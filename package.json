@@ -1,0 +1,29 @@
+{
+  "name": "warehouse",
+  "version": "1.0.0",
+  "description": "Service that allows data warehousing and workfow orchestration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soichih/warehouse.git"
+  },
+  "author": "Soichi Hayashi <hayashis@iu.edu> (http://soichi.us)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/soichih/warehouse/issues"
+  },
+  "homepage": "https://github.com/soichih/warehouse#readme",
+  "dependencies": {
+    "body-parser": "^1.16.1",
+    "compression": "^1.6.2",
+    "cors": "^2.8.1",
+    "express": "^4.14.1",
+    "express-jwt": "^5.1.0",
+    "express-winston": "^2.2.0",
+    "mongoose": "^4.8.2",
+    "winston": "^2.3.1"
+  }
+}

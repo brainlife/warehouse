@@ -1,0 +1,38 @@
+'use strict';
+
+const fs = require('fs');
+const winston = require('winston');
+
+exports.mongodb = "mongodb://localhost/warehouse";
+
+exports.wf = {
+    api: "https://soichi7.ppa.iu.edu/api/wf",
+    
+    //issue your token from auth service (make sure to chmod 600 this config if you store it here! - instead of reading from another file)
+    token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3NjYS5pdS5lZHUvYXV0aCIsImlhdCI6MTQ4NzI4NDM2My43MDMsInNjb3BlcyI6eyJzY2EiOlsidXNlciJdfSwic3ViIjoiYnJsaWZlIn0.cawBYJmjjL9n5ijKw7MtB91HanGG_D0dKaOESeWpwBsTCFRmt5EXT12ahxI4RyY68jLdm6nWBPc4hX4Uh5DyeykOuG395NiMjOQFMYhHc01iw56LZj3-dpvkGLNnKuHjiIc-OnTswAvQRbSk3aFOKFNTd_mM0oityhrKHTP_1ZM",
+}
+
+exports.express = {
+    port: 12501,
+    //public key used to validate jwt token
+    pubkey: fs.readFileSync('/home/hayashis/git/auth/api/config/auth.pub'),
+}
+
+exports.logger = {
+    winston: {
+        //hide headers which may contain jwt
+        requestWhitelist: ['url', 'method', 'httpVersion', 'originalUrl', 'query'],
+        transports: [
+            //display all logs to console
+            new winston.transports.Console({
+                timestamp: function() {
+                    var d = new Date();
+                    return d.toString();
+                },
+                level: 'debug',
+                colorize: true
+            }),
+        ]
+    },
+}
+
