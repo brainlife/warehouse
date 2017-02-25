@@ -16,6 +16,7 @@ router.get('/health', (req, res)=>{
     res.json({todo: true});
 });
 
+router.use('/project', require('./project'));
 router.use('/crate', require('./crate'));
 
 module.exports = router;

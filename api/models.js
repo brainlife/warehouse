@@ -29,9 +29,9 @@ var projectSchema = mongoose.Schema({
     //user who created this project 
     user_id: {type: String, index: true}, 
 
-    gid: Number,  //auth service group ID
-    //admins: [ String ], //list of users who can administer this project (co-PIs?)
-    //members: [ String ], //list of users who can access things under this project
+    //gid: {type: Number, index: true},
+    admins: [ String ], //list of users who can administer this project (co-PIs?)
+    members: [ String ], //list of users who can access things under this project
 
     name: String,
     desc: String, 
@@ -50,19 +50,6 @@ exports.Projects = mongoose.model('Projects', projectSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*
-var appSchema = mongoose.Schema({
-    //user who registered this app
-    user_id: {type: String, index: true},
-
-    name: String,
-    desc: String, 
-
-    create_date: { type: Date, default: Date.now },
-})
-exports.Apps = mongoose.model('Apps', appSchema);
-*/
-
 //things that user has pushed to the warehouse
 //Each crate is a basically a whole workdir for wf service
 //Each create is a directory containing .tar.gz for each task directory
@@ -79,14 +66,18 @@ var crateSchema = mongoose.Schema({
     name: String,
     desc: String, 
 
-    //current state of crate (copying > ready)
+    //current state of crate (archiving, failed, archived)
     status: String, 
+    status_msg: String,
     
     //physical location of this crate (URI?)
     system: String, //azure, dc2, jetstream-swift, etc..
-    path: String, // "/N/dc2/scratch/hayashis/123456/", "swift-container-123"
+    //path: String, // "/N/dc2/scratch/hayashis/123456/", "swift-container-123"
 
-    //list of task records stored in this crate 
+    //wf.instance
+    instance: mongoose.Schema.Types.Mixed,
+
+    //list of wf.task records stored in this crate 
     //this allows qureying of data products based on service(app) and config used
     tasks: [ mongoose.Schema.Types.Mixed ],
 
