@@ -66,13 +66,31 @@ var crateSchema = mongoose.Schema({
     name: String,
     desc: String, 
 
+    //TODO I wonder if I should store this as part of input task (config?)
+    //hierarchical information for this crate
+    //for neuroscience 
+    //research
+    //    IIBISID: 2016-00001
+    //    Modality: "MRI"
+    //    StationName: "CT71271"
+    //    radio_tracer: "DOTA NOC",
+    //exam(/study)
+    //    subject: 
+    //    study_id: //StudyInstanceUID
+    //    studytime: //StudyTimestamp
+    //series
+    //    series:  (SeriesDescription)
+    //    series_num:  (some series repeats)
+    //acquisition
+    //    acquisition_num: (usually just 1?)
+    hierarchy: mongoose.Schema.Types.Mixed,
+
     //current state of crate (archiving, failed, archived)
     status: String, 
     status_msg: String,
     
     //physical location of this crate (URI?)
     system: String, //azure, dc2, jetstream-swift, etc..
-    //path: String, // "/N/dc2/scratch/hayashis/123456/", "swift-container-123"
 
     //wf.instance
     instance: mongoose.Schema.Types.Mixed,
