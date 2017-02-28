@@ -33,7 +33,6 @@ import { getuser, getjwtheader } from './lib.jsx';
 //inline style sheet from style.less under <style>
 import css from 'style-loader!css-loader!less-loader!./style.less';
 
-
 function SideMenu(props) {
     return (
     <div className="ui left fixed inverted vertical menu">
