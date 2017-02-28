@@ -17,7 +17,7 @@ const db = require('../models');
  * @apiParam {Object} [find]    Optional Mongo find query - defaults to {}
  * @apiParam {Object} [sort]    Optional Mongo sort object - defaults to {}
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
- * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 100
+ * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 0(no limit)
  * @apiParam {Number} [skip]    Optional Record offset for pagination
  *
  * @apiHeader {String} authorization 
@@ -32,12 +32,12 @@ router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
     db.Projects.find(find)
     .select(req.query.select)
-    .limit(req.query.limit || 100)
+    .limit(req.query.limit || 0)
     .skip(req.query.skip || 0)
     .sort(req.query.sort || '_id')
     .exec((err, recs)=>{
         if(err) return next(err);
-        db.Project.count(find).exec((err, count)=>{
+        db.Projects.count(find).exec((err, count)=>{
             if(err) return next(err);
             res.json({projects: recs, count: count});
         });

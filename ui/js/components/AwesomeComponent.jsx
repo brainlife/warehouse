@@ -1,4 +1,4 @@
-console.log("hi there soichi");
+console.log("hi there soichi!");
 
 import React from 'react';
 import { Button } from 'semantic-ui-react'
