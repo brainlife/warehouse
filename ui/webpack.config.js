@@ -1,22 +1,25 @@
-var webpack = require('webpack');
-var path = require('path');
 
-var BUILD_DIR = path.resolve(__dirname, 'dist');
-var APP_DIR = path.resolve(__dirname, 'js');
+var path = require('path');
+var webpack = require('webpack');
+
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 var config = {
-    entry: APP_DIR + '/index.jsx',
+    entry: './src/index.jsx',
     output: {
-        path: BUILD_DIR,
-        filename: 'bundle.js'
+        filename: 'dist/bundle.js'
     },
+    plugins: [
+        //new webpack.optimize.OccurenceOrderPlugin(),
+        //new webpack.HotModuleReplacementPlugin(),
+        //new webpack.NoErrorsPlugin()
+    ],
     module: {
-        loaders: [{
-            test: /\.jsx?/,
-            include: APP_DIR,
-            loader: 'babel-loader'
-        }]
-    }
+        loaders: [
+            { test: /\.jsx$/, loader: 'babel-loader' },
+            { test: /\.css?$/, loaders: ['style', 'raw'] },
+        ]
+    },
 };
 
 module.exports = config;
