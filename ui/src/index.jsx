@@ -28,7 +28,7 @@ import TableExample from './components/TableExample.jsx';
 import ClockComponent from './components/ClockComponent.jsx';
 import NameForm from './components/NameForm.jsx';
 
-import { getuser, getjwtheader } from './lib.jsx';
+import { user, jwtheader } from './lib.jsx';
 
 //inline style sheet from style.less under <style>
 import css from 'style-loader!css-loader!less-loader!./style.less';
@@ -93,7 +93,8 @@ class Projects extends React.Component {
     }
 
     componentDidMount() {
-        fetch(config.api+"/project", getjwtheader())
+        console.dir(user());
+        fetch(config.api+"/project", jwtheader())
         .then(res=>{
             if(res.status != "200") {
                 console.error(res);
