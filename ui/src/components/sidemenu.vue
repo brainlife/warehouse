@@ -1,0 +1,50 @@
+<template>
+	<div class="ui left fixed inverted vertical menu">
+		<div class="item title">
+				Brain Life
+		</div>
+
+		<a href="#/" class="item" v-bind:class="{active: active == 'dashboard'}">
+				<i class="cubes icon"></i> Dashboard</a>
+		<a href="#/data" class="item" v-bind:class="{active: active == 'data'}">
+				<i class="cubes icon"></i> Data</a>
+		<a href="#/projects" class="item" v-bind:class="{active: active == 'projects'}">
+				<i class="archive icon"></i> Projects</a>
+		<a href="#/workflows" class="item" v-bind:class="{active: active == 'workflows'}">
+				<i class="object group icon"></i> Workflows</a>
+		<a href="#/test" class="item" v-bind:class="{active: active == 'test'}">
+				<i class="warning sign icon"></i> Test</a>
+		<a href="#/settings" class="item" v-bind:class="{active: active == 'settings'}"
+						v-bind:style="{bottom: '0px', position: 'fixed', width: '15em'}" target="_blank">
+				<i class="setting icon"></i> Settings
+		</a>
+	</div>
+</template>
+
+<script>
+
+import sidemenu from '@/components/sidemenu'
+
+export default {
+  name: 'hello',
+  data () {
+    return {
+      msg: 'Welcome to Your Vue.js App'
+    }
+  },
+	props: { active: String }
+}
+</script>
+
+<style scoped>
+.ui.menu .item.title {
+background-color: #489fdf;
+margin-bottom: 5px;
+font-weight: bold;
+}
+.ui.inverted.menu .item.active:hover,
+.ui.inverted.menu .item.active {
+background-color: #f0f0f0;
+color: black !important;
+}
+</style>
