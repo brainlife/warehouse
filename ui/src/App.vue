@@ -17,6 +17,10 @@ export default {
 <!--global styles-->
 <style>
 body {
-background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
+.page-with-sidemenu {
+  margin-left: 15rem;
+}
+
 </style>

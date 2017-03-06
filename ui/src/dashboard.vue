@@ -1,12 +1,14 @@
 <template>
   <div>
     <sidemenu active="dashboard"></sidemenu>
-    <h1>Dashboard</h1>
+    <div class="page">
+      <h1>Dashboard</h1>
+    </div>
   </div>
 </template>
 
 <script>
-console.log("dashbaord");
+
 import sidemenu from '@/components/sidemenu'
 export default {
   name: 'hello',

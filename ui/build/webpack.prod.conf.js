@@ -79,6 +79,7 @@ var webpackConfig = merge(baseWebpackConfig, {
       name: 'manifest',
       chunks: ['vendor']
     }),
+    /*
     // copy custom static assets
     new CopyWebpackPlugin([
       {
@@ -87,6 +88,7 @@ var webpackConfig = merge(baseWebpackConfig, {
         ignore: ['.*']
       }
     ])
+    */
   ]
 })
 
