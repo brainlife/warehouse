@@ -9,6 +9,14 @@ const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
 
+function canedit(user, rec) {
+    if(user) {
+        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
+        if(~rec.admins.indexOf(user.sub.toString())) return true;
+    }
+    return false;
+}
+    
 /**
  * @apiGroup Project
  * @api {get} /project          Query projects
@@ -35,10 +43,16 @@ router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     .limit(req.query.limit || 0)
     .skip(req.query.skip || 0)
     .sort(req.query.sort || '_id')
+    .lean()
     .exec((err, recs)=>{
         if(err) return next(err);
         db.Projects.count(find).exec((err, count)=>{
             if(err) return next(err);
+
+            //adding some derivatives
+            recs.forEach(function(rec) {
+                rec._canedit = canedit(req.user, rec);
+            });
             res.json({projects: recs, count: count});
         });
     });
@@ -66,6 +80,8 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
     var project = new db.Projects(req.body);
     project.save(function(err) {
         if (err) return next(err); 
+        project = JSON.parse(JSON.stringify(project));
+        project._canedit = canedit(req.user, project);
         res.json(project);
     });
 });
@@ -96,20 +112,20 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
         //check access
         //if(project.user_id != req.user.sub && !~project.admins.indexOf(req.user.sub)) {
-        if(!~project.admins.indexOf(req.user.sub)) {
-            return res.status(401).end("you are not administartor of this project");
-        }
-
-        //only allow update to certain fields
-        if(req.body.access) project.access = req.body.access;
-        if(req.body.name) project.name = req.body.name;
-        if(req.body.desc) project.desc = req.body.desc;
-        if(req.body.admins) project.admins = req.body.admins;
-        if(req.body.members) project.members = req.body.members;
-        project.save((err)=>{
-            if(err) return next(err);
-            res.json(project);
-        });
+        if(canedit(req.user, project)) {
+            //only allow update to certain fields
+            if(req.body.access) project.access = req.body.access;
+            if(req.body.name) project.name = req.body.name;
+            if(req.body.desc) project.desc = req.body.desc;
+            if(req.body.admins) project.admins = req.body.admins;
+            if(req.body.members) project.members = req.body.members;
+            project.save((err)=>{
+                if(err) return next(err);
+                project = JSON.parse(JSON.stringify(project));
+                project._canedit = canedit(req.user, project);
+                res.json(project);
+            });
+        } else return res.status(401).end("you are not administartor of this project");
     });
 });
 
@@ -125,9 +141,15 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
     var id = req.params.id;
     //TODO - prevent user from removing project that's in use..
-    db.Projects.remove({_id: id, user_id: req.user.sub}, function(err) {
+    db.Projects.findById(req.params.id, function(err, project) {
         if(err) return next(err);
-        res.json({message: "Project successfully removed"});
+        if(!project) return next(new Error("can't find the project with id:"+req.params.id));
+        //only superadmin or admin of this test spec can update
+        if(canedit(req.user, project)) {
+            project.remove().then(function() {
+                res.json({status: "ok"});
+            }); 
+        } else return res.status(401).end();
     });
 });
 
