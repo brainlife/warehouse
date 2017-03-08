@@ -22,7 +22,7 @@ Vue.config.auth_api = "https://soichi7.ppa.iu.edu/api/auth/"; //workflow service
 
 //config derivatives
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
-Vue.config.user = jwt_decode(Vue.config.jwt);
+if(Vue.config.jwt) Vue.config.user = jwt_decode(Vue.config.jwt);
 
 //vue-resource config
 Vue.http.options.root = "https://soichi7.ppa.iu.edu/api/warehouse/"; //default

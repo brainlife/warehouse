@@ -7,7 +7,7 @@
 		<div class="margin20">
 
 			<br>
-			<button class="ui right floated primary button" @click="newproject()">
+			<button v-if="user" class="ui right floated primary button" @click="newproject()">
 					<i class="icon add"></i>
 					Add Project
 			</button>
@@ -18,18 +18,21 @@
 				<div class="item" v-for="(project, index) in projects">
 					<div class="content">
 						<div class="meta right floated">
-							<a>{{project.create_date}}</a>
+              <button v-if="project._canedit" class="ui right floated button" @click="editproject(project)">
+                  <i class="icon edit"></i> Edit
+              </button>
 						</div>
-						<a class="header">{{project.name}}</a>
 						<div v-if="project.access == 'public'" class="ui blue horizontal label">Public</div>
 						<div v-if="project.access == 'private'" class="ui red horizontal label">Private</div>
+						<a class="header">{{project.name}}</a>
+            <br>
+            <time>{{project.create_date}}</time>
 						<div class="description">{{project.desc||'No description provided'}}</div>
 						<label>Admins</label>
             <div><contact v-for="id in project.admins" key="id" :id="id"></contact></div>
 						<label>Members</label>
             <div><contact v-for="id in project.members" key="id" :id="id"></contact></div>
 					</div>
-					<!--{{project}}-->
 				</div><!--item-->
 			</div><!--items-->
 
@@ -39,8 +42,8 @@
 	<!-- project dialog ---------------------------------------------------------------->
 	<div class="ui modal projectdialog">
 		<i class="close icon"></i>
-		<div class="header" v-if="editproject._id">
-      Editing {{editproject.name}}
+		<div class="header" v-if="edit._id">
+      Editing {{edit.name}}
 		</div>
     <div class="header" v-else>
       New Project
@@ -55,30 +58,36 @@
           <div class="ui header">We've auto-chosen a profile image for you.</div>
           <div class="field">
             <label>Project Name</label>
-            <input type="text" :value="editproject.name" placeholder="Please enter name for this project">
+            <input type="text" v-model="edit.name" placeholder="Please enter name for this project">
           </div>
           <div class="field">
             <label>Description</label>
-            <textarea :value="editproject.desc" placeholder="Details about this project"></textarea>
+            <textarea v-model="edit.desc" placeholder="Details about this project"></textarea>
           </div>
           <div class="field">
             <label>Admins</label>
-            <!--
-						<div class="ui pointing label">
-							People who can update configuration for this project
-						</div>
-            -->
-            <contactlist :uids="editproject.admins" v-on:changed="changed('admins', $event)"></contactlist>
+            <contactlist :uids="edit.init_admins" v-on:changed="changemember('admins', $event)"></contactlist>
           </div>
           <div class="field">
             <label>Members</label>
-            <!--
-						<div class="ui pointing label">
-							People can read/write data and application for this project
-						</div>
-            -->
-            <contactlist :uids="editproject.members" v-on:changed="changed('members', $event)"></contactlist>
+            <contactlist :uids="edit.init_members" v-on:changed="changemember('members', $event)"></contactlist>
           </div>
+
+					<div class="inline fields">
+						<label>Data Access</label>
+						<div class="field">
+							<div class="ui radio checkbox">
+								<input type="radio" value="public" v-model="edit.access">
+								<label>Public</label>
+							</div>
+						</div>
+						<div class="field">
+							<div class="ui radio checkbox">
+								<input type="radio" value="private" v-model="edit.access">
+								<label>Private</label>
+							</div>
+						</div>
+					</div>
 
           <p>We've grabbed the following image from the <a href="https://www.gravatar.com" target="_blank">gravatar</a> image associated with your registered e-mail address.</p>
           <p>Is it okay to use this photo?</p>
@@ -90,8 +99,11 @@
 			<div class="ui black deny button">
         Cancel
 			</div>
-			<div class="ui positive right labeled icon button">
-			  Save <i class="checkmark icon"></i>
+			<div v-if="edit._id" class="ui positive right labeled icon button">
+			  Update <i class="checkmark icon"></i>
+			</div>
+			<div v-if="!edit._id" class="ui positive right labeled icon button">
+			  Create <i class="checkmark icon"></i>
 			</div>
 		</div>
 	</div>
@@ -108,22 +120,6 @@ import sidemenu from '@/components/sidemenu'
 import contactlist from '@/components/contactlist'
 import contact from '@/components/contact'
 
-/*
-var projectdialog = {
-  name: "project-dialog",
-  template: `
-  `,
-  methods: {
-  },
-	events: {
-    'show-newproject-dialog': function() {
-			console.log("dialog");
-      $(this.$el).modal('show');
-    }
-  }
-}
-*/
-
 export default {
   name: "projects-ui",
 
@@ -133,11 +129,14 @@ export default {
       projects: [],
       count: 0, //total counts of projects (not paged)
 
-      editproject: {
+      user: Vue.config.user, //see if user is logged in
+
+      //placeholder for dialog
+      edit: {
         _id: null, //set if editing
-        name: "Untitled",
+        name: "",
         desc: "",
-        access: "public",
+        access: "",
 
         admins: [],
         members: [],
@@ -148,25 +147,62 @@ export default {
   mounted: function() {
     this.projectdialog = $(this.$el).find('.projectdialog');
     this.projectdialog.modal({
-        onApprove: function() {
-          console.log("projectdialog submitted");
+      onApprove: ()=> {
+        if(this.edit._id) {
+          //update
+					this.$http.put('project/'+this.edit._id, this.edit).then(res=>{
+            //find project that's updated
+            this.projects.forEach((p)=>{
+              if(p._id == this.edit._id) {
+                for(var k in res.body) p[k] = res.body[k];
+              }
+            });
+					}, res=>{
+						console.error(res);
+					});
+        } else {
+          //create
+          console.log("creating");
+          console.log(JSON.stringify(this.edit, null, 4));
+					this.$http.post('project', this.edit).then(res=>{
+            console.log("created", res.body);
+            this.projects.push(res.body);
+					}, res=>{
+						console.error(res);
+					});
         }
+      }
     });
   },
 
   methods: {
-    changed: function(list, uids) {
-      this.editproject[list] = uids;
+    changemember: function(list, uids) {
+      if(!uids) return;
+      console.log("set", list, uids);
+      this.edit[list] = uids;
     },
     newproject: function() {
       //initialize
-      this.editproject = {
-        name: "Untitled",
-        access: "Public",
+      this.edit = {
+        name: "",
+        desc: "",
+        access: "public",
         admins: [Vue.config.user.sub.toString()],
         members: [Vue.config.user.sub.toString()],
+
+        //ugly hack to get contactlist to not feedback list update
+        init_admins: [Vue.config.user.sub.toString()],
+        init_members: [Vue.config.user.sub.toString()],
       }
-      //console.dir(this.editproject.admins);
+      Vue.nextTick(()=>{
+        this.projectdialog.modal('show');
+      });
+    },
+    editproject: function(p) {
+      this.edit = Object.assign({
+        init_admins: p.admins,
+        init_members: p.members,
+      }, p);
       Vue.nextTick(()=>{
         this.projectdialog.modal('show');
       });

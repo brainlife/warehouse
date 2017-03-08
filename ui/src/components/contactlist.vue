@@ -35,7 +35,7 @@ export default {
     //TODO I should cache this somehow.. (or does browser do that?)
     this.$http.get(Vue.config.auth_api+'/profiles').then(res=>{
         this.profiles = res.body;
-        console.dir(this.profiles);
+        //console.dir(this.profiles);
 
         //I have to initialize dropdown *after* Vue had chance to insert all
         //<option> tags - I can't do this during mounted step.
@@ -52,16 +52,12 @@ export default {
   },
 
   watch: {
+    //initial uids to reset to..
     uids: function(val) {
       if(!val) return;
       var _val = val.map(function(v) { return v; });
-      //console.log("uids change detected", _val);
+      //console.log("uids changed....", _val);
       $(this.$el).find('.dropdown').dropdown('set exactly', _val);
-      /*
-      Vue.nextTick(()=>{
-        $(this.$el).find('.dropdown').dropdown('set selected', val);
-      });
-      */
     }
   },
 
