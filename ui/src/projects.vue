@@ -1,7 +1,5 @@
 <template>
 <div>
-	<!-- projects ---------------------------------------------------------------->
-
 	<sidemenu active="projects"></sidemenu>
 	<div class="page page-with-sidemenu">
 		<div class="margin20">
@@ -55,7 +53,7 @@
 
       <div class="description">
         <form class="ui form">
-          <div class="ui header">We've auto-chosen a profile image for you.</div>
+          <div class="ui header">Say something nice to make people feel happy</div>
           <div class="field">
             <label>Project Name</label>
             <input type="text" v-model="edit.name" placeholder="Please enter name for this project">
@@ -223,7 +221,4 @@ export default {
 </script>
 
 <style scoped>
-.margin20 {
-	margin: 20px;
-}
 </style>

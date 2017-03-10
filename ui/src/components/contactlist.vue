@@ -12,6 +12,8 @@
 <script>
 import Vue from 'vue'
 
+var profiles = null;
+
 export default {
   name: "contactlist",
   data () {
@@ -33,19 +35,21 @@ export default {
 
   mounted: function() {
     //TODO I should cache this somehow.. (or does browser do that?)
-    this.$http.get(Vue.config.auth_api+'/profiles').then(res=>{
-        this.profiles = res.body;
-        //console.dir(this.profiles);
+    if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profiles');
+    profiles.then(res=>{
+      //this.$http.get(Vue.config.auth_api+'/profiles').then(res=>{
+      this.profiles = res.body;
+      //console.dir(this.profiles);
 
-        //I have to initialize dropdown *after* Vue had chance to insert all
-        //<option> tags - I can't do this during mounted step.
-        Vue.nextTick(()=>{
-          $(this.$el).find('.dropdown').dropdown('set exactly', this.uids);
-          //inform parent of selection change
-          $(this.$el).find('.dropdown').dropdown('setting', 'onChange', (v)=>{
-              this.$emit('changed', v);
-          });
+      //I have to initialize dropdown *after* Vue had chance to insert all
+      //<option> tags - I can't do this during mounted step.
+      Vue.nextTick(()=>{
+        $(this.$el).find('.dropdown').dropdown('set exactly', this.uids);
+        //inform parent of selection change
+        $(this.$el).find('.dropdown').dropdown('setting', 'onChange', (v)=>{
+            this.$emit('changed', v);
         });
+      });
     }, res=>{
       console.error(res);
     });

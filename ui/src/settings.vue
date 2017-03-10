@@ -1,11 +1,10 @@
 <template>
 <div>
-  <sidemenu active="dashboard"></sidemenu>
+  <sidemenu active="settings"></sidemenu>
 	<div class="page page-with-sidemenu">
 		<div class="margin20">
       <h1>TODO</h1>
-      <p>Show list of all data processing that user is run or has run recently</p>
-      <p>for each project that user is member of..</p>
+      <p>Show settings.. obviously</p>
     </div>
   </div>
 </div>
@@ -14,8 +13,9 @@
 <script>
 
 import sidemenu from '@/components/sidemenu'
+
 export default {
-  name: 'hello',
+  name: 'settings',
   data () {
     return {
       msg: 'Welcome to Your Vue.js App'

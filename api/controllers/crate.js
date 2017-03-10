@@ -18,7 +18,7 @@ const db = require('../models');
 /**
  * @apiGroup Crate
  * @api {get} /crate            Query Crates 
- * @apiDescription              Returns all crates belongs to a user
+ * @apiDescription              Returns all crates accessible to the user
  *
  * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
  * @apiParam {Object} [sort]    Mongo sort object - defaults to _id. Enter in string format like "-name%20desc"
@@ -30,31 +30,45 @@ const db = require('../models');
  *
  * @apiSuccess {Object}         List of crate (maybe limited / skipped) and total count
  */
+//TODO - make jwt optional
 router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
 
-    /*
-    //handling user_id.
-    if(!req.user.scopes.sca || !~req.user.scopes.sca.indexOf("admin") || find.user_id === undefined) {
-        //non admin, or admin didn't set user_id
-        find.user_id = req.user.sub;
-    } else if(find.user_id == null) {
-        //admin can set it to null and remove user_id filtering all together
-        delete find.user_id;
+    var project_ids = [];
+    //firt, find all public projects
+    var project_query = {access: "public"};
+    //if user is logged in, look for private ones also
+    if(req.user) {
+        project_query = {
+            $or: [
+                project_query,
+                {"members": req.user.sub},
+            ]
+        };
     }
-    */
-
-    db.Crate.find(find)
-    .select(req.query.select)
-    .limit(req.query.limit || 100)
-    .skip(req.query.skip || 0)
-    .sort(req.query.sort || '_id')
-    .exec((err, crates)=>{
+    db.Projects.find(project_query);
+    .exec(err, projects) {
         if(err) return next(err);
-        db.Crate.count(find).exec((err, count)=>{
+        project_ids = projects.map(function(p) { return p._id; });
+
+        //then look for crates
+        db.Crate.find({
+            $and: [
+                {project_id: {$in: project_ids}},
+                find
+            ]
+        })
+        .select(req.query.select)
+        .limit(req.query.limit || 100)
+        .skip(req.query.skip || 0)
+        .sort(req.query.sort || '_id')
+        .exec((err, crates)=>{
             if(err) return next(err);
-            res.json({crates: crates, count: count});
+            db.Crate.count(find).exec((err, count)=>{
+                if(err) return next(err);
+                res.json({crates: crates, count: count});
+            });
         });
     });
 });

@@ -22,5 +22,8 @@ body {
 .page-with-sidemenu {
   margin-left: 15rem;
 }
+.margin20 {
+	margin: 20px;
+}
 
 </style>

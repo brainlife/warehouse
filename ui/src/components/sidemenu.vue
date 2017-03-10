@@ -6,16 +6,16 @@
 
 		<a href="#/" class="item" v-bind:class="{active: active == 'dashboard'}">
 				<i class="cubes icon"></i> Dashboard</a>
-		<a href="#/data" class="item" v-bind:class="{active: active == 'data'}">
+		<a href="#/data" class="item" v-bind:class="{active: active == 'warehouse'}">
 				<i class="cubes icon"></i> Data</a>
+		<a href="#/processes" class="item" v-bind:class="{active: active == 'processes'}">
+				<i class="object group icon"></i> Processes</a>
 		<a href="#/projects" class="item" v-bind:class="{active: active == 'projects'}">
 				<i class="archive icon"></i> Projects</a>
-		<a href="#/workflows" class="item" v-bind:class="{active: active == 'workflows'}">
-				<i class="object group icon"></i> Workflows</a>
 		<a href="#/test" class="item" v-bind:class="{active: active == 'test'}">
 				<i class="warning sign icon"></i> Test</a>
 		<a href="#/settings" class="item" v-bind:class="{active: active == 'settings'}"
-						v-bind:style="{bottom: '0px', position: 'fixed', width: '15em'}" target="_blank">
+      v-bind:style="{bottom: '0px', position: 'fixed', width: '15em'}">
 				<i class="setting icon"></i> Settings
 		</a>
 	</div>

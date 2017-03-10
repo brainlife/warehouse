@@ -62,6 +62,12 @@ var crateSchema = mongoose.Schema({
     //project that this data belongs to
     project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
+    /*
+    //type of the data
+    datatype_id : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
+    products: mongoose.Schema.Types.Mixed,
+    */
+
     //human readable name / desc
     name: String,
     desc: String, 
@@ -95,13 +101,55 @@ var crateSchema = mongoose.Schema({
     //wf.instance
     instance: mongoose.Schema.Types.Mixed,
 
-    //list of wf.task records stored in this crate 
-    //this allows qureying of data products based on service(app) and config used
+    //list of wf.task records stored in this crate (and products.json)
+    //this allows qureying of data products based on service(validator) and config used
     tasks: [ mongoose.Schema.Types.Mixed ],
 
     create_date: { type: Date, default: Date.now },
 })
 exports.Crates = mongoose.model('Crates', crateSchema);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// defines data type entry points (allowing user to upload)
+//
+var datatypeSchema = mongoose.Schema({
+    //user who created this project 
+    //user_id: {type: String, index: true}, 
+
+    //admins: [ String ], //list of users who can administer this project (co-PIs?)
+    //members: [ String ], //list of users who can access things under this project
+
+    name: String,
+    desc: String, 
+
+    //list of files to accept (for dwi, it will be something like)
+    //[
+    //  {
+    //  required: true
+    //  name: "dwi",
+    //  ext: ".nii.gz",
+    //  },
+    //  {
+    //  required: true
+    //  name: "bvecs",
+    //  },
+    //  {
+    //  required: true
+    //  name: "bvals",
+    //  }
+    //]
+    files: [ mongoose.Schema.Types.Mixed ],
+
+    //data type detail (TODO..)
+    //config: mongoose.Schema.Types.Mixed, 
+
+    //name of ABCD service that is used to validate this data
+    validator: String, 
+
+    //create_date: { type: Date, default: Date.now },
+});
+exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
