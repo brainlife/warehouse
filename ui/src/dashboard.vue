@@ -5,7 +5,7 @@
 		<div class="margin20">
       <h1>TODO</h1>
       <p>Show list of all data processing that user is run or has run recently</p>
-      <p>for each project that user is member of..</p>
+      <p>For each project that user is member of.. * inter project communication</p>
     </div>
   </div>
 </div>

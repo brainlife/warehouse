@@ -5,13 +5,15 @@
 		</div>
 
 		<a href="#/" class="item" v-bind:class="{active: active == 'dashboard'}">
-				<i class="cubes icon"></i> Dashboard</a>
+				<i class="browser icon"></i> Dashboard</a>
 		<a href="#/data" class="item" v-bind:class="{active: active == 'warehouse'}">
 				<i class="cubes icon"></i> Data</a>
 		<a href="#/processes" class="item" v-bind:class="{active: active == 'processes'}">
 				<i class="object group icon"></i> Processes</a>
+		<a href="#/apps" class="item" v-bind:class="{active: active == 'apps'}">
+				<i class="grid layout icon"></i> Apps</a>
 		<a href="#/projects" class="item" v-bind:class="{active: active == 'projects'}">
-				<i class="archive icon"></i> Projects</a>
+				<i class="protect icon"></i> Projects</a>
 		<a href="#/test" class="item" v-bind:class="{active: active == 'test'}">
 				<i class="warning sign icon"></i> Test</a>
 		<a href="#/settings" class="item" v-bind:class="{active: active == 'settings'}"

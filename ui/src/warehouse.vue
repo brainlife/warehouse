@@ -5,69 +5,47 @@
 	<div class="page page-with-sidemenu">
 		<div class="margin20">
 			<p>TODO - Allow user to search within warehouse</p>
-			<button class="ui right floated primary button" @click="openupload()">
+			<button class="ui right floated primary button"
+				@click="go('/data/upload')">
 				<i class="ui icon add"></i> Upload
 			</button>
 		</div>
 	</div>
-
-  <!--dialogs-->
-  <uploader id="uploader"></uploader>
 
 </div><!--root-->
 </template>
 
 <script>
 import Vue from 'vue'
-//import Router from 'vue-router'
 
 import sidemenu from '@/components/sidemenu'
-import uploader from '@/components/uploader'
+//import router from './router'
 
 export default {
   name: 'warehouse',
   data () {
     return {
       nothing: true,
+      //instance_id: null, //instance that takes care of upload / validation
+      //open_uploader: false,
+      //init_uploader: false, //set to true once to initialize uploader
     }
   },
 
   mounted: function() {
-    this.upload_dialog = $(this.$el).find('#uploader');
-    this.upload_dialog.modal({
-      onApprove: ()=> {
-				console.log("TODO - finalize upload");
-				/*
-				this.$http.post('project', this.edit).then(res=>{
-					console.log("created", res.body);
-					this.projects.push(res.body);
-				}, res=>{
-					console.error(res);
-				});
-				*/
-      }
-    });
+    //this.uploader = $(this.$el).find(".uploader");
   },
   methods: {
-    openupload: function() {
-			this.$http.post(Vue.config.wf_api+'/instance', {
-			}).then(res=>{
-				console.log("created new instance", res.body);
-				this.upload.instance_id = res.body._id;
-				Vue.nextTick(()=>{
-					this.upload_dialog.modal('show');
-				});
-			}, res=>{
-				console.error(res);
-				//debug - ignore error and go ahead and open the dialog
-				//(so that I can test this without api server..)
-				Vue.nextTick(()=>{
-					this.upload_dialog.modal('show');
-				});
-			});
+    go: function(path) {
+      this.$router.push('/data/upload');
+    }
+    /*
+    openuploader: function() {
+      this.$root.$emit('uploader-show');
     },
+    */
   },
-  components: { sidemenu, uploader },
+  components: { sidemenu },
 }
 </script>
 
