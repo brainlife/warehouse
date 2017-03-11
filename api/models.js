@@ -50,6 +50,7 @@ exports.Projects = mongoose.model('Projects', projectSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
 //things that user has pushed to the warehouse
 //Each crate is a basically a whole workdir for wf service
 //Each create is a directory containing .tar.gz for each task directory
@@ -61,12 +62,6 @@ var crateSchema = mongoose.Schema({
     user_id: {type: String, index: true},
     //project that this data belongs to
     project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
-
-    /*
-    //type of the data
-    datatype_id : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
-    products: mongoose.Schema.Types.Mixed,
-    */
 
     //human readable name / desc
     name: String,
@@ -108,6 +103,70 @@ var crateSchema = mongoose.Schema({
     create_date: { type: Date, default: Date.now },
 })
 exports.Crates = mongoose.model('Crates', crateSchema);
+*/
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//data that's entered to the warehouse
+//each data is a .tar.gz of a task directory from wf service
+var datasetSchema = mongoose.Schema({
+    
+    //user who registered this data
+    user_id: {type: String, index: true},
+    
+    //project that this data belongs to
+    project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+
+    //type of the data
+    datatype_id : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
+    //inventory of files stored, and detail for each files
+    product: mongoose.Schema.Types.Mixed,
+
+    //human readable name / desc
+    name: String,
+    desc: String, 
+
+    tags: [String], //allows user to search by tags
+
+    //TODO I wonder if I should store this as part of input task (config?)
+    //hierarchical information for this crate
+    //for neuroscience 
+    //research
+    //    IIBISID: 2016-00001
+    //    Modality: "MRI"
+    //    StationName: "CT71271"
+    //    radio_tracer: "DOTA NOC",
+    //exam(/study)
+    //    subject: 
+    //    study_id: //StudyInstanceUID
+    //    studytime: //StudyTimestamp
+    //series
+    //    series:  (SeriesDescription)
+    //    series_num:  (some series repeats)
+    //acquisition
+    //    acquisition_num: (usually just 1?)
+    //hierarchy: mongoose.Schema.Types.Mixed,
+
+    //physical location of this crate (URI?)
+    storage: String, //azure, dc2, jetstream-swift, etc.. (as configured in /config)
+
+    //task: mongoose.Schema.Types.Mixed, //wf.task (just as reference for now.. not sure if I need it)
+
+    //shows how this data was generated (if it's derivative) - not set if user uploaded it
+    producer: {
+        //application that produced this data (not set if user uploaded it)
+        app_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+        //data used by the application to generate this data
+        deps: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}],
+        //config used to generate the data
+        config: mongoose.Schema.Types.Mixed, 
+
+        //instance_id: String, //wf service instance_id that produced this 
+        //task_id: String, //wf service task id that produced this 
+    },
+
+    create_date: { type: Date, default: Date.now },
+})
+exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -153,28 +212,26 @@ exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*
-exports.Datasets = mongoose.model('Datasets', 
-    mongoose.Schema({
-        user_id: {type: String, index: true},
-        project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+var appSchema = mongoose.Schema({
+    //owner of this application
+    user_id: {type: String, index: true}, 
+    
+    //project that this app belongs to
+    project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
-        name: String, //name of the dataset
-        desc: String, 
-        //tags: [String], //brain region, spiecies, recording technique, etc..
+    //admins: [ String ], //list of users who can administer this application (co-PIs?)
+    //members: [ String ], //list of users who can access things under this project
 
-        source: mongoose.Schema({
-            service: String, //service which produced this dataset
-            service_branch: String, //service 
-        }),
+    name: String,
+    desc: String, 
 
-        //any metadata associated with this dataset (data type, applications to be used for, etc..)
-        config: mongoose.Schema.Types.Mixed, 
+    //application storage
+    github: String, //if the app is stored in github
+    dockerhub: String, //if the app is stored in dockerhub
 
-        create_date: { type: Date, default: Date.now },
-    })
-);
-*/
+    create_date: { type: Date, default: Date.now },
+});
+exports.Apps = mongoose.model('Apps', appSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
