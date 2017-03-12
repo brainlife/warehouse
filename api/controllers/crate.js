@@ -30,8 +30,7 @@ const db = require('../models');
  *
  * @apiSuccess {Object}         List of crate (maybe limited / skipped) and total count
  */
-//TODO - make jwt optional
-router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
 
@@ -47,8 +46,9 @@ router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             ]
         };
     }
-    db.Projects.find(project_query);
-    .exec(err, projects) {
+    db.Projects
+    .find(project_query)
+    .exec(function(err, projects) {
         if(err) return next(err);
         project_ids = projects.map(function(p) { return p._id; });
 
