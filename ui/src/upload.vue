@@ -57,7 +57,7 @@
 						</select>
 					</div>
 
-          <button class="ui right floated primary button" @click="mode ='upload'">Next</button>
+          <button class="ui right floated primary button" @click="mode = 'upload'">Next</button>
           <button class="ui right floated button" @click="back()">Back</button>
           <br clear="both">
 				</div>
@@ -261,42 +261,9 @@ export default {
   methods: {
     back: function() {
       this.$router.back();
-      /*
-      switch(this.mode) {
-      case "meta":
-        break;
-      case "upload":
-				this.mode = "meta";
-        break;
-      case "validate":
-        this.mode = "upload";
-        break;
-      case "finalize":
-        this.mode = "validate";
-        break;
-      }
-      */
     },
-    /*
-    next: function() {
-      switch(this.mode) {
-      case "meta":
-        this.mode = "upload";
-        break;
-      case "upload":
-        this.validate();
-        break;
-      case "validate":
-        this.finalize();
-        break;
-      case "finalize":
-        this.$router.push('/');
-        break;
-      }
-    },
-    */
     go: function(path) {
-        this.$router.push(path);
+      this.$router.push(path);
     },
     filechange: function(file, e) {
       var files = e.target.files || e.dataTransfer.files;

@@ -15,97 +15,18 @@
 			<div class="ui relaxed divided items">
 				<div class="item" v-for="(project, index) in projects">
 					<div class="content">
+            <project :project="project"></project>
 						<div class="meta right floated">
               <button v-if="project._canedit" class="ui right floated button" @click="editproject(project)">
                   <i class="icon edit"></i> Edit
               </button>
 						</div>
-						<div v-if="project.access == 'public'" class="ui blue horizontal label">Public</div>
-						<div v-if="project.access == 'private'" class="ui red horizontal label">Private</div>
-						<a class="header">{{project.name}}</a>
-            <br>
-            <time>{{project.create_date}}</time>
-						<div class="description">{{project.desc||'No description provided'}}</div>
-						<label>Admins</label>
-            <div><contact v-for="id in project.admins" key="id" :id="id"></contact></div>
-						<label>Members</label>
-            <div><contact v-for="id in project.members" key="id" :id="id"></contact></div>
 					</div>
 				</div><!--item-->
 			</div><!--items-->
 
 		</div><!--margin-->
 	</div><!--page-->
-
-	<!-- project dialog ---------------------------------------------------------------->
-	<div class="ui modal projectdialog">
-		<i class="close icon"></i>
-		<div class="header" v-if="edit._id">
-      Editing {{edit.name}}
-		</div>
-    <div class="header" v-else>
-      New Project
-		</div>
-		<div class="image content">
-			<div class="ui medium image">
-				<img src="./assets/some.png">
-			</div>
-
-      <div class="description">
-        <form class="ui form">
-          <div class="ui header">Say something nice to make people feel happy</div>
-          <div class="field">
-            <label>Project Name</label>
-            <input type="text" v-model="edit.name" placeholder="Please enter name for this project">
-          </div>
-          <div class="field">
-            <label>Description</label>
-            <textarea v-model="edit.desc" placeholder="Details about this project"></textarea>
-          </div>
-          <div class="field">
-            <label>Admins</label>
-            <contactlist :uids="edit.init_admins" v-on:changed="changemember('admins', $event)"></contactlist>
-          </div>
-          <div class="field">
-            <label>Members</label>
-            <contactlist :uids="edit.init_members" v-on:changed="changemember('members', $event)"></contactlist>
-          </div>
-
-					<div class="inline fields">
-						<label>Data Access</label>
-						<div class="field">
-							<div class="ui radio checkbox">
-								<input type="radio" value="public" v-model="edit.access">
-								<label>Public</label>
-							</div>
-						</div>
-						<div class="field">
-							<div class="ui radio checkbox">
-								<input type="radio" value="private" v-model="edit.access">
-								<label>Private</label>
-							</div>
-						</div>
-					</div>
-
-          <p>We've grabbed the following image from the <a href="https://www.gravatar.com" target="_blank">gravatar</a> image associated with your registered e-mail address.</p>
-          <p>Is it okay to use this photo?</p>
-        </form>
-      </div>
-
-		</div>
-		<div class="actions">
-			<div class="ui black deny button">
-        Cancel
-			</div>
-			<div v-if="edit._id" class="ui positive right labeled icon button">
-			  Update <i class="checkmark icon"></i>
-			</div>
-			<div v-if="!edit._id" class="ui positive right labeled icon button">
-			  Create <i class="checkmark icon"></i>
-			</div>
-		</div>
-	</div>
-
 </div>
 </template>
 
@@ -116,7 +37,7 @@ import Router from 'vue-router'
 
 import sidemenu from '@/components/sidemenu'
 import contactlist from '@/components/contactlist'
-import contact from '@/components/contact'
+import project from '@/components/project'
 
 export default {
   name: "projects-ui",
@@ -216,7 +137,7 @@ export default {
     });
   },
 
-  components: { sidemenu, contact, contactlist },
+  components: { sidemenu, contactlist, project },
 }
 </script>
 

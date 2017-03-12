@@ -27,17 +27,32 @@ export default {
       return "//www.gravatar.com/avatar/"+MD5(this.profile.email);
     }
   },
+  watch: {
+    id: function() {
+      this.loadprofile();
+    }
+  },
   mounted: function() {
-    //TODO I should cache this somehow.. (or does browser do that?)
-    if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profiles');
-    profiles.then(res=>{
-    //this.$http.get(Vue.config.auth_api+'/profiles').then(res=>{
-      res.body.forEach((profile)=>{
-          if(profile.id == this.id) this.profile = profile;
+    this.loadprofile();
+  },
+  methods: {
+    loadprofile: function() {
+      if(!this.id) return; //not yet set?
+      if(profiles === null) {
+        //console.log("requesting profiles");
+        profiles = this.$http.get(Vue.config.auth_api+'/profiles');
+      }
+      //console.log("using profiles");
+      profiles.then(res=>{
+        //console.log("got profiles", res.body.length);
+        res.body.forEach((profile)=>{
+            if(profile.id == this.id) this.profile = profile;
+        });
+        //if(!this.profile) console.error("failed to find profile id",this.id);
+      }, res=>{
+        console.error(res);
       });
-    }, res=>{
-      console.error(res);
-    });
+    }
   },
   props: ['id'],
 }
