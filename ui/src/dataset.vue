@@ -1,6 +1,6 @@
 <template>
 <div>
-	<sidemenu active="warehouse"></sidemenu>
+	<sidemenu active="datasets"></sidemenu>
 	<div class="page page-with-sidemenu">
 		<div class="margin20">
       <h1>{{dataset.name}}</h1>
@@ -143,9 +143,6 @@ export default {
 </script>
 
 <style scoped>
-.margin20 {
-	margin: 20px;
-}
 .ui.text.menu {
 	margin: 0;
 }

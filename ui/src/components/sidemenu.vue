@@ -6,7 +6,7 @@
 
 		<a href="#/" class="item" v-bind:class="{active: active == 'dashboard'}">
 				<i class="browser icon"></i> Dashboard</a>
-		<a href="#/data" class="item" v-bind:class="{active: active == 'warehouse'}">
+		<a href="#/datasets" class="item" v-bind:class="{active: active == 'datasets'}">
 				<i class="cubes icon"></i> Data</a>
 		<a href="#/processes" class="item" v-bind:class="{active: active == 'processes'}">
 				<i class="object group icon"></i> Processes</a>

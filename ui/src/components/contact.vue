@@ -1,9 +1,8 @@
 <template>
-<a class="ui image label">
-  <img :src="gurl" />
-  {{profile.fullname}}
+<div class="ui image label">
+  <img :src="gurl" /> {{profile.fullname}}
   <div class="detail">{{profile.email}}</div>
-</a>
+</div>
 </template>
 
 <script>

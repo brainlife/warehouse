@@ -6,7 +6,7 @@ import 'semantic-ui/dist/semantic.js'
 var jwt_decode = require('jwt-decode');
 
 import Vue from 'vue'
-import App from './App'
+import warehouse from './warehouse'
 import VueResource from 'vue-resource'
 
 import VueSemantic from 'vue-semantic'
@@ -24,11 +24,12 @@ console.log("setting config");
 Vue.config.debug = true;
 //Vue.config.productionTip = false //what is this?
 
+Vue.config.api = "https://soichi7.ppa.iu.edu/api/warehouse";
 Vue.config.wf_api = "https://soichi7.ppa.iu.edu/api/wf";
 Vue.config.auth_api = "https://soichi7.ppa.iu.edu/api/auth";
 Vue.config.event_ws = "wss://soichi7.ppa.iu.edu/api/event";
 
-Vue.http.options.root = "https://soichi7.ppa.iu.edu/api/warehouse"; //default root for $http
+Vue.http.options.root = Vue.config.api; //default root for $http
 
 //
 //
@@ -41,8 +42,8 @@ Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
 /* eslint-disable no-new */
 new Vue({
-  el: '#app',
+  el: '#warehouse',
   router,
-  template: '<App/>',
-  components: { App }
+  template: '<warehouse/>',
+  components: { warehouse }
 })
