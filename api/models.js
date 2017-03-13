@@ -36,6 +36,8 @@ var projectSchema = mongoose.Schema({
     name: String,
     desc: String, 
 
+    avatar: String, //url for avatar
+
     //project details
     //config: mongoose.Schema.Types.Mixed, 
 
@@ -215,15 +217,16 @@ exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 var appSchema = mongoose.Schema({
     //owner of this application
     user_id: {type: String, index: true}, 
+
+    admins: [ String ], //list of users who can administer this app
     
     //project that this app belongs to
-    project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
-
-    //admins: [ String ], //list of users who can administer this application (co-PIs?)
-    //members: [ String ], //list of users who can access things under this project
+    //project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
     name: String,
     desc: String, 
+
+    avatar: String, //url for avatar
 
     //application storage
     github: String, //if the app is stored in github

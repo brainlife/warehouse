@@ -18,9 +18,9 @@ function canedit(user, rec) {
 }
     
 /**
- * @apiGroup Project
- * @api {get} /project          Query projects
- * @apiDescription              Query projects registered
+ * @apiGroup App
+ * @api {get} /app              Query apps
+ * @apiDescription              Query registered apps
  *
  * @apiParam {Object} [find]    Optional Mongo find query - defaults to {}
  * @apiParam {Object} [sort]    Optional Mongo sort object - defaults to {}
@@ -28,17 +28,15 @@ function canedit(user, rec) {
  * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 0(no limit)
  * @apiParam {Number} [skip]    Optional Record offset for pagination
  *
- * @apiHeader {String} authorization 
+ * @apiHeader {String} [authorization]
  *                              A valid JWT token "Bearer: xxxxx"
- * @apiSuccess {Object}         List of projects (maybe limited / skipped) and total count
+ * @apiSuccess {Object}         List of apps (maybe limited / skipped) and total count
  */
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
 
-    //TODO I should only allow querying for projects that user has access?
-
-    db.Projects.find(find)
+    db.Apps.find(find)
     .select(req.query.select)
     .limit(req.query.limit || 0)
     .skip(req.query.skip || 0)
@@ -46,105 +44,106 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);
-        db.Projects.count(find).exec((err, count)=>{
+        db.Apps.count(find).exec((err, count)=>{
             if(err) return next(err);
-
             //adding some derivatives
-            recs.forEach(function(rec) {
+            if(req.useR) recs.forEach(function(rec) {
                 rec._canedit = canedit(req.user, rec);
             });
-            res.json({projects: recs, count: count});
+            res.json({apps: recs, count: count});
         });
     });
 });
 
 /**
- * @apiGroup Project
- * @api {post} /project         Post Project
- * @apiDescription              Register new project
+ * @apiGroup App
+ * @api {post} /app             Post App
+ * @apiDescription              Register new app
  *
- * @apiParam {String} access    "public" or "private"
- * @apiParam {String} [name]    User friendly name for this container 
- * @apiParam {String} [desc]    Description for this dataset 
+ * @apiParam {String} [name]    User friendly name for this app
+ * @apiParam {String} [desc]    Description for this app
+ * @apiParam {String} [avatar]  URL for application avatar
+ * @apiParam {String} [github]  github id/name for this app
+ * @apiParam {String} [dockerhub]  
+ *                              dockerhub id/name
  *
  * @apiParam {String[]} admins  Admin IDs
- * @apiParam {String[]} members Members
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  *
- * @apiSuccess {Object}         Project record registered
+ * @apiSuccess {Object}         App registered
  */
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
     req.body.user_id = req.user.sub;//override
-    var project = new db.Projects(req.body);
-    project.save(function(err) {
+    var app = new db.Apps(req.body);
+    app.save(function(err) {
         if (err) return next(err); 
-        project = JSON.parse(JSON.stringify(project));
-        project._canedit = canedit(req.user, project);
-        res.json(project);
+        app = JSON.parse(JSON.stringify(app));
+        app._canedit = canedit(req.user, app);
+        res.json(app);
     });
 });
 
 /**
- * @apiGroup Project
- * @api {put} /project/:id
- *                              Put Project
- * @apiDescription              Update project
+ * @apiGroup App
+ * @api {put} /app/:id          Update App
+ *                              
+ * @apiDescription              Update App
  *
- * @apiParam {String} [access]  "public" or "private"
  * @apiParam {String} [name]    User friendly name for this container 
  * @apiParam {String} [desc]    Description for this dataset 
+ * @apiParam {String} [avatar]  URL for application avatar
+ * @apiParam {String} [github]  github id/name for this app
+ * @apiParam {String} [dockerhub]  
  *
  * @apiParam {String[]} [admins]  List of admins (auth sub)
- * @apiParam {String[]} [members] List of admins (auth sub)
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  *
- * @apiSuccess {Object}         Project object updated
+ * @apiSuccess {Object}         Updated App
  */
 router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var id = req.params.id;
-    db.Projects.findById(id, (err, project)=>{
+    db.Apps.findById(id, (err, app)=>{
         if(err) return next(err);
-        if(!project) return res.status(404).end();
+        if(!app) return res.status(404).end();
 
         //check access
-        //if(project.user_id != req.user.sub && !~project.admins.indexOf(req.user.sub)) {
-        if(canedit(req.user, project)) {
+        if(canedit(req.user, app)) {
             //user can't update some fields
             delete res.body.user_id;
             delete res.body.create_date;
-            for(var k in req.body) project[k] = req.body[k];
-            project.save((err)=>{
+            for(var k in req.body) app[k] = req.body[k];
+            app.save((err)=>{
                 if(err) return next(err);
-                project = JSON.parse(JSON.stringify(project));
-                project._canedit = canedit(req.user, project);
-                res.json(project);
+                app= JSON.parse(JSON.stringify(app));
+                app._canedit = canedit(req.user, app);
+                res.json(app);
             });
-        } else return res.status(401).end("you are not administartor of this project");
+        } else return res.status(401).end("you are not administartor of this app");
     });
 });
 
 /**
- * @apiGroup Project
- * @api {delete} /project/:id
- *                              Remove registered project (only by the user registered it)
- * @apiDescription              Physically remove a project registered on DB.
+ * @apiGroup App
+ * @api {delete} /app/:id
+ *                              Remove registered app (only by the user registered it)
+ * @apiDescription              Physically remove a  app registered on DB.
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
 router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
     var id = req.params.id;
-    //TODO - prevent user from removing project that's in use..
-    db.Projects.findById(req.params.id, function(err, project) {
+    //TODO - prevent user from removing app that's in use..
+    db.Apps.findById(req.params.id, function(err, app) {
         if(err) return next(err);
-        if(!project) return next(new Error("can't find the project with id:"+req.params.id));
+        if(!app) return next(new Error("can't find the app with id:"+req.params.id));
         //only superadmin or admin of this test spec can update
-        if(canedit(req.user, project)) {
-            project.remove().then(function() {
+        if(canedit(req.user, app)) {
+            app.remove().then(function() {
                 res.json({status: "ok"});
             }); 
         } else return res.status(401).end();
