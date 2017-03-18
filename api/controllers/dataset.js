@@ -58,11 +58,11 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         db.Datasets
         .find({
             $and: [
-                {project_id: {$in: project_ids}},
+                {project: {$in: project_ids}},
                 find
             ]
         })
-        .populate('project_id datatype_id')
+        .populate('project datatype')
         .select(req.query.select)
         .limit(req.query.limit || 100)
         .skip(req.query.skip || 0)
@@ -82,10 +82,11 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @api {post} /dataset                 Create new dataset from wf service task
  * @apiDescription                      Make a request to create a new dataset from wf service taskdir
  *
- * @apiParam {String} project_id        Project used to store this dataset under
+ * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} instance_id       WF service Instance ID
  * @apiParam {String} task_id           WF service Task ID 
- * @apiParam {String} datatype_id       Data type ID for this dataset (from Datatypes)
+ * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
+ * @apiParam {String[]} datatype_tags   Data type ID for this dataset (from Datatypes)
  * @apiParam {String} [name]            Name for this dataset
  * @apiParam {String} [desc]            Description for this crate
  * @apiParam {String[]} [tags]          List of tags associated with this dataset
@@ -95,12 +96,10 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  *                              
  */
 router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-    if(!req.body.project_id) return next("project_id not set");
+    if(!req.body.project) return next("project id not set");
+    if(!req.body.datatype) return next("datatype id not set");
     if(!req.body.instance_id) return next("instance_id not set");
     if(!req.body.task_id) return next("task_id not set");
-    if(!req.body.datatype_id) return next("datatype_id not set");
-        
-    //query task (relay jwt from user) 
     request.get({
         url: config.wf.api+"/task",
         qs: {
@@ -120,7 +119,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         if(task.user_id != req.user.sub) return next("you don't own this instance");
 
         //make sure user is member of the project selected
-        db.Projects.findById(req.body.project_id, (err, project)=>{
+        db.Projects.findById(req.body.project, (err, project)=>{
             if(err) return next(err);
             if(!project) return next("couldn't find the project");
             //TODO should I only allow members but not admin?
@@ -130,10 +129,11 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             var dataset = new db.Datasets({
                 user_id: req.user.sub,
 
-                project_id: project._id,
-                datatype_id: req.body.datatype_id,
+                project: project._id,
+                datatype: req.body.datatype,
+                datatype_tags: req.body.datatype_tags,
 
-                product: req.body.product, //describe what's in this dataset
+                //product: req.body.product, //describe what's in this dataset
 
                 name: req.body.name,
                 desc: req.body.desc,
@@ -189,14 +189,6 @@ function archive(task, dataset, req, cb) {
     });
 }
 
-/*
-//decide which storage system to use to store the instance
-function choose_storage(tasks) {
-    //TODO.. analyze tasks and see where data is currently stored..
-    return "dc2";
-}
-*/
-
 //this API allows user to download any files under user's workflow directory
 //TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
 //doing so increases the chance of user misusing the token, but unless I use HTML5 File API
@@ -233,9 +225,9 @@ router.get('/download/:id', jwt({
         db.Datasets.findById(id, function(err, dataset) {
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
-            logger.debug("user is accessing p", dataset.project_id);
+            logger.debug("user is accessing p", dataset.project);
             logger.debug("user has access to", project_ids);
-            if(!~project_ids.indexOf(dataset.project_id.toString())) 
+            if(!~project_ids.indexOf(dataset.project.toString())) 
                 return res.status(404).json({message: "you don't have access to the project that the dataset belongs"});
             
             logger.debug("commencing download");

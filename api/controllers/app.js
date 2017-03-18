@@ -41,6 +41,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     .limit(req.query.limit || 0)
     .skip(req.query.skip || 0)
     .sort(req.query.sort || '_id')
+    .populate('inputs.datatype outputs.datatype')
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);
@@ -64,6 +65,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiParam {String} [desc]    Description for this app
  * @apiParam {String} [avatar]  URL for application avatar
  * @apiParam {String} [github]  github id/name for this app
+ * @apiParam {Object[]} [inputs]    Input datatypes and tags
+ * @apiParam {Object[]} [outputs]   Output datatypes and tags
  * @apiParam {String} [dockerhub]  
  *                              dockerhub id/name
  *
@@ -95,6 +98,8 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  * @apiParam {String} [desc]    Description for this dataset 
  * @apiParam {String} [avatar]  URL for application avatar
  * @apiParam {String} [github]  github id/name for this app
+ * @apiParam {Object[]} [inputs]    Input datatypes and tags
+ * @apiParam {Object[]} [outputs]   Output datatypes and tags
  * @apiParam {String} [dockerhub]  
  *
  * @apiParam {String[]} [admins]  List of admins (auth sub)

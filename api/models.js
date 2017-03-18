@@ -116,18 +116,17 @@ var datasetSchema = mongoose.Schema({
     user_id: {type: String, index: true},
     
     //project that this data belongs to
-    project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
     //type of the data
-    datatype_id : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
-    //inventory of files stored, and detail for each files
-    product: mongoose.Schema.Types.Mixed,
-
+    datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
+    datatype_tags: [String], //add specificity to datatype (different from "tags" which is used for searching)
+   
     //human readable name / desc
     name: String,
     desc: String, 
 
-    tags: [String], //allows user to search by tags
+    tags: [String], //allows user to search by tags (not datatype_tags)
 
     //TODO I wonder if I should store this as part of input task (config?)
     //hierarchical information for this crate
@@ -156,14 +155,11 @@ var datasetSchema = mongoose.Schema({
     //shows how this data was generated (if it's derivative) - not set if user uploaded it
     producer: {
         //application that produced this data (not set if user uploaded it)
-        app_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+        app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
         //data used by the application to generate this data
         deps: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}],
-        //config used to generate the data
+        //app config used to generate the data
         config: mongoose.Schema.Types.Mixed, 
-
-        //instance_id: String, //wf service instance_id that produced this 
-        //task_id: String, //wf service task id that produced this 
     },
 
     create_date: { type: Date, default: Date.now },
@@ -220,9 +216,6 @@ var appSchema = mongoose.Schema({
 
     admins: [ String ], //list of users who can administer this app
     
-    //project that this app belongs to
-    //project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
-
     name: String,
     desc: String, 
 
@@ -232,33 +225,21 @@ var appSchema = mongoose.Schema({
     github: String, //if the app is stored in github
     dockerhub: String, //if the app is stored in dockerhub
 
+    //input files for this application
+    inputs: [ new mongoose.Schema({
+        datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
+        datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
+    })],
+
+    //output files for this application
+    //TODO right now, we can only deal with a single output data types per task
+    outputs: [ new mongoose.Schema({
+        datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
+        datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
+    })],
+
     create_date: { type: Date, default: Date.now },
 });
 exports.Apps = mongoose.model('Apps', appSchema);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*
-var application_schema = mongoose.Schema({
-    user_id: {type: String, index: true},
-    //gids: [ Number ], //list of auth service group IDs that should have access to this data
-
-    project_id: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
-
-    //list of input datasets and directory names
-    datasets: [{
-        name: String,
-        id: {type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'},
-    }],
-
-    name: String, //user friendly name for this container
-    desc: String, 
-
-    //configuration for the service
-    config: mongoose.Schema.Types.Mixed, 
-
-    create_date: { type: Date, default: Date.now },
-});
-application_schema.index({name: 'text', desc: 'text'}); //TODO need to allow searching for dataset / projects..
-exports.Applications = mongoose.model('Applications', application_schema);
-*/
