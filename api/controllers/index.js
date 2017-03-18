@@ -19,6 +19,7 @@ router.get('/health', (req, res)=>{
 router.use('/project', require('./project'));
 //router.use('/crate', require('./crate'));
 router.use('/dataset', require('./dataset'));
+router.use('/app', require('./app'));
 router.use('/datatype', require('./datatype'));
 
 module.exports = router;

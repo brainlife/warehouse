@@ -14,6 +14,24 @@ const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
 
+//return all projects that user has access
+function getprojects(user, cb) {
+    //firt, find all public projects
+    var project_query = {access: "public"};
+    //if user is logged in, look for private ones also
+    if(user) {
+        project_query = {
+            $or: [
+                project_query,
+                {"members": user.sub},
+            ]
+        };
+    }
+    db.Projects
+    .find(project_query)
+    .exec(cb);
+}
+
 /**
  * @apiGroup Dataset
  * @api {get} /dataset          Query Datasets
@@ -32,32 +50,19 @@ const db = require('../models');
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
-
-    var project_ids = [];
-    //firt, find all public projects
-    var project_query = {access: "public"};
-    //if user is logged in, look for private ones also
-    if(req.user) {
-        project_query = {
-            $or: [
-                project_query,
-                {"members": req.user.sub},
-            ]
-        };
-    }
-    db.Projects
-    .find(project_query)
-    .exec(function(err, projects) {
+    getprojects(req.user, function(err, projects) {
         if(err) return next(err);
-        project_ids = projects.map(function(p) { return p._id; });
+        var project_ids = projects.map(function(p) { return p._id; });
 
         //then look for dataset
-        db.Datasets.find({
+        db.Datasets
+        .find({
             $and: [
                 {project_id: {$in: project_ids}},
                 find
             ]
         })
+        .populate('project_id datatype_id')
         .select(req.query.select)
         .limit(req.query.limit || 100)
         .skip(req.query.skip || 0)
@@ -159,8 +164,7 @@ function archive(task, dataset, req, cb) {
 
     var storage = "dc2";
     var system = config.storage_systems[storage];
-    system.archive_stream(dataset, task, (err, writestream)=>{
-        logger.info("downloading "+task._id);
+    system.upload(dataset, (err, writestream)=>{
         request.get({
             url: config.wf.api+"/resource/download",
             qs: {
@@ -192,5 +196,68 @@ function choose_storage(tasks) {
     return "dc2";
 }
 */
+
+//this API allows user to download any files under user's workflow directory
+//TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
+//doing so increases the chance of user misusing the token, but unless I use HTML5 File API
+//there isn't a good way to let user download files..
+//getToken() below allows me to check jwt token via "at" query.
+//Another way to mitigate this is to issue a temporary jwt token used to do file download (or permanent token that's tied to the URL?)
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/download/:id Download .tar.gz from dataset archive 
+ * @apiDescription              Allows user to download any files from user's resource
+ *
+ * @apiParam {String} [at]      JWT token - if user can't provide it via authentication header
+ *
+ * @apiHeader {String} [authorization] A valid JWT token "Bearer: xxxxx"
+ *
+ */
+router.get('/download/:id', jwt({
+    secret: config.express.pubkey,
+    getToken: function(req) { 
+        //load token from req.headers as well as query.at
+        if(req.query.at) return req.query.at; 
+        if(req.headers.authorization) {
+            var auth_head = req.headers.authorization;
+            if(auth_head.indexOf("Bearer") === 0) return auth_head.substr(7);
+        }
+        return null;
+    }
+}), function(req, res, next) {
+    var id = req.params.id;
+    logger.debug("requested for downloading dataset "+id);
+    getprojects(req.user, function(err, projects) {
+        if(err) return next(err);
+        var project_ids = projects.map(function(p) { return p._id.toString(); });
+        db.Datasets.findById(id, function(err, dataset) {
+            if(err) return next(err);
+            if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
+            logger.debug("user is accessing p", dataset.project_id);
+            logger.debug("user has access to", project_ids);
+            if(!~project_ids.indexOf(dataset.project_id.toString())) 
+                return res.status(404).json({message: "you don't have access to the project that the dataset belongs"});
+            
+            logger.debug("commencing download");
+            //open stream
+            var system = config.storage_systems[dataset.storage];
+            system.download(dataset, (err, readstream)=>{
+                if(err) return next(err);
+                
+                //file .. just stream using sftp stream
+                //npm-mime uses filename to guess mime type, so I can use this locally
+                //var mimetype = mime.lookup(fullpath);
+                //logger.debug("mimetype:"+mimetype);
+
+                //without attachment, the file will replace the current page
+                res.setHeader('Content-disposition', 'attachment; filename='+dataset._id+'.tar.gz');
+                //res.setHeader('Content-Length', stat.size);
+                //res.setHeader('Content-Type', mimetype);
+                readstream.pipe(res);             
+            });
+        });
+    });
+
+});
 
 module.exports = router;

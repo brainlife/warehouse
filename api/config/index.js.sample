@@ -26,13 +26,17 @@ exports.storage_systems = {
     //sshfs mount dc2 on /mnt/auto
     dc2: {
         //return archive_stream to pipe data to
-        archive_stream: (dataset, task, cb)=>{
+        upload: (dataset, cb)=>{
             var dir = "/mnt/auto/dc2/projects/brainlife/s7-warehouse/datasets/"+dataset.project_id;
             mkdirp(dir, (err)=>{
                 if(err) return cb(err);
                 cb(null, fs.createWriteStream(dir+'/'+dataset._id+'.tar.gz'));
             });
-        } 
+        },
+        download: (dataset, cb)=>{
+            var dir = "/mnt/auto/dc2/projects/brainlife/s7-warehouse/datasets/"+dataset.project_id;
+            cb(null, fs.createReadStream(dir+'/'+dataset._id+'.tar.gz'));
+        }
     }
 }
 
