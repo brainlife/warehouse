@@ -2,18 +2,30 @@
 <div>
 	<sidemenu active="datasets"></sidemenu>
 	<div class="page page-with-sidemenu">
-		<div class="margin20">
+		<div class="margin20" v-if="dataset">
+
+      <div class="ui small basic icon buttons right floated">
+        <button class="ui button" @click=""><i class="file icon"></i></button>
+        <button class="ui button"><i class="save icon"></i></button>
+        <button class="ui button"><i class="upload icon"></i></button>
+        <button class="ui button"><i class="download icon"></i></button>
+      </div>
+
       <h1>{{dataset.name}}</h1>
       <p>{{dataset.desc}}</p>
 
 			<table class="ui definition table">
 				<tbody>
 					<tr>
+            <td>Create Date</td>
+						<td>{{dataset.create_date|date}}</td>
+					</tr>
+					<tr>
 						<td class="two wide column">Storage</td>
 						<td>{{dataset.storage}}</td>
 					</tr>
-					<tr>
-						<td>doi</td>
+					<tr class="top aligned">
+						<td>DOI</td>
 						<td>10.1006/br.d.{{dataset._id}} </td>
 					</tr>
 					<tr>
@@ -24,66 +36,38 @@
 						<td>Owner</td>
 						<td><contact :id="dataset.user_id"></contact></td>
 					</tr>
-					<tr>
+					<tr class="top aligned">
 						<td>Data Type</td>
             <td>
-              {{dataset.datatype_id.desc}}
+              {{dataset.datatype.desc}}
+              <pre>{{dataset.datatype.files}}</pre>
+						  <div class="ui label" v-for="tag in dataset.datatype_tags">{{tag}}</div></td>
+            </td>
+					</tr>
+					<tr class="top aligned">
+						<td>Project</td>
+            <td>
+              <project :project="dataset.project"></project>
             </td>
 					</tr>
 				</tbody>
 			</table>
 
+      <!--
 			<h4 class="ui horizontal divider header">Content</h4>
 			{{dataset.product.files}}
+      -->
 
+      <!--
 			<h4 class="ui horizontal divider header">Project Info</h4>
-      <project :project="dataset.project_id"></project>
+      <project :project="dataset.project"></project>
+      -->
 
 			<h4 class="ui horizontal divider header">Applications</h4>
       <p>You can use this data as input for following applications.</p>
 			<div class="ui cards">
-				<div class="card">
-					<div class="content">
-						<img class="right floated mini ui image" src="//avatars3.githubusercontent.com/u/923896?v=3&s=100">
-						<div class="header">
-							Elliot Fu
-						</div>
-						<div class="meta">
-							Friends of Veronika
-						</div>
-						<div class="description">
-							Elliot requested permission to view your contact details
-						</div>
-					</div>
-					<div class="extra content">
-						<div class="ui two buttons">
-							<div class="ui basic green button">Start</div>
-							<div class="ui basic red button">Info</div>
-						</div>
-					</div>
-				</div>
-				<div class="card">
-					<div class="content">
-						<img class="right floated mini ui image" src="//avatars3.githubusercontent.com/u/923896?v=3&s=100">
-						<div class="header">
-							Jenny Hess
-						</div>
-						<div class="meta">
-							New Member
-						</div>
-						<div class="description">
-							Jenny wants to add you to the group <b>best friends</b>
-						</div>
-					</div>
-					<div class="extra content">
-						<div class="ui two buttons">
-							<div class="ui basic green button">Approve</div>
-							<div class="ui basic red button">Decline</div>
-						</div>
-					</div>
-				</div>
+        <app v-for="app in apps" key="app._id" :app="app"></app>
 			</div>
-
 
       <div class="ui segment">
         <div class="ui top attached label">Debug</div>
@@ -104,11 +88,13 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import project from '@/components/project'
+import app from '@/components/app'
 
 export default {
   data () {
     return {
-      dataset: {},
+      dataset: null,
+      apps: null,
     }
   },
 
@@ -119,12 +105,18 @@ export default {
     }})
     .then(res=>{
       this.dataset = res.body.datasets[0];
-      /*
-      Vue.nextTick(()=>{
-        console.log("shown dataset");
-        $(this.$el).find('.ui.dropdown').dropdown()
+
+      console.log("looking for app that uses this data");
+      this.$http.get('app', {params: {
+          "find": JSON.stringify({"inputs.datatype": this.dataset.datatype._id})
+      }})
+      .then(res=>{
+        this.apps = res.body.apps;
+        console.log("apps", this.apps);
+      }, res=>{
+        console.error(res);
       });
-      */
+
     }, res=>{
       console.error(res);
     });
@@ -138,7 +130,7 @@ export default {
       this.$router.push(path);
     }
   },
-  components: { sidemenu, contact, project },
+  components: { sidemenu, contact, project, app },
 }
 </script>
 

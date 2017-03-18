@@ -14,6 +14,7 @@ import router from './router'
 
 Vue.use(VueResource)
 Vue.use(VueSemantic)
+Vue.use(require('vue-filter'))
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -27,6 +28,7 @@ Vue.config.debug = true;
 Vue.config.api = "https://soichi7.ppa.iu.edu/api/warehouse";
 Vue.config.wf_api = "https://soichi7.ppa.iu.edu/api/wf";
 Vue.config.auth_api = "https://soichi7.ppa.iu.edu/api/auth";
+Vue.config.event_api = "https://soichi7.ppa.iu.edu/api/event";
 Vue.config.event_ws = "wss://soichi7.ppa.iu.edu/api/event";
 
 Vue.http.options.root = Vue.config.api; //default root for $http

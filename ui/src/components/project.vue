@@ -1,14 +1,19 @@
 <template>
 <div>
 
-  <h3>{{project.name}}</h3>
   <table class="ui definition table">
     <tbody>
+      <!--
       <tr>
           <td>Create Date</td>
           <td>
             <time>{{project.create_date}}</time>
           </td>
+      </tr>
+      -->
+      <tr>
+          <td>Name</td>
+          <td>{{project.name}}</td>
       </tr>
       <tr>
           <td>Access</td>
