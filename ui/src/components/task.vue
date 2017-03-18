@@ -1,21 +1,26 @@
 <template>
-<div>
-  <div class="ui segment">
-    <div class="ui green top attached label">
-      {{task.service}}
-      <div class="detail">{{task.status}}</div>
+<div class="ui segment">
+
+  <!--status-->
+  <div class="ui icon message">
+    <i class="notched circle loading icon blue" v-if="task.status == 'running'"></i>
+    <i class="check icon green" v-if="task.status == 'finished'"></i>
+    <i class="wait icon" v-if="task.status == 'requested'"></i>
+    <i class="warning icon red" v-if="task.status == 'failed'"></i>
+    <div class="content">
+      <div class="header"> {{task.name}} <span class="ui label small">{{task.service}}</span> </div>
+      <p>{{task.status_msg}}</p>
     </div>
-    <h3>{{task.name}}</h3>
-    <p>{{task.desc}}</p>
-    <p>{{task.status_msg}}</p>
-    <!--<pre>{{task.config}}</pre>-->
-    <pre>{{task.products}}</pre>
   </div>
 
-  <!--
-  <pre>{{task}}</pre>
-  -->
-
+  <div class="description">
+    <p>{{task.desc}}</p>
+    <!--<pre>{{task.config}}</pre>-->
+    <h3>Config</h3>
+    <pre>{{task.config}}</pre>
+    <h3>Products</h3>
+    <pre>{{task.products}}</pre>
+  </div>
 </div>
 </template>
 

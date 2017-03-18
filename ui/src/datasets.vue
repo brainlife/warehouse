@@ -3,13 +3,11 @@
   <!-- main view -->
 	<sidemenu active="datasets"></sidemenu>
 	<div class="page page-with-sidemenu">
-		<div class="margin20">
-
-			<button class="ui right floated primary button" @click="go('/data/upload')">
-				<i class="ui icon add"></i> Upload
-			</button>
-
+    <div class="margin20" :class="{rightopen: selected.length > 0}">
 			<div class="ui fluid category search">
+        <button class="ui right floated primary button" @click="go('/data/upload')">
+          <i class="ui icon add"></i> Upload
+        </button>
 				<div class="ui icon input">
 					<input class="prompt" type="text" placeholder="Search data...">
 					<i class="search icon"></i>
@@ -20,49 +18,54 @@
 			<table class="ui table">
 				<thead>
 					<tr>
-						<th>Project</th>
-						<th>Name</th>
-						<th>DataType</th>
-						<th>Description</th>
-						<th>Files</th>
+            <th style="">Select</th>
+            <th style=""></th>
+						<th>Data Type</th>
+						<th style="min-width: 180px;">Create Date</th>
+						<th style="min-width: 200px;">Project</th>
+						<th>Name/Desc</th>
+						<th>Tags</th>
+            <!--<th>Files</th>-->
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="dataset in datasets" class="dataset" @click="go('/data/'+dataset._id)">
-						<td>
-							<div class="ui green horizontal label" v-if="dataset.project_id.access == 'public'">Public</div>
-							<div class="ui red horizontal label" v-if="dataset.project_id.access == 'private'">Private</div>
-							{{dataset.project_id.name}}
-						</td>
-						<td>{{dataset.name}}</td>
-						<td>
-							{{dataset.datatype_id.desc}}
-						</td>
-						<td>{{dataset.desc}}</td>
-						<td>
-							<div v-for="(file,id) in dataset.product.files" style="display: inline">
-                <div class="ui mini label">{{id}}</div> {{file.filename}}
+          <tr v-for="dataset in datasets" :class="{dataset: true, selected: ~selected.indexOf(dataset._id)}">
+            <td>
+              <div class="ui checkbox">
+                <input type="checkbox" :checked="~selected.indexOf(dataset._id)" @click="check(dataset)">
+								<label></label>
               </div>
 						</td>
-						<!--
-            <td>
-							<div class="ui text menu">
-								<div class="ui right dropdown item">
-									Action
-									<i class="dropdown icon"></i>
-									<div class="menu">
-										<div class="item">Download</div>
-										<div class="item">Something</div>
-										<div class="item">Another Thing</div>
-									</div>
-								</div>
-							</div>
+						<td>
+							<button class="tiny ui button" @click="go('/dataset/'+dataset._id)">
+								<i class="browser icon"></i>
+							</button>
             </td>
-						-->
+            <td>
+              <!--<a class="ui blue ribbon label">{{dataset.datatype.name}}</a>-->
+              {{dataset.datatype.name}}
+              <div class="ui label" v-for="tag in dataset.datatype_tags">{{tag}}</div>
+            </td>
+						<td>
+							{{dataset.create_date | date}}
+						</td>
+						<td>
+							<div class="ui green horizontal label" v-if="dataset.project.access == 'public'">Public</div>
+							<div class="ui red horizontal label" v-if="dataset.project.access == 'private'">Private</div>
+							{{dataset.project.name}}
+						</td>
+						<td>
+              <b>{{dataset.name}}</b><br>
+              <small>{{dataset.desc}}</small>
+            </td>
+            <td>
+              <div class="ui label" v-for="tag in dataset.tags">{{tag}}</div>
+            </td>
 					</tr>
 				</tbody>
 			</table>
 
+      <!--
 			<table class="ui celled structured table">
 				<thead>
 					<tr>
@@ -118,8 +121,28 @@
 					</tr>
 				</tbody>
 			</table>
+      -->
 
-		</div>
+    </div><!--main area-->
+
+    <div class="rightbar" v-if="selected.length > 0">
+      <div class="ui inverted top attached header">
+        Selected
+      </div>
+      <div class="ui inverted attached segment">
+        <div class="ui inverted relaxed divided list">
+          <div class="item" v-for="id in selected">
+            <div class="content">
+              <div class="header">{{id}}</div>
+              Hello
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ui inverted bottom attached header">
+        {{selected.length}} items
+      </div>
+    </div>
 	</div>
 
 </div><!--root-->
@@ -136,6 +159,7 @@ export default {
   data () {
     return {
       datasets: [],
+      selected: [],
     }
   },
 
@@ -153,6 +177,7 @@ export default {
       console.error(res);
     });
 
+    this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || [];
   },
   methods: {
 		opendataset: function(dataset) {
@@ -160,6 +185,13 @@ export default {
 		},
     go: function(path) {
       this.$router.push(path);
+    },
+    check: function(dataset) {
+      //Vue.set(dataset, 'selected', !dataset.selected);
+      var pos = this.selected.indexOf(dataset._id);
+      if(~pos) this.selected.splice(pos, 1);
+      else this.selected.push(dataset._id);
+      localStorage.setItem('datasets.selected', JSON.stringify(this.selected));
     }
     /*
     openuploader: function() {
@@ -172,8 +204,24 @@ export default {
 </script>
 
 <style scoped>
+/*
 .dataset:hover {
 	cursor: pointer;
 	background-color: #ddd;
+}
+*/
+.rightopen {
+  margin-right: 300px;
+}
+.dataset.selected {
+	background-color: #e1f7f7;
+}
+.rightbar {
+  position: fixed;
+  width: 280px;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  padding: 10px;
 }
 </style>

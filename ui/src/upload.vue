@@ -1,6 +1,6 @@
 <template>
 <div>
-	<sidemenu active="warehouse"></sidemenu>
+	<sidemenu active="datasets"></sidemenu>
 	<div class="page page-with-sidemenu">
 		<div class="margin20">
       <h1>Upload</h1>
@@ -73,13 +73,13 @@
 
 					<div class="field" v-if="datatype_id">
 						<div class="ui raised segment" v-for="file in files" style="margin-left: 10px;">
-              <a class="ui ribbon label">{{file.name}}</a>
+              <a class="ui ribbon label">{{file.id}}</a>
               <br>
               <br>
               <div v-if="!file.uploaded && !file.progress">
                 <input type="file" @change="filechange(file, $event)">
               </div>
-              <div class="ui segment" v-if="!file.uploaded && file.progress">
+              <div v-if="!file.uploaded && file.progress">
                 <button class="ui tiny button remove icon" @click="cancelupload(file)" style="float: right"></i>
                   <i class="ui remove icon"></i>
                 </button>
@@ -90,7 +90,7 @@
                   <div class="label">Uploading {{file.filename}}</div>
                 </div>
               </div>
-              <div class="ui segment" v-if="file.uploaded">
+              <div v-if="file.uploaded">
                 <button class="small ui button right floated" @click="clearfile(file)">Remove</button>
                 <b>{{file.filename}}</b>
                 <small>({{file.size}} bytes)</small>
@@ -124,7 +124,7 @@
 						</div>
 					</div>
 					<div v-if="!validation.products">
-						<button class="ui loading button">Validating</button>
+            <h4><i class="notched circle loading icon"></i> Validating..</h4>
 						<pre>{{validation}}</pre>
 					</div>
 
@@ -134,12 +134,14 @@
           <br clear="both">
 				</div>
 				<div v-if="mode == 'finalize'">
-          <div v-if="dataset" class="ui message">
-            <p>Issued an archive request. Your data will be available in warehouse soon!</p>
+          <div v-if="dataset">
+            <div class="ui message">
+              <div class="header">Success!</div>
+              <p>Your data will be available in warehouse soon!</p>
+            </div>
           </div>
           <div v-if="!dataset && copy">
-						<button class="ui loading button">Copying</button>
-            <p>Organizing your input files..</p>
+            <h4><i class="notched circle loading icon"></i> Organizing your input files..</h4>
           </div>
 
           <br>
@@ -376,10 +378,9 @@ export default {
         instance_id: this.instance_id,
         name: this.name,
         desc: this.desc,
-        tags: ['todo123'],
-        project_id: this.project_id,
-        instance_id: this.instance_id,
-        datatype_id: this.datatype_id,
+        tags: [], //TODO - let user choose this?
+        project: this.project_id,
+        datatype: this.datatype_id,
         task_id: this.copy._id, //we archive data from copy task
         product: product,
       }).then(res=>{

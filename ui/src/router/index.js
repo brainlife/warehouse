@@ -18,8 +18,8 @@ export default new Router({
   routes: [
     { path: '/', name: 'dashboard', component: dashboard },
     { path: '/datasets', name: 'Datasets', component: datasets },
+    { path: '/dataset/:id', name: 'Dataset', component: dataset},
     { path: '/data/upload', name: 'Upload', component: upload},
-    { path: '/data/:id', name: 'Dataset', component: dataset},
     { path: '/processes', name: 'processes', component: processes},
     { path: '/process/:id', name: 'process', component: process},
     { path: '/projects', name: 'projects', component: projects },
