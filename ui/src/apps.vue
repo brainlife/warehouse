@@ -2,7 +2,7 @@
 <div>
   <!-- main view -->
 	<sidemenu active="apps"></sidemenu>
-	<div class="page page-with-sidemenu">
+  <div class="ui pusher">
 		<div class="margin20">
 			<div class="ui cards">
         <app v-for="app in apps" key="app._id" :app="app"></app>

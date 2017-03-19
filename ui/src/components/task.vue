@@ -15,11 +15,16 @@
 
   <div class="description">
     <p>{{task.desc}}</p>
-    <!--<pre>{{task.config}}</pre>-->
-    <h3>Config</h3>
-    <pre>{{task.config}}</pre>
-    <h3>Products</h3>
-    <pre>{{task.products}}</pre>
+    <div v-if="task.config">
+        <h3>Config</h3>
+        <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
+    </div>
+    <!--
+    <div v-if="task.products">
+        <h3>Products</h3>
+        <pre v-highlightjs><code class="json hljs">{{task.products}}</code></pre>
+    </div>
+    -->
   </div>
 </div>
 </template>

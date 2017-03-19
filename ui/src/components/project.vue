@@ -12,7 +12,7 @@
       </tr>
       -->
       <tr>
-          <td>Name</td>
+          <td width="130px">Name</td>
           <td>{{project.name}}</td>
       </tr>
       <tr>

@@ -9,6 +9,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "highlight.js": "^9.10.0",
     "jquery": "^3.1.1",
     "jwt-decode": "^2.1.0",
     "reconnectingwebsocket": "^1.0.0",

@@ -15,7 +15,7 @@
   </div>
   <div class="extra content">
     <div class="ui two buttons">
-      <div class="ui basic green button" @click="go('/app/'+app._id)">Start</div>
+      <div class="ui basic green button" @click="go('/app/'+app._id)">Detail</div>
       <!--<div class="ui basic red button">Info</div>-->
     </div>
   </div>
