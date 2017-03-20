@@ -55,7 +55,7 @@
                 <div class="ui top attached label">Debug</div>
                 <br>
                 <br>
-                <pre v-highlightjs><code class="json hljs">{{instances}}</code></pre>
+                <pre v-if="instances" v-highlightjs><code class="json hljs">{{instances}}</code></pre>
             </div>
         </div>
     </div>
@@ -70,7 +70,7 @@ export default {
   name: 'processes',
   data () {
     return {
-      instances: []
+      instances: null
     }
   },
   mounted: function() {

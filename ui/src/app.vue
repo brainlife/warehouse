@@ -3,8 +3,10 @@
     <sidemenu active="apps"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="app">
-            <img class="right floated mini ui image" :src="app.avatar">
-            <h1>{{app.name}}</h1>
+            <h2 class="ui header">
+                <img class="ui image" :src="app.avatar">
+                {{app.name}}
+            </h2>
             <p>{{app.desc}}</p>
 
             <table class="ui definition table">
@@ -43,7 +45,7 @@
                         <div class="ui list">
                             <div class="item" v-for="input in app.inputs">
                                 <div class="header"> {{input.datatype.desc}} </div>
-                                <div class="ui label" v-for="tag in input.datatype_tags">{{tag}}</div>
+                                <tags :tags="input.datatype_tags"></tags>
                                 <div class="ui segment" v-for="file in input.datatype.files">
                                     {{file}}
                                 </div>
@@ -57,7 +59,7 @@
                         <div class="ui list">
                             <div class="item" v-for="output in app.outputs">
                                 <div class="header"> {{output.datatype.desc}} </div>
-                                <div class="ui label" v-for="tag in output.datatype_tags">{{tag}}</div>
+                                <tags :tags="output.datatype_tags"></tags>
                                 <div class="ui segment" v-for="file in output.datatype.files">
                                     {{file}}
                                 </div>
@@ -88,7 +90,10 @@
                         <label>{{input.id}}</label>
                         <select class="ui fluid dropdown" v-model="input.dataset_id">
                             <option value="">(Select {{input.id}} dataset)</option>
-                            <option v-for="dataset in datasets[input.datatype._id]" :value="dataset._id">{{dataset.name}}</option>
+                            <option v-for="dataset in datasets[input.datatype._id]" :value="dataset._id">
+                                {{dataset.name}}
+                                <tags :tags="dataset.datatype_tags"></tags>
+                            </option>
                         </select>
                     </div>
 
@@ -122,139 +127,138 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import project from '@/components/project'
+import tags from '@/components/tags'
 
 export default {
-  data () {
-    return {
-      app: null,
-      resource: null,
+    components: { sidemenu, contact, project, tags },
 
-      project_id: "", //to be selected by the user
+    data () {
+        return {
+            app: null,
+            resource: null,
 
-      //cache
-      datasets: {}, //for searching datasets
-      projects: [],
-    }
-  },
+            project_id: "", //to be selected by the user
 
-  mounted: function() {
-    //console.log("looking for ", this.$route.params.id);
-    this.$http.get('app', {params: {
-        find: JSON.stringify({_id: this.$route.params.id})
-    }})
-    .then(res=>{
-      this.app = res.body.apps[0];
-      if(this.app.github) this.findbest(this.app.github);
-
-      var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
-
-      //find datasets (TODO - make this smarter..)
-      this.$http.get('dataset', {params: {
-          find: JSON.stringify({datatype: {$in: datatype_ids}})
-      }})
-      .then(res=>{
-        this.datasets = {};
-        res.body.datasets.forEach((dataset)=>{
-            var datatype_id = dataset.datatype._id;
-
-            //group by datatype_id
-            if(this.datasets[datatype_id] === undefined) Vue.set(this.datasets, datatype_id, []);
-
-            //TODO - apply tag filter
-
-            this.datasets[datatype_id].push(dataset);
-        });
-        console.log(this.datasets);
-      }, res=>{
-        console.error(res);
-      });
-
-    }, res=>{
-      console.error(res);
-    });
-
-    //load projects
-    this.$http.get('project', {params: {
-        //service: "_upload",
-    }})
-    .then(res=>{
-      this.projects = {};
-      res.body.projects.forEach((p)=>{
-        this.projects[p._id] = p;
-      });
-    }, res=>{
-      console.error(res);
-    });
-
-  },
-  methods: {
-    go: function(path) {
-      this.$router.push(path);
+            //cache
+            datasets: {}, //for searching datasets
+            projects: [],
+        }
     },
 
-    findbest: function(service) {
-      //find resource where we can run this app
-      this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-          service: service,
-      }})
-      .then(res=>{
-        this.resource = res.body;
-      }, res=>{
-        console.error(res);
-      })
-    },
+    mounted: function() {
+        //console.log("looking for ", this.$route.params.id);
+        this.$http.get('app', {params: {
+            find: JSON.stringify({_id: this.$route.params.id})
+        }})
+        .then(res=>{
+            this.app = res.body.apps[0];
+            if(this.app.github) this.findbest(this.app.github);
 
-    submitapp: function() {
+            var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
 
-      var instance = null;
-
-      //first create an instance to run everything
-      var instance_config = {
-          brainlife: true,
-          project: this.project_id,
-          app: this.app._id,
-          main_task_id: null,
-      }
-      this.$http.post(Vue.config.wf_api+'/instance', {
-        name: "brainlife.a."+this.app._id,
-        desc: this.app.name,
-        config: instance_config,
-      }).then(res=>{
-        instance = res.body;
-        console.log("instance created", instance);
-
-        //create config to download all input data from archive
-        var download = [];
-        this.app.inputs.forEach(function(input) {
-          download.push({
-            url: Vue.config.api+"/dataset/download/"+input.dataset_id+"?at="+Vue.config.jwt,
-            untar: "gz",
-            dir: "inputs/"+input.id,
-          });
-        });
-        //now submit task to download data from archive
-        return this.$http.post(Vue.config.wf_api+'/task', {
-          instance_id: instance._id,
-          name: "Stage Input",
-          service: "soichih/sca-product-raw",
-          config: { download },
+            //find datasets (TODO - make this smarter..)
+            return this.$http.get('dataset', {params: {
+                find: JSON.stringify({datatype: {$in: datatype_ids}})
+            }})
         })
-            }).then(res=>{
-                var download_task = res.body.task;
+        .then(res=>{
+            this.datasets = {};
+            res.body.datasets.forEach((dataset)=>{
+                var datatype_id = dataset.datatype._id;
 
-                //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
+                //group by datatype_id
+                if(this.datasets[datatype_id] === undefined) Vue.set(this.datasets, datatype_id, []);
 
-                //Now submit the app (TODO - generate UI and config automatically)
-                var config = {
-                        //"coords": [ [ 0, 0, 0 ], [ 0, -16, 0 ], [ 0, -8, 40 ] ],
-                };
-        this.app.inputs.forEach((input)=>{
-          input.datatype.files.forEach((file)=>{
-                        config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+file.filename;
+                //TODO - apply tag filter
+
+                this.datasets[datatype_id].push(dataset);
+            });
+            console.log(this.datasets);
+        }).catch(err=>{
+            console.error(err);
+        });
+
+        //load projects
+        this.$http.get('project', {params: {
+            //service: "_upload",
+        }})
+        .then(res=>{
+            this.projects = {};
+            res.body.projects.forEach((p)=>{
+                this.projects[p._id] = p;
+            });
+        }, res=>{
+          console.error(res);
+        });
+    },
+
+    methods: {
+        go: function(path) {
+            this.$router.push(path);
+        },
+
+        findbest: function(service) {
+          //find resource where we can run this app
+          this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
+              service: service,
+          }})
+          .then(res=>{
+            this.resource = res.body;
+          }, res=>{
+            console.error(res);
+          })
+        },
+
+        submitapp: function() {
+            var instance = null;
+
+          //first create an instance to run everything
+          var instance_config = {
+              brainlife: true,
+              project: this.project_id,
+              app: this.app._id,
+              main_task_id: null,
+          }
+          this.$http.post(Vue.config.wf_api+'/instance', {
+            name: "brainlife.a."+this.app._id,
+            desc: this.app.name,
+            config: instance_config,
+          }).then(res=>{
+            instance = res.body;
+            console.log("instance created", instance);
+
+            //create config to download all input data from archive
+            var download = [];
+            this.app.inputs.forEach(function(input) {
+              download.push({
+                url: Vue.config.api+"/dataset/download/"+input.dataset_id+"?at="+Vue.config.jwt,
+                untar: "gz",
+                dir: "inputs/"+input.id,
+              });
+            });
+            //now submit task to download data from archive
+            return this.$http.post(Vue.config.wf_api+'/task', {
+              instance_id: instance._id,
+              name: "Stage Input",
+              service: "soichih/sca-product-raw",
+              config: { download },
+            })
+                }).then(res=>{
+                    var download_task = res.body.task;
+
+                    //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
+
+                    //Now submit the app (TODO - generate UI and config automatically)
+                    var config = {
+                            //"coords": [ [ 0, 0, 0 ], [ 0, -16, 0 ], [ 0, -8, 40 ] ],
+                    };
+            this.app.inputs.forEach((input)=>{
+              input.datatype.files.forEach((file)=>{
+                            config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+file.filename;
+                        });
                     });
-                });
-        console.log("generated config");
-        console.dir(config);
+            console.log("generated config");
+            console.dir(config);
 
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
@@ -265,11 +269,12 @@ export default {
                 })
             }).then(res=>{
                 //store main task id on instance config
-                instance_config.main_task_id = res.body.task;
+                instance_config.main_task_id = res.body.task._id;
                 return this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
                     config: instance_config,
                 });
             }).then(res=>{
+                //then request for notifications
                 return this.request_notifications(instance, instance_config.main_task_id);
             }).then(res=>{
                 //all good!
@@ -277,9 +282,9 @@ export default {
             }).catch(function(err) {
                 console.error(err);
             });
-    },
+        },
 
-    request_notifications: function(instance, main_task) {
+        request_notifications: function(instance, main_task) {
             var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;
 
             //for success
@@ -292,9 +297,8 @@ export default {
                         message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease visit "+url+" to view your result.\n\nBrain-life.org Administrator"
                 },
             });
-    }
-  },
-  components: { sidemenu, contact, project },
+        }
+    },
 }
 </script>
 

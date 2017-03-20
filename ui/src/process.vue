@@ -2,15 +2,15 @@
 <div>
 	<sidemenu active="processes"></sidemenu>
     <div class="ui pusher">
-        <div class="margin20">
+        <div class="margin20" v-if="instance && tasks">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
             <button class="ui button primary right floated"
                 v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="archive()"> 
-                Archive
+                <i class="archive icon"></i> Archive Output
             </button>
             <button class="ui button right floated"
                 v-if="instance.config.dataset_id" @click="go('/dataset/'+instance.config.dataset_id)">
-                <i class="check icon"></i> Archived
+                <i class="archive icon"></i> See Archived
             </button>
             <button class="ui button right floated" @click="remove()">
                 <i class="trash icon"></i> Remove
@@ -23,7 +23,8 @@
                 <div class="ui top attached label">Outputs</div>
                 <div v-for="output in app.outputs">
                     <h3>{{output.datatype.name}}</h3>
-                    <div class="ui segment" v-for="file in output.datatype.files">{{file}}</div>
+                    <!--<div class="ui segment" v-for="file in output.datatype.files">{{file}}</div>-->
+                    <file v-for="file in output.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
                 </div>
             </div>
 
@@ -59,6 +60,7 @@ import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import message from '@/components/message'
 import task from '@/components/task'
+import file from '@/components/file'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -134,6 +136,17 @@ export default {
             console.error(res);
         });
     },
+
+    computed: {
+        main_task: function() {
+            var it = null;
+            this.tasks.forEach((task)=>{
+                if(task._id == this.instance.config.main_task_id) it = task;
+            })
+            if(!it) console.error("failed to find main_task");
+            return it;
+        }
+    },
     methods: {
         go: function(path) {
             this.$router.push(path);
@@ -173,7 +186,7 @@ export default {
             });
         },
     },
-    components: { sidemenu, contact, task, message },
+    components: { sidemenu, contact, task, message, file },
 }
 </script>
 

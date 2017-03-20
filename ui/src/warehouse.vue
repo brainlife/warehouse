@@ -25,10 +25,11 @@ body {
 .ui.pusher {
   margin-left: 210px;
 }
-.fade-enter-active, .fade-leave-active {
+
+.fade-enter-active {
   transition: opacity 1s
 }
-.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+.fade-enter, .fade-leave-to {
   opacity: 0
 }
 </style>

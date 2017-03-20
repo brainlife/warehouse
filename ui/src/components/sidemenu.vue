@@ -39,10 +39,8 @@
 
 <script>
 
-import sidemenu from '@/components/sidemenu'
-
 export default {
-  name: 'hello',
+  name: 'sidemenu',
   data () {
     return {
       msg: 'Welcome to Your Vue.js App'
