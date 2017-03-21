@@ -1,13 +1,14 @@
 <template>
 <div class="ui list" v-if="files">
-    <button v-if="files.length != 0" class="ui mini basic button" style="margin-bottom: 10px;" @click="download()">
-        <i class="download icon"></i> Download
-    </button>
+    <div class="ui icon mini basic buttons" style="margin-bottom: 10px;">
+        <button v-if="files.length != 0" class="ui button" @click="download()"><i class="download icon"></i></button>
+        <button class="ui button" @click="load()"> <i class="refresh icon"></i></button>
+    </div>
     <div class="item" v-for="file in files" key="file.filename">
     <!--<div class="ui right floated">something</div>-->
         <div class="fileitem" @click="click(file)">
-            <i class="folder icon" v-if="file.directory"></i>
             <i class="file outline icon" v-if="!file.directory"></i>
+            <i class="folder icon" v-if="file.directory"></i>
             {{file.filename}}
         </div>
         <div class="content" style="margin-left: 20px;" v-if="file.open">
@@ -44,11 +45,7 @@ export default {
         this.fullpath = this.path;
         if(!this.fullpath) this.fullpath = this.task.instance_id+'/'+this.task._id;
         console.log("loading", this.fullpath);
-        this.$http.get(Vue.config.wf_api+'/resource/ls/'+this.task.resource_id+'?path='+encodeURIComponent(this.fullpath)).then(res=>{
-            this.files = res.body.files;
-        }).catch(err=>{
-            console.error(err);
-        })
+        this.load();
     },
     
     methods: {
@@ -66,6 +63,15 @@ export default {
             var url = this.get_download_url();
             document.location = url;
         },
+
+        load: function() {
+            this.$http.get(Vue.config.wf_api+'/resource/ls/'+this.task.resource_id+'?path='+encodeURIComponent(this.fullpath)).then(res=>{
+                this.files = res.body.files;
+            }).catch(err=>{
+                console.error(err);
+            })
+        },
+
         click: function(file){
             console.dir(file);
             var url = this.get_download_url(file);

@@ -1,6 +1,6 @@
 <template>
 <div class="ui segment">
-    <i class="file icon" v-if="file.filename"></i>
+    <i class="file outline icon" v-if="file.filename"></i>
     <i class="folder icon" v-if="file.dirname"></i>
     <button class="ui mini button right floated primary" @click="click()"><i class="download icon"></i> Download</button>
     {{file.filename||file.dirname}}

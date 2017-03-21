@@ -30,9 +30,8 @@
                 <td>10.1006/br.d.{{dataset._id}} </td>
             </tr>
             <tr>
-                <td>Tags</td>
+                <td>User Tags</td>
                 <td>
-                    <!--<div class="ui label" v-for="tag in dataset.tags">{{tag}}</div>-->
                     <tags :tags="dataset.tags"></tags>
                 </td>
             </tr>
@@ -44,8 +43,7 @@
                 <td>Data Type</td>
                 <td>
                     <p>{{dataset.datatype.desc}}</p>
-                    <!--div class="ui label" v-for="tag in dataset.datatype_tags">{{tag}}</div>-->
-                    <tags :tags="dataset.tags"></tags>
+                    <tags :tags="dataset.datatype_tags"></tags>
                     <div class="ui segment" v-for="file in dataset.datatype.files">
                         <i class="file icon" v-if="file.filename"></i>
                         <i class="folder icon" v-if="file.dirname"></i>

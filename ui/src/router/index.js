@@ -11,6 +11,7 @@ import process from '@/process'
 import settings from '@/settings'
 import apps from '@/apps'
 import app from '@/app'
+import submit from '@/submit'
 
 Vue.use(Router)
 
@@ -25,6 +26,7 @@ export default new Router({
     { path: '/projects', name: 'Projects', component: projects },
     { path: '/apps', name: 'Apps', component: apps },
     { path: '/app/:id', name: 'App', component: app },
+    { path: '/app/:id/submit', name: 'AppSubmit', component: submit},
     //{ path: '/project', name: 'newproject', component: project },
     //{ path: '/project/:id', name: 'editproject', component: project },
     //{ path: '/dataset/:id', name: 'Dataset', component: Dataset },
