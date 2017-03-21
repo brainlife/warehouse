@@ -12,6 +12,7 @@ export default {
     props: [ 'tags' ],
     computed: {
         deco_tags: function() {
+            if(!this.tags) return [];
             var tags = this.tags.map(tag=>{
                 var t = {name: tag};
                 if(tag[0] == '!') {

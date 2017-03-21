@@ -156,13 +156,16 @@ export default {
             //currently only deals with outputs[0]
             var params = {
                 instance_id: this.instance._id,
-                name: "data from "+this.instance.name,
+                //name: "data from "+this.instance.name,
+                name: this.app.name+" output", 
                 desc: "Data archived from "+this.instance.name,
                 tags: ['xyz123', 'test', 'dev'], //TODO - let use set this?
                 project: this.instance.config.project,
                 task_id: this.instance.config.main_task_id,
                 datatype: this.app.outputs[0].datatype,
                 datatype_tags: this.app.outputs[0].datatype_tags,
+
+                prov: this.instance.config, //instance.config holds all provenance info
             }
             this.$http.post('dataset', params).then(res=>{
                 this.messages.push({msg: "Archiving Request Sent!", cls: {info: true}});

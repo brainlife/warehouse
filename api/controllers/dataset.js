@@ -87,6 +87,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiParam {String} task_id           WF service Task ID 
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
  * @apiParam {String[]} datatype_tags   Data type ID for this dataset (from Datatypes)
+ * @apiParam {Object} [prov]            Provenance information (not set for uploaded data)
  * @apiParam {String} [name]            Name for this dataset
  * @apiParam {String} [desc]            Description for this crate
  * @apiParam {String[]} [tags]          List of tags associated with this dataset
@@ -139,7 +140,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 desc: req.body.desc,
                 tags: req.body.tags,
 
-                //uri: storage+"://"+path,
+                prov: req.body.prov,
             });
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);
@@ -249,7 +250,6 @@ router.get('/download/:id', jwt({
             });
         });
     });
-
 });
 
 module.exports = router;

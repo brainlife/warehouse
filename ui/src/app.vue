@@ -212,54 +212,64 @@ export default {
         submitapp: function() {
             var instance = null;
 
-          //first create an instance to run everything
-          var instance_config = {
-              brainlife: true,
-              project: this.project_id,
-              app: this.app._id,
-              main_task_id: null,
-          }
-          this.$http.post(Vue.config.wf_api+'/instance', {
-            name: "brainlife.a."+this.app._id,
-            desc: this.app.name,
-            config: instance_config,
-          }).then(res=>{
-            instance = res.body;
-            console.log("instance created", instance);
+            var prov = {
+                brainlife: true,
+                project: this.project_id,
+                app: this.app._id,
+                main_task_id: null,
+                datasets: this.app.inputs,
+            }
 
-            //create config to download all input data from archive
-            var download = [];
-            this.app.inputs.forEach(function(input) {
-              download.push({
-                url: Vue.config.api+"/dataset/download/"+input.dataset_id+"?at="+Vue.config.jwt,
-                untar: "gz",
-                dir: "inputs/"+input.id,
-              });
-            });
-            //now submit task to download data from archive
-            return this.$http.post(Vue.config.wf_api+'/task', {
-              instance_id: instance._id,
-              name: "Stage Input",
-              service: "soichih/sca-product-raw",
-              config: { download },
-            })
-                }).then(res=>{
-                    var download_task = res.body.task;
+            //first create an instance to run everything
+            this.$http.post(Vue.config.wf_api+'/instance', {
+                name: "brainlife.a."+this.app._id,
+                desc: this.app.name,
+                config: prov,
+            }).then(res=>{
+                instance = res.body;
+                console.log("instance created", instance);
 
-                    //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
-
-                    //Now submit the app (TODO - generate UI and config automatically)
-                    var config = {
-                            //"coords": [ [ 0, 0, 0 ], [ 0, -16, 0 ], [ 0, -8, 40 ] ],
-                    };
-            this.app.inputs.forEach((input)=>{
-              input.datatype.files.forEach((file)=>{
-                            config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+file.filename;
-                        });
+                //create config to download all input data from archive
+                var download = [];
+                this.app.inputs.forEach(function(input) {
+                    download.push({
+                        url: Vue.config.api+"/dataset/download/"+input.dataset_id+"?at="+Vue.config.jwt,
+                        untar: "gz",
+                        dir: "inputs/"+input.id,
                     });
-            console.log("generated config");
-            console.dir(config);
+                });
+                //now submit task to download data from archive
+                return this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: instance._id,
+                    name: "Stage Input",
+                    service: "soichih/sca-product-raw",
+                    config: { download },
+                })
+            }).then(res=>{
+                var download_task = res.body.task;
 
+                console.log("download task submitted");
+
+                //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
+
+                //Now submit the app (TODO - generate UI and config automatically)
+                var config = {
+                    //"coords": [ [ 0, 0, 0 ], [ 0, -16, 0 ], [ 0, -8, 40 ] ],
+                };
+                //TODO - for now, let's just load some default config
+                for(var k in this.app.config) {
+                    var spec = this.app.config[k];
+                    config[k] = spec.default;
+                }
+                this.app.inputs.forEach((input)=>{
+                    input.datatype.files.forEach((file)=>{
+                        config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+(file.filename||file.dirname);
+                    });
+                });
+                console.log("generated config");
+                console.dir(config);
+
+                prov.config = config; //store main_task config inside provenance
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
                     name: this.app.name,
@@ -268,14 +278,14 @@ export default {
                     deps: [ download_task._id ],
                 })
             }).then(res=>{
-                //store main task id on instance config
-                instance_config.main_task_id = res.body.task._id;
+                //add main_task_id information on instance config (provenance)
+                prov.main_task_id = res.body.task._id;
                 return this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
-                    config: instance_config,
+                    config: prov,
                 });
             }).then(res=>{
                 //then request for notifications
-                return this.request_notifications(instance, instance_config.main_task_id);
+                return this.request_notifications(instance, prov.main_task_id);
             }).then(res=>{
                 //all good!
                 this.go('/process/'+instance._id);

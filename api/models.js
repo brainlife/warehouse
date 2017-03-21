@@ -148,19 +148,25 @@ var datasetSchema = mongoose.Schema({
     //hierarchy: mongoose.Schema.Types.Mixed,
 
     //physical location of this crate (URI?)
-    storage: String, //azure, dc2, jetstream-swift, etc.. (as configured in /config)
+    storage: String, //azure, dc2, sda?, jetstream-swift, etc.. (as configured in /config)
 
     //task: mongoose.Schema.Types.Mixed, //wf.task (just as reference for now.. not sure if I need it)
 
-    //shows how this data was generated (if it's derivative) - not set if user uploaded it
-    producer: {
+    //proveancne; showing how this data was generated (if it's derivative) - not set if user uploaded it
+    prov: mongoose.Schema.Types.Mixed, 
+        /*
         //application that produced this data (not set if user uploaded it)
         app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
-        //data used by the application to generate this data
-        deps: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}],
-        //app config used to generate the data
+        
+        //input dataset used by the application 
+        datasets: [new mongoose.Schema({
+            id: String,
+            dataset: {type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'},
+        })],
+        
+        //app config used 
         config: mongoose.Schema.Types.Mixed, 
-    },
+        */
 
     create_date: { type: Date, default: Date.now },
 })
