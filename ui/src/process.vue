@@ -1,6 +1,6 @@
 <template>
 <div>
-	<sidemenu active="processes"></sidemenu>
+    <sidemenu active="processes"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="instance && tasks">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>

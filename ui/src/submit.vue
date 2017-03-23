@@ -62,6 +62,8 @@ import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
 
+import lib from '@/lib'
+
 export default {
     components: { sidemenu, contact, project, tags },
 
@@ -97,6 +99,7 @@ export default {
             }})
         })
         .then(res=>{
+            /*
             this.datasets = {};
             res.body.datasets.forEach((dataset)=>{
                 var datatype_id = dataset.datatype._id;
@@ -104,11 +107,23 @@ export default {
                 //group by datatype_id
                 if(this.datasets[datatype_id] === undefined) Vue.set(this.datasets, datatype_id, []);
 
-                //TODO - apply tag filter
-
+                //apply tag filter
+                //.. make sure the dataset meets required tags
+                //.. make sure the dataset doesn't have negative tags
+    
                 this.datasets[datatype_id].push(dataset);
             });
             console.log(this.datasets);
+            */
+            var datasets = res.body.datasets;
+            this.app.inputs.forEach((input)=>{
+                console.log("looking for ", input.datatype.name);
+                console.log("input tags", input.datatype_tags);
+
+                Vue.set(input, 'datasets', datasets.filter(dataset=>{
+                    return true; 
+                }));
+            });
         }).catch(err=>{
             console.error(err);
         });

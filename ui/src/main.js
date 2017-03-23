@@ -16,7 +16,6 @@ import VueResource from 'vue-resource'
 import VueSemantic from 'vue-semantic'
 import router from './router'
 
-
 Vue.use(VueResource)
 Vue.use(VueSemantic)
 Vue.use(require('vue-filter'))
@@ -74,6 +73,11 @@ Vue.directive('highlightjs', {
       }
     })
   }
+})
+
+router.beforeEach(function (to, from, next) {
+    window.scrollTo(0, 0)
+    next();
 })
 
 /* eslint-disable no-new */

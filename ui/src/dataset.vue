@@ -60,7 +60,7 @@
         </tbody>
         </table>
 
-        <div v-if="apps.length > 0">
+        <div v-if="apps && apps.length > 0">
             <h4 class="ui horizontal divider header">Applications</h4>
             <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
             <div class="ui cards">
@@ -90,6 +90,8 @@ import project from '@/components/project'
 import tags from '@/components/tags'
 import app from '@/components/app'
 
+const lib = require('./lib');
+
 export default {
     components: { sidemenu, contact, project, app, tags },
     data () {
@@ -105,57 +107,28 @@ export default {
             find: JSON.stringify({_id: this.$route.params.id})
         }})
         .then(res=>{
-          this.dataset = res.body.datasets[0];
-
-          console.log("looking for app that uses this data");
-          this.$http.get('app', {params: {
-            "find": JSON.stringify({
-              //look for apps that uses my datatype as input
-              "inputs.datatype": this.dataset.datatype._id
-            })
-          }})
-          .then(res=>{
-            this.apps = [];
-
-            //TODO - maybe I should move this filtering logic to server
-            res.body.apps.forEach((app)=> {
-              var has_matching_input = false;
-
-              app.inputs.forEach((input)=> {
-                if(input.datatype._id == this.dataset.datatype._id) {
-                  //make sure the data type meets all application datatype tags
-                  var reject = false;
-                  input.datatype_tags.forEach((tag)=> {
-                    if(tag[0] == '!') {
-                      //negative tag (dataset must't have)
-                      if(~this.dataset.datatype_tags.indexOf(tag.substring(1))) {
-                        reject = true;
-                      }
-                    } else {
-                      //normal tag (dataset must have)
-                      if(!~this.dataset.datatype_tags.indexOf(tag)) reject = true;
-                    }
-                  });
-                  if(!reject) has_matching_input = true;
-                }
-              });
-              if(has_matching_input) this.apps.push(app);
-            });
-          }, res=>{
+            this.dataset = res.body.datasets[0];
+            console.log("looking for app that uses this data");
+            return this.$http.get('app', {params: {
+                "find": JSON.stringify({
+                //look for apps that uses my datatype as input
+                "inputs.datatype": this.dataset.datatype._id
+                })
+            }})
+        })
+        .then(res=>{
+            //should I do this via computed?
+            this.apps = lib.filter_apps(this.dataset, res.body.apps);
+        }).catch(err=>{
             console.error(res);
-          });
-
-        }, res=>{
-          console.error(res);
         });
-
     },
     methods: {
         opendataset: function(dataset) {
             console.dir(dataset);
         },
         go: function(path) {
-          this.$router.push(path);
+            this.$router.push(path);
         },
         download: function() {
             let url = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
