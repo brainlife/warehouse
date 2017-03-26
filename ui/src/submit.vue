@@ -27,16 +27,18 @@
                         <label>{{input.id}}</label>
                         <select class="ui fluid dropdown" v-model="input.dataset_id">
                             <option value="">(Select {{input.id}} dataset)</option>
-                            <option v-for="dataset in datasets[input.datatype._id]" :value="dataset._id">
+                            <option v-for="dataset in datasets[input.id]" :value="dataset._id">
                                 {{dataset.name}}
                                 <tags :tags="dataset.datatype_tags"></tags>
                             </option>
                         </select>
                     </div>
         
+                    <!--
                     <div class="field">
                         {{app.config}}
                     </div>
+                    -->
 
                     <div class="ui primary button" @click="submitapp()">Submit</div>
                 </div>
@@ -64,6 +66,54 @@ import tags from '@/components/tags'
 
 import lib from '@/lib'
 
+//take app's config template and create a real config using download_task_id
+function generate_config(app, download_task_id) {
+    var config = app.config;
+
+    function handle_obj(obj) {
+        for(var k in obj) { 
+            var node = obj[k];
+            if(node.isArray) {
+                console.log("todo.. array!");
+            } else if(typeof node === 'object') {
+                if(node.type) {
+                    switch(node.type) {
+                    case "integer":
+                        obj[k] = node.default; //TODO - let's just use default for now
+                        break;
+                    case "input":
+                        //find the input 
+                        app.inputs.forEach(input=>{
+                            if(input.id == node.input_id) {
+                                //find the file
+                                input.datatype.files.forEach(file=>{
+                                    if(file.id == node.file_id) {
+                                        obj[k] = "../"+download_task_id+"/inputs/"+input.id+"/"+(file.filename||file.dirname)
+                                    }
+                                });
+                            } 
+                        });
+                        break;
+                    }
+                } else handle_obj(node); //recurse
+            }
+        }
+    }
+
+    handle_obj(config);
+
+    /*
+    this.app.inputs.forEach((input)=>{
+        input.datatype.files.forEach((file)=>{
+            config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+(file.filename||file.dirname);
+        });
+    });
+    */
+    console.log("generated config");
+    console.dir(config);
+    return config;
+}
+
 export default {
     components: { sidemenu, contact, project, tags },
 
@@ -77,9 +127,12 @@ export default {
             project_id: "", //to be selected by the user
 
             //cache
-            datasets: {}, //for searching datasets
+            datasets: {}, //available datasets grouped by input._id
             projects: [],
         }
+    },
+
+    computed: {
     },
 
     mounted: function() {
@@ -99,31 +152,28 @@ export default {
             }})
         })
         .then(res=>{
-            /*
-            this.datasets = {};
-            res.body.datasets.forEach((dataset)=>{
-                var datatype_id = dataset.datatype._id;
-
-                //group by datatype_id
-                if(this.datasets[datatype_id] === undefined) Vue.set(this.datasets, datatype_id, []);
-
-                //apply tag filter
-                //.. make sure the dataset meets required tags
-                //.. make sure the dataset doesn't have negative tags
-    
-                this.datasets[datatype_id].push(dataset);
-            });
-            console.log(this.datasets);
-            */
-            var datasets = res.body.datasets;
             this.app.inputs.forEach((input)=>{
-                console.log("looking for ", input.datatype.name);
-                console.log("input tags", input.datatype_tags);
+                //console.log("looking for ", input.datatype.name);
+                //console.log("input tags", input.datatype_tags);
+                Vue.set(this.datasets, input.id, res.body.datasets.filter(dataset=>{
+                    if(dataset.datatype._id != input.datatype._id) return false;
 
-                Vue.set(input, 'datasets', datasets.filter(dataset=>{
-                    return true; 
+                    var match = true;
+                    //see if all required tags exists
+                    input.datatype_tags.forEach(required_tag=>{
+                        if(required_tag[0] == "!") {
+                            //negative tag
+                            var neg_tag = required_tag.substring(1);
+                            if(~dataset.datatype_tags.indexOf(neg_tag)) match = false;
+                        } else {
+                            //required tag
+                            if(!~dataset.datatype_tags.indexOf(required_tag)) match = false;
+                        }
+                    });
+                    return match; 
                 }));
             });
+            //console.dir(this.datasets);
         }).catch(err=>{
             console.error(err);
         });
@@ -162,19 +212,23 @@ export default {
         submitapp: function() {
             var instance = null;
 
-            var prov = {
+            var inst_config = {
                 brainlife: true,
                 project: this.project_id,
-                app: this.app._id,
                 main_task_id: null,
-                datasets: this.app.inputs,
+                prov: {
+                    app: this.app._id,
+                    deps: this.app.inputs.map(input=>{
+                        return {input_id: input.id, dataset: input.dataset_id};
+                    }),
+                }
             }
 
             //first create an instance to run everything
             this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "brainlife.a."+this.app._id,
                 desc: this.app.name,
-                config: prov,
+                config: inst_config,
             }).then(res=>{
                 instance = res.body;
                 console.log("instance created", instance);
@@ -197,45 +251,28 @@ export default {
                 })
             }).then(res=>{
                 var download_task = res.body.task;
-
-                console.log("download task submitted");
+                console.log("download task submitted", download_task);
 
                 //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
 
-                //Now submit the app (TODO - generate UI and config automatically)
-                var config = {
-                    //"coords": [ [ 0, 0, 0 ], [ 0, -16, 0 ], [ 0, -8, 40 ] ],
-                };
-                //TODO - for now, let's just load some default config
-                for(var k in this.app.config) {
-                    var spec = this.app.config[k];
-                    config[k] = spec.default;
-                }
-                this.app.inputs.forEach((input)=>{
-                    input.datatype.files.forEach((file)=>{
-                        config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+(file.filename||file.dirname);
-                    });
-                });
-                console.log("generated config");
-                console.dir(config);
-
-                prov.config = config; //store main_task config inside provenance
+                //submit the main task
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
                     name: this.app.name,
                     service: this.app.github,
-                    config: config,
+                    config: generate_config(this.app, download_task._id),
                     deps: [ download_task._id ],
                 })
             }).then(res=>{
-                //add main_task_id information on instance config (provenance)
-                prov.main_task_id = res.body.task._id;
+                //add main_task_id information on instance config (used by ui to render main task)
+                inst_config.main_task_id = res.body.task._id;
+                inst_config.prov.config = res.body.task.config;
                 return this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
-                    config: prov,
+                    config: inst_config,
                 });
             }).then(res=>{
                 //then request for notifications
-                return this.request_notifications(instance, prov.main_task_id);
+                return this.request_notifications(instance, inst_config.main_task_id);
             }).then(res=>{
                 //all good!
                 this.go('/process/'+instance._id);

@@ -28,7 +28,7 @@
                 </div>
             </div>
 
-            <div class="ui segments">
+            <div class="ui segment">
                 <div class="ui top attached label">Task Statuses</div>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
             </div>
@@ -93,18 +93,14 @@ export default {
         })
         .then(res=>{
           this.tasks = res.body.tasks;
-          console.log("tasks loaded")
-          console.dir(this.tasks);
 
           //load app
           return this.$http.get('app', {params: {
-              find: JSON.stringify({_id: this.instance.config.app})
+              find: JSON.stringify({_id: this.instance.config.prov.app})
           }})
         })
         .then(res=>{
             this.app = res.body.apps[0];
-            console.log("loaded app");
-            console.dir(this.app);
 
             //subscribe to the instance events
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -117,20 +113,33 @@ export default {
                         key: Vue.config.user.sub+"."+this.instance._id+".#",
                     }
                 }));
+                ws.send(JSON.stringify({
+                    bind: {
+                        ex: "wf.instance",
+                        key: Vue.config.user.sub+"."+this.instance._id,
+                    }
+                }));
             }
               
             ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
-                var task = event.msg;
-                if(!task) return;
-                if(!task._id) return; //what kind of task is this?
-
-                //look for the task to update
-                this.tasks.forEach(function(t) {
-                  if(t._id == task._id) {
-                      for(var k in task) t[k] = task[k];
-                  }
-                });
+                var msg = event.msg;
+                if(!msg || !msg._id) return; //odd..
+                switch(event.dinfo.exchange) {
+                case "wf.task":
+                    //look for the task to update
+                    this.tasks.forEach(function(t) {
+                      if(t._id == msg._id) {
+                          for(var k in msg) t[k] = msg[k];
+                      }
+                    });
+                    break;
+                case "wf.instance":
+                    this.instance = msg;    
+                    break;
+                default:
+                    console.error("unknown exchange", event.dinfo.exchange);
+                }
             }
         }).catch((err)=>{
             console.error(res);
@@ -148,6 +157,7 @@ export default {
         }
     },
     methods: {
+
         go: function(path) {
             this.$router.push(path);
         },
@@ -162,10 +172,9 @@ export default {
                 tags: ['xyz123', 'test', 'dev'], //TODO - let use set this?
                 project: this.instance.config.project,
                 task_id: this.instance.config.main_task_id,
+                prov: this.instance.config.prov, 
                 datatype: this.app.outputs[0].datatype,
                 datatype_tags: this.app.outputs[0].datatype_tags,
-
-                prov: this.instance.config, //instance.config holds all provenance info
             }
             this.$http.post('dataset', params).then(res=>{
                 this.messages.push({msg: "Archiving Request Sent!", cls: {info: true}});

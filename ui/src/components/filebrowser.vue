@@ -14,7 +14,9 @@
         <div class="content" style="margin-left: 20px;" v-if="file.open">
             <filebrowser :task="task" :path="fullpath+'/'+file.filename"></filebrowser>
         </div>
-		<pre v-if="file.content" v-highlightjs="file.content" style="margin-left: 20px;"><code :class="file.type"></code></pre>
+            <pre v-if="file.content" v-highlightjs="file.content" style="margin-left: 20px; margin: 0px">
+                <code :class="file.type"></code>
+            </pre>
     </div>
     <!--<p v-if="loading" class="ui mini compact message">Loading ...</p>-->
     <p v-if="files.length == 0" class="ui mini compact message">Empty</p>
@@ -49,6 +51,13 @@ export default {
     },
     
     methods: {
+        /*
+        tran_enter: function(el) {
+            console.dir(el);
+            $(el).slideDown('slow');
+        },
+        */
+
         get_download_url: function(file) {
             var p = this.fullpath;
             if(file) p+='/'+file.filename;

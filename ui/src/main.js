@@ -5,6 +5,8 @@ import 'semantic-ui/dist/semantic.css'
 import 'semantic-ui/dist/semantic.js'
 
 import 'highlight.js/styles/default.css'
+import 'vue2-animate/dist/vue2-animate.min.css'
+
 import hljs from 'highlight.js'
 
 var jwt_decode = require('jwt-decode');

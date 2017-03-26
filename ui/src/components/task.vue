@@ -1,17 +1,16 @@
 <template>
-<div class="ui segment">
-
-  <!--status-->
-  <div class="ui icon message">
-    <i class="notched circle loading icon blue" v-if="task.status == 'running'"></i>
-    <i class="check icon green" v-if="task.status == 'finished'"></i>
-    <i class="wait icon" v-if="task.status == 'requested'"></i>
-    <i class="warning icon red" v-if="task.status == 'failed'"></i>
-    <div class="content">
-      <div class="header"> {{task.name}} <span class="ui label small">{{task.service}}</span> </div>
-      <p>{{task.status_msg}}</p>
+<div>
+    <!--status-->
+    <div class="ui icon message">
+        <i class="notched circle loading icon blue" v-if="task.status == 'running'"></i>
+        <i class="check icon green" v-if="task.status == 'finished'"></i>
+        <i class="wait icon" v-if="task.status == 'requested'"></i>
+        <i class="warning icon red" v-if="task.status == 'failed'"></i>
+        <div class="content">
+            <div class="header"> {{task.name}} <span class="ui label small">{{task.service}}</span> </div>
+            <p>{{task.status_msg}}</p>
+        </div>
     </div>
-  </div>
     <!--
     <div class="ui right aligned small segments">
         <div class="ui segment">
@@ -26,14 +25,25 @@
     </div>
     -->
 
-    <p>{{task.desc}}</p>
-    <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
-    <!--
-    <div v-if="task.config">
-        <h3>Config</h3>
-        <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
+    {{task.desc}}
+
+    <div class="ui accordion">
+        <div class="title actgive">
+            <i class="dropdown icon"></i> 
+            Configuration
+        </div>
+        <div class="content">
+            <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
+        </div>
+
+        <div class="title actgive">
+            <i class="dropdown icon"></i> 
+            Output
+        </div>
+        <div class="content">
+            <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
+        </div>
     </div>
-    -->
 
     <!--
     <div v-if="task.products">
@@ -41,6 +51,7 @@
         <pre v-highlightjs><code class="json hljs">{{task.products}}</code></pre>
     </div>
     -->
+    <br>
 </div>
 </template>
 
@@ -59,6 +70,7 @@ export default {
     computed: {
     },
     mounted: function() {
+        $(this.$el).find('.ui.accordion').accordion();
     },
     methods: {
     },

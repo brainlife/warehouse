@@ -32,4 +32,11 @@ body {
 .fade-enter, .fade-leave-to {
   opacity: 0
 }
+pre {
+    margin: 0px;
+}
+.clickable-record:hover {
+    cursor: pointer;
+    background-color: #ddd;
+}
 </style>

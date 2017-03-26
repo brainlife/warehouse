@@ -57,6 +57,12 @@
                     <project :project="dataset.project"></project>
                 </td>
             </tr>
+            <tr class="top aligned">
+                <td>Provenance</td>
+                <td>
+                    <pre v-highlightjs><code class="json hljs">{{dataset.prov}}</code></pre>
+                </td>
+            </tr>
         </tbody>
         </table>
 
@@ -104,7 +110,8 @@ export default {
     mounted: function() {
         console.log("looking for ", this.$route.params.id);
         this.$http.get('dataset', {params: {
-            find: JSON.stringify({_id: this.$route.params.id})
+            find: JSON.stringify({_id: this.$route.params.id}),
+            populate: "project datatype prov.app",
         }})
         .then(res=>{
             this.dataset = res.body.datasets[0];

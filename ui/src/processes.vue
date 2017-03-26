@@ -23,7 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="instance in instances" class="instance" @click="go('/process/'+instance._id)">
+                    <tr v-for="instance in instances" class="clickable-record" @click="go('/process/'+instance._id)">
                         <td> {{instance.create_date | date}} </td>
                         <td> {{instance.config.project}} </td>
                         <td> {{instance.name}} </td>
@@ -99,9 +99,5 @@ export default {
 </script>
 
 <style scoped>
-.instance:hover {
-    cursor: pointer;
-    background-color: #ddd;
-}
 </style>
 

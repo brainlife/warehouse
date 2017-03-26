@@ -153,20 +153,8 @@ var datasetSchema = mongoose.Schema({
     //task: mongoose.Schema.Types.Mixed, //wf.task (just as reference for now.. not sure if I need it)
 
     //proveancne; showing how this data was generated (if it's derivative) - not set if user uploaded it
+    //object of app, deps(dataset/input_id), config
     prov: mongoose.Schema.Types.Mixed, 
-        /*
-        //application that produced this data (not set if user uploaded it)
-        app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
-        
-        //input dataset used by the application 
-        datasets: [new mongoose.Schema({
-            id: String,
-            dataset: {type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'},
-        })],
-        
-        //app config used 
-        config: mongoose.Schema.Types.Mixed, 
-        */
 
     create_date: { type: Date, default: Date.now },
 })
