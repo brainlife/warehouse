@@ -42,6 +42,7 @@ function getprojects(user, cb) {
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
  * @apiParam {Number} [limit]   Maximum number of records to return - defaults to 100
  * @apiParam {Number} [skip]    Record offset for pagination (default to 0)
+ * @apiParam {String} [populate] Fields to populate - default to "project datatype"
  * 
  * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
  *
@@ -62,7 +63,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 find
             ]
         })
-        .populate('project datatype')
+        .populate(req.query.populate || 'project datatype')
         .select(req.query.select)
         .limit(req.query.limit || 100)
         .skip(req.query.skip || 0)
@@ -86,6 +87,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiParam {String} instance_id       WF service Instance ID
  * @apiParam {String} task_id           WF service Task ID 
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
+ * @apiParam {Object} [prov]            Provenane info {app, deps, config}
  * @apiParam {String[]} datatype_tags   Data type ID for this dataset (from Datatypes)
  * @apiParam {String} [name]            Name for this dataset
  * @apiParam {String} [desc]            Description for this crate
@@ -133,13 +135,11 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 datatype: req.body.datatype,
                 datatype_tags: req.body.datatype_tags,
 
-                //product: req.body.product, //describe what's in this dataset
-
                 name: req.body.name,
                 desc: req.body.desc,
                 tags: req.body.tags,
 
-                //uri: storage+"://"+path,
+                prov: req.body.prov,
             });
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);

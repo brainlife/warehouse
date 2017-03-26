@@ -128,36 +128,20 @@ var datasetSchema = mongoose.Schema({
 
     tags: [String], //allows user to search by tags (not datatype_tags)
 
-    //TODO I wonder if I should store this as part of input task (config?)
-    //hierarchical information for this crate
-    //for neuroscience 
-    //research
-    //    IIBISID: 2016-00001
-    //    Modality: "MRI"
-    //    StationName: "CT71271"
-    //    radio_tracer: "DOTA NOC",
-    //exam(/study)
-    //    subject: 
-    //    study_id: //StudyInstanceUID
-    //    studytime: //StudyTimestamp
-    //series
-    //    series:  (SeriesDescription)
-    //    series_num:  (some series repeats)
-    //acquisition
-    //    acquisition_num: (usually just 1?)
-    //hierarchy: mongoose.Schema.Types.Mixed,
-
     //physical location of this crate (URI?)
     storage: String, //azure, dc2, jetstream-swift, etc.. (as configured in /config)
 
     //task: mongoose.Schema.Types.Mixed, //wf.task (just as reference for now.. not sure if I need it)
 
-    //shows how this data was generated (if it's derivative) - not set if user uploaded it
-    producer: {
+    //provenance info (if it's derivative) - not set if user uploaded it
+    prov: {
         //application that produced this data (not set if user uploaded it)
         app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
-        //data used by the application to generate this data
-        deps: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}],
+        //dataset used by the application to generate this data
+        deps: [{
+            input_id: String, 
+            dataset: {type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}
+        }],
         //app config used to generate the data
         config: mongoose.Schema.Types.Mixed, 
     },
