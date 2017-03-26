@@ -1,78 +1,77 @@
 <template>
 <div>
-	<sidemenu active="datasets"></sidemenu>
-	<div class="page page-with-sidemenu">
-		<div class="margin20">
-      <h1>Upload</h1>
+    <sidemenu active="datasets"></sidemenu>
+    <div class="ui pusher">
+        <div class="margin20">
+        <h1>Upload</h1>
 
-			<div class="ui four top attached steps">
-				<div class="step" v-bind:class="{active: mode == 'meta'}">
-					<i class="info circle icon"></i>
-					<div class="content">
-						<div class="title">Metadata</div>
-						<div class="description">Describe your data</div>
-					</div>
-				</div>
-				<div class="step" v-bind:class="{active: mode == 'upload'}">
-					<i class="upload icon"></i>
-					<div class="content">
-						<div class="title">Upload</div>
-						<div class="description">Upload all required files</div>
-					</div>
-				</div>
-				<div class="step" v-bind:class="{active: mode == 'validate'}">
-					<i class="checkmark box icon"></i>
-					<div class="content">
-						<div class="title">Validate</div>
-						<div class="description">Verify your uploaded data</div>
-					</div>
-				</div>
-				<div class="step" v-bind:class="{active: mode == 'finalize'}">
-					<i class="database icon"></i>
-					<div class="content">
-						<div class="title">Finalize</div>
-						<div class="description">Store your data to archive</div>
-					</div>
-				</div>
-			</div>
+        <div class="ui four top attached steps">
+            <div class="step" v-bind:class="{active: mode == 'meta'}">
+                <i class="info circle icon"></i>
+                <div class="content">
+                    <div class="title">metadata</div>
+                    <div class="description">describe your data</div>
+                </div>
+            </div>
+            <div class="step" v-bind:class="{active: mode == 'upload'}">
+                <i class="upload icon"></i>
+                <div class="content">
+                    <div class="title">upload</div>
+                    <div class="description">upload all required files</div>
+                </div>
+            </div>
+            <div class="step" v-bind:class="{active: mode == 'validate'}">
+                <i class="checkmark box icon"></i>
+                <div class="content">
+                    <div class="title">validate</div>
+                    <div class="description">verify your uploaded data</div>
+                </div>
+            </div>
+            <div class="step" v-bind:class="{active: mode == 'finalize'}">
+                <i class="database icon"></i>
+                <div class="content">
+                    <div class="title">finalize</div>
+                    <div class="description">store your data to archive</div>
+                </div>
+            </div>
+        </div>
 
-			<form class="ui form">
-			<div class="ui attached segment">
-				<div v-if="mode == 'meta'">
+        <div class="ui attached segment form">
+            <div v-if="mode == 'meta'">
 
-					<div class="field">
-						<label>Name</label>
-						<input type="text" v-model="name" placeholder="Enter a name for this data">
-					</div>
+                <div class="field">
+                    <label>Name</label>
+                    <input type="text" v-model="name" placeholder="Enter a name for this data">
+                </div>
 
-					<div class="field">
-						<label>Description</label>
-						<textarea class="desc" v-model="desc" placeholder="Any description.."></textarea>
-					</div>
+                <div class="field">
+                    <label>Description</label>
+                    <textarea class="desc" v-model="desc" placeholder="Any description.."></textarea>
+                </div>
 
-					<div class="field">
-						<label>Project</label>
-						<select v-model="project_id">
-              <option v-for="(p,id) in projects" v-bind:value="id">{{p.name}} ({{p.access}})</option>
-						</select>
-					</div>
+                <div class="field">
+                    <label>Project</label>
+                    <select v-model="project_id">
+                        <option v-for="(p,id) in projects" v-bind:value="id">{{p.name}} ({{p.access}})</option>
+                    </select>
+                </div>
 
-          <button class="ui right floated primary button" @click="mode = 'upload'">Next</button>
+          <button class="ui right floated primary button" @click="next()">Next !</button>
           <button class="ui right floated button" @click="back()">Back</button>
           <br clear="both">
-				</div>
+                </div>
 
-				<div v-if="mode == 'upload'">
-					<div class="field">
-						<label>Data Type</label>
-						<select v-model="datatype_id">
-							<option value="">(Select Data Type)</option>
-              <option v-for="(type,id) in datatypes" v-bind:value="id">{{type.desc}}</option>
-						</select>
-					</div>
+                <div v-if="mode == 'upload'">
+                    <div class="field">
+                        <label>Data Type</label>
+                        <select v-model="datatype_id">
+                            <option value="">(Select Data Type)</option>
+                            <option v-for="(type,id) in datatypes" v-bind:value="id">{{type.desc}}</option>
+                        </select>
+                    </div>
 
-					<div class="field" v-if="datatype_id">
-						<div class="ui raised segment" v-for="file in files" style="margin-left: 10px;">
+                    <div class="field" v-if="datatype_id">
+                        <div class="ui raised segment" v-for="file in files" style="margin-left: 10px;">
               <a class="ui ribbon label">{{file.id}}</a>
               <br>
               <br>
@@ -96,44 +95,44 @@
                 <small>({{file.size}} bytes)</small>
                 <br clear="both">
               </div>
-						</div>
-					</div>
+                        </div>
+                    </div>
 
           <button class="ui right floated primary button" @click="validate()">Next</button>
           <button class="ui right floated button" @click="mode = 'meta'">Back</button>
           <br clear="both">
-				</div>
+                </div>
 
-				<div v-if="mode == 'validate'">
-					<div v-if="validation && validation.status == 'finished' && validation.products">
-						<div class="field">
-							<p v-if="validation.status != 'finished'">{{validation.status_msg}}</p>
-							<div class="ui red inverted segment"
-								v-for="msg in validation.products[0].results.errors">{{msg}}</div>
-							<div class="ui yellow inverted segment"
-								v-for="msg in validation.products[0].results.warnings">{{msg}}</div>
+                <div v-if="mode == 'validate'">
+                    <div v-if="validation && validation.status == 'finished' && validation.products">
+                        <div class="field">
+                            <p v-if="validation.status != 'finished'">{{validation.status_msg}}</p>
+                            <div class="ui red inverted segment"
+                                v-for="msg in validation.products[0].results.errors">{{msg}}</div>
+                            <div class="ui yellow inverted segment"
+                                v-for="msg in validation.products[0].results.warnings">{{msg}}</div>
               <div v-if="validation.products[0].results.errors.length == 0" class="ui message">
                 <p>Your data looks good! Please proceed.</p>
               </div>
               <div v-for="(v, k) in validation.products[0].results" v-if="k != 'errors' && k != 'warnings'">
-								<div class="ui raised segment" style="margin-left: 10px;">
-									<a class="ui red ribbon label">{{k}}</a>
-									<pre>{{v}}</pre>
-								</div>
+                                <div class="ui raised segment" style="margin-left: 10px;">
+                                    <a class="ui red ribbon label">{{k}}</a>
+                                    <pre>{{v}}</pre>
+                                </div>
               </div>
-						</div>
-					</div>
-					<div v-if="!validation.products">
+                        </div>
+                    </div>
+                    <div v-if="!validation.products">
             <h4><i class="notched circle loading icon"></i> Validating..</h4>
-						<pre>{{validation}}</pre>
-					</div>
+                        <pre>{{validation}}</pre>
+                    </div>
 
           <br>
           <button class="ui right floated primary button" @click="finalize()">Next</button>
-          <button class="ui right floated button" @click="mode = 'validate'">Back</button>
+          <button class="ui right floated button" @click="mode = 'upload'">Back</button>
           <br clear="both">
-				</div>
-				<div v-if="mode == 'finalize'">
+                </div>
+                <div v-if="mode == 'finalize'">
           <div v-if="dataset">
             <div class="ui message">
               <div class="header">Success!</div>
@@ -145,13 +144,12 @@
           </div>
 
           <br>
-          <button class="ui right floated primary button" @click="go('/data')">Done!</button>
+          <button class="ui right floated primary button" @click="go('/datasets')">Done!</button>
           <button class="ui right floated button" @click="mode = 'validate'">Back</button>
           <br clear="both">
         </div>
 
-			</div>
-			</form>
+            </div>
     </div><!--margin20-->
   </div><!--page-->
 </div>
@@ -159,12 +157,9 @@
 
 <script>
 import Vue from 'vue'
-//import Router from 'vue-router'
 
 import sidemenu from '@/components/sidemenu'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-
-//Vue.use(Router)
 
 export default {
   name: "upload",
@@ -262,7 +257,16 @@ export default {
   },
   methods: {
     back: function() {
-      this.$router.back();
+      console.log("requesting router back");
+      //this.$router.go(-1);
+      this.$router.push('/datasets');
+    },
+    next: function() {
+      console.log("switching mode");
+      switch(this.mode) {
+        case "meta": this.mode = "upload"; break;
+      }
+      console.log(this.mode);
     },
     go: function(path) {
       this.$router.push(path);
@@ -274,9 +278,9 @@ export default {
     },
     upload: function(file, f) {
       console.log("starting upload", f);
-			file.filename  = f.name;
-			file.size = f.size;
-			file.type = f.type;
+            file.filename  = f.name;
+            file.size = f.size;
+            file.type = f.type;
 
       file.progress = {};
 
@@ -288,36 +292,36 @@ export default {
         var upload_resource = res.body.resource;
         var path = this.instance_id+'/upload/'+f.name;
 
-				var xhr = new XMLHttpRequest();
-				file.xhr = xhr; //so that I can abort it if user wants to
-				xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+upload_resource._id+"/"+btoa(path));
-				xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
+                var xhr = new XMLHttpRequest();
+                file.xhr = xhr; //so that I can abort it if user wants to
+                xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+upload_resource._id+"/"+btoa(path));
+                xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
         xhr.upload.addEventListener("progress", (evt)=>{
           file.progress = {loaded: evt.loaded, total: evt.total};
           $("#file_"+file.id).progress({percent: evt.loaded*100/evt.total});
           console.dir(file.progress);
           this.$forceUpdate();
-				}, false);
+                }, false);
         xhr.addEventListener("load", (evt)=>{
-					if(evt.target.status == "200") {
-						file.uploaded = true;
+                    if(evt.target.status == "200") {
+                        file.uploaded = true;
             this.$forceUpdate();
-					} else {
-						var msg = JSON.parse(evt.target.response);
-						console.error(msg);
-					}
-				}, false);
+                    } else {
+                        var msg = JSON.parse(evt.target.response);
+                        console.error(msg);
+                    }
+                }, false);
         xhr.addEventListener("error", (evt)=>{
-					console.error(evt);
-				});
-				xhr.send(f);
+                    console.error(evt);
+                });
+                xhr.send(f);
       }, res=>{
         console.error(res);
       });
     },
     validate: function() {
       this.mode = "validate";
-			this.validation = null;
+            this.validation = null;
 
       //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
       var config = {};
@@ -345,7 +349,8 @@ export default {
       //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
       var copy = [];
       this.files.forEach(function(file) {
-        copy.push({src: "../upload/"+file.filename, dest: file.id+(file.ext||'')});
+        //copy.push({src: "../upload/"+file.filename, dest: file.id+(file.ext||'')});
+        copy.push({src: "../upload/"+file.filename, dest: file.filename});
       });
       //and submit copy
       this.$http.post(Vue.config.wf_api+'/task', {
@@ -370,7 +375,8 @@ export default {
         validation: this.validation.products[0],
       }
       this.files.forEach(function(file) {
-        product.files[file.id] = {filename: file.id+(file.ext||''), size: file.size};
+        //product.files[file.id] = {filename: file.id+(file.ext||''), size: file.size};
+        product.files[file.id] = {filename: file.filename, size: file.size};
       });
 
       //finally, make a request to finalize the task directory
@@ -391,11 +397,11 @@ export default {
       });
     },
 
-		clearfile: function(file) {
-			file.uploaded = null;
-			file.progress = null;
+        clearfile: function(file) {
+            file.uploaded = null;
+            file.progress = null;
       this.$forceUpdate();
-		},
+        },
     cancelupload: function(file) {
       file.xhr.abort();
       file.uploaded = null;
@@ -412,6 +418,8 @@ export default {
   height: 30px;
 }
 .ui.header.status {
-	text-transform: uppercase;
+    text-transform: uppercase;
 }
 </style>
+
+

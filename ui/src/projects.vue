@@ -1,46 +1,44 @@
 <template>
 <div>
-	<sidemenu active="projects"></sidemenu>
-	<div class="page page-with-sidemenu">
-		<div class="margin20">
+    <sidemenu active="projects"></sidemenu>
+  <div class="ui pusher">
+        <div class="margin20">
+            <button v-if="user" class="ui right floated primary button" @click="newproject()">
+                <i class="icon add"></i>
+                Add Project
+            </button>
+            <br>
+            <br>
 
-			<br>
-			<button v-if="user" class="ui right floated primary button" @click="newproject()">
-					<i class="icon add"></i>
-					Add Project
-			</button>
-			<br>
-			<br>
+            <div class="ui relaxed divided items">
+                <div class="item" v-for="(project, index) in projects">
+                    <div class="content">
+                        <project :project="project"></project>
+                        <div class="meta right floated">
+                            <button v-if="project._canedit" class="ui right floated button" @click="editproject(project)">
+                                <i class="icon edit"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                </div><!--item-->
+            </div><!--items-->
 
-			<div class="ui relaxed divided items">
-				<div class="item" v-for="(project, index) in projects">
-					<div class="content">
-            <project :project="project"></project>
-						<div class="meta right floated">
-              <button v-if="project._canedit" class="ui right floated button" @click="editproject(project)">
-                  <i class="icon edit"></i> Edit
-              </button>
-						</div>
-					</div>
-				</div><!--item-->
-			</div><!--items-->
+        </div><!--margin-->
+    </div><!--page-->
 
-		</div><!--margin-->
-	</div><!--page-->
-
-	<!-- project dialog ---------------------------------------------------------------->
-	<div class="ui modal projectdialog">
-		<i class="close icon"></i>
-		<div class="header" v-if="edit._id">
+    <!-- project dialog ---------------------------------------------------------------->
+    <div class="ui modal projectdialog">
+        <i class="close icon"></i>
+        <div class="header" v-if="edit._id">
       Editing {{edit.name}}
-		</div>
+        </div>
     <div class="header" v-else>
       New Project
-		</div>
-		<div class="image content">
-			<div class="ui medium image">
-				<img src="./assets/some.png">
-			</div>
+        </div>
+        <div class="image content">
+            <div class="ui medium image">
+                <img src="./assets/some.png">
+            </div>
 
       <div class="description">
         <form class="ui form">
@@ -62,40 +60,40 @@
             <contactlist :uids="edit.init_members" v-on:changed="changemember('members', $event)"></contactlist>
           </div>
 
-					<div class="inline fields">
-						<label>Data Access</label>
-						<div class="field">
-							<div class="ui radio checkbox">
-								<input type="radio" value="public" v-model="edit.access">
-								<label>Public</label>
-							</div>
-						</div>
-						<div class="field">
-							<div class="ui radio checkbox">
-								<input type="radio" value="private" v-model="edit.access">
-								<label>Private</label>
-							</div>
-						</div>
-					</div>
+                    <div class="inline fields">
+                        <label>Data Access</label>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" value="public" v-model="edit.access">
+                                <label>Public</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input type="radio" value="private" v-model="edit.access">
+                                <label>Private</label>
+                            </div>
+                        </div>
+                    </div>
 
           <p>We've grabbed the following image from the <a href="https://www.gravatar.com" target="_blank">gravatar</a> image associated with your registered e-mail address.</p>
           <p>Is it okay to use this photo?</p>
         </form>
       </div>
 
-		</div>
-		<div class="actions">
-			<div class="ui black deny button">
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">
         Cancel
-			</div>
-			<div v-if="edit._id" class="ui positive right labeled icon button">
-			  Update <i class="checkmark icon"></i>
-			</div>
-			<div v-if="!edit._id" class="ui positive right labeled icon button">
-			  Create <i class="checkmark icon"></i>
-			</div>
-		</div>
-	</div>
+            </div>
+            <div v-if="edit._id" class="ui positive right labeled icon button">
+              Update <i class="checkmark icon"></i>
+            </div>
+            <div v-if="!edit._id" class="ui positive right labeled icon button">
+              Create <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
 
 </div>
 </template>
@@ -139,26 +137,26 @@ export default {
       onApprove: ()=> {
         if(this.edit._id) {
           //update
-					this.$http.put('project/'+this.edit._id, this.edit).then(res=>{
+                    this.$http.put('project/'+this.edit._id, this.edit).then(res=>{
             //find project that's updated
             this.projects.forEach((p)=>{
               if(p._id == this.edit._id) {
                 for(var k in res.body) p[k] = res.body[k];
               }
             });
-					}, res=>{
-						console.error(res);
-					});
+                    }, res=>{
+                        console.error(res);
+                    });
         } else {
           //create
           console.log("creating");
           console.log(JSON.stringify(this.edit, null, 4));
-					this.$http.post('project', this.edit).then(res=>{
+                    this.$http.post('project', this.edit).then(res=>{
             console.log("created", res.body);
             this.projects.push(res.body);
-					}, res=>{
-						console.error(res);
-					});
+                    }, res=>{
+                        console.error(res);
+                    });
         }
       }
     });

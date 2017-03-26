@@ -12,33 +12,56 @@
       <p>{{task.status_msg}}</p>
     </div>
   </div>
+    <!--
+    <div class="ui right aligned small segments">
+        <div class="ui segment">
+          <div class="ui right floated"><time>Requested {{task.start_date|date}}</time></div>
+        </div>
+        <div class="ui segment">
+          <div class="ui right floated"><time>Started {{task.start_date|date}}</time></div>
+        </div>
+        <div class="ui segment">
+          <div class="ui right floated"><time>Finished {{task.finish_date|date}}</time></div>
+        </div>
+    </div>
+    -->
 
-  <div class="description">
     <p>{{task.desc}}</p>
-    <!--<pre>{{task.config}}</pre>-->
-    <h3>Config</h3>
-    <pre>{{task.config}}</pre>
-    <h3>Products</h3>
-    <pre>{{task.products}}</pre>
-  </div>
+    <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
+    <!--
+    <div v-if="task.config">
+        <h3>Config</h3>
+        <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
+    </div>
+    -->
+
+    <!--
+    <div v-if="task.products">
+        <h3>Products</h3>
+        <pre v-highlightjs><code class="json hljs">{{task.products}}</code></pre>
+    </div>
+    -->
 </div>
 </template>
 
 <script>
 import Vue from 'vue'
 
+import filebrowser from '@/components/filebrowser'
+
 export default {
-  name: "contact",
-  data () {
-    return {
-    }
-  },
-  computed: {
-  },
-  mounted: function() {
-  },
-  methods: {
-  },
-  props: ['task'],
+    components: { filebrowser },
+    name: "contact",
+        data () {
+        return {
+        }
+    },
+    computed: {
+    },
+    mounted: function() {
+    },
+    methods: {
+    },
+    props: ['task'],
 }
 </script>

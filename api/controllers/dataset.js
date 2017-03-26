@@ -89,6 +89,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
  * @apiParam {Object} [prov]            Provenane info {app, deps, config}
  * @apiParam {String[]} datatype_tags   Data type ID for this dataset (from Datatypes)
+ * @apiParam {Object} [prov]            Provenance information (not set for uploaded data)
  * @apiParam {String} [name]            Name for this dataset
  * @apiParam {String} [desc]            Description for this crate
  * @apiParam {String[]} [tags]          List of tags associated with this dataset
@@ -249,7 +250,6 @@ router.get('/download/:id', jwt({
             });
         });
     });
-
 });
 
 module.exports = router;

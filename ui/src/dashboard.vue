@@ -1,7 +1,7 @@
 <template>
 <div>
   <sidemenu active="dashboard"></sidemenu>
-	<div class="page page-with-sidemenu">
+  <div class="ui pusher">
 		<div class="margin20">
       <h1>TODO</h1>
       <p>Show list of all data processing that user is run or has run recently</p>

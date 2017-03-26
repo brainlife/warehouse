@@ -13,12 +13,11 @@
       {{app.desc}}
     </div>
   </div>
-  <div class="extra content">
     <div class="ui two buttons">
-      <div class="ui basic green button" @click="go('/app/'+app._id)">Start</div>
+      <div class="ui button" @click="go('/app/'+app._id)"><i class="info circle icon"></i> Detail</div>
+      <div class="ui blue button" @click="go('/app/'+app._id+'/submit')"><i class="play icon"></i> Submit</div>
       <!--<div class="ui basic red button">Info</div>-->
     </div>
-  </div>
 </div>
 </template>
 

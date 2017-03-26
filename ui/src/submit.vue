@@ -4,9 +4,6 @@
     <div class="ui pusher">
         <div class="margin20" v-if="app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
-            <button class="ui button primary right floated" @click="go('/app/'+app._id+'/submit')"> 
-                <i class="play icon"></i> Submit
-            </button>
             <h2 class="ui header">
                 <img class="ui image" :src="app.avatar">
                 <div class="content">
@@ -15,94 +12,17 @@
                 </div>
             </h2>
 
-            <table class="ui definition table">
-            <tbody>
-                <tr>
-                    <td>DOI</td>
-                    <td>10.1006/br.a.{{app._id}}</td>
-                </tr>
-                <tr>
-                    <td>Owner</td>
-                    <td><contact :id="app.user_id"></contact></td>
-                </tr>
-                <tr>
-                    <td>Administrators</td>
-                    <td><contact v-for="c in app.admins" key="c._id" :id="c"></contact></td>
-                </tr>
-                <tr v-if="app.github">
-                    <td>github</td>
-                    <td>
-                        <p>
-                            <a :href="'http://github.com/'+app.github">{{app.github}}</a>
-                        </p>
-                    </td>
-                </tr>
-                <tr v-if="app.dockerhub">
-                    <td>dockerhub</td>
-                    <td>
-                        <p>
-                            <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
-                        </p>
-                    </td>
-                </tr>
-                <tr class="top aligned">
-                    <td>Inputs</td>
-                    <td>
-                        <div class="ui list">
-                            <div class="item" v-for="input in app.inputs">
-                                <div class="ui segment">
-                                    <div class="ui top attached label">
-                                        {{input.datatype.desc}}
-                                    </div>
-                                    <h5>Datatype Tags</h5>
-                                    <tags :tags="input.datatype_tags"></tags>
-
-                                    <h5>Files</h5>
-                                    <div class="ui icon label" v-for="file in input.datatype.files">
-                                        <i class="file outline icon" v-if="file.filename"></i> 
-                                        <i class="folder icon" v-if="file.dirname"></i> 
-                                        {{file.id}}
-                                        <div class="detail brown">{{file.filename||file.dirname}}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr class="top aligned" v-for="output in app.outputs">
-                    <td>Outputs</td>
-                    <td>
-                        <div class="ui list">
-                            <div class="item" v-for="output in app.outputs">
-                                <div class="header"> {{output.datatype.desc}} </div>
-                                <tags :tags="output.datatype_tags"></tags>
-                                <div class="ui segment" v-for="file in output.datatype.files">
-                                    {{file}}
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr v-if="resource">
-                    <td>Computing Resource</td>
-                    <td>
-                        <p>
-                            This service can currently run on 
-                            <a class="ui label"> {{resource.detail.name}} </a>
-                        </p>
-                    </td>
-                </tr>
-                <tr v-if="app.dockerhub">
-                    <td>dockerhub</td>
-                    <td><a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a></td>
-                </tr>
-            </tbody>
-            </table>
-
-            <!--
             <div class="ui segment">
                 <div class="ui top attached label">Submit Process</div>
                 <div class="ui form">
+                    <div class="field">
+                        <label>Project</label>
+                        <p>Project used to run this application</p>
+                        <select v-model="project_id">
+                            <option v-for="(p,id) in projects" :value="p._id">{{p.name}} ({{p.access}})</option>
+                        </select>
+                    </div>
+
                     <div class="field" v-for="input in app.inputs">
                         <label>{{input.id}}</label>
                         <select class="ui fluid dropdown" v-model="input.dataset_id">
@@ -113,21 +33,16 @@
                             </option>
                         </select>
                     </div>
-
+        
                     <div class="field">
-                        <label>Project</label>
-                        <p>Project used to run this application</p>
-                        <select v-model="project_id">
-                            <option v-for="(p,id) in projects" :value="p._id">{{p.name}} ({{p.access}})</option>
-                        </select>
+                        {{app.config}}
                     </div>
 
                     <div class="ui primary button" @click="submitapp()">Submit</div>
                 </div>
             </div>
-            -->
-            <h2>Debug</h2>
 
+            <h2>Debug</h2>
             <div class="ui segments">
                 <div class="ui segment">
                     <h3>App</h3>
@@ -146,6 +61,8 @@ import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
+
+import lib from '@/lib'
 
 export default {
     components: { sidemenu, contact, project, tags },
@@ -182,6 +99,7 @@ export default {
             }})
         })
         .then(res=>{
+            /*
             this.datasets = {};
             res.body.datasets.forEach((dataset)=>{
                 var datatype_id = dataset.datatype._id;
@@ -189,11 +107,23 @@ export default {
                 //group by datatype_id
                 if(this.datasets[datatype_id] === undefined) Vue.set(this.datasets, datatype_id, []);
 
-                //TODO - apply tag filter
-
+                //apply tag filter
+                //.. make sure the dataset meets required tags
+                //.. make sure the dataset doesn't have negative tags
+    
                 this.datasets[datatype_id].push(dataset);
             });
             console.log(this.datasets);
+            */
+            var datasets = res.body.datasets;
+            this.app.inputs.forEach((input)=>{
+                console.log("looking for ", input.datatype.name);
+                console.log("input tags", input.datatype_tags);
+
+                Vue.set(input, 'datasets', datasets.filter(dataset=>{
+                    return true; 
+                }));
+            });
         }).catch(err=>{
             console.error(err);
         });
