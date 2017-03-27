@@ -9,7 +9,7 @@
   <a href="#/datasets" class="item" v-bind:class="{active: active == 'datasets'}">
       <i class="cubes icon"></i> Data</a>
   <a href="#/processes" class="item" v-bind:class="{active: active == 'processes'}">
-      <i class="object group icon"></i> Processes</a>
+      <i class="send icon"></i> Processes</a>
   <a href="#/apps" class="item" v-bind:class="{active: active == 'apps'}">
       <i class="grid layout icon"></i> Apps</a>
   <a href="#/projects" class="item" v-bind:class="{active: active == 'projects'}">

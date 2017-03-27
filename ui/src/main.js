@@ -7,7 +7,8 @@ import 'semantic-ui/dist/semantic.js'
 import 'highlight.js/styles/default.css'
 import 'vue2-animate/dist/vue2-animate.min.css'
 
-import hljs from 'highlight.js'
+//import hljs from 'highlight.js'
+import VueHighlightJS from 'vue-highlightjs'
 
 var jwt_decode = require('jwt-decode');
 
@@ -21,6 +22,7 @@ import router from './router'
 Vue.use(VueResource)
 Vue.use(VueSemantic)
 Vue.use(require('vue-filter'))
+Vue.use(VueHighlightJS)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -50,6 +52,7 @@ Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
 //directives
 
+/*
 //https://www.metachris.com/2017/02/vuejs-syntax-highlighting-with-highlightjs/
 Vue.directive('highlightjs', {
   deep: true,
@@ -76,6 +79,7 @@ Vue.directive('highlightjs', {
     })
   }
 })
+*/
 
 router.beforeEach(function (to, from, next) {
     window.scrollTo(0, 0)

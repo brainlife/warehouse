@@ -16,13 +16,14 @@
                 <i class="trash icon"></i> Remove
             </button>
 
-            <h1>{{instance.name}}</h1>
+            <h1><i class="send icon"></i> {{instance.name}}</h1>
             <p>{{instance.desc}}</p>
 
             <div class="ui segment" v-if="app && instance.status == 'finished'">
                 <div class="ui top attached label">Outputs</div>
                 <div v-for="output in app.outputs">
                     <h3>{{output.datatype.name}}</h3>
+                    <p>{{output.datatype.desc}}</p>
                     <!--<div class="ui segment" v-for="file in output.datatype.files">{{file}}</div>-->
                     <file v-for="file in output.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
                 </div>
@@ -31,6 +32,27 @@
             <div class="ui segment">
                 <div class="ui top attached label">Task Statuses</div>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
+            </div>
+
+            <div class="ui segment">
+                <div class="ui top attached label">Inputs</div>
+                <br>
+                <div class="ui segments" v-for="dep in instance.config.prov.deps">
+                    <h5 class="ui top attached header">
+                        <h5>{{dep.input_id}}</h5>
+                    </h5>
+                    <div class="ui attached segment">
+                        <b>{{dep.dataset.name}}</b>
+                        <tags :tags="dep.dataset.datatype_tags"></tags>
+                        <small>{{dep.dataset.desc}}</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui segment">
+                <div class="ui top attached label">Configuration</div>
+                <br>
+                <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </div>
 
             <h2>Debug</h2>
@@ -61,6 +83,7 @@ import contact from '@/components/contact'
 import message from '@/components/message'
 import task from '@/components/task'
 import file from '@/components/file'
+import tags from '@/components/tags'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -81,7 +104,8 @@ export default {
     mounted: function() {
         //load instance first
         this.$http.get(Vue.config.wf_api+'/instance', {params: {
-            find: JSON.stringify({_id: this.$route.params.id})
+            find: JSON.stringify({_id: this.$route.params.id}),
+            //populate: 'project datatype',
         }})
         .then(res=>{
           this.instance = res.body.instances[0];
@@ -141,6 +165,21 @@ export default {
                     console.error("unknown exchange", event.dinfo.exchange);
                 }
             }
+
+            //load datasets used for input
+            var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
+            this.$http.get('dataset', {params: {
+                find: JSON.stringify({_id: dataset_ids}),
+                populate: ' ',
+            }})
+            .then(res=>{
+                res.body.datasets.forEach((dataset)=>{
+                    this.instance.config.prov.deps.forEach(dep=>{
+                        if(dep.dataset == dataset._id) dep.dataset = dataset;
+                    });
+                });
+            });
+
         }).catch((err)=>{
             console.error(res);
         });
@@ -198,7 +237,7 @@ export default {
             });
         },
     },
-    components: { sidemenu, contact, task, message, file },
+    components: { sidemenu, contact, task, message, file, tags },
 }
 </script>
 

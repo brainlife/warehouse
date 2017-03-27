@@ -28,7 +28,7 @@
     {{task.desc}}
 
     <div class="ui accordion">
-        <div class="title actgive">
+        <div class="title">
             <i class="dropdown icon"></i> 
             Configuration
         </div>
@@ -36,7 +36,7 @@
             <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
         </div>
 
-        <div class="title actgive">
+        <div class="title">
             <i class="dropdown icon"></i> 
             Output
         </div>
@@ -77,3 +77,9 @@ export default {
     props: ['task'],
 }
 </script>
+
+<style>
+.ui.accordion .title {
+padding: 3px 0px !important;
+}
+</style>

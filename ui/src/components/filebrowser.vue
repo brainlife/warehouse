@@ -14,9 +14,7 @@
         <div class="content" style="margin-left: 20px;" v-if="file.open">
             <filebrowser :task="task" :path="fullpath+'/'+file.filename"></filebrowser>
         </div>
-            <pre v-if="file.content" v-highlightjs="file.content" style="margin-left: 20px; margin: 0px">
-                <code :class="file.type"></code>
-            </pre>
+        <pre v-if="file.content" v-highlightjs="file.content" style="padding-left: 20px; margin: 0px"><code :class="file.type"></code></pre>
     </div>
     <!--<p v-if="loading" class="ui mini compact message">Loading ...</p>-->
     <p v-if="files.length == 0" class="ui mini compact message">Empty</p>
@@ -129,5 +127,8 @@ export default {
 .fileitem:hover {
     color: #2185D0;
     cursor: pointer;
+}
+.hljs {
+    background: #f6f6f6;
 }
 </style>

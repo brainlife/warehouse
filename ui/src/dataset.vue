@@ -3,87 +3,104 @@
     <sidemenu active="datasets"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="dataset">
+            <button class="ui primary right floated button" @click="download()">
+                <i class="download icon"></i> Download (.tar.gz)</button>
+            <button class="ui right floated button" @click="remove()">
+                <i class="trash icon"></i> Remove</button>
 
-        <!--
-        <div class="ui small basic icon buttons right floated">
-            <button class="ui button" @click=""><i class="file icon"></i></button>
-            <button class="ui button"><i class="download icon"></i> Downalod</button>
-        </div>
-        -->
-        <button class="ui primary right floated button" @click="download()"><i class="download icon"></i> Download (.tar.gz)</button>
+            <h1><i class="cube icon"></i> {{dataset.name}}</h1>
+            <p>{{dataset.desc}}</p>
 
-        <h1>{{dataset.name}}</h1>
-        <p>{{dataset.desc}}</p>
+            <table class="ui definition table">
+            <tbody>
+                <tr>
+                    <td>Create Date</td>
+                    <td>{{dataset.create_date|date}}</td>
+                </tr>
+                <tr>
+                    <td class="two wide column">Storage</td>
+                    <td>{{dataset.storage}}</td>
+                </tr>
+                <tr class="top aligned">
+                    <td>DOI</td>
+                    <td>10.1006/br.d.{{dataset._id}} </td>
+                </tr>
+                <tr>
+                    <td>User Tags</td>
+                    <td>
+                        <tags :tags="dataset.tags"></tags>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Owner</td>
+                    <td><contact :id="dataset.user_id"></contact></td>
+                </tr>
+                <tr class="top aligned">
+                    <td>Data Type</td>
+                    <td>
+                        <p>{{dataset.datatype.desc}}</p>
+                        <tags :tags="dataset.datatype_tags"></tags>
+                        <div class="ui segment" v-for="file in dataset.datatype.files">
+                            <i class="file outline icon" v-if="file.filename"></i>
+                            <i class="folder icon" v-if="file.dirname"></i>
+                            {{file.filename||file.dirname}}
+                        </div>
+                    </td>
+                </tr>
+                <tr class="top aligned">
+                    <td>Project</td>
+                    <td>
+                        <project :project="dataset.project"></project>
+                    </td>
+                </tr>
+                <tr class="top aligned">
+                    <td>Provenance</td>
+                    <td v-if="dataset.prov.app">
+                        <pre v-highlightjs><code class="json hljs">{{dataset.prov}}</code></pre>
+                    </td>
+                    <td v-else="dataset.prov">
+                        <p>Uploaded by user.</p>
+                    </td>
+                </tr>
+                <tr class="top aligned">
+                    <td>Derivatives</td>
+                    <td>
+                        <div v-if="derivatives">
+                            <p v-if="derivatives.length > 0">This dataset is used to produce following datasets.</p>
+                            <p v-else="derivatives.length > 0">No derivatives</p>
+                            <div class="ui segment clickable-record" 
+                                v-for="deri in derivatives" @click="go(deri._id)">
+                                <i class="cube icon"></i>
+                                <b>{{deri.name}}</b> {{deri.desc}}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
 
-        <table class="ui definition table">
-        <tbody>
-            <tr>
-                <td>Create Date</td>
-                <td>{{dataset.create_date|date}}</td>
-            </tr>
-            <tr>
-                <td class="two wide column">Storage</td>
-                <td>{{dataset.storage}}</td>
-            </tr>
-            <tr class="top aligned">
-                <td>DOI</td>
-                <td>10.1006/br.d.{{dataset._id}} </td>
-            </tr>
-            <tr>
-                <td>User Tags</td>
-                <td>
-                    <tags :tags="dataset.tags"></tags>
-                </td>
-            </tr>
-            <tr>
-                <td>Owner</td>
-                <td><contact :id="dataset.user_id"></contact></td>
-            </tr>
-            <tr class="top aligned">
-                <td>Data Type</td>
-                <td>
-                    <p>{{dataset.datatype.desc}}</p>
-                    <tags :tags="dataset.datatype_tags"></tags>
-                    <div class="ui segment" v-for="file in dataset.datatype.files">
-                        <i class="file icon" v-if="file.filename"></i>
-                        <i class="folder icon" v-if="file.dirname"></i>
-                        {{file.filename||file.dirname}}
-                    </div>
-                </td>
-            </tr>
-            <tr class="top aligned">
-                <td>Project</td>
-                <td>
-                    <project :project="dataset.project"></project>
-                </td>
-            </tr>
-            <tr class="top aligned">
-                <td>Provenance</td>
-                <td>
-                    <pre v-highlightjs><code class="json hljs">{{dataset.prov}}</code></pre>
-                </td>
-            </tr>
-        </tbody>
-        </table>
+            </tbody>
+            </table>
 
-        <div v-if="apps && apps.length > 0">
-            <h4 class="ui horizontal divider header">Applications</h4>
-            <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
-            <div class="ui cards">
-                <app v-for="app in apps" key="app._id" :app="app"></app>
+            <div v-if="apps && apps.length > 0">
+                <h4 class="ui horizontal divider header">Applications</h4>
+                <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
+                <div class="ui cards">
+                    <app v-for="app in apps" key="app._id" :app="app"></app>
+                </div>
+            </div>
+
+            <h2>Debug</h2>
+            <div class="ui segments">
+                <div class="ui segment" v-if="dataset">
+                    <h3>dataset</h3>
+                    <pre v-highlightjs><code class="json hljs">{{dataset}}</code></pre>
+                </div>
+                <div class="ui segment" v-if="derivatives">
+                    <h3>derivatives</h3>
+                    <pre v-highlightjs><code class="json hljs">{{derivatives}}</code></pre>
+                </div>
             </div>
         </div>
-
-      <div class="ui segment">
-        <div class="ui top attached label">Debug</div>
-        <br>
-        <br>
-                <pre>{{dataset}}</pre>
-      </div>
-
-        </div>
     </div>
-
 </div><!--root-->
 </template>
 
@@ -104,31 +121,19 @@ export default {
         return {
             dataset: null,
             apps: null,
+            derivatives: null,
+        }
+    },
+
+    watch: {
+        '$route' (to, from) {
+            //console.log(to, from);
+            this.load(this.$route.params.id);
         }
     },
 
     mounted: function() {
-        console.log("looking for ", this.$route.params.id);
-        this.$http.get('dataset', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-            populate: "project datatype prov.app",
-        }})
-        .then(res=>{
-            this.dataset = res.body.datasets[0];
-            console.log("looking for app that uses this data");
-            return this.$http.get('app', {params: {
-                "find": JSON.stringify({
-                //look for apps that uses my datatype as input
-                "inputs.datatype": this.dataset.datatype._id
-                })
-            }})
-        })
-        .then(res=>{
-            //should I do this via computed?
-            this.apps = lib.filter_apps(this.dataset, res.body.apps);
-        }).catch(err=>{
-            console.error(res);
-        });
+        this.load(this.$route.params.id);
     },
     methods: {
         opendataset: function(dataset) {
@@ -140,6 +145,48 @@ export default {
         download: function() {
             let url = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
             document.location = url;
+        },
+        remove: function() {
+            this.$http.delete('dataset/'+this.dataset._id)
+            .then(res=>{
+                this.go('/datasets');        
+            });
+        },
+        load: function(id) {
+            console.log("looking for ", id);
+            this.$http.get('dataset', {params: {
+                find: JSON.stringify({_id: id}),
+                populate: "project datatype prov.app",
+            }})
+            .then(res=>{
+                if(res.body.count == 0) {
+                    console.error("can't find dataset");
+                    return;
+                }
+                this.dataset = res.body.datasets[0];
+
+                console.log("looking for derivatives", this.dataset);
+                this.$http.get('dataset', {params: {
+                    find: JSON.stringify({"prov.deps.dataset": id}),
+                }}).then(res=>{
+                    this.derivatives = res.body.datasets;
+                }); 
+
+                console.log("looking for app that uses this data");
+                return this.$http.get('app', {params: {
+                    "find": JSON.stringify({
+                    //look for apps that uses my datatype as input
+                    "inputs.datatype": this.dataset.datatype._id
+                    })
+                }})
+            })
+            .then(res=>{
+                //should I do this via computed?
+                if(!res) return;
+                this.apps = lib.filter_apps(this.dataset, res.body.apps);
+            }).catch(err=>{
+                console.error(res);
+            });
         }
     },
 }

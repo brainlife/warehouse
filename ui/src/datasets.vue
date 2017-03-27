@@ -55,7 +55,7 @@
                         <small>{{dataset.desc}}</small>
                     </td>
                     <td>
-                        <div class="ui label" v-for="tag in dataset.tags" style="display: inline;">{{tag}}</div>
+                        <tags :tags="dataset.tags"></tags>
                     </td>
                     <td>
                         <small>{{dataset.create_date | date}}</small>
@@ -144,6 +144,7 @@ export default {
 
     mounted: function() {
         this.$http.get('dataset', {params: {
+            find: JSON.stringify({removed: {$exists: false}}),
             select: 'datatype datatype_tags project create_date name desc tags',
         }})
         .then(res=>{
