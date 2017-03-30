@@ -38,13 +38,18 @@
                 <tr class="top aligned">
                     <td>Data Type</td>
                     <td>
-                        <p>{{dataset.datatype.desc}}</p>
-                        <tags :tags="dataset.datatype_tags"></tags>
-                        <div class="ui segment" v-for="file in dataset.datatype.files">
-                            <i class="file outline icon" v-if="file.filename"></i>
-                            <i class="folder icon" v-if="file.dirname"></i>
-                            {{file.filename||file.dirname}}
+                        <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+                    </td>
+                </tr>
+                <tr class="top aligned">
+                    <td>Metadata</td>
+                    <td>
+                        <!--
+                        <div class="ui image label" v-for="(v, k) in dataset.meta">
+                            {{k}} <div class="detail">{{v}}</div>
                         </div>
+                        -->
+                        <metadata :metadata="dataset.meta"></metadata>
                     </td>
                 </tr>
                 <tr class="top aligned">
@@ -112,11 +117,13 @@ import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
 import app from '@/components/app'
+import datatype from '@/components/datatype'
+import metadata from '@/components/metadata'
 
 const lib = require('./lib');
 
 export default {
-    components: { sidemenu, contact, project, app, tags },
+    components: { sidemenu, contact, project, app, tags, datatype, metadata },
     data () {
         return {
             dataset: null,

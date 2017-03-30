@@ -18,14 +18,17 @@ import VueResource from 'vue-resource'
 
 import VueSemantic from 'vue-semantic'
 
+//element ui
 import ElementUI from 'element-ui'
+import locale from 'element-ui/lib/locale/lang/en'
 import 'element-ui/lib/theme-default/index.css'
 
 import router from './router'
 
+
 Vue.use(VueResource)
 Vue.use(VueSemantic)
-Vue.use(ElementUI)
+Vue.use(ElementUI, {locale})
 Vue.use(require('vue-filter'))
 Vue.use(VueHighlightJS)
 

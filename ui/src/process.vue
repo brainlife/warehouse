@@ -24,7 +24,6 @@
                 <div v-for="output in app.outputs">
                     <h3>{{output.datatype.name}}</h3>
                     <p>{{output.datatype.desc}}</p>
-                    <!--<div class="ui segment" v-for="file in output.datatype.files">{{file}}</div>-->
                     <file v-for="file in output.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
                 </div>
             </div>
@@ -38,13 +37,14 @@
                 <div class="ui top attached label">Inputs</div>
                 <br>
                 <div class="ui segments" v-for="dep in instance.config.prov.deps">
+                    {{dep}}
                     <h5 class="ui top attached header">
                         <h5>{{dep.input_id}}</h5>
                     </h5>
-                    <div class="ui attached segment">
-                        <b>{{dep.dataset.name}}</b>
-                        <tags :tags="dep.dataset.datatype_tags"></tags>
-                        <small>{{dep.dataset.desc}}</small>
+                    <div class="ui attached segment" v-if="dep._dataset">
+                        <tags :tags="dep._dataset.datatype_tags"></tags>
+                        <small>{{dep._dataset.desc}}</small>
+                        <metadata :metadata="dep._dataset.meta"></metadata>
                     </div>
                 </div>
             </div>
@@ -59,16 +59,24 @@
             <div class="ui segments">
                 <div class="ui segment" v-if="instance">
                     <h3>instance</h3>
-                    <pre v-highlightjs><code class="json hljs">{{instance}}</code></pre>
+                    <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
                 </div>
                 <div class="ui segment" v-if="tasks">
                     <h3>tasks</h3>
-                    <pre v-highlightjs v-for="task in tasks"><code class="json hljs">{{task}}</code></pre>
+                    <div v-for="task in tasks">
+                        <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
+                    </div>
                 </div>
                 <div class="ui segment" v-if="app">
                     <h3>app</h3>
-                    <pre v-highlightjs><code class="json hljs">{{app}}</code></pre>
+                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
                 </div>
+                <!--
+                <div class="ui segment" v-if="datasets">
+                    <h3>datasets</h3>
+                    <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
+                </div>
+                -->
             </div>
         </div>
     </div>
@@ -84,10 +92,16 @@ import message from '@/components/message'
 import task from '@/components/task'
 import file from '@/components/file'
 import tags from '@/components/tags'
+import metadata from '@/components/metadata'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
+    mixins: [
+        //require("vue-toaster")
+    ],
+    components: { sidemenu, contact, task, message, file, tags, metadata },
+
     data () {
         return {
             instance: null,
@@ -97,15 +111,11 @@ export default {
         }
     },
 
-    mixins: [
-        //require("vue-toaster")
-    ],
-
     mounted: function() {
         //load instance first
         this.$http.get(Vue.config.wf_api+'/instance', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            //populate: 'project datatype',
+            //populate: 'config.project datatype instance.config.prov.deps.dataset',
         }})
         .then(res=>{
           this.instance = res.body.instances[0];
@@ -173,9 +183,13 @@ export default {
                 populate: ' ',
             }})
             .then(res=>{
+                //this.datasets = res.body.datasets;
                 res.body.datasets.forEach((dataset)=>{
                     this.instance.config.prov.deps.forEach(dep=>{
-                        if(dep.dataset == dataset._id) dep.dataset = dataset;
+                        if(dep.dataset == dataset._id) {
+                            dep._dataset = dataset;
+                            console.log("found match", dataset);
+                        }
                     });
                 });
             });
@@ -237,7 +251,6 @@ export default {
             });
         },
     },
-    components: { sidemenu, contact, task, message, file, tags },
 }
 </script>
 

@@ -49,25 +49,17 @@
                     </td>
                 </tr>
                 <tr class="top aligned">
+                    <td>Configuration Template</td>
+                    <td>
+                        <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
+                    </td>
+                </tr>
+                <tr class="top aligned">
                     <td>Inputs</td>
                     <td>
                         <div class="ui list">
                             <div class="item" v-for="input in app.inputs">
-                                <div class="ui segment">
-                                    <div class="ui top attached label">
-                                        {{input.datatype.desc}}
-                                    </div>
-                                    <h5>Datatype Tags</h5>
-                                    <tags :tags="input.datatype_tags"></tags>
-
-                                    <h5>Files</h5>
-                                    <div class="ui icon label" v-for="file in input.datatype.files">
-                                        <i class="file outline icon" v-if="file.filename"></i> 
-                                        <i class="folder icon" v-if="file.dirname"></i> 
-                                        {{file.id}}
-                                        <div class="detail brown">{{file.filename||file.dirname}}</div>
-                                    </div>
-                                </div>
+                                 <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
                             </div>
                         </div>
                     </td>
@@ -77,11 +69,7 @@
                     <td>
                         <div class="ui list">
                             <div class="item" v-for="output in app.outputs">
-                                <div class="header"> {{output.datatype.desc}} </div>
-                                <tags :tags="output.datatype_tags"></tags>
-                                <div class="ui segment" v-for="file in output.datatype.files">
-                                    {{file}}
-                                </div>
+                                <datatype :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
                             </div>
                         </div>
                     </td>
@@ -149,9 +137,10 @@ import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
+import datatype from '@/components/datatype'
 
 export default {
-    components: { sidemenu, contact, project, tags },
+    components: { sidemenu, contact, project, tags, datatype },
 
     data () {
         return {

@@ -53,34 +53,44 @@
                 <editor :sync="true" :content="app._config"></editor>
             </div>
 
+            <hr>
             <div class="field">
                 <label>Inputs</label>
                 <div class="ui segment" v-for="input in app.inputs">
-                    <h4>ID</h4>
-                    <input type="text" v-model="input.id" placeholder="t1">
+                    <el-input v-model="input.id">
+                        <template slot="prepend">ID</template>
+                    </el-input>
 
                     <h4>Datatype</h4>
-                    <select v-model="input.datatype">
-                    </select>
+                    <el-select v-model="input.datatype">
+                        <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                    </el-select>
 
-                    <h4>Tags</h4>
-                    <el-select
-                        v-model="input.datatype_tags" multiple filterable allow-create
-                        placeholder="Choose datatype tags">
-                        <el-option
-                            v-for="tag in input.datatype_tags"
-                            :label="tag"
-                            :value="tag">
-                        </el-option>
+                    <h4>Datatype Tags</h4>
+                    <el-select v-model="input.datatype_tags" multiple filterable allow-create placeholder="Choose datatype tags">
+                        <el-option v-for="tag in input.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
                     </el-select>
                 </div>
                 <button class="ui mini button" type="button">Add</button>
             </div>
 
+            <hr>
             <div class="field">
                 <label>Output</label>
-                <div v-for="output in app.outputs">
-                    TODO..
+                <div class="ui segment" v-for="output in app.outputs">
+                    <el-input v-model="output.id">
+                        <template slot="prepend">ID</template>
+                    </el-input>
+
+                    <h4>Datatype</h4>
+                    <el-select v-model="output.datatype">
+                        <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                    </el-select>
+
+                    <h4>Datatype Tags</h4>
+                    <el-select v-model="output.datatype_tags" multiple filterable allow-create placeholder="Choose datatype tags">
+                        <el-option v-for="tag in output.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
+                    </el-select>
                 </div>
                 <button class="ui mini button" type="button">Add</button>
             </div>
@@ -143,7 +153,10 @@ export default {
                 _config: "",
                 inputs: [],
                 outputs: [],
-            }
+            },
+
+            //cache
+            datatypes: null, //registered datatypes (keyed by datatype_id)
         }
     },
     mounted: function() {
@@ -172,6 +185,19 @@ export default {
           type: 'success'
         });
         */
+
+        //load datatypes for form
+        this.$http.get('datatype', {params: {
+            //service: "_upload",
+        }})
+        .then(res=>{
+            this.datatypes = {};
+            res.body.datatypes.forEach((type)=>{
+                this.datatypes[type._id] = type;
+            });
+        }, res=>{
+            console.error(res);
+        });
 
     },
     computed: {
