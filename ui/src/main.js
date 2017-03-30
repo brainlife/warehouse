@@ -17,10 +17,15 @@ import warehouse from './warehouse'
 import VueResource from 'vue-resource'
 
 import VueSemantic from 'vue-semantic'
+
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-default/index.css'
+
 import router from './router'
 
 Vue.use(VueResource)
 Vue.use(VueSemantic)
+Vue.use(ElementUI)
 Vue.use(require('vue-filter'))
 Vue.use(VueHighlightJS)
 
@@ -29,7 +34,6 @@ Vue.use(VueHighlightJS)
 // config
 // TODO - find a way to put these somewhere under /config
 //
-console.log("setting config");
 Vue.config.debug = true;
 //Vue.config.productionTip = false //what is this?
 

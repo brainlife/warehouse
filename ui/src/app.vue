@@ -7,6 +7,9 @@
             <button class="ui button primary right floated" @click="go('/app/'+app._id+'/submit')"> 
                 <i class="play icon"></i> Submit
             </button>
+            <button class="ui button right floated" @click="go('/app/'+app._id+'/edit')"> 
+                <i class="pencil icon"></i> Edit
+            </button>
             <h2 class="ui header">
                 <img class="ui image" :src="app.avatar">
                 <div class="content">

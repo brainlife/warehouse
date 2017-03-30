@@ -5,7 +5,7 @@
         <div class="page-content" :class="{rightopen: selected_count}">
         <div class="margin20">
             <div class="ui fluid category search">
-                <button class="ui right floated primary button" @click="go('/data/upload')">
+                <button class="ui right floated primary button" @click="go('/datasets/upload')">
                     <i class="ui icon add"></i> Upload
                 </button>
                 <div class="ui icon input">
