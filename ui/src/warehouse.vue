@@ -39,4 +39,11 @@ pre {
     cursor: pointer;
     background-color: #ddd;
 }
+.panel {
+    background-color: white;
+    width: 100%;
+    padding: 20px;
+    box-shadow: 2px 2px 3px #ccc;
+    border-radius: 2px;
+}
 </style>

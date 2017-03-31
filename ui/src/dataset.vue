@@ -18,8 +18,12 @@
                     <td>{{dataset.create_date|date}}</td>
                 </tr>
                 <tr>
+                    <td>Owner</td>
+                    <td><contact :id="dataset.user_id"></contact></td>
+                </tr>
+                <tr>
                     <td class="two wide column">Storage</td>
-                    <td>{{dataset.storage}}</td>
+                    <td>This dataset is currently stored on <b>{{dataset.storage}}</b></td>
                 </tr>
                 <tr class="top aligned">
                     <td>DOI</td>
@@ -30,10 +34,6 @@
                     <td>
                         <tags :tags="dataset.tags"></tags>
                     </td>
-                </tr>
-                <tr>
-                    <td>Owner</td>
-                    <td><contact :id="dataset.user_id"></contact></td>
                 </tr>
                 <tr class="top aligned">
                     <td>Data Type</td>
@@ -55,6 +55,7 @@
                 <tr class="top aligned">
                     <td>Project</td>
                     <td>
+                        <p>This dataset belongs to following project.</p>
                         <project :project="dataset.project"></project>
                     </td>
                 </tr>

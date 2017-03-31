@@ -53,7 +53,6 @@
                     </td>
                     <td>
                         <div v-if="dataset.meta && dataset.meta.subject">{{dataset.meta.subject}}</div>
-                    
                     </td>
                     <td>
                         <b>{{dataset.name}}</b><br>
@@ -78,7 +77,7 @@
             <i class="checkmark box icon"></i> {{selected_count}} Selected
         </h3>
         <div class="ui segments">
-            <div class="ui attached segment" v-for="(datasets, did) in selected" v-if="datatypes[did]">
+            <div class="ui attached segment" v-for="(datasets, did) in group_selected" v-if="datatypes[did]">
                 <h5>{{datatypes[did].name}}</h5>
                 <div class="selected-item" v-for="(dataset, id) in datasets" @click="go('/dataset/'+id)">
                     <p>
@@ -91,8 +90,7 @@
                 </div>
             </div>
         </div>
-        <button v-if="!download_task" class="ui right floated tiny button" @click="download()"> <i class="download icon"></i> Download </button>
-        {{download_task}}
+        <button class="ui right floated tiny button" @click="download()"> <i class="download icon"></i> Download </button>
     </div>
 </div>
 </template>
@@ -115,19 +113,17 @@ export default {
 
             datatypes: {}, //catalog of datatypes from dataset.datatype 
 
-            download_task: null, //will be set if downloading
         }
     },
 
     computed: {
         
         selected_count: function() {
-            var total = 0;
-            for(var did in this.selected) {
-                total += Object.keys(this.selected[did]).length;
-            }
-            console.log("selected count", total);
-            return total;
+            //var total = 0;
+            //for(var did in this.selected) {
+            //    total += Object.keys(this.selected[did]).length;
+            //}
+            return Object.keys(this.selected).length;
         },
 
         filtered_datasets: function() {
@@ -145,6 +141,17 @@ export default {
                 return false;
             });
         },
+
+        group_selected: function() {
+            var groups = {};
+            for(var id in this.selected) {
+                var selected = this.selected[id];
+                var did = selected.datatype._id;
+                if(groups[did] === undefined) groups[did] = {};
+                groups[did][id] = selected;
+            }
+            return groups;
+        }
     },
 
     mounted: function() {
@@ -178,8 +185,9 @@ export default {
 
     methods: {
         is_selected: function(dataset) {
-            if(this.selected[dataset.datatype._id] === undefined) return false;
-            if(this.selected[dataset.datatype._id][dataset._id] === undefined) return false;
+            //if(this.selected[dataset.datatype._id] === undefined) return false;
+            //if(this.selected[dataset.datatype._id][dataset._id] === undefined) return false;
+            if(this.selected[dataset._id] === undefined) return false;
             return true;
         },
         opendataset: function(dataset) {
@@ -190,9 +198,11 @@ export default {
         },
         check: function(dataset) {
             var did = dataset.datatype._id;
-            if(this.selected[did] === undefined) Vue.set(this.selected, did, {});
-            if(this.selected[did][dataset._id]) Vue.delete(this.selected[did], dataset._id);
-            else Vue.set(this.selected[did], dataset._id, dataset);
+            //if(this.selected[did] === undefined) Vue.set(this.selected, did, {});
+            //if(this.selected[did][dataset._id]) Vue.delete(this.selected[did], dataset._id);
+            //else Vue.set(this.selected[did], dataset._id, dataset);
+            if(this.selected[dataset._id]) Vue.delete(this.selected, dataset._id);
+            else Vue.set(this.selected, dataset._id, dataset);
             this.persist_selected();
         },
         persist_selected: function() {
@@ -203,75 +213,91 @@ export default {
             this.persist_selected();
         },
         remove_selected: function(dataset) {
-            var did = dataset.datatype._id;
-            Vue.delete(this.selected[did], dataset._id);
+            //var did = dataset.datatype._id;
+            //Vue.delete(this.selected[did], dataset._id);
+            Vue.delete(this.selected, dataset._id);
             this.persist_selected();
         },
+
         download: function() {
             var download_instance = null;
             //first create an instance to download things to
             this.$http.post(Vue.config.wf_api+'/instance', {
-                name: "brainlife.download"
+                name: "brainlife.download",
+                config: {
+                    selected: this.selected,
+                }
             }).then(res=>{
                 download_instance = res.body;
                 console.log("instance created", download_instance);
 
                 //create config to download all selected data from archive
                 var download = [];
-                for(var datatype_id in this.selected) {
-                    for(var dataset_id in this.selected[datatype_id]) {
+                //for(var datatype_id in this.selected) {
+                    //for(var dataset_id in this.selected[datatype_id]) {
+                    for(var dataset_id in this.selected) {
                         download.push({
                             url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
                             untar: "gz",
                             dir: "download/"+dataset_id, //TODO - organize into BIDS?
                         });
                     }
-                }
+                //}
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: download_instance._id,
-                    name: "Staging download",
+                    name: "brainlife.download.stage",
                     service: "soichih/sca-product-raw",
                     config: { download },
                 })
             }).then(res=>{
-                this.download_task = res.body.task;
-                console.log("download_task", this.download_task);
+                var download_task = res.body.task;
 
-                //listen to download task
-                var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-                var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
-                ws.onopen = (e)=>{
-                    console.log("websocket opened", download_instance._id);
-                     ws.send(JSON.stringify({
-                        bind: {
-                            ex: "wf.task",
-                            key: Vue.config.user.sub+"."+download_instance._id+".#",
-                        }
-                    }));
-                }
-                  
-                var downloading = false;
-                ws.onmessage = (json)=>{
-                    var event = JSON.parse(json.data);
-                    var msg = event.msg;
-                    if(!msg || !msg._id) return; //odd..
-                    switch(event.dinfo.exchange) {
-                    case "wf.task":
-                        this.download_task = msg;    
+                //submit another sca-product-raw service to organize files 
+                var symlink = [];
+                for(var dataset_id in this.selected) {
+                    var dataset = this.selected[dataset_id]; 
+                    var datatype = dataset.datatype; 
+                    var datatype_tags = dataset.datatype_tags;
 
-                        if(!downloading && this.download_task.status == "finished") {
-                            downloading = true;
-                            var url = Vue.config.wf_api+'/resource/download'+
-                                '?r='+this.download_task.resource_id+
-                                '&p='+encodeURIComponent(this.download_task.instance_id+'/'+this.download_task._id+'/download')+
-                                '&at='+Vue.config.jwt;
-                            document.location = url;
-                        }
+                    var subject = null;
+                    if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+
+                    var download_path = "../"+download_task._id+"/download/"+dataset_id;
+
+                    //TODO I should probably switch by datatype._id?
+                    switch(datatype.name) {
+                    case "t1": //deprecated
+                    case "neuro/anat":
+                        datatype.files.forEach(file=>{
+                            symlink.push({
+                                src: download_path+"/"+file.filename,
+                                dest: "derivatives/someprocess/"+subject+"/anat/"+subject+"_"+file.filename,
+                            });
+                        });
+                        break;
+                    case "dwi": //deprecated
+                    case "neuro/dwi":
+                        datatype.files.forEach(file=>{
+                            symlink.push({
+                                src: download_path+"/"+file.filename,
+                                dest: "derivatives/someprocess/"+subject+"/dwi/"+subject+"_b-XXXX_"+file.filename,
+                            });
+                        });
                         break;
                     default:
-                        console.error("unknown exchange", event.dinfo.exchange);
                     }
                 }
+                return this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: download_instance._id,
+                    name: "brainlife.download.bids",
+                    service: "soichih/sca-product-raw",
+                    config: { symlink },
+                    deps: [ download_task._id ], 
+                })
+            }).then(res=>{
+                this.bids_task = res.body.task;
+                this.$router.push("/download/"+download_instance._id);
+
             });
         }
     },

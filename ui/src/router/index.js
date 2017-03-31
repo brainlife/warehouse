@@ -13,15 +13,18 @@ import apps from '@/apps'
 import app from '@/app'
 import appedit from '@/appedit'
 import submit from '@/submit'
+import download from '@/download'
 
 Vue.use(Router)
 
 export default new Router({
+    //TODO remove names.. I am not using it
   routes: [
-    { path: '/', name: 'dashboard', component: dashboard },
+    { path: '/', component: dashboard },
     { path: '/datasets', name: 'Datasets', component: datasets },
     { path: '/datasets/upload', name: 'Upload', component: upload},
     { path: '/dataset/:id', name: 'Dataset', component: dataset},
+    { path: '/download/:id', component: download},
     { path: '/processes', name: 'Processes', component: processes},
     { path: '/process/:id', name: 'Process', component: process},
     { path: '/projects', name: 'Projects', component: projects },
