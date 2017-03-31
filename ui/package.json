@@ -17,6 +17,7 @@
     "semantic-ui": "^2.2.9",
     "superagent": "^3.5.0",
     "vue": "^2.2.1",
+    "vue-awesome": "^2.2.3",
     "vue-filter": "^0.2.0",
     "vue-highlightjs": "^1.2.2",
     "vue-resource": "^1.2.1",

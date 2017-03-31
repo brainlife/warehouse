@@ -1,6 +1,6 @@
 <template>
 <div>
-    <sidemenu active="processes"></sidemenu>
+    <sidemenu active="/processes"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="instance && tasks">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
@@ -21,11 +21,35 @@
 
             <div class="ui segment" v-if="app && instance.status == 'finished'">
                 <div class="ui top attached label">Outputs</div>
+                <!--
                 <div v-for="output in app.outputs">
-                    <h3>{{output.datatype.name}}</h3>
-                    <p>{{output.datatype.desc}}</p>
                     <file v-for="file in output.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
                 </div>
+                -->
+                <el-table :data="app.outputs" style="width: 100%">
+                    <el-table-column type="expand">
+                        <template scope="props">
+                            <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
+                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
+                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
+                    <!--
+                    <el-table-column label="Files">
+                        <template scope="props">
+                            <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
+                        </template>
+                    </el-table-column>
+                    -->
+                    <!--
+                    <el-table-column prop="datatype.meta" label="Metadata">
+                        <template scope="props">
+                            {{props.row.datatype.meta}}
+                        </template>
+                    </el-table-column>
+                    -->
+                </el-table>
             </div>
 
             <div class="ui segment">
@@ -37,7 +61,6 @@
                 <div class="ui top attached label">Inputs</div>
                 <br>
                 <div class="ui segments" v-for="dep in instance.config.prov.deps">
-                    {{dep}}
                     <h5 class="ui top attached header">
                         <h5>{{dep.input_id}}</h5>
                     </h5>
@@ -176,7 +199,7 @@ export default {
                 }
             }
 
-            //load datasets used for input
+            //load datasets used for prov.deps
             var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: dataset_ids}),
@@ -187,8 +210,7 @@ export default {
                 res.body.datasets.forEach((dataset)=>{
                     this.instance.config.prov.deps.forEach(dep=>{
                         if(dep.dataset == dataset._id) {
-                            dep._dataset = dataset;
-                            console.log("found match", dataset);
+                            Vue.set(dep, '_dataset', dataset);
                         }
                     });
                 });
@@ -215,6 +237,15 @@ export default {
             this.$router.push(path);
         },
         archive: function() {
+            //construct metadata for the new output dataset
+            //TODO - I think I should let the app take care of this (via products.json?) but metadata is more or less warehouse
+            //specific concept - so maybe I should define mapping rule inside app record somehow.
+            //for now, I just concat all metadata from input datasets used
+            var meta = {}
+            this.instance.config.prov.deps.forEach(function(dep) {
+                Object.assign(meta, dep._dataset.meta);
+            });
+
             //finally, make a request to finalize the task directory
             //currently only deals with outputs[0]
             var params = {
@@ -226,6 +257,7 @@ export default {
                 project: this.instance.config.project,
                 task_id: this.instance.config.main_task_id,
                 prov: this.instance.config.prov, 
+                meta: meta,
                 datatype: this.app.outputs[0].datatype,
                 datatype_tags: this.app.outputs[0].datatype_tags,
             }
@@ -234,7 +266,6 @@ export default {
 
                 //update instance to store dataset_id
                 this.instance.config.dataset_id = res.body._id;
-                //console.dir(res.body);
                 this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, {
                     config: this.instance.config,
                 }).then(res=>{

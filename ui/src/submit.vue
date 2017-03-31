@@ -1,16 +1,12 @@
 <template>
 <div>
-    <sidemenu active="apps"></sidemenu>
+    <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
-            <h2 class="ui header">
-                <img class="ui image" :src="app.avatar">
-                <div class="content">
-                    {{app.name}}
-                    <div class="sub header">{{app.desc}}</div>
-                </div>
-            </h2>
+            <img style="float: left; margin-right: 20px;" :src="app.avatar">
+            <h2>{{app.name}}</h2>
+            <p>{{app.desc}}</p>
 
             <div class="ui segment">
                 <div class="ui top attached label">Submit Process</div>

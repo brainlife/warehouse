@@ -74,8 +74,10 @@
                     </div>
                     <div v-if="datatype_id">
                         <div class="field" v-for="m in datatypes[datatype_id].meta">
-                        <label>{{m.id}}</label>
-                        <el-input type="text" v-model="meta[m.id]"></el-input>
+                        <label>Metadata</label>
+                        <el-input type="text" v-model="meta[m.id]">
+                            <template slot="prepend"><span style="text-transform: uppercase;">{{m.id}}</span></template>
+                        </el-input>
                         </div>
                     </div>
 
@@ -469,9 +471,10 @@ export default {
 
 <style scoped>
 .ui.form textarea.desc {
-  height: 30px;
+    height: 30px;
 }
-.ui.header.status {
+.ui.header.status,
+label.meta-field-name {
     text-transform: uppercase;
 }
 </style>

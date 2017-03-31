@@ -1,6 +1,6 @@
 <template>
 <div>
-    <sidemenu active="datasets"></sidemenu>
+    <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="dataset">
             <button class="ui primary right floated button" @click="download()">

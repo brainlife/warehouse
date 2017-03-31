@@ -1,6 +1,6 @@
 <template>
 <div>
-    <sidemenu active="datasets"></sidemenu>
+    <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher"> <!-- main view -->
         <div class="page-content" :class="{rightopen: selected_count}">
         <div class="margin20">
@@ -20,7 +20,7 @@
                 <tr>
                     <th style="width: 25px; background-color: #f0f0f0; box-shadow: -1px -1px 0 1px #f0f0f0;"></th>
                     <th>Data Type</th>
-                    <th style="min-width: 200px;">Project</th>
+                    <th>Project</th>
                     <th>Subject</th><!-- TODO list of metadata are different for each datatype -->
                     <th>Name/Desc</th>
                     <th>Tags</th>

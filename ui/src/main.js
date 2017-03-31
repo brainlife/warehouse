@@ -9,28 +9,34 @@ import 'vue2-animate/dist/vue2-animate.min.css'
 
 //import hljs from 'highlight.js'
 import VueHighlightJS from 'vue-highlightjs'
+Vue.use(VueHighlightJS)
 
 var jwt_decode = require('jwt-decode');
 
 import Vue from 'vue'
-import warehouse from './warehouse'
 import VueResource from 'vue-resource'
+Vue.use(VueResource)
+
+import warehouse from './warehouse'
 
 import VueSemantic from 'vue-semantic'
+Vue.use(VueSemantic)
 
 //element ui
 import ElementUI from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
 import 'element-ui/lib/theme-default/index.css'
+Vue.use(ElementUI, {locale})
+
+//fontasome
+import 'vue-awesome/icons'
+//import 'vue-awesome/icons/flags' //only include what we need
+import Icon from 'vue-awesome/components/Icon.vue'
+Vue.component('icon', Icon)
 
 import router from './router'
 
-
-Vue.use(VueResource)
-Vue.use(VueSemantic)
-Vue.use(ElementUI, {locale})
 Vue.use(require('vue-filter'))
-Vue.use(VueHighlightJS)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //

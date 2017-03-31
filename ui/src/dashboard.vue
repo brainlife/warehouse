@@ -1,6 +1,6 @@
 <template>
 <div>
-  <sidemenu active="dashboard"></sidemenu>
+  <sidemenu active="/"></sidemenu>
   <div class="ui pusher">
 		<div class="margin20">
       <h1>TODO</h1>

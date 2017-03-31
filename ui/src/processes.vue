@@ -1,6 +1,6 @@
 <template>
 <div>
-    <sidemenu active="processes"></sidemenu>
+    <sidemenu active="/processes"></sidemenu>
     <div class="ui pusher">
         <div class="margin20">
             <div class="ui fluid category search">

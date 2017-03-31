@@ -1,6 +1,6 @@
 <template>
 <div>
-    <sidemenu active="apps"></sidemenu>
+    <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
         <div class="margin20">
         <h1 v-if="$route.params.id == '_'">Register App</h1>

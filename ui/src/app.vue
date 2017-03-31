@@ -1,6 +1,6 @@
 <template>
 <div>
-    <sidemenu active="apps"></sidemenu>
+    <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
@@ -10,13 +10,10 @@
             <button class="ui button right floated" @click="go('/app/'+app._id+'/edit')"> 
                 <i class="pencil icon"></i> Edit
             </button>
-            <h2 class="ui header">
-                <img class="ui image" :src="app.avatar">
-                <div class="content">
-                    {{app.name}}
-                    <div class="sub header">{{app.desc}}</div>
-                </div>
-            </h2>
+
+            <img style="float: left; margin-right: 20px;" :src="app.avatar">
+            <h2>{{app.name}}</h2>
+            <p>{{app.desc}}</p>
 
             <table class="ui definition table">
             <tbody>

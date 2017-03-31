@@ -1,7 +1,7 @@
 <template>
 <div>
     <!-- main view -->
-    <sidemenu active="apps"></sidemenu>
+    <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
         <div class="margin20">
             <div class="ui fluid category search">

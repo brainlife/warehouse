@@ -1,6 +1,6 @@
 <template>
 <div>
-    <sidemenu active="projects"></sidemenu>
+    <sidemenu active="/projects"></sidemenu>
   <div class="ui pusher">
         <div class="margin20">
             <button v-if="user" class="ui right floated primary button" @click="newproject()">
@@ -30,26 +30,28 @@
     <div class="ui modal projectdialog">
         <i class="close icon"></i>
         <div class="header" v-if="edit._id">
-      Editing {{edit.name}}
+      Edit Project
         </div>
     <div class="header" v-else>
       New Project
         </div>
-        <div class="image content">
+        <div class="content">
+                <!--
             <div class="ui medium image">
                 <img src="./assets/some.png">
             </div>
+                -->
 
       <div class="description">
         <form class="ui form">
-          <div class="ui header">Say something nice to make people feel happy</div>
+          <!--<div class="ui header">Say something nice to make people feel happy</div>-->
           <div class="field">
             <label>Project Name</label>
             <input type="text" v-model="edit.name" placeholder="Please enter name for this project">
           </div>
           <div class="field">
             <label>Description</label>
-            <textarea v-model="edit.desc" placeholder="Details about this project"></textarea>
+            <textarea rows="5" v-model="edit.desc" placeholder="Details about this project"></textarea>
           </div>
           <div class="field">
             <label>Admins</label>
@@ -76,8 +78,10 @@
                         </div>
                     </div>
 
+            <!--
           <p>We've grabbed the following image from the <a href="https://www.gravatar.com" target="_blank">gravatar</a> image associated with your registered e-mail address.</p>
           <p>Is it okay to use this photo?</p>
+            -->
         </form>
       </div>
 
@@ -108,64 +112,65 @@ import contactlist from '@/components/contactlist'
 import project from '@/components/project'
 
 export default {
-  name: "projects-ui",
+    name: "projects-ui",
 
-  data () {
-    return {
-      msg: 'Welcome to Your Vue.js App',
-      projects: [],
-      count: 0, //total counts of projects (not paged)
+    data () {
+        return {
+            msg: 'Welcome to Your Vue.js App',
+            projects: [],
+            count: 0, //total counts of projects (not paged)
 
-      user: Vue.config.user, //see if user is logged in
+            user: Vue.config.user, //see if user is logged in
 
-      //placeholder for dialog
-      edit: {
-        _id: null, //set if editing
-        name: "",
-        desc: "",
-        access: "",
+            //placeholder for dialog
+            edit: {
+                _id: null, //set if editing
+                name: "",
+                desc: "",
+                access: "",
 
-        admins: [],
-        members: [],
-      }
-    }
-  },
-
-  mounted: function() {
-    this.projectdialog = $(this.$el).find('.projectdialog');
-    this.projectdialog.modal({
-      onApprove: ()=> {
-        if(this.edit._id) {
-          //update
-                    this.$http.put('project/'+this.edit._id, this.edit).then(res=>{
-            //find project that's updated
-            this.projects.forEach((p)=>{
-              if(p._id == this.edit._id) {
-                for(var k in res.body) p[k] = res.body[k];
-              }
-            });
-                    }, res=>{
-                        console.error(res);
-                    });
-        } else {
-          //create
-          console.log("creating");
-          console.log(JSON.stringify(this.edit, null, 4));
-                    this.$http.post('project', this.edit).then(res=>{
-            console.log("created", res.body);
-            this.projects.push(res.body);
-                    }, res=>{
-                        console.error(res);
-                    });
+                admins: [],
+                members: [],
+            }
         }
-      }
-    });
-  },
+    },
+
+    mounted: function() {
+        this.projectdialog = $(this.$el).find('.projectdialog');
+        this.projectdialog.modal({
+
+            onApprove: ()=> {
+                if(this.edit._id) {
+                    //update
+                    console.log("update", this.edit._id, this.edit);
+                    this.$http.put('project/'+this.edit._id, this.edit).then(res=>{
+                        //find project that's updated
+                        this.projects.forEach((p)=>{
+                            if(p._id == this.edit._id) {
+                                for(var k in res.body) p[k] = res.body[k];
+                            }
+                        });
+                    }, res=>{
+                        console.error(res);
+                    });
+                } else {
+                    //create
+                    console.log("creating");
+                    console.log(JSON.stringify(this.edit, null, 4));
+                    this.$http.post('project', this.edit).then(res=>{
+                        console.log("created", res.body);
+                        this.projects.push(res.body);
+                    }, res=>{
+                        console.error(res);
+                    });
+                }
+            }
+        });
+    },
 
   methods: {
     changemember: function(list, uids) {
       if(!uids) return;
-      console.log("set", list, uids);
       this.edit[list] = uids;
     },
     newproject: function() {

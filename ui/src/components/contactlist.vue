@@ -1,11 +1,10 @@
 <template>
 <div>
-  <select class="ui fluid search dropdown" multiple>
-    <option v-for="profile in profiles" v-bind:value="profile.id">
-      {{profile.fullname}}
-      <code><{{profile.email}}></code>
-    </option>
-  </select>
+    <select class="ui fluid search dropdown" multiple>
+        <option v-for="profile in profiles" v-bind:value="profile.id"> {{profile.fullname}}
+            <code><{{profile.email}}></code>
+        </option>
+    </select>
 </div><!--root-->
 </template>
 
@@ -56,7 +55,6 @@ export default {
         uids: function(val) {
             if(!val) return;
             //val = val.map(v=>v); //convert to pure array
-
             //"set exactly" fires changes event while resetting.. erronously informating
             //client and worse, causes infinite event looping.. resetting flag prevents it
             this.resetting = true;
