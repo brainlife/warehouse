@@ -1,3 +1,8 @@
 node_modules
 ui/node_modules
 ui/semantic
+ui/.DS_Store
+ui/node_modules
+ui/dist
+ui/npm-debug.log
+ui/yarn-error.log
