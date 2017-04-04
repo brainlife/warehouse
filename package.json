@@ -24,6 +24,7 @@
     "express": "^4.14.1",
     "express-jwt": "^5.1.0",
     "express-winston": "^2.2.0",
+    "mkdirp": "^0.5.1",
     "mongoose": "^4.8.2",
     "request": "^2.79.0",
     "winston": "^2.3.1"
