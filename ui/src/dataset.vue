@@ -32,6 +32,7 @@
                 <tr>
                     <td>User Tags</td>
                     <td>
+                        <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
                         <tags :tags="dataset.tags"></tags>
                     </td>
                 </tr>
@@ -60,7 +61,7 @@
                         <pre v-highlightjs><code class="json hljs">{{dataset.prov}}</code></pre>
                     </td>
                     <td v-else="dataset.prov">
-                        <p>Uploaded by user.</p>
+                        <p class="text-muted">Uploaded by user.</p>
                     </td>
                 </tr>
                 <tr class="top aligned">

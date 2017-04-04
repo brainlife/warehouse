@@ -27,6 +27,7 @@
 
     {{task.desc}}
 
+    <!--
     <div class="ui accordion">
         <div class="title">
             <i class="dropdown icon"></i> 
@@ -35,15 +36,19 @@
         <div class="content">
             <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
         </div>
-
-        <div class="title">
-            <i class="dropdown icon"></i> 
-            Output
-        </div>
-        <div class="content">
-            <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
-        </div>
     </div>
+    -->
+
+    <el-collapse v-model="activeSections">
+        <el-collapse-item title="Configuration" name="config">
+            <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
+        </el-collapse-item>
+
+        <el-collapse-item title="Output" name="output">
+            <filebrowser v-if="task.resource_id && ~activeSections.indexOf('output')" :task="task"></filebrowser>
+            <el-alert v-if="!task.resource_id" title="Not yet submitted to computing resource" type="warning"></el-alert>
+        </el-collapse-item>
+    </el-collapse>
 
     <!--
     <div v-if="task.products">
@@ -63,8 +68,9 @@ import filebrowser from '@/components/filebrowser'
 export default {
     components: { filebrowser },
     name: "contact",
-        data () {
+    data () {
         return {
+            activeSections: []
         }
     },
     computed: {

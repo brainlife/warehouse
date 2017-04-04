@@ -17,16 +17,19 @@
             </button>
             -->
 
-
             <div class="panel">
                 <h1><i class="send icon"></i> Download</h1>
                 <p>Requested At <b><time>{{instance.create_date|date}}</time></b></p>
 
                 <el-steps :space="200" :active="get_active()">
-                    <el-step title="stage" description="Stage data out of Brain-Life warehouse"></el-step>
-                    <el-step title="organize" description="Organize data in BIDS format"></el-step>
-                    <el-step title="download" description="Ready to download your computer"></el-step>
+                    <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
+                    <el-step title="Organize" description="Organizing data in BIDS format"></el-step>
+                    <el-step title="Download" description="Ready to download your computer"></el-step>
                 </el-steps>
+                
+                <br>
+                <el-alert v-if="error" type="error" title="Failed" 
+                    :description="error" show-icon :closable="false"></el-alert>
             </div>
 
             <!--
@@ -110,6 +113,7 @@ export default {
         return {
             instance: null,
             tasks: null,
+            error: null,
         }
     },
 
@@ -184,7 +188,18 @@ export default {
         },
 
         get_active: function() {
-            return 2;
+            var task_bids = null;
+            var task_stage = null;
+            this.tasks.forEach((task)=>{
+                if(task.status == "failed") {
+                    this.error = task.status_msg;
+                }
+                if(task.name == "brainlife.download.bids") task_bids = task;
+                if(task.name == "brainlife.download.stage") task_stage = task;
+            });
+            if(task_stage.status == "finished") return 2;
+            if(task_bids.status == "finished") return 1;
+            return 0;
         },
         remove: function() {
             this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{

@@ -14,6 +14,7 @@ import app from '@/app'
 import appedit from '@/appedit'
 import submit from '@/submit'
 import download from '@/download'
+import view from '@/view'
 
 Vue.use(Router)
 
@@ -21,17 +22,18 @@ export default new Router({
     //TODO remove names.. I am not using it
   routes: [
     { path: '/', component: dashboard },
-    { path: '/datasets', name: 'Datasets', component: datasets },
-    { path: '/datasets/upload', name: 'Upload', component: upload},
-    { path: '/dataset/:id', name: 'Dataset', component: dataset},
+    { path: '/datasets', component: datasets },
+    { path: '/datasets/upload', component: upload},
+    { path: '/dataset/:id', component: dataset},
     { path: '/download/:id', component: download},
-    { path: '/processes', name: 'Processes', component: processes},
-    { path: '/process/:id', name: 'Process', component: process},
-    { path: '/projects', name: 'Projects', component: projects },
-    { path: '/apps', name: 'Apps', component: apps },
-    { path: '/app/:id', name: 'App', component: app },
-    { path: '/app/:id/submit', name: 'AppSubmit', component: submit},
-    { path: '/app/:id/edit', name: 'AppEdit', component: appedit},
-    { path: '/settings', name: 'Settings', component: settings},
+    { path: '/processes', component: processes},
+    { path: '/process/:id', component: process},
+    { path: '/projects', component: projects },
+    { path: '/apps', component: apps },
+    { path: '/app/:id', component: app },
+    { path: '/app/:id/submit', component: submit},
+    { path: '/app/:id/edit', component: appedit},
+    { path: '/settings', component: settings},
+    { path: '/view/:instanceid/:taskid', component: view},
   ]
 })
