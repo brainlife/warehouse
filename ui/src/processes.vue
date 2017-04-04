@@ -1,6 +1,6 @@
 <template>
 <div>
-    <sidemenu active="processes"></sidemenu>
+    <sidemenu active="/processes"></sidemenu>
     <div class="ui pusher">
         <div class="margin20">
             <div class="ui fluid category search">
@@ -23,7 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="instance in instances" class="instance" @click="go('/process/'+instance._id)">
+                    <tr v-for="instance in instances" class="clickable-record" @click="go('/process/'+instance._id)">
                         <td> {{instance.create_date | date}} </td>
                         <td> {{instance.config.project}} </td>
                         <td> {{instance.name}} </td>
@@ -55,7 +55,7 @@
                 <div class="ui top attached label">Debug</div>
                 <br>
                 <br>
-                <pre v-if="instances" v-highlightjs><code class="json hljs">{{instances}}</code></pre>
+                <pre v-if="instances" v-highlightjs="JSON.stringify(instances, null, 4)"><code class="json hljs"></code></pre>
             </div>
         </div>
     </div>
@@ -67,41 +67,39 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 
 export default {
-  name: 'processes',
-  data () {
-    return {
-      instances: null
-    }
-  },
-  mounted: function() {
-    this.$http.get(Vue.config.wf_api+'/instance', {params: {
-        find: JSON.stringify({
-            _id: this.$route.params.id,
-            "config.brainlife": true,
-            status: {$ne: "removed"},
-            "config.removing": {$exists: false},
-        })
-    }})
-    .then(res=>{
-      this.instances = res.body.instances;
-    }, res=>{
-      console.error(res);
-    });
-  },
-  methods: {
-    go: function(path) {
-      this.$router.push(path);
+    name: 'processes',
+    data () {
+        return {
+            instances: null
+        }
     },
-  },
+    mounted: function() {
+        this.$http.get(Vue.config.wf_api+'/instance', {params: {
+            find: JSON.stringify({
+                _id: this.$route.params.id,
+                "config.brainlife": true,
+                status: {$ne: "removed"},
+                "config.removing": {$exists: false},
+            })
+        }})
+        .then(res=>{
+            this.instances = res.body.instances;
+        }, res=>{
+            console.error(res);
+        });
+    },
 
-  components: { sidemenu },
+    methods: {
+        go: function(path) {
+            this.$router.push(path);
+        },
+    },
+
+    components: { sidemenu },
 }
+
 </script>
 
 <style scoped>
-.instance:hover {
-    cursor: pointer;
-    background-color: #ddd;
-}
 </style>
 

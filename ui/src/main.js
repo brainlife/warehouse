@@ -5,19 +5,37 @@ import 'semantic-ui/dist/semantic.css'
 import 'semantic-ui/dist/semantic.js'
 
 import 'highlight.js/styles/default.css'
-import hljs from 'highlight.js'
+import 'vue2-animate/dist/vue2-animate.min.css'
+
+//import hljs from 'highlight.js'
+import VueHighlightJS from 'vue-highlightjs'
+Vue.use(VueHighlightJS)
 
 var jwt_decode = require('jwt-decode');
 
 import Vue from 'vue'
-import warehouse from './warehouse'
 import VueResource from 'vue-resource'
+Vue.use(VueResource)
+
+import warehouse from './warehouse'
 
 import VueSemantic from 'vue-semantic'
+Vue.use(VueSemantic)
+
+//element ui
+import ElementUI from 'element-ui'
+import locale from 'element-ui/lib/locale/lang/en'
+import 'element-ui/lib/theme-default/index.css'
+Vue.use(ElementUI, {locale})
+
+//fontasome
+import 'vue-awesome/icons'
+//import 'vue-awesome/icons/flags' //only include what we need
+import Icon from 'vue-awesome/components/Icon.vue'
+Vue.component('icon', Icon)
+
 import router from './router'
 
-Vue.use(VueResource)
-Vue.use(VueSemantic)
 Vue.use(require('vue-filter'))
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +43,6 @@ Vue.use(require('vue-filter'))
 // config
 // TODO - find a way to put these somewhere under /config
 //
-console.log("setting config");
 Vue.config.debug = true;
 //Vue.config.productionTip = false //what is this?
 
@@ -48,6 +65,7 @@ Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
 //directives
 
+/*
 //https://www.metachris.com/2017/02/vuejs-syntax-highlighting-with-highlightjs/
 Vue.directive('highlightjs', {
   deep: true,
@@ -74,6 +92,7 @@ Vue.directive('highlightjs', {
     })
   }
 })
+*/
 
 router.beforeEach(function (to, from, next) {
     window.scrollTo(0, 0)

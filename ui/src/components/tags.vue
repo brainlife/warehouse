@@ -1,5 +1,5 @@
 <template>
-<div class="ui labels">
+<div class="ui mini labels">
     <a class="ui label" v-for="tag in deco_tags" :class="{red: tag.neg}">
         <i class="minus circle icon" v-if="tag.neg"></i>
         {{tag.name}}

@@ -1,14 +1,15 @@
 <template>
 <div class="card" v-if="app">
   <div class="content">
-    <img class="right floated mini ui image" :src="app.avatar">
+    <img class="right floated tiny ui image" :src="app.avatar+'?'+Math.random()">
     <div class="header">
       {{app.name}}
     </div>
+    <!--
     <div class="">
-      <!--{{app.create_date}}-->
-      <contact :id="app.user_id" class="contact mini"></contact>
+      <contact :id="app.user_id" class="contact mini"></contact>.
     </div>
+    -->
     <div class="description">
       {{app.desc}}
     </div>

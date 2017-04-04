@@ -11,25 +11,27 @@ import process from '@/process'
 import settings from '@/settings'
 import apps from '@/apps'
 import app from '@/app'
+import appedit from '@/appedit'
 import submit from '@/submit'
+import download from '@/download'
 
 Vue.use(Router)
 
 export default new Router({
+    //TODO remove names.. I am not using it
   routes: [
-    { path: '/', name: 'dashboard', component: dashboard },
+    { path: '/', component: dashboard },
     { path: '/datasets', name: 'Datasets', component: datasets },
+    { path: '/datasets/upload', name: 'Upload', component: upload},
     { path: '/dataset/:id', name: 'Dataset', component: dataset},
-    { path: '/data/upload', name: 'Upload', component: upload},
+    { path: '/download/:id', component: download},
     { path: '/processes', name: 'Processes', component: processes},
     { path: '/process/:id', name: 'Process', component: process},
     { path: '/projects', name: 'Projects', component: projects },
     { path: '/apps', name: 'Apps', component: apps },
     { path: '/app/:id', name: 'App', component: app },
     { path: '/app/:id/submit', name: 'AppSubmit', component: submit},
-    //{ path: '/project', name: 'newproject', component: project },
-    //{ path: '/project/:id', name: 'editproject', component: project },
-    //{ path: '/dataset/:id', name: 'Dataset', component: Dataset },
+    { path: '/app/:id/edit', name: 'AppEdit', component: appedit},
     { path: '/settings', name: 'Settings', component: settings},
   ]
 })

@@ -1,19 +1,19 @@
 <template>
 <div>
-    <sidemenu active="apps"></sidemenu>
+    <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
             <button class="ui button primary right floated" @click="go('/app/'+app._id+'/submit')"> 
                 <i class="play icon"></i> Submit
             </button>
-            <h2 class="ui header">
-                <img class="ui image" :src="app.avatar">
-                <div class="content">
-                    {{app.name}}
-                    <div class="sub header">{{app.desc}}</div>
-                </div>
-            </h2>
+            <button class="ui button right floated" @click="go('/app/'+app._id+'/edit')"> 
+                <i class="pencil icon"></i> Edit
+            </button>
+
+            <img style="float: left; margin-right: 20px;" :src="app.avatar">
+            <h2>{{app.name}}</h2>
+            <p>{{app.desc}}</p>
 
             <table class="ui definition table">
             <tbody>
@@ -46,25 +46,17 @@
                     </td>
                 </tr>
                 <tr class="top aligned">
+                    <td>Configuration Template</td>
+                    <td>
+                        <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
+                    </td>
+                </tr>
+                <tr class="top aligned">
                     <td>Inputs</td>
                     <td>
                         <div class="ui list">
                             <div class="item" v-for="input in app.inputs">
-                                <div class="ui segment">
-                                    <div class="ui top attached label">
-                                        {{input.datatype.desc}}
-                                    </div>
-                                    <h5>Datatype Tags</h5>
-                                    <tags :tags="input.datatype_tags"></tags>
-
-                                    <h5>Files</h5>
-                                    <div class="ui icon label" v-for="file in input.datatype.files">
-                                        <i class="file outline icon" v-if="file.filename"></i> 
-                                        <i class="folder icon" v-if="file.dirname"></i> 
-                                        {{file.id}}
-                                        <div class="detail brown">{{file.filename||file.dirname}}</div>
-                                    </div>
-                                </div>
+                                 <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
                             </div>
                         </div>
                     </td>
@@ -74,11 +66,7 @@
                     <td>
                         <div class="ui list">
                             <div class="item" v-for="output in app.outputs">
-                                <div class="header"> {{output.datatype.desc}} </div>
-                                <tags :tags="output.datatype_tags"></tags>
-                                <div class="ui segment" v-for="file in output.datatype.files">
-                                    {{file}}
-                                </div>
+                                <datatype :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
                             </div>
                         </div>
                     </td>
@@ -146,9 +134,10 @@ import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
+import datatype from '@/components/datatype'
 
 export default {
-    components: { sidemenu, contact, project, tags },
+    components: { sidemenu, contact, project, tags, datatype },
 
     data () {
         return {

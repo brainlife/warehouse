@@ -1,9 +1,9 @@
 <template>
 <div>
-    <sidemenu active="/processes"></sidemenu>
+    <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="instance && tasks">
-            <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
+            <!--
             <button class="ui button primary right floated"
                 v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="archive()"> 
                 <i class="archive icon"></i> Archive Output
@@ -15,17 +15,23 @@
             <button class="ui button right floated" @click="remove()">
                 <i class="trash icon"></i> Remove
             </button>
+            -->
 
-            <h1><i class="send icon"></i> {{instance.name}}</h1>
-            <p>{{instance.desc}}</p>
 
+            <div class="panel">
+                <h1><i class="send icon"></i> Download</h1>
+                <p>Requested At <b><time>{{instance.create_date|date}}</time></b></p>
+
+                <el-steps :space="200" :active="get_active()">
+                    <el-step title="stage" description="Stage data out of Brain-Life warehouse"></el-step>
+                    <el-step title="organize" description="Organize data in BIDS format"></el-step>
+                    <el-step title="download" description="Ready to download your computer"></el-step>
+                </el-steps>
+            </div>
+
+            <!--
             <div class="ui segment" v-if="app && instance.status == 'finished'">
                 <div class="ui top attached label">Outputs</div>
-                <!--
-                <div v-for="output in app.outputs">
-                    <file v-for="file in output.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
-                </div>
-                -->
                 <el-table :data="app.outputs" style="width: 100%">
                     <el-table-column type="expand">
                         <template scope="props">
@@ -35,27 +41,15 @@
                     <el-table-column prop="id" label="ID" width="180"></el-table-column>
                     <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
                     <el-table-column prop="datatype.desc" label="Description"></el-table-column>
-                    <!--
-                    <el-table-column label="Files">
-                        <template scope="props">
-                            <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
-                        </template>
-                    </el-table-column>
-                    -->
-                    <!--
-                    <el-table-column prop="datatype.meta" label="Metadata">
-                        <template scope="props">
-                            {{props.row.datatype.meta}}
-                        </template>
-                    </el-table-column>
-                    -->
                 </el-table>
             </div>
+            -->
 
             <div class="ui segment">
                 <div class="ui top attached label">Task Statuses</div>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
             </div>
+            <!--
 
             <div class="ui segment">
                 <div class="ui top attached label">Inputs</div>
@@ -77,6 +71,7 @@
                 <br>
                 <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </div>
+            -->
 
             <h2>Debug</h2>
             <div class="ui segments">
@@ -90,16 +85,6 @@
                         <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
                     </div>
                 </div>
-                <div class="ui segment" v-if="app">
-                    <h3>app</h3>
-                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <!--
-                <div class="ui segment" v-if="datasets">
-                    <h3>datasets</h3>
-                    <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                -->
             </div>
         </div>
     </div>
@@ -111,7 +96,6 @@ import Vue from 'vue'
 
 import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
-import message from '@/components/message'
 import task from '@/components/task'
 import file from '@/components/file'
 import tags from '@/components/tags'
@@ -120,17 +104,12 @@ import metadata from '@/components/metadata'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    mixins: [
-        //require("vue-toaster")
-    ],
-    components: { sidemenu, contact, task, message, file, tags, metadata },
+    components: { sidemenu, contact, task, file, tags, metadata },
 
     data () {
         return {
             instance: null,
             tasks: null,
-            messages: [],
-            app: null,
         }
     },
 
@@ -149,15 +128,7 @@ export default {
           }})
         })
         .then(res=>{
-          this.tasks = res.body.tasks;
-
-          //load app
-          return this.$http.get('app', {params: {
-              find: JSON.stringify({_id: this.instance.config.prov.app})
-          }})
-        })
-        .then(res=>{
-            this.app = res.body.apps[0];
+            this.tasks = res.body.tasks;
 
             //subscribe to the instance events
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -199,84 +170,23 @@ export default {
                 }
             }
 
-            //load datasets used for prov.deps
-            var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
-            this.$http.get('dataset', {params: {
-                find: JSON.stringify({_id: dataset_ids}),
-                populate: ' ',
-            }})
-            .then(res=>{
-                //this.datasets = res.body.datasets;
-                res.body.datasets.forEach((dataset)=>{
-                    this.instance.config.prov.deps.forEach(dep=>{
-                        if(dep.dataset == dataset._id) {
-                            Vue.set(dep, '_dataset', dataset);
-                        }
-                    });
-                });
-            });
-
         }).catch((err)=>{
             console.error(res);
         });
     },
 
     computed: {
-        main_task: function() {
-            var it = null;
-            this.tasks.forEach((task)=>{
-                if(task._id == this.instance.config.main_task_id) it = task;
-            })
-            if(!it) console.error("failed to find main_task");
-            return it;
-        }
     },
     methods: {
 
         go: function(path) {
             this.$router.push(path);
         },
-        archive: function() {
-            //construct metadata for the new output dataset
-            //TODO - I think I should let the app take care of this (via products.json?) but metadata is more or less warehouse
-            //specific concept - so maybe I should define mapping rule inside app record somehow.
-            //for now, I just concat all metadata from input datasets used
-            var meta = {}
-            this.instance.config.prov.deps.forEach(function(dep) {
-                Object.assign(meta, dep._dataset.meta);
-            });
 
-            //finally, make a request to finalize the task directory
-            //currently only deals with outputs[0]
-            var params = {
-                instance_id: this.instance._id,
-                //name: "data from "+this.instance.name,
-                name: this.app.name+" output", 
-                desc: "Data archived from "+this.instance.name,
-                tags: ['xyz123', 'test', 'dev'], //TODO - let use set this?
-                project: this.instance.config.project,
-                task_id: this.instance.config.main_task_id,
-                prov: this.instance.config.prov, 
-                meta: meta,
-                datatype: this.app.outputs[0].datatype,
-                datatype_tags: this.app.outputs[0].datatype_tags,
-            }
-            this.$http.post('dataset', params).then(res=>{
-                this.messages.push({msg: "Archiving Request Sent!", cls: {info: true}});
-
-                //update instance to store dataset_id
-                this.instance.config.dataset_id = res.body._id;
-                this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, {
-                    config: this.instance.config,
-                }).then(res=>{
-                    console.log("done updating instance");
-                });
-            }, res=>{
-                console.error(res);
-            });
+        get_active: function() {
+            return 2;
         },
         remove: function() {
-            //this.messages.push({msg: "Removed", cls: {info: true}});
             this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
                 this.$router.push('/processes');
             });
