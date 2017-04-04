@@ -44,11 +44,6 @@
                 <tr class="top aligned">
                     <td>Metadata</td>
                     <td>
-                        <!--
-                        <div class="ui image label" v-for="(v, k) in dataset.meta">
-                            {{k}} <div class="detail">{{v}}</div>
-                        </div>
-                        -->
                         <metadata :metadata="dataset.meta"></metadata>
                     </td>
                 </tr>
