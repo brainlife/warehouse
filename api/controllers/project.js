@@ -114,8 +114,8 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         //if(project.user_id != req.user.sub && !~project.admins.indexOf(req.user.sub)) {
         if(canedit(req.user, project)) {
             //user can't update some fields
-            delete res.body.user_id;
-            delete res.body.create_date;
+            delete req.body.user_id;
+            delete req.body.create_date;
             for(var k in req.body) project[k] = req.body[k];
             project.save((err)=>{
                 if(err) return next(err);

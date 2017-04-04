@@ -14,6 +14,15 @@ const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
 
+function canedit(user, rec) {
+    if(user) {
+        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
+        //if(~rec.admins.indexOf(user.sub.toString())) return true;
+        if(rec.user_id == user.sub.toString()) return true;
+    }
+    return false;
+}
+
 //return all projects that user has access
 function getprojects(user, cb) {
     //firt, find all public projects
@@ -83,13 +92,14 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @api {post} /dataset                 Create new dataset from wf service task
  * @apiDescription                      Make a request to create a new dataset from wf service taskdir
  *
- * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} instance_id       WF service Instance ID
  * @apiParam {String} task_id           WF service Task ID 
+ *
+ * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
- * @apiParam {Object} [prov]            Provenane info {app, deps, config}
+ * @apiParam {Object} [prov]            Provenane info {app, deps, config} - don't set if it's uploaded
+ * @apiParam {Object} [meta]            Metadata - as prescribed in datatype.meta
  * @apiParam {String[]} datatype_tags   Data type ID for this dataset (from Datatypes)
- * @apiParam {Object} [prov]            Provenance information (not set for uploaded data)
  * @apiParam {String} [name]            Name for this dataset
  * @apiParam {String} [desc]            Description for this crate
  * @apiParam {String[]} [tags]          List of tags associated with this dataset
@@ -141,6 +151,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 tags: req.body.tags,
 
                 prov: req.body.prov,
+                meta: req.body.meta,
             });
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);
@@ -249,6 +260,30 @@ router.get('/download/:id', jwt({
                 readstream.pipe(res);             
             });
         });
+    });
+});
+
+/**
+ * @apiGroup Dataset
+ * @api {delete} /dataset/:id
+ *                              Hide dataset from dataset results
+ * @apiDescription              Logically remove dataset by setting "removed" to true
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ */
+router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
+    var id = req.params.id;
+    db.Datasets.findById(req.params.id, function(err, dataset) {
+        if(err) return next(err);
+        if(!dataset) return next(new Error("can't find the dataset with id:"+req.params.id));
+        if(canedit(req.user, dataset)) {
+            dataset.removed = true;
+            dataset.save(function(err) {
+                if(err) return next(err);
+                res.json({status: "ok"});
+            }); 
+        } else return res.status(401).end();
     });
 });
 

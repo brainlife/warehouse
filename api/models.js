@@ -45,6 +45,7 @@ var projectSchema = mongoose.Schema({
     //* private - only the project member can access
     //* public - accessible by anyone
     access: {type: String, default: "private" },
+
     
     create_date: { type: Date, default: Date.now },
 });
@@ -64,7 +65,10 @@ var datasetSchema = mongoose.Schema({
     //type of the data
     datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
     datatype_tags: [String], //add specificity to datatype (different from "tags" which is used for searching)
-   
+
+    //meta fields as specified in the datatype.meta
+    meta: mongoose.Schema.Types.Mixed, 
+    
     //human readable name / desc
     name: String,
     desc: String, 
@@ -90,6 +94,8 @@ var datasetSchema = mongoose.Schema({
     },
 
     create_date: { type: Date, default: Date.now },
+
+    removed: { type: Boolean, default: false} ,
 })
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
@@ -101,10 +107,44 @@ var datatypeSchema = mongoose.Schema({
     name: String,
     desc: String, 
 
-    files: [ mongoose.Schema.Types.Mixed ],
+    //file inventory for this datatype
+    //files: [ mongoose.Schema.Types.Mixed ],
+    files: [ new mongoose.Schema({
+        id: String,
+        filename: String,
+        desc: String,
+        ext: String,
+        required: Boolean
+    })],
+    /*
+    [ 
+        {
+            "id" : "DT_STREAM",
+            "filename" : "output.DT_STREAM.tck",
+            "desc" : "Tensor / Deterministic Tracks",
+            "ext" : ".tck",
+            "required" : true
+        }, 
+    ]
+    */
 
-    //name of ABCD service that is used to validate this data
+    //name of ABCD service that is used to validate this data (TODO..)
     validator: String, 
+
+    meta: [ new mongoose.Schema({
+        id: String,
+        type: String,
+        required: Boolean,
+    })],
+    /*
+    "meta": [
+        {
+            "id": "subject",
+            "type": "string",
+            "required": true
+        }
+    ]
+    */
 
     //create_date: { type: Date, default: Date.now },
 });
@@ -125,7 +165,12 @@ var appSchema = mongoose.Schema({
 
     //application storage
     github: String, //if the app is stored in github
+    github_branch: String, //default to "master"
+
     dockerhub: String, //if the app is stored in dockerhub
+    
+    //configuration template
+    config: mongoose.Schema.Types.Mixed, 
 
     //input files for this application
     inputs: [ new mongoose.Schema({
