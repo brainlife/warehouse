@@ -37,11 +37,6 @@
                             <label></label><!-- need this somehow-->
                         </div>
                     </td>
-                    <!--
-                    <td>
-                          <i class="browser icon" @click="go('/dataset/'+dataset._id)" style="cursor: pointer;"></i>
-                    </td>
-                    -->
                     <td>
                         {{dataset.datatype.name}}
                         <tags :tags="dataset.datatype_tags"></tags>

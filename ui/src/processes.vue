@@ -25,7 +25,11 @@
                 <tbody>
                     <tr v-for="instance in instances" class="clickable-record" @click="go('/process/'+instance._id)">
                         <td> {{instance.create_date | date}} </td>
-                        <td> {{instance.config.project}} </td>
+                        <td> 
+                            <div class="ui green horizontal label" v-if="projects[instance.config.project].access == 'public'">Public</div>
+                            <div class="ui red horizontal label" v-if="projects[instance.config.project].access == 'private'">Private</div>
+                            {{projects[instance.config.project].name}} 
+                        </td>
                         <td> {{instance.name}} </td>
                         <td> {{instance.desc}} </td>
                         <td>
@@ -67,26 +71,43 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 
 export default {
+    components: { sidemenu },
     name: 'processes',
     data () {
         return {
-            instances: null
+            instances: null,
+            
+            //cache
+            projects: null, //keyed by _id
         }
     },
     mounted: function() {
-        this.$http.get(Vue.config.wf_api+'/instance', {params: {
-            find: JSON.stringify({
-                _id: this.$route.params.id,
-                "config.brainlife": true,
-                status: {$ne: "removed"},
-                "config.removing": {$exists: false},
-            })
+        //first load projects
+        this.$http.get('project', {params: {
+            //service: "_upload",
         }})
         .then(res=>{
+            this.projects = {};
+            res.body.projects.forEach((p)=>{
+                this.projects[p._id] = p;
+            });
+
+            //then load instances (processes)
+            return this.$http.get(Vue.config.wf_api+'/instance', {params: {
+                find: JSON.stringify({
+                    _id: this.$route.params.id,
+                    "config.brainlife": true,
+                    status: {$ne: "removed"},
+                    "config.removing": {$exists: false},
+                })
+            }});
+        })
+        .then(res=>{
             this.instances = res.body.instances;
-        }, res=>{
-            console.error(res);
+        }).catch(res=>{
+          console.error(res);
         });
+
     },
 
     methods: {
@@ -95,7 +116,6 @@ export default {
         },
     },
 
-    components: { sidemenu },
 }
 
 </script>
