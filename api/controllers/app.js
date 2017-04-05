@@ -25,6 +25,7 @@ function canedit(user, rec) {
  * @apiParam {Object} [find]    Optional Mongo find query - defaults to {}
  * @apiParam {Object} [sort]    Optional Mongo sort object - defaults to {}
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
+ * @apiParam {String} [populate] Relational fields to populate
  * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 0(no limit)
  * @apiParam {Number} [skip]    Optional Record offset for pagination
  *
@@ -41,7 +42,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     .limit(req.query.limit || 0)
     .skip(req.query.skip || 0)
     .sort(req.query.sort || '_id')
-    .populate('inputs.datatype outputs.datatype')
+    //.populate('inputs.datatype outputs.datatype')
+    .populate(req.query.populate || '')
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);

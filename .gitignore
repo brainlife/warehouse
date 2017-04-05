@@ -7,3 +7,4 @@ ui/dist
 ui/npm-debug.log
 ui/yarn-error.log
 **/barn
+docker/config

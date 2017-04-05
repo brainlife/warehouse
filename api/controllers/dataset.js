@@ -72,7 +72,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 find
             ]
         })
-        .populate(req.query.populate || 'project datatype')
+        //.populate(req.query.populate || 'project datatype')
+        .populate(req.query.populate || '')
         .select(req.query.select)
         .limit(req.query.limit || 100)
         .skip(req.query.skip || 0)
@@ -237,28 +238,47 @@ router.get('/download/:id', jwt({
         db.Datasets.findById(id, function(err, dataset) {
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
+            if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
             logger.debug("user is accessing p", dataset.project);
             logger.debug("user has access to", project_ids);
             if(!~project_ids.indexOf(dataset.project.toString())) 
                 return res.status(404).json({message: "you don't have access to the project that the dataset belongs"});
             
-            logger.debug("commencing download");
+            
             //open stream
             var system = config.storage_systems[dataset.storage];
-            system.download(dataset, (err, readstream)=>{
+            var stat_timer = setTimeout(function() {
+                logger.debug("stat timer called");
+                next("filesystem maybe offline today");
+            }, 1000*3);
+            system.stat(dataset, (err, stats)=>{
+                clearTimeout(stat_timer);
+                logger.debug("post stats", err, stats);
                 if(err) return next(err);
-                
-                //file .. just stream using sftp stream
-                //npm-mime uses filename to guess mime type, so I can use this locally
-                //var mimetype = mime.lookup(fullpath);
-                //logger.debug("mimetype:"+mimetype);
 
-                //without attachment, the file will replace the current page
-                res.setHeader('Content-disposition', 'attachment; filename='+dataset._id+'.tar.gz');
-                //res.setHeader('Content-Length', stat.size);
-                //res.setHeader('Content-Type', mimetype);
-                readstream.pipe(res);             
+                system.download(dataset, (err, readstream)=>{
+                    if(err) return next(err);
+
+                    //file .. just stream using sftp stream
+                    //npm-mime uses filename to guess mime type, so I can use this locally
+                    //var mimetype = mime.lookup(fullpath);
+                    //logger.debug("mimetype:"+mimetype);
+
+                    //without attachment, the file will replace the current page
+                    res.setHeader('Content-disposition', 'attachment; filename='+dataset._id+'.tar.gz');
+                    res.setHeader('Content-Length', stats.size);
+                    //res.setHeader('Content-Type', mimetype); //TODO?
+                    logger.debug("commencing download");
+                    readstream.pipe(res);   
+                    readstream.on('error', err=>{
+                        logger.error("failed to pipe", err);
+                        //next(err); //this doen't really abort download and emit error message to the user..
+                    });
+                });
+                    
             });
+
+            //});
         });
     });
 });
