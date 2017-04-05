@@ -25,6 +25,14 @@ const mkdirp = require('mkdirp');
 exports.storage_systems = {
     //sshfs mount dc2 on /mnt/auto
     dc2: {
+        /*
+        //check to see if this storage system is up
+        check: cb=>{
+            var dir = "/mnt/auto/dc2/projects/brainlife/";
+            fs.access(dir, fs.constants.R_OK | fs.constancs_W_OK, cb);
+        },
+        */
+        
         //return archive_stream to pipe data to
         upload: (dataset, cb)=>{
             var dir = "/mnt/auto/dc2/projects/brainlife/s7-warehouse/datasets/"+dataset.project;
@@ -33,9 +41,16 @@ exports.storage_systems = {
                 cb(null, fs.createWriteStream(dir+'/'+dataset._id+'.tar.gz'));
             });
         },
+        stat: (dataset, cb)=>{
+            console.log("stat.!!!!!!!!!!!!!!!!");
+            var dir = "/mnt/auto/dc2/projects/brainlife/s7-warehouse/datasets/"+dataset.project;
+            console.log("checking stats", dir)
+            fs.stat(dir+'/'+dataset._id+'.tar.gz', cb);
+        },
         download: (dataset, cb)=>{
             var dir = "/mnt/auto/dc2/projects/brainlife/s7-warehouse/datasets/"+dataset.project;
-            cb(null, fs.createReadStream(dir+'/'+dataset._id+'.tar.gz'));
+            var stream = fs.createReadStream(dir+'/'+dataset._id+'.tar.gz');
+            cb(null, stream);
         }
     }
 }
