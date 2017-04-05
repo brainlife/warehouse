@@ -56,7 +56,7 @@
                 </tbody>
             </table>
 
-            <div class="ui segment">
+            <div class="ui segment" v-if="config.debug">
                 <div class="ui top attached label">Debug</div>
                 <br>
                 <br>
@@ -80,6 +80,8 @@ export default {
             
             //cache
             projects: null, //keyed by _id
+
+            config: Vue.config,
         }
     },
     mounted: function() {

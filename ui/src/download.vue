@@ -31,8 +31,8 @@
                 <el-alert v-if="error" type="error" title="Failed" 
                     :description="error" show-icon :closable="false"></el-alert>
 
-                <div v-if="active = 3">
-                    <el-button type="primary" class="animated bounceIn" size="large" click="download()" icon="document">Download (bids.tar.gz)</el-button>    
+                <div v-if="active == 3">
+                    <el-button type="primary" class="animated bounceIn" size="large" @click="download()" icon="document">Download (bids.tar.gz)</el-button>    
                 </div>
             </div>
 
@@ -196,8 +196,8 @@ export default {
                 if(task.name == "brainlife.download.bids") this.task_bids = task;
                 if(task.name == "brainlife.download.stage") this.task_stage = task;
             });
-            if(this.task_stage.status == "finished") return 3;
-            if(this.task_bids.status == "finished") return 2;
+            if(this.task_bids.status == "finished") return 3;
+            if(this.task_stage.status == "finished") return 2;
             return 1;
         },
     },
@@ -213,10 +213,11 @@ export default {
         },
 
         download: function() {
-            let url = Vue.config.wf_api+'/resource/download'+
+            var url = Vue.config.wf_api+'/resource/download'+
                 '?r='+this.task_bids.resource_id+
                 '&p='+encodeURIComponent(this.task_bids.instance_id+'/'+this.task_bids._id+'/download')+
                 '&at='+Vue.config.jwt;            
+            console.log(url);
             document.location = url;
         },
     },

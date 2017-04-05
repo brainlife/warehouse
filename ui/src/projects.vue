@@ -1,7 +1,7 @@
 <template>
 <div>
     <sidemenu active="/projects"></sidemenu>
-  <div class="ui pusher">
+    <div class="ui pusher">
         <div class="margin20">
             <button v-if="user" class="ui right floated primary button" @click="newproject()">
                 <i class="icon add"></i>

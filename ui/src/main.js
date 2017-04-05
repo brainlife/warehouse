@@ -69,7 +69,15 @@ Vue.http.options.root = Vue.config.api; //default root for $http
 
 //config derivatives
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
-if(Vue.config.jwt) Vue.config.user = jwt_decode(Vue.config.jwt);
+if(Vue.config.jwt) {
+    Vue.config.user = jwt_decode(Vue.config.jwt);
+    //Validate jwt - if not don't set to config.user
+} else {
+    //TODO I should do this only when user really need to login 
+    console.log("no jwt.. redirect to sign page");
+    localStorage.setItem('auth_redirect', document.location);
+    document.location = "/auth#!/signin";
+}
 Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
 router.beforeEach(function (to, from, next) {

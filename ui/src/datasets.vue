@@ -67,9 +67,7 @@
     </div><!--pusher-->
 
     <div class="selected-view" v-if="selected_count && datatypes" style="padding: 10px 5px 0px 5px;">
-        <h3 style="color: white;">
-            <button class="ui right floated mini button" @click="clear_selected()"> Clear </button>
-            <i class="checkmark box icon"></i> {{selected_count}} Selected
+        <h3 style="color: white;"><icon name="check"></icon> {{selected_count}} Selected
         </h3>
         <div class="ui segments">
             <div class="ui attached segment" v-for="(_datasets, did) in group_selected" v-if="datatypes[did]">
@@ -85,7 +83,10 @@
                 </div>
             </div>
         </div>
-        <button class="ui right floated tiny button" @click="download()"> <i class="download icon"></i> Download </button>
+        <el-button-group style="float: right;">
+            <el-button size="small" icon="delete" @click="clear_selected()">Clear Selection</el-button>
+            <el-button size="small" type="primary" icon="download" @click="download()"> <i class="download icon"></i> Download </el-button>
+        </el-button-group>
     </div>
 </div>
 </template>

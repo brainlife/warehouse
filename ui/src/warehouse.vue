@@ -52,4 +52,7 @@ pre {
 code.hljs {
     font-size: 80%;
 }
+.off-sidemenu {
+    margin-left: 210px;
+}
 </style>

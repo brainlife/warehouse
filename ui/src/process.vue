@@ -13,18 +13,13 @@
                 <i class="archive icon"></i> See Archived
             </button>
             <button class="ui button right floated" @click="remove()">
-                <i class="trash icon"></i> Remove
+                <i class="trash icon"></i> Remove Process
             </button>
 
             <h1><i class="send icon"></i> {{instance.desc}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
 
             <div class="ui segment" v-if="app && instance.status == 'finished'">
                 <div class="ui top attached label">Outputs</div>
-                <!--
-                <div v-for="output in app.outputs">
-                    <file v-for="file in output.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
-                </div>
-                -->
                 <el-table :data="app.outputs" style="width: 100%" default-expand-all>
                     <el-table-column type="expand">
                         <template scope="props">
@@ -52,18 +47,18 @@
                 </el-table>
             </div>
 
-            <div class="ui segment">
+            <div class="ui segment" v-if="tasks">
                 <div class="ui top attached label">Task Statuses</div>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
             </div>
 
-            <div class="ui segment">
+            <div class="ui segment" v-if="app">
                 <div class="ui top attached label">Application</div>
                 <h3>{{app.name}}</h3>
                 <p>{{app.desc}}</p>
             </div>
 
-            <div class="ui segment">
+            <div class="ui segment" v-if="app">
                 <div class="ui top attached label">Inputs</div>
                 <!--
                 <br>

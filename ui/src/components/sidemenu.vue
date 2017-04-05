@@ -1,6 +1,5 @@
 <template>
-<div class="ui left fixed inverted vertical menu">
-
+<div class="brainlife-menu">
     <div class="item title">
         Brain Life <i class="smile icon"></i>
     </div>
@@ -24,7 +23,9 @@
                 <el-menu-item index="1-4-1">item one</el-menu-item>
             </el-submenu>
         </el-submenu>
-        <el-menu-item index="/settings"><icon name="cog"></icon>Settings</el-menu-item>
+        <el-menu-item class="bottom" index="/settings" @click="open_settings()">
+            <icon name="cog"></icon>Settings
+        </el-menu-item>
     </el-menu>
 
     <!--
@@ -78,21 +79,29 @@ export default {
     methods: {
         get_active: function() {
             return "1";
+        },
+
+        open_settings: function() {
+            window.open("/auth/#!/settings/account", "_blank");
         }
     }
 }
 </script>
 
 <style scoped>
-.ui.menu .item.title {
+.brainlife-menu {
+position: fixed;
+top: 0px;
+left: 0px;
+width: 210px;
+bottom: 0px;
+background-color: black;
+}
+.item.title {
 background-color: #489fdf;
 font-weight: bold;
 padding: 20px;
-}
-.ui.inverted.menu .item.active:hover,
-.ui.inverted.menu .item.active {
-background-color: #f0f0f0;
-color: black !important;
+color: white;
 }
 .el-menu svg {
 margin-right: 10px;
@@ -101,5 +110,13 @@ top: 3px;
 }
 .el-menu {
 background-color: inherit;
+}
+.el-menu-item.is-active {
+background-color: #f0f0f0;
+}
+.el-menu .bottom {
+position: fixed;
+bottom: 0px;
+width: 210px;
 }
 </style>

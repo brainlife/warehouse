@@ -119,7 +119,7 @@
             <div class="ui segments">
                 <div class="ui segment">
                     <h3>App</h3>
-                    <pre v-highlightjs><code class="json hljs">{{app}}</code></pre>
+                    <pre v-highlightjs="app"><code class="json hljs"></code></pre>
                 </div>
             </div>
         </div>

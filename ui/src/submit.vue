@@ -124,7 +124,7 @@ export default {
             app: null,
             resource: null,
 
-            project_id: "", //to be selected by the user
+            project_id: localStorage.getItem("last_projectid_used")||"", 
 
             //cache
             datasets: {}, //available datasets grouped by input._id
@@ -277,6 +277,7 @@ export default {
                 return this.request_notifications(instance, inst_config.main_task_id);
             }).then(res=>{
                 //all good!
+                localStorage.setItem("last_projectid_used", this.project_id);
                 this.go('/process/'+instance._id);
             }).catch(function(err) {
                 console.error(err);
