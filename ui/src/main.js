@@ -43,56 +43,34 @@ Vue.use(require('vue-filter'))
 // config
 // TODO - find a way to put these somewhere under /config
 //
-Vue.config.debug = true;
-//Vue.config.productionTip = false //what is this?
+var apihost = "https://brain-life.org/";
+var apihost_ws = "wss://brain-life.org/";
 
-Vue.config.api = "https://soichi7.ppa.iu.edu/api/warehouse";
-Vue.config.wf_api = "https://soichi7.ppa.iu.edu/api/wf";
-Vue.config.auth_api = "https://soichi7.ppa.iu.edu/api/auth";
-Vue.config.event_api = "https://soichi7.ppa.iu.edu/api/event";
-Vue.config.event_ws = "wss://soichi7.ppa.iu.edu/api/event";
+switch(process.env.NODE_ENV) {
+case "development": 
+    var apihost = "https://soichi7.ppa.iu.edu/";
+    var apihost_ws = "wss://soichi7.ppa.iu.edu/";
+    Vue.config.debug = true;
+    break;
+case "production":
+    console.log("running in production mode");
+    break;
+}
+
+Vue.config.api = apihost+"/api/warehouse";
+Vue.config.wf_api = apihost+"/api/wf";
+Vue.config.auth_api = apihost+"/api/auth";
+Vue.config.event_api = apihost+"/api/event";
+Vue.config.event_ws = apihost_ws+"/api/event";
 
 Vue.http.options.root = Vue.config.api; //default root for $http
 
-//
-//
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 //config derivatives
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
 if(Vue.config.jwt) Vue.config.user = jwt_decode(Vue.config.jwt);
 Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
-
-//directives
-
-/*
-//https://www.metachris.com/2017/02/vuejs-syntax-highlighting-with-highlightjs/
-Vue.directive('highlightjs', {
-  deep: true,
-  bind: function (el, binding) {
-    // on first bind, highlight all targets
-    let targets = el.querySelectorAll('code')
-    targets.forEach((target) => {
-      // if a value is directly assigned to the directive, use this
-      // instead of the element content.
-      if (binding.value) {
-        target.innerHTML = binding.value
-      }
-      hljs.highlightBlock(target)
-    })
-  },
-  componentUpdated: function (el, binding) {
-    // after an update, re-fill the content and then highlight
-    let targets = el.querySelectorAll('code')
-    targets.forEach((target) => {
-      if (binding.value) {
-        target.innerHTML = binding.value
-        hljs.highlightBlock(target)
-      }
-    })
-  }
-})
-*/
 
 router.beforeEach(function (to, from, next) {
     window.scrollTo(0, 0)
