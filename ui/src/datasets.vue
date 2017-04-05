@@ -38,13 +38,13 @@
                         </div>
                     </td>
                     <td>
-                        {{dataset.datatype.name}}
+                        {{datatypes[dataset.datatype].name}}
                         <tags :tags="dataset.datatype_tags"></tags>
                     </td>
                     <td>
-                        <div class="ui green horizontal label" v-if="dataset.project.access == 'public'">Public</div>
-                        <div class="ui red horizontal label" v-if="dataset.project.access == 'private'">Private</div>
-                        {{dataset.project.name}}
+                        <div class="ui green horizontal label" v-if="projects[dataset.project].access == 'public'">Public</div>
+                        <div class="ui red horizontal label" v-if="projects[dataset.project].access == 'private'">Private</div>
+                        {{projects[dataset.project].name}}
                     </td>
                     <td>
                         <div v-if="dataset.meta && dataset.meta.subject">{{dataset.meta.subject}}</div>
@@ -66,15 +66,15 @@
         </div><!--page-content-->
     </div><!--pusher-->
 
-    <div class="selected-view" v-if="selected_count" style="padding: 10px 5px 0px 5px;">
+    <div class="selected-view" v-if="selected_count && datatypes" style="padding: 10px 5px 0px 5px;">
         <h3 style="color: white;">
             <button class="ui right floated mini button" @click="clear_selected()"> Clear </button>
             <i class="checkmark box icon"></i> {{selected_count}} Selected
         </h3>
         <div class="ui segments">
-            <div class="ui attached segment" v-for="(datasets, did) in group_selected" v-if="datatypes[did]">
+            <div class="ui attached segment" v-for="(_datasets, did) in group_selected" v-if="datatypes[did]">
                 <h5>{{datatypes[did].name}}</h5>
-                <div class="selected-item" v-for="(dataset, id) in datasets" @click="go('/dataset/'+id)">
+                <div class="selected-item" v-for="(dataset, id) in _datasets" @click="go('/dataset/'+id)">
                     <p>
                         <i class="trash icon right floated" @click.stop="remove_selected(dataset)"></i>
                         <small>
@@ -106,8 +106,9 @@ export default {
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             query: "",
 
-            datatypes: {}, //catalog of datatypes from dataset.datatype 
-
+            //cache
+            datatypes: null,
+            projects: null, 
         }
     },
 
@@ -141,7 +142,7 @@ export default {
             var groups = {};
             for(var id in this.selected) {
                 var selected = this.selected[id];
-                var did = selected.datatype._id;
+                var did = selected.datatype;
                 if(groups[did] === undefined) groups[did] = {};
                 groups[did][id] = selected;
             }
@@ -150,13 +151,33 @@ export default {
     },
 
     mounted: function() {
-        this.$http.get('dataset', {params: {
-            find: JSON.stringify({$or: [
-                {removed: {$exists: false}},
-                {removed: false},
-            ]}),
-            select: 'datatype datatype_tags project create_date name desc tags meta',
+        this.$http.get('project', {params: {
+            //service: "_upload",
         }})
+        .then(res=>{
+            this.projects = {};
+            res.body.projects.forEach((p)=>{
+                this.projects[p._id] = p;
+            });
+
+            return this.$http.get('datatype', {params: {
+                //service: "_upload",
+            }})
+        })
+        .then(res=>{
+            this.datatypes = {};
+            res.body.datatypes.forEach((d)=>{
+                this.datatypes[d._id] = d;
+            });
+
+            return this.$http.get('dataset', {params: {
+                find: JSON.stringify({$or: [
+                    {removed: {$exists: false}},
+                    {removed: false},
+                ]}),
+                select: 'datatype datatype_tags project create_date name desc tags meta',
+            }})
+        })
         .then(res=>{
             this.datasets = res.body.datasets;
             /*
@@ -165,12 +186,12 @@ export default {
                 $(this.$el).find('.ui.dropdown').dropdown()
             });
             */
-
+            /*
             this.datasets.forEach(dataset=>{
                 this.datatypes[dataset.datatype._id] = dataset.datatype;
             });
-            
-            //datatypes 
+            */
+            //console.dir(this.datasets);
         }, res=>{
             console.error(res);
         });
@@ -251,7 +272,7 @@ export default {
                 var symlink = [];
                 for(var dataset_id in this.selected) {
                     var dataset = this.selected[dataset_id]; 
-                    var datatype = dataset.datatype; 
+                    var datatype = this.datatypes[dataset.datatype];
                     var datatype_tags = dataset.datatype_tags;
 
                     var subject = null;
@@ -266,7 +287,7 @@ export default {
                         datatype.files.forEach(file=>{
                             symlink.push({
                                 src: download_path+"/"+file.filename,
-                                dest: "derivatives/someprocess/"+subject+"/anat/"+subject+"_"+file.filename,
+                                dest: "download/derivatives/someprocess/"+subject+"/anat/"+subject+"_"+file.filename,
                             });
                         });
                         break;
@@ -275,7 +296,7 @@ export default {
                         datatype.files.forEach(file=>{
                             symlink.push({
                                 src: download_path+"/"+file.filename,
-                                dest: "derivatives/someprocess/"+subject+"/dwi/"+subject+"_b-XXXX_"+file.filename,
+                                dest: "download/derivatives/someprocess/"+subject+"/dwi/"+subject+"_b-XXXX_"+file.filename,
                             });
                         });
                         break;

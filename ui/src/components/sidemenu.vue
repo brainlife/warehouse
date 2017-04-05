@@ -4,7 +4,7 @@
     <div class="item title">
         Brain Life <i class="smile icon"></i>
     </div>
-    <el-menu router="true" :default-active="active" theme="dark">
+    <el-menu :router="true" :default-active="active" theme="dark">
         <el-menu-item index="/"><icon name="tachometer"></icon>Dashboard</el-menu-item>
         <el-menu-item index="/datasets"><icon name="cubes"></icon>Dataset</el-menu-item>
         <el-menu-item index="/processes"><icon name="paper-plane"></icon>Process</el-menu-item>

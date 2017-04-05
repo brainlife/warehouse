@@ -1,23 +1,26 @@
 <template>
-<div class="ui list" v-if="files">
-    <div class="ui icon mini basic buttons" style="margin-bottom: 10px;">
-        <button v-if="files.length != 0" class="ui button" @click="download()"><i class="download icon"></i></button>
-        <button class="ui button" @click="load()"> <i class="refresh icon"></i></button>
-    </div>
-    <div class="item" v-for="file in files" key="file.filename">
-    <!--<div class="ui right floated">something</div>-->
-        <div class="fileitem" @click="click(file)">
-            <i class="file outline icon" v-if="!file.directory"></i>
-            <i class="folder icon" v-if="file.directory"></i>
-            {{file.filename}}
+<div>
+    <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
+    <div class="ui list" v-if="files">
+        <div class="ui icon mini basic buttons" style="margin-bottom: 10px;">
+            <button v-if="files.length != 0" class="ui button" @click="download()"><i class="download icon"></i></button>
+            <button class="ui button" @click="load()"> <i class="refresh icon"></i></button>
         </div>
-        <div class="content" style="margin-left: 20px;" v-if="file.open">
-            <filebrowser :task="task" :path="fullpath+'/'+file.filename"></filebrowser>
+        <div class="item" v-for="file in files" key="file.filename">
+        <!--<div class="ui right floated">something</div>-->
+            <div class="fileitem" @click="click(file)">
+                <i class="file outline icon" v-if="!file.directory"></i>
+                <i class="folder icon" v-if="file.directory"></i>
+                {{file.filename}}
+            </div>
+            <div class="content" style="margin-left: 20px;" v-if="file.open">
+                <filebrowser :task="task" :path="fullpath+'/'+file.filename"></filebrowser>
+            </div>
+            <pre v-if="file.content" v-highlightjs="file.content" style="padding-left: 20px; margin: 0px"><code :class="file.type"></code></pre>
         </div>
-        <pre v-if="file.content" v-highlightjs="file.content" style="padding-left: 20px; margin: 0px"><code :class="file.type"></code></pre>
+        <!--<p v-if="loading" class="ui mini compact message">Loading ...</p>-->
+        <p v-if="files.length == 0" class="ui mini compact message">Empty</p>
     </div>
-    <!--<p v-if="loading" class="ui mini compact message">Loading ...</p>-->
-    <p v-if="files.length == 0" class="ui mini compact message">Empty</p>
 </div>
 </template>
 
@@ -30,6 +33,7 @@ export default {
         return {
             fullpath: null,
             files: null,
+            error: null,
         }
     },
 
@@ -49,13 +53,6 @@ export default {
     },
     
     methods: {
-        /*
-        tran_enter: function(el) {
-            console.dir(el);
-            $(el).slideDown('slow');
-        },
-        */
-
         get_download_url: function(file) {
             var p = this.fullpath;
             if(file) p+='/'+file.filename;
@@ -65,6 +62,7 @@ export default {
                 '&at='+Vue.config.jwt;
             return url;
         },
+
         download: function() {
             console.log("downloading",url);
             var url = this.get_download_url();
@@ -76,6 +74,7 @@ export default {
                 this.files = res.body.files;
             }).catch(err=>{
                 console.error(err);
+                this.error = err.body.message || err.statusText;
             })
         },
 
@@ -90,7 +89,7 @@ export default {
             //for small files, download content and display
             else {
                 this.$http.get(url).then(res=>{
-                    console.dir(res);
+                    //console.dir(res);
 
                     //set file type (TODO - can't highlight.js do this?)
                     //Vue.set(file, 'type', res.bodyBlob.type);

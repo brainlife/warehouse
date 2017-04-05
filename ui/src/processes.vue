@@ -16,7 +16,7 @@
                     <tr>
                         <th style="min-width: 180px">Create Date</th>
                         <th style="min-width: 200px">Project</th>
-                        <th style="min-width: 200px">Name</th>
+                        <th style="min-width: 200px">Application</th>
                         <th style="min-width: 200px">Description</th>
                         <th style="min-width: 120px">Status</th>
                         <th style="min-width: 120px">Archived</th>
@@ -30,7 +30,8 @@
                             <div class="ui red horizontal label" v-if="projects[instance.config.project].access == 'private'">Private</div>
                             {{projects[instance.config.project].name}} 
                         </td>
-                        <td> {{instance.name}} </td>
+                        <!--<td> {{instance.name}} </td>-->
+                        <td> {{instance.config.main_task_id}} (todo.. show real name) </td>
                         <td> {{instance.desc}} </td>
                         <td>
                           <div class="ui label yellow" v-if="instance.status == 'removed'">

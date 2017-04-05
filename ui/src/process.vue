@@ -16,8 +16,7 @@
                 <i class="trash icon"></i> Remove
             </button>
 
-            <h1><i class="send icon"></i> {{instance.name}}</h1>
-            <p>{{instance.desc}}</p>
+            <h1><i class="send icon"></i> {{instance.desc}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
 
             <div class="ui segment" v-if="app && instance.status == 'finished'">
                 <div class="ui top attached label">Outputs</div>
@@ -26,7 +25,7 @@
                     <file v-for="file in output.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
                 </div>
                 -->
-                <el-table :data="app.outputs" style="width: 100%">
+                <el-table :data="app.outputs" style="width: 100%" default-expand-all>
                     <el-table-column type="expand">
                         <template scope="props">
                             <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
@@ -35,6 +34,7 @@
                     <el-table-column prop="id" label="ID" width="180"></el-table-column>
                     <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
                     <el-table-column prop="datatype.desc" label="Description"></el-table-column>
+                    <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
                     <!--
                     <el-table-column label="Files">
                         <template scope="props">
@@ -58,7 +58,14 @@
             </div>
 
             <div class="ui segment">
+                <div class="ui top attached label">Application</div>
+                <h3>{{app.name}}</h3>
+                <p>{{app.desc}}</p>
+            </div>
+
+            <div class="ui segment">
                 <div class="ui top attached label">Inputs</div>
+                <!--
                 <br>
                 <div class="ui segments" v-for="dep in instance.config.prov.deps">
                     <h5 class="ui top attached header">
@@ -70,6 +77,19 @@
                         <metadata :metadata="dep._dataset.meta"></metadata>
                     </div>
                 </div>
+                -->
+                <el-table :data="app.inputs" style="width: 100%">
+                    <el-table-column type="expand">
+                        <template scope="props">
+                            <file v-for="file in props.row.datatype.files" 
+                                key="file.filename" :file="file" :task="main_task"></file>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
+                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
+                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
+                    <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
+                </el-table>
             </div>
 
             <div class="ui segment">
@@ -141,20 +161,24 @@ export default {
             //populate: 'config.project datatype instance.config.prov.deps.dataset',
         }})
         .then(res=>{
-          this.instance = res.body.instances[0];
+            this.instance = res.body.instances[0];
 
-          //load tasks
-          return this.$http.get(Vue.config.wf_api+'/task', {params: {
-              find: JSON.stringify({instance_id: this.instance._id})
-          }})
+            //load tasks
+            return this.$http.get(Vue.config.wf_api+'/task', {params: {
+                find: JSON.stringify({
+                    instance_id: this.instance._id,
+                    //name: {$ne: "brainlife.novnc"},
+                })
+            }})
         })
         .then(res=>{
-          this.tasks = res.body.tasks;
+            this.tasks = res.body.tasks;
 
-          //load app
-          return this.$http.get('app', {params: {
-              find: JSON.stringify({_id: this.instance.config.prov.app})
-          }})
+            //load app
+            return this.$http.get('app', {params: {
+                find: JSON.stringify({_id: this.instance.config.prov.app}),
+                populate: 'inputs.datatype outputs.datatype',
+            }})
         })
         .then(res=>{
             this.app = res.body.apps[0];

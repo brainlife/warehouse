@@ -46,4 +46,10 @@ pre {
     box-shadow: 2px 2px 3px #ccc;
     border-radius: 2px;
 }
+.text-muted {
+    opacity: 0.6;
+}
+code.hljs {
+    font-size: 80%;
+}
 </style>
