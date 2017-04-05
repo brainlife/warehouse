@@ -35,7 +35,7 @@ export default {
             document.location = url;
         },
         view: function() {
-            window.open("#/view/"+this.task.instance_id+"/"+this.task._id+"/", "", "width=1400,height=900,resizable=no,menubar=no"); 
+            window.open("#/view/"+this.task.instance_id+"/"+this.task._id+"/", "", "width=1450,height=900,resizable=no,menubar=no"); 
         }
     },
 }

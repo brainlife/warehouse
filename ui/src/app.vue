@@ -155,17 +155,16 @@ export default {
     },
 
     mounted: function() {
-        //console.log("looking for ", this.$route.params.id);
         this.$http.get('app', {params: {
-            find: JSON.stringify({_id: this.$route.params.id})
+            find: JSON.stringify({_id: this.$route.params.id}),
+            populate: 'inputs.datatype outputs.datatype',
         }})
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
 
+            //load datasets that this app could use..
             var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
-
-            //find datasets (TODO - make this smarter..)
             return this.$http.get('dataset', {params: {
                 find: JSON.stringify({datatype: {$in: datatype_ids}})
             }})
@@ -261,11 +260,9 @@ export default {
 
                 //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
 
-                //Now submit the app (TODO - generate UI and config automatically)
-                var config = {
-                    //"coords": [ [ 0, 0, 0 ], [ 0, -16, 0 ], [ 0, -8, 40 ] ],
-                };
-                //TODO - for now, let's just load some default config
+                //constract config
+                //TODO - this is currently very primitive.. but it will do
+                var config = {}
                 for(var k in this.app.config) {
                     var spec = this.app.config[k];
                     config[k] = spec.default;
@@ -275,10 +272,11 @@ export default {
                         config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+(file.filename||file.dirname);
                     });
                 });
+                prov.config = config; //store main_task config inside provenance
                 console.log("generated config");
                 console.dir(config);
 
-                prov.config = config; //store main_task config inside provenance
+                //Now submit the app
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
                     name: this.app.name,

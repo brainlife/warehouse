@@ -16,8 +16,7 @@
                 <i class="trash icon"></i> Remove
             </button>
 
-            <h1><i class="send icon"></i> {{instance.name}}</h1>
-            <p>{{instance.desc}}</p>
+            <h1><i class="send icon"></i> {{instance.desc}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
 
             <div class="ui segment" v-if="app && instance.status == 'finished'">
                 <div class="ui top attached label">Outputs</div>
@@ -26,7 +25,7 @@
                     <file v-for="file in output.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
                 </div>
                 -->
-                <el-table :data="app.outputs" style="width: 100%">
+                <el-table :data="app.outputs" style="width: 100%" default-expand-all>
                     <el-table-column type="expand">
                         <template scope="props">
                             <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
@@ -56,6 +55,12 @@
             <div class="ui segment">
                 <div class="ui top attached label">Task Statuses</div>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
+            </div>
+
+            <div class="ui segment">
+                <div class="ui top attached label">Application</div>
+                <h3>{{app.name}}</h3>
+                <p>{{app.desc}}</p>
             </div>
 
             <div class="ui segment">
@@ -167,12 +172,13 @@ export default {
             }})
         })
         .then(res=>{
-          this.tasks = res.body.tasks;
+            this.tasks = res.body.tasks;
 
-          //load app
-          return this.$http.get('app', {params: {
-              find: JSON.stringify({_id: this.instance.config.prov.app})
-          }})
+            //load app
+            return this.$http.get('app', {params: {
+                find: JSON.stringify({_id: this.instance.config.prov.app}),
+                populate: 'inputs.datatype outputs.datatype',
+            }})
         })
         .then(res=>{
             this.app = res.body.apps[0];

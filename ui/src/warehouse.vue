@@ -49,4 +49,7 @@ pre {
 .text-muted {
     opacity: 0.6;
 }
+code.hljs {
+    font-size: 80%;
+}
 </style>

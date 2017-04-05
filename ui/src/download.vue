@@ -21,7 +21,7 @@
                 <h1><i class="send icon"></i> Download</h1>
                 <p>Requested At <b><time>{{instance.create_date|date}}</time></b></p>
 
-                <el-steps :space="200" :active="get_active()">
+                <el-steps :space="200" :active="active">
                     <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
                     <el-step title="Organize" description="Organizing data in BIDS format"></el-step>
                     <el-step title="Download" description="Ready to download your computer"></el-step>
@@ -30,6 +30,10 @@
                 <br>
                 <el-alert v-if="error" type="error" title="Failed" 
                     :description="error" show-icon :closable="false"></el-alert>
+
+                <div v-if="active = 3">
+                    <el-button type="primary" class="animated bounceIn" size="large" click="download()" icon="document">Download (bids.tar.gz)</el-button>    
+                </div>
             </div>
 
             <!--
@@ -113,7 +117,11 @@ export default {
         return {
             instance: null,
             tasks: null,
+            task_bids: null,
+            task_stage: null,
+
             error: null,
+            status: "loading",
         }
     },
 
@@ -180,31 +188,36 @@ export default {
     },
 
     computed: {
-    },
-    methods: {
-
-        go: function(path) {
-            this.$router.push(path);
-        },
-
-        get_active: function() {
-            var task_bids = null;
-            var task_stage = null;
+        active: function() {
             this.tasks.forEach((task)=>{
                 if(task.status == "failed") {
                     this.error = task.status_msg;
                 }
-                if(task.name == "brainlife.download.bids") task_bids = task;
-                if(task.name == "brainlife.download.stage") task_stage = task;
+                if(task.name == "brainlife.download.bids") this.task_bids = task;
+                if(task.name == "brainlife.download.stage") this.task_stage = task;
             });
-            if(task_stage.status == "finished") return 2;
-            if(task_bids.status == "finished") return 1;
-            return 0;
+            if(this.task_stage.status == "finished") return 3;
+            if(this.task_bids.status == "finished") return 2;
+            return 1;
         },
+    },
+    methods: {
+        go: function(path) {
+            this.$router.push(path);
+        },
+
         remove: function() {
             this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
                 this.$router.push('/processes');
             });
+        },
+
+        download: function() {
+            let url = Vue.config.wf_api+'/resource/download'+
+                '?r='+this.task_bids.resource_id+
+                '&p='+encodeURIComponent(this.task_bids.instance_id+'/'+this.task_bids._id+'/download')+
+                '&at='+Vue.config.jwt;            
+            document.location = url;
         },
     },
 }

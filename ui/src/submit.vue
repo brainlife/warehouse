@@ -36,7 +36,7 @@
                     </div>
                     -->
 
-                    <div class="ui primary button" @click="submitapp()">Submit</div>
+                    <div class="ui primary button" @click="submit()">Submit</div>
                 </div>
             </div>
 
@@ -44,7 +44,11 @@
             <div class="ui segments">
                 <div class="ui segment">
                     <h3>App</h3>
-                    <pre v-highlightjs><code class="json hljs">{{app}}</code></pre>
+                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+                </div>
+                <div class="ui segment">
+                    <h3>Datasets</h3>
+                    <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
                 </div>
             </div>
         </div>
@@ -134,25 +138,25 @@ export default {
     mounted: function() {
         //console.log("looking for ", this.$route.params.id);
         this.$http.get('app', {params: {
-            find: JSON.stringify({_id: this.$route.params.id})
+            find: JSON.stringify({_id: this.$route.params.id}),
+            populate: 'inputs.datatype outputs.datatype',
         }})
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
 
+            //load datasets that this app cares about
             var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
-
-            //find datasets (TODO - make this smarter..)
             return this.$http.get('dataset', {params: {
                 find: JSON.stringify({datatype: {$in: datatype_ids}})
             }})
         })
         .then(res=>{
             this.app.inputs.forEach((input)=>{
-                //console.log("looking for ", input.datatype.name);
-                //console.log("input tags", input.datatype_tags);
+                console.dir(input);
                 Vue.set(this.datasets, input.id, res.body.datasets.filter(dataset=>{
-                    if(dataset.datatype._id != input.datatype._id) return false;
+                    console.dir(dataset);
+                    if(dataset.datatype != input.datatype._id) return false;
 
                     var match = true;
                     //see if all required tags exists
@@ -205,7 +209,7 @@ export default {
           })
         },
 
-        submitapp: function() {
+        submit: function() {
             var instance = null;
 
             var inst_config = {
@@ -238,7 +242,9 @@ export default {
                         dir: "inputs/"+input.id,
                     });
                 });
+
                 //now submit task to download data from archive
+                console.log("submitting download task", download);
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
                     name: "Stage Input",

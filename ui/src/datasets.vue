@@ -272,7 +272,7 @@ export default {
                 var symlink = [];
                 for(var dataset_id in this.selected) {
                     var dataset = this.selected[dataset_id]; 
-                    var datatype = dataset.datatype; 
+                    var datatype = this.datatypes[dataset.datatype];
                     var datatype_tags = dataset.datatype_tags;
 
                     var subject = null;
@@ -287,7 +287,7 @@ export default {
                         datatype.files.forEach(file=>{
                             symlink.push({
                                 src: download_path+"/"+file.filename,
-                                dest: "derivatives/someprocess/"+subject+"/anat/"+subject+"_"+file.filename,
+                                dest: "download/derivatives/someprocess/"+subject+"/anat/"+subject+"_"+file.filename,
                             });
                         });
                         break;
@@ -296,7 +296,7 @@ export default {
                         datatype.files.forEach(file=>{
                             symlink.push({
                                 src: download_path+"/"+file.filename,
-                                dest: "derivatives/someprocess/"+subject+"/dwi/"+subject+"_b-XXXX_"+file.filename,
+                                dest: "download/derivatives/someprocess/"+subject+"/dwi/"+subject+"_b-XXXX_"+file.filename,
                             });
                         });
                         break;

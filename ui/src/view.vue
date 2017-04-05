@@ -1,7 +1,7 @@
 <template>
 <div>
     {{status}}
-    {{novnc_task}}
+    <!--<pre>{{novnc_task}}</pre>-->
 </div>
 </template>
 
@@ -26,16 +26,16 @@ export default {
     },
 
     mounted: function() {
-        console.log("view mounted", this.$route);
-        this.get_instance_singleton("novnc").then(function(instance) {
-            //var instanceid = this.$route.params.instanceid;
+        this.get_instance_singleton("novnc").then((instance)=>{
+            console.log("using instance", instance);
             this.subscribe_ws(instance._id);
 
-            //look for novnc task running for specified instance
+            var task_name = "brainlife.novnc."+this.$route.params.instanceid+"."+this.$route.params.taskid;
+            //look for novnc task running for specified instance/task
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({
                     instance_id: instance._id,
-                    name: "brainlife.novnc",
+                    name: task_name,
                 })
             }})
             .then(res=>{
@@ -43,20 +43,20 @@ export default {
                     //submit novnc service for the first time!
                     this.$http.post(Vue.config.wf_api+'/task', {
                         instance_id: instance._id,
-                        name: "brainlife.novnc",
+                        name: task_name,
                         service: "soichih/abcd-novnc",
                         config: {
-                            "input_instance_id": this.$route.instanceid,
-                            "input_task_id": this.$route.taskid,
+                            "input_instance_id": this.$route.params.instanceid,
+                            "input_task_id": this.$route.params.taskid,
                             "container": "soichih/vncserver-fsl"
                         },
-                        deps: [ this.$route.taskid ], //just in case..
+                        deps: [ this.$route.params.taskid ], //just in case..
                     })
                     .then(res=>{
                         this.novnc_task = res.body.task;
                     });
                 } else {
-                    //already running..
+                    //already submitted..
                     this.novnc_task = res.body.tasks[0];
                     this.check_status();
                 }
@@ -77,10 +77,12 @@ export default {
             this.status = "unknown";
             switch(this.novnc_task.status) {
             case "running": 
+                //TODO .. relying on status_msg is ugly.. come up with a better way
                 if(this.novnc_task.status_msg == "starting") {
                     this.status = "starting"; //special token set by status.sh
-                } else {
+                } else if(this.novnc_task.status_msg.trim().indexOf("http") === 0) {
                     this.status = "running";
+                    console.log("jump to ", this.novnc_task.status_msg);
                     document.location = this.novnc_task.status_msg;
                 } 
                 break;
@@ -93,26 +95,25 @@ export default {
 
         get_instance_singleton: function() {
             return new Promise((resolve, reject) => {
+                console.log("querying instance");
                 this.$http.get(Vue.config.wf_api+'/instance', {params: {
                     find: JSON.stringify({
                         name: "brainlife.novnc",
                     })
                 }})
                 .then(res=>{
-                    if(res.instances.length == 0) {
+                    console.log(res);
+                    if(res.body.instances.length == 0) {
                         //need to submit new instance
-                        this.$http.post(Vue.config.wf_api+'/instance', {params: {
-                            find: JSON.stringify({
-                                name: "brainlife.novnc",
-                            })
-                        }})
+                        this.$http.post(Vue.config.wf_api+'/instance', {
+                            name: "brainlife.novnc",
+                        })
                         .then(res=>{
-                            console.log("created instance");
-                            resolve(res.body.instance);
+                            console.log("created instance", res.body);
+                            resolve(res.body);
                         });
                     } else {
-                        console.log("using instance");
-                        resolve(res.instances[0]);
+                        resolve(res.body.instances[0]);
                     }
                 }).catch(reject); 
             });
@@ -144,7 +145,7 @@ export default {
                 if(!msg || !msg._id) return; //odd..
                 switch(event.dinfo.exchange) {
                 case "wf.task":
-                    if(msg.name == "brainlife.novnc") {
+                    if(~msg.name.indexOf("brainlife.novnc")) {
                         this.novnc_task = msg;
                         this.check_status();
                     }
