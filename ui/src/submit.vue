@@ -7,9 +7,12 @@
             <img style="float: left; margin-right: 20px;" :src="app.avatar">
             <h2>{{app.name}}</h2>
             <p>{{app.desc}}</p>
+            <br clear="both">
 
-            <div class="ui segment">
-                <div class="ui top attached label">Submit Process</div>
+            <el-card class="box-card">
+                <div slot="header">
+                    <span>Submit Form</span>
+                </div>
                 <div class="ui form">
                     <div class="field">
                         <label>Project</label>
@@ -38,7 +41,7 @@
 
                     <div class="ui primary button" @click="submit()">Submit</div>
                 </div>
-            </div>
+            </el-card>
 
             <h2>Debug</h2>
             <div class="ui segments">
@@ -215,7 +218,7 @@ export default {
             var inst_config = {
                 brainlife: true,
                 project: this.project_id,
-                main_task_id: null,
+                main_task_id: null, //will be set once submitted
                 prov: {
                     app: this.app._id,
                     deps: this.app.inputs.map(input=>{

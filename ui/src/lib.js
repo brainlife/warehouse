@@ -1,7 +1,6 @@
 
 //pick apps that dataset can be used as input - based on its datatype_id and _tags
 function filter_apps(dataset, apps) {
-    console.log("filter_apps");
     //TODO - maybe I should move this filtering logic to server
     return apps.filter((app)=> {
         var has_matching_input = false;

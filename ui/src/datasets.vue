@@ -21,7 +21,7 @@
                     <th style="width: 25px; background-color: #f0f0f0; box-shadow: -1px -1px 0 1px #f0f0f0;"></th>
                     <th>Data Type</th>
                     <th>Project</th>
-                    <th>Subject</th><!-- TODO list of metadata are different for each datatype -->
+                    <th>Metadata</th>
                     <th>Name/Desc</th>
                     <th>Tags</th>
                     <th style="min-width: 150px;">Create Date</th>
@@ -47,7 +47,7 @@
                         {{projects[dataset.project].name}}
                     </td>
                     <td>
-                        <div v-if="dataset.meta && dataset.meta.subject">{{dataset.meta.subject}}</div>
+                        <metadata v-if="dataset.meta" :metadata="dataset.meta"></metadata>
                     </td>
                     <td>
                         <b>{{dataset.name}}</b><br>
@@ -95,12 +95,13 @@
 import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import tags from '@/components/tags'
+import metadata from '@/components/metadata'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
     name: 'datasets',
-    components: { sidemenu, tags },
+    components: { sidemenu, tags, metadata },
     data () {
         return {
             datasets: [],

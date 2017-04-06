@@ -55,4 +55,7 @@ code.hljs {
 .off-sidemenu {
     margin-left: 210px;
 }
+.el-card__header {
+    background-color: #EFF2F7;
+}
 </style>
