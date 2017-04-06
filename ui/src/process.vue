@@ -18,61 +18,55 @@
 
             <h1><i class="send icon"></i> {{instance.desc}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
 
-            <div class="ui segment" v-if="app && instance.status == 'finished'">
-                <div class="ui top attached label">Outputs</div>
+            <el-card class="box-card" v-if="app && instance.status == 'finished'">
+                <div slot="header"> <span>Outputs</span> </div>
                 <el-table :data="app.outputs" style="width: 100%" default-expand-all>
                     <el-table-column type="expand">
                         <template scope="props">
-                            <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
+                        <el-row :gutter="20">
+                            <el-col :span="20">
+                                <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
+                            </el-col>
+                            <el-col :span="4">
+                                <el-dropdown style="float: right;" @command="view">
+                                    <el-button type="primary">
+                                        Visualize <i class="el-icon-caret-bottom el-icon--right"></i>
+                                    </el-button>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <!--<div v-if="props.row.datatype.name == 'neuro/anat'">-->
+                                        <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
+                                        <el-dropdown-item command="mrview">MRView</el-dropdown-item>
+                                        <el-dropdown-item command="freeview" disabled>FreeView</el-dropdown-item>
+                                        <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
+                            </el-col>
+                        </el-row>
                         </template>
                     </el-table-column>
                     <el-table-column prop="id" label="ID" width="180"></el-table-column>
                     <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
                     <el-table-column prop="datatype.desc" label="Description"></el-table-column>
                     <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
-                    <!--
-                    <el-table-column label="Files">
-                        <template scope="props">
-                            <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
-                        </template>
-                    </el-table-column>
-                    -->
-                    <!--
-                    <el-table-column prop="datatype.meta" label="Metadata">
-                        <template scope="props">
-                            {{props.row.datatype.meta}}
-                        </template>
-                    </el-table-column>
-                    -->
                 </el-table>
-            </div>
+            </el-card>
+            <br>
 
-            <div class="ui segment" v-if="tasks">
-                <div class="ui top attached label">Task Statuses</div>
+            <el-card class="box-card" v-if="tasks">
+                <div slot="header"> <span>Task Statuses</span> </div>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
-            </div>
+            </el-card>
+            <br>
 
-            <div class="ui segment" v-if="app">
-                <div class="ui top attached label">Application</div>
+            <el-card class="box-card" v-if="app">
+                <div slot="header"> <span>Application</span> </div>
                 <h3>{{app.name}}</h3>
                 <p>{{app.desc}}</p>
-            </div>
+            </el-card>
+            <br>
 
-            <div class="ui segment" v-if="app">
-                <div class="ui top attached label">Inputs</div>
-                <!--
-                <br>
-                <div class="ui segments" v-for="dep in instance.config.prov.deps">
-                    <h5 class="ui top attached header">
-                        <h5>{{dep.input_id}}</h5>
-                    </h5>
-                    <div class="ui attached segment" v-if="dep._dataset">
-                        <tags :tags="dep._dataset.datatype_tags"></tags>
-                        <small>{{dep._dataset.desc}}</small>
-                        <metadata :metadata="dep._dataset.meta"></metadata>
-                    </div>
-                </div>
-                -->
+            <el-card class="box-card" v-if="app">
+                <div slot="header"> <span>Inputs</span> </div>
                 <el-table :data="app.inputs" style="width: 100%">
                     <el-table-column type="expand">
                         <template scope="props">
@@ -85,16 +79,16 @@
                     <el-table-column prop="datatype.desc" label="Description"></el-table-column>
                     <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
                 </el-table>
-            </div>
+            </el-card>
+            <br>
 
-            <div class="ui segment">
-                <div class="ui top attached label">Configuration</div>
-                <br>
+            <el-card class="box-card" v-if="app">
+                <div slot="header"> <span>Configuration</span> </div>
+                <p>TODO.. display this in more user frienly way</p>
                 <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
-            </div>
+            </el-card>
 
-            <h2>Debug</h2>
-            <div class="ui segments">
+            <div class="ui segments" v-if="config.debug">
                 <div class="ui segment" v-if="instance">
                     <h3>instance</h3>
                     <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
@@ -146,6 +140,8 @@ export default {
             tasks: null,
             messages: [],
             app: null,
+
+            config: Vue.config,
         }
     },
 
@@ -299,6 +295,9 @@ export default {
             this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
                 this.$router.push('/processes');
             });
+        },
+        view: function(type) {
+            window.open("#/view/"+this.instance._id+"/"+this.main_task._id+"/"+type, "", "width=1250,height=800,resizable=no,menubar=no"); 
         },
     },
 }

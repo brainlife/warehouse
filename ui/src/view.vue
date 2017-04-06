@@ -1,7 +1,7 @@
 <template>
 <div>
     {{status}}
-    <!--<pre>{{novnc_task}}</pre>-->
+    <pre>{{novnc_task}}</pre>
 </div>
 </template>
 
@@ -26,39 +26,57 @@ export default {
     },
 
     mounted: function() {
+        var instanceid = this.$route.params.instanceid;
+        var taskid = this.$route.params.taskid;
+        var viewtype = this.$route.params.type;
+
         this.get_instance_singleton("novnc").then((instance)=>{
             console.log("using instance", instance);
-            this.subscribe_ws(instance._id);
-
-            var task_name = "brainlife.novnc."+this.$route.params.instanceid+"."+this.$route.params.taskid;
+            var task_name = "brainlife.novnc";
             //look for novnc task running for specified instance/task
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({
                     instance_id: instance._id,
                     name: task_name,
+                    "config.input_instance_id": instanceid,
+                    "config.input_task_id": taskid,
+                    "config.type": viewtype,
                 })
             }})
             .then(res=>{
+                console.log("query result", res.body.tasks);
                 if(res.body.tasks.length == 0) {
                     //submit novnc service for the first time!
                     this.$http.post(Vue.config.wf_api+'/task', {
                         instance_id: instance._id,
                         name: task_name,
                         service: "soichih/abcd-novnc",
+                        max_runtime: 3600*1000, //1 hour should be enough?
                         config: {
-                            "input_instance_id": this.$route.params.instanceid,
-                            "input_task_id": this.$route.params.taskid,
-                            "container": "soichih/vncserver-fsl"
+                            "input_instance_id": instanceid,
+                            "input_task_id": taskid,
+                            "type": viewtype,
                         },
-                        deps: [ this.$route.params.taskid ], //just in case..
+                        deps: [ taskid ], //just in case..
                     })
                     .then(res=>{
                         this.novnc_task = res.body.task;
+                        this.subscribe_ws();
                     });
                 } else {
                     //already submitted..
                     this.novnc_task = res.body.tasks[0];
+                    this.subscribe_ws();
                     this.check_status();
+
+                    //if stopped or removed, rerun
+                    if( this.novnc_task.status == "stopped" || 
+                        this.novnc_task.status == "stop_requested" || 
+                        this.novnc_task.status == "failed" ||  //also retry if it failed before.
+                        this.novnc_task.status == "removed") {
+                        console.log("rerunning task");
+                        this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.novnc_task._id);
+                    }
                 }
             });
         });
@@ -74,6 +92,7 @@ export default {
         },
         
         check_status: function() {
+            //console.dir(this.novnc_task);
             this.status = "unknown";
             switch(this.novnc_task.status) {
             case "running": 
@@ -90,19 +109,21 @@ export default {
                 this.status = "finished";
                 console.log("TODO novnc finished! -- need to restart?");
                 break;
+            default:
+                this.status = this.novnc_task.status;
             }
         },
 
         get_instance_singleton: function() {
             return new Promise((resolve, reject) => {
-                console.log("querying instance");
+                //console.log("querying instance");
                 this.$http.get(Vue.config.wf_api+'/instance', {params: {
                     find: JSON.stringify({
                         name: "brainlife.novnc",
                     })
                 }})
                 .then(res=>{
-                    console.log(res);
+                    //console.log(res);
                     if(res.body.instances.length == 0) {
                         //need to submit new instance
                         this.$http.post(Vue.config.wf_api+'/instance', {
@@ -119,7 +140,10 @@ export default {
             });
         },
 
-        subscribe_ws: function(instanceid) {
+        subscribe_ws: function() {
+            var instanceid = this.novnc_task.instance_id;
+            var taskid = this.novnc_task._id;
+
             //subscribe to the instance events
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
@@ -128,13 +152,7 @@ export default {
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
-                        key: Vue.config.user.sub+"."+instanceid+".#",
-                    }
-                }));
-                ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.instance",
-                        key: Vue.config.user.sub+"."+instanceid,
+                        key: Vue.config.user.sub+"."+instanceid+"."+taskid,
                     }
                 }));
             }
@@ -143,18 +161,9 @@ export default {
                 var event = JSON.parse(json.data);
                 var msg = event.msg;
                 if(!msg || !msg._id) return; //odd..
-                switch(event.dinfo.exchange) {
-                case "wf.task":
-                    if(~msg.name.indexOf("brainlife.novnc")) {
-                        this.novnc_task = msg;
-                        this.check_status();
-                    }
-                    break;
-                case "wf.instance":
-                    //this.instance = msg;    
-                    break;
-                default:
-                    console.error("unknown exchange", event.dinfo.exchange);
+                if(~msg.name.indexOf("brainlife.novnc")) {
+                    this.novnc_task = msg;
+                    this.check_status();
                 }
             }
         }

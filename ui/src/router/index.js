@@ -34,6 +34,6 @@ export default new Router({
     { path: '/app/:id/submit', component: submit},
     { path: '/app/:id/edit', component: appedit},
     { path: '/settings', component: settings},
-    { path: '/view/:instanceid/:taskid', component: view},
+    { path: '/view/:instanceid/:taskid/:type', component: view},
   ]
 })
