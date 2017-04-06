@@ -16,7 +16,9 @@
                 <i class="trash icon"></i> Remove
             </button>
 
-            <h1><i class="send icon"></i> {{instance.desc}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
+            <h1><i class="send icon"></i> {{app.name}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
+            <!--<p>{{app.desc}}</p>-->
+            <p>{{instance.desc}}</p>
 
             <div class="ui segment" v-if="app && instance.status == 'finished'">
                 <div class="ui top attached label">Outputs</div>
@@ -57,11 +59,13 @@
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
             </div>
 
+            <!--
             <div class="ui segment">
                 <div class="ui top attached label">Application Detail</div>
                 <h3>{{app.name}}</h3>
                 <p>{{app.desc}}</p>
             </div>
+            -->
 
             <div class="ui segment">
                 <div class="ui top attached label">Inputs</div>
