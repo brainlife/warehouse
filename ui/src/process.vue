@@ -58,7 +58,7 @@
             </div>
 
             <div class="ui segment">
-                <div class="ui top attached label">Application</div>
+                <div class="ui top attached label">Application Detail</div>
                 <h3>{{app.name}}</h3>
                 <p>{{app.desc}}</p>
             </div>

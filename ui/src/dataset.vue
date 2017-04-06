@@ -82,9 +82,10 @@
             </tbody>
             </table>
 
-            <div v-if="apps && apps.length > 0">
+            <div v-if="apps">
                 <h4 class="ui horizontal divider header">Applications</h4>
                 <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
+                <p v-if="apps.length == 0">There are no application that uses this datatype</p>
                 <div class="ui cards">
                     <app v-for="app in apps" key="app._id" :app="app"></app>
                 </div>
@@ -176,17 +177,19 @@ export default {
                     this.derivatives = res.body.datasets;
                 }); 
 
-                console.log("looking for app that uses this data");
+                console.log("looking for app that uses this data", this.dataset.datatype._id);
                 return this.$http.get('app', {params: {
                     "find": JSON.stringify({
-                    //look for apps that uses my datatype as input
-                    "inputs.datatype": this.dataset.datatype._id
-                    })
+                        //look for apps that uses my datatype as input
+                        "inputs.datatype": this.dataset.datatype._id,
+                    }),
+                    "populate": "inputs.datatype", //used by filter_apps
                 }})
             })
             .then(res=>{
                 //should I do this via computed?
                 if(!res) return;
+                console.dir(this.dataset);
                 this.apps = lib.filter_apps(this.dataset, res.body.apps);
             }).catch(err=>{
                 console.error(res);

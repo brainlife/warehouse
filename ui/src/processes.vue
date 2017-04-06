@@ -31,7 +31,7 @@
                             {{projects[instance.config.project].name}} 
                         </td>
                         <!--<td> {{instance.name}} </td>-->
-                        <td> {{instance.config.main_task_id}} (todo.. show real name) </td>
+                        <td> {{apps[instance.config.prov.app].name}} </td>
                         <td> {{instance.desc}} </td>
                         <td>
                           <div class="ui label yellow" v-if="instance.status == 'removed'">
@@ -80,6 +80,7 @@ export default {
             
             //cache
             projects: null, //keyed by _id
+            apps: null, //keyed by _id
         }
     },
     mounted: function() {
@@ -91,6 +92,24 @@ export default {
             this.projects = {};
             res.body.projects.forEach((p)=>{
                 this.projects[p._id] = p;
+            });
+
+            //then load application details
+            return this.$http.get('app', {params: {
+                /*
+                find: JSON.stringify({
+                    _id: this.$route.params.id,
+                    "config.brainlife": true,
+                    status: {$ne: "removed"},
+                    "config.removing": {$exists: false},
+                })
+                */
+            }});
+        })
+        .then(res=>{
+            this.apps = {};
+            res.body.apps.forEach((a)=>{
+                this.apps[a._id] = a;
             });
 
             //then load instances (processes)

@@ -1,7 +1,7 @@
 <template>
 <div>
     {{status}}
-    <!--<pre>{{novnc_task}}</pre>-->
+    <pre>{{novnc_task}}</pre>
 </div>
 </template>
 

@@ -181,7 +181,7 @@ export default {
 
                 this.datasets[datatype_id].push(dataset);
             });
-            console.log(this.datasets);
+            //console.log(this.datasets);
         }).catch(err=>{
             console.error(err);
         });

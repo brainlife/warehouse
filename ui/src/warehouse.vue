@@ -52,4 +52,7 @@ pre {
 code.hljs {
     font-size: 80%;
 }
+.el-card__header {
+    background-color: #EFF2F7;
+}
 </style>
