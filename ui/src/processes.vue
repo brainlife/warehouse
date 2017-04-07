@@ -11,7 +11,9 @@
                 <div class="results"></div>
             </div>
 
-            <table class="ui table">
+            <h3 v-if="!instances"> <i class="el-icon-loading"></i> Loading..  </h3>
+
+            <table class="ui table" v-if="instances">
                 <thead>
                     <tr>
                         <th style="min-width: 180px">Create Date</th>

@@ -1,7 +1,7 @@
 <template>
 <div class="brainlife-menu">
     <div class="item title">
-        Brain Life <i class="smile icon"></i>
+        Brain Life
     </div>
     <el-menu :router="true" :default-active="active" theme="dark">
         <el-menu-item index="/"><icon name="tachometer"></icon>Dashboard</el-menu-item>
@@ -100,8 +100,10 @@ background-color: black;
 .item.title {
 background-color: #489fdf;
 font-weight: bold;
-padding: 20px;
+font-size: 15pt;
+padding: 15px 20px;
 color: white;
+margin-bottom: 10px;
 }
 .el-menu svg {
 margin-right: 10px;

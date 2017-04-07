@@ -2,10 +2,17 @@
 <div>
     <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
     <div class="ui list" v-if="files">
+        <!--
         <div class="ui icon mini basic buttons" style="margin-bottom: 10px;">
             <button v-if="files.length != 0" class="ui button" @click="download()"><i class="download icon"></i></button>
             <button class="ui button" @click="load()"> <i class="refresh icon"></i></button>
         </div>
+        -->
+
+        <el-button-group style="margin-bottom: 5px;">
+            <el-button size="small" @click="download()"><icon scale="0.8" name="download"></icon></el-button>
+            <el-button size="small" @click="load()"><icon scale="0.8" name="refresh"></icon></el-button>
+        </el-button-group>
         <div class="item" v-for="file in files" key="file.filename">
         <!--<div class="ui right floated">something</div>-->
             <div class="fileitem" @click="click(file)">
@@ -19,7 +26,7 @@
             <pre v-if="file.content" v-highlightjs="file.content" style="padding-left: 20px; margin: 0px"><code :class="file.type"></code></pre>
         </div>
         <!--<p v-if="loading" class="ui mini compact message">Loading ...</p>-->
-        <p v-if="files.length == 0" class="ui mini compact message">Empty</p>
+        <p v-if="files.length == 0" class="text-muted">Empty Directory</p>
     </div>
 </div>
 </template>

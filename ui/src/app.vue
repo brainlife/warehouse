@@ -4,7 +4,7 @@
     <div class="ui pusher">
         <div class="margin20" v-if="app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
-            <button class="ui button primary right floated" @click="go('/app/'+app._id+'/submit')"> 
+            <button class="ui button primary right floated" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"> 
                 <i class="play icon"></i> Submit
             </button>
             <button class="ui button right floated" @click="go('/app/'+app._id+'/edit')"> 
@@ -45,6 +45,18 @@
                         </p>
                     </td>
                 </tr>
+                <tr v-if="resource">
+                    <td>Computing Resource</td>
+                    <td>
+                        <el-alert :closable="false" title="" type="error" v-if="!resource.detail">
+                            There is no computing resource to run this currently.
+                        </el-alert>
+                        <p v-if="resource.detail">
+                            This service can currently run on 
+                            <a class="ui label"> {{resource.detail.name}} </a>
+                        </p>
+                    </td>
+                </tr>
                 <tr class="top aligned">
                     <td>Configuration Template</td>
                     <td>
@@ -69,15 +81,6 @@
                                 <datatype :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
                             </div>
                         </div>
-                    </td>
-                </tr>
-                <tr v-if="resource">
-                    <td>Computing Resource</td>
-                    <td>
-                        <p>
-                            This service can currently run on 
-                            <a class="ui label"> {{resource.detail.name}} </a>
-                        </p>
                     </td>
                 </tr>
                 <tr v-if="app.dockerhub">
@@ -119,7 +122,11 @@
             <div class="ui segments">
                 <div class="ui segment">
                     <h3>App</h3>
-                    <pre v-highlightjs="app"><code class="json hljs"></code></pre>
+                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+                </div>
+                <div class="ui segment">
+                    <h3>Resource</h3>
+                    <pre v-highlightjs="JSON.stringify(resource, null, 4)"><code class="json hljs"></code></pre>
                 </div>
             </div>
         </div>

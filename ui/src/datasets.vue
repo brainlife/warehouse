@@ -15,7 +15,9 @@
                 <div class="results"></div>
             </div>
 
-            <table class="ui compact definition table">
+            <h3 v-if="!datasets"> <i class="el-icon-loading"></i> Loading..  </h3>
+
+            <table class="ui compact definition table" v-if="datasets">
             <thead>
                 <tr>
                     <th style="width: 25px; background-color: #f0f0f0; box-shadow: -1px -1px 0 1px #f0f0f0;"></th>
@@ -104,7 +106,7 @@ export default {
     components: { sidemenu, tags, metadata },
     data () {
         return {
-            datasets: [],
+            datasets: null,
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             query: "",
 

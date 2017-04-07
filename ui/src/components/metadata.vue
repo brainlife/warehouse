@@ -1,6 +1,6 @@
 <template>
 <div>
-    <el-tag v-for="(v, k) in metadata" key="k">
+    <el-tag v-for="(v, k) in metadata" key="k" type="gray">
         <b>{{k}}</b> {{v}}
     </el-tag>
 </div>

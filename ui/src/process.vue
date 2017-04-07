@@ -16,7 +16,9 @@
                 <i class="trash icon"></i> Remove Process
             </button>
 
-            <h1><i class="send icon"></i> {{instance.desc}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
+            <h1><i class="send icon"></i> {{app.name}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
+            <!--<p>{{app.desc}}</p>-->
+            <p>{{instance.desc}}</p>
 
             <el-card class="box-card" v-if="app && instance.status == 'finished'">
                 <div slot="header"> <span>Outputs</span> </div>
@@ -35,8 +37,8 @@
                                     <el-dropdown-menu slot="dropdown">
                                         <!--<div v-if="props.row.datatype.name == 'neuro/anat'">-->
                                         <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
-                                        <el-dropdown-item command="mrview">MRView</el-dropdown-item>
-                                        <el-dropdown-item command="freeview" disabled>FreeView</el-dropdown-item>
+                                        <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
+                                        <el-dropdown-item command="mrview" disabled>MRView</el-dropdown-item>
                                         <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
@@ -60,8 +62,10 @@
 
             <el-card class="box-card" v-if="app">
                 <div slot="header"> <span>Application</span> </div>
-                <h3>{{app.name}}</h3>
+                <img style="float: left; margin-right: 20px;" :src="app.avatar">
+                <h3 style="margin: 0px;">{{app.name}}</h3>
                 <p>{{app.desc}}</p>
+                <br clear="both">
             </el-card>
             <br>
 

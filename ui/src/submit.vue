@@ -10,18 +10,26 @@
             <br clear="both">
 
             <el-card class="box-card">
+                <!--
                 <div slot="header">
                     <span>Submit Form</span>
                 </div>
+                -->
                 <div class="ui form">
                     <div class="field">
+                        <label>Description</label>
+                        <el-input type="textarea" v-model="desc" placeholder="Optional Description for your process"></el-input>
+                    </div>
+
+                    <div class="field">
                         <label>Project</label>
-                        <p>Project used to run this application</p>
+                        <p class="text-muted">Project used to run this application</p>
                         <select v-model="project_id">
                             <option v-for="(p,id) in projects" :value="p._id">{{p.name}} ({{p.access}})</option>
                         </select>
                     </div>
 
+                    <h3>Inputs</h3>
                     <div class="field" v-for="input in app.inputs">
                         <label>{{input.id}}</label>
                         <select class="ui fluid dropdown" v-model="input.dataset_id">
@@ -81,6 +89,7 @@ function generate_config(app, download_task_id) {
             } else if(typeof node === 'object') {
                 if(node.type) {
                     switch(node.type) {
+                    case "string":
                     case "integer":
                         obj[k] = node.default; //TODO - let's just use default for now
                         break;
@@ -97,6 +106,8 @@ function generate_config(app, download_task_id) {
                             } 
                         });
                         break;
+                    default:
+                        obj[k] = "unknown_template_type";
                     }
                 } else handle_obj(node); //recurse
             }
@@ -127,6 +138,8 @@ export default {
             app: null,
             resource: null,
 
+            //form inputs
+            desc: "",
             project_id: localStorage.getItem("last_projectid_used")||"", 
 
             //cache
@@ -230,7 +243,7 @@ export default {
             //first create an instance to run everything
             this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "brainlife.a."+this.app._id,
-                desc: this.app.name,
+                desc: this.desc,
                 config: inst_config,
             }).then(res=>{
                 instance = res.body;
