@@ -4,12 +4,12 @@
         Brain Life
     </div>
     <el-menu :router="true" :default-active="active" theme="dark">
-        <el-menu-item index="/"><icon name="tachometer"></icon>Dashboard</el-menu-item>
+        <el-menu-item index="/" v-if="config.debug"><icon name="tachometer"></icon>Dashboard</el-menu-item>
         <el-menu-item index="/datasets"><icon name="cubes"></icon>Dataset</el-menu-item>
         <el-menu-item index="/processes"><icon name="paper-plane"></icon>Process</el-menu-item>
         <el-menu-item index="/apps"><icon name="th-large"></icon>Apps</el-menu-item>
         <el-menu-item index="/projects"><icon name="shield"></icon>Projects</el-menu-item>
-        <el-submenu index="999">
+        <el-submenu v-if="config.debug" index="needed"> 
             <template slot="title"><icon name="flask"></icon>Test</template>
             <el-menu-item-group title="Group One">
                 <el-menu-item index="1-1">item one</el-menu-item>
@@ -64,12 +64,14 @@
 </template>
 
 <script>
+import Vue from 'vue'
 
 export default {
     name: 'sidemenu',
     data () {
         return {
-            msg: 'Welcome to Your Vue.js App'
+            msg: 'Welcome to Your Vue.js App',
+            config: Vue.config,
         }
     },
 	props: { active: String },
@@ -98,7 +100,8 @@ bottom: 0px;
 background-color: black;
 }
 .item.title {
-background-color: #489fdf;
+/*background-color: #489fdf;*/
+background-image: linear-gradient(120deg, #2693ff, #159957);
 font-weight: bold;
 font-size: 15pt;
 padding: 15px 20px;
