@@ -9,7 +9,7 @@
                     <i class="ui icon add"></i> Upload
                 </button>
                 <div class="ui icon input">
-                    <input class="prompt" type="text" v-model="query" placeholder="Search ...">
+                    <input class="prompt" type="text" v-model="query" debounce="500" placeholder="Search ...">
                     <i class="search icon"></i>
                 </div>
                 <div class="results"></div>
@@ -30,7 +30,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="dataset in filtered_datasets" 
+                <tr v-for="dataset in datasets" 
                     :class="{'clickable-record': true, selected: is_selected(dataset)}" 
                     @click="go('/dataset/'+dataset._id)">
                     <td @click.stop="check(dataset)">
@@ -126,6 +126,7 @@ export default {
             return Object.keys(this.selected).length;
         },
 
+        /*
         filtered_datasets: function() {
             if(!this.query) return this.datasets;
 
@@ -141,6 +142,7 @@ export default {
                 return false;
             });
         },
+        */
 
         group_selected: function() {
             var groups = {};
@@ -201,6 +203,12 @@ export default {
         });
 
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
+    },
+
+    watch: {
+        query: function(val) {
+            console.log(val);
+        }
     },
 
     methods: {

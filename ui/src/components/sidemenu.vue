@@ -9,7 +9,7 @@
         <el-menu-item index="/processes"><icon name="paper-plane"></icon>Process</el-menu-item>
         <el-menu-item index="/apps"><icon name="th-large"></icon>Apps</el-menu-item>
         <el-menu-item index="/projects"><icon name="shield"></icon>Projects</el-menu-item>
-        <el-submenu v-if="config.debug"> 
+        <el-submenu v-if="config.debug" index="needed"> 
             <template slot="title"><icon name="flask"></icon>Test</template>
             <el-menu-item-group title="Group One">
                 <el-menu-item index="1-1">item one</el-menu-item>
