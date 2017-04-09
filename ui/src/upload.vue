@@ -14,39 +14,6 @@
                 </el-steps>
             </div>
 
-            <!--
-            <div class="ui four top attached steps">
-                <div class="step" v-bind:class="{active: mode == 'meta'}">
-                    <i class="info circle icon"></i>
-                    <div class="content">
-                        <div class="title">metadata</div>
-                        <div class="description">describe your data</div>
-                    </div>
-                </div>
-                <div class="step" v-bind:class="{active: mode == 'upload'}">
-                    <i class="upload icon"></i>
-                    <div class="content">
-                        <div class="title">upload</div>
-                        <div class="description">upload all required files</div>
-                    </div>
-                </div>
-                <div class="step" v-bind:class="{active: mode == 'validate'}">
-                    <i class="checkmark box icon"></i>
-                    <div class="content">
-                        <div class="title">validate</div>
-                        <div class="description">verify your uploaded data</div>
-                    </div>
-                </div>
-                <div class="step" v-bind:class="{active: mode == 'finalize'}">
-                    <i class="database icon"></i>
-                    <div class="content">
-                        <div class="title">finalize</div>
-                        <div class="description">store your data to archive</div>
-                    </div>
-                </div>
-            </div>
-            -->
-
             <div class="ui attached segment form">
                 <div v-if="mode == 'meta'">
                     <div class="field">
@@ -89,10 +56,8 @@
 
                 <div v-if="mode == 'upload'">
                     <div class="field" v-if="datatype_id">
-                        <div class="ui raised segment" v-for="file in files" style="margin-left: 10px;">
-                            <a class="ui ribbon label">{{file.id}}</a>
-                            <br>
-                            <br>
+                        <div iv v-for="file in files" style="margin-left: 10px;">
+                            <h4>{{file.id}} <small class="text-muted">{{file.ext}}</small></h4>
                             <div v-if="!file.uploaded && !file.progress">
                                 <input type="file" @change="filechange(file, $event)">
                             </div>
@@ -105,7 +70,7 @@
                                     <div class="bar">
                                         <div class="progress"></div>
                                     </div>
-                                    <div class="label">Uploading {{file.filename}}</div>
+                                    <div class="label">Uploading {{file.local_filename}}</div>
                                 </div>
                             </div>
 
@@ -115,6 +80,7 @@
                                 <small>({{file.size}} bytes)</small>
                                 <br clear="both">
                             </div>
+                            <br>
                         </div>
                     </div><!--field-->
 
@@ -240,10 +206,10 @@ export default {
             var task = event.msg;
             if(!task) return;
             if(!task._id) return; //what kind of task is this?
-            if(task._id == this.validation._id) {
+            if(this.validation && task._id == this.validation._id) {
               this.validation = task;
             }
-            if(task._id == this.copy._id) {
+            if(this.copy && task._id == this.copy._id) {
               this.copy = task;
               if(task.status == "finished") {
                 this.archive();
@@ -322,109 +288,94 @@ export default {
         },
         
         upload: function(file, f) {
-            console.log("starting upload", f);
-            file.filename  = f.name;
+            file.local_filename  = f.name;
             file.size = f.size;
             file.type = f.type;
-
             file.progress = {};
 
-      //find resource to upload to
-      this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-          service: "_upload",
-      }})
-      .then(res=>{
-        var upload_resource = res.body.resource;
-        var path = this.instance_id+'/upload/'+f.name;
+            //find resource to upload to
+            this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
+                service: "_upload",
+            }})
+            .then(res=>{
+                var upload_resource = res.body.resource;
+                var path = this.instance_id+'/upload/'+file.filename;
 
                 var xhr = new XMLHttpRequest();
                 file.xhr = xhr; //so that I can abort it if user wants to
                 xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+upload_resource._id+"/"+btoa(path));
                 xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
-        xhr.upload.addEventListener("progress", (evt)=>{
-          file.progress = {loaded: evt.loaded, total: evt.total};
-          $("#file_"+file.id).progress({percent: evt.loaded*100/evt.total});
-          console.dir(file.progress);
-          this.$forceUpdate();
+                xhr.upload.addEventListener("progress", (evt)=>{
+                    file.progress = {loaded: evt.loaded, total: evt.total};
+                    $("#file_"+file.id).progress({percent: evt.loaded*100/evt.total});
+                    //console.dir(file.progress);
+                    this.$forceUpdate();
                 }, false);
-        xhr.addEventListener("load", (evt)=>{
+                xhr.addEventListener("load", (evt)=>{
                     if(evt.target.status == "200") {
                         file.uploaded = true;
-            this.$forceUpdate();
+                        this.$forceUpdate();
                     } else {
                         var msg = JSON.parse(evt.target.response);
                         console.error(msg);
                     }
                 }, false);
-        xhr.addEventListener("error", (evt)=>{
+                xhr.addEventListener("error", (evt)=>{
                     console.error(evt);
                 });
                 xhr.send(f);
-      }, res=>{
-        console.error(res);
-      });
-    },
-    validate: function() {
-      this.mode = "validate";
+            }, res=>{
+                console.error(res);
+            });
+        },
+        validate: function() {
+            this.mode = "validate";
             this.validation = null;
 
-      //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
-      var config = {};
-      this.datatypes[this.datatype_id].files.forEach(function(file) {
-        config[file.id] = "../upload/"+file.filename;
-      });
-      //and submit
-      this.$http.post(Vue.config.wf_api+'/task', {
-        instance_id: this.instance_id,
-        name: "validation",
-        service: "soichih/sca-service-conneval-validate",
-        config: config,
-      }).then(res=>{
-        console.log("submitted validation task");
-        this.validation = res.body.task;
-      }, res=>{
-        console.error(res);
-      });
-    },
-    finalize: function() {
-      this.mode = "finalize";
-      this.copy = null;
-      this.dataset = null;
+            //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
+            var config = {};
+            this.datatypes[this.datatype_id].files.forEach(function(file) {
+                config[file.id] = "../upload/"+file.filename;
+            });
+            //and submit
+            this.$http.post(Vue.config.wf_api+'/task', {
+                instance_id: this.instance_id,
+                name: "validation",
+                service: "soichih/sca-service-conneval-validate",
+                config: config,
+            }).then(res=>{
+                console.log("submitted validation task");
+                this.validation = res.body.task;
+            }, res=>{
+                console.error(res);
+            });
+        },
+        finalize: function() {
+            this.mode = "finalize";
+            this.copy = null;
+            this.dataset = null;
 
-      //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
-      var copy = [];
-      this.files.forEach(function(file) {
-        //copy.push({src: "../upload/"+file.filename, dest: file.id+(file.ext||'')});
-        copy.push({src: "../upload/"+file.filename, dest: file.filename});
-      });
-      //and submit copy
-      this.$http.post(Vue.config.wf_api+'/task', {
-        instance_id: this.instance_id,
-        name: "input",
-        service: "soichih/sca-product-raw",
-        config: { copy },
-      }).then(res=>{
-        console.log("submitted copy task");
-        this.copy = res.body.task;
-      }, res=>{
-        console.error(res);
-      });
-    },
+            //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
+            var copy = [];
+            this.files.forEach(function(file) {
+                copy.push({src: "../upload/"+file.filename, dest: file.filename});
+            });
+            //and submit copy
+            this.$http.post(Vue.config.wf_api+'/task', {
+                instance_id: this.instance_id,
+                name: "input",
+                service: "soichih/sca-product-raw",
+                config: { copy },
+            }).then(res=>{
+                console.log("submitted copy task");
+                this.copy = res.body.task;
+            }, res=>{
+                console.error(res);
+            });
+        },
 
         archive: function() {
             if(this.dataset) return; //already archived
-
-            /*
-            var product = {
-                files: {
-                },
-                validation: this.validation.products[0],
-            }
-            this.files.forEach(function(file) {
-                //product.files[file.id] = {filename: file.id+(file.ext||''), size: file.size};
-                product.files[file.id] = {filename: file.filename, size: file.size};
-            });
-            */
 
             //finally, make a request to finalize the task directory
             this.$http.post('dataset', {

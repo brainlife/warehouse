@@ -100,7 +100,8 @@ bottom: 0px;
 background-color: black;
 }
 .item.title {
-background-color: #489fdf;
+/*background-color: #489fdf;*/
+background-image: linear-gradient(120deg, #2693ff, #159957);
 font-weight: bold;
 font-size: 15pt;
 padding: 15px 20px;
