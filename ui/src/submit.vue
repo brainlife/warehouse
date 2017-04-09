@@ -35,7 +35,7 @@
                         <select class="ui fluid dropdown" v-model="input.dataset_id">
                             <option value="">(Select {{input.id}} dataset)</option>
                             <option v-for="dataset in datasets[input.id]" :value="dataset._id">
-                                {{dataset.name}}
+                                {{dataset.name}} 
                                 <tags :tags="dataset.datatype_tags"></tags>
                             </option>
                         </select>
@@ -164,14 +164,19 @@ export default {
             //load datasets that this app cares about
             var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
             return this.$http.get('dataset', {params: {
-                find: JSON.stringify({datatype: {$in: datatype_ids}})
+                find: JSON.stringify({
+                    datatype: {$in: datatype_ids},
+                    removed: false,
+                })
             }})
         })
         .then(res=>{
+            //console.log("datasets applicable:", res);
+
             this.app.inputs.forEach((input)=>{
-                console.dir(input);
+                //console.dir(input);
                 Vue.set(this.datasets, input.id, res.body.datasets.filter(dataset=>{
-                    console.dir(dataset);
+                    //console.dir(dataset);
                     if(dataset.datatype != input.datatype._id) return false;
 
                     var match = true;

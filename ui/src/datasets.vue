@@ -175,10 +175,15 @@ export default {
             });
 
             return this.$http.get('dataset', {params: {
+                /*
                 find: JSON.stringify({$or: [
                     {removed: {$exists: false}},
                     {removed: false},
                 ]}),
+                */
+                find: JSON.stringify({
+                    removed: false,
+                }),
                 select: 'datatype datatype_tags project create_date name desc tags meta',
             }})
         })

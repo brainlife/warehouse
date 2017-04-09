@@ -90,33 +90,6 @@
             </tbody>
             </table>
 
-            <!--
-            <div class="ui segment">
-                <div class="ui top attached label">Submit Process</div>
-                <div class="ui form">
-                    <div class="field" v-for="input in app.inputs">
-                        <label>{{input.id}}</label>
-                        <select class="ui fluid dropdown" v-model="input.dataset_id">
-                            <option value="">(Select {{input.id}} dataset)</option>
-                            <option v-for="dataset in datasets[input.datatype._id]" :value="dataset._id">
-                                {{dataset.name}}
-                                <tags :tags="dataset.datatype_tags"></tags>
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="field">
-                        <label>Project</label>
-                        <p>Project used to run this application</p>
-                        <select v-model="project_id">
-                            <option v-for="(p,id) in projects" :value="p._id">{{p.name}} ({{p.access}})</option>
-                        </select>
-                    </div>
-
-                    <div class="ui primary button" @click="submitapp()">Submit</div>
-                </div>
-            </div>
-            -->
             <h2>Debug</h2>
 
             <div class="ui segments">
@@ -156,7 +129,6 @@ export default {
             project_id: "", //to be selected by the user
 
             //cache
-            datasets: {}, //for searching datasets
             projects: [],
         }
     },
@@ -169,26 +141,6 @@ export default {
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
-
-            //load datasets that this app could use..
-            var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
-            return this.$http.get('dataset', {params: {
-                find: JSON.stringify({datatype: {$in: datatype_ids}})
-            }})
-        })
-        .then(res=>{
-            this.datasets = {};
-            res.body.datasets.forEach((dataset)=>{
-                var datatype_id = dataset.datatype._id;
-
-                //group by datatype_id
-                if(this.datasets[datatype_id] === undefined) Vue.set(this.datasets, datatype_id, []);
-
-                //TODO - apply tag filter
-
-                this.datasets[datatype_id].push(dataset);
-            });
-            //console.log(this.datasets);
         }).catch(err=>{
             console.error(err);
         });

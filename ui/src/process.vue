@@ -2,7 +2,7 @@
 <div>
     <sidemenu active="/processes"></sidemenu>
     <div class="ui pusher">
-        <div class="margin20" v-if="instance && tasks">
+        <div class="margin20" v-if="instance && tasks && app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
             <button class="ui button primary right floated"
                 v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="archive()"> 
@@ -20,7 +20,7 @@
             <!--<p>{{app.desc}}</p>-->
             <p>{{instance.desc}}</p>
 
-            <el-card class="box-card" v-if="app && instance.status == 'finished'">
+            <el-card class="box-card" v-if="instance.status == 'finished'">
                 <div slot="header"> <span>Outputs</span> </div>
                 <el-table :data="app.outputs" style="width: 100%" default-expand-all>
                     <el-table-column type="expand">
@@ -54,13 +54,13 @@
             </el-card>
             <br>
 
-            <el-card class="box-card" v-if="tasks">
+            <el-card class="box-card">
                 <div slot="header"> <span>Task Statuses</span> </div>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
             </el-card>
             <br>
 
-            <el-card class="box-card" v-if="app">
+            <el-card class="box-card">
                 <div slot="header"> <span>Application</span> </div>
                 <img style="float: left; margin-right: 20px;" :src="app.avatar">
                 <h3 style="margin: 0px;">{{app.name}}</h3>
@@ -69,7 +69,7 @@
             </el-card>
             <br>
 
-            <el-card class="box-card" v-if="app">
+            <el-card class="box-card">
                 <div slot="header"> <span>Inputs</span> </div>
                 <el-table :data="app.inputs" style="width: 100%">
                     <el-table-column type="expand">
@@ -86,7 +86,7 @@
             </el-card>
             <br>
 
-            <el-card class="box-card" v-if="app">
+            <el-card class="box-card">
                 <div slot="header"> <span>Configuration</span> </div>
                 <p>TODO.. display this in more user frienly way</p>
                 <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
