@@ -116,15 +116,7 @@ function generate_config(app, download_task_id) {
 
     handle_obj(config);
 
-    /*
-    this.app.inputs.forEach((input)=>{
-        input.datatype.files.forEach((file)=>{
-            config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+(file.filename||file.dirname);
-        });
-    });
-    */
-    console.log("generated config");
-    console.dir(config);
+    console.log("generated config", config);
     return config;
 }
 

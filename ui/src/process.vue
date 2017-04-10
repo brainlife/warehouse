@@ -74,8 +74,11 @@
                 <el-table :data="app.inputs" style="width: 100%">
                     <el-table-column type="expand">
                         <template scope="props">
+                            <!--
                             <file v-for="file in props.row.datatype.files" 
-                                key="file.filename" :file="file" :task="main_task"></file>
+                                key="file.filename" :file="file" :task="input_task"></file>
+                            -->
+                            <filebrowser :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.id"></filebrowser>
                         </template>
                     </el-table-column>
                     <el-table-column prop="id" label="ID" width="180"></el-table-column>
@@ -88,7 +91,7 @@
 
             <el-card class="box-card">
                 <div slot="header"> <span>Configuration</span> </div>
-                <p>TODO.. display this in more user frienly way</p>
+                <p>TODO.. display this in more user friendly way</p>
                 <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </el-card>
 
@@ -127,6 +130,7 @@ import contact from '@/components/contact'
 import message from '@/components/message'
 import task from '@/components/task'
 import file from '@/components/file'
+import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 
@@ -136,7 +140,7 @@ export default {
     mixins: [
         //require("vue-toaster")
     ],
-    components: { sidemenu, contact, task, message, file, tags, metadata },
+    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser },
 
     data () {
         return {
@@ -182,13 +186,14 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             ws.onopen = (e)=>{
-                console.log("websocket opened", this.instance._id);
+                //console.log("websocket opened", this.instance._id);
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: Vue.config.user.sub+"."+this.instance._id+".#",
                     }
                 }));
+                //console.log("binding to instance", this.instance._id);
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
@@ -247,6 +252,14 @@ export default {
                 if(task._id == this.instance.config.main_task_id) it = task;
             })
             if(!it) console.error("failed to find main_task");
+            return it;
+        },
+        input_task: function() {
+            var it = null;
+            this.tasks.forEach((task)=>{
+                if(task.name == "Stage Input") it = task; //TODO brittle~!
+            })
+            if(!it) console.error("failed to find input_task");
             return it;
         }
     },

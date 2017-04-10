@@ -43,13 +43,13 @@ Vue.use(require('vue-filter'))
 // config
 // TODO - find a way to put these somewhere under /config
 //
-var apihost = "https://brain-life.org/";
-var apihost_ws = "wss://brain-life.org/";
+var apihost = "https://brain-life.org";
+var apihost_ws = "wss://brain-life.org";
 
 switch(process.env.NODE_ENV) {
 case "development": 
-    var apihost = "https://soichi7.ppa.iu.edu/";
-    var apihost_ws = "wss://soichi7.ppa.iu.edu/";
+    var apihost = "https://soichi7.ppa.iu.edu";
+    var apihost_ws = "wss://soichi7.ppa.iu.edu";
     Vue.config.debug = true;
     break;
 case "production":

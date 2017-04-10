@@ -14,7 +14,6 @@
             <el-button size="small" @click="load()"><icon scale="0.8" name="refresh"></icon></el-button>
         </el-button-group>
         <div class="item" v-for="file in files" key="file.filename">
-        <!--<div class="ui right floated">something</div>-->
             <div class="fileitem" @click="click(file)">
                 <i class="file outline icon" v-if="!file.directory"></i>
                 <i class="folder icon" v-if="file.directory"></i>
@@ -23,7 +22,7 @@
             <div class="content" style="margin-left: 20px;" v-if="file.open">
                 <filebrowser :task="task" :path="fullpath+'/'+file.filename"></filebrowser>
             </div>
-            <pre v-if="file.content" v-highlightjs="file.content" style="padding-left: 20px; margin: 0px"><code :class="file.type"></code></pre>
+            <pre v-if="file.content" v-highlightjs="file.content" style="padding-left: 20px; margin: 0px"><code :class="file.type+' hljs'"></code></pre>
         </div>
         <!--<p v-if="loading" class="ui mini compact message">Loading ...</p>-->
         <p v-if="files.length == 0" class="text-muted">Empty Directory</p>
@@ -86,42 +85,44 @@ export default {
         },
 
         click: function(file){
-            console.dir(file);
+            //console.dir(file);
             var url = this.get_download_url(file);
 
-            //for directory, just open
-            if(file.directory) Vue.set(file, 'open', !file.open);
-            //for large file, download
-            else if(file.attrs.size > 1024*1024) document.location = url;
-            //for small files, download content and display
+            if(file.directory) Vue.set(file, 'open', !file.open); //for directory, just open
+            else if(file.attrs.size > 1024*1024) document.location = url; //for large file, download
             else {
+                //for small files, download content and display
                 this.$http.get(url).then(res=>{
-                    //console.dir(res);
+                    console.dir(res);
 
                     //set file type (TODO - can't highlight.js do this?)
-                    //Vue.set(file, 'type', res.bodyBlob.type);
-                    let type;
-                    switch(res.bodyBlob.type) {
-                    case "application/json": type = "json"; break;
-                    case "application/x-sh": type = "bash"; break;
-                    case "text/plain": type = "basic"; break;
-                    //case "application/octet-stream": type = "basic"; break;
-                    //default: type = "basic";
+                    var mime = res.headers.get("Content-Type");
+                    console.log(mime);
+                    let type = null;
+                    switch(mime) {
+                        case "application/json": type = "json"; break;
+                        case "application/x-sh": type = "bash"; break;
+                        case "text/plain": type = "text"; break;
                     }
-                    if(!type) {
-                        //for unknown file, just download
-                        console.log("unknown file type", res.bodyBlob.type)
+                    if(type) {
+                        res.text().then(c=>{
+                            if(c == "") c = "(empty)";
+                            console.log("loading as text", c);
+                            Vue.set(file, 'type', type);
+                            Vue.set(file, 'content', c);
+                        });
+                    } else {
+                        console.log("opening new window - unknown file type", mime);
                         document.location = url;
-                        return;
-                    }
+                    } 
 
-                    //load content
-                    Vue.set(file, 'type', type);
+                    /*
                     var reader = new FileReader();
                     reader.onload = function(evt) {
                         if(evt.type == "load") Vue.set(file, 'content', reader.result);
                     }
                     reader.readAsText(res.bodyBlob);
+                    */
                 });
             }
         }
