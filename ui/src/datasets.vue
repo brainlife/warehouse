@@ -9,7 +9,7 @@
                     <i class="ui icon add"></i> Upload
                 </button>
                 <div class="ui icon input">
-                    <input class="prompt" type="text" v-model="query" debounce="500" placeholder="Search ...">
+                    <input class="prompt" type="text" v-model="query" placeholder="Search ...">
                     <i class="search icon"></i>
                 </div>
                 <div class="results"></div>
@@ -108,7 +108,11 @@ export default {
         return {
             datasets: null,
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
+
+            //query loading
             query: "",
+            query_dirty: 1,
+            loading: false,
 
             //cache
             datatypes: null,
@@ -176,35 +180,9 @@ export default {
                 this.datatypes[d._id] = d;
             });
 
-            return this.$http.get('dataset', {params: {
-                /*
-                find: JSON.stringify({$or: [
-                    {removed: {$exists: false}},
-                    {removed: false},
-                ]}),
-                */
-                find: JSON.stringify({
-                    removed: false,
-                }),
-                select: 'datatype datatype_tags project create_date name desc tags meta',
-            }})
-        })
-        .then(res=>{
-            this.datasets = res.body.datasets;
-            /*
-            Vue.nextTick(()=>{
-                console.log("shown dataset");
-                $(this.$el).find('.ui.dropdown').dropdown()
-            });
-            */
-            /*
-            this.datasets.forEach(dataset=>{
-                this.datatypes[dataset.datatype._id] = dataset.datatype;
-            });
-            */
-            //console.dir(this.datasets);
-        }, res=>{
-            console.error(res);
+            setTimeout(this.check_query, 200);
+        }).catch(err=>{
+            console.error(err);
         });
 
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
@@ -212,11 +190,51 @@ export default {
 
     watch: {
         query: function(val) {
-            console.log(val);
+            this.query_dirty = Date.now();
         }
     },
 
     methods: {
+        check_query: function() {
+            //debounce to 300 msec
+            if(!this.loading && this.query_dirty && this.query_dirty < (Date.now()-300)) {
+                this.query_dirty = null;
+                this.loading = true;
+                this.load(err=>{
+                    this.loading = false;
+                    if(err) console.error(err);
+                    else this.query_dirty = false;
+                    setTimeout(this.check_query, 500);
+                });
+            } else {
+                //console.log("waiting", this);
+                setTimeout(this.check_query, 1000);
+            }
+        },
+
+        load: function(cb) {
+            console.log("loading datasets with query", this.query);
+            var find = {
+                removed: false,
+            }
+            if(this.query) {
+                find.$text = {$search: this.query};
+            }
+            this.$http.get('dataset', {params: {
+                /*
+                find: JSON.stringify({$or: [
+                    {removed: {$exists: false}},
+                    {removed: false},
+                ]}),
+                */
+                find: JSON.stringify(find),
+                select: 'datatype datatype_tags project create_date name desc tags meta',
+            }})
+            .then(res=>{
+                this.datasets = res.body.datasets;
+                cb();
+            }).catch(cb);
+        },
         is_selected: function(dataset) {
             //if(this.selected[dataset.datatype._id] === undefined) return false;
             //if(this.selected[dataset.datatype._id][dataset._id] === undefined) return false;
