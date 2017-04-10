@@ -12,7 +12,7 @@ const db = require('../models');
 function canedit(user, rec) {
     if(user) {
         if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
-        if(~rec.admins.indexOf(user.sub.toString())) return true;
+        if(rec.admins && ~rec.admins.indexOf(user.sub.toString())) return true;
     }
     return false;
 }
@@ -50,7 +50,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         db.Apps.count(find).exec((err, count)=>{
             if(err) return next(err);
             //adding some derivatives
-            if(req.useR) recs.forEach(function(rec) {
+            if(req.user) recs.forEach(function(rec) {
                 rec._canedit = canedit(req.user, rec);
             });
             res.json({apps: recs, count: count});
@@ -118,14 +118,15 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         if(!app) return res.status(404).end();
 
         //check access
+        console.dir(app);
         if(canedit(req.user, app)) {
             //user can't update some fields
-            delete res.body.user_id;
-            delete res.body.create_date;
+            delete req.body.user_id;
+            delete req.body.create_date;
             for(var k in req.body) app[k] = req.body[k];
             app.save((err)=>{
                 if(err) return next(err);
-                app= JSON.parse(JSON.stringify(app));
+                app = JSON.parse(JSON.stringify(app));
                 app._canedit = canedit(req.user, app);
                 res.json(app);
             });
@@ -149,6 +150,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
         if(err) return next(err);
         if(!app) return next(new Error("can't find the app with id:"+req.params.id));
         //only superadmin or admin of this test spec can update
+        console.dir(app);
         if(canedit(req.user, app)) {
             app.remove().then(function() {
                 res.json({status: "ok"});

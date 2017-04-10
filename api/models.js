@@ -67,7 +67,7 @@ var datasetSchema = mongoose.Schema({
     datatype_tags: [String], //add specificity to datatype (different from "tags" which is used for searching)
 
     //meta fields as specified in the datatype.meta
-    meta: mongoose.Schema.Types.Mixed, 
+    meta: mongoose.Schema.Types.Mixed,
     
     //human readable name / desc
     name: String,
@@ -77,8 +77,6 @@ var datasetSchema = mongoose.Schema({
 
     //physical location of this crate (URI?)
     storage: String, //azure, dc2, sda?, jetstream-swift, etc.. (as configured in /config)
-
-    //task: mongoose.Schema.Types.Mixed, //wf.task (just as reference for now.. not sure if I need it)
 
     //provenance info (if it's derivative) - not set if user uploaded it
     prov: {
@@ -97,6 +95,7 @@ var datasetSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false} ,
 })
+datasetSchema.index({'$**': 'text'}) //make all text fields searchable
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -174,6 +173,7 @@ var appSchema = mongoose.Schema({
 
     //input files for this application
     inputs: [ new mongoose.Schema({
+        id: String,
         datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
         datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
     })],
@@ -181,6 +181,7 @@ var appSchema = mongoose.Schema({
     //output files for this application
     //TODO right now, we can only deal with a single output data types per task
     outputs: [ new mongoose.Schema({
+        id: String,
         datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
         datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
     })],
