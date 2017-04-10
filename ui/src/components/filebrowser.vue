@@ -22,7 +22,7 @@
             <div class="content" style="margin-left: 20px;" v-if="file.open">
                 <filebrowser :task="task" :path="fullpath+'/'+file.filename"></filebrowser>
             </div>
-            <pre v-if="file.content" v-highlightjs="file.content" style="padding-left: 20px; margin: 0px"><code :class="file.type+' hljs'"></code></pre>
+            <pre v-if="file.content" v-highlightjs="file.content" class="file-content"><code :class="file.type+' hljs'"></code></pre>
         </div>
         <!--<p v-if="loading" class="ui mini compact message">Loading ...</p>-->
         <p v-if="files.length == 0" class="text-muted">Empty Directory</p>
@@ -137,5 +137,10 @@ export default {
 }
 .hljs {
     background: #f6f6f6;
+}
+pre.file-content {
+margin: 0px;
+padding-left: 20px;
+max-height: 400px;
 }
 </style>
