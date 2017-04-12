@@ -1,9 +1,9 @@
 <template>
-<div class="ui mini labels">
-    <a class="ui label" v-for="tag in deco_tags" :class="{red: tag.neg}">
+<div>
+    <el-tag v-for="(tag, i) in deco_tags" :type="tag.neg?'danger':'default'" :key="i">
         <i class="minus circle icon" v-if="tag.neg"></i>
         {{tag.name}}
-    </a>
+    </el-tag>
 </div>
 </template>
 
@@ -26,3 +26,9 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.el-tag {
+    margin-right: 5px;
+}
+</style>

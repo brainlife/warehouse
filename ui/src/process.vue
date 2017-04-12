@@ -32,13 +32,13 @@
                             <el-col :span="4">
                                 <el-dropdown style="float: right;" @command="view">
                                     <el-button type="primary">
-                                        Visualize <i class="el-icon-caret-bottom el-icon--right"></i>
+                                        View <i class="el-icon-caret-bottom el-icon--right"></i>
                                     </el-button>
                                     <el-dropdown-menu slot="dropdown">
                                         <!--<div v-if="props.row.datatype.name == 'neuro/anat'">-->
                                         <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
                                         <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
-                                        <el-dropdown-item command="mrview" disabled>MRView</el-dropdown-item>
+                                        <el-dropdown-item command="mrview">MRView</el-dropdown-item>
                                         <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
@@ -71,20 +71,30 @@
 
             <el-card class="box-card">
                 <div slot="header"> <span>Inputs</span> </div>
-                <el-table :data="app.inputs" style="width: 100%">
+                <el-table :data="instance.config.prov.deps" style="width: 100%">
                     <el-table-column type="expand">
                         <template scope="props">
-                            <!--
-                            <file v-for="file in props.row.datatype.files" 
-                                key="file.filename" :file="file" :task="input_task"></file>
-                            -->
-                            <filebrowser :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.id"></filebrowser>
+                            <filebrowser :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"></filebrowser>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
-                    <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
+                    <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
+                    <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
+                    <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
+                    <el-table-column prop="_dataset.meta" label="Metadata">
+                        <template scope="scope" v-if="scope.row._dataset">
+                            <metadata :metadata="scope.row._dataset.meta"></metadata>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
+                        <template scope="scope" v-if="scope.row._dataset">
+                            <tags :tags="scope.row._dataset.datatype_tags"></tags>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="_dataset.tags" label="User Tags">
+                        <template scope="scope" v-if="scope.row._dataset">
+                            <tags :tags="scope.row._dataset.tags"></tags>
+                        </template>
+                    </el-table-column>
                 </el-table>
             </el-card>
             <br>
@@ -162,6 +172,23 @@ export default {
         .then(res=>{
             this.instance = res.body.instances[0];
 
+            //load datasets used for prov.deps
+            var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
+            this.$http.get('dataset', {params: {
+                find: JSON.stringify({_id: dataset_ids}),
+                populate: ' ',
+            }})
+            .then(res=>{
+                //this.datasets = res.body.datasets;
+                res.body.datasets.forEach((dataset)=>{
+                    this.instance.config.prov.deps.forEach(dep=>{
+                        if(dep.dataset == dataset._id) {
+                            Vue.set(dep, '_dataset', dataset);
+                        }
+                    });
+                });
+            });
+
             //load tasks
             return this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({
@@ -223,23 +250,7 @@ export default {
                 }
             }
 
-            //load datasets used for prov.deps
-            var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
-            this.$http.get('dataset', {params: {
-                find: JSON.stringify({_id: dataset_ids}),
-                populate: ' ',
-            }})
-            .then(res=>{
-                //this.datasets = res.body.datasets;
-                res.body.datasets.forEach((dataset)=>{
-                    this.instance.config.prov.deps.forEach(dep=>{
-                        if(dep.dataset == dataset._id) {
-                            Vue.set(dep, '_dataset', dataset);
-                        }
-                    });
-                });
-            });
-
+ 
         }).catch((err)=>{
             console.error(res);
         });

@@ -40,13 +40,16 @@
                             </option>
                         </select>
                     </div>
-        
-                    <!--
-                    <div class="field">
-                        {{app.config}}
-                    </div>
-                    -->
 
+                    <h3>Configurations</h3>
+                    <!-- TODO doesn't support nested parameters-->
+                    <div class="field" v-for="(v,k) in app.config" v-if="v.type && v.value">
+                        <label>{{k}}</label>
+                        <el-input v-model="v.value">
+                            <!--<template slot="prepend">{{k}}</template>-->
+                        </el-input>
+                    </div>
+        
                     <div class="ui primary button" @click="submit()">Submit</div>
                 </div>
             </el-card>
@@ -91,7 +94,7 @@ function generate_config(app, download_task_id) {
                     switch(node.type) {
                     case "string":
                     case "integer":
-                        obj[k] = node.default; //TODO - let's just use default for now
+                        obj[k] = node.value;
                         break;
                     case "input":
                         //find the input 
@@ -153,6 +156,14 @@ export default {
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
 
+            //process config template
+            //TODO - update to handle nested parameters
+            console.dir(this.app);
+            for(var k in this.app.config) {
+                var v = this.app.config[k];
+                if(v.type && v.default) v.value = v.default;
+            }
+
             //load datasets that this app cares about
             var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
             return this.$http.get('dataset', {params: {
@@ -161,6 +172,7 @@ export default {
                     removed: false,
                 })
             }})
+
         })
         .then(res=>{
             //console.log("datasets applicable:", res);
