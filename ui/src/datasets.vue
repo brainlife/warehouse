@@ -25,7 +25,7 @@
                     <th>Project</th>
                     <th>Metadata</th>
                     <th>Name/Desc</th>
-                    <th>Tags</th>
+                    <th>User Tags</th>
                     <th style="min-width: 150px;">Create Date</th>
                 </tr>
             </thead>
