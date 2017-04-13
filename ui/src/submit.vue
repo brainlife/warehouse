@@ -35,18 +35,33 @@
                         <select class="ui fluid dropdown" v-model="input.dataset_id">
                             <option value="">(Select {{input.id}} dataset)</option>
                             <option v-for="dataset in datasets[input.id]" :value="dataset._id">
-                                {{dataset.name}} 
+                                <metadata :metadata="dataset.meta"></metadata> / 
+                                {{dataset.name}} / {{dataset.desc}} 
                                 <tags :tags="dataset.datatype_tags"></tags>
                             </option>
                         </select>
+
+                        <!--
+                        <el-input placeholder="Please input" v-model="input5">
+                            <el-select v-model="select" slot="prepend" placeholder="Select">
+                            <el-option label="Restaurant" value="1"></el-option>
+                            <el-option label="Order No." value="2"></el-option>
+                            <el-option label="Tel" value="3"></el-option>
+                            </el-select>
+                            <el-button slot="append" icon="search"></el-button>
+                        </el-input>
+                        -->
+                    </div>
+
+                    <h3>Configurations</h3>
+                    <!-- TODO doesn't support nested parameters-->
+                    <div class="field" v-for="(v,k) in app.config" v-if="v.type && v.value">
+                        <label>{{k}}</label>
+                        <el-input v-model="v.value">
+                            <!--<template slot="prepend">{{k}}</template>-->
+                        </el-input>
                     </div>
         
-                    <!--
-                    <div class="field">
-                        {{app.config}}
-                    </div>
-                    -->
-
                     <div class="ui primary button" @click="submit()">Submit</div>
                 </div>
             </el-card>
@@ -74,6 +89,7 @@ import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
+import metadata from '@/components/metadata'
 
 import lib from '@/lib'
 
@@ -91,7 +107,7 @@ function generate_config(app, download_task_id) {
                     switch(node.type) {
                     case "string":
                     case "integer":
-                        obj[k] = node.default; //TODO - let's just use default for now
+                        obj[k] = node.value;
                         break;
                     case "input":
                         //find the input 
@@ -116,20 +132,12 @@ function generate_config(app, download_task_id) {
 
     handle_obj(config);
 
-    /*
-    this.app.inputs.forEach((input)=>{
-        input.datatype.files.forEach((file)=>{
-            config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+(file.filename||file.dirname);
-        });
-    });
-    */
-    console.log("generated config");
-    console.dir(config);
+    console.log("generated config", config);
     return config;
 }
 
 export default {
-    components: { sidemenu, contact, project, tags },
+    components: { sidemenu, contact, project, tags, metadata },
 
     data () {
         return {
@@ -161,6 +169,14 @@ export default {
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
 
+            //process config template
+            //TODO - update to handle nested parameters
+            console.dir(this.app);
+            for(var k in this.app.config) {
+                var v = this.app.config[k];
+                if(v.type && v.default) v.value = v.default;
+            }
+
             //load datasets that this app cares about
             var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
             return this.$http.get('dataset', {params: {
@@ -169,6 +185,7 @@ export default {
                     removed: false,
                 })
             }})
+
         })
         .then(res=>{
             //console.log("datasets applicable:", res);

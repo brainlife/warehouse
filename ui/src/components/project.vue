@@ -30,13 +30,13 @@
       </tr>
       <tr>
           <td>Admins</td>
-          <td style="line-height: 200%;">
+          <td>
             <contact v-for="id in project.admins" key="id" :id="id"></contact>
           </td>
       </tr>
       <tr>
           <td>Members</td>
-          <td style="line-height: 200%;">
+          <td>
             <contact v-for="id in project.members" key="id" :id="id"></contact>
           </td>
       </tr>

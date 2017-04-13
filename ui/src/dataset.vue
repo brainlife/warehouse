@@ -3,13 +3,14 @@
     <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher">
         <div class="margin20" v-if="dataset">
-            <button class="ui primary right floated button" @click="download()">
-                <i class="download icon"></i> Download (.tar.gz)</button>
-            <button class="ui right floated button" @click="remove()">
-                <i class="trash icon"></i> Remove</button>
+            <el-button-group style="float: right;">
+                <el-button @click="remove()"><icon name="trash"></icon> Remove</el-button>
+                <el-button type="primary" @click="download()"><icon name="download"></icon> Download</el-button>
+            </el-button-group>
 
             <h1><i class="cube icon"></i> {{dataset.name}}</h1>
             <p>{{dataset.desc}}</p>
+            <el-alert v-if="dataset.removed" title="Remove" type="warning" show-icon :closable="false"></el-alert>
 
             <table class="ui definition table">
             <tbody>
@@ -58,7 +59,38 @@
                 <tr class="top aligned">
                     <td>Provenance</td>
                     <td v-if="dataset.prov.app">
-                        <pre v-highlightjs><code class="json hljs">{{dataset.prov}}</code></pre>
+
+                        <el-button-group style="float: right;">
+                            <el-button size="small" @click="downloadprov()"><icon name="download"></icon> Download Provenance (.sh)</el-button>
+                        </el-button-group>
+                        <br clear="both">
+                        <br>
+
+                        <el-row :gutter="10">
+                            <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
+                            <div @click="go('/dataset/'+dep.dataset)">
+                                <el-card class="clickable">
+                                    <b><icon name="cubes"></icon> {{dep.input_id}}</b><br>
+                                    {{dep.dataset}}
+                                </el-card>
+                            </div>
+                            <br>
+                            <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
+                            <br>
+                            </el-col>
+                        </el-row>
+                        <el-card style="background-color: #13ce66">
+                            <b>App / {{dataset.prov.app.name}}</b><br>
+                            {{dataset.prov.app.desc}}
+                        </el-card>
+
+                        <center>
+                            <br>
+                            <icon class="text-muted" scale="2" name="arrow-down"></icon>
+                            <br>
+                            <el-card>This dataset</el-card>
+                        </center>
+                    
                     </td>
                     <td v-else="dataset.prov">
                         <p class="text-muted">Uploaded by user.</p>
@@ -145,6 +177,7 @@ export default {
             console.dir(dataset);
         },
         go: function(path) {
+            console.log(path);
             this.$router.push(path);
         },
         download: function() {

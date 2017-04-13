@@ -34,7 +34,9 @@ body {
 }
 pre {
     margin: 0px;
+    overflow: auto;
 }
+.clickable:hover,
 .clickable-record:hover {
     cursor: pointer;
     background-color: #ddd;

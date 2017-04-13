@@ -32,13 +32,13 @@
                             <el-col :span="4">
                                 <el-dropdown style="float: right;" @command="view">
                                     <el-button type="primary">
-                                        Visualize <i class="el-icon-caret-bottom el-icon--right"></i>
+                                        View <i class="el-icon-caret-bottom el-icon--right"></i>
                                     </el-button>
                                     <el-dropdown-menu slot="dropdown">
                                         <!--<div v-if="props.row.datatype.name == 'neuro/anat'">-->
                                         <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
                                         <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
-                                        <el-dropdown-item command="mrview" disabled>MRView</el-dropdown-item>
+                                        <el-dropdown-item command="mrview">MRView</el-dropdown-item>
                                         <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
@@ -71,24 +71,37 @@
 
             <el-card class="box-card">
                 <div slot="header"> <span>Inputs</span> </div>
-                <el-table :data="app.inputs" style="width: 100%">
+                <el-table :data="instance.config.prov.deps" style="width: 100%">
                     <el-table-column type="expand">
                         <template scope="props">
-                            <file v-for="file in props.row.datatype.files" 
-                                key="file.filename" :file="file" :task="main_task"></file>
+                            <filebrowser :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"></filebrowser>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
-                    <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
+                    <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
+                    <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
+                    <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
+                    <el-table-column prop="_dataset.meta" label="Metadata">
+                        <template scope="scope" v-if="scope.row._dataset">
+                            <metadata :metadata="scope.row._dataset.meta"></metadata>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
+                        <template scope="scope" v-if="scope.row._dataset">
+                            <tags :tags="scope.row._dataset.datatype_tags"></tags>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="_dataset.tags" label="User Tags">
+                        <template scope="scope" v-if="scope.row._dataset">
+                            <tags :tags="scope.row._dataset.tags"></tags>
+                        </template>
+                    </el-table-column>
                 </el-table>
             </el-card>
             <br>
 
             <el-card class="box-card">
                 <div slot="header"> <span>Configuration</span> </div>
-                <p>TODO.. display this in more user frienly way</p>
+                <p>TODO.. display this in more user friendly way</p>
                 <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </el-card>
 
@@ -127,6 +140,7 @@ import contact from '@/components/contact'
 import message from '@/components/message'
 import task from '@/components/task'
 import file from '@/components/file'
+import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 
@@ -136,7 +150,7 @@ export default {
     mixins: [
         //require("vue-toaster")
     ],
-    components: { sidemenu, contact, task, message, file, tags, metadata },
+    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser },
 
     data () {
         return {
@@ -157,6 +171,23 @@ export default {
         }})
         .then(res=>{
             this.instance = res.body.instances[0];
+
+            //load datasets used for prov.deps
+            var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
+            this.$http.get('dataset', {params: {
+                find: JSON.stringify({_id: dataset_ids}),
+                populate: ' ',
+            }})
+            .then(res=>{
+                //this.datasets = res.body.datasets;
+                res.body.datasets.forEach((dataset)=>{
+                    this.instance.config.prov.deps.forEach(dep=>{
+                        if(dep.dataset == dataset._id) {
+                            Vue.set(dep, '_dataset', dataset);
+                        }
+                    });
+                });
+            });
 
             //load tasks
             return this.$http.get(Vue.config.wf_api+'/task', {params: {
@@ -182,13 +213,14 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             ws.onopen = (e)=>{
-                console.log("websocket opened", this.instance._id);
+                //console.log("websocket opened", this.instance._id);
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: Vue.config.user.sub+"."+this.instance._id+".#",
                     }
                 }));
+                //console.log("binding to instance", this.instance._id);
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
@@ -218,23 +250,7 @@ export default {
                 }
             }
 
-            //load datasets used for prov.deps
-            var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
-            this.$http.get('dataset', {params: {
-                find: JSON.stringify({_id: dataset_ids}),
-                populate: ' ',
-            }})
-            .then(res=>{
-                //this.datasets = res.body.datasets;
-                res.body.datasets.forEach((dataset)=>{
-                    this.instance.config.prov.deps.forEach(dep=>{
-                        if(dep.dataset == dataset._id) {
-                            Vue.set(dep, '_dataset', dataset);
-                        }
-                    });
-                });
-            });
-
+ 
         }).catch((err)=>{
             console.error(res);
         });
@@ -247,6 +263,14 @@ export default {
                 if(task._id == this.instance.config.main_task_id) it = task;
             })
             if(!it) console.error("failed to find main_task");
+            return it;
+        },
+        input_task: function() {
+            var it = null;
+            this.tasks.forEach((task)=>{
+                if(task.name == "Stage Input") it = task; //TODO brittle~!
+            })
+            if(!it) console.error("failed to find input_task");
             return it;
         }
     },
