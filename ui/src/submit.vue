@@ -35,10 +35,22 @@
                         <select class="ui fluid dropdown" v-model="input.dataset_id">
                             <option value="">(Select {{input.id}} dataset)</option>
                             <option v-for="dataset in datasets[input.id]" :value="dataset._id">
-                                {{dataset.name}} 
+                                <metadata :metadata="dataset.meta"></metadata> / 
+                                {{dataset.name}} / {{dataset.desc}} 
                                 <tags :tags="dataset.datatype_tags"></tags>
                             </option>
                         </select>
+
+                        <!--
+                        <el-input placeholder="Please input" v-model="input5">
+                            <el-select v-model="select" slot="prepend" placeholder="Select">
+                            <el-option label="Restaurant" value="1"></el-option>
+                            <el-option label="Order No." value="2"></el-option>
+                            <el-option label="Tel" value="3"></el-option>
+                            </el-select>
+                            <el-button slot="append" icon="search"></el-button>
+                        </el-input>
+                        -->
                     </div>
 
                     <h3>Configurations</h3>
@@ -77,6 +89,7 @@ import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
+import metadata from '@/components/metadata'
 
 import lib from '@/lib'
 
@@ -124,7 +137,7 @@ function generate_config(app, download_task_id) {
 }
 
 export default {
-    components: { sidemenu, contact, project, tags },
+    components: { sidemenu, contact, project, tags, metadata },
 
     data () {
         return {
