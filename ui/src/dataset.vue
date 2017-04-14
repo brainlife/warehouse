@@ -10,7 +10,7 @@
 
             <h1><i class="cube icon"></i> {{dataset.name}}</h1>
             <p>{{dataset.desc}}</p>
-            <el-alert v-if="dataset.removed" title="Remove" type="warning" show-icon :closable="false"></el-alert>
+            <el-alert v-if="dataset.removed" title="Removed" type="warning" show-icon :closable="false"></el-alert>
 
             <table class="ui definition table">
             <tbody>

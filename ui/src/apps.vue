@@ -1,8 +1,9 @@
 <template>
 <div>
-    <!-- main view -->
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
+        <pageheader :user="config.user"></pageheader>
+        <div class="page-content">
         <div class="margin20">
             <div class="ui fluid category search">
                 <button class="ui right floated primary button" @click="go('/app/_/edit')">
@@ -21,6 +22,7 @@
                 <app v-for="app in apps" key="app._id" :app="app"></app>
             </div><!--v-for-->
         </div><!--magin20-->
+        </div>
     </div><!--pusher-->
 </div><!--root-->
 </template>
@@ -28,14 +30,17 @@
 <script>
 import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
+import pageheader from '@/components/pageheader'
 import app from '@/components/app'
 
 export default {
-    name: 'apps',
+    components: { sidemenu, pageheader, app },
     data () {
         return {
             apps: [],
             query: "",
+
+            config: Vue.config,
         }
     },
 
@@ -54,7 +59,6 @@ export default {
             this.$router.push(path);
         }
     },
-    components: { sidemenu, app },
 }
 </script>
 

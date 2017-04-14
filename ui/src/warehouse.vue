@@ -23,7 +23,16 @@ body {
 	margin: 20px;
 }
 .ui.pusher {
-  margin-left: 210px;
+  margin-left: 150px;
+}
+.page-content {
+    /*transition: margin-right 0.5s;*/
+    position: fixed;
+    left: 150px;
+    right: 0px;
+    top: 50px;
+    bottom: 0px;
+    overflow: auto;
 }
 
 .fade-enter-active {
@@ -55,7 +64,7 @@ code.hljs {
     font-size: 80%;
 }
 .off-sidemenu {
-    margin-left: 210px;
+    margin-left: 150px;
 }
 .el-card__header {
     background-color: #EFF2F7;

@@ -2,6 +2,17 @@
 <div>
     <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher"> <!-- main view -->
+        <pageheader :user="config.user"></pageheader>
+        <div class="project-view">
+            <h4>Private Projects</h4>
+            <p v-for="(project, project_id) in projects" :class="{active: project.name == 'o3d222'}">
+                {{project.name}}
+            </p>
+            <h4>Public Projects</h4>
+            <p v-for="(project, project_id) in projects" :class="{active: project.name == 'o3d'}">
+                {{project.name}}
+            </p>
+        </div>
         <div class="page-content" :class="{rightopen: selected_count}">
         <div class="margin20">
             <div class="ui fluid category search">
@@ -64,13 +75,42 @@
                 </tr>
             </tbody>
             </table>
+
+<!--
+<el-table
+:data="datasets"
+default-expand-all
+style="width: 100%">
+<el-table-column
+type="selection"
+width="55">
+</el-table-column>
+<el-table-column type="expand">
+<template scope="props">
+<p>State: {{ props.row.state }}</p>
+<p>City: {{ props.row.city }}</p>
+<p>Address: {{ props.row.address }}</p>
+<p>Zip: {{ props.row.zip }}</p>
+</template>
+</el-table-column>
+<el-table-column
+label="Date"
+prop="date">
+</el-table-column>
+<el-table-column
+label="Name"
+prop="name">
+</el-table-column>
+</el-table>            
+-->
+
+
         </div><!--margin20-->
         </div><!--page-content-->
     </div><!--pusher-->
 
     <div class="selected-view" v-if="selected_count && datatypes" style="padding: 10px 5px 0px 5px;">
-        <h3 style="color: white;"><icon name="check"></icon> {{selected_count}} Selected
-        </h3>
+        <h3 style="color: white;padding-top: 10px;"><icon name="check"></icon> {{selected_count}} Selected </h3>
         <div class="ui segments">
             <div class="ui attached segment" v-for="(_datasets, did) in group_selected" v-if="datatypes[did]">
                 <h5>{{datatypes[did].name}}</h5>
@@ -96,6 +136,7 @@
 <script>
 import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
+import pageheader from '@/components/pageheader'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 
@@ -103,7 +144,7 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
     name: 'datasets',
-    components: { sidemenu, tags, metadata },
+    components: { sidemenu, tags, metadata, pageheader },
     data () {
         return {
             datasets: null,
@@ -117,6 +158,8 @@ export default {
             //cache
             datatypes: null,
             projects: null, 
+
+            config: Vue.config,
         }
     },
 
@@ -221,12 +264,6 @@ export default {
                 find.$text = {$search: this.query};
             }
             this.$http.get('dataset', {params: {
-                /*
-                find: JSON.stringify({$or: [
-                    {removed: {$exists: false}},
-                    {removed: false},
-                ]}),
-                */
                 find: JSON.stringify(find),
                 select: 'datatype datatype_tags project create_date name desc tags meta',
             }})
@@ -356,36 +393,56 @@ export default {
 </script>
 
 <style scoped>
-.page-content {
-/*transition: margin-right 0.5s;*/
-position: fixed;
-left: 200px;
-right: 0px;
-top: 0px;
-bottom: 0px;
-overflow: auto;
-}
 .rightopen {
-right: 250px;
+    right: 250px;
 }
 .selected {
-transition: color, background-color 0.2s;
-background-color: #2185d0;
-color: white;
+    transition: color, background-color 0.2s;
+    background-color: #2185d0;
+    color: white;
 }
 .selected-view {
-background-color: #2185d0;
-/*box-shadow: inset 3px 0px 3px #aaa;*/
-overflow-x: hidden;
-position: fixed;
-right: 0px;
-width: 250px;
-top: 0px;
-bottom: 0px;
+    background-color: #2185d0;
+    /*box-shadow: inset 3px 0px 3px #aaa;*/
+    overflow-x: hidden;
+    position: fixed;
+    right: 0px;
+    width: 250px;
+    top: 50px;
+    bottom: 0px;
 }
 .selected-view .selected-item:hover {
-background-color: #eee;
-cursor: pointer;
+    background-color: #eee;
+    cursor: pointer;
 }
+.page-content {
+    margin-left: 200px;
+}
+.project-view {
+    position: fixed;
+    top: 50px;
+    bottom: 0px;
+    width: 200px;
+    background-color: #3b5f84;
+    color: white;
+}
+.project-view h4 {
+    padding: 20px;
+    opacity: 0.7;
+    text-transform: uppercase;
+    margin-bottom: 0px;
+}
+.project-view p {
+    margin: 0px;
+    padding: 10px 20px;
+}
+.project-view p:hover {
+    cursor: pointer;
+    background-color: black;
+}
+.project-view p.active {
+    background-color: #2185d0;
+}
+
 </style>
 

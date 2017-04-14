@@ -2,6 +2,8 @@
 <div>
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
+        <pageheader :user="config.user"></pageheader>
+        <div class="page-content">
         <div class="margin20" v-if="app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
             <button class="ui button primary right floated" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"> 
@@ -14,6 +16,7 @@
             <img style="float: left; margin-right: 20px;" :src="app.avatar">
             <h2>{{app.name}}</h2>
             <p>{{app.desc}}</p>
+            <br clear="both">
 
             <table class="ui definition table">
             <tbody>
@@ -90,19 +93,22 @@
             </tbody>
             </table>
 
-            <h2>Debug</h2>
+            <div v-if="config.debug">
+                <h2>Debug</h2>
 
-            <div class="ui segments">
-                <div class="ui segment">
-                    <h3>App</h3>
-                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <div class="ui segment">
-                    <h3>Resource</h3>
-                    <pre v-highlightjs="JSON.stringify(resource, null, 4)"><code class="json hljs"></code></pre>
+                <div class="ui segments">
+                    <div class="ui segment">
+                        <h3>App</h3>
+                        <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+                    </div>
+                    <div class="ui segment">
+                        <h3>Resource</h3>
+                        <pre v-highlightjs="JSON.stringify(resource, null, 4)"><code class="json hljs"></code></pre>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div><!--margin20-->
+        </div><!--page-content-->
     </div>
 </div><!--root-->
 </template>
@@ -111,13 +117,14 @@
 import Vue from 'vue'
 
 import sidemenu from '@/components/sidemenu'
+import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
 import datatype from '@/components/datatype'
 
 export default {
-    components: { sidemenu, contact, project, tags, datatype },
+    components: { sidemenu, pageheader, contact, project, tags, datatype },
 
     data () {
         return {
@@ -130,6 +137,8 @@ export default {
 
             //cache
             projects: [],
+
+            config: Vue.config,
         }
     },
 

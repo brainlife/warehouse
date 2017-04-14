@@ -5,7 +5,6 @@
     </div>
 
     <tags :tags="datatype_tags"></tags>
-
     <div class="ui segment" v-for="file in datatype.files">
         <i class="file outline icon" v-if="file.filename"></i>
         <i class="folder icon" v-if="file.dirname"></i>

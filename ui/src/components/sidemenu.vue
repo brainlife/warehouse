@@ -96,18 +96,18 @@ export default {
 position: fixed;
 top: 0px;
 left: 0px;
-width: 210px;
+width: 150px;
 bottom: 0px;
 background-color: black;
 }
 .item.title {
-/*background-color: #489fdf;*/
 background-image: linear-gradient(120deg, #2693ff, #159957);
 font-weight: bold;
 font-size: 15pt;
 padding: 15px 20px;
 color: white;
 margin-bottom: 10px;
+height: 50px;
 }
 .el-menu svg {
 margin-right: 10px;
@@ -123,6 +123,6 @@ background-color: #f0f0f0;
 .el-menu .bottom {
 position: fixed;
 bottom: 0px;
-width: 210px;
+width: 150px;
 }
 </style>
