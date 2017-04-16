@@ -21,9 +21,10 @@ Vue.use(Router)
 export default new Router({
     //TODO remove names.. I am not using it
   routes: [
-    { path: '/', redirect: '/datasets', component: dashboard },
-    { path: '/datasets', component: datasets },
-    { path: '/datasets/upload', component: upload},
+    { path: '/', redirect: '/datasets' },
+    { path: '/dashboard', component: dashboard },
+    { path: '/datasets/:projectid?', component: datasets },
+    { path: '/upload', component: upload},
     { path: '/dataset/:id', component: dataset},
     { path: '/download/:id', component: download},
     { path: '/processes', component: processes},

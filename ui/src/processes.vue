@@ -1,7 +1,9 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/processes"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content" :class="{rightopen: selected_count}">
         <div class="margin20">
             <div class="ui fluid category search">
                 <div class="ui icon input">
@@ -64,7 +66,8 @@
                 <br>
                 <pre v-if="instances" v-highlightjs="JSON.stringify(instances, null, 4)"><code class="json hljs"></code></pre>
             </div>
-        </div>
+        </div><!--margin20-->
+        </div><!--page-content-->
     </div>
 </div>
 </template>
@@ -72,10 +75,10 @@
 <script>
 import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
+import pageheader from '@/components/pageheader'
 
 export default {
-    components: { sidemenu },
-    name: 'processes',
+    components: { sidemenu, pageheader },
     data () {
         return {
             instances: null,

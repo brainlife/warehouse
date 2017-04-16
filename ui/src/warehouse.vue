@@ -23,12 +23,12 @@ body {
 	margin: 20px;
 }
 .ui.pusher {
-  margin-left: 150px;
+  margin-left: 200px;
 }
 .page-content {
     /*transition: margin-right 0.5s;*/
     position: fixed;
-    left: 150px;
+    left: 90px;
     right: 0px;
     top: 50px;
     bottom: 0px;
@@ -68,5 +68,9 @@ code.hljs {
 }
 .el-card__header {
     background-color: #EFF2F7;
+}
+svg.fa-icon {
+position: relative;
+top: 2px;
 }
 </style>

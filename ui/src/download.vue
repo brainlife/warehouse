@@ -1,7 +1,9 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20" v-if="instance && tasks">
             <!--
             <button class="ui button primary right floated"
@@ -36,64 +38,28 @@
                 </div>
             </div>
 
-            <!--
-            <div class="ui segment" v-if="app && instance.status == 'finished'">
-                <div class="ui top attached label">Outputs</div>
-                <el-table :data="app.outputs" style="width: 100%">
-                    <el-table-column type="expand">
-                        <template scope="props">
-                            <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
-                </el-table>
-            </div>
-            -->
-
             <div class="ui segment">
                 <div class="ui top attached label">Task Statuses</div>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
             </div>
-            <!--
 
-            <div class="ui segment">
-                <div class="ui top attached label">Inputs</div>
-                <br>
-                <div class="ui segments" v-for="dep in instance.config.prov.deps">
-                    <h5 class="ui top attached header">
-                        <h5>{{dep.input_id}}</h5>
-                    </h5>
-                    <div class="ui attached segment" v-if="dep._dataset">
-                        <tags :tags="dep._dataset.datatype_tags"></tags>
-                        <small>{{dep._dataset.desc}}</small>
-                        <metadata :metadata="dep._dataset.meta"></metadata>
+            <div v-if="config.debug">
+                <h2>Debug</h2>
+                <div class="ui segments">
+                    <div class="ui segment" v-if="instance">
+                        <h3>instance</h3>
+                        <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
+                    </div>
+                    <div class="ui segment" v-if="tasks">
+                        <h3>tasks</h3>
+                        <div v-for="task in tasks">
+                            <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div class="ui segment">
-                <div class="ui top attached label">Configuration</div>
-                <br>
-                <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
-            </div>
-            -->
-
-            <h2>Debug</h2>
-            <div class="ui segments">
-                <div class="ui segment" v-if="instance">
-                    <h3>instance</h3>
-                    <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <div class="ui segment" v-if="tasks">
-                    <h3>tasks</h3>
-                    <div v-for="task in tasks">
-                        <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </div><!--margin20-->
+        </div><!--page-content-->
     </div>
 </div><!--root-->
 </template>
@@ -107,11 +73,12 @@ import task from '@/components/task'
 import file from '@/components/file'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
+import pageheader from '@/components/pageheader'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    components: { sidemenu, contact, task, file, tags, metadata },
+    components: { sidemenu, contact, task, file, tags, metadata, pageheader },
 
     data () {
         return {
@@ -122,6 +89,8 @@ export default {
 
             error: null,
             status: "loading",
+
+            config: Vue.config,
         }
     },
 

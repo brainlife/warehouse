@@ -1,8 +1,8 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
-        <pageheader :user="config.user"></pageheader>
         <div class="page-content">
         <div class="margin20">
             <div class="ui fluid category search">
@@ -22,7 +22,7 @@
                 <app v-for="app in apps" key="app._id" :app="app"></app>
             </div><!--v-for-->
         </div><!--magin20-->
-        </div>
+        </div><!--page-content-->
     </div><!--pusher-->
 </div><!--root-->
 </template>

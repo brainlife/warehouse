@@ -1,39 +1,126 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher"> <!-- main view -->
-        <pageheader :user="config.user"></pageheader>
-        <div class="project-view">
-            <h4>Private Projects</h4>
-            <p v-for="(project, project_id) in projects" :class="{active: project.name == 'o3d222'}">
-                {{project.name}}
-            </p>
-            <h4>Public Projects</h4>
-            <p v-for="(project, project_id) in projects" :class="{active: project.name == 'o3d'}">
-                {{project.name}}
-            </p>
-        </div>
+        <projectmenu :active="project_id"></projectmenu>
         <div class="page-content" :class="{rightopen: selected_count}">
-        <div class="margin20">
-            <div class="ui fluid category search">
-                <button class="ui right floated primary button" @click="go('/datasets/upload')">
-                    <i class="ui icon add"></i> Upload
-                </button>
-                <div class="ui icon input">
-                    <input class="prompt" type="text" v-model="query" placeholder="Search ...">
-                    <i class="search icon"></i>
+
+        <div class="fixed-top">
+            <div style="margin: 10px">
+                <!--
+                <div class="ui fluid category search">
+                    <div class="ui icon input">
+                        <input class="prompt" type="text" v-model="query" placeholder="Search ...">
+                        <i class="search icon"></i>
+                    </div>
+                    <div class="results"></div>
                 </div>
-                <div class="results"></div>
+                -->
+                <el-row :gutter="20">
+                     <el-col :span="20">
+                        <el-input
+                            placeholder="Filter Datasets" 
+                            icon="search"
+                            v-model="query">
+                        </el-input>
+                    </el-col>
+                    <el-col :span="4">
+                        <button class="ui primary button" @click="go('/upload')">
+                            <i class="ui icon add"></i> Upload
+                        </button>
+                    </el-col>
+               </el-row>
             </div>
 
-            <h3 v-if="!datasets"> <i class="el-icon-loading"></i> Loading..  </h3>
+            <el-row class="header">
+                <el-col :span="1">&nbsp;</el-col>
+                <el-col :span="3">Subject</el-col>
+                <el-col :span="20">
+                    <el-row>
+                        <el-col :span="2">&nbsp;</el-col>
+                        <el-col :span="6">Create Date</el-col>
+                        <el-col :span="6">Datatype</el-col>
+                        <el-col :span="4">Datatype Tags</el-col>
+                        <el-col :span="4">User Tags</el-col>
+                        <el-col :span="2">??</el-col>
+                    </el-row> 
+                </el-col>
+            </el-row>
+
+            <!--
+            <div class="margin20" v-if="!datasets">
+                <h3> <i class="el-icon-loading"></i> Loading.. </h3>
+            </div>
+            -->
+
+        </div><!--fixed-top-->
+
+        <!--start of dataset list-->
+        <div class="list" style="margin-top: 85px"> 
+            <el-row class="group" v-for="(datasets, subject) in datasets_grouped">
+                <el-col :span="1" style="margin-top: 3px;">
+                    <el-checkbox></el-checkbox>
+                </el-col>
+                <el-col :span="3" style="margin-top: 3px;font-weight: bold;">
+                    {{subject}}
+                </el-col> 
+                <el-col :span="20">
+                    <div 
+                    v-for="dataset in datasets" :key="dataset._id"
+                    :class="{dataset: true, clickable: true, selected: is_selected(dataset)}"
+                    @click="go('/dataset/'+dataset._id)">
+                        <el-row>
+                                <!--
+                                <el-checkbox 
+                                    @change.stop="check(dataset)"
+                                    v-model="dataset.checked"></el-checkbox>
+                                -->
+                            <el-col :span="2">
+                                <div class="ui checkbox">
+                                    <input type="checkbox" @click.stop="check(dataset)" :checked="is_selected(dataset)">
+                                    <label></label><!-- need this somehow-->
+                                </div>
+                            </el-col>
+                            <el-col :span="6">
+                                {{dataset.create_date | date}}
+                                &nbsp;
+                            </el-col>
+                            <el-col :span="6">
+                                {{datatypes[dataset.datatype].name}}
+                                <span class="text-muted">{{datatypes[dataset.datatype].desc}}</span>
+                                &nbsp;
+                            </el-col>
+                            <el-col :span="4">
+                                <tags :tags="dataset.datatype_tags"></tags> &nbsp;
+                            </el-col>
+                            <el-col :span="4">
+                                <tags :tags="dataset.tags"></tags> &nbsp;
+                            </el-col>
+                            <el-col :span="2">
+                                <!--
+                                {{dataset.storage}} &nbsp;
+                                -->
+                            </el-col>
+                        </el-row>
+                        <!--
+                        <b>{{dataset.name}}</b>
+                        {{dataset.desc}}
+                        -->
+                    </div>
+                </el-col> 
+            </el-row>
+        </div>
+
+        <!-- old list
+        <div class="margin20">
 
             <table class="ui compact definition table" v-if="datasets">
             <thead>
                 <tr>
                     <th style="width: 25px; background-color: #f0f0f0; box-shadow: -1px -1px 0 1px #f0f0f0;"></th>
+                    <th v-if="!project_id">Project</th>
                     <th>Data Type</th>
-                    <th>Project</th>
                     <th>Metadata</th>
                     <th>Name/Desc</th>
                     <th>User Tags</th>
@@ -42,22 +129,23 @@
             </thead>
             <tbody>
                 <tr v-for="dataset in datasets" 
+                    :key="dataset._id"
                     :class="{'clickable-record': true, selected: is_selected(dataset)}" 
                     @click="go('/dataset/'+dataset._id)">
                     <td @click.stop="check(dataset)">
                         <div class="ui checkbox">
                             <input type="checkbox" :checked="is_selected(dataset)">
-                            <label></label><!-- need this somehow-->
+                            <label></label>
                         </div>
+                    </td>
+                    <td v-if="!project_id">
+                        <div class="ui green horizontal label" v-if="projects[dataset.project].access == 'public'">Public</div>
+                        <div class="ui red horizontal label" v-if="projects[dataset.project].access == 'private'">Private</div>
+                        {{projects[dataset.project].name}}
                     </td>
                     <td>
                         {{datatypes[dataset.datatype].name}}
                         <tags :tags="dataset.datatype_tags"></tags>
-                    </td>
-                    <td>
-                        <div class="ui green horizontal label" v-if="projects[dataset.project].access == 'public'">Public</div>
-                        <div class="ui red horizontal label" v-if="projects[dataset.project].access == 'private'">Private</div>
-                        {{projects[dataset.project].name}}
                     </td>
                     <td>
                         <metadata v-if="dataset.meta" :metadata="dataset.meta"></metadata>
@@ -75,42 +163,13 @@
                 </tr>
             </tbody>
             </table>
-
-<!--
-<el-table
-:data="datasets"
-default-expand-all
-style="width: 100%">
-<el-table-column
-type="selection"
-width="55">
-</el-table-column>
-<el-table-column type="expand">
-<template scope="props">
-<p>State: {{ props.row.state }}</p>
-<p>City: {{ props.row.city }}</p>
-<p>Address: {{ props.row.address }}</p>
-<p>Zip: {{ props.row.zip }}</p>
-</template>
-</el-table-column>
-<el-table-column
-label="Date"
-prop="date">
-</el-table-column>
-<el-table-column
-label="Name"
-prop="name">
-</el-table-column>
-</el-table>            
--->
-
-
-        </div><!--margin20-->
+        </div>
+        -->
         </div><!--page-content-->
     </div><!--pusher-->
 
     <div class="selected-view" v-if="selected_count && datatypes" style="padding: 10px 5px 0px 5px;">
-        <h3 style="color: white;padding-top: 10px;"><icon name="check"></icon> {{selected_count}} Selected </h3>
+        <h3 style="color: white;padding-top: 10px;"><icon name="check-square" scale="1.2"></icon> {{selected_count}} Selected </h3>
         <div class="ui segments">
             <div class="ui attached segment" v-for="(_datasets, did) in group_selected" v-if="datatypes[did]">
                 <h5>{{datatypes[did].name}}</h5>
@@ -139,16 +198,17 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
+import projectmenu from '@/components/projectmenu'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    name: 'datasets',
-    components: { sidemenu, tags, metadata, pageheader },
+    components: { sidemenu, tags, metadata, pageheader, projectmenu },
     data () {
         return {
             datasets: null,
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
+            project_id: null, //project to limit search result
 
             //query loading
             query: "",
@@ -164,32 +224,25 @@ export default {
     },
 
     computed: {
+        //group datasets by subject
+        datasets_grouped: function() {
+            if(!this.datasets) return {};
+
+            console.log("grouping");
+            var groups = {};
+
+            this.datasets.forEach(dataset=>{
+                var subject = "nosub"; //not all datasets has subject tag
+                if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
+                if(!groups[subject]) groups[subject] = [];
+                groups[subject].push(dataset);
+            });
+            return groups;
+        },
         
         selected_count: function() {
-            //var total = 0;
-            //for(var did in this.selected) {
-            //    total += Object.keys(this.selected[did]).length;
-            //}
             return Object.keys(this.selected).length;
         },
-
-        /*
-        filtered_datasets: function() {
-            if(!this.query) return this.datasets;
-
-            return this.datasets.filter((dataset)=>{
-                var lquery = this.query.toLowerCase();
-                if(~dataset.name.toLowerCase().indexOf(lquery)) return true;
-                if(~dataset.desc.toLowerCase().indexOf(lquery)) return true;
-                if(~dataset.project.name.toLowerCase().indexOf(lquery)) return true;
-                if(~dataset.datatype.name.toLowerCase().indexOf(lquery)) return true;
-
-                if(~dataset.tags.indexOf(lquery)) return true; //TODO need to do something a bit smarter..
-                if(~dataset.datatype_tags.indexOf(lquery)) return true; //TODO need to do something a bit smarter..
-                return false;
-            });
-        },
-        */
 
         group_selected: function() {
             var groups = {};
@@ -204,6 +257,9 @@ export default {
     },
 
     mounted: function() {
+        this.project_id = this.$route.params.projectid; //could be set to null
+
+        //need to load all project in case user might click on "all"
         this.$http.get('project', {params: {
             //service: "_upload",
         }})
@@ -234,6 +290,11 @@ export default {
     watch: {
         query: function(val) {
             this.query_dirty = Date.now();
+        },
+        '$route': function() {
+            this.load(function(err) {
+                if(err) console.error(err);
+            });
         }
     },
 
@@ -260,21 +321,32 @@ export default {
             var find = {
                 removed: false,
             }
+            this.project_id = this.$route.params.projectid; //could be set to null
+            if(this.$route.params.projectid) {
+                find.project = this.$route.params.projectid;
+            }
             if(this.query) {
                 find.$text = {$search: this.query};
             }
+            console.log("loading", find);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
-                select: 'datatype datatype_tags project create_date name desc tags meta',
+                select: 'datatype datatype_tags project create_date name desc tags meta storage',
             }})
             .then(res=>{
                 this.datasets = res.body.datasets;
+
+                //set checked flag for each dataset
+                this.datasets.forEach(dataset=>{
+                    var checked = false;
+                    if(this.is_selected(dataset)) checked = true;
+                    Vue.set(dataset, 'checked', checked);
+                });
+
                 cb();
             }).catch(cb);
         },
         is_selected: function(dataset) {
-            //if(this.selected[dataset.datatype._id] === undefined) return false;
-            //if(this.selected[dataset.datatype._id][dataset._id] === undefined) return false;
             if(this.selected[dataset._id] === undefined) return false;
             return true;
         },
@@ -285,12 +357,15 @@ export default {
             this.$router.push(path);
         },
         check: function(dataset) {
+            console.log("check");
             var did = dataset.datatype._id;
-            //if(this.selected[did] === undefined) Vue.set(this.selected, did, {});
-            //if(this.selected[did][dataset._id]) Vue.delete(this.selected[did], dataset._id);
-            //else Vue.set(this.selected[did], dataset._id, dataset);
-            if(this.selected[dataset._id]) Vue.delete(this.selected, dataset._id);
-            else Vue.set(this.selected, dataset._id, dataset);
+            if(this.selected[dataset._id]) {    
+                Vue.delete(this.selected, dataset._id);
+                dataset.checked = false;
+            } else {
+                Vue.set(this.selected, dataset._id, dataset);
+                dataset.checked = true;
+            }
             this.persist_selected();
         },
         persist_selected: function() {
@@ -301,9 +376,9 @@ export default {
             this.persist_selected();
         },
         remove_selected: function(dataset) {
-            //var did = dataset.datatype._id;
-            //Vue.delete(this.selected[did], dataset._id);
+            console.log("remove select", dataset);
             Vue.delete(this.selected, dataset._id);
+            dataset.checked = false;
             this.persist_selected();
         },
 
@@ -352,6 +427,21 @@ export default {
 
                     var download_path = "../"+download_task._id+"/download/"+dataset_id;
 
+                    //TODO - figure out process name from dataset.prov
+                    var process_name = "someprocess";
+                    //if(dataset.prov) { }
+
+                    //TODO - this is neuroscience specific, and I need to do a lot more thinking on this
+                    var dataname = datatype.name.split("/")[1];
+                    console.dir(datatype.files);
+                    datatype.files.forEach(file=>{
+                        symlink.push({
+                            src: download_path+"/"+(file.filename||file.dirname),
+                            dest: "download/derivatives/"+process_name+"/"+subject+"/"+dataname+"/"+subject+"_"+(file.filename||file.dirname),
+                        });
+                    });
+
+                    /*
                     //TODO I should probably switch by datatype._id?
                     switch(datatype.name) {
                     case "t1": //deprecated
@@ -359,7 +449,7 @@ export default {
                         datatype.files.forEach(file=>{
                             symlink.push({
                                 src: download_path+"/"+file.filename,
-                                dest: "download/derivatives/someprocess/"+subject+"/anat/"+subject+"_"+file.filename,
+                                dest: "download/derivatives/"+process_name+"/"+subject+"/anat/"+subject+"_"+file.filename,
                             });
                         });
                         break;
@@ -368,12 +458,20 @@ export default {
                         datatype.files.forEach(file=>{
                             symlink.push({
                                 src: download_path+"/"+file.filename,
-                                dest: "download/derivatives/someprocess/"+subject+"/dwi/"+subject+"_b-XXXX_"+file.filename,
+                                dest: "download/derivatives/"+process_name+"/"+subject+"/dwi/"+subject+"_b-XXXX_"+file.filename,
                             });
                         });
                         break;
                     default:
+                        //put all else somewhere..
+                        datatype.files.forEach(file=>{
+                            symlink.push({
+                                src: download_path+"/"+file.filename,
+                                dest: "download/derivatives/"+process_name+"/"+subject+"/dwi/"+subject+"_"+file.filename,
+                            });
+                        });
                     }
+                    */
                 }
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: download_instance._id,
@@ -393,7 +491,11 @@ export default {
 </script>
 
 <style scoped>
-.rightopen {
+.page-content {
+    margin-left: 200px;
+    transition: right 0.2s;
+}
+.page-content.rightopen {
     right: 250px;
 }
 .selected {
@@ -402,8 +504,8 @@ export default {
     color: white;
 }
 .selected-view {
-    background-color: #2185d0;
-    /*box-shadow: inset 3px 0px 3px #aaa;*/
+    /*background-color: #2185d0;*/
+    background-color: #444;
     overflow-x: hidden;
     position: fixed;
     right: 0px;
@@ -415,34 +517,47 @@ export default {
     background-color: #eee;
     cursor: pointer;
 }
-.page-content {
-    margin-left: 200px;
-}
-.project-view {
-    position: fixed;
-    top: 50px;
-    bottom: 0px;
-    width: 200px;
-    background-color: #3b5f84;
-    color: white;
-}
-.project-view h4 {
-    padding: 20px;
-    opacity: 0.7;
-    text-transform: uppercase;
-    margin-bottom: 0px;
-}
-.project-view p {
-    margin: 0px;
-    padding: 10px 20px;
-}
-.project-view p:hover {
-    cursor: pointer;
-    background-color: black;
-}
-.project-view p.active {
-    background-color: #2185d0;
-}
 
+.header {
+    background-color: gray;
+    color: white;
+    text-transform: uppercase;
+    padding: 5px 10px;
+}
+.list .group {
+    padding: 2px 0px 2px 6px;
+    /*margin-bottom: 1px;*/
+    font-size: 12px;
+    background-color: #ddd;
+}
+.list .dataset {
+    padding: 5px;
+    background-color: #fff;
+    margin-bottom: 1px;
+}
+.list .dataset.clickable:hover {
+    background-color: #eee;
+}
+.list .dataset.selected,
+.list .dataset.selected:hover {
+    background-color: #2693ff;
+}
+/*
+.list .dataset:not(:last-child) {
+    border-bottom: 1px solid #ddd;
+}
+*/
+.fixed-top {
+    position: fixed;
+    left: 290px;
+    top: 50px;
+    right: 0px;
+    background-color: #eee;
+    z-index: 5;
+    transition: right 0.2s;
+}
+.rightopen .fixed-top {
+    right: 250px;
+}
 </style>
 

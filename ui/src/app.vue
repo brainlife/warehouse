@@ -1,8 +1,8 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
-        <pageheader :user="config.user"></pageheader>
         <div class="page-content">
         <div class="margin20" v-if="app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>

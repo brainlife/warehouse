@@ -1,7 +1,9 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20" v-if="app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
             <img style="float: left; margin-right: 20px;" :src="app.avatar">
@@ -77,7 +79,8 @@
                     <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
                 </div>
             </div>
-        </div>
+        </div><!--margin20-->
+        </div><!--page-content-->
     </div>
 </div><!--root-->
 </template>
@@ -90,6 +93,7 @@ import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
+import pageheader from '@/components/pageheader'
 
 import lib from '@/lib'
 
@@ -137,7 +141,7 @@ function generate_config(app, download_task_id) {
 }
 
 export default {
-    components: { sidemenu, contact, project, tags, metadata },
+    components: { sidemenu, contact, project, tags, metadata, pageheader },
 
     data () {
         return {
@@ -153,6 +157,8 @@ export default {
             //cache
             datasets: {}, //available datasets grouped by input._id
             projects: [],
+
+            config: Vue.config,
         }
     },
 

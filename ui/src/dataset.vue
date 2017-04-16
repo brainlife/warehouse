@@ -1,7 +1,9 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20" v-if="dataset">
             <el-button-group style="float: right;">
                 <el-button @click="remove()"><icon name="trash"></icon> Remove</el-button>
@@ -134,7 +136,8 @@
                     <pre v-highlightjs><code class="json hljs">{{derivatives}}</code></pre>
                 </div>
             </div>
-        </div>
+        </div><!--margin20-->
+        </div><!--page-content-->
     </div>
 </div><!--root-->
 </template>
@@ -149,16 +152,19 @@ import tags from '@/components/tags'
 import app from '@/components/app'
 import datatype from '@/components/datatype'
 import metadata from '@/components/metadata'
+import pageheader from '@/components/pageheader'
 
 const lib = require('./lib');
 
 export default {
-    components: { sidemenu, contact, project, app, tags, datatype, metadata },
+    components: { sidemenu, contact, project, app, tags, datatype, metadata, pageheader },
     data () {
         return {
             dataset: null,
             apps: null,
             derivatives: null,
+
+            config: Vue.config,
         }
     },
 

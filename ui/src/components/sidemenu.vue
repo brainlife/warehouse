@@ -1,14 +1,55 @@
 <template>
-<div class="brainlife-menu">
-    <div class="item title">
-        Brain Life
-    </div>
-    <el-menu :router="true" :default-active="active" theme="dark">
+<div class="sidemenu">
+    <ul class="items">
+        <li v-if="config.debug" 
+            @click="go('/dashboard')"
+            :class="{active: active == '/dashboard'}">
+            <icon name="tachometer" scale="1.5"></icon><br>Dashboard
+        </li>
+        <li @click="go('/apps')"
+            :class="{active: active == '/apps'}" >
+            <icon name="th-large" scale="1.5" ></icon><br>Apps
+        </li>
+        <li @click="go('/processes')"
+            :class="{active: active == '/processes'}">
+            <icon name="paper-plane" scale="1.5"></icon><br>Process
+        </li>
+        <li @click="go('/datasets')"
+            :class="{active: active == '/datasets'}">
+            <icon name="cubes" scale="1.5"></icon><br>Datasets
+        </li>
+        <li @click="go('/projects')"
+            :class="{active: active == '/projects'}">
+            <icon name="shield" scale="1.5"></icon><br>Projects
+        </li>
+        <li @click="go('/settings')"
+            :class="{active: active == '/settings'}">
+            <icon name="cog" scale="1.5"></icon><br>Settings
+        </li>
+    </ul>
+    <!--<projectmenu></projectmenu>-->
+    <!--
+    <el-menu class="menu" :router="true" :default-active="active" theme="dark">
         <el-menu-item index="/" v-if="config.debug"><icon name="tachometer"></icon>Dashboard</el-menu-item>
         <el-menu-item index="/apps"><icon name="th-large"></icon>Apps</el-menu-item>
-        <el-menu-item index="/datasets"><icon name="cubes"></icon>Dataset</el-menu-item>
         <el-menu-item index="/processes"><icon name="paper-plane"></icon>Process</el-menu-item>
         <el-menu-item index="/projects"><icon name="shield"></icon>Projects</el-menu-item>
+
+        <el-submenu index="/datasets"> 
+            <template slot="title"><icon name="cubes"></icon>Datasets</template>
+            <el-menu-item-group title="Private Projects">
+                <el-menu-item :index="'/datasets/'+project_id" 
+                    v-for="(project, project_id) in projects" 
+                    v-if="project.access == 'public'"
+                    key="project_id">{{project.name}}</el-menu-item>
+            </el-menu-item-group>
+            <el-menu-item-group title="Public Projects">
+                <el-menu-item :index="'/datasets/'+project_id" 
+                    v-for="(project, project_id) in projects" 
+                    v-if="project.access == 'private'"
+                    key="project_id">{{project.name}}</el-menu-item>
+            </el-menu-item-group>
+        </el-submenu>
 
         <el-submenu v-if="config.debug" index="needed"> 
             <template slot="title"><icon name="flask"></icon>Test</template>
@@ -24,42 +65,10 @@
                 <el-menu-item index="1-4-1">item one</el-menu-item>
             </el-submenu>
         </el-submenu>
-        <el-menu-item class="bottom" index="/settings" @click="open_settings()">
+        <el-menu-item index="/settings" @click="open_settings()">
             <icon name="cog"></icon>Settings
         </el-menu-item>
     </el-menu>
-
-    <!--
-  <a href="#/" class="item" v-bind:class="{active: active == 'dashboard'}">
-      <i class="browser icon"></i> Dashboard</a>
-  <a href="#/datasets" class="item" v-bind:class="{active: active == 'datasets'}">
-      <i class="cubes icon"></i> Data</a>
-  <a href="#/processes" class="item" v-bind:class="{active: active == 'processes'}">
-      <i class="send icon"></i> Processes</a>
-  <a href="#/apps" class="item" v-bind:class="{active: active == 'apps'}">
-      <i class="grid layout icon"></i> Apps</a>
-  <a href="#/projects" class="item" v-bind:class="{active: active == 'projects'}">
-      <i class="protect icon"></i> Projects</a>
-
-  <div class="ui dropdown item" v-bind:class="{active: active == 'test'}">
-    Test <i class="dropdown icon" style="font-size: 100%;"></i>
-    <div class="menu">
-      <div class="item">
-        <i class="mail icon"></i>Categories
-        <div class="menu">
-          <div class="item active">Unread</div>
-          <div class="item">Promotions</div>
-          <div class="item">Updates</div>
-        </div>
-      </div>
-      <div class="item"><i class="book icon"></i>Archive</div>
-    </div>
-  </div>
-
-  <a href="#/settings" class="item" v-bind:class="{active: active == 'settings'}"
-    v-bind:style="{bottom: '0px', position: 'fixed', width: '15em'}">
-      <i class="setting icon"></i> Settings
-  </a>
     -->
 </div>
 </template>
@@ -67,48 +76,89 @@
 <script>
 import Vue from 'vue'
 
+import projectmenu from '@/components/projectmenu'
+
 export default {
-    name: 'sidemenu',
+    components: { projectmenu },
     data () {
         return {
-            msg: 'Welcome to Your Vue.js App',
+            
+            projects: null, 
+
             config: Vue.config,
         }
     },
 	props: { active: String },
 	mounted: function() {
-		$(this.$el).find('.ui.dropdown').dropdown();
+		//$(this.$el).find('.ui.dropdown').dropdown();
+
+        this.$http.get('project', {params: {
+            //service: "_upload",
+        }})
+        .then(res=>{
+            this.projects = {};
+            res.body.projects.forEach((p)=>{
+                this.projects[p._id] = p;
+            });
+
+        }).catch(err=>{
+            console.error(err);
+        });
 	},
     methods: {
+        /*
         get_active: function() {
             return "1";
         },
+        */
+        go: function(page) {
+            //settings is currently served via SCA default
+            if(page == "/settings") return window.open("/auth/#!/settings/account", "_blank");
 
+            this.$router.push(page);
+        },
+        /*
         open_settings: function() {
             window.open("/auth/#!/settings/account", "_blank");
         }
+        */
     }
 }
 </script>
 
 <style scoped>
-.brainlife-menu {
-position: fixed;
-top: 0px;
-left: 0px;
-width: 150px;
-bottom: 0px;
-background-color: black;
+.sidemenu {
+    position: fixed;
+    top: 50px;
+    left: 0px;
+    width: 90px;
+    bottom: 0px;
+    background-color: #222;
+    color: #888;
+    font-size: 9pt;
 }
-.item.title {
-background-image: linear-gradient(120deg, #2693ff, #159957);
-font-weight: bold;
-font-size: 15pt;
-padding: 15px 20px;
-color: white;
-margin-bottom: 10px;
-height: 50px;
+ul.items {
+    list-style: none;
+    margin: 0px;
+    padding: 0px;
 }
+ul.items li {
+    text-align: center;
+    margin: 0px;
+    padding: 7px 0px;
+    transition: background-color 0.2s, color 0.2s;
+}
+ul.items li.active {
+    border-left: 3px solid #2693ff;
+    color: white;
+}
+ul.items li:hover {
+    background-color: #555;
+    color: white;
+    cursor: pointer;
+}
+
+/*
 .el-menu svg {
 margin-right: 10px;
 position: relative;
@@ -120,9 +170,12 @@ background-color: inherit;
 .el-menu-item.is-active {
 background-color: #f0f0f0;
 }
-.el-menu .bottom {
+.menu {
 position: fixed;
+width: 100px;
+top: 50px;
 bottom: 0px;
-width: 150px;
+overflow-y: auto;
 }
+*/
 </style>

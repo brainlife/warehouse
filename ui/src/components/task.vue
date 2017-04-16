@@ -7,10 +7,14 @@
         <i class="wait icon" v-if="task.status == 'requested'"></i>
         <i class="warning icon red" v-if="task.status == 'failed'"></i>
         <div class="content">
+            <button type="button" v-if="task.status == 'failed'" class="ui button" style="float: right;" @click="rerun()">
+                <icon name="repeat"></icon>&nbsp;&nbsp;Rerun
+            </button>
             <div class="header"> {{task.name}} <span class="ui label small">{{task.service}}</span> </div>
             <p>{{task.status_msg}}</p>
         </div>
     </div>
+
     <!--
     <div class="ui right aligned small segments">
         <div class="ui segment">
@@ -79,6 +83,15 @@ export default {
         $(this.$el).find('.ui.accordion').accordion();
     },
     methods: {
+        rerun() {
+            this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.task._id)
+            .then(res=>{
+                console.dir(res); 
+            })
+            .catch(err=>{
+                console.error(err); 
+            });
+        }
     },
     props: ['task'],
 }

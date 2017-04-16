@@ -1,7 +1,9 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/projects"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20">
             <button v-if="user" class="ui right floated primary button" @click="newproject()">
                 <i class="icon add"></i>
@@ -23,7 +25,8 @@
                 </div><!--item-->
             </div><!--items-->
 
-        </div><!--margin-->
+        </div><!--margin20-->
+        </div><!--page-content-->
     </div><!--page-->
 
     <!-- project dialog ---------------------------------------------------------------->
@@ -36,11 +39,6 @@
       New Project
         </div>
         <div class="content">
-                <!--
-            <div class="ui medium image">
-                <img src="./assets/some.png">
-            </div>
-                -->
 
       <div class="description">
         <form class="ui form">
@@ -110,9 +108,10 @@ import Router from 'vue-router'
 import sidemenu from '@/components/sidemenu'
 import contactlist from '@/components/contactlist'
 import project from '@/components/project'
+import pageheader from '@/components/pageheader'
 
 export default {
-    name: "projects-ui",
+    components: { sidemenu, contactlist, project, pageheader },
 
     data () {
         return {
@@ -131,7 +130,9 @@ export default {
 
                 admins: [],
                 members: [],
-            }
+            },
+
+            config: Vue.config,
         }
     },
 
@@ -211,7 +212,6 @@ export default {
     });
   },
 
-  components: { sidemenu, contactlist, project },
 }
 </script>
 

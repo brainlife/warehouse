@@ -1,7 +1,9 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content" :class="{rightopen: selected_count}">
         <div class="margin20">
             <h1>Upload</h1>
 
@@ -145,6 +147,7 @@
             </div>
 
         </div><!--margin20-->
+        </div><!--page-content -->
     </div><!--page-->
 </div>
 </template>
@@ -153,11 +156,11 @@
 import Vue from 'vue'
 
 import sidemenu from '@/components/sidemenu'
+import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    name: "upload",
-    //props: [ 'init' ],
+    components: { sidemenu, pageheader },
     data () {
         return {
             //user selections
@@ -177,6 +180,8 @@ export default {
             copy: null, //copy task to prep uploaded files
             dataset: null, //geneated when finalize request is sent
             mode: "meta",
+
+            config: Vue.config,
         }
     },
 
@@ -416,7 +421,6 @@ export default {
             this.$forceUpdate();
         }
     },
-    components: { sidemenu },
 }
 </script>
 

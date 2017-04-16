@@ -1,7 +1,9 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/processes"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20" v-if="instance && tasks && app">
             <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
             <button class="ui button primary right floated"
@@ -127,8 +129,9 @@
                 </div>
                 -->
             </div>
-        </div>
-    </div>
+        </div><!--margin20-->
+        </div><!--page-content-->
+    </div><!--pusher-->
 </div><!--root-->
 </template>
 
@@ -142,6 +145,7 @@ import task from '@/components/task'
 import file from '@/components/file'
 import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
+import pageheader from '@/components/pageheader'
 import metadata from '@/components/metadata'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -150,7 +154,7 @@ export default {
     mixins: [
         //require("vue-toaster")
     ],
-    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser },
+    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader },
 
     data () {
         return {

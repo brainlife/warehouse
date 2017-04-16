@@ -1,7 +1,9 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20">
             <h1 v-if="$route.params.id == '_'">Register App</h1>
             <h1 v-else>Edit {{app.name}}</h1>
@@ -117,6 +119,7 @@
             </div>
 
         </div><!--margin20-->
+        </div><!--page-content-->
     </div><!--page-->
 </div>
 </template>
@@ -129,11 +132,12 @@ import 'brace/mode/javascript'
 import 'brace/theme/chrome'
 
 import sidemenu from '@/components/sidemenu'
+import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 
 export default {
     name: "appedit",
-    components: { sidemenu, editor, contactlist },
+    components: { sidemenu, editor, contactlist, pageheader },
     data () {
         return {
             repotype: "github",
