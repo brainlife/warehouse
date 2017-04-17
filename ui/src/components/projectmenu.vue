@@ -52,14 +52,17 @@ export default {
 
     mounted: function() {
         this.$http.get('project', {params: {
-            find: JSON.stringify({members: [Vue.config.user.sub]})
+            find: JSON.stringify({$or: [
+                { members: Vue.config.user.sub}, 
+                { access: "public" },
+            ]})
         }})
         .then(res=>{
             this.projects = {};
             res.body.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
-
+            console.dir(res.body.projects);
         }).catch(err=>{
             console.error(err);
         });
