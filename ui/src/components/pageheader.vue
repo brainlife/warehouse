@@ -51,6 +51,7 @@ export default {
     position: relative;
     background-image: linear-gradient(120deg, #2693ff, #159957);
     color: white;
+    z-index: 1;
 }
 .pageheader .title {
     float: left;

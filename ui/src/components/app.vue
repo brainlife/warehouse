@@ -16,8 +16,7 @@
   </div>
     <div class="ui two buttons">
       <div class="ui button" @click="go('/app/'+app._id)"><i class="info circle icon"></i> Detail</div>
-      <div class="ui blue button" @click="go('/app/'+app._id+'/submit')"><i class="play icon"></i> Submit</div>
-      <!--<div class="ui basic red button">Info</div>-->
+      <div class="ui blue button" @click="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))"><i class="play icon"></i> Submit</div>
     </div>
 </div>
 </template>
@@ -28,17 +27,18 @@ import Vue from 'vue'
 import contact from '@/components/contact'
 
 export default {
-  name: "app",
-  data () {
-    return {
-    }
-  },
-  methods: {
-    go: function(path) {
-      this.$router.push(path);
-    }
-  },
-  props: ['app'],
-  components: { contact },
+    components: { contact },
+    props: ['app', 'dataset'],
+    data () {
+        return {
+        }
+    },
+    methods: {
+        go: function(path) {
+            this.$router.push(path);
+        }
+    },
 }
 </script>
+
+

@@ -169,7 +169,9 @@ export default {
     },
 
     mounted: function() {
-        //console.log("looking for ", this.$route.params.id);
+        //console.log("query query", this.$route.query);
+        var preselect_dataset = null;
+
         this.$http.get('app', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'inputs.datatype outputs.datatype',
@@ -197,11 +199,21 @@ export default {
 
         })
         .then(res=>{
+            var datasets = res.body.datasets;
             //console.log("datasets applicable:", res);
 
+            //find preselected datasets
+            if(this.$route.query.dataset) {
+                datasets.forEach(dataset=>{
+                    if(dataset._id == this.$route.query.dataset) preselect_dataset = dataset;
+                }); 
+            }
+            //console.log("preselect", preselect_dataset);
+
+            //find datasets that applies to each input type
             this.app.inputs.forEach((input)=>{
                 //console.dir(input);
-                Vue.set(this.datasets, input.id, res.body.datasets.filter(dataset=>{
+                Vue.set(this.datasets, input.id, datasets.filter(dataset=>{
                     //console.dir(dataset);
                     if(dataset.datatype != input.datatype._id) return false;
 
@@ -217,6 +229,16 @@ export default {
                             if(!~dataset.datatype_tags.indexOf(required_tag)) match = false;
                         }
                     });
+
+                    if(match && preselect_dataset) {
+                        var subject = preselect_dataset.meta.subject;
+                        if(preselect_dataset == dataset) input.dataset_id = dataset._id;
+                        else {
+                            //select first one that has matching subject
+                            if(dataset.meta.subject == subject) input.dataset_id = dataset._id;
+                        }
+                    }
+
                     return match; 
                 }));
             });
@@ -257,6 +279,21 @@ export default {
         },
 
         submit: function() {
+
+            //make sure all inputs are selected
+            var validated = true;
+            this.app.inputs.forEach(input=>{
+                if(!input.dataset_id) validated = false;
+            });
+            if(!validated) {
+                this.$notify({
+                    title: 'Missing Input',
+                    message: 'Please select all inputs',
+                    type: 'error'
+                });
+                return;
+            }
+
             var instance = null;
 
             var inst_config = {

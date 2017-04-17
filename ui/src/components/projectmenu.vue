@@ -86,6 +86,7 @@ export default {
     color: white;
     left: 90px;
     overflow-y: auto;
+    z-index: 2;
 }
 .projectmenu h4 {
     padding: 10px 20px;

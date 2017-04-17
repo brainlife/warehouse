@@ -494,6 +494,7 @@ export default {
     width: 250px;
     top: 50px;
     bottom: 0px;
+    z-index: 2;
 }
 .selected-view .selected-item:hover {
     background-color: #eee;

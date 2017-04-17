@@ -136,6 +136,7 @@ export default {
     background-color: #222;
     color: #888;
     font-size: 9pt;
+    z-index: 2;
 }
 ul.items {
     list-style: none;

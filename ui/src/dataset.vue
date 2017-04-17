@@ -112,7 +112,6 @@
                         </div>
                     </td>
                 </tr>
-
             </tbody>
             </table>
 
@@ -121,7 +120,7 @@
                 <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
                 <div class="ui cards">
-                    <app v-for="app in apps" key="app._id" :app="app"></app>
+                    <app v-for="app in apps" key="app._id" :app="app" :dataset="dataset"></app>
                 </div>
             </div>
 
