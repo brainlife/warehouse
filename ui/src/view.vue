@@ -96,15 +96,20 @@ export default {
             this.status = "unknown";
             switch(this.novnc_task.status) {
             case "running": 
-                //TODO .. relying on status_msg is ugly.. come up with a better way
-                if(this.novnc_task.status_msg == "starting") {
-                    this.status = "starting"; //special token set by status.sh
-                } else if(this.novnc_task.status_msg.trim().indexOf("http") === 0) {
-                    this.status = "running";
-                    console.log("jump to ", this.novnc_task.status_msg);
-                    document.location = this.novnc_task.status_msg;
-                } 
-                break;
+                this.status = this.novnc_task.status_msg.trim();
+                if(this.status == "running") {
+                    //load url.txt
+                    var path = this.novnc_task.instance_id+'/'+this.novnc_task._id+'/url.txt'
+                    var url = Vue.config.wf_api+'/resource/download'+
+                        '?r='+this.novnc_task.resource_id+
+                        '&p='+encodeURIComponent(path)+
+                        '&at='+Vue.config.jwt;
+                    this.$http.get(url).then(function(res) {
+                        document.location = res.body;
+                    }, function(err) {
+                        console.error(err);
+                    });
+                }
             case "finished":
                 this.status = "finished";
                 console.log("TODO novnc finished! -- need to restart?");

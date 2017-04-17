@@ -18,17 +18,15 @@
                 </div>
                 -->
                 <el-row :gutter="20">
-                     <el-col :span="6">
+                     <el-col :span="12">
                         <el-input
                             placeholder="Filter Datasets" 
                             icon="search"
                             v-model="query">
                         </el-input>
                     </el-col>
-                    <el-col :span="6">
-                        <button class="ui button" @click="go('/upload')">
-                            <i class="ui icon add"></i> Upload
-                        </button>
+                    <el-col :span="12">
+                        <button class="ui button" @click="go('/upload')"><i class="ui icon add"></i>&nbsp;Upload</button>
                     </el-col>
                 </el-row>
             </div>
@@ -57,7 +55,7 @@
 
         <!--start of dataset list-->
         <div class="list" style="margin-top: 40px"> 
-            <el-row class="group" v-for="(datasets, subject) in datasets_grouped">
+            <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
                 <!--
                 <el-col :span="1" style="margin-top: 3px;">
                     <el-checkbox></el-checkbox>
