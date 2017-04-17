@@ -2,35 +2,23 @@
 <div>
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
-    <div class="ui pusher"> <!-- main view -->
+    <div class="header-content">
+        <el-row :gutter="20">
+             <el-col :span="12">
+                <el-input
+                    placeholder="Filter Datasets" 
+                    icon="search"
+                    v-model="query">
+                </el-input>
+            </el-col>
+            <el-col :span="12">
+                <button class="ui button" @click="go('/upload')"><i class="ui icon add"></i>&nbsp;Upload</button>
+            </el-col>
+        </el-row>
+    </div>
+    <div class="ui pusher" :class="{rightopen: selected_count}">
         <projectmenu :active="project_id"></projectmenu>
-        <div class="page-content" :class="{rightopen: selected_count}">
-
         <div class="fixed-top">
-            <div style="margin: 7px;">
-                <!--
-                <div class="ui fluid category search">
-                    <div class="ui icon input">
-                        <input class="prompt" type="text" v-model="query" placeholder="Search ...">
-                        <i class="search icon"></i>
-                    </div>
-                    <div class="results"></div>
-                </div>
-                -->
-                <el-row :gutter="20">
-                     <el-col :span="12">
-                        <el-input
-                            placeholder="Filter Datasets" 
-                            icon="search"
-                            v-model="query">
-                        </el-input>
-                    </el-col>
-                    <el-col :span="12">
-                        <button class="ui button" @click="go('/upload')"><i class="ui icon add"></i>&nbsp;Upload</button>
-                    </el-col>
-                </el-row>
-            </div>
-
             <el-row class="header">
                 <!--<el-col :span="1">&nbsp;</el-col>-->
                 <el-col :span="4"> Subject </el-col>
@@ -54,7 +42,8 @@
         </div><!--fixed-top-->
 
         <!--start of dataset list-->
-        <div class="list" style="margin-top: 40px"> 
+        <div class="page-content">
+        <div class="list">
             <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
                 <!--
                 <el-col :span="1" style="margin-top: 3px;">
@@ -62,10 +51,8 @@
                 </el-col>
                 -->
                 <el-col :span="4" style="margin-top: 3px;font-weight: bold;">
-                    <h5>
-                        <icon name="caret-down"></icon>
-                        {{subject}}
-                    </h5>
+                    <icon name="caret-down"></icon>
+                    {{subject}}
                 </el-col> 
                 <el-col :span="20">
                     <div 
@@ -75,7 +62,7 @@
                         <el-row>
                             <el-col :span="2">
                                 &nbsp;&nbsp;&nbsp;
-                                <div class="ui checkbox">
+                                <div class="ui checkbox" style="position: relative; top: 2px;">
                                     <input type="checkbox" @click.stop="check(dataset)" :checked="is_selected(dataset)">
                                     <label></label><!-- need this somehow-->
                                 </div>
@@ -100,6 +87,7 @@
                 </el-col> 
             </el-row>
         </div>
+        </div><!--page-content-->
 
         <!-- old list
         <div class="margin20">
@@ -154,7 +142,6 @@
             </table>
         </div>
         -->
-        </div><!--page-content-->
     </div><!--pusher-->
 
     <div class="selected-view" v-if="selected_count && datatypes" style="padding: 10px 5px 0px 5px;">
@@ -484,9 +471,13 @@ export default {
 .page-content {
     margin-left: 200px;
     transition: right 0.2s;
-    box-shadow: 3px 3px 6px gray;
+    top: 89px;
+    box-shadow: inset 0px 0px 10px #999;
 }
-.page-content.rightopen {
+.rightopen .page-content {
+    right: 250px;
+}
+.rightopen .fixed-top {
     right: 250px;
 }
 .selected {
@@ -509,6 +500,14 @@ export default {
     cursor: pointer;
 }
 
+.header-content {
+    padding-top: 7px;
+    position: fixed;
+    top: 0px;
+    left: 300px;
+    right: 200px;
+}
+
 .header,
 .list .group {
     padding: 9px 10px 11px 10px;
@@ -523,11 +522,12 @@ export default {
 .list .group {
     /*margin-bottom: 1px;*/
     font-size: 12px;
-    padding-bottom: 0px;
+}
+.list .group:not(:last-child) {
+    border-bottom: 1px solid #ddd;
 }
 .list .dataset {
-    padding: 5px 0px;
-    background-color: #fff;
+    padding: 3px 0px;
     margin-bottom: 1px;
     transition: background-color 0.2s;
 }
@@ -541,13 +541,9 @@ export default {
 .fixed-top {
     position: fixed;
     left: 290px;
-    top: 0px;
     right: 0px;
     z-index: 5;
     transition: right 0.2s;
-}
-.rightopen .fixed-top {
-    right: 250px;
 }
 </style>
 

@@ -37,9 +37,12 @@
                         <select class="ui fluid dropdown" v-model="input.dataset_id">
                             <option value="">(Select {{input.id}} dataset)</option>
                             <option v-for="dataset in datasets[input.id]" :value="dataset._id">
+                                <!--
                                 <metadata :metadata="dataset.meta"></metadata> / 
                                 {{dataset.name}} / {{dataset.desc}} 
                                 <tags :tags="dataset.datatype_tags"></tags>
+                                -->
+                                {{dataset.meta.subject}} | {{dataset.name}} | {{dataset.create_date|data}}
                             </option>
                         </select>
 

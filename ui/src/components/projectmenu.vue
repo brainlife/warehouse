@@ -85,6 +85,7 @@ export default {
     background-color: #444;
     color: white;
     left: 90px;
+    overflow-y: auto;
 }
 .projectmenu h4 {
     padding: 10px 20px;
