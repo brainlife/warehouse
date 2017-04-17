@@ -7,7 +7,7 @@
         <div class="page-content" :class="{rightopen: selected_count}">
 
         <div class="fixed-top">
-            <div style="margin: 10px">
+            <div style="margin: 7px;">
                 <!--
                 <div class="ui fluid category search">
                     <div class="ui icon input">
@@ -18,32 +18,31 @@
                 </div>
                 -->
                 <el-row :gutter="20">
-                     <el-col :span="20">
+                     <el-col :span="6">
                         <el-input
                             placeholder="Filter Datasets" 
                             icon="search"
                             v-model="query">
                         </el-input>
                     </el-col>
-                    <el-col :span="4">
-                        <button class="ui primary button" @click="go('/upload')">
+                    <el-col :span="6">
+                        <button class="ui button" @click="go('/upload')">
                             <i class="ui icon add"></i> Upload
                         </button>
                     </el-col>
-               </el-row>
+                </el-row>
             </div>
 
             <el-row class="header">
-                <el-col :span="1">&nbsp;</el-col>
-                <el-col :span="3">Subject</el-col>
+                <!--<el-col :span="1">&nbsp;</el-col>-->
+                <el-col :span="4"> Subject </el-col>
                 <el-col :span="20">
                     <el-row>
                         <el-col :span="2">&nbsp;</el-col>
                         <el-col :span="6">Create Date</el-col>
                         <el-col :span="6">Datatype</el-col>
-                        <el-col :span="4">Datatype Tags</el-col>
+                        <el-col :span="6">Name / Desc</el-col>
                         <el-col :span="4">User Tags</el-col>
-                        <el-col :span="2">??</el-col>
                     </el-row> 
                 </el-col>
             </el-row>
@@ -57,13 +56,18 @@
         </div><!--fixed-top-->
 
         <!--start of dataset list-->
-        <div class="list" style="margin-top: 85px"> 
+        <div class="list" style="margin-top: 40px"> 
             <el-row class="group" v-for="(datasets, subject) in datasets_grouped">
+                <!--
                 <el-col :span="1" style="margin-top: 3px;">
                     <el-checkbox></el-checkbox>
                 </el-col>
-                <el-col :span="3" style="margin-top: 3px;font-weight: bold;">
-                    {{subject}}
+                -->
+                <el-col :span="4" style="margin-top: 3px;font-weight: bold;">
+                    <h5>
+                        <icon name="caret-down"></icon>
+                        {{subject}}
+                    </h5>
                 </el-col> 
                 <el-col :span="20">
                     <div 
@@ -71,12 +75,8 @@
                     :class="{dataset: true, clickable: true, selected: is_selected(dataset)}"
                     @click="go('/dataset/'+dataset._id)">
                         <el-row>
-                                <!--
-                                <el-checkbox 
-                                    @change.stop="check(dataset)"
-                                    v-model="dataset.checked"></el-checkbox>
-                                -->
                             <el-col :span="2">
+                                &nbsp;&nbsp;&nbsp;
                                 <div class="ui checkbox">
                                     <input type="checkbox" @click.stop="check(dataset)" :checked="is_selected(dataset)">
                                     <label></label><!-- need this somehow-->
@@ -86,27 +86,18 @@
                                 {{dataset.create_date | date}}
                                 &nbsp;
                             </el-col>
-                            <el-col :span="6">
+                            <el-col :span="6" :title="datatypes[dataset.datatype].desc">
                                 {{datatypes[dataset.datatype].name}}
-                                <span class="text-muted">{{datatypes[dataset.datatype].desc}}</span>
-                                &nbsp;
-                            </el-col>
-                            <el-col :span="4">
                                 <tags :tags="dataset.datatype_tags"></tags> &nbsp;
+                            </el-col>
+                            <el-col :span="6">
+                                <b>{{dataset.name}}</b>
+                                {{dataset.desc}}
                             </el-col>
                             <el-col :span="4">
                                 <tags :tags="dataset.tags"></tags> &nbsp;
                             </el-col>
-                            <el-col :span="2">
-                                <!--
-                                {{dataset.storage}} &nbsp;
-                                -->
-                            </el-col>
                         </el-row>
-                        <!--
-                        <b>{{dataset.name}}</b>
-                        {{dataset.desc}}
-                        -->
                     </div>
                 </el-col> 
             </el-row>
@@ -169,11 +160,11 @@
     </div><!--pusher-->
 
     <div class="selected-view" v-if="selected_count && datatypes" style="padding: 10px 5px 0px 5px;">
-        <h3 style="color: white;padding-top: 10px;"><icon name="check-square" scale="1.2"></icon> {{selected_count}} Selected </h3>
+        <h3 style="color: white;"><icon name="check-square" scale="1.2"></icon> {{selected_count}} Selected </h3>
         <div class="ui segments">
-            <div class="ui attached segment" v-for="(_datasets, did) in group_selected" v-if="datatypes[did]">
+            <div class="ui attached segment" v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
                 <h5>{{datatypes[did].name}}</h5>
-                <div class="selected-item" v-for="(dataset, id) in _datasets" @click="go('/dataset/'+id)">
+                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
                     <p>
                         <i class="trash icon right floated" @click.stop="remove_selected(dataset)"></i>
                         <small>
@@ -194,6 +185,7 @@
 
 <script>
 import Vue from 'vue'
+
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import tags from '@/components/tags'
@@ -494,6 +486,7 @@ export default {
 .page-content {
     margin-left: 200px;
     transition: right 0.2s;
+    box-shadow: 3px 3px 6px gray;
 }
 .page-content.rightopen {
     right: 250px;
@@ -518,41 +511,40 @@ export default {
     cursor: pointer;
 }
 
+.header,
+.list .group {
+    padding: 9px 10px 11px 10px;
+}
+
 .header {
-    background-color: gray;
-    color: white;
+    background-color: #444;
+    color: #999;
+    font-weight: bold;
     text-transform: uppercase;
-    padding: 5px 10px;
 }
 .list .group {
-    padding: 2px 0px 2px 6px;
     /*margin-bottom: 1px;*/
     font-size: 12px;
-    background-color: #ddd;
+    padding-bottom: 0px;
 }
 .list .dataset {
-    padding: 5px;
+    padding: 5px 0px;
     background-color: #fff;
     margin-bottom: 1px;
+    transition: background-color 0.2s;
 }
 .list .dataset.clickable:hover {
-    background-color: #eee;
+    background-color: #ddd;
 }
 .list .dataset.selected,
 .list .dataset.selected:hover {
     background-color: #2693ff;
 }
-/*
-.list .dataset:not(:last-child) {
-    border-bottom: 1px solid #ddd;
-}
-*/
 .fixed-top {
     position: fixed;
     left: 290px;
-    top: 50px;
+    top: 0px;
     right: 0px;
-    background-color: #eee;
     z-index: 5;
     transition: right 0.2s;
 }

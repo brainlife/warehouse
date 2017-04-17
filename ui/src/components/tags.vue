@@ -1,6 +1,6 @@
 <template>
-<div>
-    <el-tag v-for="(tag, i) in deco_tags" :type="tag.neg?'danger':'default'" :key="i">
+<div style="display: inline-block;">
+    <el-tag v-for="(tag, i) in deco_tags" :type="tag.neg?'danger':'gray'" :key="i">
         <i class="minus circle icon" v-if="tag.neg"></i>
         {{tag.name}}
     </el-tag>

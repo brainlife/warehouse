@@ -329,7 +329,7 @@ export default {
             });
         },
         view: function(type) {
-            window.open("#/view/"+this.instance._id+"/"+this.main_task._id+"/"+type, "", "width=1250,height=800,resizable=no,menubar=no"); 
+            window.open("#/view/"+this.instance._id+"/"+this.main_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
     },
 }
