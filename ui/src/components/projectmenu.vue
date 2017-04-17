@@ -52,7 +52,7 @@ export default {
 
     mounted: function() {
         this.$http.get('project', {params: {
-            //service: "_upload",
+            find: JSON.stringify({members: [Vue.config.user.sub]})
         }})
         .then(res=>{
             this.projects = {};
