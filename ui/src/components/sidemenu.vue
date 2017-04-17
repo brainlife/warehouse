@@ -147,8 +147,10 @@ ul.items li {
     margin: 0px;
     padding: 7px 0px;
     transition: background-color 0.2s, color 0.2s;
+    padding-left: 3px;
 }
 ul.items li.active {
+    padding-left: 0px;
     border-left: 3px solid #2693ff;
     color: white;
 }
