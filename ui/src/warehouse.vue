@@ -17,7 +17,9 @@ export default {
 <!--global styles-->
 <style>
 body {
-  background-color: #f0f0f0;
+background-color: #f0f0f0;
+font-family: 'Lato', sans-serif;
+font-size: 10pt;
 }
 .margin20 {
 	margin: 20px;
@@ -54,8 +56,7 @@ pre {
     background-color: white;
     width: 100%;
     padding: 20px;
-    box-shadow: 2px 2px 3px #ccc;
-    border-radius: 2px;
+    box-sizing: border-box;
 }
 .text-muted {
     opacity: 0.6;
@@ -72,5 +73,17 @@ code.hljs {
 svg.fa-icon {
 position: relative;
 top: 2px;
+zoom: 90%;
+}
+h4 {
+font-size: 15px;
+font-weight: bold;
+}
+h5 {
+font-size: 13px;
+font-weight: bold;
+}
+small {
+font-size: 80%;
 }
 </style>

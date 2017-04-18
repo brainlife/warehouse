@@ -30,6 +30,7 @@
 
                     <div class="field" v-if="projects">
                         <label>Project</label>
+                        <p class="text-muted">Project to store this dataset</p>
                         <select v-model="project_id">
                             <option v-for="(p,id) in projects" v-bind:value="id">{{p.name}} ({{p.access}})</option>
                         </select>

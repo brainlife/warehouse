@@ -1,8 +1,10 @@
 
 //3rd parties
 import 'jquery/dist/jquery.js'
-import 'semantic-ui/dist/semantic.css'
-import 'semantic-ui/dist/semantic.js'
+import '@/reset.css'
+//import 'normalize.css/normalize.css'
+//import 'semantic-ui/dist/semantic.css'
+//import 'semantic-ui/dist/semantic.js'
 
 import 'highlight.js/styles/default.css'
 import 'vue2-animate/dist/vue2-animate.min.css'
@@ -19,8 +21,8 @@ Vue.use(VueResource)
 
 import warehouse from './warehouse'
 
-import VueSemantic from 'vue-semantic'
-Vue.use(VueSemantic)
+//import VueSemantic from 'vue-semantic'
+//Vue.use(VueSemantic)
 
 //element ui
 import ElementUI from 'element-ui'

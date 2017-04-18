@@ -13,6 +13,14 @@
         <el-dropdown-item disabled>Action 4</el-dropdown-item>
         <el-dropdown-item divided>Action 5</el-dropdown-item>
         -->
+        <div style="margin: 0px 0px; padding: 10px; background-color: #f7f7f7;">
+            <h5>Profile</h5>
+            <br>
+            <p><span class="text-muted">Fullname</span><br>{{user.profile.fullname||'(Not Set)'}}</p>
+            <br>
+            <p><span class="text-muted">Email</span><br>{{user.profile.email||'(Not Set)'}}</p>
+            <br>
+        </div>
       </el-dropdown-menu>
     </el-dropdown>
 </div>
@@ -46,7 +54,7 @@ export default {
 .pageheader {
     background-color: white;
     padding: 10px;
-    height: 50px;
+    height: 30px;
     box-shadow: 0px 2px 3px #999;
     position: relative;
     background-image: linear-gradient(120deg, #2693ff, #159957);
@@ -58,7 +66,6 @@ export default {
     font-size: 18pt;
     font-weight: bold;
     position: relative;
-    margin-top: -3px;
     margin-left: 5px;
 }
 </style>

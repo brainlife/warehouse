@@ -24,6 +24,7 @@
     "http-proxy-middleware": "^0.17.4",
     "jquery": "^3.1.1",
     "jwt-decode": "^2.2.0",
+    "normalize.css": "^6.0.0",
     "reconnectingwebsocket": "^1.0.0",
     "semantic-ui": "^2.2.9",
     "superagent": "^3.5.0",

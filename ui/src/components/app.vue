@@ -1,24 +1,16 @@
 <template>
-<div class="card" v-if="app">
-  <div class="content">
-    <img class="right floated tiny ui image" :src="app.avatar+'?'+Math.random()">
-    <div class="header">
-      {{app.name}}
+<el-card>
+    <img :src="app.avatar+'?'+Math.random()" class="image">
+    <div style="padding: 14px;">
+        <p>
+            <h4>{{app.name}}</h4> <small>{{app.desc}}</small>
+        </p>
+        <div class="bottom clearfix">
+            <el-button type="text" class="button" @click="go('/app/'+app._id)"><i class="info circle icon"></i> Detail</el-button>
+            <el-button type="text" class="button" @click="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))"><i class="play icon"></i> Submit</el-button>
+        </div>
     </div>
-    <!--
-    <div class="">
-      <contact :id="app.user_id" class="contact mini"></contact>.
-    </div>
-    -->
-    <div class="description">
-      {{app.desc}}
-    </div>
-  </div>
-    <div class="ui two buttons">
-      <div class="ui button" @click="go('/app/'+app._id)"><i class="info circle icon"></i> Detail</div>
-      <div class="ui blue button" @click="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))"><i class="play icon"></i> Submit</div>
-    </div>
-</div>
+</el-card>
 </template>
 
 <script>
@@ -41,4 +33,34 @@ export default {
 }
 </script>
 
+<style scoped>
+  .time {
+    font-size: 13px;
+    color: #999;
+  }
+  
+  .bottom {
+    margin-top: 13px;
+    line-height: 12px;
+  }
 
+  .button {
+    padding: 0;
+    float: right;
+  }
+
+  .image {
+    width: 100%;
+    display: block;
+  }
+
+  .clearfix:before,
+  .clearfix:after {
+      display: table;
+      content: "";
+  }
+  
+  .clearfix:after {
+      clear: both
+  }
+</style>

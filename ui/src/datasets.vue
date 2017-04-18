@@ -12,7 +12,7 @@
                 </el-input>
             </el-col>
             <el-col :span="12">
-                <button class="ui button" @click="go('/upload')"><i class="ui icon add"></i>&nbsp;Upload</button>
+                <el-button @click="go('/upload')"><!--<icon name="plus"></icon>&nbsp;-->Upload</el-button>
             </el-col>
         </el-row>
     </div>
@@ -21,14 +21,14 @@
         <div class="fixed-top">
             <el-row class="header">
                 <!--<el-col :span="1">&nbsp;</el-col>-->
-                <el-col :span="4"> Subject </el-col>
+                <el-col :span="4"><h4>Subject</h4></el-col>
                 <el-col :span="20">
                     <el-row>
                         <el-col :span="2">&nbsp;</el-col>
-                        <el-col :span="6">Create Date</el-col>
-                        <el-col :span="6">Datatype</el-col>
-                        <el-col :span="6">Name / Desc</el-col>
-                        <el-col :span="4">User Tags</el-col>
+                        <el-col :span="6"><h4>Create Date</h4></el-col>
+                        <el-col :span="6"><h4>Datatype</h4></el-col>
+                        <el-col :span="6"><h4>Name / Desc</h4></el-col>
+                        <el-col :span="4"><h4>User Tags</h4></el-col>
                     </el-row> 
                 </el-col>
             </el-row>
@@ -57,14 +57,19 @@
                 <el-col :span="20">
                     <div 
                     v-for="dataset in datasets" :key="dataset._id"
-                    :class="{dataset: true, clickable: true, selected: is_selected(dataset)}"
-                    @click="go('/dataset/'+dataset._id)">
+                    @click="go('/dataset/'+dataset._id)"
+                    :class="{dataset: true, clickable: true, selected: dataset.checked}">
                         <el-row>
                             <el-col :span="2">
+                                <!--
                                 &nbsp;&nbsp;&nbsp;
                                 <div class="ui checkbox" style="position: relative; top: 2px;">
                                     <input type="checkbox" @click.stop="check(dataset)" :checked="is_selected(dataset)">
-                                    <label></label><!-- need this somehow-->
+                                    <label></label>
+                                </div>
+                                -->
+                                <div @click.stop="" style="margin-left: 5px;">
+                                    <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                 </div>
                             </el-col>
                             <el-col :span="6">
@@ -86,84 +91,37 @@
                     </div>
                 </el-col> 
             </el-row>
-        </div>
+        </div><!--list-->
         </div><!--page-content-->
-
-        <!-- old list
-        <div class="margin20">
-
-            <table class="ui compact definition table" v-if="datasets">
-            <thead>
-                <tr>
-                    <th style="width: 25px; background-color: #f0f0f0; box-shadow: -1px -1px 0 1px #f0f0f0;"></th>
-                    <th v-if="!project_id">Project</th>
-                    <th>Data Type</th>
-                    <th>Metadata</th>
-                    <th>Name/Desc</th>
-                    <th>User Tags</th>
-                    <th style="min-width: 150px;">Create Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="dataset in datasets" 
-                    :key="dataset._id"
-                    :class="{'clickable-record': true, selected: is_selected(dataset)}" 
-                    @click="go('/dataset/'+dataset._id)">
-                    <td @click.stop="check(dataset)">
-                        <div class="ui checkbox">
-                            <input type="checkbox" :checked="is_selected(dataset)">
-                            <label></label>
-                        </div>
-                    </td>
-                    <td v-if="!project_id">
-                        <div class="ui green horizontal label" v-if="projects[dataset.project].access == 'public'">Public</div>
-                        <div class="ui red horizontal label" v-if="projects[dataset.project].access == 'private'">Private</div>
-                        {{projects[dataset.project].name}}
-                    </td>
-                    <td>
-                        {{datatypes[dataset.datatype].name}}
-                        <tags :tags="dataset.datatype_tags"></tags>
-                    </td>
-                    <td>
-                        <metadata v-if="dataset.meta" :metadata="dataset.meta"></metadata>
-                    </td>
-                    <td>
-                        <b>{{dataset.name}}</b><br>
-                        <small>{{dataset.desc}}</small>
-                    </td>
-                    <td>
-                        <tags :tags="dataset.tags"></tags>
-                    </td>
-                    <td>
-                        <small>{{dataset.create_date | date}}</small>
-                    </td>
-                </tr>
-            </tbody>
-            </table>
-        </div>
-        -->
     </div><!--pusher-->
 
-    <div class="selected-view" v-if="selected_count && datatypes" style="padding: 10px 5px 0px 5px;">
-        <h3 style="color: white;"><icon name="check-square" scale="1.2"></icon> {{selected_count}} Selected </h3>
-        <div class="ui segments">
-            <div class="ui attached segment" v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
+    <div class="selected-view" v-if="selected_count && datatypes">
+        <h4 class="header">
+            <icon name="check-square"></icon> {{selected_count}} Selected 
+        </h4>
+        <div class="panel">
+            <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
                 <h5>{{datatypes[did].name}}</h5>
                 <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
                     <p>
-                        <i class="trash icon right floated" @click.stop="remove_selected(dataset)"></i>
+                        <div @click.stop="remove_selected(dataset)" style="display: inline;">
+                            <icon name="trash"></icon>
+                        </div>
                         <small>
                             {{dataset.name}}
                             <tags :tags="dataset.datatype_tags"></tags>
                         </small>
                     </p>
                 </div>
+                <br>
             </div>
         </div>
-        <el-button-group style="float: right;">
-            <el-button size="small" icon="delete" @click="clear_selected()">Clear Selection</el-button>
-            <el-button size="small" type="primary" icon="download" @click="download()"> <i class="download icon"></i> Download </el-button>
-        </el-button-group>
+        <div class="panel" style="background-color: #999;">
+            <el-button-group>
+                <el-button size="small" icon="delete" @click="clear_selected()">Clear Selection</el-button>
+                <el-button size="small" type="primary" icon="download" @click="download()"> <i class="download icon"></i> Download </el-button>
+            </el-button-group>
+        </div>
     </div>
 </div>
 </template>
@@ -205,7 +163,7 @@ export default {
         datasets_grouped: function() {
             if(!this.datasets) return {};
 
-            console.log("grouping");
+            //console.log("grouping");
             var groups = {};
 
             this.datasets.forEach(dataset=>{
@@ -294,7 +252,7 @@ export default {
         },
 
         load: function(cb) {
-            console.log("loading datasets with query", this.query);
+            //console.log("loading datasets with query", this.query);
             var find = {
                 removed: false,
             }
@@ -305,7 +263,7 @@ export default {
             if(this.query) {
                 find.$text = {$search: this.query};
             }
-            console.log("loading", find);
+            //console.log("loading", find);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
                 select: 'datatype datatype_tags project create_date name desc tags meta storage',
@@ -315,33 +273,32 @@ export default {
 
                 //set checked flag for each dataset
                 this.datasets.forEach(dataset=>{
-                    var checked = false;
-                    if(this.is_selected(dataset)) checked = true;
-                    Vue.set(dataset, 'checked', checked);
+                    if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
                 });
 
                 cb();
             }).catch(cb);
         },
+        /*
         is_selected: function(dataset) {
             if(this.selected[dataset._id] === undefined) return false;
             return true;
         },
+        */
         opendataset: function(dataset) {
-            console.dir(dataset);
+            //console.dir(dataset);
         },
         go: function(path) {
             this.$router.push(path);
         },
         check: function(dataset) {
-            console.log("check");
-            var did = dataset.datatype._id;
+            //var did = dataset.datatype._id;
             if(this.selected[dataset._id]) {    
+                Vue.set(dataset, 'checked', false);
                 Vue.delete(this.selected, dataset._id);
-                dataset.checked = false;
             } else {
+                Vue.set(dataset, 'checked', true);
                 Vue.set(this.selected, dataset._id, dataset);
-                dataset.checked = true;
             }
             this.persist_selected();
         },
@@ -349,13 +306,22 @@ export default {
             localStorage.setItem('datasets.selected', JSON.stringify(this.selected));
         },
         clear_selected: function() {
+            for(var id in this.selected) {
+                //find dataset ref
+                this.datasets.forEach(dataset=>{
+                    if(dataset._id == id) dataset.checked = false;
+                });
+            }
             this.selected = {};
             this.persist_selected();
         },
         remove_selected: function(dataset) {
-            console.log("remove select", dataset);
+            console.log("removing", dataset);
+            //find dataset ref
+            this.datasets.forEach(_d=>{
+                if(dataset._id == _d._id) _d.checked = false;
+            });
             Vue.delete(this.selected, dataset._id);
-            dataset.checked = false;
             this.persist_selected();
         },
 
@@ -369,7 +335,7 @@ export default {
                 }
             }).then(res=>{
                 download_instance = res.body;
-                console.log("instance created", download_instance);
+                //console.log("instance created", download_instance);
 
                 //create config to download all selected data from archive
                 var download = [];
@@ -410,7 +376,7 @@ export default {
 
                     //TODO - this is neuroscience specific, and I need to do a lot more thinking on this
                     var dataname = datatype.name.split("/")[1];
-                    console.dir(datatype.files);
+                    //console.dir(datatype.files);
                     datatype.files.forEach(file=>{
                         symlink.push({
                             src: download_path+"/"+(file.filename||file.dirname),
@@ -471,7 +437,7 @@ export default {
 .page-content {
     margin-left: 200px;
     transition: right 0.2s;
-    top: 89px;
+    top: 88px;
     box-shadow: inset 0px 0px 10px #999;
 }
 .rightopen .page-content {
@@ -496,6 +462,10 @@ export default {
     bottom: 0px;
     z-index: 2;
 }
+.selected-view .header {
+    margin: 0px 0px;
+    color: white;
+}
 .selected-view .selected-item:hover {
     background-color: #eee;
     cursor: pointer;
@@ -517,8 +487,7 @@ export default {
 
 .header {
     background-color: #444;
-    color: #999;
-    font-weight: bold;
+    color: #777;
     text-transform: uppercase;
 }
 .list .group {
