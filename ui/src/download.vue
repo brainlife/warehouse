@@ -26,7 +26,7 @@
                 <el-steps :space="200" :active="active">
                     <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
                     <el-step title="Organize" description="Organizing data in BIDS format"></el-step>
-                    <el-step title="Download" description="Ready to download your computer"></el-step>
+                    <el-step title="Download" description="Ready to download to your computer"></el-step>
                 </el-steps>
                 
                 <br>

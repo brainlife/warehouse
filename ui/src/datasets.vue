@@ -507,6 +507,7 @@ export default {
     top: 0px;
     left: 300px;
     right: 200px;
+    z-index: 2;
 }
 
 .header,
