@@ -50,7 +50,7 @@
                     <el-checkbox></el-checkbox>
                 </el-col>
                 -->
-                <el-col :span="4" style="margin-top: 3px;font-weight: bold;">
+                <el-col :span="4">
                     <icon name="caret-down"></icon>
                     {{subject}}
                 </el-col> 
@@ -512,7 +512,7 @@ export default {
 
 .header,
 .list .group {
-    padding: 9px 10px 11px 10px;
+    padding: 9px 5px 11px 10px;
 }
 
 .header {
@@ -532,9 +532,10 @@ export default {
     padding: 3px 0px;
     margin-bottom: 1px;
     transition: background-color 0.2s;
+    background-color: #e7e7e7;
 }
 .list .dataset.clickable:hover {
-    background-color: #ddd;
+    background-color: #ccc;
 }
 .list .dataset.selected,
 .list .dataset.selected:hover {
