@@ -127,6 +127,9 @@ export default {
 </script>
 
 <style scoped>
+li svg {
+margin: 0px 10px 10px 10px;
+}
 .sidemenu {
     position: fixed;
     top: 50px;
@@ -160,25 +163,4 @@ ul.items li:hover {
     color: white;
     cursor: pointer;
 }
-
-/*
-.el-menu svg {
-margin-right: 10px;
-position: relative;
-top: 3px;
-}
-.el-menu {
-background-color: inherit;
-}
-.el-menu-item.is-active {
-background-color: #f0f0f0;
-}
-.menu {
-position: fixed;
-width: 100px;
-top: 50px;
-bottom: 0px;
-overflow-y: auto;
-}
-*/
 </style>
