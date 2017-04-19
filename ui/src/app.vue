@@ -5,98 +5,94 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20" v-if="app">
-            <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
-            <button class="ui button primary right floated" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"> 
-                <i class="play icon"></i> Submit
-            </button>
-            <button class="ui button right floated" @click="go('/app/'+app._id+'/edit')"> 
-                <i class="pencil icon"></i> Edit
-            </button>
+            <el-button-group style="float: right;">
+                <el-button @click="go('/app/'+app._id+'/edit')"> 
+                    <icon name="pencil"></icon> Edit
+                </el-button>
+                <el-button type="primary" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"> 
+                    <icon name="play"></icon> Submit
+                </el-button>
+            </el-button-group>
 
             <img style="float: left; margin-right: 20px;" :src="app.avatar">
-            <h2>{{app.name}}</h2>
+            <h1>{{app.name}}</h1>
             <p>{{app.desc}}</p>
             <br clear="both">
+            <br>
 
-            <table class="ui definition table">
-            <tbody>
-                <tr>
-                    <td>DOI</td>
-                    <td>10.1006/br.a.{{app._id}}</td>
-                </tr>
-                <tr>
-                    <td>Owner</td>
-                    <td><contact :id="app.user_id"></contact></td>
-                </tr>
-                <tr>
-                    <td>Administrators</td>
-                    <td><contact v-for="c in app.admins" key="c._id" :id="c"></contact></td>
-                </tr>
-                <tr v-if="app.github">
-                    <td>github</td>
-                    <td>
-                        <p>
-                            <a :href="'http://github.com/'+app.github">{{app.github}}</a>
-                        </p>
-                    </td>
-                </tr>
-                <tr v-if="app.dockerhub">
-                    <td>dockerhub</td>
-                    <td>
-                        <p>
-                            <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
-                        </p>
-                    </td>
-                </tr>
-                <tr v-if="resource">
-                    <td>Computing Resource</td>
-                    <td>
-                        <el-alert :closable="false" title="" type="error" v-if="!resource.detail">
-                            There is no computing resource to run this currently.
-                        </el-alert>
-                        <p v-if="resource.detail">
-                            This service can currently run on 
-                            <a class="ui label"> {{resource.detail.name}} </a>
-                        </p>
-                    </td>
-                </tr>
-                <tr class="top aligned">
-                    <td>Configuration Template</td>
-                    <td>
-                        <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
-                    </td>
-                </tr>
-                <tr class="top aligned">
-                    <td>Inputs</td>
-                    <td>
-                        <div class="ui list">
-                            <div class="item" v-for="input in app.inputs">
-                                 <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr class="top aligned" v-for="output in app.outputs">
-                    <td>Outputs</td>
-                    <td>
-                        <div class="ui list">
-                            <div class="item" v-for="output in app.outputs">
-                                <datatype :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr v-if="app.dockerhub">
-                    <td>dockerhub</td>
-                    <td><a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a></td>
-                </tr>
-            </tbody>
+            <table class="info"> 
+            <tr>
+                <th width="180px;">DOI</th>
+                <td><pre>10.1006/br.a.{{app._id}}</pre></td>
+            </tr>
+            <tr>
+                <th>Contacts</th>
+                <td>
+                    <el-row>
+                        <el-col :span="8">
+                            <h5>Owner</h5>
+                            <contact :id="app.user_id"></contact>
+                        </el-col>
+                        <el-col :span="16">
+                            <h5>Administrators</h5>
+                            <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
+                        </el-col>
+                    </el-row>
+                </td>
+            </tr>
+            <tr>
+                <th>Source Code</th>
+                <td>
+                    <div v-if="app.github">
+                        Github
+                        <a :href="'http://github.com/'+app.github">{{app.github}}</a>
+                    </div>
+                    <div v-if="app.dockerhub">
+                        Dockerhub
+                        <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
+                    </div>
+                </td>
+            </tr>
+            <tr v-if="resource">
+                <th>Computing Resource</th>
+                <td>
+                    <el-alert :closable="false" title="" type="error" v-if="!resource.detail">
+                        There is no computing resource to run this currently.
+                    </el-alert>
+                    <p v-if="resource.detail">
+                        This service can currently run on 
+                        <a class="ui label"> {{resource.detail.name}} </a>
+                    </p> 
+                </td>
+            </tr>
+            <tr>
+                <th>Configuration Template</th>
+                <td>
+                    <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
+                </td>
+            </tr>
+            <tr>
+                <th>Inputs</th>
+                <td>
+                    <div class="item" v-for="input in app.inputs">
+                         <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>Outputs</th>
+                <td>
+                    <div class="item" v-for="output in app.outputs">
+                        <datatype :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
+                    </div>
+                </td>
+            </tr>
             </table>
 
+            <br>
             <div v-if="config.debug">
                 <h2>Debug</h2>
-
-                <div class="ui segments">
+                <div class="panel">
                     <div class="ui segment">
                         <h3>App</h3>
                         <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
@@ -128,8 +124,6 @@ export default {
 
     data () {
         return {
-            messages: [], //move to mixin?
-
             app: null,
             resource: null,
 

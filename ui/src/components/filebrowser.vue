@@ -1,7 +1,7 @@
 <template>
 <div>
     <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
-    <div class="ui list" v-if="files">
+    <div v-if="files">
         <!--
         <div class="ui icon mini basic buttons" style="margin-bottom: 10px;">
             <button v-if="files.length != 0" class="ui button" @click="download()"><i class="download icon"></i></button>
@@ -13,11 +13,25 @@
             <el-button size="small" @click="download()"><icon scale="0.8" name="download"></icon></el-button>
             <el-button size="small" @click="load()"><icon scale="0.8" name="refresh"></icon></el-button>
         </el-button-group>
+        <p v-if="files.length == 0" class="text-muted">Empty Directory</p>
+
         <div class="item" v-for="file in files" key="file.filename">
             <div class="fileitem" @click="click(file)">
-                <i class="file outline icon" v-if="!file.directory"></i>
-                <i class="folder icon" v-if="file.directory"></i>
-                {{file.filename}}
+                <el-row :gutter="5">
+                    <el-col :span="8">
+                        <span class="text-muted" style="margin-right: 8px;">
+                            <icon name="file-o" v-if="!file.directory"></icon>
+                            <icon name="folder" v-if="file.directory"></icon>
+                        </span>
+                        {{file.filename}}
+                        <span class="text-muted" style="float: right">{{file.attrs.size|filesize}}</span>
+                    </el-col>
+                    <el-col :span="4"><pre>{{file.attrs.mode_string}}</pre></el-col>
+                    <el-col :span="4">{{file.attrs.uid}}</el-col>
+                    <el-col :span="4">{{file.attrs.gid}}</el-col>
+                    <!--<el-col :span="2">{{file.attrs.atime|date}}</el-col>-->
+                    <el-col :span="4">{{file.attrs.mtime|date}}</el-col>
+                </el-row>
             </div>
             <div class="content" style="margin-left: 20px;" v-if="file.open">
                 <filebrowser :task="task" :path="fullpath+'/'+file.filename"></filebrowser>
@@ -25,13 +39,17 @@
             <pre v-if="file.content" v-highlightjs="file.content" class="file-content"><code :class="file.type+' hljs'"></code></pre>
         </div>
         <!--<p v-if="loading" class="ui mini compact message">Loading ...</p>-->
-        <p v-if="files.length == 0" class="text-muted">Empty Directory</p>
-    </div>
+    </div><!--if files-->
 </div>
 </template>
 
 <script>
 import Vue from 'vue'
+
+import filesize from 'filesize'
+Vue.filter('filesize', function(value) {
+    return filesize(value);
+});
 
 export default {
     name: 'filebrowser',
@@ -142,5 +160,6 @@ pre.file-content {
 margin: 0px;
 padding-left: 20px;
 max-height: 400px;
+background-color: #ddd;
 }
 </style>

@@ -1,26 +1,30 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader :user="config.user">
+        <!--pageheader slot-->
+        <el-row :gutter="20">
+            <el-col :span="14">
+                <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
+            </el-col>
+            <el-col :span="10">
+                <el-button @click="go('/app/_/edit')"> <i class="ui icon add"></i> Register </el-button>
+            </el-col>
+        </el-row>
+    </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20">
-            <el-row :gutter="10">
-                <el-col :span="6">
-                    <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
-                </el-col>
-                <el-col :span="4">
-                    <el-button @click="go('/app/_/edit')"> <i class="ui icon add"></i> Register </el-button>
-                </el-col>
-            </el-row>
-
-            <br>
-
-            <el-row>
-                <el-col :span="8" v-for="app in apps" key="app._id">
+            <!--
+            <el-row :gutter="20">
+                <el-col :span="6" v-for="app in apps" key="app._id">
                     <app :app="app"></app>
                 </el-col>
             </el-row>
+            -->
+            <div v-for="app in apps" key="app._id" class="card">
+                <app :app="app"></app>
+            </div>
         </div><!--magin20-->
         </div><!--page-content-->
     </div><!--pusher-->
@@ -63,4 +67,9 @@ export default {
 </script>
 
 <style scoped>
+.card {
+    width: 350px; 
+    float: left;
+    margin-right: 10px;
+}
 </style>

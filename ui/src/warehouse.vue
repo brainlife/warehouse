@@ -19,7 +19,7 @@ export default {
 body {
 background-color: #f0f0f0;
 font-family: 'Lato', sans-serif;
-font-size: 10pt;
+font-size: 14px;
 }
 .margin20 {
 	margin: 20px;
@@ -46,18 +46,24 @@ font-size: 10pt;
 pre {
     margin: 0px;
     overflow: auto;
+    font-family: 'monospace';
 }
 .clickable:hover,
 .clickable-record:hover {
     cursor: pointer;
     background-color: #ddd;
 }
+/*
 .panel {
     background-color: white;
     width: 100%;
-    padding: 20px;
+    padding: 10px 15px;
     box-sizing: border-box;
+    box-shadow: 0px 1px 4px #ccc;
+    border-radius: 1px;
+    margin-bottom: 8px;
 }
+*/
 .text-muted {
     opacity: 0.6;
 }
@@ -68,22 +74,57 @@ code.hljs {
     margin-left: 150px;
 }
 .el-card__header {
-    background-color: #EFF2F7;
+    background-color: #efefef;
 }
 svg.fa-icon {
 position: relative;
-top: 2px;
-zoom: 90%;
+zoom: 78%;
+}
+h1 {
+font-size: 26px;
+font-weight: bold;
+margin-bottom: 13px;
+}
+h2 {
+font-size: 22px;
+font-weight: bold;
+margin-bottom: 11px;
+}
+h3 {
+font-size: 18px;
+font-weight: bold;
+margin-bottom: 9px;
 }
 h4 {
 font-size: 15px;
 font-weight: bold;
+margin-bottom: 7px;
 }
 h5 {
 font-size: 13px;
 font-weight: bold;
+margin-bottom: 6px;
 }
 small {
 font-size: 80%;
 }
+
+table.info {
+    width: 100%;
+}
+table.info tr {
+    border-bottom: 1px solid #eee;
+    background-color: white;
+}
+table.info th {
+    color: #777; 
+    text-align: left;
+    font-size: 14px;
+    padding: 10px;
+    font-weight: 700;
+}
+table.info td {
+    padding: 10px;
+}
+
 </style>

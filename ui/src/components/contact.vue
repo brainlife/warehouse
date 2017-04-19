@@ -1,7 +1,8 @@
 <template>
-<div class="ui image label">
-  <img :src="gurl" /> {{profile.fullname}}
-  <div class="detail">{{profile.email}}</div>
+<div class="contact">
+    <img :src="gurl">
+    <div class="name">{{profile.fullname}}</div>
+    <div class="email">&lt;{{profile.email}}&gt;</div>
 </div>
 </template>
 
@@ -56,3 +57,36 @@ export default {
   props: ['id'],
 }
 </script>
+
+<style scope>
+.contact {
+display: inline-block;
+height: 25px;
+margin-right: 10px;
+font-size: 12px;
+color: #555;
+font-weight: 700;
+line-height: 200%;
+white-space: nowrap;
+}
+.contact img {
+float: left;
+height: 25px;
+border-top-left-radius: 5px;
+border-bottom-left-radius: 5px;
+}
+.name, .email {
+display: inline-block;
+padding: 0px 10px;
+background-color: #eee;
+}
+.email {
+position: relative;
+left: -3px;
+background-color: #ddd;
+color: #888;
+font-family: monospace;
+border-top-right-radius: 5px;
+border-bottom-right-radius: 5px;
+}
+</style>

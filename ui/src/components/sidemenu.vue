@@ -4,27 +4,27 @@
         <li v-if="config.debug" 
             @click="go('/dashboard')"
             :class="{active: active == '/dashboard'}">
-            <icon name="tachometer" scale="1.5"></icon><br>Dashboard
+            <icon name="tachometer" scale="2"></icon><br>Dashboard
         </li>
         <li @click="go('/apps')"
             :class="{active: active == '/apps'}" >
-            <icon name="th-large" scale="1.5" ></icon><br>Apps
+            <icon name="th-large" scale="2" ></icon><br>Apps
         </li>
         <li @click="go('/processes')"
             :class="{active: active == '/processes'}">
-            <icon name="paper-plane" scale="1.5"></icon><br>Process
+            <icon name="paper-plane" scale="2"></icon><br>Process
         </li>
         <li @click="go('/datasets')"
             :class="{active: active == '/datasets'}">
-            <icon name="cubes" scale="1.5"></icon><br>Datasets
+            <icon name="cubes" scale="2"></icon><br>Datasets
         </li>
         <li @click="go('/projects')"
             :class="{active: active == '/projects'}">
-            <icon name="shield" scale="1.5"></icon><br>Projects
+            <icon name="shield" scale="2"></icon><br>Projects
         </li>
         <li @click="go('/settings')"
             :class="{active: active == '/settings'}">
-            <icon name="cog" scale="1.5"></icon><br>Settings
+            <icon name="cog" scale="2"></icon><br>Settings
         </li>
     </ul>
     <!--<projectmenu></projectmenu>-->
@@ -128,7 +128,7 @@ export default {
 
 <style scoped>
 li svg {
-margin: 0px 10px 10px 10px;
+margin: 0px 10px 0px 10px;
 }
 .sidemenu {
     position: fixed;

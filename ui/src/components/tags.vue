@@ -1,7 +1,7 @@
 <template>
 <div style="display: inline-block;">
     <el-tag v-for="(tag, i) in deco_tags" :type="tag.neg?'danger':'gray'" :key="i">
-        <i class="minus circle icon" v-if="tag.neg"></i>
+        <icon name="ban" v-if="tag.neg"></icon>
         {{tag.name}}
     </el-tag>
 </div>

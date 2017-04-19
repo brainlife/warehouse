@@ -5,22 +5,20 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20" v-if="instance && tasks && app">
-            <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
-            <button class="ui button primary right floated"
-                v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="archive()"> 
-                <i class="archive icon"></i> Archive Output
-            </button>
-            <button class="ui button right floated"
-                v-if="instance.config.dataset_id" @click="go('/dataset/'+instance.config.dataset_id)">
-                <i class="archive icon"></i> See Archived
-            </button>
-            <button class="ui button right floated" @click="remove()">
-                <i class="trash icon"></i> Remove Process
-            </button>
-
-            <h1><i class="send icon"></i> {{app.name}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
-            <!--<p>{{app.desc}}</p>-->
+            <el-button-group style="float: right;">
+                <el-button v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="archive()"> 
+                    <icon name="archive"></icon> Archive Output
+                </el-button>
+                <el-button v-if="instance.config.dataset_id" @click="go('/dataset/'+instance.config.dataset_id)">
+                    <icon name="archive"></icon> See Archived
+                </el-button>
+                <el-button @click="remove()">
+                    <icon name="trash"></icon> Remove Process
+                </el-button>
+            </el-button-group>
+            <h1><icon name="send" scale="2"></icon> {{app.name}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
             <p>{{instance.desc}}</p>
+            <br>
 
             <el-card class="box-card" v-if="instance.status == 'finished'">
                 <div slot="header"> <span>Outputs</span> </div>
@@ -65,7 +63,7 @@
             <el-card class="box-card">
                 <div slot="header"> <span>Application</span> </div>
                 <img style="float: left; margin-right: 20px;" :src="app.avatar">
-                <h3 style="margin: 0px;">{{app.name}}</h3>
+                <h3>{{app.name}}</h3>
                 <p>{{app.desc}}</p>
                 <br clear="both">
             </el-card>
@@ -103,11 +101,11 @@
 
             <el-card class="box-card">
                 <div slot="header"> <span>Configuration</span> </div>
-                <p>TODO.. display this in more user friendly way</p>
                 <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </el-card>
 
-            <div class="ui segments" v-if="config.debug">
+            <br>
+            <el-card v-if="config.debug">
                 <div class="ui segment" v-if="instance">
                     <h3>instance</h3>
                     <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
@@ -128,7 +126,7 @@
                     <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
                 </div>
                 -->
-            </div>
+            </el-card>
         </div><!--margin20-->
         </div><!--page-content-->
     </div><!--pusher-->
@@ -160,7 +158,6 @@ export default {
         return {
             instance: null,
             tasks: null,
-            messages: [],
             app: null,
 
             config: Vue.config,
@@ -177,19 +174,19 @@ export default {
             this.instance = res.body.instances[0];
 
             //load datasets used for prov.deps
+            console.dir(this.instance.config.prov);
             var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
-            this.$http.get('dataset', {params: {
+            return this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: dataset_ids}),
-                populate: ' ',
+                populate: ' ', //load all default
             }})
-            .then(res=>{
-                //this.datasets = res.body.datasets;
-                res.body.datasets.forEach((dataset)=>{
-                    this.instance.config.prov.deps.forEach(dep=>{
-                        if(dep.dataset == dataset._id) {
-                            Vue.set(dep, '_dataset', dataset);
-                        }
-                    });
+        })
+        .then(res=>{
+            res.body.datasets.forEach((dataset)=>{
+                this.instance.config.prov.deps.forEach(dep=>{
+                    if(dep.dataset == dataset._id) {
+                        Vue.set(dep, '_dataset', dataset);
+                    }
                 });
             });
 
@@ -301,7 +298,10 @@ export default {
                 name: this.app.name+" output", 
                 desc: "Data archived from "+this.instance.name,
                 tags: ['xyz123', 'test', 'dev'], //TODO - let use set this?
-                project: this.instance.config.project,
+
+                //TODO user must provide this now
+                //project: this.instance.config.project,
+
                 task_id: this.instance.config.main_task_id,
                 prov: this.instance.config.prov, 
                 meta: meta,
@@ -309,7 +309,7 @@ export default {
                 datatype_tags: this.app.outputs[0].datatype_tags,
             }
             this.$http.post('dataset', params).then(res=>{
-                this.messages.push({msg: "Archiving Request Sent!", cls: {info: true}});
+                //this.messages.push({msg: "Archiving Request Sent!", cls: {info: true}});
 
                 //update instance to store dataset_id
                 this.instance.config.dataset_id = res.body._id;

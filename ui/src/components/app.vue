@@ -1,15 +1,40 @@
 <template>
-<el-card>
-    <img :src="app.avatar+'?'+Math.random()" class="image">
-    <div style="padding: 14px;">
-        <p>
-            <h4>{{app.name}}</h4> <small>{{app.desc}}</small>
-        </p>
-        <div class="bottom clearfix">
-            <el-button type="text" class="button" @click="go('/app/'+app._id)"><i class="info circle icon"></i> Detail</el-button>
-            <el-button type="text" class="button" @click="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))"><i class="play icon"></i> Submit</el-button>
+<el-card :body-style="{padding: '0px'}" style="margin-bottom: 20px;">
+    <el-row>
+        <el-col :span="18">
+            <h4 class="appname">{{app.name}}</h4>
+            <div class="appdesc">{{app.desc}}</div>
+        </el-col>
+        <el-col :span="6">
+            <img :src="app.avatar+'?'+Math.random()" class="image">
+            <br>
+        </el-col>
+        <div style="padding: 10px;">
+            <el-button-group style="width: 100%;">
+                <el-button style="width: 50%;" @click="go('/app/'+app._id)"><icon name="info-circle"></icon> Detail</el-button>
+                <el-button style="width: 50%;" type="primary" @click="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))">
+                    <icon name="play"></icon> Submit</el-button>
+            </el-button-group>
+        </div>
+    </el-row>
+
+    <!--
+    <div style="padding: 10px;">
+        <div>
+            <br>
+            <div style="height: 150px; overflow: auto" class="text-muted">
+                {{app.desc}}
+            </div>
+        </div>
+        <div class="bottom">
+            <el-button-group style="width: 100%;">
+                <el-button style="width: 50%;" @click="go('/app/'+app._id)"><icon name="info-circle"></icon> Detail</el-button>
+                <el-button style="width: 50%;" type="primary" @click="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))">
+                    <icon name="play"></icon> Submit</el-button>
+            </el-button-group>
         </div>
     </div>
+    -->
 </el-card>
 </template>
 
@@ -34,33 +59,34 @@ export default {
 </script>
 
 <style scoped>
-  .time {
-    font-size: 13px;
-    color: #999;
-  }
-  
-  .bottom {
-    margin-top: 13px;
-    line-height: 12px;
-  }
+.time {
+font-size: 13px;
+color: #999;
+}
 
-  .button {
-    padding: 0;
-    float: right;
-  }
+.bottom {
+margin-top: 13px;
+line-height: 12px;
+}
 
-  .image {
-    width: 100%;
-    display: block;
-  }
+.button {
+padding: 0;
+float: right;
+}
 
-  .clearfix:before,
-  .clearfix:after {
-      display: table;
-      content: "";
-  }
-  
-  .clearfix:after {
-      clear: both
-  }
+.appname {
+color: #666;
+padding: 10px;
+margin-bottom: 0px;
+}
+.appdesc {
+margin: 10px;
+height: 150px;
+overflow: auto;
+}
+
+.image {
+width: 100%;
+display: block;
+}
 </style>

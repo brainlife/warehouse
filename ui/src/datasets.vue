@@ -20,7 +20,6 @@
         <projectmenu :active="project_id"></projectmenu>
         <div class="fixed-top">
             <el-row class="header">
-                <!--<el-col :span="1">&nbsp;</el-col>-->
                 <el-col :span="4"><h4>Subject</h4></el-col>
                 <el-col :span="20">
                     <el-row>
@@ -28,7 +27,7 @@
                         <el-col :span="6"><h4>Create Date</h4></el-col>
                         <el-col :span="6"><h4>Datatype</h4></el-col>
                         <el-col :span="6"><h4>Name / Desc</h4></el-col>
-                        <el-col :span="4"><h4>User Tags</h4></el-col>
+                        <el-col :span="4"><h4>Tags</h4></el-col>
                     </el-row> 
                 </el-col>
             </el-row>
@@ -99,7 +98,7 @@
         <h4 class="header">
             <icon name="check-square"></icon> {{selected_count}} Selected 
         </h4>
-        <div class="panel">
+        <div class="select-group">
             <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
                 <h5>{{datatypes[did].name}}</h5>
                 <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
@@ -116,7 +115,7 @@
                 <br>
             </div>
         </div>
-        <div class="panel" style="background-color: #999;">
+        <div class="select-group" style="background-color: #999;">
             <el-button-group>
                 <el-button size="small" icon="delete" @click="clear_selected()">Clear Selection</el-button>
                 <el-button size="small" type="primary" icon="download" @click="download()"> <i class="download icon"></i> Download </el-button>
@@ -463,14 +462,17 @@ export default {
     z-index: 2;
 }
 .selected-view .header {
-    margin: 0px 0px;
     color: white;
 }
 .selected-view .selected-item:hover {
     background-color: #eee;
     cursor: pointer;
 }
-
+.selected-view .select-group {
+    background-color: white;
+    padding: 10px 15px;
+    box-sizing: border-box;
+}
 .header-content {
     padding-top: 7px;
     position: fixed;
@@ -482,7 +484,7 @@ export default {
 
 .header,
 .list .group {
-    padding: 9px 5px 11px 10px;
+    padding: 10px 5px 3px 10px;
 }
 
 .header {
@@ -516,6 +518,7 @@ export default {
     right: 0px;
     z-index: 5;
     transition: right 0.2s;
+    top: 50px;
 }
 </style>
 

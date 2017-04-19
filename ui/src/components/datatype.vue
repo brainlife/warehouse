@@ -1,15 +1,15 @@
 <template>
 <el-card class="box-card">
-    <div slot="header" class="clearfix">
-       <b>{{datatype.name}}</b> | <small>{{datatype.desc}}</small>
+    <div slot="header">
+       <span style="font-weight: 600;">{{datatype.desc}}</span> <span class="text-muted">({{datatype.name}})</span>
+        <tags :tags="datatype_tags"></tags>
     </div>
 
-    <tags :tags="datatype_tags"></tags>
-    <div class="ui segment" v-for="file in datatype.files">
+    <el-card v-for="file in datatype.files" class="file">
         <i class="file outline icon" v-if="file.filename"></i>
         <i class="folder icon" v-if="file.dirname"></i>
         {{file.filename||file.dirname}}
-    </div>
+    </el-card>
 </el-card>
 </template>
 
@@ -29,3 +29,9 @@ export default {
 
 }
 </script>
+
+<style scope>
+.file {
+margin-bottom: 10px;
+}
+</style>
