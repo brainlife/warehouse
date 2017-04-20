@@ -3,6 +3,8 @@ import Router from 'vue-router'
 
 import dashboard from '@/dashboard'
 import projects from '@/projects'
+import project from '@/project'
+import projectedit from '@/projectedit'
 import datasets from '@/datasets'
 import dataset from '@/dataset'
 import upload from '@/upload'
@@ -30,6 +32,8 @@ export default new Router({
     { path: '/processes', component: processes},
     { path: '/process/:id', component: process},
     { path: '/projects', component: projects },
+    { path: '/project/:id', component: project },
+    { path: '/project/:id/edit', component: projectedit },
     { path: '/apps', component: apps },
     { path: '/app/:id', component: app },
     { path: '/app/:id/submit', component: submit},

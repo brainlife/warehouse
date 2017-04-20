@@ -79,31 +79,49 @@ code.hljs {
     background-color: #efefef;
     padding: 10px 15px !important;
 }
+.el-button {
+    border: none !important;
+}
+.el-button.el-button--default {
+    background-color: #e7e7e7;
+}
+
+.el-table th,
+.el-table__fixed-header-wrapper thead div,
+.el-table__header-wrapper thead div {
+    background-color: #eee !important;
+}
+
 svg.fa-icon {
 position: relative;
 zoom: 78%;
 }
 h1 {
+line-height: 100%;
 font-size: 26px;
 font-weight: bold;
 margin-bottom: 13px;
 }
 h2 {
+line-height: 100%;
 font-size: 22px;
 font-weight: bold;
 margin-bottom: 11px;
 }
 h3 {
+line-height: 100%;
 font-size: 18px;
 font-weight: bold;
 margin-bottom: 9px;
 }
 h4 {
+line-height: 100%;
 font-size: 15px;
 font-weight: bold;
 margin-bottom: 7px;
 }
 h5 {
+line-height: 100%;
 font-size: 13px;
 font-weight: bold;
 margin-bottom: 6px;

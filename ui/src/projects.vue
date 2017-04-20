@@ -1,17 +1,45 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader :user="config.user">
+        <el-row :gutter="20">
+            <el-col :span="14">
+                <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
+            </el-col>
+            <el-col :span="10">
+                <!--<el-button @click="go('/app/_/edit')"> <i class="ui icon add"></i> Register </el-button>-->
+                <el-button v-if="user" @click="newproject()"> <icon name="plus"></icon> Add Project </el-button>
+            </el-col>
+        </el-row>
+    </pageheader>
     <sidemenu active="/projects"></sidemenu>
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20">
-            <button v-if="user" class="ui right floated primary button" @click="newproject()">
-                <i class="icon add"></i>
-                Add Project
-            </button>
-            <br>
-            <br>
+            <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
+            <el-table v-if="projects" :data="projects" style="width: 100%;" @row-click="click">
+                <el-table-column label="Name" prop="name" sortable></el-table-column> 
+                <el-table-column label="Access">
+                    <template scope="scope">
+                        {{scope.row.access}}
+                    </template>
+                </el-table-column> 
+                <el-table-column label="Description" prop="name"></el-table-column> 
+                <el-table-column width="400" label="Admins">
+                    <template scope="scope">
+                        <contact v-for="id in scope.row.admins" key="id" :id="id"></contact>
+                    </template>
+                </el-table-column> 
+                <el-table-column>
+                    <template scope="scope">
+                        <div style="float: right;">
+                            <el-button type="text" @click.stop="editp(scope.row)">Edit</el-button>
+                        </div>
+                    </template>
+                </el-table-column> 
+            </el-table>
 
+            <!--
+            <br>
             <div class="ui relaxed divided items">
                 <div class="item" v-for="(project, index) in projects">
                     <div class="content">
@@ -22,14 +50,16 @@
                             </button>
                         </div>
                     </div>
-                </div><!--item-->
-            </div><!--items-->
+                </div>
+            </div>
+            -->
 
         </div><!--margin20-->
         </div><!--page-content-->
     </div><!--page-->
 
     <!-- project dialog ---------------------------------------------------------------->
+    <!--
     <div class="ui modal projectdialog">
         <i class="close icon"></i>
         <div class="header" v-if="edit._id">
@@ -42,7 +72,6 @@
 
       <div class="description">
         <form class="ui form">
-          <!--<div class="ui header">Say something nice to make people feel happy</div>-->
           <div class="field">
             <label>Project Name</label>
             <input type="text" v-model="edit.name" placeholder="Please enter name for this project">
@@ -75,11 +104,6 @@
                             </div>
                         </div>
                     </div>
-
-            <!--
-          <p>We've grabbed the following image from the <a href="https://www.gravatar.com" target="_blank">gravatar</a> image associated with your registered e-mail address.</p>
-          <p>Is it okay to use this photo?</p>
-            -->
         </form>
       </div>
 
@@ -96,6 +120,7 @@
             </div>
         </div>
     </div>
+    -->
 
 </div>
 </template>
@@ -109,9 +134,10 @@ import sidemenu from '@/components/sidemenu'
 import contactlist from '@/components/contactlist'
 import project from '@/components/project'
 import pageheader from '@/components/pageheader'
+import contact from '@/components/contact'
 
 export default {
-    components: { sidemenu, contactlist, project, pageheader },
+    components: { sidemenu, contactlist, project, pageheader, contact },
 
     data () {
         return {
@@ -132,11 +158,14 @@ export default {
                 members: [],
             },
 
+            query: "",
+
             config: Vue.config,
         }
     },
 
     mounted: function() {
+        /*
         this.projectdialog = $(this.$el).find('.projectdialog');
         this.projectdialog.modal({
 
@@ -167,40 +196,55 @@ export default {
                 }
             }
         });
+        */
     },
 
-  methods: {
-    changemember: function(list, uids) {
-      if(!uids) return;
-      this.edit[list] = uids;
-    },
-    newproject: function() {
-      //initialize
-      this.edit = {
-        name: "",
-        desc: "",
-        access: "public",
-        admins: [Vue.config.user.sub.toString()],
-        members: [Vue.config.user.sub.toString()],
+    methods: {
+        changemember: function(list, uids) {
+            if(!uids) return;
+            this.edit[list] = uids;
+        },
 
-        //ugly hack to get contactlist to not feedback list update
-        init_admins: [Vue.config.user.sub.toString()],
-        init_members: [Vue.config.user.sub.toString()],
-      }
-      Vue.nextTick(()=>{
-        this.projectdialog.modal('show');
-      });
-    },
-    editproject: function(p) {
-      this.edit = Object.assign({
-        init_admins: p.admins,
-        init_members: p.members,
-      }, p);
-      Vue.nextTick(()=>{
-        console.log("showing");
-        this.projectdialog.modal('show');
-      });
-    }
+        click: function(row) {
+            this.$router.push('/project/'+row._id);
+        },
+        editp: function(row) {
+            this.$router.push('/project/'+row._id+'/edit');
+        },
+
+        newproject: function() {
+            this.$router.push('/project/_/edit');
+            /*
+            //initialize
+              this.edit = {
+                name: "",
+                desc: "",
+                access: "public",
+                admins: [Vue.config.user.sub.toString()],
+                members: [Vue.config.user.sub.toString()],
+
+                //ugly hack to get contactlist to not feedback list update
+                init_admins: [Vue.config.user.sub.toString()],
+                init_members: [Vue.config.user.sub.toString()],
+              }
+              Vue.nextTick(()=>{
+                this.projectdialog.modal('show');
+              });
+            */
+        },
+
+        /*
+        editproject: function(p) {
+              this.edit = Object.assign({
+                init_admins: p.admins,
+                init_members: p.members,
+              }, p);
+              Vue.nextTick(()=>{
+                console.log("showing");
+                this.projectdialog.modal('show');
+              });
+            }
+        */
   },
 
   created: function() {

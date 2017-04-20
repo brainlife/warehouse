@@ -62,7 +62,7 @@
 
             <el-card class="box-card">
                 <div slot="header"> <span>Application</span> </div>
-                <img style="float: left; margin-right: 20px;" :src="app.avatar">
+                <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
                 <h3>{{app.name}}</h3>
                 <p>{{app.desc}}</p>
                 <br clear="both">
@@ -140,6 +140,7 @@ import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
 import pageheader from '@/components/pageheader'
 import metadata from '@/components/metadata'
+import appavatar from '@/components/appavatar'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -147,7 +148,7 @@ export default {
     mixins: [
         //require("vue-toaster")
     ],
-    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader },
+    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar },
 
     data () {
         return {

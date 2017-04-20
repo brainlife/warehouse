@@ -1,15 +1,9 @@
 <template>
 <el-card :body-style="{padding: '0px'}" style="margin-bottom: 20px;">
-    <el-row>
-        <el-col :span="18">
-            <h4 class="appname">{{app.name}}</h4>
-            <div class="appdesc">{{app.desc}}</div>
-        </el-col>
-        <el-col :span="6">
-            <img :src="app.avatar+'?'+Math.random()" class="image">
-            <br>
-        </el-col>
-        <div style="padding: 10px;">
+        <appavatar :app="app" style="float: right;margin-left: 10px;"></appavatar>
+        <h4 class="appname">{{app.name}}</h4>
+        <div class="appdesc" :class="{'compact': compact}">{{app.desc}}</div>
+        <div style="padding: 10px;" v-if="!compact">
             <el-button-group style="width: 100%;">
                 <el-button style="width: 50%;" @click="go('/app/'+app._id)"><icon name="info-circle"></icon> Detail</el-button>
                 <el-button style="width: 50%;" type="primary" @click="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))">
@@ -42,10 +36,11 @@
 import Vue from 'vue'
 
 import contact from '@/components/contact'
+import appavatar from '@/components/appavatar'
 
 export default {
-    components: { contact },
-    props: ['app', 'dataset'],
+    components: { contact, appavatar },
+    props: ['app', 'dataset', 'compact'],
     data () {
         return {
         }
@@ -89,4 +84,8 @@ overflow: auto;
 width: 100%;
 display: block;
 }
+.compact {
+height: inherit;
+}
+
 </style>

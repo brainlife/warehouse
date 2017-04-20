@@ -85,10 +85,14 @@
                         <br>
                         </el-col>
                     </el-row>
+                    <!--
                     <el-card style="background-color: #13ce66">
+                        <appavatar :app="dataset.prov.app" style="float: left;"></appavatar>
                         <b>App / {{dataset.prov.app.name}}</b><br>
                         {{dataset.prov.app.desc}}
                     </el-card>
+                    -->
+                    <app :app="dataset.prov.app" :compact="true"/>
 
                     <center>
                         <br>
@@ -158,11 +162,12 @@ import app from '@/components/app'
 import datatype from '@/components/datatype'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
+import appavatar from '@/components/appavatar'
 
 const lib = require('./lib');
 
 export default {
-    components: { sidemenu, contact, project, app, tags, datatype, metadata, pageheader },
+    components: { sidemenu, contact, project, app, tags, datatype, metadata, pageheader, appavatar },
     data () {
         return {
             dataset: null,

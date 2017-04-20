@@ -9,7 +9,6 @@
                 <!--<el-button @click="go('/app/_/edit')"> <i class="ui icon add"></i> Register </el-button>-->
             </el-col>
         </el-row>
-
     </pageheader>
     <sidemenu active="/processes"></sidemenu>
     <div class="ui pusher">

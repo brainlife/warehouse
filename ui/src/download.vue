@@ -19,45 +19,45 @@
             </button>
             -->
 
-            <div class="panel">
-                <h1><i class="send icon"></i> Download</h1>
-                <p>Requested At <b><time>{{instance.create_date|date}}</time></b></p>
+            <h1><icon name="download" scale="2"></icon> Download</h1>
+            <el-card>
+                <div slot="header" style="padding: 15px;">
+                    <p style="float: right;"><span class="text-muted">Requested at</span> <b><time>{{instance.create_date|date}}</time></b></p>
+                    <el-steps :space="200" :active="active">
+                        <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
+                        <el-step title="Organize" description="Organizing data in BIDS format"></el-step>
+                        <el-step title="Download" description="Ready to download to your computer"></el-step>
+                    </el-steps>
+                    
+                    <br>
+                    <el-alert v-if="error" type="error" title="Failed" 
+                        :description="error" show-icon :closable="false"></el-alert>
 
-                <el-steps :space="200" :active="active">
-                    <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
-                    <el-step title="Organize" description="Organizing data in BIDS format"></el-step>
-                    <el-step title="Download" description="Ready to download to your computer"></el-step>
-                </el-steps>
-                
-                <br>
-                <el-alert v-if="error" type="error" title="Failed" 
-                    :description="error" show-icon :closable="false"></el-alert>
-
-                <div v-if="active == 3">
-                    <el-button type="primary" class="animated bounceIn" size="large" @click="download()" icon="document">Download (bids.tar.gz)</el-button>    
+                    <div v-if="active == 3">
+                        <el-button type="primary" class="animated bounceIn" size="large" @click="download()" icon="document">Download (bids.tar.gz)</el-button>    
+                    </div>
                 </div>
-            </div>
 
-            <div class="ui segment">
-                <div class="ui top attached label">Task Statuses</div>
+                <h3>Task Status</h3>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
-            </div>
 
-            <div v-if="config.debug">
-                <h2>Debug</h2>
-                <div class="ui segments">
-                    <div class="ui segment" v-if="instance">
-                        <h3>instance</h3>
-                        <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
-                    </div>
-                    <div class="ui segment" v-if="tasks">
-                        <h3>tasks</h3>
-                        <div v-for="task in tasks">
-                            <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
-                        </div>
+            </el-card>
+
+            <br>
+            <el-card v-if="config.debug">
+                <div slot="header">Debug</div>
+                <div v-if="instance">
+                    <h3>instance</h3>
+                    <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
+                </div>
+                <div v-if="tasks">
+                    <h3>tasks</h3>
+                    <div v-for="task in tasks">
+                        <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
                     </div>
                 </div>
-            </div>
+            </el-card>
+
         </div><!--margin20-->
         </div><!--page-content-->
     </div>

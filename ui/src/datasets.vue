@@ -12,7 +12,7 @@
                 </el-input>
             </el-col>
             <el-col :span="12">
-                <el-button @click="go('/upload')"><!--<icon name="plus"></icon>&nbsp;-->Upload</el-button>
+                <el-button @click="go('/upload')"><icon name="upload"></icon> Upload Data</el-button>
             </el-col>
         </el-row>
     </div>
@@ -436,7 +436,7 @@ export default {
 .page-content {
     margin-left: 200px;
     transition: right 0.2s;
-    top: 88px;
+    top: 85px;
     box-shadow: inset 0px 0px 10px #999;
 }
 .rightopen .page-content {

@@ -14,15 +14,18 @@
                 </el-button>
             </el-button-group>
 
-            <img style="float: left; margin-right: 20px;" :src="app.avatar">
+            <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
             <h1>{{app.name}}</h1>
-            <p>{{app.desc}}</p>
             <br clear="both">
             <br>
 
             <table class="info"> 
             <tr>
-                <th width="180px;">DOI</th>
+                <th width="180px;">Description</th>
+                <td>{{app.desc}}</td>
+            </tr>
+            <tr>
+                <th>DOI</th>
                 <td><pre>10.1006/br.a.{{app._id}}</pre></td>
             </tr>
             <tr>
@@ -72,7 +75,7 @@
                 </td>
             </tr>
             <tr>
-                <th>Inputs</th>
+                <th>Input Datatypes</th>
                 <td>
                     <div class="item" v-for="input in app.inputs">
                          <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
@@ -80,7 +83,7 @@
                 </td>
             </tr>
             <tr>
-                <th>Outputs</th>
+                <th>Output Datatypes</th>
                 <td>
                     <div class="item" v-for="output in app.outputs">
                         <datatype :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
@@ -112,9 +115,10 @@ import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
 import datatype from '@/components/datatype'
+import appavatar from '@/components/appavatar'
 
 export default {
-    components: { sidemenu, pageheader, contact, project, tags, datatype },
+    components: { sidemenu, pageheader, contact, project, tags, datatype, appavatar },
 
     data () {
         return {
