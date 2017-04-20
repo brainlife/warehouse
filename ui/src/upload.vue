@@ -3,149 +3,133 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher">
-        <div class="page-content" :class="{rightopen: selected_count}">
+        <div class="page-content">
         <div class="margin20">
-            <h1>Upload</h1>
+            <h1><icon name="upload" scale="2"></icon> Upload Dataset</h1>
 
-            <div class="ui attached segment form">
-                <el-steps :space="200" :active="get_active_tab()">
-                    <el-step title="Metadata" icon="edit" description="Choose datatype and enter information"></el-step>
-                    <el-step title="Upload" icon="upload" description="Upload all required files"></el-step>
-                    <el-step title="Validate" icon="picture" description="Validate your files"></el-step>
-                    <el-step title="Finalize" icon="picture" description="Archive your data to Brain Life"></el-step>
-                </el-steps>
-            </div>
+            <el-card>
+                <div slot="header">
+                    <el-steps :space="200" :active="get_active_tab()">
+                        <el-step title="Metadata" icon="edit" description="Choose datatype and enter information"></el-step>
+                        <el-step title="Upload" icon="upload" description="Upload all required files"></el-step>
+                        <el-step title="Validate" icon="picture" description="Validate your files"></el-step>
+                        <el-step title="Finalize" icon="picture" description="Archive your data to Brain Life"></el-step>
+                    </el-steps>
+                </div>
 
-            <div class="ui attached segment form">
-                <div v-if="mode == 'meta'">
-                    <div class="field">
-                        <label>Name</label>
-                        <input type="text" v-model="name" placeholder="Enter a name for this data">
-                    </div>
+                <el-form label-width="120px">
+                    <div v-if="mode == 'meta'">
+                        <el-form-item label="Name">
+                            <el-input v-model="name" placeholder="Name of this dataset"></el-input>
+                        </el-form-item>
 
-                    <div class="field">
-                        <label>Description</label>
-                        <el-input type="textarea" v-model="desc" :rows="4" placeholder="Any description.."></el-input>
-                    </div>
+                        <el-form-item label="Description">
+                            <el-input type="textarea" v-model="desc" :rows="4" placeholder="Any description (optional)"></el-input>
+                        </el-form-item>
 
-                    <div class="field" v-if="projects">
-                        <label>Project</label>
-                        <p class="text-muted">Project to store this dataset</p>
-                        <select v-model="project_id">
-                            <option v-for="(p,id) in projects" v-bind:value="id">{{p.name}} ({{p.access}})</option>
-                        </select>
-                    </div>
+                        <el-form-item label="Project" v-if="projects">
+                            <el-select v-model="project_id" placeholder="Select project to store this dataset" style="width: 100%">
+                                <el-option v-for="(p,id) in projects" key="id" :value="id" :label="p.name">{{p.name}} ({{p.access}})</el-option>
+                            </el-select>
+                        </el-form-item>
 
-                    <div class="field" v-if="datatypes">
-                        <label>Data Type</label>
-                        <el-select v-model="datatype_id" placeholder="Please select">
-                            <el-option v-for="(type,id) in datatypes" key="id" :value="id" :label="type.desc"></el-option>
-                        </el-select>
-                    </div>
-                    <div v-if="datatype_id">
-                        <div class="field" v-for="m in datatypes[datatype_id].meta">
-                        <label>Metadata</label>
-                        <el-input type="text" v-model="meta[m.id]">
-                            <template slot="prepend"><span style="text-transform: uppercase;">{{m.id}}</span></template>
-                        </el-input>
-                        </div>
-                    </div>
+                        <el-form-item label="Data Type" v-if="datatypes">
+                            <el-select v-model="datatype_id" placeholder="Please select" style="width: 100%;">
+                                <el-option v-for="(type,id) in datatypes" key="id" :value="id" :label="type.desc"></el-option>
+                            </el-select>
+                        </el-form-item>
 
-                    <br>
-                    <button class="ui right floated primary button" @click="next()">Next</button>
-                    <button class="ui right floated button" @click="back()">Back</button>
-                    <br clear="both">
-                </div><!--meta-->
+                        <el-form-item label="Metadata" v-if="datatype_id">
+                            <div v-for="m in datatypes[datatype_id].meta">
+                                <el-input type="text" v-model="meta[m.id]">
+                                    <template slot="prepend"><span style="text-transform: uppercase;">{{m.id}}</span></template>
+                                </el-input>
+                            </div>
+                        </el-form-item>
 
-                <div v-if="mode == 'upload'">
-                    <div class="field" v-if="datatype_id">
-                        <div iv v-for="file in files" style="margin-left: 10px;">
-                            <h4>{{file.id}} <small class="text-muted">{{file.ext}}</small></h4>
+                        <el-form-item>
+                            <el-button @click="back()">Back</el-button>
+                            <el-button type="primary" @click="next()">Next</el-button>
+                        </el-form-item>
+                    </div><!--meta-->
+
+                    <div v-if="mode == 'upload'">
+                        <el-card v-if="datatype_id" v-for="file in files" :key="file.id" style="margin-left: 10px;">
+                            <div slot="header">{{file.id}} <small class="text-muted">{{file.ext}}</small></div>
+
                             <div v-if="!file.uploaded && !file.progress">
                                 <input type="file" @change="filechange(file, $event)">
                             </div>
 
                             <div v-if="!file.uploaded && file.progress">
-                                <button class="ui tiny button remove icon" @click="cancelupload(file)" style="float: right"></i>
-                                    <i class="ui remove icon"></i>
-                                </button>
-                                <div class="ui indicating progress" v-bind:id="'file_'+file.id" style="margin-right: 40px;">
-                                    <div class="bar">
-                                        <div class="progress"></div>
-                                    </div>
-                                    <div class="label">Uploading {{file.local_filename}}</div>
-                                </div>
+                                <el-button type="small" @click="cancelupload(file)" style="float: right; position: relative; top:-5px;">
+                                    <icon name="remove"></icon> Cancel
+                                </el-button>
+                                Uploading {{file.local_filename}}
+                                <el-progress :text-inside="true" :stroke-width="18" :percentage="Math.floor(file.progress.loaded*1000/file.progress.total)/10"></el-progress>
                             </div>
 
                             <div v-if="file.uploaded">
-                                <button class="small ui button right floated" @click="clearfile(file)">Remove</button>
-                                <b>{{file.filename}}</b>
-                                <small>({{file.size}} bytes)</small>
-                                <br clear="both">
+                                <b>{{file.local_filename}}</b>
+                                <small>({{file.size|filesize}})</small>
+                                <el-button type="small" @click="clearfile(file)" style="float: right;"><icon name="remove"></icon> Remove</el-button>
                             </div>
                             <br>
-                        </div>
-                    </div><!--field-->
+                        </el-card>
 
-                    <button class="ui right floated primary button" @click="validate()">Next</button>
-                    <button class="ui right floated button" @click="mode = 'meta'">Back</button>
-                    <br clear="both">
-                </div>
+                        <br>
+                        <el-button @click="mode = 'meta'">Back</el-button>
+                        <el-button type="primary" @click="validate()">Next</el-button>
+                    </div>
 
-                <div v-if="mode == 'validate'">
-                    <div v-if="validation && validation.status == 'finished' && validation.products">
-                        <div class="field">
+                    <div v-if="mode == 'validate'">
+                        <div v-if="validation && validation.status == 'finished' && validation.products">
                             <p v-if="validation.status != 'finished'">{{validation.status_msg}}</p>
-                            <div class="ui red inverted segment" v-for="msg in validation.products[0].results.errors">{{msg}}</div>
-                            <div class="ui yellow inverted segment" v-for="msg in validation.products[0].results.warnings">{{msg}}</div>
-                            <div v-if="validation.products[0].results.errors.length == 0" class="ui message">
-                                <p>Your data looks good! Please proceed.</p>
-                            </div>
-                            <div v-for="(v, k) in validation.products[0].results" v-if="k != 'errors' && k != 'warnings'">
-                                <div class="ui raised segment" style="margin-left: 10px;">
-                                    <a class="ui red ribbon label">{{k}}</a>
-                                    <pre>{{v}}</pre>
-                                </div>
-                            </div>
+                            <el-alert :title="msg" type="error" show-icon v-for="(msg,idx) in validation.products[0].results.errors" :key="idx"></el-alert>
+                            <el-alert :title="msg" type="warning" show-icon  v-for="(msg,idx) in validation.products[0].results.warnings" :key="idx"></el-alert>
+                            <el-alert title="Your data looks good! Please proceed" show-icon type="success" v-if="validation.products[0].results.errors.length == 0"></el-alert>
+                            <br>
+                
+                            <!--show info-->
+                            <el-card v-for="(v, k) in validation.products[0].results" :key="k" v-if="k != 'errors' && k != 'warnings'">
+                                <div slot="header">{{k}}</div>
+                                <pre v-highlightjs="v"><code class="text hljs"></code></pre>
+                            </el-card>
                         </div>
-                    </div>
-                    <div v-if="!validation.products">
-                        <h4><i class="notched circle loading icon"></i> Validating..</h4>
-                        <pre>{{validation}}</pre>
-                    </div>
-
-                    <br>
-                    <button class="ui right floated primary button" @click="finalize()">Next</button>
-                    <button class="ui right floated button" @click="mode = 'upload'">Back</button>
-                    <br clear="both">
-                </div>
-
-                <div v-if="mode == 'finalize'">
-                    <div v-if="dataset">
-                        <div class="ui message">
-                            <div class="header">Success!</div>
-                                <p>Your data will be available in warehouse soon!</p>
-                            </div>
+                        <div v-if="!validation.products">
+                            <h4><i class="notched circle loading icon"></i> Validating..</h4>
+                            <pre v-highlightjs="JSON.stringify(validation, null, 4)"><code class="json hljs"></code></pre>
                         </div>
-                    <div v-if="!dataset && copy">
-                        <h4><i class="notched circle loading icon"></i> Organizing your input files..</h4>
+
+                        <br>
+                        <el-button @click="mode = 'upload'">Back</el-button>
+                        <el-button type="primary" @click="finalize()">Next</el-button>
                     </div>
 
-                    <br>
-                    <button class="ui right floated primary button" @click="go('/datasets')">Done!</button>
-                    <button class="ui right floated button" @click="mode = 'validate'">Back</button>
-                    <br clear="both">
-                </div>
-            </div><!--segments-->
+                    <div v-if="mode == 'finalize'">
+                        <div v-if="dataset">
+                            <el-alert type="success" show-icon title="Success!"><br>Your data will be available in warehouse soon</el-alert>
+                        </div>
+                        <div v-if="!dataset && copy">
+                            <h4><i class="notched circle loading icon"></i> Organizing your input files..</h4>
+                        </div>
 
-            <div class="ui segment">
-                <h3>debug</h3>
+                        <br>
+                        <el-button @click="mode = 'validate'">Back</el-button>
+                        <el-button type="primary" @click="go('/datasets')">Done!</el-button>
+                    </div>
+                </el-form>
+            </el-card>
+
+            <br>
+            <el-card v-if="config.debug">
+                <div slot="header">debug</div>
                 {{name}}
                 {{desc}}
                 {{datatype_id}}
                 {{project_id}}
                 <pre>{{meta}}</pre>
-            </div>
+            </el-card>
 
         </div><!--margin20-->
         </div><!--page-content -->
@@ -313,7 +297,7 @@ export default {
                 xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
                 xhr.upload.addEventListener("progress", (evt)=>{
                     file.progress = {loaded: evt.loaded, total: evt.total};
-                    $("#file_"+file.id).progress({percent: evt.loaded*100/evt.total});
+                    //$("#file_"+file.id).progress({percent: evt.loaded*100/evt.total});
                     //console.dir(file.progress);
                     this.$forceUpdate();
                 }, false);

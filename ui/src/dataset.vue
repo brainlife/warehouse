@@ -10,7 +10,7 @@
                 <el-button type="primary" @click="download()"><icon name="download"></icon> Download</el-button>
             </el-button-group>
 
-            <h1><i class="cube icon"></i> {{dataset.name}}</h1>
+            <h1><icon name="cube" scale="2"></icon> {{dataset.name}}</h1>
             <p>{{dataset.desc}}</p>
             <br clear="both">
             <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
@@ -109,7 +109,7 @@
                         <p class="text-muted" v-if="derivatives.length > 0">This dataset is used to produce following datasets.</p>
                         <p class="text-muted" v-else="derivatives.length > 0">No derivatives</p>
                         <br>
-                        <el-card class="clickable-record" v-for="deri in derivatives" style="margin-bottom: 10px;">
+                        <el-card class="clickable-record" v-for="deri in derivatives" :key="deri._id" style="margin-bottom: 10px;">
                             <div @click="go(deri._id)">
                                 <icon name="cube"></icon>
                                 <b>{{deri.name}}</b> {{deri.desc}}

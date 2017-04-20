@@ -40,6 +40,11 @@ import router from './router'
 
 Vue.use(require('vue-filter'))
 
+import filesize from 'filesize'
+Vue.filter('filesize', function(value) {
+    return filesize(value);
+});
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // config
@@ -94,7 +99,10 @@ if(Vue.config.user.exp < Date.now()/1000) {
 Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
 router.beforeEach(function (to, from, next) {
-    window.scrollTo(0, 0)
+    console.log("scrolling to top");
+    window.scrollTo(0, 0);
+    //this crashes the vue
+    //if($(".page-content")) $(".page-content").scrollTo(0,0);
     next();
 })
 

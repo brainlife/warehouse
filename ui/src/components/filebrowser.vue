@@ -46,11 +46,6 @@
 <script>
 import Vue from 'vue'
 
-import filesize from 'filesize'
-Vue.filter('filesize', function(value) {
-    return filesize(value);
-});
-
 export default {
     name: 'filebrowser',
     data() {

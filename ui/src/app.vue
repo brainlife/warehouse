@@ -28,12 +28,12 @@
             <tr>
                 <th>Contacts</th>
                 <td>
-                    <el-row>
-                        <el-col :span="8">
+                    <el-row :gutter="10">
+                        <el-col :span="10">
                             <h5>Owner</h5>
                             <contact :id="app.user_id"></contact>
                         </el-col>
-                        <el-col :span="16">
+                        <el-col :span="14">
                             <h5>Administrators</h5>
                             <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
                         </el-col>
@@ -90,19 +90,13 @@
             </table>
 
             <br>
-            <div v-if="config.debug">
-                <h2>Debug</h2>
-                <div class="panel">
-                    <div class="ui segment">
-                        <h3>App</h3>
-                        <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                    </div>
-                    <div class="ui segment">
-                        <h3>Resource</h3>
-                        <pre v-highlightjs="JSON.stringify(resource, null, 4)"><code class="json hljs"></code></pre>
-                    </div>
-                </div>
-            </div>
+            <el-card v-if="config.debug">
+                <div slot="header">Debug</div>
+                <h3>App</h3>
+                <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+                <h3>Resource</h3>
+                <pre v-highlightjs="JSON.stringify(resource, null, 4)"><code class="json hljs"></code></pre>
+            </el-card>
         </div><!--margin20-->
         </div><!--page-content-->
     </div>

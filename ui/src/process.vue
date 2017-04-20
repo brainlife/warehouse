@@ -6,14 +6,14 @@
         <div class="page-content">
         <div class="margin20" v-if="instance && tasks && app">
             <el-button-group style="float: right;">
-                <el-button v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="archive()"> 
-                    <icon name="archive"></icon> Archive Output
-                </el-button>
                 <el-button v-if="instance.config.dataset_id" @click="go('/dataset/'+instance.config.dataset_id)">
                     <icon name="archive"></icon> See Archived
                 </el-button>
                 <el-button @click="remove()">
                     <icon name="trash"></icon> Remove Process
+                </el-button>
+                <el-button type="primary" v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="archive()"> 
+                    <icon name="archive"></icon> Archive Output
                 </el-button>
             </el-button-group>
             <h1><icon name="send" scale="2"></icon> {{app.name}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
@@ -106,26 +106,21 @@
 
             <br>
             <el-card v-if="config.debug">
-                <div class="ui segment" v-if="instance">
+                <div slot="header">Debug</div>
+                <div v-if="instance">
                     <h3>instance</h3>
                     <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
                 </div>
-                <div class="ui segment" v-if="tasks">
+                <div v-if="tasks">
                     <h3>tasks</h3>
                     <div v-for="task in tasks">
                         <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
                     </div>
                 </div>
-                <div class="ui segment" v-if="app">
+                <div v-if="app">
                     <h3>app</h3>
                     <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
                 </div>
-                <!--
-                <div class="ui segment" v-if="datasets">
-                    <h3>datasets</h3>
-                    <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                -->
             </el-card>
         </div><!--margin20-->
         </div><!--page-content-->

@@ -5,7 +5,7 @@
         <tags :tags="datatype_tags"></tags>
     </div>
 
-    <el-card v-for="file in datatype.files" class="file">
+    <el-card v-for="file in datatype.files" :key="file.id" class="file">
         <i class="file outline icon" v-if="file.filename"></i>
         <i class="folder icon" v-if="file.dirname"></i>
         {{file.filename||file.dirname}}

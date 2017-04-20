@@ -18,6 +18,8 @@ export default {
 <style>
 body {
 background-color: #f0f0f0;
+}
+body, textarea, input {
 font-family: 'Lato', sans-serif;
 font-size: 14px;
 }
@@ -75,6 +77,7 @@ code.hljs {
 }
 .el-card__header {
     background-color: #efefef;
+    padding: 10px 15px !important;
 }
 svg.fa-icon {
 position: relative;
@@ -126,5 +129,4 @@ table.info th {
 table.info td {
     padding: 10px;
 }
-
 </style>
