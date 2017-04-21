@@ -103,7 +103,7 @@
                 
                 </td>
                 <td v-else="dataset.prov">
-                    <p class="text-muted">Uploaded by user.</p>
+                    <p class="text-muted">Uploaded by user</p>
                 </td>
             </tr>
             <tr>

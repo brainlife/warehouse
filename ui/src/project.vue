@@ -16,7 +16,7 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20" v-if="project">
-            <el-button-group style="float: right;" v-if="project.admins.indexOf(config.user.sub)">
+            <el-button-group style="float: right;" v-if="project._canedit">
                 <el-button @click="remove()">
                     <icon name="trash"></icon> Remove Project
                 </el-button>

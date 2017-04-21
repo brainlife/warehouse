@@ -18,13 +18,14 @@
             <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
             <el-table v-if="projects" :data="projects" style="width: 100%;" @row-click="click">
                 <el-table-column label="Name" prop="name" sortable></el-table-column> 
-                <el-table-column label="Access">
+                <el-table-column label="Access" prop="access" sortable>
                     <template scope="scope">
-                        {{scope.row.access}}
+                        <el-tag v-if="scope.row.access == 'public'" type="success">Public</el-tag>
+                        <el-tag v-if="scope.row.access == 'private'" type="danger">Private</el-tag>
                     </template>
                 </el-table-column> 
-                <el-table-column label="Description" prop="name"></el-table-column> 
-                <el-table-column width="400" label="Admins">
+                <el-table-column width="275" label="Description" prop="desc"></el-table-column> 
+                <el-table-column width="375" label="Admins">
                     <template scope="scope">
                         <contact v-for="id in scope.row.admins" key="id" :id="id"></contact>
                     </template>
@@ -32,7 +33,7 @@
                 <el-table-column>
                     <template scope="scope">
                         <div style="float: right;">
-                            <el-button type="text" @click.stop="editp(scope.row)">Edit</el-button>
+                            <el-button v-if="scope.row._canedit" type="text" @click.stop="editp(scope.row)">Edit</el-button>
                         </div>
                     </template>
                 </el-table-column> 

@@ -55,17 +55,6 @@ pre {
     cursor: pointer;
     background-color: #ddd;
 }
-/*
-.panel {
-    background-color: white;
-    width: 100%;
-    padding: 10px 15px;
-    box-sizing: border-box;
-    box-shadow: 0px 1px 4px #ccc;
-    border-radius: 1px;
-    margin-bottom: 8px;
-}
-*/
 .text-muted {
     opacity: 0.6;
 }
@@ -75,26 +64,12 @@ code.hljs {
 .off-sidemenu {
     margin-left: 150px;
 }
-.el-card__header {
-    background-color: #efefef;
-    padding: 10px 15px !important;
-}
-.el-button {
-    border: none !important;
-}
-.el-button.el-button--default {
-    background-color: #e7e7e7;
-}
-
-.el-table th,
-.el-table__fixed-header-wrapper thead div,
-.el-table__header-wrapper thead div {
-    background-color: #eee !important;
-}
-
 svg.fa-icon {
 position: relative;
 zoom: 78%;
+}
+b{
+font-weight: 700;
 }
 h1 {
 line-height: 100%;

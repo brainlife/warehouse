@@ -24,7 +24,7 @@ export default {
   computed: {
     gurl: function() {
       if(!this.profile.email) return null;
-      return "//www.gravatar.com/avatar/"+MD5(this.profile.email);
+      return "//www.gravatar.com/avatar/"+MD5(this.profile.email)+"?s=22";
     }
   },
   watch: {
@@ -61,17 +61,18 @@ export default {
 <style scope>
 .contact {
 display: inline-block;
-height: 25px;
+height: 22px;
 margin-right: 10px;
 font-size: 12px;
 color: #555;
 font-weight: 700;
 line-height: 200%;
 white-space: nowrap;
+margin: 5px 0px;
 }
 .contact img {
 float: left;
-height: 25px;
+height: 22px;
 border-top-left-radius: 5px;
 border-bottom-left-radius: 5px;
 }

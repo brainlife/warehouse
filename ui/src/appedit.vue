@@ -5,118 +5,123 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20">
-            <h1 v-if="$route.params.id == '_'">Register App</h1>
-            <h1 v-else>Edit {{app.name}}</h1>
+            <h1 v-if="$route.params.id == '_'">New App</h1>
+            <h1 v-else><icon name="pencil" scale="2"/> Edit {{app.name}}</h1>
 
-            <form class="ui form">
-                <div class="field">
-                    <label>Name</label>
-                    <input type="text" v-model="app.name" placeholder="Name of application">
-                </div>
-                <div class="field">
-                    <label>Description Name</label>
-                    <textarea v-model="app.desc" placeholder="Enter description for this application."></textarea>
-                </div>
-                <div class="field" v-if="app.init_admins">
-                    <label>Administrator</label>
-                    <contactlist :uids="app.init_admins" @changed="changeadmins($event)"></contactlist>
-                </div>
-                <div class="field">
-                    <label>Avatar</label>
-                    <input type="text" v-model="app.avatar" placeholder="URL of application avatar">
-                </div>
-                <div class="field">
-                    <label>Source code Repository</label>
-                    <div class="ui top attached tabular menu repotype">
-                        <a class="item active" data-tab="github">Github</a>
-                        <a class="item" data-tab="dockerhub">Dockerhub</a>
-                    </div>
+            <el-card>
+                <el-form ref="form" label-width="120px">
+                    <el-form-item label="Name">
+                        <el-input type="text" v-model="app.name" placeholder="Name of application"/>
+                    </el-form-item>
+                    <el-form-item label="Description">
+                        <el-input type="textarea" v-model="app.desc" placeholder="Enter description for this application."/>
+                    </el-form-item>
+                    <el-form-item label="Administrators">
+                        <contactlist :uids="app.admins"></contactlist>
+                    </el-form-item>
+                    <el-form-item label="Avatar">
+                        <el-input type="text" v-model="app.avatar" placeholder="URL of application avatar"/>
+                    </el-form-item>
+                    <el-form-item label="Source Code">
+                        <el-tabs v-model="form.repotype" type="border-card">
+                            <el-tab-pane label="Github" name="github">
+                                <el-form-item>
+                                    Reponame
+                                    <el-input type="text" v-model="app.github" placeholder="org/repo"/>
+                                </el-form-item>
+                                <el-form-item>
+                                    Branch
+                                    <el-input type="text" v-model="app.github_branch" placeholder="master"/>
+                                </el-form-item>
+                            </el-tab-pane>
+                            <el-tab-pane label="Dockerhub" name="dockerhub">
+                                <el-form-item>
+                                    Container Name
+                                    <el-input type="text" v-model="app.dockerhub" placeholder="org/container"/>
+                                </el-form-item> 
+                            </el-tab-pane>
+                        </el-tabs>
+                    </el-form-item>
 
-                    <div class="ui bottom attached tab segment active" data-tab="github">
-                        <div class="field">
-                            <label>Repo Name</label>
-                            <input type="text" v-model="app.github" placeholder="org/repo">
-                        </div>
-                        <div class="field">
-                            <label>Branch Name</label>
-                            <input type="text" v-model="app.github_branch" placeholder="master">
-                        </div>
-                    </div>
-                    <div class="ui bottom attached tab segment" data-tab="dockerhub">
-                        <div class="field">
-                            <label>Container Name</label>
-                            <input type="text" v-model="app.dockerhub" placeholder="org/container">
-                        </div> 
-                    </div>
-                </div>
-
-                <div class="field" v-if="app._config">
-                    <label>Configuration Template</label>
-                    <editor :sync="true" :content="app._config"></editor>
-                </div>
-
-                <hr>
-                <div class="field">
-                    <label>Inputs</label>
-                    <div class="ui segment" v-for="input in app.inputs">
-                        <el-input v-model="input.id">
-                            <template slot="prepend">ID</template>
-                        </el-input>
-
-                        <h4>Datatype</h4>
-                        <el-select v-model="input.datatype">
-                            <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                        </el-select>
-
-                        <h4>Datatype Tags</h4>
-                        <el-select v-model="input.datatype_tags" multiple filterable allow-create placeholder="Choose datatype tags">
-                            <el-option v-for="tag in input.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
-                        </el-select>
-                    </div>
-                    <button class="ui mini button" type="button" @click="add(app.inputs)">Add</button>
-                </div>
-
-                <hr>
-                <div class="field">
-                    <label>Output</label>
-                    <div class="ui segment" v-for="output in app.outputs">
+                    <el-form-item label="Configuration">
                         <!--
-                        <el-input v-model="output.id">
-                            <template slot="prepend">ID</template>
-                        </el-input>
+                        https://github.com/dhenkes/vue2-ace/issues/5
+                        <editor :content="app._config" :sync="true" :lang="'json'"></editor>
                         -->
-                        <h4>Datatype</h4>
-                        <el-select v-model="output.datatype">
-                            <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                        </el-select>
+                        <el-input type="textarea" v-model="app._config" autosize/>
+                    </el-form-item>
 
-                        <h4>Datatype Tags</h4>
-                        <el-select v-model="output.datatype_tags" multiple filterable allow-create placeholder="Choose datatype tags">
-                            <el-option v-for="tag in output.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
-                        </el-select>
-                    </div>
-                    <button class="ui mini button" type="button" @click="add(app.outputs)">Add</button>
-                </div>
+                    <el-form-item label="Inputs">
+                        <el-card v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
+                            <el-row :gutter="20">
+                            <el-col :span="4">
+                                ID
+                                <el-input v-model="input.id">
+                                    <!--<template slot="prepend">ID</template>-->
+                                </el-input>
+                            </el-col>
+                            <el-col :span="6">
+                                Datatype
+                                <el-select v-model="input.datatype" style="width: 100%;">
+                                    <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                                </el-select>
+                            </el-col>
+                            <el-col :span="14">
+                                Datatype Tags
+                                <el-select v-model="input.datatype_tags" 
+                                    style="width: 100%"
+                                    multiple filterable allow-create placeholder="Enter datatype tags">
+                                    <el-option v-for="tag in input.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
+                                </el-select>
+                            </el-col>
+                            </el-row>
+                        </el-card>
+                        <el-button @click="add(app.inputs)">Add Input</el-button>
+                    </el-form-item>
 
-                <!--
-                <div class="field">
-                    <div class="ui checkbox">
-                        <input type="checkbox" tabindex="0" class="hidden">
-                        <label>I agree to the Terms and Conditions</label>
-                    </div>
-                </div>
-                -->
-                <el-button type="primary" icon="check" @click="submit()" style="float: right;">Submit</el-button>
-            </form>
+                    <el-form-item label="Outputs">
+                        <el-card v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
+                            <el-row :gutter="20">
+                            <el-col :span="4">
+                                ID
+                                <el-input v-model="output.id">
+                                    <!--<template slot="prepend">ID</template>-->
+                                </el-input>
+                            </el-col>
+                            <el-col :span="6">
+                                Datatype
+                                <el-select v-model="output.datatype" style="width: 100%">
+                                    <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                                </el-select>
+                            </el-col>
+                            <el-col :span="14">
+                                Datatype Tags
+                                <el-select v-model="output.datatype_tags" 
+                                    style="width: 100%" 
+                                    multiple filterable allow-create placeholder="Enter datatype tags">
+                                    <el-option v-for="tag in output.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
+                                </el-select>
+                            </el-col>
+                            </el-row>
+                        </el-card>
+                        <el-button @click="add(app.outputs)">Add Output</el-button>
+                    </el-form-item>
+
+                    <el-form-item>
+                        <el-button type="primary" icon="check" @click="submit()">Submit</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-card>
             
             <br><br>
 
-            <div class="ui segments" v-if="config.debug">
-                <div class="ui segment">
-                    <h3>app</h3>
-                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-            </div>
+            <el-card v-if="config.debug">
+                <div slot="header">Debug</div>
+                <h3>app</h3>
+                <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+                <h3>form</h3>
+                <pre v-highlightjs="JSON.stringify(form, null, 4)"><code class="json hljs"></code></pre>
+            </el-card>
 
         </div><!--margin20-->
         </div><!--page-content-->
@@ -128,7 +133,7 @@
 import Vue from 'vue'
 
 import editor from 'vue2-ace'
-import 'brace/mode/javascript'
+import 'brace/mode/json'
 import 'brace/theme/chrome'
 
 import sidemenu from '@/components/sidemenu'
@@ -140,12 +145,9 @@ export default {
     components: { sidemenu, editor, contactlist, pageheader },
     data () {
         return {
-            repotype: "github",
-
             app: {
                 _id: null,
-                init_admins: null,
-                admins: null,
+                admins: [Vue.config.user.sub.toString()],
 
                 name: null,
                 desc: null,
@@ -153,8 +155,10 @@ export default {
 
                 github: null,
                 github_branch: null,
+                
+                config: null,
+                _config: "{\"something\": 123}",
 
-                _config: null,
                 inputs: [],
                 outputs: [],
             },
@@ -162,18 +166,15 @@ export default {
             //cache
             datatypes: null, //registered datatypes (keyed by datatype_id)
 
+            //form aids
+            form: {
+                repotype: "github",
+            },
+
             config: Vue.config,
         }
     },
     mounted: function() {
-		$(this.$el).find('.repotype .item').tab({
-            onVisible: (v)=> {
-                this.repotype = v;
-            }
-        });
-        this.$on('editor-update', function(c) {
-            this.app._config = c;
-        });
         if(this.$route.params.id !== '_') {
             //load app to edit
             this.$http.get('app', {params: {
@@ -184,13 +185,6 @@ export default {
                 this.app.init_admins = this.app.admins;
                 this.app._config = JSON.stringify(this.app.config, null, 4);
             });
-        } else {
-            //init new app
-            this.app.admins = this.app.init_admins = [Vue.config.user.sub];
-            this.add(this.app.inputs);
-            this.add(this.app.outputs);
-            this.app.avatar = "http://lorempixel.com/80/80/technics/";
-            this._config = "{}";
         } 
         //this.$message('This is a message');
         /*
@@ -200,6 +194,10 @@ export default {
           type: 'success'
         });
         */
+
+        this.$on('editor-update', c=>{
+            console.log(c);
+        });
 
         //load datatypes for form
         this.$http.get('datatype', {params: {
@@ -218,9 +216,11 @@ export default {
     computed: {
     },
     methods: {
+        /*
         changeadmins: function(admins) {
             this.app.admins = admins;
         },
+        */
 
         add: function(it) {
             it.push({
@@ -231,13 +231,13 @@ export default {
         },
 
         submit: function() {
+            //console.dir(this.app._config);
             try {
                 this.app.config = JSON.parse(this.app._config);     
             } catch(err) {
                 this.$notify({ showClose: true, message: 'Failed to parse config template.', type: 'error' });
                 return;
             }
-            console.log("submitting", this.app);
             if(this.app._id !== '_') {
                 //update
                 this.$http.put('app/'+this.app._id, this.app)

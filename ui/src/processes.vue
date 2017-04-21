@@ -16,19 +16,18 @@
         <div class="margin20">
             <h3 v-if="!instances"> <icon name="spinner"></icon> Loading..  </h3>
             <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click">
-                <el-table-column label="Create Date" sortable>
+                <el-table-column label="Create Date" prop="create_date" sortable>
                     <template scope="scope">
                         {{scope.row.create_date|date}}
                     </template>
                 </el-table-column> 
-                <el-table-column label="Application" sortable>
+                <el-table-column label="Application">
                     <template scope="scope">
                         {{apps[scope.row.config.prov.app].name}}
                     </template>
                 </el-table-column> 
-                <el-table-column prop="desc" label="Description">
-                </el-table-column> 
-                <el-table-column label="Status" sortable>
+                <el-table-column prop="desc" label="Description"/></el-table-column> 
+                <el-table-column label="Status" prop="status" sortable>
                     <template scope="scope">
                         <el-tag v-if="scope.row.status == 'removed'">
                             <icon name="remove"></icon> Removed</el-tag>
@@ -44,7 +43,7 @@
                             <icon name="help"></icon> Failed</el-tag>
                     </template>
                 </el-table-column> 
-                <el-table-column label="Archived" sortable>
+                <el-table-column label="Archived">
                     <template scope="scope">
                           <el-tag v-if="scope.row.config.dataset_id">
                             <icon name="check"></icon> Archived</el-tag>

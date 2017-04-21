@@ -5,27 +5,39 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20">
-            <h1 v-if="$route.params.id == '_'">Register Project</h1>
+            <h1 v-if="$route.params.id == '_'">New Project</h1>
             <h1 v-else><icon name="pencil" scale="2"/> Edit {{project.name}}</h1>
 
-            <form class="ui form">
-                <div class="field">
-                    <label>Name</label>
-                    <input type="text" v-model="project.name" placeholder="Project Name">
-                </div>
-                <div class="field">
-                    <label>Description Name</label>
-                    <textarea v-model="project.desc" placeholder="Enter description for this project."></textarea>
-                </div>
-                <div class="field" v-if="project.admins">
-                    <label>Administrator</label>
-                    <contactlist :uids="project.admins" @changed="changeadmins($event)"></contactlist>
-                </div>
-                <el-button type="primary" icon="check" @click="submit()" style="float: right;">Submit</el-button>
-            </form>
+            <el-card>
+                <el-form ref="form" label-width="120px">
+                    <el-form-item label="Name">
+                        <el-input type="text" v-model="project.name" placeholder="Project Name"></el-input>
+                    </el-form-item>
+                    <el-form-item label="Description">
+                        <el-input type="textarea" v-model="project.desc" placeholder="Enter description for this project."></el-input>
+                    </el-form-item>
+                    <el-form-item label="Access">
+                        <el-select v-model="project.access">
+                            <el-option label="Private" value="private"></el-option>
+                            <el-option label="Public" value="public"></el-option>
+                        </el-select>
+                        <p class="text-muted">Decide if non project member can access datasets inside this project</p>
+                    </el-form-item>
+                    <el-form-item label="Administrators">
+                        <contactlist :uids="project.admins"></contactlist>
+                        <p class="text-muted">Users who can update the project members</p>
+                    </el-form-item>
+                    <el-form-item label="Members">
+                        <contactlist :uids="project.members"></contactlist>
+                        <p class="text-muted">Users who can update the project members</p>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" icon="check" @click="submit()">Submit</el-button>
+                    </el-form-item>
+                </el-form>
+            </el-card>
             
-            <br><br>
-
+            <br>
             <el-card v-if="config.debug">
                 <div slot="header">Debug</div>
                 <h3>project</h3>
@@ -54,8 +66,8 @@ export default {
                 name: "",
                 desc: "",
                 access: "private",
-                admins: [Vue.config.user.sub],
-                members: [Vue.config.user.sub],
+                admins: [Vue.config.user.sub.toString()],
+                members: [Vue.config.user.sub.toString()],
             },
 
             config: Vue.config,
@@ -85,7 +97,7 @@ export default {
     },
     methods: {
         changeadmins: function(admins) {
-            this.project.admins = admins;
+            //this.project.admins = admins;
         },
 
         add: function(it) {
@@ -121,6 +133,21 @@ export default {
                 });
             } 
             */
+            if(this.project._id) {
+                //update
+                this.$http.put('project/'+this.project._id, this.project).then(res=>{
+                    this.$router.push('/projects');
+                }, res=>{
+                    console.error(res);
+                });
+            } else {
+                //create
+                this.$http.post('project', this.project).then(res=>{
+                    this.$router.push('/projects');
+                }, res=>{
+                    console.error(res);
+                });
+            }
         }
     },
 }

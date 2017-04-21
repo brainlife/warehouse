@@ -64,7 +64,7 @@
                     </el-alert>
                     <p v-if="resource.detail">
                         This service can currently run on 
-                        <a class="ui label"> {{resource.detail.name}} </a>
+                        <el-tag> {{resource.detail.name}} </el-tag>
                     </p> 
                 </td>
             </tr>
@@ -78,7 +78,8 @@
                 <th>Input Datatypes</th>
                 <td>
                     <div class="item" v-for="input in app.inputs">
-                         <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
+                        <!--<b>{{input.id}}</b>-->
+                        <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags" style="margin-bottom: 10px;"></datatype>
                     </div>
                 </td>
             </tr>
@@ -86,7 +87,7 @@
                 <th>Output Datatypes</th>
                 <td>
                     <div class="item" v-for="output in app.outputs">
-                        <datatype :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
+                        <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
                     </div>
                 </td>
             </tr>
@@ -125,16 +126,20 @@ export default {
             app: null,
             resource: null,
 
-            project_id: "", //to be selected by the user
+            //project_id: "", //to be selected by the user
 
             //cache
-            projects: [],
+            //projects: [],
 
             config: Vue.config,
         }
     },
 
     mounted: function() {
+        this.$on('editor-update', c=>{
+            console.log("update", c);
+        });
+
         this.$http.get('app', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'inputs.datatype outputs.datatype',
@@ -146,6 +151,7 @@ export default {
             console.error(err);
         });
 
+        /*
         //load projects
         this.$http.get('project', {params: {
             //service: "_upload",
@@ -158,12 +164,14 @@ export default {
         }, res=>{
           console.error(res);
         });
+        */
     },
 
     methods: {
         go: function(path) {
             this.$router.push(path);
         },
+
 
         findbest: function(service) {
           //find resource where we can run this app
@@ -182,7 +190,7 @@ export default {
 
             var prov = {
                 brainlife: true,
-                project: this.project_id,
+                //project: this.project_id,
                 app: this.app._id,
                 main_task_id: null,
                 datasets: this.app.inputs,

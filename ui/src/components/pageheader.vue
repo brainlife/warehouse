@@ -69,6 +69,7 @@ export default {
     margin-left: 5px;
     top: 14px;
     left: 8px;
+    text-shadow: 1px 1px 1px #555;
 }
 .menu {
     position: fixed;
