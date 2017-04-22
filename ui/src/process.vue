@@ -39,6 +39,7 @@
                                         <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
                                         <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
                                         <el-dropdown-item command="mrview">MRView</el-dropdown-item>
+                                        <el-dropdown-item command="fibernavigator">FiberNavigator</el-dropdown-item>
                                         <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>

@@ -114,12 +114,21 @@
                 </div>
                 <br>
             </div>
+            <el-button size="small" icon="delete" @click="clear_selected()">Clear All</el-button>
         </div>
         <div class="select-group" style="background-color: #999;">
-            <el-button-group>
-                <el-button size="small" icon="delete" @click="clear_selected()">Clear Selection</el-button>
-                <el-button size="small" type="primary" icon="download" @click="download()"> <i class="download icon"></i> Download </el-button>
-            </el-button-group>
+            <el-button size="small" type="primary" @click="download()">Download</el-button>
+            <el-dropdown @command="view">
+                <el-button size="small" type="primary">
+                    View<i class="el-icon-caret-bottom el-icon--right"></i>
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="fslview">FSL View</el-dropdown-item>
+                    <el-dropdown-item command="freeview">Free View</el-dropdown-item>
+                    <el-dropdown-item command="mrview">MR View</el-dropdown-item>
+                    <el-dropdown-item command="fibernavigator">Fiber Navigator</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
         </div>
     </div>
 </div>
@@ -324,38 +333,64 @@ export default {
             this.persist_selected();
         },
 
-        download: function() {
-            var download_instance = null;
+        get_instance: function() {
             //first create an instance to download things to
-            this.$http.post(Vue.config.wf_api+'/instance', {
+            return this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "brainlife.download",
                 config: {
                     selected: this.selected,
                 }
-            }).then(res=>{
-                download_instance = res.body;
-                //console.log("instance created", download_instance);
+            }).then(res=>res.body);
+        },
 
-                //create config to download all selected data from archive
-                var download = [];
-                //for(var datatype_id in this.selected) {
-                    //for(var dataset_id in this.selected[datatype_id]) {
-                    for(var dataset_id in this.selected) {
-                        download.push({
-                            url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
-                            untar: "gz",
-                            dir: "download/"+dataset_id, //TODO - organize into BIDS?
-                        });
-                    }
-                //}
-                return this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: download_instance._id,
-                    name: "brainlife.download.stage",
-                    service: "soichih/sca-product-raw",
-                    config: { download },
-                })
-            }).then(res=>{
-                var download_task = res.body.task;
+        stage_selected: function(instance, resource) {
+            //create config to download all selected data from archive
+            var download = [];
+            for(var dataset_id in this.selected) {
+                download.push({
+                    url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
+                    untar: "gz",
+                    dir: "download/"+dataset_id, 
+                });
+            }
+            return this.$http.post(Vue.config.wf_api+'/task', {
+                instance_id: instance._id,
+                name: "brainlife.download.stage",
+                service: "soichih/sca-product-raw",
+                preferred_resource_id: resource,
+                config: { download },
+            }).then(res=>res.body.task);
+        },
+
+        view: function(type) {
+            //find novnc resource
+            this.$http.get(Vue.config.wf_api+'/resource', {params: {
+                find: JSON.stringify({"config.services.name": "soichih/abcd-novnc"}),
+            }}).then(res=>{
+                var novnc_resource = res.body.resources[0];
+                if(!novnc_resource) console.error("faild to find soichih/abcd-novnc resource"); 
+                else {
+                    //create download task
+                    var download_instance = null;
+                    this.get_instance().then(instance=>{
+                        download_instance = instance;
+                        return this.stage_selected(instance, novnc_resource);
+                    }).then(task=>{
+                        var download_task = task;
+                        window.open("#/view/"+download_instance._id+"/"+download_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
+                        //this.$router.push("/view/"+download_instance._id+"/"+download_task._id+"/"+type);
+                    });
+                }
+            });
+        },
+
+        download: function() {
+            var download_instance = null;
+            this.get_instance().then(instance=>{
+                download_instance = instance;
+                return this.stage_selected(instance);
+            }).then(task=>{
+                var download_task = task;
 
                 //submit another sca-product-raw service to organize files 
                 var symlink = [];
@@ -371,7 +406,6 @@ export default {
 
                     //TODO - figure out process name from dataset.prov
                     var process_name = "someprocess";
-                    //if(dataset.prov) { }
 
                     //TODO - this is neuroscience specific, and I need to do a lot more thinking on this
                     var dataname = datatype.name.split("/")[1];
@@ -383,37 +417,6 @@ export default {
                         });
                     });
 
-                    /*
-                    //TODO I should probably switch by datatype._id?
-                    switch(datatype.name) {
-                    case "t1": //deprecated
-                    case "neuro/anat":
-                        datatype.files.forEach(file=>{
-                            symlink.push({
-                                src: download_path+"/"+file.filename,
-                                dest: "download/derivatives/"+process_name+"/"+subject+"/anat/"+subject+"_"+file.filename,
-                            });
-                        });
-                        break;
-                    case "dwi": //deprecated
-                    case "neuro/dwi":
-                        datatype.files.forEach(file=>{
-                            symlink.push({
-                                src: download_path+"/"+file.filename,
-                                dest: "download/derivatives/"+process_name+"/"+subject+"/dwi/"+subject+"_b-XXXX_"+file.filename,
-                            });
-                        });
-                        break;
-                    default:
-                        //put all else somewhere..
-                        datatype.files.forEach(file=>{
-                            symlink.push({
-                                src: download_path+"/"+file.filename,
-                                dest: "download/derivatives/"+process_name+"/"+subject+"/dwi/"+subject+"_"+file.filename,
-                            });
-                        });
-                    }
-                    */
                 }
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: download_instance._id,

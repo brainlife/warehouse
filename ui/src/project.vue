@@ -66,6 +66,13 @@
                     <contact v-for="c in project.members" key="c._id" :id="c"></contact>
                 </td>
             </tr>
+            <tr>
+                <th>TODO</th>
+                <td>
+                    <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this project?</p>
+                    <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
+                </td>
+            </tr>
             </table>
 
         </div><!--margin20-->
