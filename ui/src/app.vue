@@ -14,6 +14,11 @@
                 </el-button>
             </el-button-group>
 
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
+                <el-breadcrumb-item>{{app._id}}</el-breadcrumb-item>
+            </el-breadcrumb>
+
             <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
             <h1>{{app.name}}</h1>
             <br clear="both">

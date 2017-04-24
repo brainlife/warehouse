@@ -1,9 +1,16 @@
 <template>
 <el-card class="box-card">
     <div slot="header">
-        <b>{{id}}</b> <span class="text-muted"> | {{datatype.name}}</span> <br>
-        <span class="text-muted">{{datatype.desc}}</span>
-        <tags :tags="datatype_tags"></tags>
+        <el-row>
+            <el-col :span="6">
+                <b>{{id}}</b>
+            </el-col>
+            <el-col :span="18">
+                <span>{{datatype.name}}</span> 
+                <small class="text-muted">({{datatype.desc}})</small>
+                <tags :tags="datatype_tags"></tags>
+            </el-col>
+        </el-row>
     </div>
 
     <el-row :gutter="20">

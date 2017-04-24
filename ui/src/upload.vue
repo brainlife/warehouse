@@ -5,7 +5,12 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20">
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item :to="{ path: '/datasets' }">Datasets</el-breadcrumb-item>
+                <el-breadcrumb-item>Upload</el-breadcrumb-item>
+            </el-breadcrumb>
             <br>
+
             <h1><icon name="upload" scale="2"></icon> Upload Dataset</h1>
             <br>
 

@@ -1,10 +1,7 @@
 
 //3rd parties
 import 'jquery/dist/jquery.js'
-import '@/reset.css'
-//import 'normalize.css/normalize.css'
-//import 'semantic-ui/dist/semantic.css'
-//import 'semantic-ui/dist/semantic.js'
+//import '@/reset.css'
 
 import 'highlight.js/styles/default.css'
 import 'vue2-animate/dist/vue2-animate.min.css'

@@ -19,6 +19,12 @@
             </button>
             -->
 
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item :to="{ path: '/datasets' }">Datasets</el-breadcrumb-item>
+                <el-breadcrumb-item>Download {{instance._id}}</el-breadcrumb-item>
+            </el-breadcrumb>
+            <br>
+
             <h1><icon name="download" scale="2"></icon> Download</h1>
             <el-card>
                 <div slot="header" style="padding: 15px;">

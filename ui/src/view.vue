@@ -57,7 +57,7 @@ export default {
                             "input_task_id": taskid,
                             "type": viewtype,
                         },
-                        deps: [ taskid ], //just in case..
+                        deps: [ taskid ], 
                     })
                     .then(res=>{
                         this.novnc_task = res.body.task;

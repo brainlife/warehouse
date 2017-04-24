@@ -16,6 +16,12 @@
                     <icon name="archive"></icon> Archive Output
                 </el-button>
             </el-button-group>
+
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item :to="{ path: '/processes' }">Processes</el-breadcrumb-item>
+                <el-breadcrumb-item>{{instance._id}}</el-breadcrumb-item>
+            </el-breadcrumb>
+
             <h1><icon name="send" scale="2"></icon> {{app.name}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
             <p>{{instance.desc}}</p>
             <br>
@@ -75,7 +81,8 @@
                 <el-table :data="instance.config.prov.deps" style="width: 100%">
                     <el-table-column type="expand">
                         <template scope="props">
-                            <filebrowser :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"></filebrowser>
+                            <el-alert v-if="input_task.status != 'finished'" title="Input datasets not yet loaded" type="warning" show-icon :closable="false"/>
+                            <filebrowser v-if="input_task.status == 'finished'" :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"/>
                         </template>
                     </el-table-column>
                     <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
@@ -331,6 +338,3 @@ export default {
     },
 }
 </script>
-
-<style scoped>
-</style>

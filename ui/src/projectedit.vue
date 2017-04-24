@@ -5,6 +5,14 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20">
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item :to="{ path: '/projects' }">Projects</el-breadcrumb-item>
+                <el-breadcrumb-item v-if="project._id" :to="{ path: '/project/'+project._id }">{{project._id}}</el-breadcrumb-item>
+                <el-breadcrumb-item v-if="project._id">Edit</el-breadcrumb-item>
+                <el-breadcrumb-item v-if="!project._id">New Project</el-breadcrumb-item>
+            </el-breadcrumb>
+            <br>
+
             <h1 v-if="$route.params.id == '_'">New Project</h1>
             <h1 v-else><icon name="pencil" scale="2"/> Edit {{project.name}}</h1>
 

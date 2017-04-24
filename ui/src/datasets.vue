@@ -440,7 +440,6 @@ export default {
     margin-left: 200px;
     transition: right 0.2s;
     top: 85px;
-    box-shadow: inset 0px 0px 10px #999;
 }
 .rightopen .page-content {
     right: 250px;
@@ -475,6 +474,7 @@ export default {
     background-color: white;
     padding: 10px 15px;
     box-sizing: border-box;
+    box-shadow: inset 3px 0px 3px #999;
 }
 .header-content {
     padding-top: 7px;
@@ -484,10 +484,12 @@ export default {
     right: 200px;
     z-index: 2;
 }
-
-.header,
+.header {
+    padding: 10px 0px 5px 10px;
+}
 .list .group {
-    padding: 10px 5px 3px 10px;
+    padding: 5px 0px 5px 10px;
+    background-color: white;
 }
 
 .header {
@@ -500,13 +502,12 @@ export default {
     font-size: 12px;
 }
 .list .group:not(:last-child) {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #eee;
 }
 .list .dataset {
     padding: 3px 0px;
     margin-bottom: 1px;
     transition: background-color 0.2s;
-    background-color: #e7e7e7;
 }
 .list .dataset.clickable:hover {
     background-color: #ccc;

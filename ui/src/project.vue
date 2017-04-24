@@ -24,6 +24,12 @@
                     <icon name="pencil"></icon> Edit
                 </el-button>
             </el-button-group>
+
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item :to="{ path: '/projects' }">Projects</el-breadcrumb-item>
+                <el-breadcrumb-item>{{project._id}}</el-breadcrumb-item>
+            </el-breadcrumb>
+
           <!--
             <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
             <el-table v-if="projects" :data="projects" style="width: 100%;" @row-click="click">

@@ -12,11 +12,8 @@
             <br>
             <div style="margin: 0px 0px; padding: 10px; background-color: #f7f7f7;">
                 <h5>Profile</h5>
-                <br>
                 <p><span class="text-muted">Fullname</span><br>{{user.profile.fullname||'(Not Set)'}}</p>
-                <br>
                 <p><span class="text-muted">Email</span><br>{{user.profile.email||'(Not Set)'}}</p>
-                <br>
             </div>
         </el-dropdown-menu>
     </el-dropdown>
@@ -64,10 +61,10 @@ export default {
 .title {
     position: fixed;
     font-size: 18pt;
-    font-weight: bold;
     position: relative;
+    top: 8px;
+    margin: 0px;
     margin-left: 5px;
-    top: 14px;
     left: 8px;
     text-shadow: 1px 1px 1px #555;
 }

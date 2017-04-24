@@ -5,7 +5,7 @@
     </div>
     <p>
         <icon name="file-o" v-if="file.filename"></icon>
-        <icon class="folder" v-if="file.dirname"></icon>
+        <icon name="folder" v-if="file.dirname"></icon>
         {{file.filename||file.dirname}}
     </p>
     <p><small>{{file.desc}}</small></p>

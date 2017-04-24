@@ -10,8 +10,8 @@
         -->
 
         <el-button-group style="margin-bottom: 5px;">
-            <el-button size="small" @click="download()"><icon scale="0.8" name="download"></icon></el-button>
-            <el-button size="small" @click="load()"><icon scale="0.8" name="refresh"></icon></el-button>
+            <el-button size="mini" @click="download()"><icon scale="0.8" name="download"></icon> Download</el-button>
+            <el-button size="mini" @click="load()"><icon scale="0.8" name="refresh"></icon> Refresh</el-button>
         </el-button-group>
         <p v-if="files.length == 0" class="text-muted">Empty Directory</p>
 

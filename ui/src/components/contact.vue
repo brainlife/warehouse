@@ -66,9 +66,9 @@ margin-right: 10px;
 font-size: 12px;
 color: #555;
 font-weight: 700;
-line-height: 200%;
 white-space: nowrap;
-margin: 5px 0px;
+margin: 2px 0px;
+line-height: 22px;
 }
 .contact img {
 float: left;

@@ -1,16 +1,15 @@
 <template>
-<div>
+<div class="task">
     <!--status-->
-    <el-alert title="" style="margin-bottom: 5px;" :type="alerttype" show-icon :closable="false">
+    <el-alert class="status" title="" :type="alerttype" show-icon :closable="false" style="padding: 15px;">
         <el-button v-if="task.status == 'failed'" style="float: right;" @click="rerun()">
             <icon name="repeat"></icon>&nbsp;&nbsp;Rerun
         </el-button>
-        <h4 style="margin-bottom: 0px;">
-            <span style="text-transform: uppercase;">{{task.status}}</span>&nbsp; <el-tag>{{task.service}}</el-tag>
+        <h4>
+            <span style="text-transform: uppercase;">{{task.status}}</span>
+            <small>{{task.service}}</small> 
         </h4>
-        <p>
-            <i>{{task.status_msg}}</i>
-        </p>
+        <i>{{task.status_msg}}</i>
     </el-alert>
 
     <el-collapse v-model="activeSections">
@@ -68,11 +67,11 @@ export default {
 </script>
 
 <style>
-.ui.accordion .title {
-padding: 3px 0px !important;
+.task .status {
+margin-bottom: 5px;
 }
-.el-alert__icon {
+.task .status .el-alert__icon {
 font-size: 30px;
-padding: 0px 10px 0px 5px;
+padding: 5px;
 }
 </style>
