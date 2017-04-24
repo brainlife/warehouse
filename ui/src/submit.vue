@@ -5,6 +5,12 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20" v-if="app">
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
+                <el-breadcrumb-item v-if="app._id">Submit {{app._id}}</el-breadcrumb-item>
+            </el-breadcrumb>
+            <br>
+
             <img style="float: left; margin-right: 20px;" :src="app.avatar">
             <h2>{{app.name}}</h2>
             <p>{{app.desc}}</p>
