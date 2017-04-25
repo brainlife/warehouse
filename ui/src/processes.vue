@@ -45,7 +45,7 @@
                 </el-table-column> 
                 <el-table-column label="Archived">
                     <template scope="scope">
-                          <el-tag v-if="scope.row.config.dataset_id">
+                          <el-tag v-if="scope.row.config.dataset_ids || scope.row.config.dataset_id">
                             <icon name="check"></icon> Archived</el-tag>
                     </template>
                 </el-table-column> 
@@ -113,8 +113,8 @@ export default {
         })
         .then(res=>{
             this.instances = res.body.instances;
-        }).catch(res=>{
-          console.error(res);
+        }).catch(err=>{
+          console.error(err);
         });
 
     },

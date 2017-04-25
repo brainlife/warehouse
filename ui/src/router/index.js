@@ -10,6 +10,7 @@ import dataset from '@/dataset'
 import upload from '@/upload'
 import processes from '@/processes'
 import process from '@/process'
+import processarchive from '@/processarchive'
 import settings from '@/settings'
 import apps from '@/apps'
 import app from '@/app'
@@ -31,6 +32,7 @@ export default new Router({
     { path: '/download/:id', component: download},
     { path: '/processes', component: processes},
     { path: '/process/:id', component: process},
+    { path: '/process/:id/archive', component: processarchive},
     { path: '/projects', component: projects },
     { path: '/project/:id', component: project },
     { path: '/project/:id/edit', component: projectedit },

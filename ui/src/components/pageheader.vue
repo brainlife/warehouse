@@ -72,11 +72,12 @@ export default {
     position: fixed;
     font-size: 18pt;
     position: relative;
-    top: 8px;
+    top: 9px;
     margin: 0px;
     margin-left: 5px;
     left: 8px;
-    text-shadow: 1px 1px 1px #555;
+    font-weight: 700;
+    text-shadow: 1px 1px 1px #999;
 }
 .menu {
     position: fixed;

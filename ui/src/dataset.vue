@@ -85,17 +85,13 @@
                                 {{dep.dataset}}
                             </el-card>
                         </div>
-                        <br>
                         <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
-                        <br>
                         </el-col>
                     </el-row>
                     <app :app="dataset.prov.app" :compact="true"/>
 
                     <center>
-                        <br>
                         <icon class="text-muted" scale="2" name="arrow-down"></icon>
-                        <br>
                         <el-card>This dataset</el-card>
                     </center>
                 
@@ -108,14 +104,23 @@
                 <th>Derivatives</th>
                 <td>
                     <div v-if="derivatives">
-                        <p class="text-muted" v-if="derivatives.length > 0">This dataset is used to produce following datasets.</p>
-                        <p class="text-muted" v-else="derivatives.length > 0">No derivatives</p>
-                        <el-card class="clickable-record" v-for="deri in derivatives" :key="deri._id" style="margin-bottom: 10px;">
-                            <div @click="go(deri._id)">
-                                <icon name="cube"></icon>
-                                <b>{{deri.name}}</b> {{deri.desc}}
-                            </div>
-                        </el-card>
+                        <p class="text-muted" v-if="derivatives.length == 0">No derivatives</p>
+                        <div v-if="derivatives.length > 0">
+                            <el-card>This dataset</el-card>
+                            <el-row>
+                            <el-col :span="8" v-for="deri in derivatives" :key="deri._id">
+                                <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
+                                <app :appid="deri.prov.app" :compact="true"/>
+                                <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
+                                <el-card class="clickable-record" v-for="deri in derivatives" :key="deri._id" style="margin-bottom: 10px;">
+                                    <div @click="go(deri._id)">
+                                        <icon name="cube"></icon>
+                                        <b>{{deri.name}}</b>
+                                    </div>
+                                </el-card>
+                            </el-col>
+                            </el-row>
+                        </div>
                     </div>
                 </td>
             </tr>
@@ -135,9 +140,9 @@
             <el-card v-if="config.debug">
                 <div slot="header">Debug</div>
                 <h3>dataset</h3>
-                <pre v-highlightjs><code class="json hljs">{{dataset}}</code></pre>
+                <pre v-highlightjs="JSON.stringify(dataset, null, 4)"><code class="json hljs"></code></pre>
                 <h3>derivatives</h3>
-                <pre v-highlightjs><code class="json hljs">{{derivatives}}</code></pre>
+                <pre v-highlightjs="JSON.stringify(derivatives, null, 4)"><code class="json hljs"></code></pre>
             </el-card>
         </div><!--margin20-->
         </div><!--page-content-->

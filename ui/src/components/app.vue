@@ -22,9 +22,19 @@ import appavatar from '@/components/appavatar'
 
 export default {
     components: { contact, appavatar },
-    props: ['app', 'dataset', 'compact'],
+    props: ['app', 'dataset', 'compact', 'appid' ],
     data () {
         return {
+        }
+    },
+    mounted: function() {
+        if(this.appid) {
+            this.$http.get('app', {params: {
+                find: JSON.stringify({_id: this.appid}),
+                //populate: "project datatype prov.app",
+            }}).then(res=>{
+                this.app = res.body.apps[0];
+            });
         }
     },
     methods: {

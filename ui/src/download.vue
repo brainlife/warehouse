@@ -157,8 +157,8 @@ export default {
                 }
             }
 
-        }).catch((err)=>{
-            console.error(res);
+        }).catch(err=>{
+            console.error(err);
         });
     },
 

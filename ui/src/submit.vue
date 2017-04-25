@@ -368,7 +368,7 @@ export default {
                 //all good!
                 //localStorage.setItem("last_projectid_used", this.project_id);
                 this.go('/process/'+instance._id);
-            }).catch(function(err) {
+            }).catch(err=>{
                 console.error(err);
             });
         },
@@ -388,7 +388,7 @@ export default {
             }).then(res=>{
                 console.log("requested notification");
                 console.dir(res.body);
-            }).catch(function(err) {
+            }).catch(err=>{
                 console.error(err);
             });
         }

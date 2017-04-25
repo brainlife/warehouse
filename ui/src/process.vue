@@ -6,15 +6,19 @@
         <div class="page-content">
         <div class="margin20" v-if="instance && tasks && app">
             <el-button-group style="float: right;">
+                <!--
                 <el-button v-if="instance.config.dataset_id" @click="go('/dataset/'+instance.config.dataset_id)">
                     <icon name="archive"></icon> See Archived
                 </el-button>
+                -->
                 <el-button @click="remove()">
                     <icon name="trash"></icon> Remove Process
                 </el-button>
-                <el-button type="primary" v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="archive()"> 
+                <!--
+                <el-button type="primary" v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="go('/process/'+instance._id+'/archive')"> 
                     <icon name="archive"></icon> Archive Output
                 </el-button>
+                -->
             </el-button-group>
 
             <el-breadcrumb separator="/">
@@ -27,9 +31,29 @@
 
             <table class="info">
             <tr>
-                <th>Process Description</th>
+                <th>Description</th>
                 <td>
                     {{instance.desc}}
+                </td>
+            </tr>
+            <tr>
+                <th>Dataset ID</th>
+                <td>
+                    <div v-if="!instance.config.dataset_ids">
+                        <p class="text-muted">Not archived yet</p>
+                        <el-card v-if="instance.status == 'finished'" style="background-color: #def;">
+                            <div slot="header"><b style="color: #2693ff;"><icon name="cubes"/> Archive Output</b></div>
+                            <p>The output data will be purged within 25 days of process completion.</p>
+                            <p>Please archive if you'd like to persist the output datasets as part of your project.</p>
+                            <el-button size="large" type="primary" @click="go('/process/'+instance._id+'/archive')">
+                                <icon name="archive"></icon> Archive Output
+                            </el-button>
+                        </el-card>
+                    </div>
+                    <div v-if="instance.config.dataset_ids">
+                        <span class="text-muted">Output from this process is archived in the warehouse with dataset ID of</span>
+                        <el-button v-for="id in instance.config.dataset_ids" type="text" @click="go('/dataset/'+id)">{{id}}</el-button>
+                    </div>
                 </td>
             </tr>
             <tr>
@@ -49,7 +73,6 @@
             <tr v-if="instance.status == 'finished'">
                 <th>Outputs</th>
                 <td>
-                    <p><el-alert title="" type="info">The output data will be purged within 25 days of task completion. Please archive if you'd like to persist the data.</el-alert></p>
                     <el-table :data="app.outputs" style="width: 100%" default-expand-all>
                         <el-table-column type="expand">
                             <template scope="props">
@@ -80,6 +103,7 @@
                         <el-table-column prop="datatype.desc" label="Description"></el-table-column>
                         <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
                     </el-table>
+
                 </td>
             </tr>
             <tr>
@@ -167,6 +191,7 @@ import appavatar from '@/components/appavatar'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
+
 export default {
     mixins: [
         //require("vue-toaster")
@@ -192,8 +217,14 @@ export default {
         .then(res=>{
             this.instance = res.body.instances[0];
 
+            //for backward compatibility
+            if(this.instance.config.dataset_id) {
+                this.instance.config.dataset_ids = [this.instance.config.dataset_id];
+            }
+
             //load datasets used for prov.deps
-            //console.dir(this.instance.config.prov);
+            console.dir(this.instance.config.prov);
+            //if(!this.instance.config.prov.deps.map) this.instance.config.prov.deps = [this.instance.config.prov.deps];
             var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
             return this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: dataset_ids}),
@@ -272,7 +303,7 @@ export default {
 
  
         }).catch((err)=>{
-            console.error(res);
+            console.error(err);
         });
     },
 
@@ -295,51 +326,8 @@ export default {
         }
     },
     methods: {
-
         go: function(path) {
             this.$router.push(path);
-        },
-        archive: function() {
-            //construct metadata for the new output dataset
-            //TODO - I think I should let the app take care of this (via products.json?) but metadata is more or less warehouse
-            //specific concept - so maybe I should define mapping rule inside app record somehow.
-            //for now, I just concat all metadata from input datasets used
-            var meta = {}
-            this.instance.config.prov.deps.forEach(function(dep) {
-                Object.assign(meta, dep._dataset.meta);
-            });
-
-            //finally, make a request to finalize the task directory
-            //currently only deals with outputs[0]
-            var params = {
-                instance_id: this.instance._id,
-                //name: "data from "+this.instance.name,
-                name: this.app.name+" output", 
-                desc: "Data archived from "+this.instance.name,
-                tags: ['xyz123', 'test', 'dev'], //TODO - let use set this?
-
-                //TODO user must provide this now
-                //project: this.instance.config.project,
-
-                task_id: this.instance.config.main_task_id,
-                prov: this.instance.config.prov, 
-                meta: meta,
-                datatype: this.app.outputs[0].datatype,
-                datatype_tags: this.app.outputs[0].datatype_tags,
-            }
-            this.$http.post('dataset', params).then(res=>{
-                //this.messages.push({msg: "Archiving Request Sent!", cls: {info: true}});
-
-                //update instance to store dataset_id
-                this.instance.config.dataset_id = res.body._id;
-                this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, {
-                    config: this.instance.config,
-                }).then(res=>{
-                    console.log("done updating instance");
-                });
-            }, res=>{
-                console.error(res);
-            });
         },
         remove: function() {
             //this.messages.push({msg: "Removed", cls: {info: true}});
