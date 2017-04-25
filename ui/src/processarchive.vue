@@ -14,7 +14,7 @@
             <br>
             <h1><icon name="cubes" scale="2"></icon> Archive Output</h1>
             
-            <p class="text-muted">Archive output datasets generated from your process to brain-life warehouse</p>
+            <p class="text-muted">Please populate and submit following form to archive the output datasets generated from this process</p>
 
             <el-card>
                 <el-form ref="form" label-width="180px">
@@ -297,13 +297,23 @@ export default {
                     next();
                 }, next);
             }, err=>{
-                if(err) return console.error(err);
+                if(err) {
+                    this.$notify.error({
+                        title: 'Error',
+                        message: err.toString()
+                    });
+                    return;
+                }
 
                 //update instance to store dataset_ids
                 this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, {
                     config: this.instance.config,
                 }).then(res=>{
-                    console.log("done updating instance");
+                    this.$notify.success({
+                        title: 'Success',
+                        message: 'Successfully archived datasets',
+                    });
+                    this.$router.push("/process/"+this.instance._id);
                 }).catch(console.error);
             });
         },
