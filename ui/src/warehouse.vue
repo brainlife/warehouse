@@ -17,13 +17,26 @@ export default {
 <!--global styles-->
 <style>
 body {
-  background-color: #f0f0f0;
+background-color: #f0f0f0;
+}
+body, textarea, input {
+font-family: 'Lato', sans-serif;
+font-size: 14px;
 }
 .margin20 {
 	margin: 20px;
 }
 .ui.pusher {
-  margin-left: 210px;
+  margin-left: 200px;
+}
+.page-content {
+    /*transition: margin-right 0.5s;*/
+    position: fixed;
+    left: 90px;
+    right: 0px;
+    top: 50px;
+    bottom: 0px;
+    overflow: auto;
 }
 
 .fade-enter-active {
@@ -35,18 +48,12 @@ body {
 pre {
     margin: 0px;
     overflow: auto;
+    font-family: 'monospace';
 }
 .clickable:hover,
 .clickable-record:hover {
     cursor: pointer;
     background-color: #ddd;
-}
-.panel {
-    background-color: white;
-    width: 100%;
-    padding: 20px;
-    box-shadow: 2px 2px 3px #ccc;
-    border-radius: 2px;
 }
 .text-muted {
     opacity: 0.6;
@@ -55,9 +62,77 @@ code.hljs {
     font-size: 80%;
 }
 .off-sidemenu {
-    margin-left: 210px;
+    margin-left: 150px;
 }
-.el-card__header {
-    background-color: #EFF2F7;
+svg.fa-icon {
+position: relative;
+zoom: 78%;
+}
+b{
+font-weight: 700;
+}
+h1,h2,h3,h4,h5,h6 {
+line-height: 100%;
+margin-top: 0px;
+}
+h1 {
+font-size: 26px;
+font-weight: bold;
+margin-bottom: 13px;
+}
+h2 {
+font-size: 22px;
+font-weight: bold;
+margin-bottom: 11px;
+}
+h3 {
+font-size: 18px;
+font-weight: bold;
+margin-bottom: 9px;
+}
+h4 {
+font-size: 15px;
+font-weight: bold;
+margin-bottom: 7px;
+}
+h5 {
+font-size: 13px;
+font-weight: bold;
+margin-bottom: 6px;
+}
+
+table.info {
+    width: 100%;
+}
+table.info tr {
+    border-bottom: 1px solid #eee;
+    background-color: white;
+}
+table.info th {
+    color: #777; 
+    text-align: left;
+    vertical-align: top;
+    font-size: 14px;
+    padding: 10px;
+    margin: 0px;
+    font-weight: 600;
+}
+table.info td {
+    padding: 10px;
+}
+.el-table .cell {
+padding: 2px;
+}
+p {
+margin-top: 0px;
+}
+.el-card {
+border-radius: 0px !important;
+margin-bottom: 10px !important;
+}
+.navigation {
+    color: #999;
+    margin-bottom: 15px;
 }
 </style>
+

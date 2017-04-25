@@ -1,70 +1,63 @@
 <template>
 <div>
+    <pageheader :user="config.user">
+        <el-row :gutter="20">
+            <el-col :span="14">
+                <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
+            </el-col>
+            <el-col :span="10">
+                <!--<el-button @click="go('/app/_/edit')"> <i class="ui icon add"></i> Register </el-button>-->
+            </el-col>
+        </el-row>
+    </pageheader>
     <sidemenu active="/processes"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20">
-            <div class="ui fluid category search">
-                <div class="ui icon input">
-                    <input class="prompt" type="text" placeholder="Search processes...">
-                    <i class="search icon"></i>
-                </div>
-                <div class="results"></div>
-            </div>
+            <h3 v-if="!instances"> <icon name="spinner"></icon> Loading..  </h3>
+            <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click">
+                <el-table-column label="Create Date" prop="create_date" sortable>
+                    <template scope="scope">
+                        {{scope.row.create_date|date}}
+                    </template>
+                </el-table-column> 
+                <el-table-column label="Application">
+                    <template scope="scope">
+                        {{apps[scope.row.config.prov.app].name}}
+                    </template>
+                </el-table-column> 
+                <el-table-column prop="desc" label="Description"/></el-table-column> 
+                <el-table-column label="Status" prop="status" sortable>
+                    <template scope="scope">
+                        <el-tag v-if="scope.row.status == 'removed'">
+                            <icon name="remove"></icon> Removed</el-tag>
+                        <el-tag type="success" v-if="scope.row.status == 'finished'">
+                            <icon name="check"></icon> Finished</el-tag>
+                        <el-tag type="primary" v-if="scope.row.status == 'running'">
+                            <icon name="circle-o-notch" class="fa-spin"></icon> Running</el-tag>
+                        <el-tag type="primary" v-if="scope.row.status == 'requested'">
+                            <icon name="wait"></icon> Requested</el-tag>
+                        <el-tag type="danger" v-if="scope.row.status == 'failed'">
+                            <icon name="warning"></icon> Failed</el-tag>
+                        <el-tag type="warning" v-if="scope.row.status == 'unknown'">
+                            <icon name="help"></icon> Failed</el-tag>
+                    </template>
+                </el-table-column> 
+                <el-table-column label="Archived">
+                    <template scope="scope">
+                          <el-tag v-if="scope.row.config.dataset_ids || scope.row.config.dataset_id">
+                            <icon name="check"></icon> Archived</el-tag>
+                    </template>
+                </el-table-column> 
+            </el-table>
 
-            <h3 v-if="!instances"> <i class="el-icon-loading"></i> Loading..  </h3>
-
-            <table class="ui table" v-if="instances">
-                <thead>
-                    <tr>
-                        <th style="min-width: 180px">Create Date</th>
-                        <th style="min-width: 200px">Project</th>
-                        <th style="min-width: 200px">Application</th>
-                        <th style="min-width: 200px">Description</th>
-                        <th style="min-width: 120px">Status</th>
-                        <th style="min-width: 120px">Archived</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="instance in instances" class="clickable-record" @click="go('/process/'+instance._id)">
-                        <td> {{instance.create_date | date}} </td>
-                        <td> 
-                            <div class="ui green horizontal label" v-if="projects[instance.config.project].access == 'public'">Public</div>
-                            <div class="ui red horizontal label" v-if="projects[instance.config.project].access == 'private'">Private</div>
-                            {{projects[instance.config.project].name}} 
-                        </td>
-                        <!--<td> {{instance.name}} </td>-->
-                        <td> {{apps[instance.config.prov.app].name}} </td>
-                        <td> {{instance.desc}} </td>
-                        <td>
-                          <div class="ui label yellow" v-if="instance.status == 'removed'">
-                            <i class="icon remove"></i> Removed</div>
-                          <div class="ui label blue" v-if="instance.status == 'finished'">
-                            <i class="icon check"></i> Finished!</div>
-                          <div class="ui label green" v-if="instance.status == 'running'">
-                            <i class="notched circle loading icon"></i> Running</div>
-                          <div class="ui label green" v-if="instance.status == 'requested'">
-                            <i class="wait icon"></i> Requested</div>
-                          <div class="ui label red" v-if="instance.status == 'failed'">
-                            <i class="warning icon"></i> Failed</div>
-                          <div class="ui label" v-if="instance.status == 'unknown'">
-                            <i class="help icon "></i> Failed</div>
-                        </td>
-
-                        <td>
-                          <div class="ui label" v-if="instance.config.dataset_id">
-                            <i class="check icon"></i> Archived</div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="ui segment" v-if="config.debug">
-                <div class="ui top attached label">Debug</div>
-                <br>
-                <br>
+            <br>
+            <el-card v-if="config.debug">
+                <div slot="header">Debug</div>
                 <pre v-if="instances" v-highlightjs="JSON.stringify(instances, null, 4)"><code class="json hljs"></code></pre>
-            </div>
-        </div>
+            </el-card>
+        </div><!--margin20-->
+        </div><!--page-content-->
     </div>
 </div>
 </template>
@@ -72,44 +65,36 @@
 <script>
 import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
+import pageheader from '@/components/pageheader'
 
 export default {
-    components: { sidemenu },
-    name: 'processes',
+    components: { sidemenu, pageheader },
     data () {
         return {
             instances: null,
+
+            query: "",
             
             //cache
-            projects: null, //keyed by _id
+            //projects: null, //keyed by _id
             apps: null, //keyed by _id
 
             config: Vue.config,
         }
     },
     mounted: function() {
-        //first load projects
-        this.$http.get('project', {params: {
-            //service: "_upload",
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.body.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
 
-            //then load application details
-            return this.$http.get('app', {params: {
-                /*
-                find: JSON.stringify({
-                    _id: this.$route.params.id,
-                    "config.brainlife": true,
-                    status: {$ne: "removed"},
-                    "config.removing": {$exists: false},
-                })
-                */
-            }});
-        })
+        //load application details
+        this.$http.get('app', {params: {
+            /*
+            find: JSON.stringify({
+                _id: this.$route.params.id,
+                "config.brainlife": true,
+                status: {$ne: "removed"},
+                "config.removing": {$exists: false},
+            })
+            */
+        }})
         .then(res=>{
             this.apps = {};
             res.body.apps.forEach((a)=>{
@@ -128,16 +113,16 @@ export default {
         })
         .then(res=>{
             this.instances = res.body.instances;
-        }).catch(res=>{
-          console.error(res);
+        }).catch(err=>{
+          console.error(err);
         });
 
     },
 
     methods: {
-        go: function(path) {
-            this.$router.push(path);
-        },
+        click: function(row) {
+            this.$router.push("/process/"+row._id);
+        }
     },
 
 }

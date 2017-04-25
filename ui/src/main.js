@@ -1,11 +1,10 @@
 
 //3rd parties
 import 'jquery/dist/jquery.js'
-import 'semantic-ui/dist/semantic.css'
-import 'semantic-ui/dist/semantic.js'
+//import '@/reset.css'
 
 import 'highlight.js/styles/default.css'
-import 'vue2-animate/dist/vue2-animate.min.css'
+//import 'vue2-animate/dist/vue2-animate.min.css'
 
 //import hljs from 'highlight.js'
 import VueHighlightJS from 'vue-highlightjs'
@@ -19,13 +18,14 @@ Vue.use(VueResource)
 
 import warehouse from './warehouse'
 
-import VueSemantic from 'vue-semantic'
-Vue.use(VueSemantic)
+//import VueSemantic from 'vue-semantic'
+//Vue.use(VueSemantic)
 
 //element ui
+import '../theme/index.css'
 import ElementUI from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
-import 'element-ui/lib/theme-default/index.css'
+//import 'element-ui/lib/theme-default/index.css'
 Vue.use(ElementUI, {locale})
 
 //fontasome
@@ -37,6 +37,11 @@ Vue.component('icon', Icon)
 import router from './router'
 
 Vue.use(require('vue-filter'))
+
+import filesize from 'filesize'
+Vue.filter('filesize', function(value) {
+    return filesize(value);
+});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -92,7 +97,10 @@ if(Vue.config.user.exp < Date.now()/1000) {
 Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
 router.beforeEach(function (to, from, next) {
-    window.scrollTo(0, 0)
+    console.log("scrolling to top");
+    window.scrollTo(0, 0);
+    //this crashes the vue
+    //if($(".page-content")) $(".page-content").scrollTo(0,0);
     next();
 })
 
@@ -103,3 +111,5 @@ new Vue({
   template: '<warehouse/>',
   components: { warehouse }
 })
+
+

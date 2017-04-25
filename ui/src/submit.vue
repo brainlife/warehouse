@@ -1,13 +1,22 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20" v-if="app">
-            <message v-for="(msg, idx) in messages" key="idx" :msg="msg"></message>
-            <img style="float: left; margin-right: 20px;" :src="app.avatar">
-            <h2>{{app.name}}</h2>
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
+                <el-breadcrumb-item v-if="app._id">Submit {{app._id}}</el-breadcrumb-item>
+            </el-breadcrumb>
+            <br>
+
+            <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
+            <h1>{{app.name}}</h1>
             <p>{{app.desc}}</p>
+
             <br clear="both">
+            <br>
 
             <el-card class="box-card">
                 <!--
@@ -15,69 +24,57 @@
                     <span>Submit Form</span>
                 </div>
                 -->
-                <div class="ui form">
-                    <div class="field">
-                        <label>Description</label>
-                        <el-input type="textarea" v-model="desc" placeholder="Optional Description for your process"></el-input>
-                    </div>
+                <el-form :model="form" ref="form" label-position="left" label-width="150px">
 
-                    <div class="field">
-                        <label>Project</label>
-                        <p class="text-muted">Project used to run this application</p>
-                        <select v-model="project_id">
-                            <option v-for="(p,id) in projects" :value="p._id">{{p.name}} ({{p.access}})</option>
-                        </select>
-                    </div>
+                    <!--
+                    <el-form-item label="Project">
+                        <el-select v-model="form.project_id">
+                            <el-option v-for="p in projects" :value="p._id" :label="p.name" :key="p._id">
+                                <el-tag>{{p.access}}</el-tag>
+                                {{p.name}}
+                            </el-option>
+                        </el-select>
+                        <p class="text-muted">* Project used to run this application</p>
+                    </el-form-item>
+                    -->
 
-                    <h3>Inputs</h3>
-                    <div class="field" v-for="input in app.inputs">
-                        <label>{{input.id}}</label>
-                        <select class="ui fluid dropdown" v-model="input.dataset_id">
-                            <option value="">(Select {{input.id}} dataset)</option>
-                            <option v-for="dataset in datasets[input.id]" :value="dataset._id">
-                                <metadata :metadata="dataset.meta"></metadata> / 
-                                {{dataset.name}} / {{dataset.desc}} 
-                                <tags :tags="dataset.datatype_tags"></tags>
-                            </option>
-                        </select>
+                    <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
+                    <el-form-item v-for="input in app.inputs" :label="input.id" :key="input.id" ref="form">
+                        <el-select v-model="form.inputs[input.id]" placeholder="Please select input dataset">
+                            <el-option v-for="dataset in datasets[input.id]" :key="dataset._id" 
+                                :value="dataset._id" :label="dataset.meta.subject+' '+dataset.name">
+                                {{dataset.meta.subject}} | {{dataset.name}} | {{dataset.create_date|date}}
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
 
-                        <!--
-                        <el-input placeholder="Please input" v-model="input5">
-                            <el-select v-model="select" slot="prepend" placeholder="Select">
-                            <el-option label="Restaurant" value="1"></el-option>
-                            <el-option label="Order No." value="2"></el-option>
-                            <el-option label="Tel" value="3"></el-option>
-                            </el-select>
-                            <el-button slot="append" icon="search"></el-button>
-                        </el-input>
-                        -->
-                    </div>
-
-                    <h3>Configurations</h3>
+                    <!--<h4 style="margin-left: 150px;">Configurations</h4>-->
                     <!-- TODO doesn't support nested parameters-->
-                    <div class="field" v-for="(v,k) in app.config" v-if="v.type && v.value">
-                        <label>{{k}}</label>
-                        <el-input v-model="v.value">
-                            <!--<template slot="prepend">{{k}}</template>-->
-                        </el-input>
-                    </div>
-        
-                    <div class="ui primary button" @click="submit()">Submit</div>
-                </div>
+                    <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value">
+                        <el-input v-model="form.config[k]"></el-input>
+                    </el-form-item>
+ 
+                    <el-form-item label="Description">
+                        <el-input type="textarea" v-model="form.desc" placeholder="Optional Description for this processing"></el-input>
+                    </el-form-item>
+                    <br>
+                    <el-form-item>
+                        <el-button type="primary" @click="submit()">Submit</el-button>
+                    </el-form-item>
+                </el-form>
             </el-card>
 
-            <h2>Debug</h2>
-            <div class="ui segments">
-                <div class="ui segment">
-                    <h3>App</h3>
-                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <div class="ui segment">
-                    <h3>Datasets</h3>
-                    <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-            </div>
-        </div>
+            <el-card v-if="config.debug">
+                <div slot="header">Debug</div>
+                <h3>Form</h3>
+                <pre v-highlightjs="JSON.stringify(form, null, 4)"><code class="json hljs"></code></pre>
+                <h3>App</h3>
+                <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+                <h3>Datasets</h3>
+                <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
+            </el-card>
+        </div><!--margin20-->
+        </div><!--page-content-->
     </div>
 </div><!--root-->
 </template>
@@ -90,6 +87,8 @@ import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
+import pageheader from '@/components/pageheader'
+import appavatar from '@/components/appavatar'
 
 import lib from '@/lib'
 
@@ -137,22 +136,25 @@ function generate_config(app, download_task_id) {
 }
 
 export default {
-    components: { sidemenu, contact, project, tags, metadata },
+    components: { sidemenu, contact, project, tags, metadata, pageheader, appavatar },
 
     data () {
         return {
-            messages: [], //move to mixin?
-
             app: null,
             resource: null,
 
-            //form inputs
-            desc: "",
-            project_id: localStorage.getItem("last_projectid_used")||"", 
+            form: {
+                desc: "",
+                //project_id: localStorage.getItem("last_projectid_used")||"", 
+                inputs: {},
+                config: {},
+            },
 
             //cache
             datasets: {}, //available datasets grouped by input._id
-            projects: [],
+            //projects: [],
+
+            config: Vue.config,
         }
     },
 
@@ -160,7 +162,9 @@ export default {
     },
 
     mounted: function() {
-        //console.log("looking for ", this.$route.params.id);
+        //console.log("query query", this.$route.query);
+        var preselect_dataset = null;
+
         this.$http.get('app', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'inputs.datatype outputs.datatype',
@@ -169,9 +173,18 @@ export default {
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
 
+            //prepare form inputs
+            this.app.inputs.forEach((input)=>{
+                Vue.set(this.form.inputs, input.id, null);
+            });
+            for(var k in this.app.config) {
+                Vue.set(this.form.config, k, this.app.config[k].default);
+                //Vue.set(this.rules, k, [{required: true, message: 'Please enter'}]);
+            }
+
             //process config template
             //TODO - update to handle nested parameters
-            console.dir(this.app);
+            //console.dir(this.app);
             for(var k in this.app.config) {
                 var v = this.app.config[k];
                 if(v.type && v.default) v.value = v.default;
@@ -188,11 +201,21 @@ export default {
 
         })
         .then(res=>{
+            var datasets = res.body.datasets;
             //console.log("datasets applicable:", res);
 
+            //find preselected datasets
+            if(this.$route.query.dataset) {
+                datasets.forEach(dataset=>{
+                    if(dataset._id == this.$route.query.dataset) preselect_dataset = dataset;
+                }); 
+            }
+            //console.log("preselect", preselect_dataset);
+
+            //find datasets that applies to each input type
             this.app.inputs.forEach((input)=>{
                 //console.dir(input);
-                Vue.set(this.datasets, input.id, res.body.datasets.filter(dataset=>{
+                Vue.set(this.datasets, input.id, datasets.filter(dataset=>{
                     //console.dir(dataset);
                     if(dataset.datatype != input.datatype._id) return false;
 
@@ -208,6 +231,16 @@ export default {
                             if(!~dataset.datatype_tags.indexOf(required_tag)) match = false;
                         }
                     });
+
+                    if(match && preselect_dataset) {
+                        var subject = preselect_dataset.meta.subject;
+                        if(preselect_dataset == dataset) this.form.inputs[input.id] = dataset._id;
+                        else {
+                            //select first one that has matching subject
+                            if(dataset.meta.subject == subject) this.form.inputs[input.id] = dataset._id;
+                        }
+                    }
+
                     return match; 
                 }));
             });
@@ -216,6 +249,7 @@ export default {
             console.error(err);
         });
 
+        /*
         //load projects
         this.$http.get('project', {params: {
             //service: "_upload",
@@ -228,6 +262,7 @@ export default {
         }, res=>{
           console.error(res);
         });
+        */
     },
 
     methods: {
@@ -248,24 +283,40 @@ export default {
         },
 
         submit: function() {
+
+            //make sure all inputs are selected
+            var validated = true;
+            for(var k in this.form.inputs) {
+                if(!this.form.inputs[k]) validated = false;
+            }
+            if(!validated) {
+                this.$notify({
+                    title: 'Missing Input',
+                    message: 'Please select all inputs',
+                    type: 'error'
+                });
+                return;
+            }
+
             var instance = null;
 
             var inst_config = {
                 brainlife: true,
-                project: this.project_id,
+                //project: this.project_id,
                 main_task_id: null, //will be set once submitted
                 prov: {
                     app: this.app._id,
-                    deps: this.app.inputs.map(input=>{
-                        return {input_id: input.id, dataset: input.dataset_id};
-                    }),
+                    deps: [], 
                 }
+            }
+            for(var input_id in this.form.inputs) {
+                inst_config.prov.deps.push({input_id, dataset: this.form.inputs[input_id]});
             }
 
             //first create an instance to run everything
             this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "brainlife.a."+this.app._id,
-                desc: this.desc,
+                desc: this.form.desc,
                 config: inst_config,
             }).then(res=>{
                 instance = res.body;
@@ -273,13 +324,13 @@ export default {
 
                 //create config to download all input data from archive
                 var download = [];
-                this.app.inputs.forEach(function(input) {
+                for(var input_id in this.form.inputs) {
                     download.push({
-                        url: Vue.config.api+"/dataset/download/"+input.dataset_id+"?at="+Vue.config.jwt,
+                        url: Vue.config.api+"/dataset/download/"+this.form.inputs[input_id]+"?at="+Vue.config.jwt,
                         untar: "gz",
-                        dir: "inputs/"+input.id,
+                        dir: "inputs/"+input_id,
                     });
-                });
+                }
 
                 //now submit task to download data from archive
                 console.log("submitting download task", download);
@@ -300,7 +351,7 @@ export default {
                     instance_id: instance._id,
                     name: this.app.name,
                     service: this.app.github,
-                    config: generate_config(this.app, download_task._id),
+                    config: Object.assign(this.form.config, generate_config(this.app, download_task._id)),
                     deps: [ download_task._id ],
                 })
             }).then(res=>{
@@ -315,14 +366,14 @@ export default {
                 return this.request_notifications(instance, inst_config.main_task_id);
             }).then(res=>{
                 //all good!
-                localStorage.setItem("last_projectid_used", this.project_id);
+                //localStorage.setItem("last_projectid_used", this.project_id);
                 this.go('/process/'+instance._id);
-            }).catch(function(err) {
+            }).catch(err=>{
                 console.error(err);
             });
         },
 
-        request_notifications: function(instance, main_task) {
+        request_notifications: function(instance, task_id) {
             var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;
 
             //for success
@@ -330,10 +381,15 @@ export default {
                 event: "wf.task.finished",
                 handler: "email",
                 config: {
-                        task_id: main_task._id,
-                        subject: "[brain-life.org] Process Completed",
-                        message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease visit "+url+" to view your result.\n\nBrain-life.org Administrator"
+                    task_id: task_id,
+                    subject: "[brain-life.org] Process Completed",
+                    message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease visit "+url+" to view your result.\n\nBrain-life.org Administrator"
                 },
+            }).then(res=>{
+                console.log("requested notification");
+                console.dir(res.body);
+            }).catch(err=>{
+                console.error(err);
             });
         }
     },

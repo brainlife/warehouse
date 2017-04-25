@@ -1,10 +1,11 @@
 <template>
 <div>
-    <select class="ui fluid search dropdown" multiple>
-        <option v-for="profile in profiles" v-bind:value="profile.id"> {{profile.fullname}}
+    <el-select v-model="uids" multiple style="width: 100%;">
+        <el-option v-for="profile in profiles" :key="profile.id" :label="profile.fullname||profile.email" :value="profile.id.toString()">
+             {{profile.fullname}}
             <code><{{profile.email}}></code>
-        </option>
-    </select>
+        </el-option>
+    </el-select>
 </div><!--root-->
 </template>
 
@@ -24,12 +25,13 @@ export default {
     props: ['uids'],
 
     mounted: function() {
-        //TODO I should cache this somehow.. (or does browser do that?)
-        if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profiles');
+        //TODO I should let ui-select/async and let it "search" users
+        if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profile');
         profiles.then(res=>{
             //this.$http.get(Vue.config.auth_api+'/profiles').then(res=>{
-            this.profiles = res.body;
+            this.profiles = res.body.profiles;
 
+            /*
             //I have to initialize dropdown *after* Vue had chance to insert all
             //<option> tags - I can't do this during mounted step.
             Vue.nextTick(()=>{
@@ -45,12 +47,14 @@ export default {
                     this.$emit('changed', v);
                 });
             });
+            */
         }, res=>{
             console.error(res);
         });
     },
 
     watch: {
+        /*
         //initial uids to reset to..
         uids: function(val) {
             if(!val) return;
@@ -61,10 +65,11 @@ export default {
             $(this.$el).find('.dropdown').dropdown('set exactly', val);
             this.resetting = false;
         }
+        */
     },
 
     destroy: function () {
-        $(this.$el).find('.dropdown').dropdown('destroy');
+        //$(this.$el).find('.dropdown').dropdown('destroy');
     },
 
 }

@@ -1,26 +1,25 @@
 <template>
 <div>
-    <!-- main view -->
+    <pageheader :user="config.user">
+        <!--pageheader slot-->
+        <el-row :gutter="20">
+            <el-col :span="14">
+                <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
+            </el-col>
+            <el-col :span="10">
+                <el-button @click="go('/app/_/edit')"> <icon name="plus"></icon> Register App</el-button>
+            </el-col>
+        </el-row>
+    </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20">
-            <div class="ui fluid category search">
-                <button class="ui right floated primary button" @click="go('/app/_/edit')">
-                    <i class="ui icon add"></i> Register
-                </button>
-                <div class="ui icon input">
-                    <input class="prompt" type="text" v-model="query" placeholder="Search ...">
-                    <i class="search icon"></i>
-                </div>
-                <div class="results"></div>
+            <div v-for="app in apps" key="app._id" class="card">
+                <app :app="app"></app>
             </div>
-
-            <br>
-
-            <div class="ui cards">
-                <app v-for="app in apps" key="app._id" :app="app"></app>
-            </div><!--v-for-->
         </div><!--magin20-->
+        </div><!--page-content-->
     </div><!--pusher-->
 </div><!--root-->
 </template>
@@ -28,14 +27,17 @@
 <script>
 import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
+import pageheader from '@/components/pageheader'
 import app from '@/components/app'
 
 export default {
-    name: 'apps',
+    components: { sidemenu, pageheader, app },
     data () {
         return {
             apps: [],
             query: "",
+
+            config: Vue.config,
         }
     },
 
@@ -54,9 +56,13 @@ export default {
             this.$router.push(path);
         }
     },
-    components: { sidemenu, app },
 }
 </script>
 
 <style scoped>
+.card {
+    width: 325px; 
+    float: left;
+    margin-right: 10px;
+}
 </style>

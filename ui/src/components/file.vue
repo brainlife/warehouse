@@ -1,14 +1,15 @@
 <template>
-<div class="ui segment">
-    <i class="file outline icon" v-if="file.filename"></i>
-    <i class="folder icon" v-if="file.dirname"></i>
-    <div style="float: right; position: relative; top: -8px;">
-        <!--<el-button type="primary" size="small" @click="view()"><icon name="eye"></icon></el-button>-->
-        <el-button type="primary" size="small" @click="download()"><icon name="download"></icon></el-button>
+<el-card>
+    <div style="float:right; position: relative; top: -5px;">
+        <el-button type="primary" size="small" @click="download()"><icon name="download"></icon> Download</el-button>
     </div>
-    {{file.filename||file.dirname}}
+    <p>
+        <icon name="file-o" v-if="file.filename"></icon>
+        <icon name="folder" v-if="file.dirname"></icon>
+        {{file.filename||file.dirname}}
+    </p>
     <p><small>{{file.desc}}</small></p>
-</div>
+</el-card>
 </template>
 
 <script>

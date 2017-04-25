@@ -1,7 +1,9 @@
 <template>
 <div>
+    <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="ui pusher">
+        <div class="page-content">
         <div class="margin20" v-if="instance && tasks">
             <!--
             <button class="ui button primary right floated"
@@ -17,83 +19,53 @@
             </button>
             -->
 
-            <div class="panel">
-                <h1><i class="send icon"></i> Download</h1>
-                <p>Requested At <b><time>{{instance.create_date|date}}</time></b></p>
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item :to="{ path: '/datasets' }">Datasets</el-breadcrumb-item>
+                <el-breadcrumb-item>Download {{instance._id}}</el-breadcrumb-item>
+            </el-breadcrumb>
+            <br>
 
-                <el-steps :space="200" :active="active">
-                    <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
-                    <el-step title="Organize" description="Organizing data in BIDS format"></el-step>
-                    <el-step title="Download" description="Ready to download your computer"></el-step>
-                </el-steps>
-                
-                <br>
-                <el-alert v-if="error" type="error" title="Failed" 
-                    :description="error" show-icon :closable="false"></el-alert>
+            <h1><icon name="download" scale="2"></icon> Download</h1>
+            <el-card>
+                <div slot="header" style="padding: 15px;">
+                    <p style="float: right;"><span class="text-muted">Requested at</span> <b><time>{{instance.create_date|date}}</time></b></p>
+                    <el-steps :space="200" :active="active">
+                        <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
+                        <el-step title="Organize" description="Organizing data in BIDS format"></el-step>
+                        <el-step title="Download" description="Ready to download to your computer"></el-step>
+                    </el-steps>
+                    
+                    <br>
+                    <el-alert v-if="error" type="error" title="Failed" 
+                        :description="error" show-icon :closable="false"></el-alert>
 
-                <div v-if="active == 3">
-                    <el-button type="primary" class="animated bounceIn" size="large" @click="download()" icon="document">Download (bids.tar.gz)</el-button>    
-                </div>
-            </div>
-
-            <!--
-            <div class="ui segment" v-if="app && instance.status == 'finished'">
-                <div class="ui top attached label">Outputs</div>
-                <el-table :data="app.outputs" style="width: 100%">
-                    <el-table-column type="expand">
-                        <template scope="props">
-                            <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
-                </el-table>
-            </div>
-            -->
-
-            <div class="ui segment">
-                <div class="ui top attached label">Task Statuses</div>
-                <task v-for="task in tasks" key="task._id" :task="task"></task>
-            </div>
-            <!--
-
-            <div class="ui segment">
-                <div class="ui top attached label">Inputs</div>
-                <br>
-                <div class="ui segments" v-for="dep in instance.config.prov.deps">
-                    <h5 class="ui top attached header">
-                        <h5>{{dep.input_id}}</h5>
-                    </h5>
-                    <div class="ui attached segment" v-if="dep._dataset">
-                        <tags :tags="dep._dataset.datatype_tags"></tags>
-                        <small>{{dep._dataset.desc}}</small>
-                        <metadata :metadata="dep._dataset.meta"></metadata>
+                    <div v-if="active == 3">
+                        <el-button type="primary" class="animated bounceIn" size="large" @click="download()" icon="document">Download (bids.tar.gz)</el-button>    
                     </div>
                 </div>
-            </div>
 
-            <div class="ui segment">
-                <div class="ui top attached label">Configuration</div>
-                <br>
-                <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
-            </div>
-            -->
+                <h3>Task Status</h3>
+                <task v-for="task in tasks" key="task._id" :task="task"></task>
 
-            <h2>Debug</h2>
-            <div class="ui segments">
-                <div class="ui segment" v-if="instance">
+            </el-card>
+
+            <br>
+            <el-card v-if="config.debug">
+                <div slot="header">Debug</div>
+                <div v-if="instance">
                     <h3>instance</h3>
                     <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
                 </div>
-                <div class="ui segment" v-if="tasks">
+                <div v-if="tasks">
                     <h3>tasks</h3>
                     <div v-for="task in tasks">
                         <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
                     </div>
                 </div>
-            </div>
-        </div>
+            </el-card>
+
+        </div><!--margin20-->
+        </div><!--page-content-->
     </div>
 </div><!--root-->
 </template>
@@ -107,11 +79,12 @@ import task from '@/components/task'
 import file from '@/components/file'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
+import pageheader from '@/components/pageheader'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    components: { sidemenu, contact, task, file, tags, metadata },
+    components: { sidemenu, contact, task, file, tags, metadata, pageheader },
 
     data () {
         return {
@@ -122,6 +95,8 @@ export default {
 
             error: null,
             status: "loading",
+
+            config: Vue.config,
         }
     },
 
@@ -182,8 +157,8 @@ export default {
                 }
             }
 
-        }).catch((err)=>{
-            console.error(res);
+        }).catch(err=>{
+            console.error(err);
         });
     },
 

@@ -1,9 +1,18 @@
 <template>
 <div>
-    <sidemenu active="/"></sidemenu>
-    <div class="off-sidemenu">
+    <pageheader :user="config.user"></pageheader>
+    <sidemenu active="/dashboard"></sidemenu>
+    <div class="ui pusher">
+        <div class="page-content">
 		<div class="margin20">
-            
+          <el-alert
+            title="TODO"
+            type="info"
+            description="I am not sure what to show here"
+            show-icon>
+          </el-alert>
+            <br>
+
             <el-card>
                 <p>Show list of all data processing that user is run or has run recently</p>
             </el-card>
@@ -68,23 +77,25 @@
                 </el-col>
             </el-row>
 
-
-        </div>
+        </div><!--magin20-->
+        </div><!--page-content-->
     </div><!--off-sidemenu-->
 </div>
 </template>
 
 <script>
-
+import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
+import pageheader from '@/components/pageheader'
+
 export default {
-  name: 'hello',
-  data () {
-    return {
-      msg: 'Welcome to Your Vue.js App'
-    }
-  },
-  components: { sidemenu },
+    components: { sidemenu, pageheader },
+    data () {
+        return {
+            msg: 'Welcome to Your Vue.js App',
+            config: Vue.config,
+        }
+    },
 }
 </script>
 

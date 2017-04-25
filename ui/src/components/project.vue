@@ -1,46 +1,35 @@
 <template>
 <div>
-
-  <table class="ui definition table">
-    <tbody>
-      <!--
-      <tr>
-          <td>Create Date</td>
-          <td>
-            <time>{{project.create_date}}</time>
-          </td>
-      </tr>
-      -->
-      <tr>
-          <td width="130px">Name</td>
-          <td>{{project.name}}</td>
-      </tr>
-      <tr>
-          <td>Access</td>
-          <td>
-            <div v-if="project.access == 'public'" class="ui blue label">Public</div>
-            <div v-if="project.access == 'private'" class="ui red label">Private</div>
-          </td>
-      </tr>
-      <tr>
-          <td>Description</td>
-          <td>
-            {{project.desc||'No description provided'}}
-          </td>
-      </tr>
-      <tr>
-          <td>Admins</td>
-          <td>
-            <contact v-for="id in project.admins" key="id" :id="id"></contact>
-          </td>
-      </tr>
-      <tr>
-          <td>Members</td>
-          <td>
-            <contact v-for="id in project.members" key="id" :id="id"></contact>
-          </td>
-      </tr>
-    </tbody>
+  <table class="info">
+  <tr>
+      <th width="130px">Name</th>
+      <td>{{project.name}}</td>
+  </tr>
+  <tr>
+      <th>Access</th>
+      <td>
+        <div v-if="project.access == 'public'" class="ui blue label">Public</div>
+        <div v-if="project.access == 'private'" class="ui red label">Private</div>
+      </td>
+  </tr>
+  <tr>
+      <th>Description</th>
+      <td>
+        {{project.desc||'No description provided'}}
+      </td>
+  </tr>
+  <tr>
+      <th>Admins</th>
+      <td>
+        <contact v-for="id in project.admins" key="id" :id="id"></contact>
+      </td>
+  </tr>
+  <tr>
+      <th>Members</th>
+      <td>
+        <contact v-for="id in project.members" key="id" :id="id"></contact>
+      </td>
+  </tr>
   </table>
 </div>
 </template>
