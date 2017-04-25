@@ -353,12 +353,18 @@ export default {
                     dir: "download/"+dataset_id, 
                 });
             }
+
+            //remove in 48 hours (abcd-novnc should terminate in 24 hours)
+            var remove_date = new Date();
+            remove_date.setDate(remove_date.getDate()+2);
+
             return this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: instance._id,
                 name: "brainlife.download.stage",
                 service: "soichih/sca-product-raw",
                 preferred_resource_id: resource,
                 config: { download },
+                remove_date: remove_date,
             }).then(res=>res.body.task);
         },
 

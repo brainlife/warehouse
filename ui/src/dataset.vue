@@ -63,7 +63,6 @@
                 <th>Project</th>
                 <td>
                     <p class="text-muted">This dataset belongs to following project.</p>
-                    <br>
                     <el-card>
                         <project :project="dataset.project"></project>
                     </el-card>
@@ -77,7 +76,6 @@
                         <el-button size="small" @click="downloadprov()"><icon name="download"></icon> Download Provenance (.sh)</el-button>
                     </el-button-group>
                     <br clear="both">
-                    <br>
 
                     <el-row :gutter="10">
                         <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
@@ -92,13 +90,6 @@
                         <br>
                         </el-col>
                     </el-row>
-                    <!--
-                    <el-card style="background-color: #13ce66">
-                        <appavatar :app="dataset.prov.app" style="float: left;"></appavatar>
-                        <b>App / {{dataset.prov.app.name}}</b><br>
-                        {{dataset.prov.app.desc}}
-                    </el-card>
-                    -->
                     <app :app="dataset.prov.app" :compact="true"/>
 
                     <center>
@@ -132,12 +123,9 @@
 
             <br>
             <div v-if="apps">
-                <hr>
-                <br>
                 <h2>Applications</h2>
                 <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
-                <br>
                 <div v-for="app in apps" key="app._id" class="card">
                     <app :app="app" :dataset="dataset"></app>
                 </div>
@@ -263,7 +251,7 @@ export default {
     background-color: #ddd;
 }
 .card {
-    width: 350px; 
+    width: 325px; 
     float: left;
     margin-right: 10px;
 }

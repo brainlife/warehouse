@@ -24,7 +24,6 @@
 
             <h1><icon name="send" scale="2"></icon> {{app.name}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
             <p>{{instance.desc}}</p>
-            <br>
 
             <el-card class="box-card" v-if="instance.status == 'finished'">
                 <div slot="header"> <span>Outputs</span> </div>
@@ -59,13 +58,11 @@
                     <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
                 </el-table>
             </el-card>
-            <br>
 
             <el-card class="box-card">
                 <div slot="header"> <span>Task Statuses</span> </div>
                 <task v-for="task in tasks" key="task._id" :task="task"></task>
             </el-card>
-            <br>
 
             <el-card class="box-card">
                 <div slot="header"> <span>Application</span> </div>
@@ -74,7 +71,6 @@
                 <p>{{app.desc}}</p>
                 <br clear="both">
             </el-card>
-            <br>
 
             <el-card class="box-card">
                 <div slot="header"> <span>Inputs</span> </div>
@@ -105,14 +101,12 @@
                     </el-table-column>
                 </el-table>
             </el-card>
-            <br>
 
             <el-card class="box-card">
                 <div slot="header"> <span>Configuration</span> </div>
                 <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </el-card>
 
-            <br>
             <el-card v-if="config.debug">
                 <div slot="header">Debug</div>
                 <div v-if="instance">
