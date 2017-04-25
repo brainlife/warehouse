@@ -31,7 +31,7 @@
 
             <table class="info">
             <tr>
-                <th>Description</th>
+                <th width="150px">Description</th>
                 <td>
                     {{instance.desc}}
                 </td>

@@ -69,58 +69,56 @@
                 </td>
             </tr>
             <tr>
-                <th>Provenance</th>
-                <td v-if="dataset.prov.app">
-
+                <th>Provenance / Derivative</th>
+                <td>
                     <el-button-group style="float: right;">
                         <el-button size="small" @click="downloadprov()"><icon name="download"></icon> Download Provenance (.sh)</el-button>
                     </el-button-group>
                     <br clear="both">
 
-                    <el-row :gutter="10">
-                        <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
-                        <div @click="go('/dataset/'+dep.dataset)">
-                            <el-card class="clickable">
-                                <b><icon name="cubes"></icon> {{dep.input_id}}</b><br>
-                                {{dep.dataset}}
-                            </el-card>
-                        </div>
-                        <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
-                        </el-col>
-                    </el-row>
-                    <app :app="dataset.prov.app" :compact="true"/>
+                    <div v-if="dataset.prov.app">
+                        <el-row :gutter="10">
+                            <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
+                                <div @click="go('/dataset/'+dep.dataset)">
+                                    <el-card class="clickable">
+                                        <b><icon name="cubes"></icon> {{dep.input_id}}</b><br>
+                                        {{dep.dataset}}
+                                    </el-card>
+                                </div>
+                                <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
+                            </el-col>
+                        </el-row>
+                        <app :app="dataset.prov.app" :compact="true"/>
+                        <center>
+                            <icon class="text-muted" scale="2" name="arrow-down"></icon>
+                        </center>
+                    </div>
+                    <div v-else>
+                        <center>
+                            <el-card><icon name="upload"/> User Upload</el-card>
+                            <icon class="text-muted" scale="2" name="arrow-down"></icon>
+                        </center>
+                    </div>
 
                     <center>
-                        <icon class="text-muted" scale="2" name="arrow-down"></icon>
-                        <el-card>This dataset</el-card>
+                        <el-card style="background-color: #2693ff; color: white;">This dataset</el-card>
                     </center>
-                
-                </td>
-                <td v-else="dataset.prov">
-                    <p class="text-muted">Uploaded by user</p>
-                </td>
-            </tr>
-            <tr>
-                <th>Derivatives</th>
-                <td>
-                    <div v-if="derivatives">
-                        <p class="text-muted" v-if="derivatives.length == 0">No derivatives</p>
-                        <div v-if="derivatives.length > 0">
-                            <el-card>This dataset</el-card>
-                            <el-row>
-                            <el-col :span="8" v-for="deri in derivatives" :key="deri._id">
+
+                    <div v-if="Object.keys(derivatives).length > 0">
+                        <el-row :gutter="10">
+                            <el-col :span="8" v-for="(datasets, task_id) in derivatives" :key="task_id">
                                 <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
-                                <app :appid="deri.prov.app" :compact="true"/>
+                                <app :appid="datasets[0].prov.app" :compact="true" style="max-height: 150px;"/>
                                 <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
-                                <el-card class="clickable-record" v-for="deri in derivatives" :key="deri._id" style="margin-bottom: 10px;">
-                                    <div @click="go(deri._id)">
+                                <el-card class="clickable-record" v-for="dataset in datasets" :key="dataset._id" style="margin-bottom: 10px;">
+                                    <div @click="go(dataset._id)">
                                         <icon name="cube"></icon>
-                                        <b>{{deri.name}}</b>
+                                        <b>{{dataset.name}}</b>
+                                        <time class="text-muted">{{dataset.create_date|date}}</time>
                                     </div>
                                 </el-card>
                             </el-col>
-                            </el-row>
-                        </div>
+                        </el-row>
                     </div>
                 </td>
             </tr>
@@ -171,7 +169,7 @@ export default {
         return {
             dataset: null,
             apps: null,
-            derivatives: null,
+            derivatives: {},
 
             config: Vue.config,
         }
@@ -218,11 +216,17 @@ export default {
                 }
                 this.dataset = res.body.datasets[0];
 
-                console.log("looking for derivatives", this.dataset);
+                //console.log("looking for derivatives", this.dataset);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify({"prov.deps.dataset": id}),
                 }}).then(res=>{
-                    this.derivatives = res.body.datasets;
+                    //group by task_id
+                    this.derivatives = {}; //reset
+                    res.body.datasets.forEach(dataset=>{
+                        var task_id = dataset.prov.task_id || Math.random(); //create random task id if it's missing (backwared compatibility)
+                        if(!this.derivatives[task_id]) this.derivatives[task_id] = [];
+                        this.derivatives[task_id].push(dataset);
+                    });
                 }); 
 
                 console.log("looking for app that uses this data", this.dataset.datatype._id);

@@ -1,7 +1,7 @@
 <template>
 <div class="contact">
     <img :src="gurl">
-    <div class="name">{{profile.fullname}}</div>
+    <div class="name">{{profile.fullname||'?'}}</div>
     <div class="email">&lt;{{profile.email}}&gt;</div>
 </div>
 </template>

@@ -491,7 +491,7 @@ export default {
     z-index: 2;
 }
 .header {
-    padding: 10px 0px 5px 10px;
+    padding: 10px 0px 3px 10px;
 }
 .list .group {
     padding: 5px 0px 5px 10px;

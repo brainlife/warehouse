@@ -1,5 +1,5 @@
 <template>
-<el-card :body-style="{padding: '0px'}" style="margin-bottom: 20px;">
+<el-card :body-style="{padding: '0px'}" style="margin-bottom: 20px;" v-if="app">
         <appavatar :app="app" style="float: left;margin-right: 10px;"></appavatar>
         <h4 class="appname">{{app.name}}</h4>
         <div class="appdesc" :class="{'compact': compact}">{{app.desc}}</div>

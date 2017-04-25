@@ -358,6 +358,8 @@ export default {
                 //add main_task_id information on instance config (used by ui to render main task)
                 inst_config.main_task_id = res.body.task._id;
                 inst_config.prov.config = res.body.task.config;
+                inst_config.prov.task_id = res.body.task._id;
+                inst_config.prov.instance_id = instance._id;
                 return this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
                     config: inst_config,
                 });
