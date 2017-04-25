@@ -11,8 +11,8 @@
             </el-breadcrumb>
             <br>
 
-            <img style="float: left; margin-right: 20px;" :src="app.avatar">
-            <h2>{{app.name}}</h2>
+            <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
+            <h1>{{app.name}}</h1>
             <p>{{app.desc}}</p>
 
             <br clear="both">
@@ -64,22 +64,15 @@
                 </el-form>
             </el-card>
 
-            <br>
-            <div v-if="config.debug">
-                <h2>Debug</h2>
-                <div class="panel">
-                    <h3>Form</h3>
-                    <pre v-highlightjs="JSON.stringify(form, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <div class="panel">
-                    <h3>App</h3>
-                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <div class="panel">
-                    <h3>Datasets</h3>
-                    <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-            </div>
+            <el-card v-if="config.debug">
+                <div slot="header">Debug</div>
+                <h3>Form</h3>
+                <pre v-highlightjs="JSON.stringify(form, null, 4)"><code class="json hljs"></code></pre>
+                <h3>App</h3>
+                <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+                <h3>Datasets</h3>
+                <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
+            </el-card>
         </div><!--margin20-->
         </div><!--page-content-->
     </div>
@@ -95,6 +88,7 @@ import project from '@/components/project'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
+import appavatar from '@/components/appavatar'
 
 import lib from '@/lib'
 
@@ -142,7 +136,7 @@ function generate_config(app, download_task_id) {
 }
 
 export default {
-    components: { sidemenu, contact, project, tags, metadata, pageheader },
+    components: { sidemenu, contact, project, tags, metadata, pageheader, appavatar },
 
     data () {
         return {
@@ -289,13 +283,6 @@ export default {
         },
 
         submit: function() {
-            /*
-            this.$refs['form'].validate(valid=>{
-                if(valid) alert('valid');
-                else alert('not valid');
-            });
-            return;
-            */
 
             //make sure all inputs are selected
             var validated = true;

@@ -34,7 +34,7 @@
                         <el-tag type="success" v-if="scope.row.status == 'finished'">
                             <icon name="check"></icon> Finished</el-tag>
                         <el-tag type="primary" v-if="scope.row.status == 'running'">
-                            <icon name="loading"></icon> Running</el-tag>
+                            <icon name="circle-o-notch" class="fa-spin"></icon> Running</el-tag>
                         <el-tag type="primary" v-if="scope.row.status == 'requested'">
                             <icon name="wait"></icon> Requested</el-tag>
                         <el-tag type="danger" v-if="scope.row.status == 'failed'">
@@ -83,17 +83,6 @@ export default {
         }
     },
     mounted: function() {
-        /*
-        //first load projects
-        this.$http.get('project', {params: {
-            //service: "_upload",
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.body.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-        */
 
         //load application details
         this.$http.get('app', {params: {

@@ -4,7 +4,7 @@ import 'jquery/dist/jquery.js'
 //import '@/reset.css'
 
 import 'highlight.js/styles/default.css'
-import 'vue2-animate/dist/vue2-animate.min.css'
+//import 'vue2-animate/dist/vue2-animate.min.css'
 
 //import hljs from 'highlight.js'
 import VueHighlightJS from 'vue-highlightjs'
@@ -111,3 +111,5 @@ new Vue({
   template: '<warehouse/>',
   components: { warehouse }
 })
+
+

@@ -2,20 +2,13 @@
 <div>
     <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
     <div v-if="files">
-        <!--
-        <div class="ui icon mini basic buttons" style="margin-bottom: 10px;">
-            <button v-if="files.length != 0" class="ui button" @click="download()"><i class="download icon"></i></button>
-            <button class="ui button" @click="load()"> <i class="refresh icon"></i></button>
-        </div>
-        -->
-
         <el-button-group style="margin-bottom: 5px;">
             <el-button size="mini" @click="download()"><icon scale="0.8" name="download"></icon> Download</el-button>
             <el-button size="mini" @click="load()"><icon scale="0.8" name="refresh"></icon> Refresh</el-button>
         </el-button-group>
         <p v-if="files.length == 0" class="text-muted">Empty Directory</p>
 
-        <div class="item" v-for="file in files" key="file.filename">
+        <div v-for="file in files" key="file.filename">
             <div class="fileitem" @click="click(file)">
                 <el-row :gutter="5">
                     <el-col :span="8">
@@ -122,7 +115,14 @@ export default {
                             if(c == "") c = "(empty)";
                             console.log("loading as text", c);
                             Vue.set(file, 'type', type);
-                            Vue.set(file, 'content', c);
+                            //last ditch attempt to animte height
+                            var lines = c.trim().split("\n");
+                            Vue.set(file, 'content', "");
+                            function addline() {
+                                file.content += lines.shift()+"\n";
+                                if(lines.length) setTimeout(addline, 10);
+                            }
+                            setTimeout(addline, 10);
                         });
                     } else {
                         console.log("opening new window - unknown file type", mime);
@@ -144,17 +144,24 @@ export default {
 </script>
 
 <style scoped>
+.fileitem {
+line-height: 150%;
+font-size: 13px;
+}
 .fileitem:hover {
-    color: #2185D0;
-    cursor: pointer;
+color: #2185D0;
+cursor: pointer;
+background-color: #ddd;
 }
 .hljs {
-    background: #f6f6f6;
+background: #f0f0f0;
 }
 pre.file-content {
 margin: 0px;
-padding-left: 20px;
+padding-left: 10px;
 max-height: 400px;
-background-color: #ddd;
+background-color: #d7d7d7;
+height: 20%;
+margin-bottom: 15px;
 }
 </style>

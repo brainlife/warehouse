@@ -19,94 +19,115 @@
 
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item :to="{ path: '/processes' }">Processes</el-breadcrumb-item>
-                <el-breadcrumb-item>{{instance._id}}</el-breadcrumb-item>
+                <el-breadcrumb-item>{{instance.name}}</el-breadcrumb-item>
             </el-breadcrumb>
 
-            <h1><icon name="send" scale="2"></icon> {{app.name}} <!--<small class="text-muted">{{instance.name}}</small>--></h1>
-            <p>{{instance.desc}}</p>
+            <!--<h1><icon name="send" scale="2"></icon> {{app.name}}</h1>-->
+            <h1><icon name="send" scale="2"></icon> Process</h1>
 
-            <el-card class="box-card" v-if="instance.status == 'finished'">
-                <div slot="header"> <span>Outputs</span> </div>
-                <el-table :data="app.outputs" style="width: 100%" default-expand-all>
-                    <el-table-column type="expand">
-                        <template scope="props">
-                        <el-row :gutter="20">
-                            <el-col :span="20">
-                                <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
-                            </el-col>
-                            <el-col :span="4">
-                                <el-dropdown style="float: right;" @command="view">
-                                    <el-button type="primary">
-                                        View <i class="el-icon-caret-bottom el-icon--right"></i>
-                                    </el-button>
-                                    <el-dropdown-menu slot="dropdown">
-                                        <!--<div v-if="props.row.datatype.name == 'neuro/anat'">-->
-                                        <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
-                                        <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
-                                        <el-dropdown-item command="mrview">MRView</el-dropdown-item>
-                                        <el-dropdown-item command="fibernavigator">FiberNavigator</el-dropdown-item>
-                                        <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
-                                    </el-dropdown-menu>
-                                </el-dropdown>
-                            </el-col>
-                        </el-row>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
-                    <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
-                </el-table>
-            </el-card>
+            <table class="info">
+            <tr>
+                <th>Process Description</th>
+                <td>
+                    {{instance.desc}}
+                </td>
+            </tr>
+            <tr>
+                <th>Application</th>
+                <td>
+                    <appavatar :app="app" style="float: right; margin-left: 10px;"></appavatar>
+                    <h3>{{app.name}}</h3>
+                    <p>{{app.desc}}</p>
+                </td>
+            </tr>
+            <tr>
+                <th width="180px">Submit Date</th>
+                <td>
+                    <p>{{instance.create_date|date}}</p>
+                </td>
+            </tr>
+            <tr v-if="instance.status == 'finished'">
+                <th>Outputs</th>
+                <td>
+                    <p><el-alert title="" type="info">The output data will be purged within 25 days of task completion. Please archive if you'd like to persist the data.</el-alert></p>
+                    <el-table :data="app.outputs" style="width: 100%" default-expand-all>
+                        <el-table-column type="expand">
+                            <template scope="props">
+                            <el-row :gutter="20">
+                                <el-col :span="20">
+                                    <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
+                                </el-col>
+                                <el-col :span="4">
+                                    <el-dropdown style="float: right;" @command="view">
+                                        <el-button type="primary">
+                                            View <i class="el-icon-caret-bottom el-icon--right"></i>
+                                        </el-button>
+                                        <el-dropdown-menu slot="dropdown">
+                                            <!--<div v-if="props.row.datatype.name == 'neuro/anat'">-->
+                                            <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
+                                            <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
+                                            <el-dropdown-item command="mrview">MRView</el-dropdown-item>
+                                            <el-dropdown-item command="fibernavigator">FiberNavigator</el-dropdown-item>
+                                            <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
+                                        </el-dropdown-menu>
+                                    </el-dropdown>
+                                </el-col>
+                            </el-row>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="id" label="ID" width="180"></el-table-column>
+                        <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
+                        <el-table-column prop="datatype.desc" label="Description"></el-table-column>
+                        <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
+                    </el-table>
+                </td>
+            </tr>
+            <tr>
+                <th>Task Status</th>
+                <td>
+                    <task v-for="task in tasks" key="task._id" :task="task"></task>
+                </td>
+            </tr>
+            <tr>
+                <th>Inputs</th>
+                <td>
+                    <el-table :data="instance.config.prov.deps" style="width: 100%">
+                        <el-table-column type="expand">
+                            <template scope="props">
+                                <el-alert v-if="input_task.status != 'finished'" title="Input datasets not yet loaded" type="warning" show-icon :closable="false"/>
+                                <filebrowser v-if="input_task.status == 'finished'" :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"/>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
+                        <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
+                        <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
+                        <el-table-column prop="_dataset.meta" label="Metadata">
+                            <template scope="scope" v-if="scope.row._dataset">
+                                <metadata :metadata="scope.row._dataset.meta"></metadata>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
+                            <template scope="scope" v-if="scope.row._dataset">
+                                <tags :tags="scope.row._dataset.datatype_tags"></tags>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="_dataset.tags" label="User Tags">
+                            <template scope="scope" v-if="scope.row._dataset">
+                                <tags :tags="scope.row._dataset.tags"></tags>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </td>
+            </tr>
+            <tr>
+                <th>Configuration</th>
+                <td>
+                    <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
+                </td>
+            </tr>
+            </table>
 
-            <el-card class="box-card">
-                <div slot="header"> <span>Task Statuses</span> </div>
-                <task v-for="task in tasks" key="task._id" :task="task"></task>
-            </el-card>
-
-            <el-card class="box-card">
-                <div slot="header"> <span>Application</span> </div>
-                <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
-                <h3>{{app.name}}</h3>
-                <p>{{app.desc}}</p>
-                <br clear="both">
-            </el-card>
-
-            <el-card class="box-card">
-                <div slot="header"> <span>Inputs</span> </div>
-                <el-table :data="instance.config.prov.deps" style="width: 100%">
-                    <el-table-column type="expand">
-                        <template scope="props">
-                            <el-alert v-if="input_task.status != 'finished'" title="Input datasets not yet loaded" type="warning" show-icon :closable="false"/>
-                            <filebrowser v-if="input_task.status == 'finished'" :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"/>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
-                    <el-table-column prop="_dataset.meta" label="Metadata">
-                        <template scope="scope" v-if="scope.row._dataset">
-                            <metadata :metadata="scope.row._dataset.meta"></metadata>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
-                        <template scope="scope" v-if="scope.row._dataset">
-                            <tags :tags="scope.row._dataset.datatype_tags"></tags>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="_dataset.tags" label="User Tags">
-                        <template scope="scope" v-if="scope.row._dataset">
-                            <tags :tags="scope.row._dataset.tags"></tags>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </el-card>
-
-            <el-card class="box-card">
-                <div slot="header"> <span>Configuration</span> </div>
-                <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
-            </el-card>
-
+            <br>
             <el-card v-if="config.debug">
                 <div slot="header">Debug</div>
                 <div v-if="instance">
@@ -172,7 +193,7 @@ export default {
             this.instance = res.body.instances[0];
 
             //load datasets used for prov.deps
-            console.dir(this.instance.config.prov);
+            //console.dir(this.instance.config.prov);
             var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
             return this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: dataset_ids}),

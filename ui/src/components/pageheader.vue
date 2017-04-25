@@ -14,6 +14,11 @@
                 <h5>Profile</h5>
                 <p><span class="text-muted">Fullname</span><br>{{user.profile.fullname||'(Not Set)'}}</p>
                 <p><span class="text-muted">Email</span><br>{{user.profile.email||'(Not Set)'}}</p>
+                <p>
+                    <span class="text-muted">Gravatar</span><br>
+                    <img :src="'//www.gravatar.com/avatar/'+md5(user.profile.email)+'?=50'"><br>
+                    <el-button size="small" @click="gotog(user.profile.email)">Update at Gravatar</el-button>
+                </p>
             </div>
         </el-dropdown-menu>
     </el-dropdown>
@@ -22,6 +27,7 @@
 
 <script>
 import Vue from 'vue'
+import md5 from 'md5'
 
 export default {
     data () {
@@ -39,7 +45,11 @@ export default {
             case "signout":
                 document.location = "/auth#!/signout";
             }
-        }
+        },
+        gotog(email) {
+            document.location = "https://gravatar.com/"+md5(email);
+        },
+        md5, 
     }
 }
 </script>

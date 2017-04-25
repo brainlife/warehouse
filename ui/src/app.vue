@@ -29,6 +29,10 @@
                 <th width="180px;">Description</th>
                 <td>{{app.desc}}</td>
             </tr>
+            <tr v-if="app.avatar">
+                <th>Avatar</th>
+                <td>{{app.avatar}}</td>
+            </tr>
             <tr>
                 <th>DOI</th>
                 <td><pre>10.1006/br.a.{{app._id}}</pre></td>
