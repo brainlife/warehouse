@@ -55,6 +55,9 @@ pre {
     cursor: pointer;
     background-color: #ddd;
 }
+.clickable-row {
+    cursor: pointer;
+}
 .text-muted {
     opacity: 0.6;
 }
@@ -122,9 +125,6 @@ table.info td {
 }
 .el-table .cell {
 padding: 2px;
-}
-tr.clickable:hover {
-cursor: pointer;
 }
 p {
 margin-top: 0px;

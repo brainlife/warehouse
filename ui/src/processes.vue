@@ -15,7 +15,7 @@
         <div class="page-content">
         <div class="margin20">
             <h3 v-if="!instances"> <icon name="spinner"></icon> Loading..  </h3>
-            <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click" row-class-name="clickable">
+            <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click" row-class-name="clickable-row">
                 <el-table-column label="Create Date" prop="create_date" sortable>
                     <template scope="scope">
                         <time>{{scope.row.create_date|date}}</time>
