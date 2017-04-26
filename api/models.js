@@ -82,6 +82,7 @@ var datasetSchema = mongoose.Schema({
     prov: {
         //application that produced this data (not set if user uploaded it)
         app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+        
         //dataset used by the application to generate this data
         deps: [{
             input_id: String, 
@@ -89,6 +90,10 @@ var datasetSchema = mongoose.Schema({
         }],
         //app config used to generate the data
         config: mongoose.Schema.Types.Mixed, 
+
+        //instance / task ID from workflow service
+        instance_id: String,
+        task_id: String,
     },
 
     create_date: { type: Date, default: Date.now },
