@@ -15,10 +15,10 @@
         <div class="page-content">
         <div class="margin20">
             <h3 v-if="!instances"> <icon name="spinner"></icon> Loading..  </h3>
-            <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click">
+            <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click" row-class-name="clickable">
                 <el-table-column label="Create Date" prop="create_date" sortable>
                     <template scope="scope">
-                        {{scope.row.create_date|date}}
+                        <time>{{scope.row.create_date|date}}</time>
                     </template>
                 </el-table-column> 
                 <el-table-column label="Application">

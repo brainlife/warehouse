@@ -29,6 +29,7 @@
                 <el-breadcrumb-item :to="{ path: '/projects' }">Projects</el-breadcrumb-item>
                 <el-breadcrumb-item>{{project._id}}</el-breadcrumb-item>
             </el-breadcrumb>
+            <br>
 
           <!--
             <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>

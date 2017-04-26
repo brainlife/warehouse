@@ -6,7 +6,7 @@
         <div class="page-content">
         <div class="margin20" v-if="app">
             <el-button-group style="float: right;">
-                <el-button @click="go('/app/'+app._id+'/edit')"> 
+                <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit"> 
                     <icon name="pencil"></icon> Edit
                 </el-button>
                 <el-button type="primary" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"> 
@@ -18,6 +18,7 @@
                 <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
                 <el-breadcrumb-item>{{app._id}}</el-breadcrumb-item>
             </el-breadcrumb>
+            <br>
 
             <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
             <h1>{{app.name}}</h1>

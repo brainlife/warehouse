@@ -6,7 +6,7 @@
         <div class="page-content">
         <div class="margin20" v-if="dataset">
             <el-button-group style="float: right;">
-                <el-button @click="remove()"><icon name="trash"></icon> Remove</el-button>
+                <el-button @click="remove()" v-if="dataset._canedit"><icon name="trash"></icon> Remove</el-button>
                 <el-button type="primary" @click="download()"><icon name="download"></icon> Download</el-button>
             </el-button-group>
 
@@ -14,6 +14,7 @@
                 <el-breadcrumb-item :to="{ path: '/datasets' }">Datasets</el-breadcrumb-item>
                 <el-breadcrumb-item> {{dataset._id}}</el-breadcrumb-item>
             </el-breadcrumb>
+            <br>
 
             <h1><icon name="cube" scale="2"></icon> {{dataset.name}}</h1>
             <br clear="both">

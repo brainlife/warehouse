@@ -24,9 +24,9 @@
                 <el-col :span="20">
                     <el-row>
                         <el-col :span="2">&nbsp;</el-col>
-                        <el-col :span="6"><h4>Create Date</h4></el-col>
                         <el-col :span="6"><h4>Datatype</h4></el-col>
                         <el-col :span="6"><h4>Name / Desc</h4></el-col>
+                        <el-col :span="6"><h4>Create Date</h4></el-col>
                         <el-col :span="4"><h4>Tags</h4></el-col>
                     </el-row> 
                 </el-col>
@@ -71,17 +71,17 @@
                                     <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                 </div>
                             </el-col>
-                            <el-col :span="6">
-                                {{dataset.create_date | date}}
-                                &nbsp;
-                            </el-col>
-                            <el-col :span="6" :title="datatypes[dataset.datatype].desc">
+                            <el-col :span="5" :title="datatypes[dataset.datatype].desc">
                                 {{datatypes[dataset.datatype].name}}
                                 <tags :tags="dataset.datatype_tags"></tags> &nbsp;
                             </el-col>
-                            <el-col :span="6">
+                            <el-col :span="7">
                                 <b>{{dataset.name}}</b>
                                 {{dataset.desc}}
+                            </el-col>
+                            <el-col :span="6">
+                                <time class="text-muted">{{dataset.create_date | date}}</time>
+                                &nbsp;
                             </el-col>
                             <el-col :span="4">
                                 <tags :tags="dataset.tags"></tags> &nbsp;
@@ -102,7 +102,7 @@
             <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
                 <h5>{{datatypes[did].name}}</h5>
                 <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
-                    <p>
+                    <div>
                         <div @click.stop="remove_selected(dataset)" style="display: inline;">
                             <icon name="trash"></icon>
                         </div>
@@ -110,7 +110,7 @@
                             {{dataset.name}}
                             <tags :tags="dataset.datatype_tags"></tags>
                         </small>
-                    </p>
+                    </div>
                 </div>
                 <br>
             </div>

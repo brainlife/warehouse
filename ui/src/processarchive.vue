@@ -142,14 +142,21 @@ export default {
                 });
             });
 
-            //load projects (TODO - that user can choose?)
+            //load projects that user is member of
             return this.$http.get('project', {params: {
-                //find: JSON.stringify({_id: dataset_ids}),
+                find: JSON.stringify({members: Vue.config.user.sub}),
                 populate: ' ', //load all default
             }})
         })
         .then(res=>{
             this.projects = res.body.projects;
+            if(this.projects.length == 0) {
+                this.$notify.error({
+                    title: 'Error',
+                    message: 'You have no project you are member of. Please create a project first.'
+                });
+                return;
+            }
 
             //load app
             return this.$http.get('app', {params: {

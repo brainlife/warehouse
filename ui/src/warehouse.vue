@@ -123,6 +123,9 @@ table.info td {
 .el-table .cell {
 padding: 2px;
 }
+tr.clickable:hover {
+cursor: pointer;
+}
 p {
 margin-top: 0px;
 }
