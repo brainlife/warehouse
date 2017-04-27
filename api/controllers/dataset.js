@@ -60,16 +60,17 @@ function getprojects(user, cb) {
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
+
+    var select = null;
+    if(req.query.select) {
+        select = req.query.select;
+        //always load user_id so that we can compute canedit properly
+        if(!~select.indexOf("user_id")) select+=" user_id";
+    }
+
     getprojects(req.user, function(err, projects) {
         if(err) return next(err);
         var project_ids = projects.map(function(p) { return p._id; });
-
-        var populate = ''; //load all by default
-        if(req.query.populate) {
-            populate = req.query.populate;
-            //always load user_id so that we can compute canedit properly
-            if(!~populate.indexOf("user_id")) populate+= " user_id";
-        }
     
         //then look for dataset
         db.Datasets
@@ -79,8 +80,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 find
             ]
         })
-        .populate(populate)
-        .select(req.query.select)
+        .populate(req.query.populate || '') //all by default
+        .select(select)
         .limit(req.query.limit || 100)
         .skip(req.query.skip || 0)
         .sort(req.query.sort || '_id')
@@ -91,7 +92,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 if(err) return next(err);
                 
                 //adding some derivatives
-                recs.forEach(function(rec) {
+                datasets.forEach(function(rec) {
                     rec._canedit = canedit(req.user, rec);
                 });
                 
