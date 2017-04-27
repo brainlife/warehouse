@@ -36,7 +36,7 @@
 
                         <el-form-item label="Project" v-if="projects">
                             <el-select v-model="project_id" placeholder="Select project to store this dataset" style="width: 100%">
-                                <el-option v-for="(p,id) in projects" key="id" :value="id" :label="p.name">{{p.name}} ({{p.access}})</el-option>
+                                <el-option v-for="(p,id) in projects" key="id" :value="id" :label="p.name">{{p.name}} <projectaccess :access="p.access"/></el-option>
                             </el-select>
                         </el-form-item>
 
@@ -150,9 +150,10 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+import projectaccess from '@/components/projectaccess'
 
 export default {
-    components: { sidemenu, pageheader },
+    components: { sidemenu, pageheader, projectaccess },
     data () {
         return {
             //user selections

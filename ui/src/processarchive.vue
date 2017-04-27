@@ -27,8 +27,8 @@
                             <el-input type="text" v-model="dataset.desc" placeholder="Dataset Description"></el-input>
                         </el-form-item>
                         <el-form-item label="Project">
-                            <el-select v-model="dataset.project" placeholder="Please select">
-                                <el-option v-for="project in projects" :label="project.name" :value="project._id" :key="project._id"></el-option>
+                            <el-select v-model="dataset.project" placeholder="Please select" style="width: 100%;">
+                                <el-option v-for="project in projects" :label="project.name" :value="project._id" :key="project._id">{{project.name}} <projectaccess :access="project.access"/></el-option>
                             </el-select>
                             <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
                         </el-form-item>
@@ -94,6 +94,7 @@ import tags from '@/components/tags'
 import pageheader from '@/components/pageheader'
 import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
+import projectaccess from '@/components/projectaccess'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import async from 'async'
@@ -102,13 +103,15 @@ export default {
     mixins: [
         //require("vue-toaster")
     ],
-    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar },
+    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar, projectaccess },
 
     data () {
         return {
             instance: null,
             app: null,
             projects: null,
+
+            test: null,
 
             datasets: [], //used as form
 
@@ -191,7 +194,7 @@ export default {
                     meta[m.id] = meta_catalog[m.id]; 
                 });
 
-                this.datasets.push({
+                var dataset = {
                     instance_id: this.instance._id,
                     task_id: this.instance.config.main_task_id,
                     prov: this.instance.config.prov, 
@@ -203,7 +206,9 @@ export default {
                     meta: meta,
                     datatype: output.datatype._id,
                     datatype_tags: output.datatype_tags,
-                });
+                }
+                //this.$set(dataset, 'project', this.projects[0]._id);
+                this.datasets.push(dataset);
             });
 
             /*

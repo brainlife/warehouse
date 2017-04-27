@@ -6,7 +6,7 @@
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
             </el-col>
             <el-col :span="10">
-                <!--<el-button @click="go('/app/_/edit')"> <i class="ui icon add"></i> Register </el-button>-->
+                <el-button @click="go('/apps')"><icon name="plus"/> New Process </el-button>
             </el-col>
         </el-row>
     </pageheader>
@@ -122,6 +122,13 @@ export default {
     methods: {
         click: function(row) {
             this.$router.push("/process/"+row._id);
+        },
+        go: function(path) {
+            this.$notify.info({
+                title: 'Info',
+                message: 'Please select application to submit'
+            });
+            this.$router.push(path);
         }
     },
 
