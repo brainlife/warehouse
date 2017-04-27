@@ -132,7 +132,8 @@ var datatypeSchema = mongoose.Schema({
     ]
     */
 
-    //name of ABCD service that is used to validate this data (TODO..)
+    //name of ABCD service that is used to validate this data
+    //if not set, it will default to "soichih/sca-service-conneval-validate"
     validator: String, 
 
     meta: [ new mongoose.Schema({

@@ -330,16 +330,17 @@ export default {
             this.mode = "validate";
             this.validation = null;
 
-            //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
+            //create validator config
             var config = {};
-            this.datatypes[this.datatype_id].files.forEach(function(file) {
+            var datatype = this.datatypes[this.datatype_id];
+            datgatype.files.forEach(function(file) {
                 config[file.id] = "../upload/"+file.filename;
             });
             //and submit
             this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: this.instance_id,
                 name: "validation",
-                service: "soichih/sca-service-conneval-validate",
+                service: datatype.validator || "soichih/sca-service-conneval-validate", //TODO - deprecate sca-service-conneval-validate eventually
                 config: config,
             }).then(res=>{
                 console.log("submitted validation task");
