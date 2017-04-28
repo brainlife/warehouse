@@ -128,6 +128,100 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.datatype) return next("datatype id not set");
     if(!req.body.instance_id) return next("instance_id not set");
     if(!req.body.task_id) return next("task_id not set");
+    
+    async.waterfall([
+        cb=>{
+            //get task
+            request.get({
+                url: config.wf.api+"/task",
+                qs: {
+                    find: JSON.stringify({"_id": req.body.task_id}),
+                },
+                json: true,
+                //TODO - I need to deal with cookie based jwt also?
+                headers: {
+                    authorization: req.headers.authorization, 
+                }
+            }, cb);
+        },
+
+        (_res, ret, cb)=>{
+            //make sure user owns this instance
+            if(ret.tasks.length != 1) return cb("couldn't find task");
+            var task = ret.tasks[0];
+            if(task.user_id != req.user.sub) return cb("you don't own this instance");
+            
+            //make sure user is member of the project selected
+            db.Projects.findById(req.body.project, (err, project)=>{
+                if(err) return cb(err);
+                if(!project) return cb("couldn't find the project");
+                //TODO should I only allow members but not admin?
+                if(!~project.admins.indexOf(req.user.sub) && !~project.members.indexOf(req.user.sub)) return cb("you are not member of this project");
+                cb(null, task);
+            });
+        },
+
+        /*
+        (task, cb)=>{
+            //load application detail if prov.app exists
+            if(req.body.prov && req.body.prov.app) {
+                db.Apps.findById(req.body.prov.app, (err, app)=>{
+                    if(err) return cb(err);
+                    if(!app) return cb("couldn't find the application specified in the prov");
+
+                    //find file mapping for specified output
+                    var files = null;
+                    app.outputs.forEach(output=>{
+                        if(output.datatype == req.body.datatype) files = output.files; //could be missing
+                    });
+                    cb(null, task, files);
+                });
+            } else cb(null, task, null);
+        },
+        */
+        
+        /*
+        (task, files, cb)=>{
+            //load datatype
+            db.Datatypes.findById(req.body.datatype, (err, datatype)=>{
+                if(err) return cb(err);
+                if(!datatype) return cb("couldn't find specified datatype");
+                cb(null, task, files, datatype);
+            });
+        },
+        */
+
+        (task, cb)=>{
+            //now create a dataset record
+            var dataset = new db.Datasets({
+                user_id: req.user.sub,
+
+                project: req.body.project,
+                datatype: req.body.datatype,
+                datatype_tags: req.body.datatype_tags,
+
+                name: req.body.name,
+                desc: req.body.desc,
+                tags: req.body.tags,
+
+                prov: req.body.prov,
+                meta: req.body.meta,
+            });
+            dataset.save((e, _dataset)=>{
+                if(e) return next(e);
+                res.json(_dataset);
+
+                //then, asynchrnously copy content to the storage
+                archive(task, _dataset, req, function(err) {
+                    if(err) logger.error(err);
+                    //TODO post event?
+                });
+            });
+        },
+
+    ], next); //end-waterfall
+
+    /*
     request.get({
         url: config.wf.api+"/task",
         qs: {
@@ -152,7 +246,15 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             if(!project) return next("couldn't find the project");
             //TODO should I only allow members but not admin?
             if(!~project.admins.indexOf(req.user.sub) && !~project.members.indexOf(req.user.sub)) return next("you are not member of this project");
-            
+
+            //load application detail if prov.app exists
+            if(req.body.prov && req.body.prov.app) {
+                db.Apps.findById(req.body.prov.app, (err, app)=>{
+                    if(err) return next(err);
+                    if(!app)
+                });
+            }
+        
             //now create a dataset record
             var dataset = new db.Datasets({
                 user_id: req.user.sub,
@@ -171,14 +273,17 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);
                 res.json(_dataset);
+
+
                 //then, asynchrnously copy content to the storage
                 archive(task, _dataset, req, function(err) {
                     if(err) logger.error(err);
-                    //TODO now what?
+                    //TODO post event?
                 });
             });
         });
     });
+    */
 });
 
 function archive(task, dataset, req, cb) {
@@ -192,6 +297,8 @@ function archive(task, dataset, req, cb) {
     var storage = "dc2";
     var system = config.storage_systems[storage];
     system.upload(dataset, (err, writestream)=>{
+
+        //download the entire .tar.gz from sca-wf service
         request.get({
             url: config.wf.api+"/resource/download",
             qs: {
@@ -202,6 +309,7 @@ function archive(task, dataset, req, cb) {
                 authorization: req.headers.authorization, 
             }
         })
+        //and pipe it directly to the storage
         .on('response', function(r) {
             console.log("stream response received");
             if(r.statusCode != 200) {
