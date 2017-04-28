@@ -12,34 +12,30 @@
         </el-row>
     </pageheader>
     <sidemenu active="/projects"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
-        <div class="margin20">
-            <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
-            <el-table v-if="projects" :data="projects" style="width: 100%;" @row-click="click" row-class-name="clickable-row">
-                <el-table-column label="Name" prop="name" sortable></el-table-column> 
-                <el-table-column width="275" label="Description" prop="desc"></el-table-column> 
-                <el-table-column width="100" label="Access" prop="access" sortable>
-                    <template scope="scope">
-                        <projectaccess :access="scope.row.access"/>
-                    </template>
-                </el-table-column> 
-                <el-table-column width="375" label="Admins">
-                    <template scope="scope">
-                        <contact v-for="id in scope.row.admins" key="id" :id="id"></contact>
-                    </template>
-                </el-table-column> 
-                <el-table-column>
-                    <template scope="scope">
-                        <div style="float: right;">
-                            <el-button v-if="scope.row._canedit" type="text" @click.stop="editp(scope.row)">Edit</el-button>
-                        </div>
-                    </template>
-                </el-table-column> 
-            </el-table>
-        </div><!--margin20-->
-        </div><!--page-content-->
-    </div><!--page-->
+    <div class="page-content">
+        <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
+        <el-table v-if="projects" :data="projects" style="width: 100%;" @row-click="click" row-class-name="clickable-row">
+            <el-table-column label="Name" prop="name" sortable></el-table-column> 
+            <el-table-column width="275" label="Description" prop="desc"></el-table-column> 
+            <el-table-column width="100" label="Access" prop="access" sortable>
+                <template scope="scope">
+                    <projectaccess :access="scope.row.access"/>
+                </template>
+            </el-table-column> 
+            <el-table-column width="375" label="Admins">
+                <template scope="scope">
+                    <contact v-for="id in scope.row.admins" key="id" :id="id"></contact>
+                </template>
+            </el-table-column> 
+            <el-table-column>
+                <template scope="scope">
+                    <div style="float: right;">
+                        <el-button v-if="scope.row._canedit" type="text" @click.stop="editp(scope.row)">Edit</el-button>
+                    </div>
+                </template>
+            </el-table-column> 
+        </el-table>
+    </div><!--page-content-->
 </div>
 </template>
 

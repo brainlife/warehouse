@@ -2,9 +2,8 @@
 <div>
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/processes"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
-        <div class="margin20" v-if="instance && tasks && app">
+    <div class="page-content" v-if="instance && tasks && app">
+        <div class="margin20">
             <el-button-group style="float: right;">
                 <!--
                 <el-button v-if="instance.config.dataset_id" @click="go('/dataset/'+instance.config.dataset_id)">
@@ -28,150 +27,149 @@
 
             <!--<h1><icon name="send" scale="2"></icon> {{app.name}}</h1>-->
             <h1><icon name="send" scale="2"></icon> Process</h1>
+        </div>
 
-            <table class="info">
-            <tr>
-                <th width="150px">Description</th>
-                <td>
-                    {{instance.desc}}
-                </td>
-            </tr>
-            <tr>
-                <th>Dataset ID</th>
-                <td>
-                    <div v-if="!instance.config.dataset_ids">
-                        <p class="text-muted">Not archived yet</p>
-                        <el-card v-if="instance.status == 'finished'" style="background-color: #def;">
-                            <div slot="header"><b style="color: #2693ff;"><icon name="cubes"/> Archive Output</b></div>
-                            <p>The output data will be purged within 25 days of process completion.</p>
-                            <p>Please archive if you'd like to persist the output datasets as part of your project.</p>
-                            <el-button size="large" type="primary" @click="go('/process/'+instance._id+'/archive')">
-                                <icon name="archive"></icon> Archive Output
-                            </el-button>
-                        </el-card>
-                    </div>
-                    <div v-if="instance.config.dataset_ids">
-                        <span class="text-muted">Output from this process is archived in the warehouse with dataset ID of</span>
-                        <el-button v-for="id in instance.config.dataset_ids" :key="id" type="text" @click="go('/dataset/'+id)">{{id}}</el-button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <th>Application</th>
-                <td>
-                    <appavatar :app="app" style="float: right; margin-left: 10px;"></appavatar>
-                    <h3>{{app.name}}</h3>
-                    <p>{{app.desc}}</p>
-                </td>
-            </tr>
-            <tr>
-                <th width="180px">Submit Date</th>
-                <td>
-                    <p>{{instance.create_date|date}}</p>
-                </td>
-            </tr>
-            <tr v-if="instance.status == 'finished'">
-                <th>Outputs</th>
-                <td>
-                    <el-table :data="app.outputs" style="width: 100%" default-expand-all>
-                        <el-table-column type="expand">
-                            <template scope="props">
-                            <el-row :gutter="20">
-                                <el-col :span="20">
-                                    <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
-                                </el-col>
-                                <el-col :span="4">
-                                    <el-dropdown style="float: right;" @command="view">
-                                        <el-button type="primary">
-                                            View <i class="el-icon-caret-bottom el-icon--right"></i>
-                                        </el-button>
-                                        <el-dropdown-menu slot="dropdown">
-                                            <!--<div v-if="props.row.datatype.name == 'neuro/anat'">-->
-                                            <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
-                                            <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
-                                            <el-dropdown-item command="mrview">MRView</el-dropdown-item>
-                                            <el-dropdown-item command="fibernavigator">FiberNavigator</el-dropdown-item>
-                                            <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
-                                        </el-dropdown-menu>
-                                    </el-dropdown>
-                                </el-col>
-                            </el-row>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                        <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                        <el-table-column prop="datatype.desc" label="Description"></el-table-column>
-                        <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
-                    </el-table>
+        <table class="info">
+        <tr>
+            <th width="150px">Description</th>
+            <td>
+                {{instance.desc}}
+            </td>
+        </tr>
+        <tr>
+            <th>Dataset ID</th>
+            <td>
+                <div v-if="!instance.config.dataset_ids">
+                    <p class="text-muted">Not archived yet</p>
+                    <el-card v-if="instance.status == 'finished'" style="background-color: #def;">
+                        <div slot="header"><b style="color: #2693ff;"><icon name="cubes"/> Archive Output</b></div>
+                        <p>The output data will be purged within 25 days of process completion.</p>
+                        <p>Please archive if you'd like to persist the output datasets as part of your project.</p>
+                        <el-button size="large" type="primary" @click="go('/process/'+instance._id+'/archive')">
+                            <icon name="archive"></icon> Archive Output
+                        </el-button>
+                    </el-card>
+                </div>
+                <div v-if="instance.config.dataset_ids">
+                    <span class="text-muted">Output from this process is archived in the warehouse with dataset ID of</span>
+                    <el-button v-for="id in instance.config.dataset_ids" :key="id" type="text" @click="go('/dataset/'+id)">{{id}}</el-button>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>Application</th>
+            <td>
+                <appavatar :app="app" style="float: right; margin-left: 10px;"></appavatar>
+                <h3>{{app.name}}</h3>
+                <p>{{app.desc}}</p>
+            </td>
+        </tr>
+        <tr>
+            <th width="180px">Submit Date</th>
+            <td>
+                <p>{{instance.create_date|date}}</p>
+            </td>
+        </tr>
+        <tr v-if="instance.status == 'finished'">
+            <th>Outputs</th>
+            <td>
+                <el-table :data="app.outputs" style="width: 100%" default-expand-all>
+                    <el-table-column type="expand">
+                        <template scope="props">
+                        <el-row :gutter="20">
+                            <el-col :span="20">
+                                <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
+                            </el-col>
+                            <el-col :span="4">
+                                <el-dropdown style="float: right;" @command="view">
+                                    <el-button type="primary">
+                                        View <i class="el-icon-caret-bottom el-icon--right"></i>
+                                    </el-button>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <!--<div v-if="props.row.datatype.name == 'neuro/anat'">-->
+                                        <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
+                                        <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
+                                        <el-dropdown-item command="mrview">MRView</el-dropdown-item>
+                                        <el-dropdown-item command="fibernavigator">FiberNavigator</el-dropdown-item>
+                                        <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
+                            </el-col>
+                        </el-row>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
+                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
+                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
+                    <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
+                </el-table>
 
-                </td>
-            </tr>
-            <tr>
-                <th>Task Status</th>
-                <td>
-                    <task v-for="task in tasks" key="task._id" :task="task"></task>
-                </td>
-            </tr>
-            <tr>
-                <th>Inputs</th>
-                <td>
-                    <el-table :data="instance.config.prov.deps" style="width: 100%">
-                        <el-table-column type="expand">
-                            <template scope="props">
-                                <el-alert v-if="input_task.status != 'finished'" title="Input datasets not yet loaded" type="warning" show-icon :closable="false"/>
-                                <filebrowser v-if="input_task.status == 'finished'" :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"/>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
-                        <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
-                        <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
-                        <el-table-column prop="_dataset.meta" label="Metadata">
-                            <template scope="scope" v-if="scope.row._dataset">
-                                <metadata :metadata="scope.row._dataset.meta"></metadata>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
-                            <template scope="scope" v-if="scope.row._dataset">
-                                <tags :tags="scope.row._dataset.datatype_tags"></tags>
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="_dataset.tags" label="User Tags">
-                            <template scope="scope" v-if="scope.row._dataset">
-                                <tags :tags="scope.row._dataset.tags"></tags>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                </td>
-            </tr>
-            <tr>
-                <th>Configuration</th>
-                <td>
-                    <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
-                </td>
-            </tr>
-            </table>
+            </td>
+        </tr>
+        <tr>
+            <th>Task Status</th>
+            <td>
+                <task v-for="task in tasks" key="task._id" :task="task"></task>
+            </td>
+        </tr>
+        <tr>
+            <th>Inputs</th>
+            <td>
+                <el-table :data="instance.config.prov.deps" style="width: 100%">
+                    <el-table-column type="expand">
+                        <template scope="props">
+                            <el-alert v-if="input_task.status != 'finished'" title="Input datasets not yet loaded" type="warning" show-icon :closable="false"/>
+                            <filebrowser v-if="input_task.status == 'finished'" :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"/>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
+                    <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
+                    <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
+                    <el-table-column prop="_dataset.meta" label="Metadata">
+                        <template scope="scope" v-if="scope.row._dataset">
+                            <metadata :metadata="scope.row._dataset.meta"></metadata>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
+                        <template scope="scope" v-if="scope.row._dataset">
+                            <tags :tags="scope.row._dataset.datatype_tags"></tags>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="_dataset.tags" label="User Tags">
+                        <template scope="scope" v-if="scope.row._dataset">
+                            <tags :tags="scope.row._dataset.tags"></tags>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </td>
+        </tr>
+        <tr>
+            <th>Configuration</th>
+            <td>
+                <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
+            </td>
+        </tr>
+        </table>
 
-            <br>
-            <el-card v-if="config.debug">
-                <div slot="header">Debug</div>
-                <div v-if="instance">
-                    <h3>instance</h3>
-                    <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
+        <br>
+        <el-card v-if="config.debug">
+            <div slot="header">Debug</div>
+            <div v-if="instance">
+                <h3>instance</h3>
+                <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
+            </div>
+            <div v-if="tasks">
+                <h3>tasks</h3>
+                <div v-for="task in tasks">
+                    <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
                 </div>
-                <div v-if="tasks">
-                    <h3>tasks</h3>
-                    <div v-for="task in tasks">
-                        <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
-                    </div>
-                </div>
-                <div v-if="app">
-                    <h3>app</h3>
-                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-            </el-card>
-        </div><!--margin20-->
-        </div><!--page-content-->
-    </div><!--pusher-->
+            </div>
+            <div v-if="app">
+                <h3>app</h3>
+                <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+            </div>
+        </el-card>
+    </div><!--page-content-->
 </div><!--root-->
 </template>
 

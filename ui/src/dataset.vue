@@ -2,9 +2,9 @@
 <div>
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
-        <div class="margin20" v-if="dataset">
+    <div class="page-content" v-if="dataset">
+
+        <div class="margin20">
             <el-button-group style="float: right;">
                 <el-button @click="remove()" v-if="dataset._canedit"><icon name="trash"></icon> Remove</el-button>
                 <el-button type="primary" @click="download()"><icon name="download"></icon> Download</el-button>
@@ -17,135 +17,133 @@
             <br>
 
             <h1><icon name="cube" scale="2"></icon> {{dataset.name}}</h1>
-            <br clear="both">
             <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
+        </div>
 
-            <table class="info">
-            <tr>
-                <th width="180px">Create Date</th>
-                <td>{{dataset.create_date|date}}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{dataset.desc}}</td>
-            </tr>
-            <tr>
-                <th>Owner</th>
-                <td><contact :id="dataset.user_id"></contact></td>
-            </tr>
-            <tr>
-                <th>Storage</th>
-                <td>This dataset is currently stored on <b>{{dataset.storage}}</b></td>
-            </tr>
-            <tr>
-                <th>DOI</th>
-                <td>10.1006/br.d.{{dataset._id}} </td>
-            </tr>
-            <tr>
-                <th>User Tags</th>
-                <td>
-                    <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
-                    <tags :tags="dataset.tags"></tags>
-                </td>
-            </tr>
-            <tr>
-                <th>Data Type</th>
-                <td>
-                    <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
-                </td>
-            </tr>
-            <tr>
-                <th>Metadata</th>
-                <td>
-                    <metadata :metadata="dataset.meta"></metadata>
-                </td>
-            </tr>
-            <tr>
-                <th>Project</th>
-                <td>
-                    <p class="text-muted">This dataset belongs to following project.</p>
-                    <el-card>
-                        <project :project="dataset.project"></project>
-                    </el-card>
-                </td>
-            </tr>
-            <tr>
-                <th>Provenance / Derivative</th>
-                <td>
-                    <el-button-group style="float: right;">
-                        <el-button size="small" @click="downloadprov()"><icon name="download"></icon> Download Provenance (.sh)</el-button>
-                    </el-button-group>
-                    <br clear="both">
+        <table class="info">
+        <tr>
+            <th width="180px">Create Date</th>
+            <td>{{dataset.create_date|date}}</td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>{{dataset.desc}}</td>
+        </tr>
+        <tr>
+            <th>Owner</th>
+            <td><contact :id="dataset.user_id"></contact></td>
+        </tr>
+        <tr>
+            <th>Storage</th>
+            <td>This dataset is currently stored on <b>{{dataset.storage}}</b></td>
+        </tr>
+        <tr>
+            <th>DOI</th>
+            <td>10.1006/br.d.{{dataset._id}} </td>
+        </tr>
+        <tr>
+            <th>User Tags</th>
+            <td>
+                <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
+                <tags :tags="dataset.tags"></tags>
+            </td>
+        </tr>
+        <tr>
+            <th>Data Type</th>
+            <td>
+                <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+            </td>
+        </tr>
+        <tr>
+            <th>Metadata</th>
+            <td>
+                <metadata :metadata="dataset.meta"></metadata>
+            </td>
+        </tr>
+        <tr>
+            <th>Project</th>
+            <td>
+                <p class="text-muted">This dataset belongs to following project.</p>
+                <el-card>
+                    <project :project="dataset.project"></project>
+                </el-card>
+            </td>
+        </tr>
+        <tr>
+            <th>Provenance / Derivative</th>
+            <td>
+                <el-button-group style="float: right;">
+                    <el-button size="small" @click="downloadprov()"><icon name="download"></icon> Download Provenance (.sh)</el-button>
+                </el-button-group>
+                <br clear="both">
 
-                    <div v-if="dataset.prov.app">
-                        <el-row :gutter="10">
-                            <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
-                                <div @click="go('/dataset/'+dep.dataset)">
-                                    <el-card class="clickable">
-                                        <b><icon name="cubes"></icon> {{dep.input_id}}</b><br>
-                                        {{dep.dataset}}
-                                    </el-card>
-                                </div>
-                                <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
-                            </el-col>
-                        </el-row>
-                        <app :app="dataset.prov.app" :compact="true"/>
-                        <center>
-                            <icon class="text-muted" scale="2" name="arrow-down"></icon>
-                        </center>
-                    </div>
-                    <div v-else>
-                        <center>
-                            <el-card><icon name="upload"/> User Upload</el-card>
-                            <icon class="text-muted" scale="2" name="arrow-down"></icon>
-                        </center>
-                    </div>
-
-                    <center>
-                        <el-card style="background-color: #2693ff; color: white;">This dataset</el-card>
-                    </center>
-
-                    <div v-if="Object.keys(derivatives).length > 0">
-                        <el-row :gutter="10">
-                            <el-col :span="8" v-for="(datasets, task_id) in derivatives" :key="task_id">
-                                <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
-                                <app :appid="datasets[0].prov.app" :compact="true" style="max-height: 150px;"/>
-                                <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
-                                <el-card class="clickable-record" v-for="dataset in datasets" :key="dataset._id" style="margin-bottom: 10px;">
-                                    <div @click="go(dataset._id)">
-                                        <icon name="cube"></icon>
-                                        <b>{{dataset.name}}</b>
-                                        <time class="text-muted">{{dataset.create_date|date}}</time>
-                                    </div>
+                <div v-if="dataset.prov.app">
+                    <el-row :gutter="10">
+                        <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
+                            <div @click="go('/dataset/'+dep.dataset)">
+                                <el-card class="clickable">
+                                    <b><icon name="cubes"></icon> {{dep.input_id}}</b><br>
+                                    {{dep.dataset}}
                                 </el-card>
-                            </el-col>
-                        </el-row>
-                    </div>
-                </td>
-            </tr>
-            </table>
-
-            <br>
-            <div v-if="apps">
-                <h2>Applications</h2>
-                <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
-                <p v-if="apps.length == 0">There are no application that uses this datatype</p>
-                <div v-for="app in apps" key="app._id" class="card">
-                    <app :app="app" :dataset="dataset"></app>
+                            </div>
+                            <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
+                        </el-col>
+                    </el-row>
+                    <app :app="dataset.prov.app" :compact="true"/>
+                    <center>
+                        <icon class="text-muted" scale="2" name="arrow-down"></icon>
+                    </center>
                 </div>
-            </div>
-            <br clear="all">
+                <div v-else>
+                    <center>
+                        <el-card><icon name="upload"/> User Upload</el-card>
+                        <icon class="text-muted" scale="2" name="arrow-down"></icon>
+                    </center>
+                </div>
 
-            <el-card v-if="config.debug">
-                <div slot="header">Debug</div>
-                <h3>dataset</h3>
-                <pre v-highlightjs="JSON.stringify(dataset, null, 4)"><code class="json hljs"></code></pre>
-                <h3>derivatives</h3>
-                <pre v-highlightjs="JSON.stringify(derivatives, null, 4)"><code class="json hljs"></code></pre>
-            </el-card>
-        </div><!--margin20-->
-        </div><!--page-content-->
-    </div>
+                <center>
+                    <el-card style="background-color: #2693ff; color: white;">This dataset</el-card>
+                </center>
+
+                <div v-if="Object.keys(derivatives).length > 0">
+                    <el-row :gutter="10">
+                        <el-col :span="8" v-for="(datasets, task_id) in derivatives" :key="task_id">
+                            <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
+                            <app :appid="datasets[0].prov.app" :compact="true" style="max-height: 150px;"/>
+                            <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
+                            <el-card class="clickable-record" v-for="dataset in datasets" :key="dataset._id" style="margin-bottom: 10px;">
+                                <div @click="go(dataset._id)">
+                                    <icon name="cube"></icon>
+                                    <b>{{dataset.name}}</b>
+                                    <time class="text-muted">{{dataset.create_date|date}}</time>
+                                </div>
+                            </el-card>
+                        </el-col>
+                    </el-row>
+                </div>
+            </td>
+        </tr>
+        </table>
+
+        <br>
+        <div v-if="apps">
+            <h2>Applications</h2>
+            <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
+            <p v-if="apps.length == 0">There are no application that uses this datatype</p>
+            <div v-for="app in apps" key="app._id" class="card">
+                <app :app="app" :dataset="dataset"></app>
+            </div>
+        </div>
+        <br clear="all">
+
+        <el-card v-if="config.debug">
+            <div slot="header">Debug</div>
+            <h3>dataset</h3>
+            <pre v-highlightjs="JSON.stringify(dataset, null, 4)"><code class="json hljs"></code></pre>
+            <h3>derivatives</h3>
+            <pre v-highlightjs="JSON.stringify(derivatives, null, 4)"><code class="json hljs"></code></pre>
+        </el-card>
+    </div><!--page-content-->
 </div><!--root-->
 </template>
 

@@ -13,8 +13,7 @@
         -->
     </pageheader>
     <sidemenu active="/projects"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
+    <div class="page-content">
         <div class="margin20" v-if="project">
             <el-button-group style="float: right;" v-if="project._canedit">
                 <el-button @click="remove()">
@@ -50,41 +49,39 @@
             -->
             
             <h1><icon name="shield" scale="2"/> {{project.name}}</h1>
-            <br clear="both">
-
-            <table class="info"> 
-            <tr>
-                <th width="180px;">Description</th>
-                <td>{{project.desc}}</td>
-            </tr>
-            <tr>
-                <th>Access</th>
-                <td>{{project.access}}</td>
-            </tr>
-            <tr>
-                <th>Admins</th>
-                <td>
-                    <contact v-for="c in project.admins" key="c._id" :id="c"></contact>
-                </td>
-            </tr>
-            <tr>
-                <th>Project Members</th>
-                <td>
-                    <contact v-for="c in project.members" key="c._id" :id="c"></contact>
-                </td>
-            </tr>
-            <tr>
-                <th>TODO</th>
-                <td>
-                    <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this project?</p>
-                    <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
-                </td>
-            </tr>
-            </table>
-
         </div><!--margin20-->
-        </div><!--page-content-->
-    </div><!--page-->
+
+        <table class="info"> 
+        <tr>
+            <th width="180px;">Description</th>
+            <td>{{project.desc}}</td>
+        </tr>
+        <tr>
+            <th>Access</th>
+            <td>{{project.access}}</td>
+        </tr>
+        <tr>
+            <th>Admins</th>
+            <td>
+                <contact v-for="c in project.admins" key="c._id" :id="c"></contact>
+            </td>
+        </tr>
+        <tr>
+            <th>Project Members</th>
+            <td>
+                <contact v-for="c in project.members" key="c._id" :id="c"></contact>
+            </td>
+        </tr>
+        <tr>
+            <th>TODO</th>
+            <td>
+                <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this project?</p>
+                <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
+            </td>
+        </tr>
+        </table>
+
+    </div><!--page-content-->
 </div>
 </template>
 

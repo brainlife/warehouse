@@ -11,53 +11,49 @@
         </el-row>
     </pageheader>
     <sidemenu active="/processes"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
-        <div class="margin20">
-            <h3 v-if="!instances"> <icon name="spinner"></icon> Loading..  </h3>
-            <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click" row-class-name="clickable-row">
-                <el-table-column label="Create Date" prop="create_date" sortable>
-                    <template scope="scope">
-                        <time>{{scope.row.create_date|date}}</time>
-                    </template>
-                </el-table-column> 
-                <el-table-column label="Application">
-                    <template scope="scope">
-                        {{apps[scope.row.config.prov.app].name}}
-                    </template>
-                </el-table-column> 
-                <el-table-column prop="desc" label="Description"/></el-table-column> 
-                <el-table-column label="Status" prop="status" sortable>
-                    <template scope="scope">
-                        <el-tag v-if="scope.row.status == 'removed'">
-                            <icon name="remove"></icon> Removed</el-tag>
-                        <el-tag type="success" v-if="scope.row.status == 'finished'">
-                            <icon name="check"></icon> Finished</el-tag>
-                        <el-tag type="primary" v-if="scope.row.status == 'running'">
-                            <icon name="circle-o-notch" class="fa-spin"></icon> Running</el-tag>
-                        <el-tag type="primary" v-if="scope.row.status == 'requested'">
-                            <icon name="wait"></icon> Requested</el-tag>
-                        <el-tag type="danger" v-if="scope.row.status == 'failed'">
-                            <icon name="warning"></icon> Failed</el-tag>
-                        <el-tag type="warning" v-if="scope.row.status == 'unknown'">
-                            <icon name="help"></icon> Failed</el-tag>
-                    </template>
-                </el-table-column> 
-                <el-table-column label="Archived">
-                    <template scope="scope">
-                          <el-tag v-if="scope.row.config.dataset_ids || scope.row.config.dataset_id">
-                            <icon name="check"></icon> Archived</el-tag>
-                    </template>
-                </el-table-column> 
-            </el-table>
+    <div class="page-content">
+        <h3 v-if="!instances"> <icon name="spinner"></icon> Loading..  </h3>
+        <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click" row-class-name="clickable-row">
+            <el-table-column label="Create Date" prop="create_date" sortable>
+                <template scope="scope">
+                    <time>{{scope.row.create_date|date}}</time>
+                </template>
+            </el-table-column> 
+            <el-table-column label="Application">
+                <template scope="scope">
+                    {{apps[scope.row.config.prov.app].name}}
+                </template>
+            </el-table-column> 
+            <el-table-column prop="desc" label="Description"/></el-table-column> 
+            <el-table-column label="Status" prop="status" sortable>
+                <template scope="scope">
+                    <el-tag v-if="scope.row.status == 'removed'">
+                        <icon name="remove"></icon> Removed</el-tag>
+                    <el-tag type="success" v-if="scope.row.status == 'finished'">
+                        <icon name="check"></icon> Finished</el-tag>
+                    <el-tag type="primary" v-if="scope.row.status == 'running'">
+                        <icon name="circle-o-notch" class="fa-spin"></icon> Running</el-tag>
+                    <el-tag type="primary" v-if="scope.row.status == 'requested'">
+                        <icon name="wait"></icon> Requested</el-tag>
+                    <el-tag type="danger" v-if="scope.row.status == 'failed'">
+                        <icon name="warning"></icon> Failed</el-tag>
+                    <el-tag type="warning" v-if="scope.row.status == 'unknown'">
+                        <icon name="help"></icon> Failed</el-tag>
+                </template>
+            </el-table-column> 
+            <el-table-column label="Archived">
+                <template scope="scope">
+                      <el-tag v-if="scope.row.config.dataset_ids || scope.row.config.dataset_id">
+                        <icon name="check"></icon> Archived</el-tag>
+                </template>
+            </el-table-column> 
+        </el-table>
 
-            <br>
-            <el-card v-if="config.debug">
-                <div slot="header">Debug</div>
-                <pre v-if="instances" v-highlightjs="JSON.stringify(instances, null, 4)"><code class="json hljs"></code></pre>
-            </el-card>
-        </div><!--margin20-->
-        </div><!--page-content-->
+        <br>
+        <el-card v-if="config.debug">
+            <div slot="header">Debug</div>
+            <pre v-if="instances" v-highlightjs="JSON.stringify(instances, null, 4)"><code class="json hljs"></code></pre>
+        </el-card>
     </div>
 </div>
 </template>
