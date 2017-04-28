@@ -559,7 +559,7 @@
 }
 
 .el-table th{
-    background-color: rgb(242, 242, 242);
+    background-color: rgb(219, 219, 219);
     text-align: left;
 }
 
@@ -773,7 +773,7 @@
     position: absolute;
     top: -1px;
     right: 0;
-    background-color: rgb(242, 242, 242);
+    background-color: rgb(219, 219, 219);
     border-bottom: 1px solid rgb(230, 230, 230);
 }
 
@@ -797,7 +797,7 @@
 }
 
 .el-table__fixed-header-wrapper thead div{
-    background-color: rgb(242, 242, 242);
+    background-color: rgb(219, 219, 219);
     color: rgb(46, 46, 46);
 }
 
@@ -822,7 +822,7 @@
 }
 
 .el-table__header-wrapper thead div{
-    background-color: rgb(242, 242, 242);
+    background-color: rgb(219, 219, 219);
     color: rgb(46, 46, 46);
 }
 
@@ -955,6 +955,7 @@
  -------------------------- */
     /* Table
  -------------------------- */
+    /*--table-header-background: var(--color-extra-light-gray);*/
     /* Pagination
  -------------------------- */
     /* Popover

@@ -123,8 +123,8 @@ table.info th {
 table.info td {
     padding: 10px;
 }
-.el-table .cell {
-padding: 2px;
+.el-table__header-wrapper thead div {
+color: gray !important;
 }
 p {
 margin-top: 0px;

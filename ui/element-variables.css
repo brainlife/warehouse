@@ -424,7 +424,8 @@
  -------------------------- */
   --table-border-color: color(var(--border-color-base) h(0) s(0%) l(90%));
   --table-text-color: var(--color-base-black);
-  --table-header-background: var(--color-extra-light-gray);
+  /*--table-header-background: var(--color-extra-light-gray);*/
+  --table-header-background: var(--color-base-gray);
 
   /* Pagination
  -------------------------- */

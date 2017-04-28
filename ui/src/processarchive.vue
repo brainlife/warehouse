@@ -211,36 +211,6 @@ export default {
                 this.datasets.push(dataset);
             });
 
-            /*
-            //subscribe to the instance events
-            //TODO - I just need to subscribe to the archive task
-            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-            var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
-            ws.onopen = (e)=>{
-                //console.log("websocket opened", this.instance._id);
-                ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.task",
-                        key: Vue.config.user.sub+"."+this.instance._id+".#",
-                    }
-                }));
-            }
-              
-            ws.onmessage = (json)=>{
-                var event = JSON.parse(json.data);
-                var msg = event.msg;
-                if(!msg || !msg._id) return; //odd..
-                switch(event.dinfo.exchange) {
-                case "wf.task":
-                    break;
-                case "wf.instance":
-                    this.instance = msg;    
-                    break;
-                default:
-                    console.error("unknown exchange", event.dinfo.exchange);
-                }
-            }
-            */
         }).catch(err=>{
             console.error(err);
         });
@@ -272,34 +242,7 @@ export default {
             this.$router.push(path);
         },
         submit: function() {
-            /*
-            //construct metadata for the new output dataset
-            //TODO - I think I should let the app take care of this (via products.json?) but metadata is more or less warehouse
-            //specific concept - so maybe I should define mapping rule inside app record somehow.
-            //for now, I just concat all metadata from input datasets used
-            var meta = {}
-            this.instance.config.prov.deps.forEach(function(dep) {
-                Object.assign(meta, dep._dataset.meta);
-            });
-
-            //finally, make a request to finalize the task directory currently only deals with outputs[0]
-            var params = {
-                instance_id: this.instance._id,
-                name: this.app.name+" output", 
-                desc: "Data archived from "+this.instance.name,
-                tags: ['xyz123', 'test', 'dev'], //TODO - let use set this?
-
-                project: this.instance.config.project,
-
-                task_id: this.instance.config.main_task_id,
-                prov: this.instance.config.prov, 
-                meta: meta,
-                datatype: this.app.outputs[0].datatype,
-                datatype_tags: this.app.outputs[0].datatype_tags,
-            }
-            */
-
-            //request dataset requests
+            //request archive for *each* output datasets
             this.instance.config.dataset_ids = [];
             async.forEach(this.datasets, (dataset, next)=>{
                 this.$http.post('dataset', dataset).then(res=>{

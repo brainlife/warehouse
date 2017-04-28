@@ -120,24 +120,28 @@
                         <template scope="props">
                             <el-alert v-if="input_task.status != 'finished'" title="Input datasets not yet loaded" type="warning" show-icon :closable="false"/>
                             <filebrowser v-if="input_task.status == 'finished'" :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"/>
+                            <el-row>
+                                <el-col>hey</el-col>
+                                <el-col>yo</el-col>
+                            </el-row>
                         </template>
                     </el-table-column>
                     <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
                     <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
                     <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
                     <el-table-column prop="_dataset.meta" label="Metadata">
-                        <template scope="scope" v-if="scope.row._dataset">
-                            <metadata :metadata="scope.row._dataset.meta"></metadata>
+                        <template scope="scope">
+                            <metadata v-if="scope.row._dataset" :metadata="scope.row._dataset.meta"></metadata>
                         </template>
                     </el-table-column>
                     <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
-                        <template scope="scope" v-if="scope.row._dataset">
-                            <tags :tags="scope.row._dataset.datatype_tags"></tags>
+                        <template scope="scope">
+                            <tags v-if="scope.row._dataset" :tags="scope.row._dataset.datatype_tags"></tags>
                         </template>
                     </el-table-column>
                     <el-table-column prop="_dataset.tags" label="User Tags">
                         <template scope="scope" v-if="scope.row._dataset">
-                            <tags :tags="scope.row._dataset.tags"></tags>
+                            <tags v-if="scope.row._dataset" :tags="scope.row._dataset.tags"></tags>
                         </template>
                     </el-table-column>
                 </el-table>
