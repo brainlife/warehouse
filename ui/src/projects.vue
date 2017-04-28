@@ -21,8 +21,7 @@
                 <el-table-column width="275" label="Description" prop="desc"></el-table-column> 
                 <el-table-column width="100" label="Access" prop="access" sortable>
                     <template scope="scope">
-                        <el-tag v-if="scope.row.access == 'public'" type="success">Public</el-tag>
-                        <el-tag v-if="scope.row.access == 'private'" type="danger">Private</el-tag>
+                        <projectaccess :access="scope.row.access"/>
                     </template>
                 </el-table-column> 
                 <el-table-column width="375" label="Admins">
@@ -38,91 +37,9 @@
                     </template>
                 </el-table-column> 
             </el-table>
-
-            <!--
-            <br>
-            <div class="ui relaxed divided items">
-                <div class="item" v-for="(project, index) in projects">
-                    <div class="content">
-                        <project :project="project"></project>
-                        <div class="meta right floated">
-                            <button v-if="project._canedit" class="ui right floated button" @click="editproject(project)">
-                                <i class="icon edit"></i> Edit
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            -->
-
         </div><!--margin20-->
         </div><!--page-content-->
     </div><!--page-->
-
-    <!-- project dialog ---------------------------------------------------------------->
-    <!--
-    <div class="ui modal projectdialog">
-        <i class="close icon"></i>
-        <div class="header" v-if="edit._id">
-      Edit Project
-        </div>
-    <div class="header" v-else>
-      New Project
-        </div>
-        <div class="content">
-
-      <div class="description">
-        <form class="ui form">
-          <div class="field">
-            <label>Project Name</label>
-            <input type="text" v-model="edit.name" placeholder="Please enter name for this project">
-          </div>
-          <div class="field">
-            <label>Description</label>
-            <textarea rows="5" v-model="edit.desc" placeholder="Details about this project"></textarea>
-          </div>
-          <div class="field">
-            <label>Admins</label>
-            <contactlist :uids="edit.init_admins" v-on:changed="changemember('admins', $event)"></contactlist>
-          </div>
-          <div class="field">
-            <label>Members</label>
-            <contactlist :uids="edit.init_members" v-on:changed="changemember('members', $event)"></contactlist>
-          </div>
-
-                    <div class="inline fields">
-                        <label>Data Access</label>
-                        <div class="field">
-                            <div class="ui radio checkbox">
-                                <input type="radio" value="public" v-model="edit.access">
-                                <label>Public</label>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <div class="ui radio checkbox">
-                                <input type="radio" value="private" v-model="edit.access">
-                                <label>Private</label>
-                            </div>
-                        </div>
-                    </div>
-        </form>
-      </div>
-
-        </div>
-        <div class="actions">
-            <div class="ui black deny button">
-        Cancel
-            </div>
-            <div v-if="edit._id" class="ui positive right labeled icon button">
-              Update <i class="checkmark icon"></i>
-            </div>
-            <div v-if="!edit._id" class="ui positive right labeled icon button">
-              Create <i class="checkmark icon"></i>
-            </div>
-        </div>
-    </div>
-    -->
-
 </div>
 </template>
 
@@ -136,9 +53,10 @@ import contactlist from '@/components/contactlist'
 import project from '@/components/project'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
+import projectaccess from '@/components/projectaccess'
 
 export default {
-    components: { sidemenu, contactlist, project, pageheader, contact },
+    components: { sidemenu, contactlist, project, pageheader, contact, projectaccess },
 
     data () {
         return {

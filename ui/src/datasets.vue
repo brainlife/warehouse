@@ -12,7 +12,7 @@
                 </el-input>
             </el-col>
             <el-col :span="12">
-                <el-button @click="go('/upload')"><icon name="upload"></icon> Upload Data</el-button>
+                <el-button @click="go('/upload')"><icon name="upload"/> Upload Data</el-button>
             </el-col>
         </el-row>
     </div>
@@ -75,8 +75,8 @@
                                 {{datatypes[dataset.datatype].name}}
                                 <tags :tags="dataset.datatype_tags"></tags> &nbsp;
                             </el-col>
-                            <el-col :span="7">
-                                <b>{{dataset.name}}</b>
+                            <el-col :span="7" class="ellipsis">
+                                <b>{{dataset.name}}</b><br>
                                 {{dataset.desc}}
                             </el-col>
                             <el-col :span="6">
@@ -529,6 +529,11 @@ export default {
     z-index: 5;
     transition: right 0.2s;
     top: 50px;
+}
+.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
 }
 </style>
 

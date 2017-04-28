@@ -52,7 +52,7 @@
                     </div>
                     <div v-if="instance.config.dataset_ids">
                         <span class="text-muted">Output from this process is archived in the warehouse with dataset ID of</span>
-                        <el-button v-for="id in instance.config.dataset_ids" type="text" @click="go('/dataset/'+id)">{{id}}</el-button>
+                        <el-button v-for="id in instance.config.dataset_ids" :key="id" type="text" @click="go('/dataset/'+id)">{{id}}</el-button>
                     </div>
                 </td>
             </tr>

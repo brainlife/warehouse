@@ -36,7 +36,7 @@
 
                         <el-form-item label="Project" v-if="projects">
                             <el-select v-model="project_id" placeholder="Select project to store this dataset" style="width: 100%">
-                                <el-option v-for="(p,id) in projects" key="id" :value="id" :label="p.name">{{p.name}} ({{p.access}})</el-option>
+                                <el-option v-for="(p,id) in projects" key="id" :value="id" :label="p.name">{{p.name}} <projectaccess :access="p.access"/></el-option>
                             </el-select>
                         </el-form-item>
 
@@ -92,13 +92,13 @@
                     <div v-if="mode == 'validate'">
                         <div v-if="validation && validation.status == 'finished' && validation.products">
                             <p v-if="validation.status != 'finished'">{{validation.status_msg}}</p>
-                            <el-alert :title="msg" type="error" show-icon v-for="(msg,idx) in validation.products[0].results.errors" :key="idx"></el-alert>
-                            <el-alert :title="msg" type="warning" show-icon  v-for="(msg,idx) in validation.products[0].results.warnings" :key="idx"></el-alert>
-                            <el-alert title="Your data looks good! Please proceed" show-icon type="success" v-if="validation.products[0].results.errors.length == 0"></el-alert>
+                            <el-alert :title="msg" type="error" show-icon v-for="(msg,idx) in validation.products[0].errors" :key="idx"></el-alert>
+                            <el-alert :title="msg" type="warning" show-icon  v-for="(msg,idx) in validation.products[0].warnings" :key="idx"></el-alert>
+                            <el-alert title="Your data looks good! Please proceed" show-icon type="success" v-if="validation.products[0].errors.length == 0"></el-alert>
                             <br>
                 
                             <!--show info-->
-                            <el-card v-for="(v, k) in validation.products[0].results" :key="k" v-if="k != 'errors' && k != 'warnings'">
+                            <el-card v-for="(v, k) in validation.products[0]" :key="k" v-if="k != 'errors' && k != 'warnings'">
                                 <div slot="header">{{k}}</div>
                                 <pre v-highlightjs="v"><code class="text hljs"></code></pre>
                             </el-card>
@@ -135,7 +135,10 @@
                 {{desc}}
                 {{datatype_id}}
                 {{project_id}}
-                <pre>{{meta}}</pre>
+                <h3>Meta</h3>
+                <pre v-if="meta" v-highlightjs="JSON.stringify(meta, null, 4)"><code class="json hljs"></code></pre>
+                <h3>Validation</h3>
+                <pre v-if="meta" v-highlightjs="JSON.stringify(validation, null, 4)"><code class="json hljs"></code></pre>
             </el-card>
 
         </div><!--margin20-->
@@ -150,9 +153,10 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+import projectaccess from '@/components/projectaccess'
 
 export default {
-    components: { sidemenu, pageheader },
+    components: { sidemenu, pageheader, projectaccess },
     data () {
         return {
             //user selections
@@ -204,7 +208,12 @@ export default {
             if(!task) return;
             if(!task._id) return; //what kind of task is this?
             if(this.validation && task._id == this.validation._id) {
-              this.validation = task;
+                this.validation = task;
+                //for backward compatibility 
+                if(this.validation.products[0].results) {
+                    //unwrap old structure to new
+                    this.validation.products[0] = this.validation.products[0].results;
+                }
             }
             if(this.copy && task._id == this.copy._id) {
               this.copy = task;
@@ -329,16 +338,17 @@ export default {
             this.mode = "validate";
             this.validation = null;
 
-            //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
+            //create validator config
             var config = {};
-            this.datatypes[this.datatype_id].files.forEach(function(file) {
+            var datatype = this.datatypes[this.datatype_id];
+            datatype.files.forEach(function(file) {
                 config[file.id] = "../upload/"+file.filename;
             });
             //and submit
             this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: this.instance_id,
                 name: "validation",
-                service: "soichih/sca-service-conneval-validate",
+                service: datatype.validator || "soichih/sca-service-conneval-validate", //TODO - deprecate sca-service-conneval-validate eventually
                 config: config,
             }).then(res=>{
                 console.log("submitted validation task");

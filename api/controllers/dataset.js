@@ -60,10 +60,18 @@ function getprojects(user, cb) {
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
+
+    var select = null;
+    if(req.query.select) {
+        select = req.query.select;
+        //always load user_id so that we can compute canedit properly
+        if(!~select.indexOf("user_id")) select+=" user_id";
+    }
+
     getprojects(req.user, function(err, projects) {
         if(err) return next(err);
         var project_ids = projects.map(function(p) { return p._id; });
-
+    
         //then look for dataset
         db.Datasets
         .find({
@@ -72,16 +80,22 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 find
             ]
         })
-        //.populate(req.query.populate || 'project datatype')
-        .populate(req.query.populate || '')
-        .select(req.query.select)
+        .populate(req.query.populate || '') //all by default
+        .select(select)
         .limit(req.query.limit || 100)
         .skip(req.query.skip || 0)
         .sort(req.query.sort || '_id')
+        .lean()
         .exec((err, datasets)=>{
             if(err) return next(err);
             db.Datasets.count(find).exec((err, count)=>{
                 if(err) return next(err);
+                
+                //adding some derivatives
+                datasets.forEach(function(rec) {
+                    rec._canedit = canedit(req.user, rec);
+                });
+                
                 res.json({datasets: datasets, count: count});
             });
         });
