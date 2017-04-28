@@ -146,8 +146,10 @@ export default {
 <style scoped>
 .fileitem {
 line-height: 150%;
-padding-left: 4px;
+margin: 0px;
+padding: 2px 4px;
 height: 25px;
+font-size: 13px;
 }
 .fileitem:hover {
 color: #2185D0;
