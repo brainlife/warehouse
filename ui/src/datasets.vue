@@ -50,8 +50,8 @@
                 </el-col>
                 -->
                 <el-col :span="4">
-                    <icon name="caret-down"></icon>
-                    {{subject}}
+                        <!--<icon name="caret-down" scale="1.3"></icon>-->
+                    <strong>{{subject}}</strong>
                 </el-col> 
                 <el-col :span="20">
                     <div 
@@ -60,13 +60,6 @@
                     :class="{dataset: true, clickable: true, selected: dataset.checked}">
                         <el-row>
                             <el-col :span="2">
-                                <!--
-                                &nbsp;&nbsp;&nbsp;
-                                <div class="ui checkbox" style="position: relative; top: 2px;">
-                                    <input type="checkbox" @click.stop="check(dataset)" :checked="is_selected(dataset)">
-                                    <label></label>
-                                </div>
-                                -->
                                 <div @click.stop="" style="margin-left: 5px;">
                                     <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                 </div>
@@ -459,7 +452,6 @@ export default {
     color: white;
 }
 .selected-view {
-    /*background-color: #2185d0;*/
     background-color: #444;
     overflow-x: hidden;
     position: fixed;
@@ -492,16 +484,16 @@ export default {
 }
 .header {
     padding: 10px 0px 3px 10px;
+    text-transform: uppercase;
 }
 .list .group {
     padding: 5px 0px 5px 10px;
     background-color: white;
 }
 
-.header {
-    background-color: #444;
-    color: #777;
-    text-transform: uppercase;
+.fixed-top .header {
+    background-color: #ddd;
+    color: #999;
 }
 .list .group {
     /*margin-bottom: 1px;*/
