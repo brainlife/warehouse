@@ -45,7 +45,6 @@ var projectSchema = mongoose.Schema({
     //* private - only the project member can access
     //* public - accessible by anyone
     access: {type: String, default: "private" },
-
     
     create_date: { type: Date, default: Date.now },
 });
@@ -82,6 +81,9 @@ var datasetSchema = mongoose.Schema({
     prov: {
         //application that produced this data (not set if user uploaded it)
         app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+
+        //output id of the app (set when dataset is posted)
+        output_id: String, 
         
         //dataset used by the application to generate this data
         deps: [{

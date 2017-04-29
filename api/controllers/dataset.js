@@ -108,7 +108,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiDescription                      Make a request to create a new dataset from wf service taskdir
  *
  * @apiParam {String} instance_id       WF service Instance ID
- * @apiParam {String} task_id           WF service Task ID 
+ * @apiParam {String} task_id           WF service Task ID (of output task)
+ * @apiParam {String} output_id         Output ID (from app.outputs.id)
  *
  * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
@@ -128,36 +129,77 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.datatype) return next("datatype id not set");
     if(!req.body.instance_id) return next("instance_id not set");
     if(!req.body.task_id) return next("task_id not set");
-    request.get({
-        url: config.wf.api+"/task",
-        qs: {
-            find: JSON.stringify({"_id": req.body.task_id}),
+    if(!req.body.output_id) return next("output_id not set");
+    
+    async.waterfall([
+        cb=>{
+            //get task
+            request.get({
+                url: config.wf.api+"/task",
+                qs: {
+                    find: JSON.stringify({"_id": req.body.task_id}),
+                },
+                json: true,
+                //TODO - I need to deal with cookie based jwt also?
+                headers: {
+                    authorization: req.headers.authorization, 
+                }
+            }, cb);
         },
-        json: true,
-        //TODO - I need to deal with cookie based jwt also?
-        headers: {
-            authorization: req.headers.authorization, 
-        }
-    }, (e, r, ret)=>{
-        if(e) return next(e);
-        
-        //make sure user owns this instance
-        if(ret.tasks.length != 1) return next("couldn't find task");
-        var task = ret.tasks[0];
-        if(task.user_id != req.user.sub) return next("you don't own this instance");
 
-        //make sure user is member of the project selected
-        db.Projects.findById(req.body.project, (err, project)=>{
-            if(err) return next(err);
-            if(!project) return next("couldn't find the project");
-            //TODO should I only allow members but not admin?
-            if(!~project.admins.indexOf(req.user.sub) && !~project.members.indexOf(req.user.sub)) return next("you are not member of this project");
+        (_res, ret, cb)=>{
+            //make sure user owns this instance
+            if(ret.tasks.length != 1) return cb("couldn't find task");
+            var task = ret.tasks[0];
+            if(task.user_id != req.user.sub) return cb("you don't own this instance");
             
+            //make sure user is member of the project selected
+            db.Projects.findById(req.body.project, (err, project)=>{
+                if(err) return cb(err);
+                if(!project) return cb("couldn't find the project");
+                //TODO should I only allow members but not admin?
+                if(!~project.admins.indexOf(req.user.sub) && !~project.members.indexOf(req.user.sub)) return cb("you are not member of this project");
+                cb(null, task);
+            });
+        },
+
+        /*
+        (task, cb)=>{
+            //load application detail if prov.app exists
+            if(req.body.prov && req.body.prov.app) {
+                db.Apps.findById(req.body.prov.app, (err, app)=>{
+                    if(err) return cb(err);
+                    if(!app) return cb("couldn't find the application specified in the prov");
+
+                    //find file mapping for specified output
+                    var files = null;
+                    app.outputs.forEach(output=>{
+                        if(output.datatype == req.body.datatype) files = output.files; //could be missing
+                    });
+                    cb(null, task, files);
+                });
+            } else cb(null, task, null);
+        },
+        */
+        
+        /*
+        (task, files, cb)=>{
+            //load datatype
+            db.Datatypes.findById(req.body.datatype, (err, datatype)=>{
+                if(err) return cb(err);
+                if(!datatype) return cb("couldn't find specified datatype");
+                cb(null, task, files, datatype);
+            });
+        },
+        */
+
+        (task, cb)=>{
+
             //now create a dataset record
             var dataset = new db.Datasets({
                 user_id: req.user.sub,
 
-                project: project._id,
+                project: req.body.project,
                 datatype: req.body.datatype,
                 datatype_tags: req.body.datatype_tags,
 
@@ -168,17 +210,22 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 prov: req.body.prov,
                 meta: req.body.meta,
             });
+            
+            //output_id doesn't come from instance.prov, so I need to add it to prov
+            dataset.prov.output_id = req.body.output_id;
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);
                 res.json(_dataset);
+                
                 //then, asynchrnously copy content to the storage
                 archive(task, _dataset, req, function(err) {
                     if(err) logger.error(err);
-                    //TODO now what?
+                    //TODO post event?
                 });
             });
-        });
-    });
+        },
+
+    ], next); //end-waterfall
 });
 
 function archive(task, dataset, req, cb) {
@@ -192,16 +239,21 @@ function archive(task, dataset, req, cb) {
     var storage = "dc2";
     var system = config.storage_systems[storage];
     system.upload(dataset, (err, writestream)=>{
+
+        //console.log("download path", task.instance_id+"/"+task._id+"/"+dataset.prov.output_id);
+        
+        //download the entire .tar.gz from sca-wf service
         request.get({
             url: config.wf.api+"/resource/download",
             qs: {
                 r: task.resource_id,
-                p: task.instance_id+"/"+task._id,
+                p: task.instance_id+"/"+task._id+"/"+dataset.prov.output_id,
             },
             headers: {
                 authorization: req.headers.authorization, 
             }
         })
+        //and pipe it directly to the storage
         .on('response', function(r) {
             console.log("stream response received");
             if(r.statusCode != 200) {
