@@ -6,8 +6,8 @@
             <icon name="repeat"></icon>&nbsp;&nbsp;Rerun
         </el-button>
         <h4>
-            <span style="text-transform: uppercase;">{{task.status}}</span>
-            <small>{{task.service}}</small> 
+            <span style="text-transform: uppercase;">{{task.status}}</span> |
+            {{task.name}} <small class="text-muted">{{task.service}}</small> 
         </h4>
         <i>{{task.status_msg}}</i>
     </el-alert>

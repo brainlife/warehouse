@@ -23,7 +23,7 @@
                     <el-col :span="4">{{file.attrs.uid}}</el-col>
                     <el-col :span="4">{{file.attrs.gid}}</el-col>
                     <!--<el-col :span="2">{{file.attrs.atime|date}}</el-col>-->
-                    <el-col :span="4">{{file.attrs.mtime|date}}</el-col>
+                    <el-col :span="4">{{file.attrs.mtime*1000|date}}</el-col>
                 </el-row>
             </div>
             <div class="content" style="margin-left: 20px;" v-if="file.open">

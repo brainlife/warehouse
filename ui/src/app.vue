@@ -192,6 +192,7 @@ export default {
           })
         },
 
+        /*
         submitapp: function() {
             var instance = null;
 
@@ -275,6 +276,7 @@ export default {
                 console.error(err);
             });
         },
+        */
 
         request_notifications: function(instance, main_task) {
             var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;

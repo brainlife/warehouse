@@ -123,19 +123,19 @@
                 </div>
             </td>
         </tr>
+        <tr>
+            <th>Applications</th>
+            <td>
+                <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
+                <p v-if="apps.length == 0">There are no application that uses this datatype</p>
+                <div v-for="app in apps" key="app._id" class="card">
+                    <app :app="app" :dataset="dataset"></app>
+                </div>
+            </td>
+        </tr>
         </table>
 
         <br>
-        <div v-if="apps">
-            <h2>Applications</h2>
-            <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
-            <p v-if="apps.length == 0">There are no application that uses this datatype</p>
-            <div v-for="app in apps" key="app._id" class="card">
-                <app :app="app" :dataset="dataset"></app>
-            </div>
-        </div>
-        <br clear="all">
-
         <el-card v-if="config.debug">
             <div slot="header">Debug</div>
             <h3>dataset</h3>
