@@ -5,19 +5,9 @@
     <div class="page-content" v-if="instance && tasks && app">
         <div class="margin20">
             <el-button-group style="float: right;">
-                <!--
-                <el-button v-if="instance.config.dataset_id" @click="go('/dataset/'+instance.config.dataset_id)">
-                    <icon name="archive"></icon> See Archived
-                </el-button>
-                -->
                 <el-button @click="remove()">
                     <icon name="trash"></icon> Remove Process
                 </el-button>
-                <!--
-                <el-button type="primary" v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="go('/process/'+instance._id+'/archive')"> 
-                    <icon name="archive"></icon> Archive Output
-                </el-button>
-                -->
             </el-button-group>
 
             <el-breadcrumb separator="/">
@@ -31,7 +21,7 @@
 
         <table class="info">
         <tr>
-            <th width="150px">Description</th>
+            <th width="200px">Description</th>
             <td>
                 {{instance.desc}}
             </td>
@@ -100,7 +90,7 @@
                     </el-table-column>
                     <el-table-column prop="id" label="ID" width="180"></el-table-column>
                     <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
+                    <el-table-column prop="datatype.desc" label="Description" width="250"></el-table-column>
                     <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
                 </el-table>
 
@@ -218,6 +208,9 @@ export default {
             //for backward compatibility
             if(this.instance.config.dataset_id) {
                 this.instance.config.dataset_ids = [this.instance.config.dataset_id];
+            }
+            if(this.instance.config.main_task_id) {
+                this.instance.config.output_task_id = this.instance.config.main_task_id;
             }
 
             //load datasets used for prov.deps

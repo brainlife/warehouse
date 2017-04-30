@@ -51,7 +51,7 @@
             <h1><icon name="shield" scale="2"/> {{project.name}}</h1>
         </div><!--margin20-->
 
-        <table class="info"> 
+        <table class="info" v-if="project">
         <tr>
             <th width="180px;">Description</th>
             <td>{{project.desc}}</td>
