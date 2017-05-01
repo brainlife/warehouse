@@ -3,7 +3,7 @@
     <el-card>
         <el-row>
             <el-col :span="6" class="project-name">{{project.name}}</el-col>
-            <el-col :span="10">{{project.desc}}</el-col>
+            <el-col :span="10">{{project.desc||'no desc..'}}</el-col>
             <el-col :span="8">
                 <el-button 
                     v-if="project._canedit" type="text" 

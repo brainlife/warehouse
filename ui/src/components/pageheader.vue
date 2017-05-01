@@ -1,6 +1,6 @@
 <template>
 <div class="pageheader">
-    <p class="title">Brain-Life</p>
+    <p class="title" @click="gohome()">Brain Life</p>
     <div class="slot"><slot></slot></div>
     <el-dropdown class="menu" @command="handleCommand">
         <h4 style="padding-top: 4px;">
@@ -45,6 +45,9 @@ export default {
             case "signout":
                 document.location = "/auth#!/signout";
             }
+        },
+        gohome() {
+            document.location = "/";
         },
         gotog(email) {
             document.location = "https://gravatar.com/"+md5(email);
