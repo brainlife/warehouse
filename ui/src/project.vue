@@ -30,24 +30,6 @@
             </el-breadcrumb>
             <br>
 
-          <!--
-            <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
-            <el-table v-if="projects" :data="projects" style="width: 100%;" @row-click="click">
-                <el-table-column label="Name" prop="name" sortable></el-table-column> 
-                <el-table-column label="Access">
-                    <template scope="scope">
-                        {{scope.row.access}}
-                    </template>
-                </el-table-column> 
-                <el-table-column label="Description" prop="name"></el-table-column> 
-                <el-table-column width="400" label="Admins">
-                    <template scope="scope">
-                        <contact v-for="id in scope.row.admins" key="id" :id="id"></contact>
-                    </template>
-                </el-table-column> 
-            </el-table>
-            -->
-            
             <h1><icon name="shield" scale="2"/> {{project.name}}</h1>
         </div><!--margin20-->
 
@@ -58,7 +40,9 @@
         </tr>
         <tr>
             <th>Access</th>
-            <td>{{project.access}}</td>
+            <td>
+                <projectaccess :access="project.access"/>
+            </td>
         </tr>
         <tr>
             <th>Admins</th>
@@ -95,9 +79,10 @@ import contactlist from '@/components/contactlist'
 import project from '@/components/project'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
+import projectaccess from '@/components/projectaccess'
 
 export default {
-    components: { sidemenu, contactlist, project, pageheader, contact },
+    components: { sidemenu, contactlist, project, projectaccess, pageheader, contact },
 
     data () {
         return {

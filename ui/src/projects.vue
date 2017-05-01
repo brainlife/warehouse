@@ -6,14 +6,13 @@
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
             </el-col>
             <el-col :span="10">
-                <!--<el-button @click="go('/app/_/edit')"> <i class="ui icon add"></i> Register </el-button>-->
                 <el-button v-if="user" @click="newproject()"> <icon name="plus"></icon> Add Project </el-button>
             </el-col>
         </el-row>
     </pageheader>
     <sidemenu active="/projects"></sidemenu>
     <div class="page-content">
-        <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
+        <!--
         <el-table v-if="projects" :data="projects" style="width: 100%;" @row-click="click" row-class-name="clickable-row">
             <el-table-column label="Name" prop="name" sortable></el-table-column> 
             <el-table-column width="275" label="Description" prop="desc"></el-table-column> 
@@ -35,6 +34,19 @@
                 </template>
             </el-table-column> 
         </el-table>
+        -->
+        <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
+        <div class="margin20" v-if="projects">
+            <h2 class="group-title">Private Projects</h2>
+            <div v-for="project in projects" :key="project._id" v-if="project.access == 'private'">
+                <projectcard :project="project" class="private-project"/>
+            </div>
+            <br>
+            <h2 class="group-title">Public Projects</h2>
+            <div v-for="project in projects" :key="project._id" v-if="project.access == 'public'">
+                <projectcard :project="project" class="public-project"/>
+            </div>
+        </div>
     </div><!--page-content-->
 </div>
 </template>
@@ -49,10 +61,10 @@ import contactlist from '@/components/contactlist'
 import project from '@/components/project'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
-import projectaccess from '@/components/projectaccess'
+import projectcard from '@/components/projectcard'
 
 export default {
-    components: { sidemenu, contactlist, project, pageheader, contact, projectaccess },
+    components: { sidemenu, contactlist, project, pageheader, contact, projectcard},
 
     data () {
         return {
@@ -120,13 +132,6 @@ export default {
             this.edit[list] = uids;
         },
 
-        click: function(row) {
-            this.$router.push('/project/'+row._id);
-        },
-        editp: function(row) {
-            this.$router.push('/project/'+row._id+'/edit');
-        },
-
         newproject: function() {
             this.$router.push('/project/_/edit');
             /*
@@ -174,5 +179,20 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+.el-card {
+box-shadow: none;
+}
+.public-project .el-card__body {
+border-left: 3px solid #159957;
+}
+.private-project .el-card__body {
+border-left: 3px solid red;
+}
+</style>
+
+<style scope>
+.group-title {
+color: #999;
+}
 </style>
