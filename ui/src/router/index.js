@@ -15,6 +15,7 @@ import settings from '@/settings'
 import apps from '@/apps'
 import app from '@/app'
 import appedit from '@/appedit'
+import appsubmit from '@/appsubmit'
 import submit from '@/submit'
 import download from '@/download'
 import view from '@/view'
@@ -38,9 +39,10 @@ export default new Router({
     { path: '/project/:id/edit', component: projectedit },
     { path: '/apps', component: apps },
     { path: '/app/:id', component: app },
-    { path: '/app/:id/submit', component: submit},
+    { path: '/app/:id/submit', component: appsubmit},
     { path: '/app/:id/edit', component: appedit},
     { path: '/settings', component: settings},
+    { path: '/submit', component: submit},
     { path: '/view/:instanceid/:taskid/:type', component: view},
   ]
 })
