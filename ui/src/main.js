@@ -38,10 +38,12 @@ import router from './router'
 
 Vue.use(require('vue-filter'))
 
+/*
 import filesize from 'filesize'
 Vue.filter('filesize', function(value) {
     return filesize(value);
 });
+*/
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //

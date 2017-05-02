@@ -303,7 +303,7 @@ export default {
             var inst_config = {
                 brainlife: true,
                 //project: this.project_id,
-                main_task_id: null, //will be set once submitted
+                output_task_id: null, //will be set once submitted
                 prov: {
                     app: this.app._id,
                     deps: [], 
@@ -315,7 +315,7 @@ export default {
 
             //first create an instance to run everything
             this.$http.post(Vue.config.wf_api+'/instance', {
-                name: "brainlife.a."+this.app._id,
+                name: "brainlife process for app:"+this.app._id,
                 desc: this.form.desc,
                 config: inst_config,
             }).then(res=>{
@@ -355,8 +355,39 @@ export default {
                     deps: [ download_task._id ],
                 })
             }).then(res=>{
-                //add main_task_id information on instance config (used by ui to render main task)
-                inst_config.main_task_id = res.body.task._id;
+                var main_task = res.body.task;
+                //submit the output handling task
+                var symlink = [];
+                this.app.outputs.forEach(output=>{
+                    console.log("processing", output);
+                    if(output.files) {
+                        for(var file_id in output.files) {
+                            //find datatype file id
+                            output.datatype.files.forEach(datatype_file=>{
+                                if(datatype_file.id == file_id) {
+                                    var name = datatype_file.filename||datatype_file.dirname;
+                                    symlink.push({ 
+                                        "src": "../"+main_task._id+"/"+output.files[file_id], 
+                                        "dest": output.id+"/"+name 
+                                    });
+                                }
+                            });
+                        }
+                    } else {
+                        //copy everything..
+                        symlink.push({"src": "../"+main_task._id, "dest": output.id});
+                    }
+                });
+                return this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: instance._id,
+                    name: "Organize Output", 
+                    service: "soichih/sca-product-raw",
+                    config: { symlink },
+                    deps: [ main_task._id ],
+                })
+            }).then(res=>{
+                //add output_task_id information on instance config (used by ui to render main task)
+                inst_config.output_task_id = res.body.task._id;
                 inst_config.prov.config = res.body.task.config;
                 inst_config.prov.task_id = res.body.task._id;
                 inst_config.prov.instance_id = instance._id;
@@ -365,7 +396,7 @@ export default {
                 });
             }).then(res=>{
                 //then request for notifications
-                return this.request_notifications(instance, inst_config.main_task_id);
+                return this.request_notifications(instance, inst_config.output_task_id);
             }).then(res=>{
                 //all good!
                 //localStorage.setItem("last_projectid_used", this.project_id);

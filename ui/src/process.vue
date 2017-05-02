@@ -5,19 +5,9 @@
     <div class="page-content" v-if="instance && tasks && app">
         <div class="margin20">
             <el-button-group style="float: right;">
-                <!--
-                <el-button v-if="instance.config.dataset_id" @click="go('/dataset/'+instance.config.dataset_id)">
-                    <icon name="archive"></icon> See Archived
-                </el-button>
-                -->
                 <el-button @click="remove()">
                     <icon name="trash"></icon> Remove Process
                 </el-button>
-                <!--
-                <el-button type="primary" v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="go('/process/'+instance._id+'/archive')"> 
-                    <icon name="archive"></icon> Archive Output
-                </el-button>
-                -->
             </el-button-group>
 
             <el-breadcrumb separator="/">
@@ -31,7 +21,7 @@
 
         <table class="info">
         <tr>
-            <th width="150px">Description</th>
+            <th width="200px">Description</th>
             <td>
                 {{instance.desc}}
             </td>
@@ -78,7 +68,7 @@
                         <template scope="props">
                         <el-row :gutter="20">
                             <el-col :span="20">
-                                <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="main_task"></file>
+                                <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task"></file>
                             </el-col>
                             <el-col :span="4">
                                 <el-dropdown style="float: right;" @command="view">
@@ -100,7 +90,7 @@
                     </el-table-column>
                     <el-table-column prop="id" label="ID" width="180"></el-table-column>
                     <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
+                    <el-table-column prop="datatype.desc" label="Description" width="250"></el-table-column>
                     <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
                 </el-table>
 
@@ -120,10 +110,6 @@
                         <template scope="props">
                             <el-alert v-if="input_task.status != 'finished'" title="Input datasets not yet loaded" type="warning" show-icon :closable="false"/>
                             <filebrowser v-if="input_task.status == 'finished'" :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"/>
-                            <el-row>
-                                <el-col>hey</el-col>
-                                <el-col>yo</el-col>
-                            </el-row>
                         </template>
                     </el-table-column>
                     <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
@@ -223,6 +209,9 @@ export default {
             if(this.instance.config.dataset_id) {
                 this.instance.config.dataset_ids = [this.instance.config.dataset_id];
             }
+            if(this.instance.config.main_task_id) {
+                this.instance.config.output_task_id = this.instance.config.main_task_id;
+            }
 
             //load datasets used for prov.deps
             console.dir(this.instance.config.prov);
@@ -310,12 +299,12 @@ export default {
     },
 
     computed: {
-        main_task: function() {
+        output_task: function() {
             var it = null;
             this.tasks.forEach((task)=>{
-                if(task._id == this.instance.config.main_task_id) it = task;
+                if(task._id == this.instance.config.output_task_id) it = task;
             })
-            if(!it) console.error("failed to find main_task");
+            if(!it) console.error("failed to find output_task");
             return it;
         },
         input_task: function() {
@@ -327,6 +316,7 @@ export default {
             return it;
         }
     },
+
     methods: {
         go: function(path) {
             this.$router.push(path);
@@ -338,7 +328,7 @@ export default {
             });
         },
         view: function(type) {
-            window.open("#/view/"+this.instance._id+"/"+this.main_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
+            window.open("#/view/"+this.instance._id+"/"+this.output_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
     },
 }

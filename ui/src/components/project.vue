@@ -8,8 +8,7 @@
   <tr>
       <th>Access</th>
       <td>
-        <div v-if="project.access == 'public'" class="ui blue label">Public</div>
-        <div v-if="project.access == 'private'" class="ui red label">Private</div>
+        <projectaccess :access="project.access"/>
       </td>
   </tr>
   <tr>
@@ -37,10 +36,11 @@
 <script>
 import Vue from 'vue'
 import contact from '@/components/contact'
+import projectaccess from '@/components/projectaccess'
 
 export default {
+  components: { contact, projectaccess },
   name: "project",
   props: [ "project" ],
-  components: { contact },
 }
 </script>

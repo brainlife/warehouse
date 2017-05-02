@@ -107,7 +107,7 @@
                 </div>
                 <br>
             </div>
-            <el-button size="small" icon="delete" @click="clear_selected()">Clear All</el-button>
+            <el-button size="small" icon="delete" @click="clear_selected()">Unselect All</el-button>
         </div>
         <div class="select-group" style="background-color: #999;">
             <el-button size="small" type="primary" @click="download()">Download</el-button>

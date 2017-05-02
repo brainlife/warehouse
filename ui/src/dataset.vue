@@ -35,7 +35,10 @@
         </tr>
         <tr>
             <th>Storage</th>
-            <td>This dataset is currently stored on <b>{{dataset.storage}}</b></td>
+            <td>
+                <p v-if="dataset.storage">This dataset is currently stored in <b>{{dataset.storage}}</b></p>
+                <el-alert v-else title="Storage field is not set" type="error"> </el-alert>
+            </td>
         </tr>
         <tr>
             <th>DOI</th>
@@ -123,19 +126,19 @@
                 </div>
             </td>
         </tr>
+        <tr v-if="apps">
+            <th>Applications</th>
+            <td>
+                <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
+                <p v-if="apps.length == 0">There are no application that uses this datatype</p>
+                <div v-for="app in apps" key="app._id" class="card">
+                    <app :app="app" :dataset="dataset"></app>
+                </div>
+            </td>
+        </tr>
         </table>
 
         <br>
-        <div v-if="apps">
-            <h2>Applications</h2>
-            <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
-            <p v-if="apps.length == 0">There are no application that uses this datatype</p>
-            <div v-for="app in apps" key="app._id" class="card">
-                <app :app="app" :dataset="dataset"></app>
-            </div>
-        </div>
-        <br clear="all">
-
         <el-card v-if="config.debug">
             <div slot="header">Debug</div>
             <h3>dataset</h3>
@@ -240,7 +243,7 @@ export default {
             .then(res=>{
                 //should I do this via computed?
                 if(!res) return;
-                console.dir(this.dataset);
+                //console.dir(this.dataset);
                 this.apps = lib.filter_apps(this.dataset, res.body.apps);
             }).catch(err=>{
                 console.error(res);

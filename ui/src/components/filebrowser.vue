@@ -23,7 +23,7 @@
                     <el-col :span="4">{{file.attrs.uid}}</el-col>
                     <el-col :span="4">{{file.attrs.gid}}</el-col>
                     <!--<el-col :span="2">{{file.attrs.atime|date}}</el-col>-->
-                    <el-col :span="4">{{file.attrs.mtime|date}}</el-col>
+                    <el-col :span="4">{{file.attrs.mtime*1000|date}}</el-col>
                 </el-row>
             </div>
             <div class="content" style="margin-left: 20px;" v-if="file.open">
@@ -146,8 +146,10 @@ export default {
 <style scoped>
 .fileitem {
 line-height: 150%;
-padding-left: 4px;
+margin: 0px;
+padding: 2px 4px;
 height: 25px;
+font-size: 13px;
 }
 .fileitem:hover {
 color: #2185D0;

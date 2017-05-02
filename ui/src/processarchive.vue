@@ -19,7 +19,7 @@
             <el-card>
                 <el-form ref="form" label-width="180px">
                     <div v-for="dataset in datasets" :key="dataset.id" style="border-bottom: 1px solid #ddd; margin-bottom: 20px;">
-                        <h2>{{dataset.id}}</h2>
+                        <h2>{{dataset.prov.output_id}}</h2>
                         <el-form-item label="Name (optional)">
                             <el-input type="text" v-model="dataset.name" placeholder="Dataset Name"></el-input>
                         </el-form-item>
@@ -194,20 +194,21 @@ export default {
                     meta[m.id] = meta_catalog[m.id]; 
                 });
 
+                var prov = this.instance.config.prov;
+                prov.output_id = output.id;
+                
                 var dataset = {
                     instance_id: this.instance._id,
-                    task_id: this.instance.config.main_task_id,
-                    prov: this.instance.config.prov, 
-                    id: output.id,
-                    name: output.id+" from "+this.instance.name,
-                    desc: output.id+" from "+this.instance.desc,
+                    task_id: this.instance.config.output_task_id,
+                    prov: prov,
+                    name: output.id+" output",
+                    desc: output.id+" output from "+this.instance.name,
                     project: this.projects[0]._id, //select first project by default (TODO - remember user preference?)
                     tags: tags, 
                     meta: meta,
                     datatype: output.datatype._id,
                     datatype_tags: output.datatype_tags,
                 }
-                //this.$set(dataset, 'project', this.projects[0]._id);
                 this.datasets.push(dataset);
             });
 
@@ -216,26 +217,6 @@ export default {
         });
     },
 
-    computed: {
-        /*
-        main_task: function() {
-            var it = null;
-            this.tasks.forEach((task)=>{
-                if(task._id == this.instance.config.main_task_id) it = task;
-            })
-            if(!it) console.error("failed to find main_task");
-            return it;
-        },
-        input_task: function() {
-            var it = null;
-            this.tasks.forEach((task)=>{
-                if(task.name == "Stage Input") it = task; //TODO brittle~!
-            })
-            if(!it) console.error("failed to find input_task");
-            return it;
-        }
-        */
-    },
     methods: {
 
         go: function(path) {
@@ -246,8 +227,6 @@ export default {
             this.instance.config.dataset_ids = [];
             async.forEach(this.datasets, (dataset, next)=>{
                 this.$http.post('dataset', dataset).then(res=>{
-                    //this.messages.push({msg: "Archiving Request Sent!", cls: {info: true}});
-                    console.log("posted dataset", res.body);
                     this.instance.config.dataset_ids.push(res.body._id);
                     next();
                 }, next);

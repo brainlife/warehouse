@@ -18,6 +18,7 @@ export default {
 <style>
 body {
 background-color: #f0f0f0;
+color: #222;
 }
 body, textarea, input {
 font-family: 'Lato', sans-serif;
