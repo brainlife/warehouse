@@ -157,21 +157,6 @@ export default {
         }).catch(err=>{
             console.error(err);
         });
-
-        /*
-        //load projects
-        this.$http.get('project', {params: {
-            //service: "_upload",
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.body.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-        }, res=>{
-          console.error(res);
-        });
-        */
     },
 
     methods: {
@@ -193,91 +178,6 @@ export default {
         },
 
         /*
-        submitapp: function() {
-            var instance = null;
-
-            var prov = {
-                brainlife: true,
-                //project: this.project_id,
-                app: this.app._id,
-                main_task_id: null,
-                datasets: this.app.inputs,
-            }
-
-            //first create an instance to run everything
-            this.$http.post(Vue.config.wf_api+'/instance', {
-                name: "brainlife.a."+this.app._id,
-                desc: this.app.name,
-                config: prov,
-            }).then(res=>{
-                instance = res.body;
-                console.log("instance created", instance);
-
-                //create config to download all input data from archive
-                var download = [];
-                this.app.inputs.forEach(function(input) {
-                    download.push({
-                        url: Vue.config.api+"/dataset/download/"+input.dataset_id+"?at="+Vue.config.jwt,
-                        untar: "gz",
-                        dir: "inputs/"+input.id,
-                    });
-                });
-                //now submit task to download data from archive
-                return this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: instance._id,
-                    name: "Stage Input",
-                    service: "soichih/sca-product-raw",
-                    config: { download },
-                })
-            }).then(res=>{
-                var download_task = res.body.task;
-
-                console.log("download task submitted");
-
-                //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
-
-                //constract config
-                //TODO - this is currently very primitive.. but it will do
-                var config = {}
-                for(var k in this.app.config) {
-                    var spec = this.app.config[k];
-                    config[k] = spec.default;
-                }
-                this.app.inputs.forEach((input)=>{
-                    input.datatype.files.forEach((file)=>{
-                        config[file.id] = "../"+download_task._id+"/inputs/"+input.id+"/"+(file.filename||file.dirname);
-                    });
-                });
-                prov.config = config; //store main_task config inside provenance
-                console.log("generated config");
-                console.dir(config);
-
-                //Now submit the app
-                return this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: instance._id,
-                    name: this.app.name,
-                    service: this.app.github,
-                    config: config,
-                    deps: [ download_task._id ],
-                })
-            }).then(res=>{
-                //add main_task_id information on instance config (provenance)
-                prov.main_task_id = res.body.task._id;
-                return this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
-                    config: prov,
-                });
-            }).then(res=>{
-                //then request for notifications
-                return this.request_notifications(instance, prov.main_task_id);
-            }).then(res=>{
-                //all good!
-                this.go('/process/'+instance._id);
-            }).catch(function(err) {
-                console.error(err);
-            });
-        },
-        */
-
         request_notifications: function(instance, main_task) {
             var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;
 
@@ -292,6 +192,7 @@ export default {
                 },
             });
         }
+        */
     },
 }
 </script>

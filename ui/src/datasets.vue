@@ -110,7 +110,10 @@
             <el-button size="small" icon="delete" @click="clear_selected()">Unselect All</el-button>
         </div>
         <div class="select-group" style="background-color: #999;">
-            <el-button size="small" type="primary" @click="download()">Download</el-button>
+            <el-button-group>
+                <el-button size="small" type="primary" @click="download()">Download</el-button>
+                <el-button size="small" type="primary" @click="submit()">Submit</el-button>
+            </el-button-group>
             <el-dropdown @command="view">
                 <el-button size="small" type="primary">
                     View<i class="el-icon-caret-bottom el-icon--right"></i>
@@ -429,6 +432,10 @@ export default {
                 this.$router.push("/download/"+download_instance._id);
 
             });
+        },
+
+        submit: function() {
+            this.$router.push('/submit');
         }
     },
 }

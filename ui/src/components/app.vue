@@ -2,12 +2,36 @@
 <el-card :body-style="{padding: '0px'}" 
     v-if="app" 
     style="margin-bottom: 20px;" 
-    :class="{'compact': compact, 'clickable': true}">
-    <div @click="go('/app/'+app._id)">
+    :class="{'compact': compact, 'clickable': false}">
+    <div @click-dis="go('/app/'+app._id)">
         <appavatar :app="app" style="float: left;margin-right: 10px;"></appavatar>
-        <h4 class="appname">{{app.name}}</h4>
-        <div class="appdesc">{{app.desc}}</div>
-        <div v-if="!compact">
+        <div v-if="compact">
+            <el-row :gutter="10">
+            <el-col :span="10">
+                <h4 class="appname">{{app.name}}</h4>
+                <div class="appdesc">{{app.desc}}</div>
+            </el-col>
+            <el-col :span="7">
+                <div style="padding: 10px">
+                    <h5 style="padding-bottom: 5px; color: #999">Input Datatype</h5>
+                    <el-tag v-for="input in app.inputs" :key="input.id" style="margin-right: 4px;">
+                        <b>{{input.id}}</b>
+                    </el-tag>
+                </div>
+            </el-col>
+            <el-col :span="5">
+                <div style="padding: 10px">
+                    <h5 style="padding-bottom: 5px; color: #999">Output Datatype</h5>
+                    <el-tag v-for="output in app.outputs" :key="output.id" style="margin-right: 4px;">
+                        <b>{{output.id}}</b>
+                    </el-tag>
+                </div>
+            </el-col>
+            </el-row>
+        </div>
+        <div v-else="!compact">
+            <h4 class="appname">{{app.name}}</h4>
+            <div class="appdesc">{{app.desc}}</div>
             <el-button-group style="width: 100%;">
                 <el-button size="small" style="width: 50%;" @click.stop="go('/app/'+app._id)"><icon name="info-circle"></icon> Detail</el-button>
                 <el-button size="small" style="width: 50%;" type="primary" @click.stop="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))">
@@ -52,16 +76,14 @@ export default {
 <style scoped>
 .appname {
 color: #666;
-padding: 10px;
+margin-top: 3px;
+padding: 8px;
 margin-bottom: 0px;
 }
 .appdesc {
-margin-bottom: 10px;
 height: 150px;
 overflow: auto;
 font-size: 13px;
-color: #333;
-line-height: 150%;
 }
 
 .image {

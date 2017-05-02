@@ -109,7 +109,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  *
  * @apiParam {String} instance_id       WF service Instance ID
  * @apiParam {String} task_id           WF service Task ID (of output task)
- * @apiParam {String} output_id         Output ID (from app.outputs.id)
  *
  * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
@@ -129,7 +128,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.datatype) return next("datatype id not set");
     if(!req.body.instance_id) return next("instance_id not set");
     if(!req.body.task_id) return next("task_id not set");
-    if(!req.body.output_id) return next("output_id not set");
+    //if(!req.body.output_id) return next("output_id not set");
     
     async.waterfall([
         cb=>{
@@ -212,7 +211,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             });
             
             //output_id doesn't come from instance.prov, so I need to add it to prov
-            dataset.prov.output_id = req.body.output_id;
+            //dataset.prov.output_id = req.body.output_id;
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);
                 res.json(_dataset);
@@ -247,7 +246,7 @@ function archive(task, dataset, req, cb) {
             url: config.wf.api+"/resource/download",
             qs: {
                 r: task.resource_id,
-                p: task.instance_id+"/"+task._id+"/"+dataset.prov.output_id,
+                p: task.instance_id+"/"+task._id+"/"+(dataset.prov.output_id||''),
             },
             headers: {
                 authorization: req.headers.authorization, 
