@@ -19,7 +19,7 @@
             <el-card>
                 <el-form ref="form" label-width="180px">
                     <div v-for="dataset in datasets" :key="dataset.id" style="border-bottom: 1px solid #ddd; margin-bottom: 20px;">
-                        <h2>{{dataset.output_id}}</h2>
+                        <h2>{{dataset.prov.output_id}}</h2>
                         <el-form-item label="Name (optional)">
                             <el-input type="text" v-model="dataset.name" placeholder="Dataset Name"></el-input>
                         </el-form-item>
@@ -194,10 +194,13 @@ export default {
                     meta[m.id] = meta_catalog[m.id]; 
                 });
 
+                var prov = this.instance.config.prov;
+                prov.output_id = output.id;
+                
                 var dataset = {
                     instance_id: this.instance._id,
                     task_id: this.instance.config.output_task_id,
-                    prov: this.instance.config.prov, 
+                    prov: prov,
                     name: output.id+" output",
                     desc: output.id+" output from "+this.instance.name,
                     project: this.projects[0]._id, //select first project by default (TODO - remember user preference?)
@@ -205,7 +208,6 @@ export default {
                     meta: meta,
                     datatype: output.datatype._id,
                     datatype_tags: output.datatype_tags,
-                    output_id: output.id,
                 }
                 this.datasets.push(dataset);
             });
