@@ -140,5 +140,8 @@ margin-bottom: 10px !important;
     color: #999;
     margin-bottom: 15px;
 }
+time {
+opacity: 0.8;
+}
 </style>
 

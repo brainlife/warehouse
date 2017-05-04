@@ -302,7 +302,7 @@ export default {
             }).then(res=>{
                 //all good!
                 //localStorage.setItem("last_projectid_used", this.project_id);
-                this.go('/process/'+instance._id);
+                this.go('/simpleprocess/'+instance._id);
             }).catch(err=>{
                 console.error(err);
             });

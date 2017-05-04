@@ -89,7 +89,7 @@ svg.cloud {
     position: fixed;
     font-size: 18pt;
     position: relative;
-    top: 9px;
+    top: 11px;
     margin: 0px;
     margin-left: 5px;
     left: 8px;

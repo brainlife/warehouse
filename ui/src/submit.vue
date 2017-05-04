@@ -17,7 +17,7 @@
                 <h2 class="text-muted">Submit {{app.name}}</h2>
                 <h3>Please select / configure tasks to submit.</h3>
                 <el-form label-width="150px">
-                    <el-card v-for="task in tasks" :class="{disabled: !task.enable}">
+                    <el-card v-for="(task, idx) in tasks" :class="{disabled: !task.enable}" :key="idx">
                         <p>
                             <el-checkbox v-model="task.enable" @change="revalidate()">Submit</el-checkbox>
                         </p>
@@ -38,9 +38,9 @@
                             <el-input v-model="task.config[k]"></el-input>
                         </el-form-item>
 
-                         <!--<pre>{{task}}</pre>-->
+                        <!--<pre>{{task}}</pre>-->
                     </el-card>
-                    <el-card style="background-color: #5cc18e;">
+                    <el-card class="submit">
                         <el-form-item label="Description">
                             <el-input type="textarea" v-model="desc"></el-input>
                         </el-form-item>
@@ -51,6 +51,15 @@
                     </el-card>
                 </el-form> 
             </div>
+
+            <br>
+            <el-card v-if="config.debug">
+                <div slot="header">Debug</div>
+                <div v-if="tasks">
+                    <h3>tasks</h3>
+                    <pre v-highlightjs="JSON.stringify(tasks, null, 4)"><code class="json hljs"></code></pre>
+                </div>
+            </el-card>
 
         </div><!--margin20-->
         </div><!--page-content-->
@@ -66,6 +75,7 @@ import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import app from '@/components/app'
 
+const async = require('async');
 const lib = require('./lib');
 
 function generate_default(app) {
@@ -83,6 +93,7 @@ export default {
     data () {
         return {
             page: "select_app",
+            desc: "", //instance desc
             apps: null, //application user can run with selected data
 
             tasks: [], //tasks to configure / submit
@@ -110,7 +121,7 @@ export default {
             find: JSON.stringify({
                 "inputs.datatype": {$in: datatype_ids},
             }),
-            //populate: 'inputs.datatype',// outputs.datatype',
+            populate: 'inputs.datatype',// outputs.datatype',
         }})
         .then(res=>{
             //filter apps for each dataset selected.. to create list of apps that user can really submit
@@ -144,7 +155,7 @@ export default {
             this.page = "config";
 
             //load datasets with applicable datatypes (will filter later)
-            var datatype_ids = this.app.inputs.map(input=>input.datatype);
+            var datatype_ids = this.app.inputs.map(input=>input.datatype._id);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({
                     datatype: {$in: datatype_ids},
@@ -167,7 +178,7 @@ export default {
 
                     var task = {
                         enable: false,
-                        service: app.github,
+                        name: 'task submission for dataset:'+did,
                         config: generate_default(this.app),
                         inputs: {},
                     };
@@ -231,12 +242,30 @@ export default {
             if(!this.validate()) {
                 this.$notify.error({ title: 'Error', message: 'Validation failed' });
             } else {
-                alert('good');
+                this.submit_instance().then(instance=>{
+                    console.log("submitted instance", instance);
+                    this.submit_download_tasks(instance, err=>{
+                        if(err) console.error("failed to submit download tasks");
+                        else this.submit_apps(instance, err=>{
+                            if(err) console.error("failed to submit app tasks");
+                            this.submit_orgout(instance, err=>{
+                                if(err) console.error("failed to submit org-output tasks");
+                                this.update_instance(instance, err=>{
+                                    if(err) console.error("failed to update instance");
+                                    this.request_notification(instance, err=>{
+                                        if(err) console.error("failed to request instance notification");
+                                        this.go('/process/'+instance._id);
+                                    });
+                                });
+                            });
+                        }); 
+                    });
+                });
             }
         },
 
-        submit_instance(cb) {
-            //first create an instance to run everything
+        submit_instance() {
+            //first create an instance to host all tasks 
             var instance = null;
             var inst_config = {
                 brainlife: true,
@@ -245,21 +274,132 @@ export default {
                     //deps: [], 
                 }
             }
-            /*
+            /* TODO - not sure how to set prov.deps for bulk submission
             for(var input_id in this.form.inputs) {
                 inst_config.prov.deps.push({input_id, dataset: this.form.inputs[input_id]});
             }
             */
-            this.$http.post(Vue.config.wf_api+'/instance', {
+            return this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "brainlife bulk process for app:"+this.app._id,
                 desc: this.desc,
                 config: inst_config,
-            }).then(res=>{
-                instance = res.body;
-                console.log("instance created", instance);
-            })
+            }).then(res=>res.body);
         },
 
+        //submit data staging tasks
+        submit_download_tasks(instance, cb) {
+            async.eachSeries(this.tasks, (task, next_task)=>{
+                if(!task.enable) return next_task();
+
+                //create config to download all input data from archive
+                var download = [];
+                for(var input_id in task.inputs) {
+                    download.push({
+                        url: Vue.config.api+"/dataset/download/"+task.inputs[input_id].dataset+"?at="+Vue.config.jwt,
+                        untar: "gz",
+                        dir: "inputs/"+input_id,
+                    });
+                }
+                //now submit task to download data from archive
+                //console.log("submitting download task", download);
+                this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: instance._id,
+                    name: "brainlife.stage_input",
+                    desc: "Stage Input for "+task.name,
+                    service: "soichih/sca-product-raw",
+                    config: { download, inputs: task.inputs },
+                }).then(res=>{
+                    //Vue.set(task, 'download_task',  res.body.task);
+                    task.download_task = res.body.task;
+                    console.log("submitted download", task);
+                    next_task();
+                });//.catch(next_task);
+            }, cb);
+        },
+
+        submit_apps(instance, cb) {
+            async.eachSeries(this.tasks, (task, next_task)=>{
+                if(!task.enable) return next_task();
+                this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: instance._id,
+                    name: "brainlife.process",
+                    desc: this.app.name,
+                    service: this.app.github, //TODO what if it's docker?
+                    config: Object.assign(task.config, lib.generate_config(this.app, task.download_task._id)),
+                    deps: [ task.download_task._id ],
+                }).then(res=>{
+                    //Vue.set(task, 'main_task',  res.body.task);
+                    task.main_task = res.body.task;
+                    console.log("submitted main task", task);
+                    next_task();
+                });//.catch(next_task);
+            }, cb);
+        },
+
+        submit_orgout(instance, cb) {
+            async.eachSeries(this.tasks, (task, next_task)=>{
+                if(!task.enable) return next_task();
+
+                var symlink = [];
+                this.app.outputs.forEach(output=>{
+                    if(output.files) {
+                        for(var file_id in output.files) {
+                            //find datatype file id
+                            output.datatype.files.forEach(datatype_file=>{
+                                if(datatype_file.id == file_id) {
+                                    var name = datatype_file.filename||datatype_file.dirname;
+                                    symlink.push({ 
+                                        "src": "../"+task.main_task._id+"/"+output.files[file_id], 
+                                        "dest": output.id+"/"+name 
+                                    });
+                                }
+                            });
+                        }
+                    } else {
+                        //copy everything..
+                        symlink.push({"src": "../"+task.main_task._id, "dest": output.id});
+                    }
+                });
+                this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: instance._id,
+                    name: "brainlife.stage_output",
+                    desc: "Organize Output", 
+                    service: "soichih/sca-product-raw",
+                    config: { symlink },
+                    deps: [ task.main_task._id ],
+                }).then(res=>{
+                    task.org_task = res.body.task;
+                    console.log("submitted org output task", task);
+                    next_task();
+                });
+            }, cb);
+        },
+
+        update_instance(instance, cb) {
+            //instance.config.prov.tasks = this.tasks; //TODO.. not sure what I really need out of tasks...
+            this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
+                config: instance.config,
+            }).then(res=>{
+                console.log("updated instance config");
+                cb();
+            }, cb);
+        },
+
+        request_notification: function(instance, cb) {
+            var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;
+            this.$http.post(Vue.config.event_api+"/notification", {
+                event: "wf.instance.finished",
+                handler: "email",
+                config: {
+                    instance_id: instance._id,
+                    subject: "[brain-life.org] Process Completed",
+                    message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease downoad / archive output files at "+url+"\n\nBrain-life.org Administrator"
+                },
+            }).then(res=>{
+                console.log("requested instance notification", res.body);
+                cb();
+            }, cb);
+        },
     },
 }
 </script>
@@ -267,6 +407,9 @@ export default {
 <style scoped>
 .disabled {
 background-color: #ddd;
+}
+.submit {
+background-color: #eee;
 }
 </style>
 

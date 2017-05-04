@@ -73,7 +73,7 @@
                                 {{dataset.desc}}
                             </el-col>
                             <el-col :span="6">
-                                <time class="text-muted">{{dataset.create_date | date}}</time>
+                                <time>{{dataset.create_date | date}}</time>
                                 &nbsp;
                             </el-col>
                             <el-col :span="4">

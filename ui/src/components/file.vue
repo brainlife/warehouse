@@ -22,16 +22,20 @@ export default {
         }
     },
 
-    props: [ 'file', 'task' ],
+    props: [ 'file', 'task', 'subdir' ],
     
     mounted: function() {
 
     },
     methods: {
         download: function() {
+            var path = this.task.instance_id+'/'+this.task._id+'/';
+            if(this.subdir) path += this.subdir+"/";
+            path += this.file.filename||this.file.dirname;
+
             let url = Vue.config.wf_api+'/resource/download'+
                 '?r='+this.task.resource_id+
-                '&p='+encodeURIComponent(this.task.instance_id+'/'+this.task._id+'/'+(this.file.filename||this.file.dirname))+
+                '&p='+encodeURIComponent(path)+
                 '&at='+Vue.config.jwt;            
             document.location = url;
         },

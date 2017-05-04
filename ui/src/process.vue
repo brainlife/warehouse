@@ -2,13 +2,11 @@
 <div>
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/processes"></sidemenu>
-    <div class="page-content" v-if="instance && tasks && app">
+    <div class="page-content" v-if="instance && tasks">
         <div class="margin20">
-            <el-button-group style="float: right;">
-                <el-button @click="remove()">
-                    <icon name="trash"></icon> Remove Process
-                </el-button>
-            </el-button-group>
+            <el-button @click="remove()" style="float: right;">
+                <icon name="trash"></icon> Remove Process
+            </el-button>
 
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item :to="{ path: '/processes' }">Processes</el-breadcrumb-item>
@@ -18,128 +16,52 @@
             <!--<h1><icon name="send" scale="2"></icon> {{app.name}}</h1>-->
             <h1><icon name="send" scale="2"></icon> Process</h1>
         </div>
+        
+        <el-form label-width="200px">
+            <el-form-item label="Name">
+                <el-input v-model="instance.name"/>
+            </el-form-item>
+            <el-form-item label="Description">
+                <el-input type="textarea" v-model="instance.desc" :autosize="{minRows: 2, maxRows: 5}"/>
+            </el-form-item>
+            <el-form-item label="">
+                <time>Created at {{instance.create_date|date}}</time>
+            </el-form-item>
+        </el-form>
 
-        <table class="info">
-        <tr>
-            <th width="200px">Description</th>
-            <td>
-                {{instance.desc}}
-            </td>
-        </tr>
-        <tr>
-            <th>Dataset ID</th>
-            <td>
-                <div v-if="!instance.config.dataset_ids">
-                    <p class="text-muted">Not archived yet</p>
-                    <el-card v-if="instance.status == 'finished'" style="background-color: #def;">
-                        <div slot="header"><b style="color: #2693ff;"><icon name="cubes"/> Archive Output</b></div>
-                        <p>The output data will be purged within 25 days of process completion.</p>
-                        <p>Please archive if you'd like to persist the output datasets as part of your project.</p>
-                        <el-button size="large" type="primary" @click="go('/process/'+instance._id+'/archive')">
-                            <icon name="archive"></icon> Archive Output
-                        </el-button>
-                    </el-card>
-                </div>
-                <div v-if="instance.config.dataset_ids">
-                    <span class="text-muted">Output from this process is archived in the warehouse with dataset ID of</span>
-                    <el-button v-for="id in instance.config.dataset_ids" :key="id" type="text" @click="go('/dataset/'+id)">{{id}}</el-button>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <th>Application</th>
-            <td>
-                <appavatar :app="app" style="float: right; margin-left: 10px;"></appavatar>
-                <h3>{{app.name}}</h3>
-                <p>{{app.desc}}</p>
-            </td>
-        </tr>
-        <tr>
-            <th width="180px">Submit Date</th>
-            <td>
-                <p>{{instance.create_date|date}}</p>
-            </td>
-        </tr>
-        <tr v-if="instance.status == 'finished'">
-            <th>Outputs</th>
-            <td>
-                <el-table :data="app.outputs" style="width: 100%" default-expand-all>
-                    <el-table-column type="expand">
-                        <template scope="props">
-                        <el-row :gutter="20">
-                            <el-col :span="20">
-                                <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task"></file>
-                            </el-col>
-                            <el-col :span="4">
-                                <el-dropdown style="float: right;" @command="view">
-                                    <el-button type="primary">
-                                        View <i class="el-icon-caret-bottom el-icon--right"></i>
-                                    </el-button>
-                                    <el-dropdown-menu slot="dropdown">
-                                        <!--<div v-if="props.row.datatype.name == 'neuro/anat'">-->
-                                        <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
-                                        <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
-                                        <el-dropdown-item command="mrview">MRView</el-dropdown-item>
-                                        <el-dropdown-item command="fibernavigator">FiberNavigator</el-dropdown-item>
-                                        <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
-                                    </el-dropdown-menu>
-                                </el-dropdown>
-                            </el-col>
+        <div class="task task-input">
+            <h2 style="color: white">Input Datasets</h2>
+            <p class="text-muted">Following datasets are staged out of Brain Life warehouse and made available for processing.</p>
+            <div v-for="(task, idx) in tasks" v-if="task._class == 'input'" :key="idx">
+                <el-card>
+                    <div slot="header" style="text-transform: uppercase; font-weight: 700; display: inline-block;">
+                        <span v-if="task.status == 'finished'">Staged</span>
+                        <span v-else>{{task.status}} <small>{{task.status_msg}}</small></span>
+                    </div>
+                    <p v-for="(input, input_id) in task.config.inputs" :key="input_id">
+                        <el-row>
+                        <el-col :span="6">
+                            {{input.datatype.name}} <metadata :metadata="datasets[input.dataset].meta"/>
+                        </el-col>
+                        <el-col :span="12">
+                            {{datasets[input.dataset].name}} <small class="text-muted">{{datasets[input.dataset].desc}}</small>
+                        </el-col>
                         </el-row>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description" width="250"></el-table-column>
-                    <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
-                </el-table>
+                    </p>
+                </el-card>
+            </div>
+            <el-button type="primary" style="float: right;"><icon name="plus"/> Stage Other Datasets</el-button>
+            <br clear="both">
+        </div>
 
-            </td>
-        </tr>
-        <tr>
-            <th>Task Status</th>
-            <td>
-                <task v-for="task in tasks" key="task._id" :task="task"></task>
-            </td>
-        </tr>
-        <tr>
-            <th>Inputs</th>
-            <td>
-                <el-table :data="instance.config.prov.deps" style="width: 100%">
-                    <el-table-column type="expand">
-                        <template scope="props">
-                            <el-alert v-if="input_task.status != 'finished'" title="Input datasets not yet loaded" type="warning" show-icon :closable="false"/>
-                            <filebrowser v-if="input_task.status == 'finished'" :task="input_task" :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+props.row.input_id"/>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
-                    <el-table-column prop="_dataset.meta" label="Metadata">
-                        <template scope="scope">
-                            <metadata v-if="scope.row._dataset" :metadata="scope.row._dataset.meta"></metadata>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
-                        <template scope="scope">
-                            <tags v-if="scope.row._dataset" :tags="scope.row._dataset.datatype_tags"></tags>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="_dataset.tags" label="User Tags">
-                        <template scope="scope" v-if="scope.row._dataset">
-                            <tags v-if="scope.row._dataset" :tags="scope.row._dataset.tags"></tags>
-                        </template>
-                    </el-table-column>
-                </el-table>
-            </td>
-        </tr>
-        <tr>
-            <th>Configuration</th>
-            <td>
-                <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
-            </td>
-        </tr>
-        </table>
+        <div class="task">
+            <h2>Processing</h2>
+            <div v-for="(task, idx) in tasks" v-if="task._class == 'process'" :key="idx" class="process">
+                <task :task="task"/>
+            </div>
+            <el-button type="primary" style="float: right;"><icon name="plus"/> New Process</el-button>
+            <br clear="both">
+        </div>
 
         <br>
         <el-card v-if="config.debug">
@@ -153,10 +75,6 @@
                 <div v-for="task in tasks">
                     <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
                 </div>
-            </div>
-            <div v-if="app">
-                <h3>app</h3>
-                <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
             </div>
         </el-card>
     </div><!--page-content-->
@@ -179,19 +97,16 @@ import appavatar from '@/components/appavatar'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
-
 export default {
-    mixins: [
-        //require("vue-toaster")
-    ],
     components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar },
 
     data () {
         return {
             instance: null,
             tasks: null,
-            app: null,
 
+            //cache
+            datasets: {}, 
             config: Vue.config,
         }
     },
@@ -205,32 +120,6 @@ export default {
         .then(res=>{
             this.instance = res.body.instances[0];
 
-            //for backward compatibility
-            if(this.instance.config.dataset_id) {
-                this.instance.config.dataset_ids = [this.instance.config.dataset_id];
-            }
-            if(this.instance.config.main_task_id) {
-                this.instance.config.output_task_id = this.instance.config.main_task_id;
-            }
-
-            //load datasets used for prov.deps
-            console.dir(this.instance.config.prov);
-            //if(!this.instance.config.prov.deps.map) this.instance.config.prov.deps = [this.instance.config.prov.deps];
-            var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
-            return this.$http.get('dataset', {params: {
-                find: JSON.stringify({_id: dataset_ids}),
-                populate: ' ', //load all default
-            }})
-        })
-        .then(res=>{
-            res.body.datasets.forEach((dataset)=>{
-                this.instance.config.prov.deps.forEach(dep=>{
-                    if(dep.dataset == dataset._id) {
-                        Vue.set(dep, '_dataset', dataset);
-                    }
-                });
-            });
-
             //load tasks
             return this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({
@@ -242,15 +131,35 @@ export default {
         .then(res=>{
             this.tasks = res.body.tasks;
 
-            //load app
-            return this.$http.get('app', {params: {
-                find: JSON.stringify({_id: this.instance.config.prov.app}),
-                populate: 'inputs.datatype outputs.datatype',
+            //classify tasks
+            this.tasks.forEach(task=>{
+                switch(task.name) {
+                    case "brainlife.stage_input": task._class = "input"; break;
+                    case "brainlife.stage_output": task._class = "output"; break;
+                    case "brainlife.process": task._class = "process"; break;
+                }
+            });
+
+            //load datasets used by config.input
+            var dataset_ids = [];
+            this.tasks.forEach(task=>{
+                if(task.config.inputs) {
+                    for(var input_id in task.config.inputs) { 
+                        dataset_ids.push(task.config.inputs[input_id].dataset);
+                    }
+                }
+            });
+            console.log("looking for", dataset_ids);
+            return this.$http.get('dataset', {params: {
+                find: JSON.stringify({_id: dataset_ids}),
+                populate: ' ', //load all default
             }})
         })
         .then(res=>{
-            this.app = res.body.apps[0];
-
+            res.body.datasets.forEach((dataset)=>{
+                Vue.set(this.datasets, dataset._id, dataset);
+            });
+    
             //subscribe to the instance events
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
@@ -333,3 +242,16 @@ export default {
     },
 }
 </script>
+
+<style scope>
+.task {
+background-color: white;
+padding: 15px;
+}
+.task h2 {
+color: #999;
+}
+.task-input {
+background-color: #ccc;
+}
+</style>

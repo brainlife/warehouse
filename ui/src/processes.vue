@@ -34,7 +34,7 @@
                     <el-tag type="primary" v-if="scope.row.status == 'running'">
                         <icon name="circle-o-notch" class="fa-spin"></icon> Running</el-tag>
                     <el-tag type="primary" v-if="scope.row.status == 'requested'">
-                        <icon name="wait"></icon> Requested</el-tag>
+                        <icon name="clock-o"></icon> Requested</el-tag>
                     <el-tag type="danger" v-if="scope.row.status == 'failed'">
                         <icon name="warning"></icon> Failed</el-tag>
                     <el-tag type="warning" v-if="scope.row.status == 'unknown'">
@@ -112,12 +112,14 @@ export default {
         }).catch(err=>{
           console.error(err);
         });
-
     },
 
     methods: {
-        click: function(row) {
-            this.$router.push("/process/"+row._id);
+        click: function(instance) {
+            console.dir(instance);
+            //TODO - really bad way of telling difference between process or workflow
+            if(instance.config.prov.deps) this.$router.push("/simpleprocess/"+instance._id);
+            else this.$router.push("/process/"+instance._id);
         },
         go: function(path) {
             this.$notify.info({

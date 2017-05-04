@@ -1,13 +1,17 @@
 <template>
 <div class="task">
     <!--status-->
-    <el-alert class="status" title="" :type="alerttype" show-icon :closable="false" style="padding: 15px;">
+    <el-alert title="" :class="task.status" show-icon :closable="false" style="padding: 15px;">
         <el-button v-if="task.status == 'failed'" style="float: right;" @click="rerun()">
             <icon name="repeat"></icon>&nbsp;&nbsp;Rerun
         </el-button>
         <h4>
-            <span style="text-transform: uppercase;">{{task.status}}</span> |
-            {{task.name}} <small class="text-muted">{{task.service}}</small> 
+            <div style="float: right;">
+                <time v-if="task.status == 'finished'">Finished {{task.finish_date|date}}</time>
+                <time v-if="task.status == 'running'">Started {{task.start_date|date}}</time>
+                <time v-if="task.status == 'requested'">Created {{task.create_date|date}}</time>
+            </div>
+            <span style="text-transform: uppercase;">{{task.status}}</span> | {{task.desc||task.name}} <small class="text-muted">{{task.service}}</small> 
         </h4>
         <i>{{task.status_msg}}</i>
     </el-alert>
@@ -40,13 +44,6 @@ export default {
         }
     },
     computed: {
-        alerttype: function() {
-            switch(this.task.status) {
-            case "finished": return "success";
-            case "failed": return "error";
-            default: return "info";
-            }
-        }
     },
     mounted: function() {
         //$(this.$el).find('.ui.accordion').accordion();
@@ -67,10 +64,20 @@ export default {
 </script>
 
 <style>
-.task .status {
+.task .el-alert {
 margin-bottom: 5px;
 }
-.task .status .el-alert__icon {
+.el-alert.finished {
+background-color: green;
+}
+.el-alert.failed {
+background-color: #c00;
+}
+.el-alert.running {
+background-color: #2693ff;
+}
+
+.task .el-alert .el-alert__icon {
 font-size: 30px;
 padding: 5px;
 }

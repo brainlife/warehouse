@@ -9,6 +9,7 @@ import datasets from '@/datasets'
 import dataset from '@/dataset'
 import upload from '@/upload'
 import processes from '@/processes'
+import simpleprocess from '@/simpleprocess'
 import process from '@/process'
 import processarchive from '@/processarchive'
 import settings from '@/settings'
@@ -32,8 +33,13 @@ export default new Router({
     { path: '/dataset/:id', component: dataset},
     { path: '/download/:id', component: download},
     { path: '/processes', component: processes},
+
+    //simple workflow
+    { path: '/simpleprocess/:id', component: simpleprocess},
     { path: '/process/:id', component: process},
     { path: '/process/:id/archive', component: processarchive},
+
+        
     { path: '/projects', component: projects },
     { path: '/project/:id', component: project },
     { path: '/project/:id/edit', component: projectedit },
