@@ -17,19 +17,20 @@
                 <h2 class="text-muted">Submit {{app.name}}</h2>
                 <h3>Please select / configure tasks to submit.</h3>
                 <el-form label-width="150px">
-                    <el-card v-for="task in tasks">
+                    <el-card v-for="task in tasks" :class="{disabled: !task.enable}">
                         <p>
-                            <el-checkbox v-model="task.enable">Submit</el-checkbox>
+                            <el-checkbox v-model="task.enable" @change="revalidate()">Submit</el-checkbox>
                         </p>
 
                         <!--input-->
                         <el-form-item v-for="input in task.inputs" :label="input.id" :key="input.id" ref="form">
-                            <el-select v-model="input.dataset" placeholder="Please select input dataset" style="width: 100%;">
+                            <el-select @change="revalidate()" v-model="input.dataset" placeholder="Please select input dataset" style="width: 100%;">
                                 <el-option v-for="dataset in datasets[input.id]" :key="dataset._id" 
                                     :value="dataset._id" :label="dataset.meta.subject+' '+dataset.name">
                                     {{dataset.meta.subject}} | {{dataset.name}} | {{dataset.create_date|date}}
                                 </el-option>
                             </el-select>
+                            <el-alert v-if="input.error" :title="input.error" type="error"/>
                         </el-form-item>
 
                         <!--config-->
@@ -39,10 +40,15 @@
 
                          <!--<pre>{{task}}</pre>-->
                     </el-card>
-                    <el-form-item>
-                        <el-button @click="page = 'select_app'">Back</el-button>
-                        <el-button type="primary" @click="submit()">Submit</el-button>
-                    </el-form-item>
+                    <el-card style="background-color: #5cc18e;">
+                        <el-form-item label="Description">
+                            <el-input type="textarea" v-model="desc"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button @click="page = 'select_app'">Back</el-button>
+                            <el-button type="primary" @click="submit()"><icon name="play"/> Submit</el-button>
+                        </el-form-item>
+                    </el-card>
                 </el-form> 
             </div>
 
@@ -85,6 +91,7 @@ export default {
 
             datasets: {}, //possible datasets that user can choose from for each input type
 
+            validated: false,
             config: Vue.config,
         }
     },
@@ -198,11 +205,69 @@ export default {
             //find datasets that applies 
             //var datasets = this.dataset.filter(lib.filter_apps
         },
+
+        revalidate: function() {
+            if(this.validated) this.validate();
+        },
+
+        validate: function() {
+            var valid = true;
+            this.tasks.forEach(task=>{
+                //make sure all inputs are selected
+                for(var iid in task.inputs) {
+                    var input = task.inputs[iid];
+                    Vue.set(input, 'error', null);
+                    if(task.enable && !input.dataset) {
+                        valid = false;
+                        input.error = "Please select input";
+                    }
+                }
+            }); 
+            this.validated = true;
+            return valid;
+        },
+
+        submit: function() {
+            if(!this.validate()) {
+                this.$notify.error({ title: 'Error', message: 'Validation failed' });
+            } else {
+                alert('good');
+            }
+        },
+
+        submit_instance(cb) {
+            //first create an instance to run everything
+            var instance = null;
+            var inst_config = {
+                brainlife: true,
+                prov: {
+                    app: this.app._id,
+                    //deps: [], 
+                }
+            }
+            /*
+            for(var input_id in this.form.inputs) {
+                inst_config.prov.deps.push({input_id, dataset: this.form.inputs[input_id]});
+            }
+            */
+            this.$http.post(Vue.config.wf_api+'/instance', {
+                name: "brainlife bulk process for app:"+this.app._id,
+                desc: this.desc,
+                config: inst_config,
+            }).then(res=>{
+                instance = res.body;
+                console.log("instance created", instance);
+            })
+        },
+
     },
 }
 </script>
 
 <style scoped>
+.disabled {
+background-color: #ddd;
+}
 </style>
 
 

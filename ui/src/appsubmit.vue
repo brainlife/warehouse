@@ -202,8 +202,8 @@ export default {
                 return;
             }
 
+            //first create an instance to run everything
             var instance = null;
-
             var inst_config = {
                 brainlife: true,
                 //project: this.project_id,
@@ -216,8 +216,6 @@ export default {
             for(var input_id in this.form.inputs) {
                 inst_config.prov.deps.push({input_id, dataset: this.form.inputs[input_id]});
             }
-
-            //first create an instance to run everything
             this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "brainlife process for app:"+this.app._id,
                 desc: this.form.desc,
