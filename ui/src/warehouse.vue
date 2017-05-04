@@ -21,7 +21,8 @@ background-color: #f0f0f0;
 color: #444;
 }
 body, textarea, input {
-font-family: 'Lato', sans-serif;
+/*font-family: 'Lato', sans-serif;*/
+font-family: 'Roboto', sans-serif;
 font-size: 14px;
 }
 .margin20 {
@@ -123,6 +124,7 @@ table.info th {
 }
 table.info td {
     padding: 10px;
+    line-height: 140%;
 }
 .el-table__header-wrapper thead div {
 color: gray !important;
