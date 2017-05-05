@@ -10,7 +10,7 @@
                 <h2 class="text-muted">Please select application you'd like to submit with selected datasets</h2>
                 <br>
                 <div v-for="app in apps" :key="app._id" @click="selectapp(app)" class="clickable">
-                    <app :app="app" compact="true"/>
+                    <app :app="app" :compact="true" :clickable="false"/>
                 </div>
             </div>
             <div v-if="page == 'config'">
@@ -165,7 +165,6 @@ export default {
                 this.app.inputs.forEach(input=>{
                     Vue.set(this.datasets, input.id, lib.filter_datasets(res.body.datasets, input));
                 });
-                //console.dir(this.datasets);
 
                 //for each dataset selected.. create task entry
                 this.tasks = [];
@@ -209,12 +208,6 @@ export default {
                     if(task.enable) this.tasks.push(task); 
                 }
             });
-            //console.log("set datasets");
-            //console.dir(this.app);
-
-
-            //find datasets that applies 
-            //var datasets = this.dataset.filter(lib.filter_apps
         },
 
         revalidate: function() {

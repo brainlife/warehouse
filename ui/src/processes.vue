@@ -21,7 +21,9 @@
             </el-table-column> 
             <el-table-column label="Application">
                 <template scope="scope">
-                    {{apps[scope.row.config.prov.app].name}}
+                    <div v-if="scope.row.config.prov">
+                        {{apps[scope.row.config.prov.app].name}}
+                    </div>
                 </template>
             </el-table-column> 
             <el-table-column prop="desc" label="Description"/></el-table-column> 
@@ -118,7 +120,7 @@ export default {
         click: function(instance) {
             console.dir(instance);
             //TODO - really bad way of telling difference between process or workflow
-            if(instance.config.prov.deps) this.$router.push("/simpleprocess/"+instance._id);
+            if(instance.config.prov) this.$router.push("/simpleprocess/"+instance._id);
             else this.$router.push("/process/"+instance._id);
         },
         go: function(path) {

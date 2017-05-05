@@ -2,8 +2,8 @@
 <el-card :body-style="{padding: '0px'}" 
     v-if="app" 
     style="margin-bottom: 20px;" 
-    :class="{'compact': compact, 'clickable': false}">
-    <div @click-dis="go('/app/'+app._id)">
+    :class="{'compact': compact, 'clickable': clickable}">
+    <div @click="click()">
         <appavatar :app="app" style="float: left;margin-right: 10px;"></appavatar>
         <div v-if="compact">
             <h4 class="appname">{{app.name}}</h4>
@@ -30,11 +30,13 @@
         <div v-else="!compact">
             <h4 class="appname">{{app.name}}</h4>
             <div class="appdesc">{{app.desc}}</div>
+            <!--
             <el-button-group style="width: 100%;">
-                <el-button size="small" style="width: 50%;" @click.stop="go('/app/'+app._id)"><icon name="info-circle"></icon> Detail</el-button>
-                <el-button size="small" style="width: 50%;" type="primary" @click.stop="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))">
+                <el-button size="small" style="width: 50%;" type="text" @click.stop="go('/app/'+app._id)"><icon name="info-circle"></icon> Detail</el-button>
+                <el-button size="small" style="width: 50%;" type="text" @click.stop="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))">
                     <icon name="play"></icon> Submit</el-button>
             </el-button-group>
+            -->
         </div>
     </div>
 </el-card>
@@ -49,7 +51,14 @@ import tags from '@/components/tags'
 
 export default {
     components: { contact, appavatar, tags },
-    props: ['app', 'dataset', 'compact', 'appid' ],
+    props: ['app', 'dataset', 'compact', 'appid', 'clickable' ],
+    props: {
+        app: Object,
+        dataset: Object,
+        compact: Boolean,
+        appid: String,
+        clickable: {type: Boolean, default: true},
+    },
     data () {
         return {
         }
@@ -65,9 +74,9 @@ export default {
         }
     },
     methods: {
-        go: function(path) {
-            this.$router.push(path);
-        }
+        click: function() {
+            if(this.clickable) this.$router.push('/app/'+this.app._id);
+        },
     },
 }
 </script>
@@ -75,15 +84,15 @@ export default {
 <style scoped>
 .appname {
 color: #666;
-padding: 8px;
-margin-bottom: 0px;
+padding: 10px;
+padding-bottom: 0px;
 }
 .appdesc {
 height: 150px;
 overflow: auto;
 font-size: 13px;
 color: #666;
-margin-bottom: 10px;
+margin: 10px;
 }
 
 .image {

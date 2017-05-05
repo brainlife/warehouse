@@ -14,23 +14,19 @@
             </el-breadcrumb>
 
             <!--<h1><icon name="send" scale="2"></icon> {{app.name}}</h1>-->
+            <time style="float: right; margin-top: 15px;">Created at {{instance.create_date|date}}</time>
             <h1><icon name="send" scale="2"></icon> Process</h1>
-        </div>
-        
-        <el-form label-width="200px">
+            <!--
             <el-form-item label="Name">
                 <el-input v-model="instance.name"/>
             </el-form-item>
-            <el-form-item label="Description">
-                <el-input type="textarea" v-model="instance.desc" :autosize="{minRows: 2, maxRows: 5}"/>
-            </el-form-item>
-            <el-form-item label="">
-                <time>Created at {{instance.create_date|date}}</time>
-            </el-form-item>
-        </el-form>
+            -->
+            <el-input type="textarea" placeholder="Description" 
+                v-model="instance.desc" :autosize="{minRows: 2, maxRows: 5}"/>
+        </div>
 
-        <div class="task task-input">
-            <h2 style="color: white">Input Datasets</h2>
+        <div class="section">
+            <h2>Input Datasets</h2>
             <p class="text-muted">Following datasets are staged out of Brain Life warehouse and made available for processing.</p>
             <div v-for="(task, idx) in tasks" v-if="task._class == 'input'" :key="idx">
                 <el-card>
@@ -41,25 +37,28 @@
                     <p v-for="(input, input_id) in task.config.inputs" :key="input_id">
                         <el-row>
                         <el-col :span="6">
-                            {{input.datatype.name}} <metadata :metadata="datasets[input.dataset].meta"/>
+                            {{input.datatype.name}} <tags :tags="datasets[input.dataset].datatype_tags"/>
                         </el-col>
                         <el-col :span="12">
                             {{datasets[input.dataset].name}} <small class="text-muted">{{datasets[input.dataset].desc}}</small>
+                        </el-col>
+                        <el-col :span="6">
+                            <metadata :metadata="datasets[input.dataset].meta"/>
                         </el-col>
                         </el-row>
                     </p>
                 </el-card>
             </div>
-            <el-button type="primary" style="float: right;"><icon name="plus"/> Stage Other Datasets</el-button>
+            <el-button type="primary"><icon name="plus"/> Stage Datasets</el-button>
             <br clear="both">
         </div>
 
-        <div class="task">
+        <div class="section">
             <h2>Processing</h2>
             <div v-for="(task, idx) in tasks" v-if="task._class == 'process'" :key="idx" class="process">
                 <task :task="task"/>
             </div>
-            <el-button type="primary" style="float: right;"><icon name="plus"/> New Process</el-button>
+            <el-button type="primary"><icon name="plus"/> New Process</el-button>
             <br clear="both">
         </div>
 
@@ -100,7 +99,7 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 export default {
     components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar },
 
-    data () {
+    data() {
         return {
             instance: null,
             tasks: null,
@@ -111,100 +110,15 @@ export default {
         }
     },
 
-    mounted: function() {
-        //load instance first
-        this.$http.get(Vue.config.wf_api+'/instance', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-            //populate: 'config.project datatype instance.config.prov.deps.dataset',
-        }})
-        .then(res=>{
-            this.instance = res.body.instances[0];
-
-            //load tasks
-            return this.$http.get(Vue.config.wf_api+'/task', {params: {
-                find: JSON.stringify({
-                    instance_id: this.instance._id,
-                    //name: {$ne: "brainlife.novnc"},
-                })
-            }})
-        })
-        .then(res=>{
-            this.tasks = res.body.tasks;
-
-            //classify tasks
-            this.tasks.forEach(task=>{
-                switch(task.name) {
-                    case "brainlife.stage_input": task._class = "input"; break;
-                    case "brainlife.stage_output": task._class = "output"; break;
-                    case "brainlife.process": task._class = "process"; break;
-                }
+    mounted() {
+        console.dir(this);
+        if(this.$route.params.id) {
+            this.load();
+        } else {
+            this.submit_instance(instance=>{
+                this.$router.push("/process/"+instance._id);
             });
-
-            //load datasets used by config.input
-            var dataset_ids = [];
-            this.tasks.forEach(task=>{
-                if(task.config.inputs) {
-                    for(var input_id in task.config.inputs) { 
-                        dataset_ids.push(task.config.inputs[input_id].dataset);
-                    }
-                }
-            });
-            console.log("looking for", dataset_ids);
-            return this.$http.get('dataset', {params: {
-                find: JSON.stringify({_id: dataset_ids}),
-                populate: ' ', //load all default
-            }})
-        })
-        .then(res=>{
-            res.body.datasets.forEach((dataset)=>{
-                Vue.set(this.datasets, dataset._id, dataset);
-            });
-    
-            //subscribe to the instance events
-            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-            var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
-            ws.onopen = (e)=>{
-                //console.log("websocket opened", this.instance._id);
-                ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.task",
-                        key: Vue.config.user.sub+"."+this.instance._id+".#",
-                    }
-                }));
-                //console.log("binding to instance", this.instance._id);
-                ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.instance",
-                        key: Vue.config.user.sub+"."+this.instance._id,
-                    }
-                }));
-            }
-              
-            ws.onmessage = (json)=>{
-                var event = JSON.parse(json.data);
-                var msg = event.msg;
-                if(!msg || !msg._id) return; //odd..
-                switch(event.dinfo.exchange) {
-                case "wf.task":
-                    //look for the task to update
-                    this.tasks.forEach(function(t) {
-                      if(t._id == msg._id) {
-                          for(var k in msg) t[k] = msg[k];
-                      }
-                    });
-                    break;
-                case "wf.instance":
-                    this.instance = msg;    
-                    break;
-                default:
-                    console.error("unknown exchange", event.dinfo.exchange);
-                }
-            }
-
- 
-        }).catch((err)=>{
-            console.error(err);
-        });
+        }
     },
 
     computed: {
@@ -239,19 +153,169 @@ export default {
         view: function(type) {
             window.open("#/view/"+this.instance._id+"/"+this.output_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
+        load: function() {
+            //load instance first
+            this.$http.get(Vue.config.wf_api+'/instance', {params: {
+                find: JSON.stringify({_id: this.$route.params.id}),
+                //populate: 'config.project datatype instance.config.prov.deps.dataset',
+            }})
+            .then(res=>{
+                this.instance = res.body.instances[0];
+
+                //load tasks
+                return this.$http.get(Vue.config.wf_api+'/task', {params: {
+                    find: JSON.stringify({
+                        instance_id: this.instance._id,
+                        //name: {$ne: "brainlife.novnc"},
+                    })
+                }})
+            })
+            .then(res=>{
+                this.tasks = res.body.tasks;
+
+                //classify tasks
+                this.tasks.forEach(task=>{
+                    switch(task.name) {
+                        case "brainlife.stage_input": task._class = "input"; break;
+                        case "brainlife.stage_output": task._class = "output"; break;
+                        case "brainlife.process": task._class = "process"; break;
+                    }
+                });
+
+                //load datasets used by config.input
+                var dataset_ids = [];
+                this.tasks.forEach(task=>{
+                    if(task.config.inputs) {
+                        for(var input_id in task.config.inputs) { 
+                            dataset_ids.push(task.config.inputs[input_id].dataset);
+                        }
+                    }
+                });
+                console.log("looking for", dataset_ids);
+                return this.$http.get('dataset', {params: {
+                    find: JSON.stringify({_id: dataset_ids}),
+                    populate: ' ', //load all default
+                }})
+            })
+            .then(res=>{
+                res.body.datasets.forEach((dataset)=>{
+                    Vue.set(this.datasets, dataset._id, dataset);
+                });
+        
+                //subscribe to the instance events
+                var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+                var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
+                ws.onopen = (e)=>{
+                    //console.log("websocket opened", this.instance._id);
+                    ws.send(JSON.stringify({
+                        bind: {
+                            ex: "wf.task",
+                            key: Vue.config.user.sub+"."+this.instance._id+".#",
+                        }
+                    }));
+                    //console.log("binding to instance", this.instance._id);
+                    ws.send(JSON.stringify({
+                        bind: {
+                            ex: "wf.instance",
+                            key: Vue.config.user.sub+"."+this.instance._id,
+                        }
+                    }));
+                }
+                  
+                ws.onmessage = (json)=>{
+                    var event = JSON.parse(json.data);
+                    var msg = event.msg;
+                    if(!msg || !msg._id) return; //odd..
+                    switch(event.dinfo.exchange) {
+                    case "wf.task":
+                        //look for the task to update
+                        this.tasks.forEach(function(t) {
+                          if(t._id == msg._id) {
+                              for(var k in msg) t[k] = msg[k];
+                          }
+                        });
+                        break;
+                    case "wf.instance":
+                        this.instance = msg;    
+                        break;
+                    default:
+                        console.error("unknown exchange", event.dinfo.exchange);
+                    }
+                }
+            }).catch((err)=>{
+                console.error(err);
+            });
+        },
+
+        submit_instance: function(cb) {
+            //first create an instance to host all tasks 
+            var instance = null;
+            var inst_config = {
+                brainlife: true,
+                prov: {
+                    //app: this.app._id,
+                    //deps: [], 
+                }
+            }
+            /* TODO - not sure how to set prov.deps for bulk submission
+            for(var input_id in this.form.inputs) {
+                inst_config.prov.deps.push({input_id, dataset: this.form.inputs[input_id]});
+            }
+            */
+            this.$http.post(Vue.config.wf_api+'/instance', {
+                name: "brainlife.process",
+                //desc: null,
+                config: {
+                    brainlife: true,
+                },
+            }).then(res=>{
+                console.log("created instance", res.body);
+                cb(res.body);
+            });
+        },
+
+        stage_selected: function() {
+            var selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
+            for(var did in selected) {
+                var selected_dataset = selected[did];
+
+                //create config to download all input data from archive
+                var download = [];
+                for(var input_id in task.inputs) {
+                    download.push({
+                        url: Vue.config.api+"/dataset/download/"+task.inputs[input_id].dataset+"?at="+Vue.config.jwt,
+                        untar: "gz",
+                        dir: "inputs/"+input_id,
+                    });
+                }
+
+                //now submit task to download data from archive
+                this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: instance._id,
+                    name: "brainlife.stage_input",
+                    desc: "Stage Input for "+task.name,
+                    service: "soichih/sca-product-raw",
+                    config: { download, inputs: task.inputs },
+                }).then(res=>{
+                    task.download_task = res.body.task;
+                    console.log("submitted download", task);
+                    next_task();
+                });
+            }
+        }
     },
 }
 </script>
 
 <style scope>
-.task {
+.section {
 background-color: white;
-padding: 15px;
+padding: 20px;
 }
-.task h2 {
+.section h2 {
 color: #999;
-}
-.task-input {
-background-color: #ccc;
+padding-bottom: 10px;
+margin-bottom: 15px;
+border-bottom: 1px solid #ccc;
 }
 </style>

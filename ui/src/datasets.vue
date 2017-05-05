@@ -112,7 +112,7 @@
         <div class="select-group" style="background-color: #999;">
             <el-button-group>
                 <el-button size="small" type="primary" @click="download()">Download</el-button>
-                <el-button size="small" type="primary" @click="submit()">Submit</el-button>
+                <el-button size="small" type="primary" @click="submit()">Process</el-button>
             </el-button-group>
             <el-dropdown @command="view">
                 <el-button size="small" type="primary">
@@ -195,7 +195,7 @@ export default {
         }
     },
 
-    mounted: function() {
+    mounted() {
         this.project_id = this.$route.params.projectid; //could be set to null
 
         //need to load all project in case user might click on "all"
@@ -380,7 +380,6 @@ export default {
                     }).then(task=>{
                         var download_task = task;
                         window.open("#/view/"+download_instance._id+"/"+download_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
-                        //this.$router.push("/view/"+download_instance._id+"/"+download_task._id+"/"+type);
                     });
                 }
             });

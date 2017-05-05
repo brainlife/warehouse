@@ -2,29 +2,31 @@
 <div>
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
-    <div class="page-content" v-if="app">
-        <div class="margin20">
-            <el-button-group style="float: right;">
-                <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit"> 
-                    <icon name="pencil"></icon> Edit
-                </el-button>
-                <el-button type="primary" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"> 
-                    <icon name="play"></icon> Submit
-                </el-button>
-            </el-button-group>
-
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
-                <el-breadcrumb-item>{{app._id}}</el-breadcrumb-item>
-            </el-breadcrumb>
-            <br>
-
-            <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
-            <h1>{{app.name}}</h1>
-            <br clear="both">
-        </div>
-
-        <table class="info"> 
+    <div class="header" v-if="app">
+        <!--
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
+            <el-breadcrumb-item>{{app._id}}</el-breadcrumb-item>
+        </el-breadcrumb>
+        <br>
+        -->
+        <el-button-group style="float: right;">
+            <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit"> 
+                <icon name="pencil"></icon> Edit
+            </el-button>
+            <el-button type="primary" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"> 
+                <icon name="play"></icon> Submit
+            </el-button>
+        </el-button-group>
+        <appavatar :app="app" style="float: left; margin-right: 20px; margin-top: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
+        <br>
+        <br>
+        <h1>{{app.name}}</h1>
+    </div> 
+    <!--<div class="header-bottom"></div>-->
+    <div class="page-content" v-if="app" style="margin-top: 90px; padding-top: 60px;">
+        <!--<p class="appdesc">{{app.desc}}</p>-->
+        <table class="info">
         <tr>
             <th width="180px;">Description</th>
             <td>{{app.desc}}</td>
@@ -199,12 +201,39 @@ export default {
 
 <style scoped>
 .ui.text.menu {
-    margin: 0;
+margin: 0;
 }
 .dataset:hover {
-    cursor: pointer;
-    background-color: #ddd;
+cursor: pointer;
+background-color: #ddd;
+}
+.header {
+background: #666;
+padding: 20px;
+padding-bottom: 30px;
+margin-top: 42px;
+height: 40px;
+position: fixed;
+right: 0px;
+left: 90px;
+color: #666;
+z-index: 1;
+border-bottom: 1px solid #666;
+}
+.header h1 {
+color: white;
+}
+.header-bottom {
+height: 50px;
+background-color: white;
+position: fixed;
+top: 140px;
+right: 0px;
+left: 90px;
+border-bottom: 1px solid #ddd;
+}
+.appdesc {
+margin: 20px 30px 30px 138px;
+color: gray;
 }
 </style>
-
-

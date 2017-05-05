@@ -69,10 +69,10 @@ export default {
     top: 0px;
     left: 0px;
     right: 0px;
-    box-shadow: 0px 2px 3px #999;
+    box-shadow: 0px 2px 3px rgba(0,0,0,0.5);
     background-image: linear-gradient(120deg, #2693ff, #159957);
     color: white;
-    z-index: 1;
+    z-index: 2;
 }
 
 svg.cloud {

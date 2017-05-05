@@ -16,46 +16,46 @@
             <p>{{app.desc}}</p>
 
             <br clear="both">
-            <br>
+        </div>
 
-            <el-card class="box-card">
-                <el-form :model="form" ref="form" label-position="left" label-width="150px">
-                    <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
-                    <el-form-item v-for="input in app.inputs" :label="input.id" :key="input.id" ref="form">
-                        <el-select v-model="form.inputs[input.id]" placeholder="Please select input dataset">
-                            <el-option v-for="dataset in datasets[input.id]" :key="dataset._id" 
-                                :value="dataset._id" :label="dataset.meta.subject+' '+dataset.name">
-                                {{dataset.meta.subject}} | {{dataset.name}} | {{dataset.create_date|date}}
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
+        <div class="content">
+            <el-form :model="form" ref="form" label-position="left" label-width="150px">
+                <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
+                <el-form-item v-for="input in app.inputs" :label="input.id" :key="input.id" ref="form">
+                    <el-select v-model="form.inputs[input.id]" placeholder="Please select input dataset">
+                        <el-option v-for="dataset in datasets[input.id]" :key="dataset._id" 
+                            :value="dataset._id" :label="dataset.meta.subject+' '+dataset.name">
+                            {{dataset.meta.subject}} | {{dataset.name}} | {{dataset.create_date|date}}
+                        </el-option>
+                    </el-select>
+                </el-form-item>
 
-                    <!--<h4 style="margin-left: 150px;">Configurations</h4>-->
-                    <!-- TODO doesn't support nested parameters-->
-                    <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value">
-                        <el-input v-model="form.config[k]"></el-input>
-                    </el-form-item>
- 
-                    <el-form-item label="Description">
-                        <el-input type="textarea" v-model="form.desc" placeholder="Optional Description for this processing"></el-input>
-                    </el-form-item>
-                    <br>
-                    <el-form-item>
-                        <el-button type="primary" @click="submit()">Submit</el-button>
-                    </el-form-item>
-                </el-form>
-            </el-card>
+                <!--<h4 style="margin-left: 150px;">Configurations</h4>-->
+                <!-- TODO doesn't support nested parameters-->
+                <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value">
+                    <el-input v-model="form.config[k]"></el-input>
+                </el-form-item>
 
-            <el-card v-if="config.debug">
-                <div slot="header">Debug</div>
-                <h3>Form</h3>
-                <pre v-highlightjs="JSON.stringify(form, null, 4)"><code class="json hljs"></code></pre>
-                <h3>App</h3>
-                <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                <h3>Datasets</h3>
-                <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
-            </el-card>
-        </div><!--margin20-->
+                <el-form-item label="Description">
+                    <el-input type="textarea" v-model="form.desc" placeholder="Optional Description for this processing"></el-input>
+                </el-form-item>
+                <br>
+                <el-form-item>
+                    <el-button type="primary" @click="submit()">Submit</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+
+        <br>
+        <el-card v-if="config.debug">
+            <div slot="header">Debug</div>
+            <h3>Form</h3>
+            <pre v-highlightjs="JSON.stringify(form, null, 4)"><code class="json hljs"></code></pre>
+            <h3>App</h3>
+            <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+            <h3>Datasets</h3>
+            <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
+        </el-card>
         </div><!--page-content-->
     </div>
 </div><!--root-->
@@ -333,11 +333,15 @@ export default {
 
 <style scoped>
 .ui.text.menu {
-    margin: 0;
+margin: 0;
 }
 .dataset:hover {
-    cursor: pointer;
-    background-color: #ddd;
+cursor: pointer;
+background-color: #ddd;
+}
+.content {
+background-color: white;
+padding: 20px;
 }
 </style>
 
