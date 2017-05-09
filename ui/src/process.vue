@@ -21,16 +21,17 @@
         </div>
 
         <div class="sidebar">
-            <h3>Input Datasets</h3>
-            <div v-for="(dataset, did) in _input_datasets" :key="did" style="margin-bottom: 10px; font-size: 90%;">
-                <metadata :metadata="dataset.meta"></metadata>
-                <b>{{dataset.name}}</b> <tags :tags="dataset.datatype_tags"></tags><br>
-                <small class="text-muted">{{dataset.desc}}</small>
-                <br>
-            </div>
+            <div style="margin: 0px 10px;">
+                <h3>Input Datasets</h3>
+                <div v-for="(dataset, did) in _input_datasets" :key="did" style="margin-bottom: 10px; font-size: 90%;">
+                    <metadata :metadata="dataset.meta"></metadata>
+                    <b>{{dataset.name}}</b> <tags :tags="dataset.datatype_tags"></tags><br>
+                    <small class="text-muted">{{dataset.desc}}</small>
+                    <br>
+                </div>
 
-            <el-button type="primary" @click="stage_datasets()"><icon name="plus"/> Stage Datasets</el-button>
-            <br clear="both">
+                <el-button type="primary" @click="stage_datasets()"><icon name="plus"/> Stage Datasets</el-button>
+            </div>
         </div>
 
         <div class="main-section">
@@ -691,7 +692,7 @@ export default {
 }
 </script>
 
-<style scope>
+<style scoped>
 .main-section {
 position: fixed;
 padding: 20px;
@@ -715,12 +716,11 @@ border-bottom: 1px solid #666;
 }
 .sidebar {
 background-color: white;
-margin-top: 20px;
-padding: 10px;
+padding-top: 20px;
 position: fixed;
-top: 120px;
+top: 140px;
 bottom: 0px;
-width: 280px;
+width: 300px;
 right: 0px;
 overflow: auto;
 }
