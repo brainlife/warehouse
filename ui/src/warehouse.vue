@@ -20,54 +20,52 @@ body {
 background-color: #f0f0f0;
 color: #444;
 }
-body, textarea, input {
-/*font-family: 'Lato', sans-serif;*/
+body, textarea, input, table {
 font-family: 'Roboto', sans-serif;
 font-size: 14px;
 }
 .margin20 {
-	margin: 20px;
+margin: 20px;
 }
 .ui.pusher {
-  margin-left: 200px;
+margin-left: 200px;
 }
 .page-content {
-    /*transition: margin-right 0.5s;*/
-    position: fixed;
-    left: 90px;
-    right: 0px;
-    top: 50px;
-    bottom: 0px;
-    overflow: auto;
+position: fixed;
+left: 90px;
+right: 0px;
+top: 50px;
+bottom: 0px;
+overflow: auto;
 }
 
 .fade-enter-active {
-  transition: opacity 1s
+transition: opacity 1s
 }
 .fade-enter, .fade-leave-to {
-  opacity: 0
+opacity: 0
 }
 pre {
-    margin: 0px;
-    overflow: auto;
-    font-family: 'monospace';
+margin: 0px;
+overflow: auto;
+font-family: 'monospace';
 }
 .clickable:hover,
 .clickable-record:hover {
-    cursor: pointer;
-    background-color: #ddd;
+cursor: pointer;
+background-color: #ddd;
 }
 .clickable-row {
-    cursor: pointer;
+cursor: pointer;
 }
 .text-muted {
-    opacity: 0.6;
+opacity: 0.6;
 }
 code.hljs {
-    font-size: 80%;
+font-size: 80%;
 }
 .off-sidemenu {
-    margin-left: 150px;
+margin-left: 150px;
 }
 svg.fa-icon {
 position: relative;
@@ -107,8 +105,7 @@ margin-bottom: 6px;
 }
 
 table.info {
-    width: 100%;
-    font-size: 13px;
+width: 100%;
 }
 table.info tr {
     background-color: white;

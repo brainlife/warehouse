@@ -23,14 +23,29 @@
         <div class="sidebar">
             <div style="margin: 0px 10px;">
                 <h3>Input Datasets</h3>
-                <div v-for="(dataset, did) in _input_datasets" :key="did" style="margin-bottom: 10px; font-size: 90%;">
+                <el-card v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_input'" style="margin-bottom: 10px; font-size: 90%;">
+                <!--<div v-for="(dataset, did) in _input_datasets" :key="did" style="margin-bottom: 10px; font-size: 90%;">-->
+                    <div slot="header">
+                        {{dataset.datatype_id}}
+                        <tags :tags="dataset.datatype_tags"></tags>
+                    </div> 
                     <metadata :metadata="dataset.meta"></metadata>
-                    <b>{{dataset.name}}</b> <tags :tags="dataset.datatype_tags"></tags><br>
+                    <b>{{dataset.name}}</b><br>
                     <small class="text-muted">{{dataset.desc}}</small>
-                    <br>
-                </div>
-
+                </el-card>
                 <el-button type="primary" @click="stage_datasets()"><icon name="plus"/> Stage Datasets</el-button>
+                <br>
+                <br>
+                <h3>Output Datasets</h3>
+                <el-card v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" style="margin-bottom: 10px; font-size: 90%;">
+                    <div slot="header">
+                        {{dataset.datatype_id}}
+                        <tags :tags="dataset.datatype_tags"></tags>
+                    </div> 
+                    <metadata :metadata="dataset.meta"></metadata>
+                    <b>{{dataset.name}}</b><br>
+                    <small class="text-muted">{{dataset.desc}}</small>
+                </el-card>
             </div>
         </div>
 
@@ -57,9 +72,9 @@
                             :dataset="dataset" @submitted="archived(dataset)" style="margin-top: 30px;"/>
                     </el-card>
                 </div>
-                <br v-else>
             </div>
 
+            <br>
             <el-button v-if="!newprocess" type="primary" @click="start_newprocess()">New Process <icon name="caret-down"/></el-button>
             <el-card v-else>
                 <h3 slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Process</h3>
@@ -76,41 +91,69 @@
                 </transition>
 
                 <transition name="fade">
-                <div v-if="this.newtask.app">
+                <div v-if="this.newtask_app">
                     <el-form label-width="150px"> 
                         <el-form-item label="Application">
-                            <app :app="this.newtask.app" :compact="true" :clickable="false"></app>
-                        </el-form-item>
-                        <el-form-item label="Description">
-                            <el-input type="textarea" placeholder="Description" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"/>
-                        </el-form-item>
-                        <!--input-->
-                        <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id" :key="input_id">
-                            <el-select @change="revalidate()" v-model="newtask.inputs[input_id].dataset" placeholder="Please select input dataset" style="width: 100%;">
-                                <el-option v-for="(dataset, idx) in _datasets" v-if="dataset.datatype_id == input.datatype._id" :key="idx"
-                                    :value="idx" :label="dataset.meta.subject+' '+dataset.name">
-                                    <span v-if="dataset.task.status != 'finished'">(Tentative)</span>
-                                    <b>{{dataset.name}}</b> 
-                                    <tags :tags="dataset.datatype_tags"></tags>
-                                    <!--<small class="text-muted">{{dataset.desc}}</small>-->
-                                    <!--{{dataset.name}} | {{dataset.create_date|date}}-->
-                                    | <metadata :metadata="dataset.meta"/>
-                                </el-option>
-                            </el-select>
-                            <el-alert v-if="input.error" :title="input.error" type="error"/>
+                            <app :app="this.newtask_app" :compact="true" :clickable="false"></app>
                         </el-form-item>
 
-                        <!--config-->
-                        <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k">
-                            <el-input v-model="newtask.config[k]"></el-input>
+                        <el-form-item label="Description">
+                            <el-input type="textarea" placeholder="Description" v-model="newtask_desc" :autosize="{minRows: 2, maxRows: 5}"/>
                         </el-form-item>
+
+                        <el-form-item label="">
+                            <el-tabs v-model="submit_mode" type="card">
+                                <el-tab-pane label="Single" name="single"></el-tab-pane>
+                                <el-tab-pane label="Bulk" name="bulk">
+                                    <p class="text-muted">Submit process for each input datasets</p>
+                                </el-tab-pane>
+                            </el-tabs> 
+                        </el-form-item>
+
+                        <div v-for="(newtask, newtask_idx) in newtasks" :key="newtask_idx">
+                            <!--input-->
+                            <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id" :key="input_id">
+                                <el-select @change="revalidate()" v-model="newtask.inputs[input_id].dataset" placeholder="Please select input dataset" style="width: 100%;">
+                                    <el-option-group key="brainlife.stage_input" label="Input Datasets">
+                                        <el-option v-for="(dataset, idx) in _datasets" 
+                                            v-if="dataset.datatype_id == input.datatype._id && dataset.task.name == 'brainlife.stage_input'" :key="idx"
+                                                :value="idx" :label="dataset.name+' | subject:'+dataset.meta.subject">
+                                            <span v-if="dataset.task.status != 'finished'">(Staging)</span>
+                                            <b>{{dataset.name}}</b> 
+                                            <tags :tags="dataset.datatype_tags"></tags>
+                                            | <metadata :metadata="dataset.meta"/>
+                                        </el-option>
+                                    </el-option-group>
+                                    <el-option-group key="brainlife.stage_output" label="Generated Datasets">
+                                        <el-option v-for="(dataset, idx) in _datasets" 
+                                            v-if="dataset.datatype_id == input.datatype._id && dataset.task.name == 'brainlife.stage_output'" :key="idx"
+                                                :value="idx" :label="dataset.meta.subject+' '+dataset.name">
+                                            <span v-if="dataset.task.status != 'finished'">(Processing)</span>
+                                            <b>{{dataset.name}}</b> 
+                                            <tags :tags="dataset.datatype_tags"></tags>
+                                            | <metadata :metadata="dataset.meta"/>
+                                        </el-option>
+                                    </el-option-group>
+                                </el-select>
+                                <el-alert v-if="input.error" :title="input.error" type="error"/>
+                            </el-form-item>
+
+                            <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="typeof v == 'string' || typeof v == 'number'">
+                                <el-input v-model="newtask.config[k]"></el-input>
+                                <!--
+                                <div v-if="typeof newtask.config[k] == 'object'">
+                                    <div v-if="typeof newtask.config[k] == 'object'">
+                                    </div> 
+                                </div>
+                                -->
+                            </el-form-item>
+                        </div>
 
                         <el-form-item>
                             <el-button @click="close_newprocess()">Cancel</el-button>
                             <el-button type="primary" @click="submit_newprocess()">Submit</el-button>
                         </el-form-item>
                          
-                        <!--<pre>{{newtask}}</pre>-->
                     </el-form>
                 </div>
                 </transition>
@@ -119,20 +162,10 @@
             <br>
             <el-card v-if="config.debug">
                 <div slot="header">Debug</div>
-                <div v-if="newtask">
-                    <h3>newtask</h3>
-                    <pre v-highlightjs="JSON.stringify(newtask, null, 4)"><code class="json hljs"></code></pre>
+                <div v-if="newtasks">
+                    <h3>newtasks</h3>
+                    <pre v-highlightjs="JSON.stringify(newtasks, null, 4)"><code class="json hljs"></code></pre>
                 </div>
-                <!--
-                <div v-if="datasets">
-                    <h3>_datasets</h3>
-                    <pre v-highlightjs="JSON.stringify(_datasets, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <div v-if="newtask">
-                    <h3>newtask</h3>
-                    <pre v-highlightjs="JSON.stringify(newtask, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                -->
                 <div v-if="instance">
                     <h3>instance</h3>
                     <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
@@ -182,6 +215,8 @@ export default {
             newprocess: false, //set to true while submitting new process
             apps: null, //application user can run with selected data
 
+            newtasks: [],
+            /*
             newtask: {
                 name: null,
                 desc: null,
@@ -190,10 +225,16 @@ export default {
                 validated: false,
                 inputs: {},
             },
+            */
+            submit_mode: "single",
+            newtask_app: null,
+            newtask_desc: "",
+            validated: false,
 
             //cache
             tasks: null,
             datasets: {}, 
+
             config: Vue.config,
         }
     },
@@ -433,7 +474,7 @@ export default {
         },
 
         close_newprocess: function(cb) {
-            this.newtask.app = null;
+            this.newtask_app = null;
             this.newprocess = false;
         },
 
@@ -467,6 +508,7 @@ export default {
 
         start_newprocess: function() {
             this.newprocess = true;
+            this.newtasks = [];
 
             //create list of all datatypes that user has staged / generated
             var datatype_ids = [];
@@ -498,17 +540,28 @@ export default {
             });
         },
 
-        generate_default: function(app) {
-            var config = {};
-            for(var k in app.config) {
-                var v = app.config[k];
-                if(v.type && v.default) config[k] = v.default;
+        set_default: function(config) {
+            for(var k in config) {
+                var v = config[k];
+                if(v.type) {
+                    //assume it's edge
+                    switch(v.type) {
+                    case "string":
+                    case "integer":
+                        config[k] = v.default;        
+                        break;
+                    case "input":
+                        config.input = this.newtask_app.inputs[v.input_id];
+                        config.dataset = null;
+                    }
+                } else this.set_default(v); //recurse on primitive
             }
-            return config;
         },
 
         selectapp: function(app) {
             this.apps = null;
+            this.newtask_app = app;
+            this.validated = false;
 
             //load datasets with applicable datatypes (will filter later)
             //TODO --- no, I should only allow input datasets, or datasets generated from other process
@@ -519,44 +572,39 @@ export default {
                     removed: false,
                 })
             }}).then(res=>{
-                /*
-                app.inputs.forEach(input=>{
-                    Vue.set(this.datasets, input.id, lib.filter_datasets(res.body.datasets, input));
+                var newtask = {
+                    name: 'brainlife.process',
+                    //config: this.generate_default(app),
+                    config: Object.assign({}, app.config),
+                    deps: [],
+                    inputs: {},
+                };
+                this.set_default(newtask.config);
+                this.newtask_app.inputs.forEach((input)=>{
+                    newtask.inputs[input.id] = Object.assign({dataset: null}, input);
                 });
-                */
-
-                //reset
-                this.newtask.name = 'brainlife.process';
-                this.newtask.desc = '';
-                this.newtask.config = this.generate_default(app);
-                this.newtask.validated = false;
-                this.newtask.app = app;
-
-                //setup inputs for newtask 
-                this.newtask.inputs = {};
-                app.inputs.forEach((input)=>{
-                    this.newtask.inputs[input.id] = input;
-                    this.$set(input, 'dataset', null);
-                });
+                this.newtasks.push(newtask); 
             });
         },
 
         revalidate: function() {
-            if(this.newtask.validated) this.validate();
+            if(this.validated) this.validate();
         },
 
         validate: function() {
             var valid = true;
             //make sure all inputs are selected
-            for(var iid in this.newtask.inputs) {
-                var input = this.newtask.inputs[iid];
-                Vue.set(input, 'error', null);
-                if(!input.dataset) {
-                    valid = false;
-                    input.error = "Please select input";
+            this.newtasks.forEach(newtask=>{
+                for(var iid in newtask.inputs) {
+                    var input = newtask.inputs[iid];
+                    Vue.set(input, 'error', null);
+                    if(input.dataset === null) {
+                        valid = false;
+                        input.error = "Please select input";
+                    }
                 }
-            }
-            this.newtask.validated = true;
+            });
+            this.validated = true;
             return valid;
         },
 
@@ -569,121 +617,113 @@ export default {
             Vue.set(dataset, 'archiving', false);
         },
 
+        //recursively update configuration with given newtask
+        process_input_config: function(newtask, config) {
+            for(var k in config) { 
+                var node = config[k];
+                if(!node) return;
+                if(node.isArray) {
+                    console.log("todo.. array!");
+                } else if(typeof node === 'object') {
+                    if(node.type) {
+                        switch(node.type) {
+                        case "input":
+                            //clear this node
+                            for(var _k in config) delete config[_k];
+                            //find the file
+                            var input = newtask.inputs[node.input_id];
+                            var dataset = this._datasets[input.dataset];
+                            console.log("input", input);
+                            console.log("datasets", dataset);
+                            if(!~newtask.deps.indexOf(dataset.task._id)) newtask.deps.push(dataset.task._id);
+                            //then lookup file_id
+                            input.datatype.files.forEach(file=>{
+                                if(file.id == node.file_id) {
+                                    config[k] = "../"+dataset.task._id+"/"+dataset.path+"/"+(file.filename||file.dirname)
+                                }
+                            });
+                            break;
+                        default:
+                            config[k] = "unknown_template_type";
+                        }
+                    } else this.process_input_config(newtask, node); //recurse to child node
+                }
+            }
+        },
+
         submit_newprocess: function() {
             if(!this.validate()) {
-                this.$notify.error({ title: 'Error', message: 'Validation failed' });
+                this.$notify.error({ title: 'Error', message: 'Please correct the form' });
             } else {
-                var deps = [];
 
-                //generate task.config from template and selected input
-                function handle_obj(obj) {
-                    for(var k in obj) { 
-                        var node = obj[k];
-                        if(!node) return;
-                        if(node.isArray) {
-                            console.log("todo.. array!");
-                        } else if(typeof node === 'object') {
-                            if(node.type) {
-                                switch(node.type) {
-                                case "string":
-                                case "integer":
-                                    obj[k] = node.value;
-                                    break;
-                                case "input":
-                                    //find the file
-                                    var input = this.newtask.inputs[node.input_id];
-                                    var dataset = this._datasets[input.dataset];
-                                    console.log("input", input);
-                                    console.log("datasets", dataset);
-                                    if(!~deps.indexOf(dataset.task._id)) deps.push(dataset.task._id);
-                                    //then lookup file_id
-                                    input.datatype.files.forEach(file=>{
-                                        if(file.id == node.file_id) {
-                                            obj[k] = "../"+dataset.task._id+"/"+dataset.path+"/"+(file.filename||file.dirname)
-                                        }
-                                    });
-                                    break;
-                                default:
-                                    obj[k] = "unknown_template_type";
-                                }
-                            } else handle_obj(node); //recurse
-                        }
-                    }
-                }
-                handle_obj.apply(this, [this.newtask.app.config]);
-                console.log("newtask", this.newtask); 
-                console.log("deps", deps);
-
-                //submit the app
-                this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: this.instance._id,
-                    name: this.newtask.name,
-                    desc: this.newtask.desc,
-                    service: this.newtask.app.github, //TODO what if it's docker?
-                    config: this.newtask.app.config,
-                    deps,
-                }).then(res=>{
-                    var task = res.body.task;
-                    console.log("submitted task", task);
-                    this.tasks.push(task);
-
-                    /*
-                    //store information about this task in instance.config
-                    if(!this.instance.config.processes) this.instance.config.processes = {};
-                    this.instance.config.processes[task._id] = {
-                        app: this.newtask.app
-                    };
-                    this.save_instance();
-                    */
-
-                    //I also need to submit stage_output task
-                    var symlink = [];
-                    var datasets = {};
-
-                    //aggregate all metadata from inputs to fake output metadata
-                    //TOOD - I think each app should produce this (and/or let user override it?)
-                    var agg_meta = {};
-                    this.newtask.app.inputs.forEach(input=>{
-                        var dataset = this._datasets[input.dataset];
-                        for(var k in dataset.meta) {
-                            agg_meta[k] = dataset.meta[k];
-                        }
-                    });
-
-                    this.newtask.app.outputs.forEach(output=>{
-                        if(output.files) {
-                            for(var file_id in output.files) {
-                                //find datatype file id
-                                output.datatype.files.forEach(datatype_file=>{
-                                    if(datatype_file.id == file_id) {
-                                        var name = datatype_file.filename||datatype_file.dirname;
-                                        symlink.push({ 
-                                            "src": "../"+task._id+"/"+output.files[file_id], 
-                                            "dest": output.id+"/"+name 
-                                        });
-                                    }
-                                });
-                            }
-                        } else {
-                            //copy everything..
-                            symlink.push({"src": "../"+task._id, "dest": output.id});
-                        }
+                this.newtasks.forEach(newtask=>{
+                    this.process_input_config(newtask, newtask.config);
+                    console.log("newtask", newtask); 
                     
-                        output.name = "process output from "+this.newtask.app.name;
-                        output.meta = agg_meta;
-                        datasets[output.id] = output;
-                    });
+                    //submit the app
                     this.$http.post(Vue.config.wf_api+'/task', {
                         instance_id: this.instance._id,
-                        name: "brainlife.stage_output",
-                        service: "soichih/sca-product-raw",
-                        config: { symlink, datasets },
-                        deps: [ task._id ],
+                        name: newtask.name,
+                        desc: this.newtask_desc,
+                        service: this.newtask_app.github, //TODO what if it's docker?
+                        config: newtask.config,
+                        deps: newtask.deps,
                     }).then(res=>{
-                        var output_task = res.body.task;
-                        console.log("submitted stage_output task", output_task);
-                        this.tasks.push(output_task);
-                        this.close_newprocess();
+                        var task = res.body.task;
+                        console.log("submitted task", task);
+                        this.tasks.push(task);
+
+                        //////////////////////////////////////////////////////////////////////////////////////////////////
+                        //
+                        // I also need to submit stage_output task
+                        //
+                        var symlink = [];
+                        var datasets = {};
+                        //aggregate all metadata from inputs to fake output metadata
+                        //TOOD - I think each app should produce this (and/or let user override it?)
+                        var agg_meta = {};
+                        for(var input_id in newtask.inputs) {
+                            var input = newtask.inputs[input_id];
+                            var dataset = this._datasets[input.dataset];
+                            for(var k in dataset.meta) {
+                                agg_meta[k] = dataset.meta[k];
+                            }
+                        }
+                        this.newtask_app.outputs.forEach(output=>{
+                            if(output.files) {
+                                for(var file_id in output.files) {
+                                    //find datatype file id
+                                    output.datatype.files.forEach(datatype_file=>{
+                                        if(datatype_file.id == file_id) {
+                                            var name = datatype_file.filename||datatype_file.dirname;
+                                            symlink.push({ 
+                                                "src": "../"+task._id+"/"+output.files[file_id], 
+                                                "dest": output.id+"/"+name 
+                                            });
+                                        }
+                                    });
+                                }
+                            } else {
+                                //copy everything..
+                                symlink.push({"src": "../"+task._id, "dest": output.id});
+                            }
+                        
+                            output.name = "process output from "+newtask.name;
+                            output.meta = agg_meta;
+                            datasets[output.id] = output;
+                        });
+                        this.$http.post(Vue.config.wf_api+'/task', {
+                            instance_id: this.instance._id,
+                            name: "brainlife.stage_output",
+                            service: "soichih/sca-product-raw",
+                            config: { symlink, datasets },
+                            deps: [ task._id ],
+                        }).then(res=>{
+                            var output_task = res.body.task;
+                            console.log("submitted stage_output task", output_task);
+                            this.tasks.push(output_task);
+                            this.close_newprocess();
+                        });
                     });
                 });
             }
@@ -697,7 +737,7 @@ export default {
 position: fixed;
 padding: 20px;
 left: 90px;
-right: 300px;
+right: 350px;
 top: 140px;
 bottom: 0px;
 overflow: auto;
@@ -715,12 +755,13 @@ z-index: 1;
 border-bottom: 1px solid #666;
 }
 .sidebar {
+box-shadow: inset 3px 0px 3px #ccc;
 background-color: white;
 padding-top: 20px;
 position: fixed;
 top: 140px;
 bottom: 0px;
-width: 300px;
+width: 350px;
 right: 0px;
 overflow: auto;
 }

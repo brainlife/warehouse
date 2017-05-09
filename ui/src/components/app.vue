@@ -102,6 +102,7 @@ display: block;
 }
 .compact .appname {
 padding: 5px 0px;
+margin-bottom: 0px;
 }
 /* styles for '...' */ 
 .compact .appdesc {
@@ -119,6 +120,7 @@ padding: 5px 0px;
   margin-right: -1em;
   padding-right: 1em;
   margin-bottom: 0px;
+    margin-top: 0px;
 }
 /* create the ... */
 .compact .appdesc :before {
@@ -143,6 +145,5 @@ padding: 5px 0px;
   height: 1em;
   margin-top: 0.2em;
   /* bg color = bg color under block */
-  background: white;
 }
 </style>
