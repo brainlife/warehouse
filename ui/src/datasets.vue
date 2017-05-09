@@ -409,7 +409,10 @@ export default {
 
                     //TODO - this is neuroscience specific, and I need to do a lot more thinking on this
                     var dataname = datatype.name.split("/")[1];
-                    //console.dir(datatype.files);
+
+                    //TODO - until I figure out how to make things unique, let's add dataset_id
+                    dataname+="_"+dataset_id;
+
                     datatype.files.forEach(file=>{
                         symlink.push({
                             src: download_path+"/"+(file.filename||file.dirname),

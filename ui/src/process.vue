@@ -40,7 +40,7 @@
             <!--<h2>Processing</h2>-->
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <task :task="task" v-if="task.name == 'brainlife.process'"/>
-                <div v-if="task.name == 'brainlife.stage_output'" class="process-output">
+                <div v-if="task.name == 'brainlife.stage_output' && task.status == 'finished'" class="process-output">
                     <h4 style="color: white;">Output Datasets</h4>
                     <el-card v-for="(dataset, input_id) in task.config.datasets">
                         <b>{{input_id}}</b> <tags :tags="dataset.datatype_tags"/> <small>{{dataset.datatype}}</small>
@@ -56,6 +56,7 @@
                             :dataset="dataset" @submitted="archived(dataset)" style="margin-top: 30px;"/>
                     </el-card>
                 </div>
+                <br v-else>
             </div>
 
             <el-button v-if="!newprocess" type="primary" @click="start_newprocess()">New Process <icon name="caret-down"/></el-button>
