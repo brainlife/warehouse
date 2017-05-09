@@ -93,19 +93,13 @@ overflow: auto;
 font-size: 13px;
 color: #666;
 margin: 10px;
+line-height: 140%;
 }
 
 .image {
 width: 100%;
 display: block;
 }
-/*
-.compact {
-overflow: hidden;
-white-space: nowrap;
-text-overflow: ellipsis;
-}
-*/
 .compact .appname {
 padding: 5px 0px;
 }

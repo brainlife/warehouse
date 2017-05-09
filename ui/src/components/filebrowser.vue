@@ -165,7 +165,6 @@ margin-left: 4px;
 padding-left: 10px;
 max-height: 400px;
 background-color: #d7d7d7;
-height: 20%;
 margin-bottom: 15px;
 }
 </style>

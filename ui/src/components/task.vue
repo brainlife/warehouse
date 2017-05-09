@@ -7,9 +7,10 @@
         </el-button>
         <h4>
             <div style="float: right;">
-                <time v-if="task.status == 'finished'">Finished {{task.finish_date|date}}</time>
-                <time v-if="task.status == 'running'">Started {{task.start_date|date}}</time>
-                <time v-if="task.status == 'requested'">Created {{task.create_date|date}}</time>
+                <time v-if="task.status == 'finished'">Finished at {{task.finish_date|date}}</time>
+                <time v-if="task.status == 'running'">Started at {{task.start_date|date}}</time>
+                <time v-if="task.status == 'requested'">Requested at {{task.create_date|date}}</time>
+                <time v-if="task.status == 'failed'">Failed at {{task.fail_date|date}}</time>
             </div>
             <span style="text-transform: uppercase;">{{task.status}}</span> | {{task.desc||task.name}} <small class="text-muted">{{task.service}}</small> 
         </h4>
@@ -18,15 +19,21 @@
 
     <el-collapse v-model="activeSections">
         <el-collapse-item title="Configuration" name="config">
+            <!--<el-alert title="todo">display this in more user friendly way</el-alert>-->
             <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
         </el-collapse-item>
 
-        <el-collapse-item title="Output" name="output">
+        <el-collapse-item title="Raw Output" name="output">
             <filebrowser v-if="task.resource_id && ~activeSections.indexOf('output')" :task="task"></filebrowser>
             <el-alert v-if="!task.resource_id" title="Not yet submitted to computing resource" type="warning"></el-alert>
         </el-collapse-item>
+
+        <!--
+        <el-collapse-item title="View" name="viewer">
+            <volumeviewer :task="task"/>
+        </el-collapse-item>
+        -->
     </el-collapse>
-    <br>
 </div>
 </template>
 
@@ -34,9 +41,10 @@
 import Vue from 'vue'
 
 import filebrowser from '@/components/filebrowser'
+//import volumeviewer from '@/components/volumeviewer'
 
 export default {
-    components: { filebrowser },
+    components: { filebrowser, /*volumeviewer*/ },
     name: "contact",
     data () {
         return {
@@ -65,7 +73,9 @@ export default {
 
 <style>
 .task .el-alert {
+margin-top: 5px;
 margin-bottom: 5px;
+padding: 10px !important;
 }
 .el-alert.finished {
 background-color: green;

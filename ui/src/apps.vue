@@ -14,7 +14,8 @@
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
         <div class="page-content">
-        <div class="margin20">
+        <div v-if="!apps" style="margin: 40px;"><h3>Loading ..</h3></div>
+        <div class="margin20" v-if="apps">
             <div v-for="app in apps" key="app._id" class="card">
                 <app :app="app"></app>
             </div>
@@ -34,7 +35,7 @@ export default {
     components: { sidemenu, pageheader, app },
     data () {
         return {
-            apps: [],
+            apps: null,
             query: "",
 
             config: Vue.config,

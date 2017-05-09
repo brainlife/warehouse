@@ -6,13 +6,15 @@
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
             </el-col>
             <el-col :span="10">
-                <el-button @click="go('/apps')"><icon name="plus"/> New Process </el-button>
+                <el-button @click="newprocess()"><icon name="plus"/> New Process </el-button>
             </el-col>
         </el-row>
     </pageheader>
     <sidemenu active="/processes"></sidemenu>
     <div class="page-content">
-        <h3 v-if="!instances"> <icon name="spinner"></icon> Loading..  </h3>
+        <div v-if="!instances">
+            <h2 style="margin: 50px;">Loading ...</h2>
+        </div>
         <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click" row-class-name="clickable-row">
             <el-table-column label="Create Date" prop="create_date" sortable>
                 <template scope="scope">
@@ -123,6 +125,10 @@ export default {
             if(instance.config.prov) this.$router.push("/simpleprocess/"+instance._id);
             else this.$router.push("/process/"+instance._id);
         },
+        newprocess: function() {
+            this.$router.push('/process/_new');
+        }
+        /*
         go: function(path) {
             this.$notify.info({
                 title: 'Info',
@@ -130,6 +136,7 @@ export default {
             });
             this.$router.push(path);
         }
+        */
     },
 
 }

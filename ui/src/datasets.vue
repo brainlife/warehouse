@@ -32,17 +32,16 @@
                 </el-col>
             </el-row>
 
-            <!--
-            <div class="margin20" v-if="!datasets">
-                <h3> <i class="el-icon-loading"></i> Loading.. </h3>
-            </div>
-            -->
-
         </div><!--fixed-top-->
 
         <!--start of dataset list-->
         <div class="page-content">
-        <div class="list">
+
+        <div v-if="!datasets_grouped" style="margin: 30px;">
+            <h2>Loading ...</h2>
+        </div>
+
+        <div class="list" v-if="datasets_grouped">
             <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
                 <!--
                 <el-col :span="1" style="margin-top: 3px;">
@@ -165,7 +164,7 @@ export default {
     computed: {
         //group datasets by subject
         datasets_grouped: function() {
-            if(!this.datasets) return {};
+            if(!this.datasets) return null;
 
             //console.log("grouping");
             var groups = {};

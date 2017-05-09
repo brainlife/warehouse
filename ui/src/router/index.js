@@ -36,7 +36,7 @@ export default new Router({
 
     //simple workflow
     { path: '/simpleprocess/:id', component: simpleprocess},
-    { path: '/process/:id?', component: process},
+    { path: '/process/:id', component: process},
     { path: '/process/:id/archive', component: processarchive},
 
         

@@ -35,7 +35,7 @@
             </el-table-column> 
         </el-table>
         -->
-        <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
+        <div v-if="!projects" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="projects">
             <h2 class="group-title">Private Projects</h2>
             <div v-for="project in projects" :key="project._id" v-if="project.access == 'private'">
@@ -69,7 +69,7 @@ export default {
     data () {
         return {
             msg: 'Welcome to Your Vue.js App',
-            projects: [],
+            projects: null,
             count: 0, //total counts of projects (not paged)
 
             user: Vue.config.user, //see if user is logged in

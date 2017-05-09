@@ -19,6 +19,7 @@
     "babel-preset-latest": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "babel-register": "^6.24.1",
+    "brainbrowser": "^2.3.0",
     "element-ui": "^1.2.9",
     "express": "^4.15.2",
     "extract-text-webpack-plugin": "^2.1.0",

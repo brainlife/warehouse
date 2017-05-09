@@ -108,16 +108,15 @@ margin-bottom: 6px;
 
 table.info {
     width: 100%;
+    font-size: 13px;
 }
 table.info tr {
-    border-bottom: 1px solid #eee;
     background-color: white;
 }
 table.info th {
     color: #777; 
     text-align: left;
     vertical-align: top;
-    font-size: 14px;
     padding: 10px;
     margin: 0px;
     font-weight: 600;

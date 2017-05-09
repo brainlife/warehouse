@@ -15,17 +15,24 @@
                 <el-breadcrumb-item>{{instance.name}}</el-breadcrumb-item>
             </el-breadcrumb>
 
-            <!--<h1><icon name="send" scale="2"></icon> {{app.name}}</h1>-->
+            <div style="float: right">
+                <br>
+                <span style="text-transform: uppercase;">{{instance.status}}</span> |
+                <time style="margin-top: 15px;">Created at {{instance.create_date|date}}</time>
+            </div>
             <h1><icon name="send" scale="2"></icon> Process</h1>
+            <el-input type="textarea" placeholder="Description" @change="changedesc()" v-model="instance.desc" :autosize="{minRows: 2, maxRows: 5}"/>
         </div>
 
         <table class="info">
+        <!--
         <tr>
             <th width="200px">Description</th>
             <td>
                 {{instance.desc}}
             </td>
         </tr>
+        -->
         <tr>
             <th>Dataset ID</th>
             <td>
@@ -183,6 +190,8 @@ import appavatar from '@/components/appavatar'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
+var debounce = null;
+
 export default {
     mixins: [
         //require("vue-toaster")
@@ -323,6 +332,22 @@ export default {
     },
 
     methods: {
+        changedesc: function() {
+            clearTimeout(debounce);
+            debounce = setTimeout(this.save_instance, 1000);        
+        },
+
+        save_instance: function() {
+            console.dir(this.instance.desc);
+            this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, this.instance).then(res=>{
+                this.$notify({
+                    title: 'Saved',
+                    message: 'Updated process detail',
+                    type: 'success',
+                });
+            });
+        },
+
         go: function(path) {
             this.$router.push(path);
         },
