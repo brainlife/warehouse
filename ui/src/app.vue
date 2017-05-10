@@ -91,6 +91,7 @@
         <tr>
             <th>Input Datatypes</th>
             <td>
+                <p class="text-muted">You need following input datasets to run this application</p>
                 <div class="item" v-for="input in app.inputs">
                     <!--<b>{{input.id}}</b>-->
                     <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags" style="margin-bottom: 10px;"></datatype>
@@ -100,6 +101,7 @@
         <tr>
             <th>Output Datatypes</th>
             <td>
+                <p class="text-muted">This application produces following output datasets</p>
                 <div class="item" v-for="output in app.outputs">
                     <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
                 </div>

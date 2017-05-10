@@ -1,7 +1,12 @@
 <template>
-  <div id="warehouse">
-    <router-view></router-view>
-  </div>
+    <div id="warehouse">
+        <!--
+        <transition :name="'fade'">
+            <router-view></router-view>
+        </transition>
+        -->
+        <router-view></router-view>
+    </div>
 </template>
 
 <script>
@@ -12,6 +17,18 @@ export default {
 
 <!--scoped styles-->
 <style scoped>
+.fade-enter-active, .fade-leave-active {
+  transition-property: opacity;
+  transition-duration: .25s;
+}
+
+.fade-enter-active {
+  transition-delay: .25s;
+}
+
+.fade-enter, .fade-leave-active {
+  opacity: 0
+}
 </style>
 
 <!--global styles-->

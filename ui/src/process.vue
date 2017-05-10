@@ -24,8 +24,8 @@
             <div style="margin: 0px 10px;">
                 <h3>Input Datasets</h3>
                 <el-card v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_input'" style="margin-bottom: 10px; font-size: 90%;">
-                <!--<div v-for="(dataset, did) in _input_datasets" :key="did" style="margin-bottom: 10px; font-size: 90%;">-->
                     <div slot="header">
+                        {{dataset.task.status}}
                         {{dataset.datatype_id}}
                         <tags :tags="dataset.datatype_tags"></tags>
                     </div> 
@@ -33,12 +33,13 @@
                     <b>{{dataset.name}}</b><br>
                     <small class="text-muted">{{dataset.desc}}</small>
                 </el-card>
-                <el-button type="primary" @click="stage_datasets()"><icon name="plus"/> Stage Datasets</el-button>
+                <el-button type="primary" @click="show_input_dialog = true" v-bind:class="{animated: true, headShake: _datasets.length == 0}"><icon name="plus"/> Stage Datasets</el-button>
                 <br>
                 <br>
                 <h3>Output Datasets</h3>
                 <el-card v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" style="margin-bottom: 10px; font-size: 90%;">
                     <div slot="header">
+                        {{dataset.task.status}}
                         {{dataset.datatype_id}}
                         <tags :tags="dataset.datatype_tags"></tags>
                     </div> 
@@ -54,6 +55,11 @@
                 <el-input type="textarea" placeholder="Process Description" @change="changedesc()" v-model="instance.desc" :autosize="{minRows: 2, maxRows: 5}"/>
             </p>
             <!--<h2>Processing</h2>-->
+            <!--
+            <p v-if="_datasets.length == 0">
+                <el-alert type="info" title="Please stage datasets to process."/>
+            </p>
+            -->
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <task :task="task" v-if="task.name == 'brainlife.process'"/>
                 <div v-if="task.name == 'brainlife.stage_output' && task.status == 'finished'" class="process-output">
@@ -139,13 +145,8 @@
                             </el-form-item>
 
                             <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="typeof v == 'string' || typeof v == 'number'">
-                                <el-input v-model="newtask.config[k]"></el-input>
-                                <!--
-                                <div v-if="typeof newtask.config[k] == 'object'">
-                                    <div v-if="typeof newtask.config[k] == 'object'">
-                                    </div> 
-                                </div>
-                                -->
+                                <el-input v-if="typeof v == 'string'" v-model="newtask.config[k]"/>
+                                <el-input-number v-if="typeof v == 'number'" v-model="newtask.config[k]" :step="2"/>
                             </el-form-item>
                         </div>
 
@@ -179,6 +180,38 @@
             </el-card>
         </div><!--main-section-->
     </div>
+
+    <el-dialog title="Stage Datasets" :visible.sync="show_input_dialog">
+        <p class="text-muted">You need to stage your datasets to be processed.</p>
+        <el-form label-width="120px">
+            <el-form-item label="Load from">
+                <el-select v-model="input_dialog.mode" placeholder="">
+                    <el-option label="All Selected" value="selected"></el-option>
+                    <el-option label="Warehouse" value="warehouse"></el-option>
+                </el-select>
+                <div v-if="input_dialog.mode == 'selected'">
+                    <ul>
+                        <li v-for="(select, did) in selected">
+                            <metadata :metadata="select.meta"/>
+                            {{select.name}} 
+                            <tags :tags="select.datatype_tags"></tags>
+                        </li>
+                    </ul>
+                </div>
+            </el-form-item>
+            <div v-if="input_dialog.mode == 'warehouse'">
+                <el-form-item label="Project">
+                    <projectselector v-model="input_dialog.project"/>
+                </el-form-item>
+            </div>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="show_input_dialog = false">Cancel</el-button>
+            <el-button type="primary" @click="stage_selected()">Stage</el-button>
+        </span>
+    </el-dialog>
+
+
 </div><!--root-->
 </template>
 
@@ -197,6 +230,7 @@ import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
 import app from '@/components/app'
 import archiveform from '@/components/archiveform'
+import projectselector from '@/components/projectselector'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -205,7 +239,7 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 var debounce = null;
 
 export default {
-    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar, app, archiveform },
+    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar, app, archiveform, projectselector },
 
     data() {
         return {
@@ -231,6 +265,15 @@ export default {
             newtask_desc: "",
             validated: false,
 
+            //dialog
+            show_input_dialog: false,
+            input_dialog: {
+                mode: "selected",
+                project: null,
+            },
+
+            selected: JSON.parse(localStorage.getItem('datasets.selected')) || {},
+
             //cache
             tasks: null,
             datasets: {}, 
@@ -242,10 +285,13 @@ export default {
     mounted() {
         if(this.$route.params.id == "_new") {
             this.submit_instance(instance=>{
+                /*
                 //stage all selected
                 this.stage_selected(instance, err=>{
                     this.$router.push("/process/"+instance._id);
                 });
+                */
+                this.$router.push("/process/"+instance._id);
             });
         } else {
             this.load();
@@ -478,11 +524,11 @@ export default {
             this.newprocess = false;
         },
 
-        stage_selected: function(instance, cb) {
-            var selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
+        stage_selected: function() {
+            this.show_input_dialog = false;
+
             var download = [];
-            for(var did in selected) {
-                //var selected_dataset = selected[did];
+            for(var did in this.selected) {
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+did+"?at="+Vue.config.jwt,
                     untar: "gz",
@@ -491,19 +537,16 @@ export default {
             }
             //now submit task to download data from archive
             this.$http.post(Vue.config.wf_api+'/task', {
-                instance_id: instance._id,
+                instance_id: this.instance._id,
                 name: "brainlife.stage_input",
                 desc: "Stage Input for "+task.name,
                 service: "soichih/sca-product-raw",
-                config: { download, datasets: selected },
+                config: { download, datasets: this.selected },
             }).then(res=>{
                 console.log("submitted download", res.body.task);
-                cb();
+                var task = res.body.task;
+                this.tasks.push(task); 
             });
-        },
-
-        stage_datasets: function() {
-            alert("todo");
         },
 
         start_newprocess: function() {

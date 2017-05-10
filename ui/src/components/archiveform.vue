@@ -7,11 +7,14 @@
         <el-input type="text" v-model="form.desc" placeholder="Dataset Desc"></el-input>
     </el-form-item>
     <el-form-item label="Project">
+        <!--
         <el-select v-model="form.project" placeholder="Please select" style="width: 100%;">
             <el-option v-for="project in projects" :label="project.name" :value="project._id" :key="project._id">
                 {{project.name}} <projectaccess :access="project.access"/>
             </el-option>
         </el-select>
+        -->
+        <projectselector v-model="form.project"/>
         <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
     </el-form-item>
     <el-form-item label="User Tags (optional)">
@@ -49,9 +52,10 @@
 import Vue from 'vue'
 
 import projectaccess from '@/components/projectaccess'
+import projectselector from '@/components/projectselector'
 
 export default {
-    components: { projectaccess },
+    components: { projectaccess, projectselector },
     data() {
         return {
             form: {
@@ -68,7 +72,7 @@ export default {
             }, 
 
             //cache
-            projects: null,
+            //projects: null,
         }
     },
 
@@ -87,6 +91,7 @@ export default {
             Vue.set(this.form.meta, k, this.dataset.meta[k]);
         }
 
+        /*
         //load projects that user is member of
         this.$http.get('project', {params: {
             find: JSON.stringify({members: Vue.config.user.sub}),
@@ -94,6 +99,7 @@ export default {
         }}).then(res=>{
             this.projects = res.body.projects;
         });
+        */
     },
 
     methods: {
