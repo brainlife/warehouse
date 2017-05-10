@@ -40,8 +40,9 @@
             <td><pre>10.1006/br.a.{{app._id}}</pre></td>
         </tr>
         <tr>
-            <th>Contacts</th>
+            <th>Developers</th>
             <td>
+                <!--
                 <el-row :gutter="10">
                     <el-col :span="10">
                         <h5>Owner</h5>
@@ -52,6 +53,8 @@
                         <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
                     </el-col>
                 </el-row>
+                -->
+                <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
             </td>
         </tr>
         <tr>

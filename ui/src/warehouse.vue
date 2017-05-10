@@ -109,6 +109,7 @@ margin-bottom: 6px;
 table.info {
     width: 100%;
     font-size: 13px;
+    border-spacing: 1px;
 }
 table.info tr {
     background-color: white;
