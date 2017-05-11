@@ -12,7 +12,7 @@
                 </el-input>
             </el-col>
             <el-col :span="12">
-                <el-button @click="go('/upload')"><icon name="upload"/> Upload Data</el-button>
+                <el-button @click="go('/upload')" icon="upload">Upload Data</el-button>
             </el-col>
         </el-row>
     </div>

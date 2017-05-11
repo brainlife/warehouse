@@ -11,12 +11,8 @@
         <br>
         -->
         <el-button-group style="float: right;">
-            <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit"> 
-                <icon name="pencil"></icon> Edit
-            </el-button>
-            <el-button type="primary" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"> 
-                <icon name="play"></icon> Submit
-            </el-button>
+            <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</el-button>
+            <el-button type="primary" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"icon="caret-right">Submit</el-button>
         </el-button-group>
         <appavatar :app="app" style="float: left; margin-right: 20px; margin-top: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
         <br>

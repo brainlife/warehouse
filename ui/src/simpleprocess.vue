@@ -5,9 +5,7 @@
     <div class="page-content" v-if="instance && tasks && app">
         <div class="margin20">
             <el-button-group style="float: right;">
-                <el-button @click="remove()">
-                    <icon name="trash"></icon> Remove Process
-                </el-button>
+                <el-button @click="remove()" icon="delete">Remove Process</el-button>
             </el-button-group>
 
             <el-breadcrumb separator="/">

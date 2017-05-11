@@ -86,6 +86,8 @@
   --------------------------*/
     /* Collapse
   --------------------------*/
+    /* Transfer
+  --------------------------*/
 }
 
 .el-carousel{
@@ -161,6 +163,24 @@
     opacity: 0.24;
 }
 
+.el-carousel__indicators--labels{
+    left: 0;
+    right: 0;
+    transform: none;
+    text-align: center;
+}
+
+.el-carousel__indicators--labels .el-carousel__button {
+    width: auto;
+    height: auto;
+    padding: 2px 18px;
+    font-size: 12px;
+}
+
+.el-carousel__indicators--labels .el-carousel__indicator {
+    padding: 6px 4px;
+}
+
 .el-carousel__indicator{
     display: inline-block;
     background-color: transparent;
@@ -198,7 +218,8 @@
 .carousel-arrow-right-enter, .carousel-arrow-right-leave-active {
     transform: translateY(-50%) translateX(10px);
     opacity: 0;
-}:root{
+}
+:root{
     /* Transition
   -------------------------- */
     /* Colors

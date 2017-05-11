@@ -44,9 +44,6 @@ font-size: 14px;
 .margin20 {
 margin: 20px;
 }
-.ui.pusher {
-margin-left: 200px;
-}
 .page-content {
 position: fixed;
 left: 90px;
@@ -83,10 +80,6 @@ font-size: 80%;
 }
 .off-sidemenu {
 margin-left: 150px;
-}
-svg.fa-icon {
-position: relative;
-zoom: 78%;
 }
 b{
 font-weight: 700;

@@ -1,21 +1,26 @@
 <template>
 <div class="task">
     <!--status-->
-    <el-alert title="" :class="task.status" show-icon :closable="false" style="padding: 15px;">
+    <el-card title="" :class="task.status" show-icon :closable="false" :body-style="{}">
+        <div style="float: left; margin-right: 10px;">
+            <statusicon :status="task.status" scale="2"/>
+        </div>
         <el-button v-if="task.status == 'failed'" style="float: right;" @click="rerun()">
             <icon name="repeat"></icon>&nbsp;&nbsp;Rerun
         </el-button>
-        <h4>
-            <div style="float: right;">
-                <time v-if="task.status == 'finished'">Finished at {{task.finish_date|date}}</time>
-                <time v-if="task.status == 'running'">Started at {{task.start_date|date}}</time>
-                <time v-if="task.status == 'requested'">Requested at {{task.create_date|date}}</time>
-                <time v-if="task.status == 'failed'">Failed at {{task.fail_date|date}}</time>
-            </div>
-            <span style="text-transform: uppercase;">{{task.status}}</span> | {{task.desc||task.name}} <small class="text-muted">{{task.service}}</small> 
-        </h4>
-        <i>{{task.status_msg}}</i>
-    </el-alert>
+        <div style="margin-left: 40px;">
+            <h4>
+                <small style="float: right;">
+                    <time v-if="task.status == 'finished'">Finished at {{task.finish_date|date}}</time>
+                    <time v-if="task.status == 'running'">Started at {{task.start_date|date}}</time>
+                    <time v-if="task.status == 'requested'">Requested at {{task.create_date|date}}</time>
+                    <time v-if="task.status == 'failed'">Failed at {{task.fail_date|date}}</time>
+                </small>
+                <span style="text-transform: uppercase;">{{task.status}}</span> | {{task.desc||task.name}} <small class="text-muted">{{task.service}}</small> 
+            </h4>
+            <i>{{task.status_msg}}</i>
+        </div>
+    </el-card>
 
     <el-collapse v-model="activeSections">
         <el-collapse-item title="Configuration" name="config">
@@ -41,10 +46,11 @@
 import Vue from 'vue'
 
 import filebrowser from '@/components/filebrowser'
+import statusicon from '@/components/statusicon'
 //import volumeviewer from '@/components/volumeviewer'
 
 export default {
-    components: { filebrowser, /*volumeviewer*/ },
+    components: { filebrowser, statusicon },
     name: "contact",
     data () {
         return {
@@ -72,23 +78,23 @@ export default {
 </script>
 
 <style>
-.task .el-alert {
-margin-top: 5px;
-margin-bottom: 5px;
-padding: 10px !important;
+.el-card {
+margin-bottom: 0px !important;
 }
-.el-alert.finished {
+</style>
+
+<style scoped>
+.el-card {
+color: white;
+background-color: gray;
+}
+.el-card.finished {
 background-color: green;
 }
-.el-alert.failed {
+.el-card.failed {
 background-color: #c00;
 }
-.el-alert.running {
+.el-card.running {
 background-color: #2693ff;
-}
-
-.task .el-alert .el-alert__icon {
-font-size: 30px;
-padding: 5px;
 }
 </style>

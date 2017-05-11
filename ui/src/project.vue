@@ -16,12 +16,8 @@
     <div class="page-content">
         <div class="margin20" v-if="project">
             <el-button-group style="float: right;" v-if="project._canedit">
-                <el-button @click="remove()">
-                    <icon name="trash"></icon> Remove Project
-                </el-button>
-                <el-button @click="edit()"> 
-                    <icon name="pencil"></icon> Edit
-                </el-button>
+                <el-button @click="remove()" icon="delete">Remove Project</el-button>
+                <el-button @click="edit()" icon="edit">Edit</el-button>
             </el-button-group>
 
             <el-breadcrumb separator="/">

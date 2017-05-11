@@ -2,68 +2,65 @@
 <div>
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
-        <div class="margin20">
+    <div class="page-content">
+    <div class="margin20">
 
-            <div v-if="page == 'select_app' && apps">
-                <h2 class="text-muted">Please select application you'd like to submit with selected datasets</h2>
-                <br>
-                <div v-for="app in apps" :key="app._id" @click="selectapp(app)" class="clickable">
-                    <app :app="app" :compact="true" :clickable="false"/>
-                </div>
-            </div>
-            <div v-if="page == 'config'">
-                <h2 class="text-muted">Submit {{app.name}}</h2>
-                <h3>Please select / configure tasks to submit.</h3>
-                <el-form label-width="150px">
-                    <el-card v-for="(task, idx) in tasks" :class="{disabled: !task.enable}" :key="idx">
-                        <p>
-                            <el-checkbox v-model="task.enable" @change="revalidate()">Submit</el-checkbox>
-                        </p>
-
-                        <!--input-->
-                        <el-form-item v-for="input in task.inputs" :label="input.id" :key="input.id" ref="form">
-                            <el-select @change="revalidate()" v-model="input.dataset" placeholder="Please select input dataset" style="width: 100%;">
-                                <el-option v-for="dataset in datasets[input.id]" :key="dataset._id" 
-                                    :value="dataset._id" :label="dataset.meta.subject+' '+dataset.name">
-                                    {{dataset.meta.subject}} | {{dataset.name}} | {{dataset.create_date|date}}
-                                </el-option>
-                            </el-select>
-                            <el-alert v-if="input.error" :title="input.error" type="error"/>
-                        </el-form-item>
-
-                        <!--config-->
-                        <el-form-item v-for="(v,k) in task.config" :label="k" :key="k">
-                            <el-input v-model="task.config[k]"></el-input>
-                        </el-form-item>
-
-                        <!--<pre>{{task}}</pre>-->
-                    </el-card>
-                    <el-card class="submit">
-                        <el-form-item label="Description">
-                            <el-input type="textarea" v-model="desc"></el-input>
-                        </el-form-item>
-                        <el-form-item>
-                            <el-button @click="page = 'select_app'">Back</el-button>
-                            <el-button type="primary" @click="submit()"><icon name="play"/> Submit</el-button>
-                        </el-form-item>
-                    </el-card>
-                </el-form> 
-            </div>
-
+        <div v-if="page == 'select_app' && apps">
+            <h2 class="text-muted">Please select application you'd like to submit with selected datasets</h2>
             <br>
-            <el-card v-if="config.debug">
-                <div slot="header">Debug</div>
-                <div v-if="tasks">
-                    <h3>tasks</h3>
-                    <pre v-highlightjs="JSON.stringify(tasks, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-            </el-card>
+            <div v-for="app in apps" :key="app._id" @click="selectapp(app)" class="clickable">
+                <app :app="app" :compact="true" :clickable="false"/>
+            </div>
+        </div>
+        <div v-if="page == 'config'">
+            <h2 class="text-muted">Submit {{app.name}}</h2>
+            <h3>Please select / configure tasks to submit.</h3>
+            <el-form label-width="150px">
+                <el-card v-for="(task, idx) in tasks" :class="{disabled: !task.enable}" :key="idx">
+                    <p>
+                        <el-checkbox v-model="task.enable" @change="revalidate()">Submit</el-checkbox>
+                    </p>
 
-        </div><!--margin20-->
-        </div><!--page-content-->
-    </div>
+                    <!--input-->
+                    <el-form-item v-for="input in task.inputs" :label="input.id" :key="input.id" ref="form">
+                        <el-select @change="revalidate()" v-model="input.dataset" placeholder="Please select input dataset" style="width: 100%;">
+                            <el-option v-for="dataset in datasets[input.id]" :key="dataset._id" 
+                                :value="dataset._id" :label="dataset.meta.subject+' '+dataset.name">
+                                {{dataset.meta.subject}} | {{dataset.name}} | {{dataset.create_date|date}}
+                            </el-option>
+                        </el-select>
+                        <el-alert v-if="input.error" :title="input.error" type="error"/>
+                    </el-form-item>
+
+                    <!--config-->
+                    <el-form-item v-for="(v,k) in task.config" :label="k" :key="k">
+                        <el-input v-model="task.config[k]"></el-input>
+                    </el-form-item>
+
+                    <!--<pre>{{task}}</pre>-->
+                </el-card>
+                <el-card class="submit">
+                    <el-form-item label="Description">
+                        <el-input type="textarea" v-model="desc"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button @click="page = 'select_app'">Back</el-button>
+                        <el-button type="primary" @click="submit()"><icon name="play"/> Submit</el-button>
+                    </el-form-item>
+                </el-card>
+            </el-form> 
+        </div>
+
+        <br>
+        <el-card v-if="config.debug">
+            <div slot="header">Debug</div>
+            <div v-if="tasks">
+                <h3>tasks</h3>
+                <pre v-highlightjs="JSON.stringify(tasks, null, 4)"><code class="json hljs"></code></pre>
+            </div>
+        </el-card>
+    </div><!--margin20-->
+    </div><!--page-content-->
 </div><!--root-->
 </template>
 

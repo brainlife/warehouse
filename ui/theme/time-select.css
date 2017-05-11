@@ -85,6 +85,8 @@
   --------------------------*/
   /* Collapse
   --------------------------*/
+  /* Transfer
+  --------------------------*/
 }
 @charset "UTF-8";
 :root {
@@ -174,11 +176,20 @@
   --------------------------*/
   /* Collapse
   --------------------------*/
+  /* Transfer
+  --------------------------*/
 }
+/* DEPRECATED */
 .fade-in-linear-enter-active, .fade-in-linear-leave-active {
   transition: opacity 200ms linear;
 }
 .fade-in-linear-enter, .fade-in-linear-leave, .fade-in-linear-leave-active {
+  opacity: 0;
+}
+.el-fade-in-linear-enter-active, .el-fade-in-linear-leave-active {
+  transition: opacity 200ms linear;
+}
+.el-fade-in-linear-enter, .el-fade-in-linear-leave, .el-fade-in-linear-leave-active {
   opacity: 0;
 }
 .el-fade-in-enter-active, .el-fade-in-leave-active {
@@ -217,10 +228,10 @@
 .collapse-transition {
   transition: 0.3s height ease-in-out, 0.3s padding-top ease-in-out, 0.3s padding-bottom ease-in-out;
 }
-.list-enter-active, .list-leave-active {
+.el-list-enter-active, .el-list-leave-active {
   transition: all 1s;
 }
-.list-enter, .list-leave-active {
+.el-list-enter, .el-list-leave-active {
   opacity: 0;
   transform: translateY(-30px);
 }
@@ -335,6 +346,8 @@
   --------------------------*/
   /* Collapse
   --------------------------*/
+  /* Transfer
+  --------------------------*/
 }
 :root {
   /* Transition
@@ -422,6 +435,8 @@
   /* Carousel
   --------------------------*/
   /* Collapse
+  --------------------------*/
+  /* Transfer
   --------------------------*/
 }
 .el-picker-panel {
@@ -670,6 +685,8 @@
   --------------------------*/
   /* Collapse
   --------------------------*/
+  /* Transfer
+  --------------------------*/
 }
 @charset "UTF-8";
 :root {
@@ -758,6 +775,8 @@
   /* Carousel
   --------------------------*/
   /* Collapse
+  --------------------------*/
+  /* Transfer
   --------------------------*/
 }
 .el-scrollbar {

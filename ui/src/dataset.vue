@@ -6,8 +6,8 @@
 
         <div class="margin20">
             <el-button-group style="float: right;">
-                <el-button @click="remove()" v-if="dataset._canedit"><icon name="trash"></icon> Remove</el-button>
-                <el-button type="primary" @click="download()"><icon name="download"></icon> Download</el-button>
+                <el-button @click="remove()" v-if="dataset._canedit" icon="delete">Remove</el-button>
+                <el-button type="primary" @click="download()" icon="document">Download</el-button>
             </el-button-group>
 
             <el-breadcrumb separator="/">
@@ -76,7 +76,7 @@
             <th>Provenance / Derivative</th>
             <td>
                 <el-button-group style="float: right;">
-                    <el-button size="small" @click="downloadprov()"><icon name="download"></icon> Download Provenance (.sh)</el-button>
+                    <el-button size="small" @click="downloadprov()" icon="document">Download Provenance (.sh)</el-button>
                 </el-button-group>
                 <br clear="both">
 

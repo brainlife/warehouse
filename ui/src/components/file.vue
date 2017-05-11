@@ -1,7 +1,7 @@
 <template>
 <el-card>
     <div style="float:right; position: relative; top: -5px;">
-        <el-button type="primary" size="small" @click="download()"><icon name="download"></icon> Download</el-button>
+        <el-button type="primary" size="small" @click="download()" icon="document">Download</el-button>
     </div>
     <p>
         <icon name="file-o" v-if="file.filename"></icon>

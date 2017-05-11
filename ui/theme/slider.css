@@ -100,6 +100,8 @@
   --------------------------*/
     /* Collapse
   --------------------------*/
+    /* Transfer
+  --------------------------*/
 }
 .el-input{
     position: relative;
@@ -233,7 +235,7 @@
     display: block;
     margin: -10px;
 }
-.el-input-group__append .el-button, .el-input-group__append .el-select .el-input__inner, .el-input-group__append .el-select:hover .el-input__inner, .el-input-group__prepend .el-button, .el-input-group__prepend .el-select .el-input__inner, .el-input-group__prepend .el-select:hover .el-input__inner{
+.el-input-group__append button.el-button, .el-input-group__append div.el-select .el-input__inner, .el-input-group__append div.el-select:hover .el-input__inner, .el-input-group__prepend button.el-button, .el-input-group__prepend div.el-select .el-input__inner, .el-input-group__prepend div.el-select:hover .el-input__inner{
     border-color: transparent;
     background-color: transparent;
     color: inherit;
@@ -398,6 +400,8 @@
     /* Carousel
   --------------------------*/
     /* Collapse
+  --------------------------*/
+    /* Transfer
   --------------------------*/
 }
 .el-input-number{
@@ -570,6 +574,8 @@
     /* Carousel
   --------------------------*/
     /* Collapse
+  --------------------------*/
+    /* Transfer
   --------------------------*/
 }
 .el-tooltip{}
@@ -772,9 +778,89 @@
   --------------------------*/
     /* Collapse
   --------------------------*/
+    /* Transfer
+  --------------------------*/
 }
 
 .el-slider{}
+
+.el-slider.is-vertical{
+    position: relative;
+}
+
+.el-slider.is-vertical .el-slider__runway{
+    width: 4px;
+    height: 100%;
+    margin: 0 16px;
+}
+
+.el-slider.is-vertical .el-slider__bar{
+    width: 4px;
+    height: auto;
+    border-radius: 0 0 3px 3px;
+}
+
+.el-slider.is-vertical .el-slider__button-wrapper{
+    top: auto;
+    left: -16px;
+    transform: translateY(50%);
+}
+
+.el-slider.is-vertical .el-slider__stop{
+    transform: translateY(50%);
+}
+
+.el-slider.is-vertical.el-slider--with-input{
+    padding-bottom: 64px;
+}
+
+.el-slider.is-vertical.el-slider--with-input .el-slider__input{
+    overflow: visible;
+    float: none;
+    position: absolute;
+    bottom: 22px;
+    width: 36px;
+    margin-top: 15px;
+}
+
+.el-slider.is-vertical.el-slider--with-input .el-slider__input .el-input__inner{
+    text-align: center;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.el-slider.is-vertical.el-slider--with-input .el-slider__input .el-input-number__decrease, .el-slider.is-vertical.el-slider--with-input .el-slider__input .el-input-number__increase{
+    top: 30px;
+    margin-top: -1px;
+    border: 1px solid rgb(204, 204, 204);
+    line-height: 20px;
+    box-sizing: border-box;
+    transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+}
+
+.el-slider.is-vertical.el-slider--with-input .el-slider__input .el-input-number__decrease{
+    width: 18px;
+    right: 18px;
+    border-bottom-left-radius: 4px;
+}
+
+.el-slider.is-vertical.el-slider--with-input .el-slider__input .el-input-number__increase{
+    width: 19px;
+    border-bottom-right-radius: 4px;
+}
+
+.el-slider.is-vertical.el-slider--with-input .el-slider__input .el-input-number__increase ~ .el-input .el-input__inner{
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.el-slider.is-vertical.el-slider--with-input .el-slider__input:hover .el-input-number__decrease, .el-slider.is-vertical.el-slider--with-input .el-slider__input:hover .el-input-number__increase{
+    border-color: rgb(148, 148, 148);
+}
+
+.el-slider.is-vertical.el-slider--with-input .el-slider__input:active .el-input-number__decrease, .el-slider.is-vertical.el-slider--with-input .el-slider__input:active .el-input-number__increase{
+    border-color: #2693ff;
+}
 
 .el-slider__runway{
     width: 100%;

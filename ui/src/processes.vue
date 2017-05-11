@@ -6,7 +6,7 @@
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
             </el-col>
             <el-col :span="10">
-                <el-button @click="newprocess()"><icon name="plus"/> New Process </el-button>
+                <el-button @click="newprocess()" icon="plus">New Process</el-button>
             </el-col>
         </el-row>
     </pageheader>
@@ -36,7 +36,7 @@
                     <el-tag type="success" v-if="scope.row.status == 'finished'">
                         <icon name="check"></icon> Finished</el-tag>
                     <el-tag type="primary" v-if="scope.row.status == 'running'">
-                        <icon name="circle-o-notch" class="fa-spin"></icon> Running</el-tag>
+                        <icon name="circle-o-notch" spin></icon> Running</el-tag>
                     <el-tag type="primary" v-if="scope.row.status == 'requested'">
                         <icon name="clock-o"></icon> Requested</el-tag>
                     <el-tag type="danger" v-if="scope.row.status == 'failed'">

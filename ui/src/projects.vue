@@ -6,7 +6,7 @@
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
             </el-col>
             <el-col :span="10">
-                <el-button v-if="user" @click="newproject()"> <icon name="plus"></icon> Add Project </el-button>
+                <el-button v-if="user" @click="newproject()" icon="plus">Add Project</el-button>
             </el-col>
         </el-row>
     </pageheader>
