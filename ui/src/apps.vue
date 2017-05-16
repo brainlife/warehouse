@@ -17,7 +17,7 @@
         <div v-if="!apps" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="apps">
             <div v-for="app in apps" key="app._id" class="card">
-                <app :app="app"></app>
+                <app :app="app"></app><br>
             </div>
         </div><!--magin20-->
         </div><!--page-content-->

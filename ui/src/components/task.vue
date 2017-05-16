@@ -2,13 +2,15 @@
 <div class="task">
     <!--status-->
     <el-card title="" :class="task.status" show-icon :closable="false" :body-style="{}">
-        <div style="float: left; margin-right: 10px;">
+        <div style="float: left; padding-left: 5px;">
             <statusicon :status="task.status" scale="2"/>
         </div>
-        <el-button v-if="task.status == 'failed'" style="float: right;" @click="rerun()">
-            <icon name="repeat"></icon>&nbsp;&nbsp;Rerun
-        </el-button>
-        <div style="margin-left: 40px;">
+        <div style="float: right">
+            <el-button v-if="task.status == 'failed'" @click="rerun()">Rerun</el-button>
+            <!--<el-button v-if="task.status == 'running'" @click="stop()">Stop</el-button>-->
+            <el-button v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" icon="delete2"></el-button>
+        </div>
+        <div style="margin-left: 50px; margin-right: 100px">
             <h4>
                 <small style="float: right;">
                     <time v-if="task.status == 'finished'">Finished at {{task.finish_date|date}}</time>
@@ -23,7 +25,7 @@
     </el-card>
 
     <el-collapse v-model="activeSections">
-        <el-collapse-item title="Configuration" name="config">
+        <el-collapse-item title="Configuration" name="config" style="margin: 0px;">
             <!--<el-alert title="todo">display this in more user friendly way</el-alert>-->
             <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
         </el-collapse-item>
@@ -71,7 +73,26 @@ export default {
             .catch(err=>{
                 console.error(err); 
             });
-        }
+        },
+        stop() {
+            this.$http.put(Vue.config.wf_api+'/task/stop/'+this.task._id)
+            .then(res=>{
+                console.dir(res); 
+            })
+            .catch(err=>{
+                console.error(err); 
+            });
+        },
+        remove() {
+            this.$http.delete(Vue.config.wf_api+'/task/'+this.task._id)
+            .then(res=>{
+                console.dir(res); 
+                this.$emit("remove", this.task._id);
+            })
+            .catch(err=>{
+                console.error(err); 
+            });
+        },
     },
     props: ['task'],
 }
@@ -96,5 +117,8 @@ background-color: #c00;
 }
 .el-card.running {
 background-color: #2693ff;
+}
+.el-card.requested {
+background-color: #50bfff;
 }
 </style>

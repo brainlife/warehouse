@@ -4,11 +4,11 @@
     <sidemenu active="/processes"></sidemenu>
     <div v-if="instance && tasks">
         <div class="fixed-top">
-            <el-button @click="remove()" style="float: right;" icon="delete">Remove Process</el-button>
+            <el-button @click="remove_instance()" style="float: right;" icon="delete">Remove Process</el-button>
 
-            <h1 style="margin-bottom: 5px;"><icon name="send" scale="1.5"></icon> Process</h1>
+            <h1 style="margin-bottom: 5px; color: #eee;"><icon name="send" scale="1.5"></icon> Process</h1>
             <div class="text-muted">
-                <span style="text-transform: uppercase;"><statusicon :status="instance.status"/> <b>{{instance.status}}</b></span> |
+                <!--<span style="text-transform: uppercase;"><statusicon :status="instance.status"/> <b>{{instance.status}}</b></span> |-->
                 <time style="margin-top: 15px;">Created at {{instance.create_date|date}}</time>
             </div>
         </div>
@@ -51,7 +51,7 @@
 
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
-                <task :task="task" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;"/>
+                <task :task="task" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task"/>
                 <div v-if="task.name == 'brainlife.stage_output' && task.status == 'finished'" class="process-output">
                     <h4 style="color: white;">Output Datasets</h4>
                     <el-card v-for="(dataset, input_id) in task.config.datasets" :key="input_id">
@@ -180,7 +180,8 @@
             <!--<p class="text-muted">need to stage your datasets to be processed.</p>-->
             <el-tabs v-model="input_dialog.mode">
                 <el-tab-pane label="Selected Datasets" name="selected">
-                    <el-alert type="info" v-if="Object.keys(selected).legth == 0">Please go to Datasets page to select dataset to load</el-alert>
+                    <p class="text-muted" v-if="Object.keys(selected).length == 0">Please go to <a href="#/datasets">Datasets</a> page to select datasets.</p>
+                    <p class="text-muted" v-else>We will stage following datasets you have selected.</p>
                     <ul style="list-style: none;margin: 0px; padding: 0px; max-height: 200px; overflow: auto;">
                         <li v-for="(select, did) in selected" :key="did" style="margin-bottom: 2px;">
                             <metadata :metadata="select.meta"/>
@@ -206,7 +207,7 @@
             </el-tabs>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="show_input_dialog = false">Cancel</el-button>
-                <el-button type="primary" @click="stage()">Stage</el-button>
+                <el-button type="primary" @click="stage()" icon="check">Stage</el-button>
             </span>
         </el-dialog>
     </div>
@@ -293,7 +294,6 @@ export default {
     },
 
     mounted() {
-
         //load datatypes
         this.$http.get('datatype', {params: {
             find: JSON.stringify({
@@ -322,6 +322,8 @@ export default {
         _datasets: function() {
             var datasets = [];
             this.tasks.forEach(task=>{
+                if(task.status == "removed") return;
+                if(task.status == "stopped") return;
                 switch(task.name) {
                 case "brainlife.stage_input": 
                 case "brainlife.stage_output": 
@@ -343,6 +345,7 @@ export default {
             return datasets;
         },
         
+        /*
         _input_tasks: function() {
             return this.tasks.filter(task=>task.name == "brainlife.stage_input");
         },
@@ -355,6 +358,7 @@ export default {
             });
             return datasets;
         },
+        */
     },
 
     watch: {
@@ -402,10 +406,25 @@ export default {
         go: function(path) {
             this.$router.push(path);
         },
-        remove: function() {
-            //this.messages.push({msg: "Removed", cls: {info: true}});
+        remove_instance: function() {
             this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
                 this.$router.push('/processes');
+            });
+        },
+        remove_task: function(id) {
+            //the specified task (id) is already removed by <task> component, but I need to remove all tasks that depends on it also
+            this.tasks.forEach(task=>{
+                console.log("checking", task);
+                if(task.name == "brainlife.stage_output" && task.deps[0]._id == id) { //assume we only have 1 dep..
+                    console.log("found dep to remove", task);
+                    this.$http.delete(Vue.config.wf_api+'/task/'+task._id)
+                    .then(res=>{
+                        console.log("removed dep task", task._id);
+                    })
+                    .catch(err=>{
+                        console.error(err); 
+                    });
+                }
             });
         },
         view: function(type) {
@@ -424,6 +443,7 @@ export default {
                 return this.$http.get(Vue.config.wf_api+'/task', {params: {
                     find: JSON.stringify({
                         instance_id: this.instance._id,
+                        status: {$ne: "removed"},
                         //name: {$ne: "brainlife.novnc"},
                     })
                 }})
@@ -431,6 +451,7 @@ export default {
             .then(res=>{
                 this.tasks = res.body.tasks;
 
+                /*
                 //load datasets used by config.input
                 var dataset_ids = [];
                 this.tasks.forEach(task=>{
@@ -440,6 +461,11 @@ export default {
                         }
                     }
                 });
+                */
+
+                if(this._datasets.length == 0) {
+                    this.show_input_dialog = true;
+                }
 
                 //subscribe to the instance events
                 var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -601,8 +627,9 @@ export default {
                         config[k] = v.default;        
                         break;
                     case "input":
-                        config.input = this.newtask_app.inputs[v.input_id];
-                        config.dataset = null;
+                        //config.input = this.newtask_app.inputs[v.input_id];
+                        //config.dataset = null;
+                        break;
                     }
                 } else this.set_default(v); //recurse on primitive
             }
@@ -624,7 +651,7 @@ export default {
                 };
                 this.set_default(newtask.config);
                 this.newtask_app.inputs.forEach(input=>{
-                    newtask.inputs[input.id] = Object.assign({dataset: null}, input);
+                    newtask.inputs[input.id] = Object.assign({dataset: null}, input); //copy
                     if(input.datatype._id == this._datasets[idx].datatype_id) {
                         newtask.inputs[input.id].dataset = idx;
                     }
@@ -670,14 +697,14 @@ export default {
             for(var k in config) { 
                 var node = config[k];
                 if(!node) return;
-                if(node.isArray) {
+                if(node instanceof Array) {
                     console.log("todo.. array!");
                 } else if(typeof node === 'object') {
                     if(node.type) {
                         switch(node.type) {
                         case "input":
-                            //clear this node
-                            for(var _k in config) delete config[_k];
+                            console.log("processing input", k);
+
                             //find the file
                             var input = newtask.inputs[node.input_id];
                             var dataset = this._datasets[input.dataset];
@@ -704,13 +731,12 @@ export default {
                 this.$notify.error({ title: 'Error', message: 'Please correct the form' });
             } else {
 
-                this.newtasks.forEach(newtask=>{
-                    this.process_input_config(newtask, newtask.config);
+                this.newtasks.forEach((newtask, idx)=>{
                     if(!newtask.submit) return;
+                    if(this.submit_mode == "single" && idx > 0) return; 
 
+                    this.process_input_config(newtask, newtask.config);
                     console.log("submitting newtask", newtask); 
-                    
-                    //submit the app
                     this.$http.post(Vue.config.wf_api+'/task', {
                         instance_id: this.instance._id,
                         name: "brainlife.process",
@@ -758,7 +784,7 @@ export default {
                                 symlink.push({"src": "../"+task._id, "dest": output.id});
                             }
                         
-                            output.name = "process output from "+newtask.name;
+                            //output.name = "process output from ..";
                             output.meta = agg_meta;
                             datasets[output.id] = output;
                         });

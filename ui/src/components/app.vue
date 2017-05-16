@@ -1,42 +1,16 @@
 <template>
 <el-card :body-style="{padding: '0px'}" 
     v-if="app" 
-    style="margin-bottom: 20px;" 
     :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
-        <appavatar :app="app" style="float: left;margin-right: 10px;"></appavatar>
+        <appavatar :app="app" style="float: left;margin-right: 15px;"></appavatar>
         <div v-if="compact">
             <h4 class="appname">{{app.name}}</h4>
             <div class="appdesc">{{app.desc}}</div>
-            <!--
-            <el-row :gutter="10">
-            <el-col :span="10">
-                <h5 style="padding-bottom: 5px; color: #999">Input Datatype</h5>
-                <div v-for="input in app.inputs" :key="input.id">
-                    <b>{{input.id}}</b>
-                    <tags :tags="input.datatype_tags"/>
-                </div>
-            </el-col>
-            <el-col :span="10">
-                <h5 style="padding-bottom: 5px; color: #999">Output Datatype</h5>
-                <div v-for="output in app.outputs" :key="output.id">
-                    <b>{{output.id}}</b>
-                    <tags :tags="output.datatype_tags"/>
-                </div>
-            </el-col>
-            </el-row>
-            -->
         </div>
         <div v-else="!compact">
             <h4 class="appname">{{app.name}}</h4>
             <div class="appdesc">{{app.desc}}</div>
-            <!--
-            <el-button-group style="width: 100%;">
-                <el-button size="small" style="width: 50%;" type="text" @click.stop="go('/app/'+app._id)"><icon name="info-circle"></icon> Detail</el-button>
-                <el-button size="small" style="width: 50%;" type="text" @click.stop="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))">
-                    <icon name="play"></icon> Submit</el-button>
-            </el-button-group>
-            -->
         </div>
     </div>
 </el-card>

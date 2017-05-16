@@ -222,7 +222,7 @@ z-index: 1;
 border-bottom: 1px solid #666;
 }
 .header h1 {
-color: white;
+color: #eee;
 }
 .header-bottom {
 height: 50px;

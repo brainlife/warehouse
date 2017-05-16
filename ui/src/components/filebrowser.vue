@@ -1,5 +1,6 @@
 <template>
 <div>
+    <p class="text-muted" style="margin: 5px;" v-if="!files"><icon name="cog" spin/> Loading..</p>
     <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
     <div v-if="files">
         <el-button-group style="margin-bottom: 5px;">
