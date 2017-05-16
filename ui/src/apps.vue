@@ -7,7 +7,7 @@
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
             </el-col>
             <el-col :span="10">
-                <el-button @click="go('/app/_/edit')"> <icon name="plus"></icon> Register App</el-button>
+                <el-button @click="go('/app/_/edit')" icon="plus">Register App</el-button>
             </el-col>
         </el-row>
     </pageheader>
