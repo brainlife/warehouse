@@ -43,13 +43,7 @@
 
         <div class="list" v-if="datasets_grouped">
             <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
-                <!--
-                <el-col :span="1" style="margin-top: 3px;">
-                    <el-checkbox></el-checkbox>
-                </el-col>
-                -->
                 <el-col :span="4">
-                        <!--<icon name="caret-down" scale="1.3"></icon>-->
                     <strong>{{subject}}</strong>
                 </el-col> 
                 <el-col :span="20">
@@ -59,7 +53,7 @@
                     :class="{dataset: true, clickable: true, selected: dataset.checked}">
                         <el-row>
                             <el-col :span="2">
-                                <div @click.stop="" style="margin-left: 5px;">
+                                <div @click.stop="check(dataset)" style="padding: 0px 5px; padding-bottom: 20px;">
                                     <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                 </div>
                             </el-col>
@@ -109,13 +103,10 @@
             <el-button size="small" icon="delete" @click="clear_selected()">Unselect All</el-button>
         </div>
         <div class="select-group" style="background-color: #999;">
-            <el-button size="small" type="primary" @click="download()">Download</el-button>
-            <!--
             <el-button-group>
                 <el-button size="small" type="primary" @click="download()">Download</el-button>
-                <el-button size="small" type="primary" @click="submit()">Process</el-button>
+                <el-button size="small" type="primary" @click="process()">Process</el-button>
             </el-button-group>
-            -->
             <el-dropdown @command="view">
                 <el-button size="small" type="primary">
                     View<i class="el-icon-caret-bottom el-icon--right"></i>
@@ -285,12 +276,6 @@ export default {
                 cb();
             }).catch(cb);
         },
-        /*
-        is_selected: function(dataset) {
-            if(this.selected[dataset._id] === undefined) return false;
-            return true;
-        },
-        */
         opendataset: function(dataset) {
             //console.dir(dataset);
         },
@@ -438,7 +423,7 @@ export default {
             });
         },
 
-        submit: function() {
+        process: function() {
             this.$router.push('/process/_new');
         }
     },

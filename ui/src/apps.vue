@@ -7,7 +7,7 @@
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
             </el-col>
             <el-col :span="10">
-                <el-button @click="go('/app/_/edit')"> <icon name="plus"></icon> Register App</el-button>
+                <el-button @click="go('/app/_/edit')" icon="plus">Register App</el-button>
             </el-col>
         </el-row>
     </pageheader>
@@ -17,7 +17,7 @@
         <div v-if="!apps" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="apps">
             <div v-for="app in apps" key="app._id" class="card">
-                <app :app="app"></app>
+                <app :app="app"></app><br>
             </div>
         </div><!--magin20-->
         </div><!--page-content-->
