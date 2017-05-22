@@ -60,9 +60,23 @@
                             <metadata :metadata="dataset.meta"/>
                             <!--{{dataset.desc || dataset.name}}-->
                             <el-button size="small" type="primary" style="float: right;" 
-                                v-if="!dataset.archiving && !dataset.dataset_id" @click="archive(dataset)">Archive ..</el-button>
+                                v-if="!dataset.archiving && !dataset.dataset_id" @click="archive(dataset)">Archive</el-button>
                             <el-button size="small" style="float: right;" 
                                 v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)">See Archived Dataset <small>{{dataset.dataset_id}}</small></el-button>
+                            <!--TODO - show only viewer that makes sense for each data type-->
+                            <el-dropdown style="float: right; margin-right: 5px;" @command="view">
+                                <el-button size="small" type="primary">
+                                    View <i class="el-icon-caret-bottom el-icon--right"></i>
+                                </el-button>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/fslview'">FSLView</el-dropdown-item>
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/freeview'">FreeView</el-dropdown-item>
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/mrview'">MRView</el-dropdown-item>
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/fibernavigator'">FiberNavigator</el-dropdown-item>
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/brainview'" disabled divided>BrainView</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+
                             <archiveform v-if="dataset.archiving == true" 
                                 :instance="instance" 
                                 :input_id ="input_id" 
@@ -440,8 +454,8 @@ export default {
                 }
             });
         },
-        view: function(type) {
-            window.open("#/view/"+this.instance._id+"/"+this.output_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
+        view: function(url) {
+            window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
         load: function() {
             //load instance first
