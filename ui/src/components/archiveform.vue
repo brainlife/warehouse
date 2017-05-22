@@ -4,16 +4,9 @@
         <el-input type="text" v-model="form.name" placeholder="Dataset Name"></el-input>
     </el-form-item>
     <el-form-item label="Dataset Desc">
-        <el-input type="text" v-model="form.desc" placeholder="Dataset Desc"></el-input>
+        <el-input type="textarea" v-model="form.desc" placeholder="Dataset Desc"></el-input>
     </el-form-item>
     <el-form-item label="Project">
-        <!--
-        <el-select v-model="form.project" placeholder="Please select" style="width: 100%;">
-            <el-option v-for="project in projects" :label="project.name" :value="project._id" :key="project._id">
-                {{project.name}} <projectaccess :access="project.access"/>
-            </el-option>
-        </el-select>
-        -->
         <projectselector v-model="form.project"/>
         <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
     </el-form-item>
@@ -76,9 +69,15 @@ export default {
         }
     },
 
-    props: [ 'dataset', 'instance', 'task', 'input_id' ],
+    props: {
+        dataset: {required: true}, 
+        instance: {required: true}, 
+        task: {required: true}, 
+        input_id: {required: true},
+    },
     
     mounted: function() {
+        
         this.form.instance_id = this.instance._id;
         this.form.task_id = this.task._id;
         this.form.prov = {output_id: this.input_id}; //this instruct post api to pull from subdir

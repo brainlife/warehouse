@@ -37,8 +37,7 @@
                         <metadata :metadata="dataset.meta"/>
                         {{datatypes[dataset.datatype_id].name}} <tags :tags="dataset.datatype_tags"></tags>
                         <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
-                        <br>
-                        <small>{{dataset.name}}</small>
+                        <!--<br> <small>{{dataset.name}}</small>-->
                     </li>
                 </ul>
             </div>
@@ -51,23 +50,27 @@
 
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
-                <task :task="task" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task"/>
-                <div v-if="task.name == 'brainlife.stage_output' && task.status == 'finished'" class="process-output">
-                    <h4 style="color: white;">Output Datasets</h4>
-                    <el-card v-for="(dataset, input_id) in task.config.datasets" :key="input_id">
-                        <b>{{input_id}}</b> <tags :tags="dataset.datatype_tags"/> <small>{{dataset.datatype}}</small>
-                        <metadata :metadata="dataset.meta"/>
-                        <el-button size="small" type="primary" style="float: right;" 
-                            v-if="!dataset.archiving && !dataset.dataset_id" @click="archive(dataset)">Archive ..</el-button>
-                        <el-button size="small" style="float: right;" 
-                            v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)">See Archived Dataset <small>{{dataset.dataset_id}}</small></el-button>
-                        <archiveform v-if="dataset.archiving == true" 
-                            :instance="instance" 
-                            :input_id ="input_id" 
-                            :task="task" 
-                            :dataset="dataset" @submitted="archived(dataset)" style="margin-top: 30px;"/>
-                    </el-card>
-                </div>
+                <task :task="task" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task">
+                    <el-collapse-item title="Output Datasets" name="output" slot="output" 
+                        v-if="_output_tasks[task._id] && _output_tasks[task._id].status == 'finished'">
+
+                        <!--insert slot for output datasets-->
+                        <el-card v-for="(dataset, input_id) in _output_tasks[task._id].config.datasets" :key="input_id">
+                            <b>{{input_id}}</b> <tags :tags="dataset.datatype_tags"/>
+                            <metadata :metadata="dataset.meta"/>
+                            <!--{{dataset.desc || dataset.name}}-->
+                            <el-button size="small" type="primary" style="float: right;" 
+                                v-if="!dataset.archiving && !dataset.dataset_id" @click="archive(dataset)">Archive ..</el-button>
+                            <el-button size="small" style="float: right;" 
+                                v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)">See Archived Dataset <small>{{dataset.dataset_id}}</small></el-button>
+                            <archiveform v-if="dataset.archiving == true" 
+                                :instance="instance" 
+                                :input_id ="input_id" 
+                                :task="_output_tasks[task._id]" 
+                                :dataset="dataset" @submitted="archived(dataset)" style="margin-top: 30px;"/>
+                        </el-card>
+                    </el-collapse-item>
+                </task>
             </div>
 
             <br>
@@ -128,8 +131,7 @@
                                                 :value="idx" :label="dataset.meta.subject+' '+dataset.name">
                                             <span v-if="dataset.task.status != 'finished'">(Processing)</span>
                                             <b>{{dataset.name}}</b> 
-                                            <tags :tags="dataset.datatype_tags"></tags>
-                                            | <metadata :metadata="dataset.meta"/>
+                                            <tags :tags="dataset.datatype_tags"></tags> | <metadata :metadata="dataset.meta"/>
                                         </el-option>
                                     </el-option-group>
                                 </el-select>
@@ -344,6 +346,17 @@ export default {
             }); 
             return datasets;
         },
+
+        //return brainlife.stage_output tasks that's keyed by the parent task for easy lookup
+        _output_tasks: function() {
+            var tasks = {};
+            this.tasks.forEach(task=>{
+                if(task.name == "brainlife.stage_output") {
+                    tasks[task.deps[0]] = task;
+                }
+            });
+            return tasks;
+        }
         
         /*
         _input_tasks: function() {
@@ -415,7 +428,7 @@ export default {
             //the specified task (id) is already removed by <task> component, but I need to remove all tasks that depends on it also
             this.tasks.forEach(task=>{
                 console.log("checking", task);
-                if(task.name == "brainlife.stage_output" && task.deps[0]._id == id) { //assume we only have 1 dep..
+                if(task.name == "brainlife.stage_output" && task.deps[0] == id) { //assume we only have 1 dep..
                     console.log("found dep to remove", task);
                     this.$http.delete(Vue.config.wf_api+'/task/'+task._id)
                     .then(res=>{
@@ -451,18 +464,6 @@ export default {
             .then(res=>{
                 this.tasks = res.body.tasks;
 
-                /*
-                //load datasets used by config.input
-                var dataset_ids = [];
-                this.tasks.forEach(task=>{
-                    if(task.config.inputs) {
-                        for(var input_id in task.config.inputs) { 
-                            dataset_ids.push(task.config.inputs[input_id].dataset);
-                        }
-                    }
-                });
-                */
-
                 if(this._datasets.length == 0) {
                     this.show_input_dialog = true;
                 }
@@ -495,9 +496,9 @@ export default {
                     case "wf.task":
                         //look for the task to update
                         this.tasks.forEach(function(t) {
-                          if(t._id == msg._id) {
-                              for(var k in msg) t[k] = msg[k];
-                          }
+                            if(t._id == msg._id) {
+                                for(var k in msg) t[k] = msg[k];
+                            }
                         });
                         break;
                     case "wf.instance":
