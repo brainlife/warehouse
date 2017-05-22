@@ -1,5 +1,5 @@
 <template>
-<div>
+<div style="display: inline-block;">
     <el-tag v-for="(v, k) in metadata" key="k" type="gray">
         <b>{{k}}</b> {{v}}
     </el-tag>

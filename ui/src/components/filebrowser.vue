@@ -1,10 +1,11 @@
 <template>
 <div>
+    <p class="text-muted" style="margin: 5px;" v-if="!files"><icon name="cog" spin/> Loading..</p>
     <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
     <div v-if="files">
         <el-button-group style="margin-bottom: 5px;">
-            <el-button size="mini" @click="download()"><icon scale="0.8" name="download"></icon> Download</el-button>
-            <el-button size="mini" @click="load()"><icon scale="0.8" name="refresh"></icon> Refresh</el-button>
+            <el-button size="mini" @click="download()" icon="document">Download</el-button>
+            <el-button size="mini" @click="load()"><icon scale="0.6" name="refresh"></icon> Refresh</el-button>
         </el-button-group>
         <p v-if="files.length == 0" class="text-muted">Empty Directory</p>
 
@@ -165,7 +166,6 @@ margin-left: 4px;
 padding-left: 10px;
 max-height: 400px;
 background-color: #d7d7d7;
-height: 20%;
 margin-bottom: 15px;
 }
 </style>

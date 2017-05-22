@@ -1,12 +1,16 @@
 <template>
 <div class="appavatar">
-    <img :src="app.avatar || 'https://robohash.org/'+app._id+'.png'" width="80"></img>
+    <img :src="app.avatar || 'https://robohash.org/'+app._id+'.png'" :width="width" :height="height"></img>
 </div>
 </template>
 
 <script>
 export default {
-    props: [ 'app' ],
+    props: {
+        app: { type: Object },
+        width: { type: Number, default: 80 },
+        height: { type: Number, default: 80 },
+    }
 }
 </script>
 
@@ -14,7 +18,5 @@ export default {
 .appavatar {
 background-color: #ddd;
 box-shadow: inset 0px 0px 10px #aaa;
-height: 80px;
-width: 80px;
 }
 </style>

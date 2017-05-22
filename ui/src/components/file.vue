@@ -1,7 +1,7 @@
 <template>
 <el-card>
     <div style="float:right; position: relative; top: -5px;">
-        <el-button type="primary" size="small" @click="download()"><icon name="download"></icon> Download</el-button>
+        <el-button type="primary" size="small" @click="download()" icon="document">Download</el-button>
     </div>
     <p>
         <icon name="file-o" v-if="file.filename"></icon>
@@ -22,16 +22,20 @@ export default {
         }
     },
 
-    props: [ 'file', 'task' ],
+    props: [ 'file', 'task', 'subdir' ],
     
     mounted: function() {
 
     },
     methods: {
         download: function() {
+            var path = this.task.instance_id+'/'+this.task._id+'/';
+            if(this.subdir) path += this.subdir+"/";
+            path += this.file.filename||this.file.dirname;
+
             let url = Vue.config.wf_api+'/resource/download'+
                 '?r='+this.task.resource_id+
-                '&p='+encodeURIComponent(this.task.instance_id+'/'+this.task._id+'/'+(this.file.filename||this.file.dirname))+
+                '&p='+encodeURIComponent(path)+
                 '&at='+Vue.config.jwt;            
             document.location = url;
         },

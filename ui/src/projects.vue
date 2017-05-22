@@ -6,7 +6,7 @@
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
             </el-col>
             <el-col :span="10">
-                <el-button v-if="user" @click="newproject()"> <icon name="plus"></icon> Add Project </el-button>
+                <el-button v-if="user" @click="newproject()" icon="plus">Add Project</el-button>
             </el-col>
         </el-row>
     </pageheader>
@@ -35,7 +35,7 @@
             </el-table-column> 
         </el-table>
         -->
-        <h3 v-if="!projects"> <icon name="spinner"></icon> Loading..  </h3>
+        <div v-if="!projects" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="projects">
             <h2 class="group-title">Private Projects</h2>
             <div v-for="project in projects" :key="project._id" v-if="project.access == 'private'">
@@ -69,7 +69,7 @@ export default {
     data () {
         return {
             msg: 'Welcome to Your Vue.js App',
-            projects: [],
+            projects: null,
             count: 0, //total counts of projects (not paged)
 
             user: Vue.config.user, //see if user is logged in
@@ -92,38 +92,18 @@ export default {
     },
 
     mounted: function() {
-        /*
-        this.projectdialog = $(this.$el).find('.projectdialog');
-        this.projectdialog.modal({
-
-            onApprove: ()=> {
-                if(this.edit._id) {
-                    //update
-                    console.log("update", this.edit._id, this.edit);
-                    this.$http.put('project/'+this.edit._id, this.edit).then(res=>{
-                        //find project that's updated
-                        this.projects.forEach((p)=>{
-                            if(p._id == this.edit._id) {
-                                for(var k in res.body) p[k] = res.body[k];
-                            }
-                        });
-                    }, res=>{
-                        console.error(res);
-                    });
-                } else {
-                    //create
-                    console.log("creating");
-                    console.log(JSON.stringify(this.edit, null, 4));
-                    this.$http.post('project', this.edit).then(res=>{
-                        console.log("created", res.body);
-                        this.projects.push(res.body);
-                    }, res=>{
-                        console.error(res);
-                    });
-                }
-            }
+        this.$http.get('project', {params: {
+            find: JSON.stringify({$or: [
+                { members: Vue.config.user.sub}, 
+                { access: "public" },
+            ]})
+        }})
+        .then(res=>{
+            this.projects = res.body.projects;
+            this.count = res.body.count;
+        }).catch(err=>{
+            console.error(err);
         });
-        */
     },
 
     methods: {
@@ -165,15 +145,6 @@ export default {
               });
             }
         */
-  },
-
-  created: function() {
-    this.$http.get('project').then(res=>{
-      this.projects = res.body.projects;
-      this.count = res.body.count;
-    }, res=>{
-      console.error(res);
-    });
   },
 
 }

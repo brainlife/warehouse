@@ -1,18 +1,16 @@
 <template>
 <el-card :body-style="{padding: '0px'}" 
     v-if="app" 
-    style="margin-bottom: 20px;" 
-    :class="{'compact': compact, 'clickable': true}">
-    <div @click="go('/app/'+app._id)">
-        <appavatar :app="app" style="float: left;margin-right: 10px;"></appavatar>
-        <h4 class="appname">{{app.name}}</h4>
-        <div class="appdesc">{{app.desc}}</div>
-        <div v-if="!compact">
-            <el-button-group style="width: 100%;">
-                <el-button size="small" style="width: 50%;" @click.stop="go('/app/'+app._id)"><icon name="info-circle"></icon> Detail</el-button>
-                <el-button size="small" style="width: 50%;" type="primary" @click.stop="go('/app/'+app._id+'/submit'+(dataset?'?dataset='+dataset._id:''))">
-                    <icon name="play"></icon> Submit</el-button>
-            </el-button-group>
+    :class="{'compact': compact, 'clickable': clickable}">
+    <div @click="click()">
+        <appavatar :app="app" style="float: left;margin-right: 15px;"></appavatar>
+        <div v-if="compact">
+            <h4 class="appname">{{app.name}}</h4>
+            <div class="appdesc">{{app.desc}}</div>
+        </div>
+        <div v-else="!compact">
+            <h4 class="appname">{{app.name}}</h4>
+            <div class="appdesc">{{app.desc}}</div>
         </div>
     </div>
 </el-card>
@@ -23,10 +21,18 @@ import Vue from 'vue'
 
 import contact from '@/components/contact'
 import appavatar from '@/components/appavatar'
+import tags from '@/components/tags'
 
 export default {
-    components: { contact, appavatar },
-    props: ['app', 'dataset', 'compact', 'appid' ],
+    components: { contact, appavatar, tags },
+    props: ['app', 'dataset', 'compact', 'appid', 'clickable' ],
+    props: {
+        app: Object,
+        dataset: Object,
+        compact: Boolean,
+        appid: String,
+        clickable: {type: Boolean, default: true},
+    },
     data () {
         return {
         }
@@ -42,9 +48,9 @@ export default {
         }
     },
     methods: {
-        go: function(path) {
-            this.$router.push(path);
-        }
+        click: function() {
+            if(this.clickable) this.$router.push('/app/'+this.app._id);
+        },
     },
 }
 </script>
@@ -53,30 +59,24 @@ export default {
 .appname {
 color: #666;
 padding: 10px;
-margin-bottom: 0px;
+padding-bottom: 0px;
 }
 .appdesc {
-margin-bottom: 10px;
 height: 150px;
 overflow: auto;
 font-size: 13px;
-color: #333;
-line-height: 150%;
+color: #666;
+margin: 10px;
+line-height: 140%;
 }
 
 .image {
 width: 100%;
 display: block;
 }
-/*
-.compact {
-overflow: hidden;
-white-space: nowrap;
-text-overflow: ellipsis;
-}
-*/
 .compact .appname {
 padding: 5px 0px;
+margin-bottom: 0px;
 }
 /* styles for '...' */ 
 .compact .appdesc {
@@ -94,6 +94,7 @@ padding: 5px 0px;
   margin-right: -1em;
   padding-right: 1em;
   margin-bottom: 0px;
+    margin-top: 0px;
 }
 /* create the ... */
 .compact .appdesc :before {
@@ -118,6 +119,5 @@ padding: 5px 0px;
   height: 1em;
   margin-top: 0.2em;
   /* bg color = bg color under block */
-  background: white;
 }
 </style>

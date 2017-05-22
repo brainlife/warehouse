@@ -6,8 +6,8 @@
 
         <div class="margin20">
             <el-button-group style="float: right;">
-                <el-button @click="remove()" v-if="dataset._canedit"><icon name="trash"></icon> Remove</el-button>
-                <el-button type="primary" @click="download()"><icon name="download"></icon> Download</el-button>
+                <el-button @click="remove()" v-if="dataset._canedit" icon="delete">Remove</el-button>
+                <el-button type="primary" @click="download()" icon="document">Download</el-button>
             </el-button-group>
 
             <el-breadcrumb separator="/">
@@ -36,7 +36,7 @@
         <tr>
             <th>Storage</th>
             <td>
-                <p v-if="dataset.storage">This dataset is currently stored in <b>{{dataset.storage}}</b></p>
+                <div v-if="dataset.storage">This dataset is currently stored in <b>{{dataset.storage}}</b></div>
                 <el-alert v-else title="Storage field is not set" type="error"> </el-alert>
             </td>
         </tr>
@@ -76,17 +76,19 @@
             <th>Provenance / Derivative</th>
             <td>
                 <el-button-group style="float: right;">
-                    <el-button size="small" @click="downloadprov()"><icon name="download"></icon> Download Provenance (.sh)</el-button>
+                    <el-button size="small" @click="downloadprov()" icon="document">Download Provenance (.sh)</el-button>
                 </el-button-group>
                 <br clear="both">
 
                 <div v-if="dataset.prov.app">
                     <el-row :gutter="10">
                         <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
-                            <div @click="go('/dataset/'+dep.dataset)">
+                            <div @click="go('/dataset/'+dep.dataset._id)">
                                 <el-card class="clickable">
-                                    <b><icon name="cubes"></icon> {{dep.input_id}}</b><br>
-                                    {{dep.dataset}}
+                                    <b><icon name="cubes"></icon> {{dep.input_id}}</b>
+                                    <tags :tags="dep.dataset.datatype_tags"/>
+                                    <br>
+                                    <!--{{dep.dataset}}-->
                                 </el-card>
                             </div>
                             <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
@@ -118,6 +120,8 @@
                                 <div @click="go(dataset._id)">
                                     <icon name="cube"></icon>
                                     <b>{{dataset.name}}</b>
+                                    <tags :tags="dataset.datatype_tags"/>
+                                    <br>
                                     <time class="text-muted">{{dataset.create_date|date}}</time>
                                 </div>
                             </el-card>
@@ -209,7 +213,7 @@ export default {
             console.log("looking for ", id);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                populate: "project datatype prov.app",
+                populate: "project datatype prov.app prov.deps.dataset",
             }})
             .then(res=>{
                 if(res.body.count == 0) {

@@ -12,7 +12,7 @@
                 </el-input>
             </el-col>
             <el-col :span="12">
-                <el-button @click="go('/upload')"><icon name="upload"/> Upload Data</el-button>
+                <el-button @click="go('/upload')" icon="upload">Upload Data</el-button>
             </el-col>
         </el-row>
     </div>
@@ -32,25 +32,18 @@
                 </el-col>
             </el-row>
 
-            <!--
-            <div class="margin20" v-if="!datasets">
-                <h3> <i class="el-icon-loading"></i> Loading.. </h3>
-            </div>
-            -->
-
         </div><!--fixed-top-->
 
         <!--start of dataset list-->
         <div class="page-content">
-        <div class="list">
+
+        <div v-if="!datasets_grouped" style="margin: 30px;">
+            <h2>Loading ...</h2>
+        </div>
+
+        <div class="list" v-if="datasets_grouped">
             <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
-                <!--
-                <el-col :span="1" style="margin-top: 3px;">
-                    <el-checkbox></el-checkbox>
-                </el-col>
-                -->
                 <el-col :span="4">
-                        <!--<icon name="caret-down" scale="1.3"></icon>-->
                     <strong>{{subject}}</strong>
                 </el-col> 
                 <el-col :span="20">
@@ -60,7 +53,7 @@
                     :class="{dataset: true, clickable: true, selected: dataset.checked}">
                         <el-row>
                             <el-col :span="2">
-                                <div @click.stop="" style="margin-left: 5px;">
+                                <div @click.stop="check(dataset)" style="padding: 0px 5px; padding-bottom: 20px;">
                                     <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                 </div>
                             </el-col>
@@ -73,7 +66,7 @@
                                 {{dataset.desc}}
                             </el-col>
                             <el-col :span="6">
-                                <time class="text-muted">{{dataset.create_date | date}}</time>
+                                <time>{{dataset.create_date | date}}</time>
                                 &nbsp;
                             </el-col>
                             <el-col :span="4">
@@ -110,7 +103,10 @@
             <el-button size="small" icon="delete" @click="clear_selected()">Unselect All</el-button>
         </div>
         <div class="select-group" style="background-color: #999;">
-            <el-button size="small" type="primary" @click="download()">Download</el-button>
+            <el-button-group>
+                <el-button size="small" type="primary" @click="download()">Download</el-button>
+                <el-button size="small" type="primary" @click="process()">Process</el-button>
+            </el-button-group>
             <el-dropdown @command="view">
                 <el-button size="small" type="primary">
                     View<i class="el-icon-caret-bottom el-icon--right"></i>
@@ -162,7 +158,7 @@ export default {
     computed: {
         //group datasets by subject
         datasets_grouped: function() {
-            if(!this.datasets) return {};
+            if(!this.datasets) return null;
 
             //console.log("grouping");
             var groups = {};
@@ -192,7 +188,7 @@ export default {
         }
     },
 
-    mounted: function() {
+    mounted() {
         this.project_id = this.$route.params.projectid; //could be set to null
 
         //need to load all project in case user might click on "all"
@@ -280,12 +276,6 @@ export default {
                 cb();
             }).catch(cb);
         },
-        /*
-        is_selected: function(dataset) {
-            if(this.selected[dataset._id] === undefined) return false;
-            return true;
-        },
-        */
         opendataset: function(dataset) {
             //console.dir(dataset);
         },
@@ -377,7 +367,6 @@ export default {
                     }).then(task=>{
                         var download_task = task;
                         window.open("#/view/"+download_instance._id+"/"+download_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
-                        //this.$router.push("/view/"+download_instance._id+"/"+download_task._id+"/"+type);
                     });
                 }
             });
@@ -408,7 +397,10 @@ export default {
 
                     //TODO - this is neuroscience specific, and I need to do a lot more thinking on this
                     var dataname = datatype.name.split("/")[1];
-                    //console.dir(datatype.files);
+
+                    //TODO - until I figure out how to make things unique, let's add dataset_id
+                    dataname+="_"+dataset_id;
+
                     datatype.files.forEach(file=>{
                         symlink.push({
                             src: download_path+"/"+(file.filename||file.dirname),
@@ -429,6 +421,10 @@ export default {
                 this.$router.push("/download/"+download_instance._id);
 
             });
+        },
+
+        process: function() {
+            this.$router.push('/process/_new');
         }
     },
 }

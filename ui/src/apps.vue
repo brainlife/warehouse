@@ -7,16 +7,17 @@
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
             </el-col>
             <el-col :span="10">
-                <el-button @click="go('/app/_/edit')"> <icon name="plus"></icon> Register App</el-button>
+                <el-button @click="go('/app/_/edit')" icon="plus">Register App</el-button>
             </el-col>
         </el-row>
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="ui pusher">
         <div class="page-content">
-        <div class="margin20">
+        <div v-if="!apps" style="margin: 40px;"><h3>Loading ..</h3></div>
+        <div class="margin20" v-if="apps">
             <div v-for="app in apps" key="app._id" class="card">
-                <app :app="app"></app>
+                <app :app="app"></app><br>
             </div>
         </div><!--magin20-->
         </div><!--page-content-->
@@ -34,7 +35,7 @@ export default {
     components: { sidemenu, pageheader, app },
     data () {
         return {
-            apps: [],
+            apps: null,
             query: "",
 
             config: Vue.config,

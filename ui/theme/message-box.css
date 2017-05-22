@@ -92,6 +92,8 @@
   --------------------------*/
   /* Collapse
   --------------------------*/
+  /* Transfer
+  --------------------------*/
 }
 .v-modal-enter{
   animation: v-modal-in .2s ease;
@@ -207,6 +209,8 @@
   /* Carousel
   --------------------------*/
   /* Collapse
+  --------------------------*/
+  /* Transfer
   --------------------------*/
 }
 .el-button{
@@ -683,6 +687,8 @@
   --------------------------*/
   /* Collapse
   --------------------------*/
+  /* Transfer
+  --------------------------*/
 }
 .el-input{
   position: relative;
@@ -816,7 +822,7 @@
   display: block;
   margin: -10px;
 }
-.el-input-group__append .el-button, .el-input-group__append .el-select .el-input__inner, .el-input-group__append .el-select:hover .el-input__inner, .el-input-group__prepend .el-button, .el-input-group__prepend .el-select .el-input__inner, .el-input-group__prepend .el-select:hover .el-input__inner{
+.el-input-group__append button.el-button, .el-input-group__append div.el-select .el-input__inner, .el-input-group__append div.el-select:hover .el-input__inner, .el-input-group__prepend button.el-button, .el-input-group__prepend div.el-select .el-input__inner, .el-input-group__prepend div.el-select:hover .el-input__inner{
   border-color: transparent;
   background-color: transparent;
   color: inherit;

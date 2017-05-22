@@ -1,7 +1,12 @@
 <template>
-  <div id="warehouse">
-    <router-view></router-view>
-  </div>
+    <div id="warehouse">
+        <!--
+        <transition :name="'fade'">
+            <router-view></router-view>
+        </transition>
+        -->
+        <router-view></router-view>
+    </div>
 </template>
 
 <script>
@@ -12,65 +17,69 @@ export default {
 
 <!--scoped styles-->
 <style scoped>
+.fade-enter-active, .fade-leave-active {
+  transition-property: opacity;
+  transition-duration: .25s;
+}
+
+.fade-enter-active {
+  transition-delay: .25s;
+}
+
+.fade-enter, .fade-leave-active {
+  opacity: 0
+}
 </style>
 
 <!--global styles-->
 <style>
 body {
 background-color: #f0f0f0;
-color: #222;
+color: #444;
 }
-body, textarea, input {
-font-family: 'Lato', sans-serif;
+body, textarea, input, table {
+font-family: 'Roboto', sans-serif;
 font-size: 14px;
 }
 .margin20 {
-	margin: 20px;
-}
-.ui.pusher {
-  margin-left: 200px;
+margin: 20px;
 }
 .page-content {
-    /*transition: margin-right 0.5s;*/
-    position: fixed;
-    left: 90px;
-    right: 0px;
-    top: 50px;
-    bottom: 0px;
-    overflow: auto;
+position: fixed;
+left: 90px;
+right: 0px;
+top: 50px;
+bottom: 0px;
+overflow: auto;
 }
 
 .fade-enter-active {
-  transition: opacity 1s
+transition: opacity 1s
 }
 .fade-enter, .fade-leave-to {
-  opacity: 0
+opacity: 0
 }
 pre {
-    margin: 0px;
-    overflow: auto;
-    font-family: 'monospace';
+margin: 0px;
+overflow: auto;
+font-family: 'monospace';
 }
 .clickable:hover,
 .clickable-record:hover {
-    cursor: pointer;
-    background-color: #ddd;
+cursor: pointer;
+background-color: #ddd;
 }
 .clickable-row {
-    cursor: pointer;
+cursor: pointer;
 }
 .text-muted {
-    opacity: 0.6;
+opacity: 0.6;
 }
 code.hljs {
-    font-size: 80%;
+font-size: 80%;
 }
 .off-sidemenu {
-    margin-left: 150px;
-}
-svg.fa-icon {
-position: relative;
-zoom: 78%;
+margin-left: 150px;
 }
 b{
 font-weight: 700;
@@ -107,22 +116,23 @@ margin-bottom: 6px;
 
 table.info {
     width: 100%;
+    font-size: 13px;
+    border-spacing: 1px;
 }
 table.info tr {
-    border-bottom: 1px solid #eee;
     background-color: white;
 }
 table.info th {
     color: #777; 
     text-align: left;
     vertical-align: top;
-    font-size: 14px;
     padding: 10px;
     margin: 0px;
     font-weight: 600;
 }
 table.info td {
     padding: 10px;
+    line-height: 140%;
 }
 .el-table__header-wrapper thead div {
 color: gray !important;
@@ -137,6 +147,9 @@ margin-bottom: 10px !important;
 .navigation {
     color: #999;
     margin-bottom: 15px;
+}
+time {
+opacity: 0.8;
 }
 </style>
 

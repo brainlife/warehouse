@@ -86,6 +86,8 @@
   --------------------------*/
     /* Collapse
   --------------------------*/
+    /* Transfer
+  --------------------------*/
 }
 
 .el-select-dropdown{}
@@ -104,7 +106,7 @@
     cursor: pointer
 }
 
-.el-select-dropdown__item.hover{
+.el-select-dropdown__item.hover, .el-select-dropdown__item:hover{
     background-color: rgb(235, 235, 235)
 }
 

@@ -1,81 +1,66 @@
 <template>
 <div>
     <pageheader :user="config.user"></pageheader>
-    <sidemenu active="/apps"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
-        <div class="margin20" v-if="app">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
-                <el-breadcrumb-item v-if="app._id">Submit {{app._id}}</el-breadcrumb-item>
-            </el-breadcrumb>
+    <sidemenu active="/datasets"></sidemenu>
+    <div class="page-content">
+    <div class="margin20">
+
+        <div v-if="page == 'select_app' && apps">
+            <h2 class="text-muted">Please select application you'd like to submit with selected datasets</h2>
             <br>
+            <div v-for="app in apps" :key="app._id" @click="selectapp(app)" class="clickable">
+                <app :app="app" :compact="true" :clickable="false"/>
+            </div>
+        </div>
+        <div v-if="page == 'config'">
+            <h2 class="text-muted">Submit {{app.name}}</h2>
+            <h3>Please select / configure tasks to submit.</h3>
+            <el-form label-width="150px">
+                <el-card v-for="(task, idx) in tasks" :class="{disabled: !task.enable}" :key="idx">
+                    <p>
+                        <el-checkbox v-model="task.enable" @change="revalidate()">Submit</el-checkbox>
+                    </p>
 
-            <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
-            <h1>{{app.name}}</h1>
-            <p>{{app.desc}}</p>
-
-            <br clear="both">
-            <br>
-
-            <el-card class="box-card">
-                <!--
-                <div slot="header">
-                    <span>Submit Form</span>
-                </div>
-                -->
-                <el-form :model="form" ref="form" label-position="left" label-width="150px">
-
-                    <!--
-                    <el-form-item label="Project">
-                        <el-select v-model="form.project_id">
-                            <el-option v-for="p in projects" :value="p._id" :label="p.name" :key="p._id">
-                                <el-tag>{{p.access}}</el-tag>
-                                {{p.name}}
-                            </el-option>
-                        </el-select>
-                        <p class="text-muted">* Project used to run this application</p>
-                    </el-form-item>
-                    -->
-
-                    <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
-                    <el-form-item v-for="input in app.inputs" :label="input.id" :key="input.id" ref="form">
-                        <el-select v-model="form.inputs[input.id]" placeholder="Please select input dataset">
+                    <!--input-->
+                    <el-form-item v-for="input in task.inputs" :label="input.id" :key="input.id" ref="form">
+                        <el-select @change="revalidate()" v-model="input.dataset" placeholder="Please select input dataset" style="width: 100%;">
                             <el-option v-for="dataset in datasets[input.id]" :key="dataset._id" 
                                 :value="dataset._id" :label="dataset.meta.subject+' '+dataset.name">
                                 {{dataset.meta.subject}} | {{dataset.name}} | {{dataset.create_date|date}}
                             </el-option>
                         </el-select>
+                        <el-alert v-if="input.error" :title="input.error" type="error"/>
                     </el-form-item>
 
-                    <!--<h4 style="margin-left: 150px;">Configurations</h4>-->
-                    <!-- TODO doesn't support nested parameters-->
-                    <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value">
-                        <el-input v-model="form.config[k]"></el-input>
+                    <!--config-->
+                    <el-form-item v-for="(v,k) in task.config" :label="k" :key="k">
+                        <el-input v-model="task.config[k]"></el-input>
                     </el-form-item>
- 
+
+                    <!--<pre>{{task}}</pre>-->
+                </el-card>
+                <el-card class="submit">
                     <el-form-item label="Description">
-                        <el-input type="textarea" v-model="form.desc" placeholder="Optional Description for this processing"></el-input>
+                        <el-input type="textarea" v-model="desc"></el-input>
                     </el-form-item>
-                    <br>
                     <el-form-item>
-                        <el-button type="primary" @click="submit()">Submit</el-button>
+                        <el-button @click="page = 'select_app'">Back</el-button>
+                        <el-button type="primary" @click="submit()"><icon name="play"/> Submit</el-button>
                     </el-form-item>
-                </el-form>
-            </el-card>
+                </el-card>
+            </el-form> 
+        </div>
 
-            <el-card v-if="config.debug">
-                <div slot="header">Debug</div>
-                <h3>Form</h3>
-                <pre v-highlightjs="JSON.stringify(form, null, 4)"><code class="json hljs"></code></pre>
-                <h3>App</h3>
-                <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                <h3>Datasets</h3>
-                <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
-            </el-card>
-        </div><!--margin20-->
-        </div><!--page-content-->
-    </div>
+        <br>
+        <el-card v-if="config.debug">
+            <div slot="header">Debug</div>
+            <div v-if="tasks">
+                <h3>tasks</h3>
+                <pre v-highlightjs="JSON.stringify(tasks, null, 4)"><code class="json hljs"></code></pre>
+            </div>
+        </el-card>
+    </div><!--margin20-->
+    </div><!--page-content-->
 </div><!--root-->
 </template>
 
@@ -83,77 +68,38 @@
 import Vue from 'vue'
 
 import sidemenu from '@/components/sidemenu'
-import contact from '@/components/contact'
-import project from '@/components/project'
-import tags from '@/components/tags'
-import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
+import app from '@/components/app'
 
-import lib from '@/lib'
+const async = require('async');
+const lib = require('./lib');
 
-//take app's config template and create a real config using download_task_id
-function generate_config(app, download_task_id) {
-    var config = app.config;
-
-    function handle_obj(obj) {
-        for(var k in obj) { 
-            var node = obj[k];
-            if(node.isArray) {
-                console.log("todo.. array!");
-            } else if(typeof node === 'object') {
-                if(node.type) {
-                    switch(node.type) {
-                    case "string":
-                    case "integer":
-                        obj[k] = node.value;
-                        break;
-                    case "input":
-                        //find the input 
-                        app.inputs.forEach(input=>{
-                            if(input.id == node.input_id) {
-                                //find the file
-                                input.datatype.files.forEach(file=>{
-                                    if(file.id == node.file_id) {
-                                        obj[k] = "../"+download_task_id+"/inputs/"+input.id+"/"+(file.filename||file.dirname)
-                                    }
-                                });
-                            } 
-                        });
-                        break;
-                    default:
-                        obj[k] = "unknown_template_type";
-                    }
-                } else handle_obj(node); //recurse
-            }
-        }
+function generate_default(app) {
+    var config = {};
+    for(var k in app.config) {
+        var v = app.config[k];
+        if(v.type && v.default) config[k] = v.default;
     }
-
-    handle_obj(config);
-
-    console.log("generated config", config);
     return config;
 }
 
 export default {
-    components: { sidemenu, contact, project, tags, metadata, pageheader, appavatar },
+    components: { sidemenu, pageheader, appavatar, app },
 
     data () {
         return {
-            app: null,
-            resource: null,
+            page: "select_app",
+            desc: "", //instance desc
+            apps: null, //application user can run with selected data
 
-            form: {
-                desc: "",
-                //project_id: localStorage.getItem("last_projectid_used")||"", 
-                inputs: {},
-                config: {},
-            },
+            tasks: [], //tasks to configure / submit
 
-            //cache
-            datasets: {}, //available datasets grouped by input._id
-            //projects: [],
+            selected: JSON.parse(localStorage.getItem('datasets.selected')) || {},
 
+            datasets: {}, //possible datasets that user can choose from for each input type
+
+            validated: false,
             config: Vue.config,
         }
     },
@@ -162,107 +108,30 @@ export default {
     },
 
     mounted: function() {
-        //console.log("query query", this.$route.query);
-        var preselect_dataset = null;
-
+        var datatype_ids = [];
+        for(var did in this.selected) {
+            var select = this.selected[did];
+            datatype_ids.push(select.datatype);
+        }
+        
         this.$http.get('app', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'inputs.datatype outputs.datatype',
+            find: JSON.stringify({
+                "inputs.datatype": {$in: datatype_ids},
+            }),
+            populate: 'inputs.datatype',// outputs.datatype',
         }})
         .then(res=>{
-            this.app = res.body.apps[0];
-            if(this.app.github) this.findbest(this.app.github);
-
-            //prepare form inputs
-            this.app.inputs.forEach((input)=>{
-                Vue.set(this.form.inputs, input.id, null);
-            });
-            for(var k in this.app.config) {
-                Vue.set(this.form.config, k, this.app.config[k].default);
-                //Vue.set(this.rules, k, [{required: true, message: 'Please enter'}]);
+            //filter apps for each dataset selected.. to create list of apps that user can really submit
+            this.apps = [];
+            for(var did in this.selected) {
+                var apps = lib.filter_apps(this.selected[did], res.body.apps); 
+                apps.forEach(app=>{
+                    if(!~this.apps.indexOf(app)) this.apps.push(app);
+                });
             }
-
-            //process config template
-            //TODO - update to handle nested parameters
-            //console.dir(this.app);
-            for(var k in this.app.config) {
-                var v = this.app.config[k];
-                if(v.type && v.default) v.value = v.default;
-            }
-
-            //load datasets that this app cares about
-            var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
-            return this.$http.get('dataset', {params: {
-                find: JSON.stringify({
-                    datatype: {$in: datatype_ids},
-                    removed: false,
-                })
-            }})
-
-        })
-        .then(res=>{
-            var datasets = res.body.datasets;
-            //console.log("datasets applicable:", res);
-
-            //find preselected datasets
-            if(this.$route.query.dataset) {
-                datasets.forEach(dataset=>{
-                    if(dataset._id == this.$route.query.dataset) preselect_dataset = dataset;
-                }); 
-            }
-            //console.log("preselect", preselect_dataset);
-
-            //find datasets that applies to each input type
-            this.app.inputs.forEach((input)=>{
-                //console.dir(input);
-                Vue.set(this.datasets, input.id, datasets.filter(dataset=>{
-                    //console.dir(dataset);
-                    if(dataset.datatype != input.datatype._id) return false;
-
-                    var match = true;
-                    //see if all required tags exists
-                    input.datatype_tags.forEach(required_tag=>{
-                        if(required_tag[0] == "!") {
-                            //negative tag
-                            var neg_tag = required_tag.substring(1);
-                            if(~dataset.datatype_tags.indexOf(neg_tag)) match = false;
-                        } else {
-                            //required tag
-                            if(!~dataset.datatype_tags.indexOf(required_tag)) match = false;
-                        }
-                    });
-
-                    if(match && preselect_dataset) {
-                        var subject = preselect_dataset.meta.subject;
-                        if(preselect_dataset == dataset) this.form.inputs[input.id] = dataset._id;
-                        else {
-                            //select first one that has matching subject
-                            if(dataset.meta.subject == subject) this.form.inputs[input.id] = dataset._id;
-                        }
-                    }
-
-                    return match; 
-                }));
-            });
-            //console.dir(this.datasets);
         }).catch(err=>{
             console.error(err);
         });
-
-        /*
-        //load projects
-        this.$http.get('project', {params: {
-            //service: "_upload",
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.body.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-        }, res=>{
-          console.error(res);
-        });
-        */
     },
 
     methods: {
@@ -270,96 +139,199 @@ export default {
             this.$router.push(path);
         },
 
-        findbest: function(service) {
-          //find resource where we can run this app
-          this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-              service: service,
-          }})
-          .then(res=>{
-            this.resource = res.body;
-          }, res=>{
-            console.error(res);
-          })
+        //select dataset with specified subject
+        select: function(input, subject) {
+            var datasets = this.datasets[input.id].filter(dataset=>dataset.meta.subject == subject);
+
+            //TODO if there are more than 1 dataset, select the best one
+            if(datasets.length > 0) input.dataset = datasets[0]._id;
+        },
+
+        selectapp: function(app) {
+            this.app = app;
+            this.page = "config";
+
+            //load datasets with applicable datatypes (will filter later)
+            var datatype_ids = this.app.inputs.map(input=>input.datatype._id);
+            this.$http.get('dataset', {params: {
+                find: JSON.stringify({
+                    datatype: {$in: datatype_ids},
+                    removed: false,
+                })
+            }}).then(res=>{
+                this.app.inputs.forEach(input=>{
+                    Vue.set(this.datasets, input.id, lib.filter_datasets(res.body.datasets, input));
+                });
+
+                //for each dataset selected.. create task entry
+                this.tasks = [];
+                for(var did in this.selected) {
+                    var selected_dataset = this.selected[did];
+
+                    //construct default configuration
+                    //var config = lib.generate_config(this.app, "123456");
+                    //console.dir(config);
+
+                    var task = {
+                        enable: false,
+                        name: 'task submission for dataset:'+did,
+                        config: generate_default(this.app),
+                        inputs: {},
+                    };
+
+                    //set inputs
+                    var subject = null;
+                    this.app.inputs.forEach((input)=>{
+                        task.inputs[input.id] = Object.assign({}, input);
+
+                        //preselect datasets selected by user
+                        task.inputs[input.id].dataset = null;
+                        if(this.datasets[input.id]) this.datasets[input.id].forEach(dataset=>{
+                            if(dataset._id == did) {
+                                task.inputs[input.id].dataset = did;
+                                task.enable = true;
+
+                                subject = dataset.meta.subject;
+                            }
+                        }); 
+                    });
+
+                    //preselect other input using with the same subject
+                    for(var iid in task.inputs) {
+                        if(task.inputs[iid].dataset) continue;
+                        this.select(task.inputs[iid], subject); 
+                    } 
+
+                    if(task.enable) this.tasks.push(task); 
+                }
+            });
+        },
+
+        revalidate: function() {
+            if(this.validated) this.validate();
+        },
+
+        validate: function() {
+            var valid = true;
+            this.tasks.forEach(task=>{
+                //make sure all inputs are selected
+                for(var iid in task.inputs) {
+                    var input = task.inputs[iid];
+                    Vue.set(input, 'error', null);
+                    if(task.enable && !input.dataset) {
+                        valid = false;
+                        input.error = "Please select input";
+                    }
+                }
+            }); 
+            this.validated = true;
+            return valid;
         },
 
         submit: function() {
-
-            //make sure all inputs are selected
-            var validated = true;
-            for(var k in this.form.inputs) {
-                if(!this.form.inputs[k]) validated = false;
-            }
-            if(!validated) {
-                this.$notify({
-                    title: 'Missing Input',
-                    message: 'Please select all inputs',
-                    type: 'error'
+            if(!this.validate()) {
+                this.$notify.error({ title: 'Error', message: 'Validation failed' });
+            } else {
+                this.submit_instance().then(instance=>{
+                    console.log("submitted instance", instance);
+                    this.submit_download_tasks(instance, err=>{
+                        if(err) console.error("failed to submit download tasks");
+                        else this.submit_apps(instance, err=>{
+                            if(err) console.error("failed to submit app tasks");
+                            this.submit_orgout(instance, err=>{
+                                if(err) console.error("failed to submit org-output tasks");
+                                this.update_instance(instance, err=>{
+                                    if(err) console.error("failed to update instance");
+                                    this.request_notification(instance, err=>{
+                                        if(err) console.error("failed to request instance notification");
+                                        this.go('/process/'+instance._id);
+                                    });
+                                });
+                            });
+                        }); 
+                    });
                 });
-                return;
             }
+        },
 
+        submit_instance() {
+            //first create an instance to host all tasks 
             var instance = null;
-
             var inst_config = {
                 brainlife: true,
-                //project: this.project_id,
-                output_task_id: null, //will be set once submitted
                 prov: {
                     app: this.app._id,
-                    deps: [], 
+                    //deps: [], 
                 }
             }
+            /* TODO - not sure how to set prov.deps for bulk submission
             for(var input_id in this.form.inputs) {
                 inst_config.prov.deps.push({input_id, dataset: this.form.inputs[input_id]});
             }
-
-            //first create an instance to run everything
-            this.$http.post(Vue.config.wf_api+'/instance', {
-                name: "brainlife process for app:"+this.app._id,
-                desc: this.form.desc,
+            */
+            return this.$http.post(Vue.config.wf_api+'/instance', {
+                name: "brainlife bulk process for app:"+this.app._id,
+                desc: this.desc,
                 config: inst_config,
-            }).then(res=>{
-                instance = res.body;
-                console.log("instance created", instance);
+            }).then(res=>res.body);
+        },
+
+        //submit data staging tasks
+        submit_download_tasks(instance, cb) {
+            async.eachSeries(this.tasks, (task, next_task)=>{
+                if(!task.enable) return next_task();
 
                 //create config to download all input data from archive
                 var download = [];
-                for(var input_id in this.form.inputs) {
+                for(var input_id in task.inputs) {
                     download.push({
-                        url: Vue.config.api+"/dataset/download/"+this.form.inputs[input_id]+"?at="+Vue.config.jwt,
+                        url: Vue.config.api+"/dataset/download/"+task.inputs[input_id].dataset+"?at="+Vue.config.jwt,
                         untar: "gz",
                         dir: "inputs/"+input_id,
                     });
                 }
-
                 //now submit task to download data from archive
-                console.log("submitting download task", download);
-                return this.$http.post(Vue.config.wf_api+'/task', {
+                //console.log("submitting download task", download);
+                this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
-                    name: "Stage Input",
+                    name: "brainlife.stage_input",
+                    desc: "Stage Input for "+task.name,
                     service: "soichih/sca-product-raw",
-                    config: { download },
-                })
-            }).then(res=>{
-                var download_task = res.body.task;
-                console.log("download task submitted", download_task);
+                    config: { download, inputs: task.inputs },
+                }).then(res=>{
+                    //Vue.set(task, 'download_task',  res.body.task);
+                    task.download_task = res.body.task;
+                    console.log("submitted download", task);
+                    next_task();
+                });//.catch(next_task);
+            }, cb);
+        },
 
-                //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
-
-                //submit the main task
-                return this.$http.post(Vue.config.wf_api+'/task', {
+        submit_apps(instance, cb) {
+            async.eachSeries(this.tasks, (task, next_task)=>{
+                if(!task.enable) return next_task();
+                this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
-                    name: this.app.name,
-                    service: this.app.github,
-                    config: Object.assign(this.form.config, generate_config(this.app, download_task._id)),
-                    deps: [ download_task._id ],
-                })
-            }).then(res=>{
-                var main_task = res.body.task;
-                //submit the output handling task
+                    name: "brainlife.process",
+                    desc: this.app.name,
+                    service: this.app.github, //TODO what if it's docker?
+                    config: Object.assign(task.config, lib.generate_config(this.app, task.download_task._id)),
+                    deps: [ task.download_task._id ],
+                }).then(res=>{
+                    //Vue.set(task, 'main_task',  res.body.task);
+                    task.main_task = res.body.task;
+                    console.log("submitted main task", task);
+                    next_task();
+                });//.catch(next_task);
+            }, cb);
+        },
+
+        submit_orgout(instance, cb) {
+            async.eachSeries(this.tasks, (task, next_task)=>{
+                if(!task.enable) return next_task();
+
                 var symlink = [];
                 this.app.outputs.forEach(output=>{
-                    console.log("processing", output);
                     if(output.files) {
                         for(var file_id in output.files) {
                             //find datatype file id
@@ -367,7 +339,7 @@ export default {
                                 if(datatype_file.id == file_id) {
                                     var name = datatype_file.filename||datatype_file.dirname;
                                     symlink.push({ 
-                                        "src": "../"+main_task._id+"/"+output.files[file_id], 
+                                        "src": "../"+task.main_task._id+"/"+output.files[file_id], 
                                         "dest": output.id+"/"+name 
                                     });
                                 }
@@ -375,67 +347,59 @@ export default {
                         }
                     } else {
                         //copy everything..
-                        symlink.push({"src": "../"+main_task._id, "dest": output.id});
+                        symlink.push({"src": "../"+task.main_task._id, "dest": output.id});
                     }
                 });
-                return this.$http.post(Vue.config.wf_api+'/task', {
+                this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
-                    name: "Organize Output", 
+                    name: "brainlife.stage_output",
+                    desc: "Organize Output", 
                     service: "soichih/sca-product-raw",
                     config: { symlink },
-                    deps: [ main_task._id ],
-                })
-            }).then(res=>{
-                //add output_task_id information on instance config (used by ui to render main task)
-                inst_config.output_task_id = res.body.task._id;
-                inst_config.prov.config = res.body.task.config;
-                inst_config.prov.task_id = res.body.task._id;
-                inst_config.prov.instance_id = instance._id;
-                return this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
-                    config: inst_config,
+                    deps: [ task.main_task._id ],
+                }).then(res=>{
+                    task.org_task = res.body.task;
+                    console.log("submitted org output task", task);
+                    next_task();
                 });
-            }).then(res=>{
-                //then request for notifications
-                return this.request_notifications(instance, inst_config.output_task_id);
-            }).then(res=>{
-                //all good!
-                //localStorage.setItem("last_projectid_used", this.project_id);
-                this.go('/process/'+instance._id);
-            }).catch(err=>{
-                console.error(err);
-            });
+            }, cb);
         },
 
-        request_notifications: function(instance, task_id) {
-            var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;
+        update_instance(instance, cb) {
+            //instance.config.prov.tasks = this.tasks; //TODO.. not sure what I really need out of tasks...
+            this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
+                config: instance.config,
+            }).then(res=>{
+                console.log("updated instance config");
+                cb();
+            }, cb);
+        },
 
-            //for success
-            return this.$http.post(Vue.config.event_api+"/notification", {
-                event: "wf.task.finished",
+        request_notification: function(instance, cb) {
+            var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;
+            this.$http.post(Vue.config.event_api+"/notification", {
+                event: "wf.instance.finished",
                 handler: "email",
                 config: {
-                    task_id: task_id,
+                    instance_id: instance._id,
                     subject: "[brain-life.org] Process Completed",
-                    message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease visit "+url+" to view your result.\n\nBrain-life.org Administrator"
+                    message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease downoad / archive output files at "+url+"\n\nBrain-life.org Administrator"
                 },
             }).then(res=>{
-                console.log("requested notification");
-                console.dir(res.body);
-            }).catch(err=>{
-                console.error(err);
-            });
-        }
+                console.log("requested instance notification", res.body);
+                cb();
+            }, cb);
+        },
     },
 }
 </script>
 
 <style scoped>
-.ui.text.menu {
-    margin: 0;
+.disabled {
+background-color: #ddd;
 }
-.dataset:hover {
-    cursor: pointer;
-    background-color: #ddd;
+.submit {
+background-color: #eee;
 }
 </style>
 

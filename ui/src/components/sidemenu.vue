@@ -159,7 +159,7 @@ ul.items li.active {
     color: white;
 }
 ul.items li:hover {
-    background-color: #555;
+    background-color: #444;
     color: white;
     cursor: pointer;
 }
