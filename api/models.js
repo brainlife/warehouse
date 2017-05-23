@@ -13,7 +13,9 @@ if(config.debug) {
 }
 
 exports.init = (cb)=>{
-    mongoose.connect(config.mongodb, {reconnectTries: Number.MAX_VALUE}, (err)=>{
+    mongoose.connect(config.mongodb, {
+        server: { reconnectTries: Number.MAX_VALUE }
+    }, err=>{
         if(err) return cb(err);
         logger.info("connected to mongo");
         cb();

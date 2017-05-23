@@ -1,5 +1,3 @@
-'use strict';
-
 const fs = require('fs');
 const winston = require('winston');
 
@@ -7,7 +5,6 @@ exports.mongodb = "mongodb://localhost/warehouse";
 
 exports.wf = {
     api: "https://soichi7.ppa.iu.edu/api/wf",
-    
     //token used to submit -mover servicer
     //issue your token from auth service (make sure to chmod 600 this config if you store it here! - instead of reading from another file)
     //token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3NjYS5pdS5lZHUvYXV0aCIsImlhdCI6MTQ4NzI4NDM2My43MDMsInNjb3BlcyI6eyJzY2EiOlsidXNlciJdfSwic3ViIjoiYnJsaWZlIn0.cawBYJmjjL9n5ijKw7MtB91HanGG_D0dKaOESeWpwBsTCFRmt5EXT12ahxI4RyY68jLdm6nWBPc4hX4Uh5DyeykOuG395NiMjOQFMYhHc01iw56LZj3-dpvkGLNnKuHjiIc-OnTswAvQRbSk3aFOKFNTd_mM0oityhrKHTP_1ZM",
@@ -24,14 +21,6 @@ const mkdirp = require('mkdirp');
 exports.storage_systems = {
     //sshfs mount dc2 on /mnt/auto
     dc2: {
-        /*
-        //check to see if this storage system is up
-        check: cb=>{
-            var dir = "/mnt/auto/dc2/projects/brainlife/";
-            fs.access(dir, fs.constants.R_OK | fs.constancs_W_OK, cb);
-        },
-        */
-        
         //return archive_stream to pipe data to
         upload: (dataset, cb)=>{
             var dir = "/mnt/auto/dc2/projects/brainlife/s7-warehouse/datasets/"+dataset.project;
@@ -48,7 +37,15 @@ exports.storage_systems = {
             var dir = "/mnt/auto/dc2/projects/brainlife/s7-warehouse/datasets/"+dataset.project;
             var stream = fs.createReadStream(dir+'/'+dataset._id+'.tar.gz');
             cb(null, stream);
-        }
+        },
+        test: cb=>{
+            var dir = "/mnt/auto/dc2/projects/brainlife/s7-warehouse/datasets/";
+            fs.stat(dir, (err,stats)=>{
+                if(err) return cb(err);
+                if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
+                cb();
+            }); 
+        },
     }
 }
 

@@ -36,7 +36,7 @@ Vue.component('icon', Icon)
 
 import router from './router'
 
-import 'animate.css/animate.min.css'
+//import 'animate.css/animate.min.css'
 
 Vue.use(require('vue-filter'))
 
