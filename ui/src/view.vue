@@ -153,12 +153,10 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             ws.onopen = (e)=>{
-                console.log("websocket opened", instanceid);
+                var key = Vue.config.user.sub+"."+instanceid+"."+taskid;
+                console.log("websocket opened: binding to ", key);
                 ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.task",
-                        key: Vue.config.user.sub+"."+instanceid+"."+taskid,
-                    }
+                    bind: { ex: "wf.task", key }
                 }));
             }
               
@@ -167,6 +165,7 @@ export default {
                 var msg = event.msg;
                 if(!msg || !msg._id) return; //odd..
                 if(~msg.name.indexOf("brainlife.novnc")) {
+                    console.log("novnc_task updated", msg);
                     this.novnc_task = msg;
                     this.check_status();
                 }

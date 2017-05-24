@@ -34,14 +34,17 @@
                             <el-input type="textarea" v-model="desc" :rows="4" placeholder="Any description (optional)"></el-input>
                         </el-form-item>
 
-                        <el-form-item label="Project" v-if="projects">
+                        <el-form-item label="Project">
+                            <!--
                             <el-select v-model="project_id" placeholder="Select project to store this dataset" style="width: 100%">
                                 <el-option v-for="(p,id) in projects" key="id" :value="id" :label="p.name">{{p.name}} <projectaccess :access="p.access"/></el-option>
                             </el-select>
+                            -->
+                            <projectselector v-model="project_id"/><!--@change="input_project_changed(project)"-->
                         </el-form-item>
 
                         <el-form-item label="Data Type" v-if="datatypes">
-                            <el-select v-model="datatype_id" placeholder="Please select" style="width: 100%;">
+                            <el-select v-model="datatype_id" placeholder="Please select" @change="change_datatype" style="width: 100%;">
                                 <el-option v-for="(type,id) in datatypes" key="id" :value="id" :label="type.desc"></el-option>
                             </el-select>
                         </el-form-item>
@@ -56,7 +59,7 @@
 
                         <el-form-item>
                             <el-button @click="back()">Back</el-button>
-                            <el-button type="primary" @click="next()">Next</el-button>
+                            <el-button type="primary" @click="next()" :disabled="!is_valid('meta')">Next</el-button>
                         </el-form-item>
                     </div><!--meta-->
 
@@ -131,12 +134,19 @@
             <br>
             <el-card v-if="config.debug">
                 <div slot="header">debug</div>
+                <h3>Name/Desc</h3>
                 {{name}}
                 {{desc}}
+
+                <h3>Datatype ID</h3>
                 {{datatype_id}}
+
+                <h3>Project ID</h3>
                 {{project_id}}
+
                 <h3>Meta</h3>
                 <pre v-if="meta" v-highlightjs="JSON.stringify(meta, null, 4)"><code class="json hljs"></code></pre>
+
                 <h3>Validation</h3>
                 <pre v-if="meta" v-highlightjs="JSON.stringify(validation, null, 4)"><code class="json hljs"></code></pre>
             </el-card>
@@ -154,9 +164,10 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import projectaccess from '@/components/projectaccess'
+import projectselector from '@/components/projectselector'
 
 export default {
-    components: { sidemenu, pageheader, projectaccess },
+    components: { sidemenu, pageheader, projectselector},
     data () {
         return {
             //user selections
@@ -169,7 +180,7 @@ export default {
 
             //cache
             datatypes: null, //registered datatypes (keyed by datatype_id)
-            projects: null,
+            //projects: null,
 
             //state
             validation: null, //task entry for validation
@@ -182,48 +193,50 @@ export default {
     },
 
     mounted: function() {
+
         //initialize instance / resource ids if we haven't done yet
         if(this.initialized) return;
         this.initialized = true;
         console.log("uploader mounted - creating instance");
+
         this.$http.post(Vue.config.wf_api+'/instance', {
             name: "_upload",
         }).then(res=>{
-          this.instance_id = res.body._id;
-          console.log("subscribe to event service", this.instance_id);
-          var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-          var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
-          ws.onopen = (e)=>{
-            console.log("websocket opened", this.instance_id);
-            ws.send(JSON.stringify({
-              bind: {
-                ex: "wf.task",
-                key: Vue.config.user.sub+"."+this.instance_id+".#",
-              }
-            }));
-          }
-          ws.onmessage = (json)=>{
-            var event = JSON.parse(json.data);
-            var task = event.msg;
-            if(!task) return;
-            if(!task._id) return; //what kind of task is this?
-            if(this.validation && task._id == this.validation._id) {
-                this.validation = task;
-                //for backward compatibility 
-                if(this.validation.products[0].results) {
-                    //unwrap old structure to new
-                    this.validation.products[0] = this.validation.products[0].results;
+            this.instance_id = res.body._id;
+            console.log("subscribe to event service", this.instance_id);
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
+            ws.onopen = (e)=>{
+                console.log("websocket opened", this.instance_id);
+                ws.send(JSON.stringify({
+                  bind: {
+                    ex: "wf.task",
+                    key: Vue.config.user.sub+"."+this.instance_id+".#",
+                  }
+                }));
+            }
+            ws.onmessage = (json)=>{
+                var event = JSON.parse(json.data);
+                var task = event.msg;
+                if(!task) return;
+                if(!task._id) return; //what kind of task is this?
+                if(this.validation && task._id == this.validation._id) {
+                    this.validation = task;
+                    //for backward compatibility 
+                    if(this.validation.products[0].results) {
+                        //unwrap old structure to new
+                        this.validation.products[0] = this.validation.products[0].results;
+                    }
+                }
+                if(this.copy && task._id == this.copy._id) {
+                    this.copy = task;
+                    if(task.status == "finished") {
+                        this.archive();
+                    }
                 }
             }
-            if(this.copy && task._id == this.copy._id) {
-              this.copy = task;
-              if(task.status == "finished") {
-                this.archive();
-              }
-            }
-          }
         }, res=>{
-          console.error(res);
+            console.error(res);
         });
 
         //load datatypes
@@ -239,6 +252,7 @@ export default {
             console.error(res);
         });
 
+        /*
         //load projects
         this.$http.get('project', {params: {
             //service: "_upload",
@@ -251,6 +265,7 @@ export default {
         }, res=>{
             console.error(res);
         });
+        */
     },
 
     computed: {
@@ -262,10 +277,10 @@ export default {
     methods: {
         get_active_tab: function() {
             switch(this.mode) {
-            case "meta": return 1;
-            case "upload": return 2;
-            case "validate": return 3;
-            case "finalize": return 4;
+                case "meta": return 1;
+                case "upload": return 2;
+                case "validate": return 3;
+                case "finalize": return 4;
             }
         },
 
@@ -416,12 +431,48 @@ export default {
             file.progress = null;
             this.$forceUpdate();
         },
+
         cancelupload: function(file) {
             file.xhr.abort();
             file.uploaded = null;
             file.progress = null;
             this.$forceUpdate();
-        }
+        },
+
+        change_datatype: function() {
+            //need to reset all meta properties to be reactive
+            this.meta = {};
+            this.datatypes[this.datatype_id].meta.forEach(meta=>{
+                //console.log("setting meta", meta.id);
+                Vue.set(this.meta, meta.id, "");
+            });
+        },
+
+        //check if we can proceed out of the page we are in
+        is_valid: function(form) {
+            let valid = true;
+            switch(form) {
+            case "meta":
+                if(!this.name) return false;
+                if(!this.project_id) return false;
+                if(!this.datatype_id) return false;
+                this.datatypes[this.datatype_id].meta.forEach(meta=>{
+                    if(!this.meta[meta.id]) valid = false;
+                });
+                break;
+            case "upload":
+                this.files.forEach(file=>{
+                    console.log(file);
+                    if(!file.uploaded) valid = false;
+                });
+                break;
+            default:
+                console.error('unknown form');
+                return false;
+            }
+            return valid;
+        },
+
     },
 }
 </script>

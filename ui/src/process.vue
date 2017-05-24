@@ -745,7 +745,6 @@ export default {
             if(!this.validate()) {
                 this.$notify.error({ title: 'Error', message: 'Please correct the form' });
             } else {
-
                 this.newtasks.forEach((newtask, idx)=>{
                     if(!newtask.submit) return;
                     if(this.submit_mode == "single" && idx > 0) return; 
@@ -784,7 +783,8 @@ export default {
                             if(output.files) {
                                 for(var file_id in output.files) {
                                     //find datatype file id
-                                    output.datatype.files.forEach(datatype_file=>{
+                                    var datatype = this.datatypes[output.datatype];
+                                    datatype.files.forEach(datatype_file=>{
                                         if(datatype_file.id == file_id) {
                                             var name = datatype_file.filename||datatype_file.dirname;
                                             symlink.push({ 
