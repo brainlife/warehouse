@@ -32,11 +32,11 @@
                         <p class="text-muted">Decide if non project member can access datasets inside this project</p>
                     </el-form-item>
                     <el-form-item label="Administrators">
-                        <contactlist :uids="project.admins"></contactlist>
+                        <contactlist v-model="project.admins"></contactlist>
                         <p class="text-muted">Users who can update the project members</p>
                     </el-form-item>
                     <el-form-item label="Members">
-                        <contactlist :uids="project.members"></contactlist>
+                        <contactlist v-model="project.members"></contactlist>
                         <p class="text-muted">Users who can update the project members</p>
                     </el-form-item>
                     <el-form-item>
