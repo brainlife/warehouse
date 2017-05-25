@@ -68,6 +68,7 @@ function generate_config(app, download_task_id) {
                     switch(node.type) {
                     case "string":
                     case "integer":
+                    case "boolean":
                         obj[k] = node.value;
                         break;
                     case "input":

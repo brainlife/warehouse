@@ -155,6 +155,7 @@
                             <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="typeof v == 'string' || typeof v == 'number'">
                                 <el-input v-if="typeof v == 'string'" v-model="newtask.config[k]"/>
                                 <el-input-number v-if="typeof v == 'number'" v-model="newtask.config[k]" :step="2"/>
+                                <el-checkbox v-if="typeof v == 'boolean'" v-model="newtask.config[k]"/>
                             </el-form-item>
 
                             <el-form-item>
@@ -640,6 +641,7 @@ export default {
                     switch(v.type) {
                     case "string":
                     case "integer":
+                    case "boolean":
                         config[k] = v.default;        
                         break;
                     case "input":

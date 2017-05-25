@@ -31,8 +31,10 @@
 
             <!--<h4 style="margin-left: 150px;">Configurations</h4>-->
             <!-- TODO doesn't support nested parameters-->
-            <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value">
-                <el-input v-model="form.config[k]"></el-input>
+            <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value !== undefined">
+                <el-input v-if="v.type == 'integer'" v-model="form.config[k]"></el-input>
+                <el-input-number v-if="v.type == 'string'" v-model="form.config[k]"></el-input-number>
+                <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox>
             </el-form-item>
 
             <el-form-item label="Description">
@@ -121,10 +123,9 @@ export default {
 
             //process config template
             //TODO - update to handle nested parameters
-            //console.dir(this.app);
             for(var k in this.app.config) {
                 var v = this.app.config[k];
-                if(v.type && v.default) v.value = v.default;
+                if(v.type && v.default !== undefined) v.value = v.default;
             }
 
             //load datasets that this app cares about
