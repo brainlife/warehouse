@@ -54,7 +54,7 @@ function filter_datasets(datasets, input) {
 }
 
 //take app's config template and create a real config using download_task_id
-function generate_config(app, download_task_id) {
+function generate_config(app, download_task_id, formconfig) {
     var config = app.config;
 
     function handle_obj(obj) {
@@ -69,7 +69,8 @@ function generate_config(app, download_task_id) {
                     case "string":
                     case "integer":
                     case "boolean":
-                        obj[k] = node.value;
+                        //obj[k] = node.value;
+                        obj[k] = formconfig[k];
                         break;
                     case "input":
                         //find the input 

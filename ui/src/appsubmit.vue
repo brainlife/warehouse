@@ -32,8 +32,8 @@
             <!--<h4 style="margin-left: 150px;">Configurations</h4>-->
             <!-- TODO doesn't support nested parameters-->
             <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value !== undefined">
-                <el-input v-if="v.type == 'integer'" v-model="form.config[k]"></el-input>
-                <el-input-number v-if="v.type == 'string'" v-model="form.config[k]"></el-input-number>
+                <el-input-number v-if="v.type == 'integer'" v-model="form.config[k]"></el-input-number>
+                <el-input v-if="v.type == 'string'" v-model="form.config[k]"></el-input>
                 <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox>
             </el-form-item>
 
@@ -252,7 +252,7 @@ export default {
                     instance_id: instance._id,
                     name: this.app.name,
                     service: this.app.github,
-                    config: Object.assign(this.form.config, lib.generate_config(this.app, download_task._id)),
+                    config: lib.generate_config(this.app, download_task._id, this.form.config),
                     deps: [ download_task._id ],
                 })
             }).then(res=>{
