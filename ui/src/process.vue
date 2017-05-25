@@ -60,7 +60,7 @@
                             <metadata :metadata="dataset.meta"/>
                             <!--{{dataset.desc || dataset.name}}-->
                             <el-button size="small" type="primary" style="float: right;" 
-                                v-if="!dataset.archiving && !dataset.dataset_id" @click="archive(dataset)">Archive</el-button>
+                                v-if="!archiving[dataset.dataset_id] && !dataset.dataset_id" @click="archive(dataset.dataset_id)">Archive</el-button>
                             <el-button size="small" style="float: right;" 
                                 v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)">See Archived Dataset <small>{{dataset.dataset_id}}</small></el-button>
                             <!--TODO - show only viewer that makes sense for each data type-->
@@ -77,11 +77,11 @@
                                 </el-dropdown-menu>
                             </el-dropdown>
 
-                            <archiveform v-if="dataset.archiving == true" 
+                            <archiveform v-if="archiving[dataset.dataset_id] == true" 
                                 :instance="instance" 
                                 :input_id ="input_id" 
                                 :task="_output_tasks[task._id]" 
-                                :dataset="dataset" @submitted="archived(dataset)" style="margin-top: 30px;"/>
+                                :dataset="dataset" @submitted="archived(dataset.dataset_id)" style="margin-top: 30px;"/>
                         </el-card>
                     </el-collapse-item>
                 </task>
@@ -299,6 +299,7 @@ export default {
             },
 
             selected: JSON.parse(localStorage.getItem('datasets.selected')) || {},
+            archiving: {},
 
             //cache
             tasks: null,
@@ -698,13 +699,11 @@ export default {
             return valid;
         },
 
-        archive: function(dataset) {
-            console.log("opend----------------", dataset);
-            Vue.set(dataset, 'archiving', true);
+        archive: function(dataset_id) {
+            Vue.set(this.archiving, dataset_id, true);
         },
-        archived: function(dataset) {
-            console.log("closed----------------", dataset);
-            Vue.set(dataset, 'archiving', false);
+        archived: function(dataset_id) {
+            Vue.set(this.archiving, dataset_id, false);
         },
 
         //recursively update configuration with given newtask

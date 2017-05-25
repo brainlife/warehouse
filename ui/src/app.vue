@@ -3,13 +3,6 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="header" v-if="app">
-        <!--
-        <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
-            <el-breadcrumb-item>{{app._id}}</el-breadcrumb-item>
-        </el-breadcrumb>
-        <br>
-        -->
         <el-button-group style="float: right;">
             <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</el-button>
             <el-button type="primary" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"icon="caret-right">Submit</el-button>
@@ -19,9 +12,7 @@
         <br>
         <h1>{{app.name}}</h1>
     </div> 
-    <!--<div class="header-bottom"></div>-->
     <div class="page-content" v-if="app" style="margin-top: 90px; padding-top: 60px;">
-        <!--<p class="appdesc">{{app.desc}}</p>-->
         <table class="info">
         <tr>
             <th width="180px;">Description</th>
@@ -32,24 +23,12 @@
             <td>{{app.avatar}}</td>
         </tr>
         <tr>
-            <th>DOI</th>
+            <th>DOI (todo)</th>
             <td><pre>10.1006/br.a.{{app._id}}</pre></td>
         </tr>
         <tr>
             <th>Developers</th>
             <td>
-                <!--
-                <el-row :gutter="10">
-                    <el-col :span="10">
-                        <h5>Owner</h5>
-                        <contact :id="app.user_id"></contact>
-                    </el-col>
-                    <el-col :span="14">
-                        <h5>Administrators</h5>
-                        <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
-                    </el-col>
-                </el-row>
-                -->
                 <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
             </td>
         </tr>
