@@ -26,7 +26,7 @@
         </li>
         <li v-if="config.debug" @click="go('/datatypes')"
             :class="{active: active == '/datatypes'}">
-            <icon name="shield" scale="2"></icon><br>Datatypes
+            <icon name="cube" scale="2"></icon><br>Datatypes
         </li>
         <li @click="go('/settings')"
             :class="{active: active == '/settings'}">

@@ -105,7 +105,7 @@
                 </transition>
 
                 <transition name="fade">
-                <div v-if="this.newtask_app">
+                <div v-if="this.newtask_app && !this.submitting">
                     <el-form label-width="150px"> 
                         <el-form-item label="Application">
                             <app :app="this.newtask_app" :compact="true" :clickable="false"></app>
@@ -132,11 +132,11 @@
                                     <el-option-group key="brainlife.stage_input" label="Input Datasets">
                                         <el-option v-for="(dataset, idx) in _datasets" 
                                             v-if="dataset.datatype_id == input.datatype._id && dataset.task.name == 'brainlife.stage_input'" :key="idx"
-                                                :value="idx" :label="dataset.name+' | subject:'+dataset.meta.subject">
+                                                :value="idx" :label="'subject:'+dataset.meta.subject + ' | '+dataset.name">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
+                                            <metadata :metadata="dataset.meta"/>
                                             <b>{{dataset.name}}</b> 
-                                            <tags :tags="dataset.datatype_tags"></tags>
-                                            | <metadata :metadata="dataset.meta"/>
+                                            <tags :tags="dataset.datatype_tags"></tags> 
                                         </el-option>
                                     </el-option-group>
                                     <el-option-group key="brainlife.stage_output" label="Produced Datasets">
@@ -152,15 +152,17 @@
                                 <el-alert v-if="input.error" :title="input.error" type="error"/>
                             </el-form-item>
 
-                            <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="typeof v == 'string' || typeof v == 'number'">
+                            <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="!v.type"><!-- v-if="typeof v == 'string' || typeof v == 'number'">-->
                                 <el-input v-if="typeof v == 'string'" v-model="newtask.config[k]"/>
                                 <el-input-number v-if="typeof v == 'number'" v-model="newtask.config[k]" :step="2"/>
-                                <el-checkbox v-if="typeof v == 'boolean'" v-model="newtask.config[k]"/>
+                                <el-checkbox v-if="typeof v == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
                             </el-form-item>
 
+                            <!--
                             <el-form-item>
                                 <div style="border-bottom: 1px solid #ddd;"></div>
                             </el-form-item>
+                            -->
                         </div>
 
                         <el-form-item>
@@ -215,7 +217,10 @@
                     <el-form-item label="Dataset">
                         <el-select v-model="input_dialog.dataset" placeholder="Select Dataset" style="width: 100%;">
                             <el-option-group v-for="(datasets, subject) in input_dialog.datasets_groups" :key="subject" :label="subject">
-                                <el-option v-for="dataset in datasets" :key="dataset._id" :label="subject+' | '+dataset.name" :value="dataset._id">{{dataset.name}}</el-option>
+                                <el-option v-for="dataset in datasets" 
+                                    :key="dataset._id" 
+                                    :label="subject+' | '+datatypes[dataset.datatype].name+' | '+dataset.name+' | '+dataset.create_date" 
+                                    :value="dataset._id"><b>{{datatypes[dataset.datatype].name}}</b> {{dataset.name}} <span class="text-muted">{{dataset.create_date|date}}</span></el-option>
                             </el-option-group>
                         </el-select>
                     </el-form-item>
@@ -287,6 +292,7 @@ export default {
             newtask_app: null,
             newtask_desc: "",
             validated: false,
+            submitting: false,
 
             //dialog
             show_input_dialog: false,
@@ -546,6 +552,7 @@ export default {
         close_newprocess: function(cb) {
             this.newtask_app = null;
             this.newprocess = false;
+            this.submitting = false;
         },
 
         stage: function() {
@@ -746,6 +753,7 @@ export default {
             if(!this.validate()) {
                 this.$notify.error({ title: 'Error', message: 'Please correct the form' });
             } else {
+                this.submitting = true;
                 this.newtasks.forEach((newtask, idx)=>{
                     if(!newtask.submit) return;
                     if(this.submit_mode == "single" && idx > 0) return; 

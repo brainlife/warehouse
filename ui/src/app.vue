@@ -4,6 +4,7 @@
     <sidemenu active="/apps"></sidemenu>
     <div class="header" v-if="app">
         <el-button-group style="float: right;">
+            <el-button @click="remove()" v-if="app._canedit" icon="delete">Remove</el-button>
             <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</el-button>
             <el-button type="primary" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"icon="caret-right">Submit</el-button>
         </el-button-group>
@@ -159,22 +160,12 @@ export default {
           })
         },
 
-        /*
-        request_notifications: function(instance, main_task) {
-            var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;
-
-            //for success
-            return this.$http.post(Vue.config.event_api+"/notification", {
-                event: "wf.task.finished",
-                handler: "email",
-                config: {
-                        task_id: main_task._id,
-                        subject: "[brain-life.org] Process Completed",
-                        message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease visit "+url+" to view your result.\n\nBrain-life.org Administrator"
-                },
+        remove: function() {
+            this.$http.delete('app/'+this.app._id)
+            .then(res=>{
+                this.go('/apps');        
             });
-        }
-        */
+        },
     },
 }
 </script>
