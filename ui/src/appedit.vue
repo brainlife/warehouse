@@ -61,63 +61,67 @@
                 </el-form-item>
 
                 <el-form-item label="Inputs">
-                    <el-card v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
-                        <el-row :gutter="20">
-                        <el-col :span="4">
-                            ID
-                            <el-input v-model="input.id">
-                                <!--<template slot="prepend">ID</template>-->
-                            </el-input>
-                        </el-col>
-                        <el-col :span="6">
-                            Datatype
-                            <el-select v-model="input.datatype" style="width: 100%;">
-                                <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                            </el-select>
-                        </el-col>
-                        <el-col :span="14">
-                            Datatype Tags
-                            <el-select v-model="input.datatype_tags" 
-                                style="width: 100%"
-                                multiple filterable allow-create placeholder="Enter datatype tags">
-                                <el-option v-for="tag in input.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
-                            </el-select>
-                        </el-col>
-                        </el-row>
-                    </el-card>
-                    <el-button @click="add(app.inputs)">Add Input</el-button>
+                    <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
+                        <el-card>
+                            <el-row :gutter="20">
+                            <el-col :span="4">
+                                ID
+                                <el-input v-model="input.id">
+                                    <!--<template slot="prepend">ID</template>-->
+                                </el-input>
+                            </el-col>
+                            <el-col :span="6">
+                                Datatype
+                                <el-select v-model="input.datatype" style="width: 100%;">
+                                    <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                                </el-select>
+                            </el-col>
+                            <el-col :span="14">
+                                Datatype Tags
+                                <el-select v-model="input.datatype_tags" 
+                                    style="width: 100%"
+                                    multiple filterable allow-create placeholder="Enter datatype tags">
+                                    <el-option v-for="tag in input.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
+                                </el-select>
+                            </el-col>
+                            </el-row>
+                        </el-card>
+                    </div>
+                    <el-button @click="add(app.inputs)" size="small" icon="plus">Add Input</el-button>
                 </el-form-item>
 
                 <el-form-item label="Outputs">
-                    <el-card v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
-                        <el-row :gutter="20">
-                        <el-col :span="4">
-                            ID
-                            <el-input v-model="output.id">
-                                <!--<template slot="prepend">ID</template>-->
-                            </el-input>
-                        </el-col>
-                        <el-col :span="6">
-                            Datatype
-                            <el-select v-model="output.datatype" style="width: 100%">
-                                <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                            </el-select>
-                        </el-col>
-                        <el-col :span="14">
-                            Datatype Tags
-                            <el-select v-model="output.datatype_tags" 
-                                style="width: 100%" 
-                                multiple filterable allow-create placeholder="Enter datatype tags">
-                                <el-option v-for="tag in output.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
-                            </el-select>
-                        </el-col>
-                        </el-row>
-                    </el-card>
-                    <el-button @click="add(app.outputs)">Add Output</el-button>
+                    <div v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
+                        <el-card>
+                            <el-row :gutter="20">
+                            <el-col :span="4">
+                                ID
+                                <el-input v-model="output.id">
+                                    <!--<template slot="prepend">ID</template>-->
+                                </el-input>
+                            </el-col>
+                            <el-col :span="6">
+                                Datatype
+                                <el-select v-model="output.datatype" style="width: 100%">
+                                    <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                                </el-select>
+                            </el-col>
+                            <el-col :span="14">
+                                Datatype Tags
+                                <el-select v-model="output.datatype_tags" 
+                                    style="width: 100%" 
+                                    multiple filterable allow-create placeholder="Enter datatype tags">
+                                    <el-option v-for="tag in output.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
+                                </el-select>
+                            </el-col>
+                            </el-row>
+                        </el-card>
+                    </div>
+                    <el-button @click="add(app.outputs)" size="small" icon="plus">Add Output</el-button>
                 </el-form-item>
 
                 <el-form-item>
-                    <el-button type="primary" icon="check" @click="submit()">Submit</el-button>
+                    <el-button style="float: right;" type="primary" icon="check" @click="submit()">Submit</el-button>
                 </el-form-item>
             </el-form>
         </div>
