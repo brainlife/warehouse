@@ -110,11 +110,27 @@ export default {
                         case "application/json": type = "json"; break;
                         case "application/x-sh": type = "bash"; break;
                         case "text/plain": type = "text"; break;
+                        case "application/octet-stream": 
+                            //for all octet-stream, guess file type from extension
+                            var tokens = file.filename.split(".");
+                            var ext = tokens[tokens.length-1];
+                            switch(ext) {
+                                case "bvals": 
+                                case "bvecs": 
+                                    type = "text"; break;
+                            }
                     }
                     if(type) {
                         res.text().then(c=>{
+
+                            //reformat json content
+                            if(type == "json") {
+                                var j = JSON.parse(c);
+                                c = JSON.stringify(j, null, 4);
+                            }
+
                             if(c == "") c = "(empty)";
-                            console.log("loading as text", c);
+                            console.log("loading as", type);
                             Vue.set(file, 'type', type);
                             //last ditch attempt to animte height
                             var lines = c.trim().split("\n");
