@@ -138,7 +138,7 @@
                 <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
                 <div v-for="app in apps" key="app._id" class="card">
-                    <app :app="app" :dataset="dataset"></app>
+                    <app :app="app" :dataset="dataset" :compact="true"></app>
                 </div>
             </td>
         </tr>

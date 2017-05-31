@@ -59,7 +59,7 @@
                             <metadata :metadata="dataset.meta"/>
                             <!--{{dataset.desc || dataset.name}}-->
                             <el-button size="small" type="primary" style="float: right;" 
-                                v-if="!archiving[dataset._id] && !dataset.dataset_id" @click="archive(dataset._id)">Archive</el-button>
+                                v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id)">Archive</el-button>
                             <el-button size="small" style="float: right;" 
                                 v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)">See Archived Dataset <small>{{dataset.dataset_id}}</small></el-button>
                             <!--TODO - show only viewer that makes sense for each data type-->
@@ -74,11 +74,11 @@
                                 </el-dropdown-menu>
                             </el-dropdown>
 
-                            <archiveform v-if="archiving[dataset._id]" 
+                            <archiveform v-if="archiving[task._id]" 
                                 :instance="instance" 
                                 :input_id ="input_id" 
                                 :task="_output_tasks[task._id]" 
-                                :dataset="dataset" @submitted="archived(dataset.dataset_id)" style="margin-top: 30px;"/>
+                                :dataset="dataset" @submitted="archived(task._id)" style="margin-top: 30px;"/>
                         </el-card>
                     </el-collapse-item>
                 </task>
@@ -703,12 +703,11 @@ export default {
             return valid;
         },
 
-        archive: function(dataset_id) {
-            console.log(dataset_id, this.archiving);
-            Vue.set(this.archiving, dataset_id, true);
+        archive: function(task_id) {
+            Vue.set(this.archiving, task_id, true);
         },
-        archived: function(dataset_id) {
-            Vue.set(this.archiving, dataset_id, false);
+        archived: function(task_id) {
+            Vue.set(this.archiving, task_id, false);
         },
 
         //recursively update configuration with given newtask
