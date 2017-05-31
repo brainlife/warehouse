@@ -25,9 +25,6 @@
                         <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
                         <br>
                         <small>{{dataset.name}}</small>
-                        <!--
-                        <br>
-                        <small class="text-muted">{{dataset.desc}}</small>-->
                     </li>
                 </ul>
                 <br>
@@ -37,7 +34,6 @@
                         <metadata :metadata="dataset.meta"/>
                         {{datatypes[dataset.datatype_id].name}} <tags :tags="dataset.datatype_tags"></tags>
                         <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
-                        <!--<br> <small>{{dataset.name}}</small>-->
                     </li>
                 </ul>
             </div>
@@ -63,7 +59,7 @@
                             <metadata :metadata="dataset.meta"/>
                             <!--{{dataset.desc || dataset.name}}-->
                             <el-button size="small" type="primary" style="float: right;" 
-                                v-if="!archiving[dataset.dataset_id] && !dataset.dataset_id" @click="archive(dataset.dataset_id)">Archive</el-button>
+                                v-if="!archiving[dataset._id] && !dataset.dataset_id" @click="archive(dataset._id)">Archive</el-button>
                             <el-button size="small" style="float: right;" 
                                 v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)">See Archived Dataset <small>{{dataset.dataset_id}}</small></el-button>
                             <!--TODO - show only viewer that makes sense for each data type-->
@@ -78,7 +74,7 @@
                                 </el-dropdown-menu>
                             </el-dropdown>
 
-                            <archiveform v-if="archiving[dataset.dataset_id] == true" 
+                            <archiveform v-if="archiving[dataset._id]" 
                                 :instance="instance" 
                                 :input_id ="input_id" 
                                 :task="_output_tasks[task._id]" 
@@ -221,7 +217,7 @@
                                 <el-option v-for="dataset in datasets" 
                                     :key="dataset._id" 
                                     :label="subject+' | '+datatypes[dataset.datatype].name+' | '+dataset.name+' | '+dataset.create_date" 
-                                    :value="dataset._id"><b>{{datatypes[dataset.datatype].name}}</b> {{dataset.name}} <span class="text-muted">{{dataset.create_date|date}}</span></el-option>
+                                    :value="dataset._id"><b>{{datatypes[dataset.datatype].name}}</b> {{dataset.name}} <tags :tags="dataset.datatype_tags"></tags> <span class="text-muted">{{dataset.create_date|date}}</span></el-option>
                             </el-option-group>
                         </el-select>
                     </el-form-item>
@@ -256,8 +252,6 @@ import projectselector from '@/components/projectselector'
 import statusicon from '@/components/statusicon'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-
-//const lib = require('./lib');
 
 var debounce = null;
 
@@ -409,7 +403,8 @@ export default {
                 find: JSON.stringify({
                     project: p,
                     removed: false,
-                })
+                }),
+                limit: 1000,
             }}).then(res=>{
                 //group by subject
                 this.input_dialog.datasets_groups = {};
@@ -450,7 +445,6 @@ export default {
         remove_task: function(id) {
             //the specified task (id) is already removed by <task> component, but I need to remove all tasks that depends on it also
             this.tasks.forEach(task=>{
-                console.log("checking", task);
                 if(task.name == "brainlife.stage_output" && task.deps[0] == id) { //assume we only have 1 dep..
                     console.log("found dep to remove", task);
                     this.$http.delete(Vue.config.wf_api+'/task/'+task._id)
@@ -651,16 +645,11 @@ export default {
                 if(v.type) {
                     //assume it's edge
                     switch(v.type) {
-                    case "string":
-                    case "integer":
-                    case "float":
-                    case "boolean":
-                        config[k] = v.default;        
-                        break;
                     case "input":
-                        //config.input = this.newtask_app.inputs[v.input_id];
-                        //config.dataset = null;
+                        //don't do anything for input
                         break;
+                    default:
+                        config[k] = v.default;        
                     }
                 } else this.set_default(v); //recurse on primitive
             }
@@ -715,6 +704,7 @@ export default {
         },
 
         archive: function(dataset_id) {
+            console.log(dataset_id, this.archiving);
             Vue.set(this.archiving, dataset_id, true);
         },
         archived: function(dataset_id) {
@@ -725,20 +715,16 @@ export default {
         process_input_config: function(newtask, config) {
             for(var k in config) { 
                 var node = config[k];
-                if(!node) return;
+                //if(node) return;
                 if(node instanceof Array) {
                     console.log("todo.. array!");
                 } else if(typeof node === 'object') {
                     if(node.type) {
                         switch(node.type) {
                         case "input":
-                            console.log("processing input", k);
-
                             //find the file
                             var input = newtask.inputs[node.input_id];
                             var dataset = this._datasets[input.dataset];
-                            console.log("input", input);
-                            console.log("datasets", dataset);
                             if(!~newtask.deps.indexOf(dataset.task._id)) newtask.deps.push(dataset.task._id);
                             //then lookup file_id
                             input.datatype.files.forEach(file=>{
