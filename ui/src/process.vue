@@ -4,7 +4,7 @@
     <sidemenu active="/processes"></sidemenu>
     <div v-if="instance && tasks">
         <div class="fixed-top">
-            <el-button @click="remove_instance()" style="float: right;" icon="delete">Remove Process</el-button>
+            <el-button v-if="!instance.config.removing" @click="remove_instance()" style="float: right;" icon="delete">Remove Process</el-button>
 
             <h1 style="margin-bottom: 5px; color: #eee;"><icon name="send" scale="1.5"></icon> Process</h1>
             <div class="text-muted">
@@ -44,6 +44,9 @@
         </div>
 
         <div class="main-section">
+            <p v-if="instance.status == 'removed' || instance.config.removing">
+                <el-alert type="error" title="">This process has been removed</el-alert>
+            </p>
             <p>
                 <el-input type="textarea" placeholder="Process Description" @change="changedesc()" v-model="instance.desc" :autosize="{minRows: 2, maxRows: 5}"/>
             </p>
