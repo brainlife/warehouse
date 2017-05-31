@@ -76,7 +76,7 @@
             <th>Provenance / Derivative</th>
             <td>
                 <el-button-group style="float: right;">
-                    <el-button size="small" @click="downloadprov()" icon="document">Download Provenance (.sh)</el-button>
+                    <el-button size="small" @click="download_prov()" icon="document">Download Provenance</el-button>
                 </el-button-group>
                 <br clear="both">
 
@@ -94,7 +94,9 @@
                             <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
                         </el-col>
                     </el-row>
-                    <app :app="dataset.prov.app" :compact="true"/>
+                    <app :app="dataset.prov.app" :compact="true">
+                        <pre style="background-color: #eee; padding: 10px;">{{dataset.prov.config}}</pre>
+                    </app>
                     <center>
                         <icon class="text-muted" scale="2" name="arrow-down"></icon>
                     </center>
@@ -198,6 +200,9 @@ export default {
         go: function(path) {
             console.log(path);
             this.$router.push(path);
+        },
+        download_prov: function() {
+            alert("TODO..");
         },
         download: function() {
             let url = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;

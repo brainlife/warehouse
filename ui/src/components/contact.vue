@@ -13,7 +13,7 @@ import md5 from 'md5'
 var profiles = null;
 
 export default {
-  name: "contact",
+  props: ['id'],
   data () {
     return {
       profile: {},
@@ -52,7 +52,6 @@ export default {
       });
     }
   },
-  props: ['id'],
 }
 </script>
 

@@ -263,6 +263,7 @@ export default {
             //console.log("loading", find);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
+                limit: 1000, //TODO - I need to implement infinite scrolling
                 select: 'datatype datatype_tags project create_date name desc tags meta storage',
             }})
             .then(res=>{

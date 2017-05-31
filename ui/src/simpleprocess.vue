@@ -224,7 +224,6 @@ export default {
             }
 
             //load datasets used for prov.deps
-            //console.dir(this.instance.config.prov);
             var dataset_ids = [];
             if(this.instance.config.prov.deps) this.instance.config.prov.deps.forEach(dep=>{
                 dataset_ids.push(dep.dataset);

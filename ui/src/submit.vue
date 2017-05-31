@@ -168,10 +168,6 @@ export default {
                 for(var did in this.selected) {
                     var selected_dataset = this.selected[did];
 
-                    //construct default configuration
-                    //var config = lib.generate_config(this.app, "123456");
-                    //console.dir(config);
-
                     var task = {
                         enable: false,
                         name: 'task submission for dataset:'+did,

@@ -25,7 +25,7 @@
             <el-form-item label="Description">
                 <el-input type="textarea" v-model="app.desc" placeholder="Enter description for this application."/>
             </el-form-item>
-            <el-form-item label="Administrators">
+            <el-form-item label="Developers">
                 <contactlist v-model="app.admins"></contactlist>
             </el-form-item>
             <el-form-item label="Avatar">

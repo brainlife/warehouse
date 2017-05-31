@@ -65,9 +65,7 @@
                                 v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)">See Archived Dataset <small>{{dataset.dataset_id}}</small></el-button>
                             <!--TODO - show only viewer that makes sense for each data type-->
                             <el-dropdown style="float: right; margin-right: 5px;" @command="view">
-                                <el-button size="small" type="primary">
-                                    View <i class="el-icon-caret-bottom el-icon--right"></i>
-                                </el-button>
+                                <el-button size="small"> View <i class="el-icon-caret-bottom el-icon--right"></i> </el-button>
                                 <el-dropdown-menu slot="dropdown">
                                     <el-dropdown-item :command="_output_tasks[task._id]._id+'/fslview'">FSLView</el-dropdown-item>
                                     <el-dropdown-item :command="_output_tasks[task._id]._id+'/freeview'">FreeView</el-dropdown-item>
@@ -648,6 +646,7 @@ export default {
                     switch(v.type) {
                     case "string":
                     case "integer":
+                    case "float":
                     case "boolean":
                         config[k] = v.default;        
                         break;

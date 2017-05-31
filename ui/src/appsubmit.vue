@@ -17,7 +17,7 @@
         <br clear="both">
     </div>
 
-    <div class="content">
+    <div class="content" v-if="app">
         <el-form :model="form" ref="form" label-position="left" label-width="150px">
             <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
             <el-form-item v-for="input in app.inputs" :label="input.id" :key="input.id" ref="form">
@@ -32,6 +32,7 @@
             <!--<h4 style="margin-left: 150px;">Configurations</h4>-->
             <!-- TODO doesn't support nested parameters-->
             <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value !== undefined">
+                <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01">
                 <el-input-number v-if="v.type == 'integer'" v-model="form.config[k]"></el-input-number>
                 <el-input v-if="v.type == 'string'" v-model="form.config[k]"></el-input>
                 <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox>
@@ -205,10 +206,13 @@ export default {
             var instance = null;
             var inst_config = {
                 brainlife: true,
-                //project: this.project_id,
                 output_task_id: null, //will be set once submitted
+
+                //TODO - may deprecate.. I need to support multiple tasks 
                 prov: {
                     app: this.app._id,
+                    task_id: null,
+                    config: null,
                     deps: [], 
                 }
             }
@@ -257,6 +261,10 @@ export default {
                 })
             }).then(res=>{
                 var main_task = res.body.task;
+                //TODO - I wonder if these should be deprecated (instance could have multiple tasks now)
+                inst_config.prov.task_id = main_task._id;
+                inst_config.prov.config = main_task.config;
+
                 //submit the output handling task
                 var symlink = [];
                 this.app.outputs.forEach(output=>{
@@ -289,8 +297,7 @@ export default {
             }).then(res=>{
                 //add output_task_id information on instance config (used by ui to render main task)
                 inst_config.output_task_id = res.body.task._id;
-                inst_config.prov.config = res.body.task.config;
-                inst_config.prov.task_id = res.body.task._id;
+
                 inst_config.prov.instance_id = instance._id;
                 return this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
                     config: inst_config,

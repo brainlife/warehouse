@@ -4,14 +4,15 @@
     :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
         <appavatar :app="app" style="float: left;margin-right: 15px;"></appavatar>
-        <div v-if="compact">
-            <h4 class="appname">{{app.name}}</h4>
-            <div class="appdesc">{{app.desc}}</div>
+        <h4 class="appname">{{app.name}}</h4>
+        <div class="desc">{{app.desc}}</div>
+        <div class="devs">
+            <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
         </div>
-        <div v-else="!compact">
-            <h4 class="appname">{{app.name}}</h4>
-            <div class="appdesc">{{app.desc}}</div>
-        </div>
+        <!--
+        <pre class="appconfig" v-if="app.config">{{app.config}}</pre>
+        -->
+        <slot/>
     </div>
 </el-card>
 </template>
@@ -61,7 +62,7 @@ color: #666;
 padding: 10px;
 padding-bottom: 0px;
 }
-.appdesc {
+.desc {
 height: 150px;
 overflow: auto;
 font-size: 13px;
@@ -79,7 +80,7 @@ padding: 5px 0px;
 margin-bottom: 0px;
 }
 /* styles for '...' */ 
-.compact .appdesc {
+.compact .desc {
   /* hide text if it more than N lines  */
   overflow: hidden;
   /* for set '...' in absolute position */
@@ -97,7 +98,7 @@ margin-bottom: 0px;
     margin-top: 0px;
 }
 /* create the ... */
-.compact .appdesc :before {
+.compact .desc :before {
   /* points in the end */
   content: '...';
   /* absolute position */
@@ -107,7 +108,7 @@ margin-bottom: 0px;
   bottom: 0;
 }
 /* hide ... if we have text, which is less than or equal to max lines */
-.compact .appdesc:after {
+.compact .desc:after {
   /* points in the end */
   content: '';
   /* absolute position */
@@ -119,5 +120,12 @@ margin-bottom: 0px;
   height: 1em;
   margin-top: 0.2em;
   /* bg color = bg color under block */
+}
+.devs {
+    background-color: #eee;
+    padding: 10px;
+    height: 55px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 </style>

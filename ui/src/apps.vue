@@ -68,7 +68,7 @@ export default {
 
 <style scoped>
 .card {
-    width: 325px; 
+    width: 350px; 
     float: left;
     margin-right: 10px;
 }

@@ -68,6 +68,7 @@ function generate_config(app, download_task_id, formconfig) {
                     switch(node.type) {
                     case "string":
                     case "integer":
+                    case "float":
                     case "boolean":
                         //obj[k] = node.value;
                         obj[k] = formconfig[k];
