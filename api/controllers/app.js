@@ -67,10 +67,15 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiParam {String} [desc]    Description for this app
  * @apiParam {String} [avatar]  URL for application avatar
  * @apiParam {String} [github]  github id/name for this app
- * @apiParam {Object[]} [inputs]    Input datatypes and tags
- * @apiParam {Object[]} [outputs]   Output datatypes and tags
- * @apiParam {String} [dockerhub]  
- *                              dockerhub id/name
+ * @apiParam {Object[]} [inputs]    Input datatypes. Array of {id, datatype, datatype_tags[]}
+ * @apiParam {Object[]} [outputs]   Output datatypes. same as input datatype
+ *
+ * @apiParam {String} [github]   Github org/name
+ * @apiParam {String} [github_branch]   Github default branch/tag name
+ *
+ * @apiParam {Object} [config]   configuration template
+ *
+ * @apiParam {String} [dockerhub]   Dockerhub id/name
  *
  * @apiParam {String[]} admins  Admin IDs
  *
@@ -138,7 +143,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiGroup App
  * @api {delete} /app/:id
  *                              Remove registered app (only by the user registered it)
- * @apiDescription              Physically remove a  app registered on DB.
+ * @apiDescription              Mark the application as removed
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -149,10 +154,15 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
     db.Apps.findById(req.params.id, function(err, app) {
         if(err) return next(err);
         if(!app) return next(new Error("can't find the app with id:"+req.params.id));
-        //only superadmin or admin of this test spec can update
-        console.dir(app);
         if(canedit(req.user, app)) {
+            /*physically remove
             app.remove().then(function() {
+                res.json({status: "ok"});
+            }); 
+            */
+            app.removed = true;
+            app.save(function(err) {
+                if(err) return next(err);
                 res.json({status: "ok"});
             }); 
         } else return res.status(401).end();

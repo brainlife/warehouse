@@ -71,6 +71,11 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     getprojects(req.user, function(err, projects) {
         if(err) return next(err);
         var project_ids = projects.map(function(p) { return p._id; });
+
+        var limit = 100;
+        if(req.query.limit) limit = parseInt(req.query.limit);
+        var skip = 0;
+        if(req.query.skip) limit = parseInt(req.query.skip);
     
         //then look for dataset
         db.Datasets
@@ -82,8 +87,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         })
         .populate(req.query.populate || '') //all by default
         .select(select)
-        .limit(req.query.limit || 100)
-        .skip(req.query.skip || 0)
+        .limit(limit)
+        .skip(skip)
         .sort(req.query.sort || '_id')
         .lean()
         .exec((err, datasets)=>{

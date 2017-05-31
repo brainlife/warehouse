@@ -197,6 +197,8 @@ var appSchema = mongoose.Schema({
     })],
 
     create_date: { type: Date, default: Date.now },
+
+    removed: { type: Boolean, default: false} ,
 });
 exports.Apps = mongoose.model('Apps', appSchema);
 
