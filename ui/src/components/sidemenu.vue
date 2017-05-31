@@ -6,6 +6,7 @@
             :class="{active: active == '/dashboard'}">
             <icon name="tachometer" scale="2"></icon><br>Dashboard
         </li>
+        <li v-if="config.debug" class="divider"></li>
         <li @click="go('/apps')"
             :class="{active: active == '/apps'}" >
             <icon name="th-large" scale="2" ></icon><br>Apps
@@ -18,9 +19,14 @@
             :class="{active: active == '/datasets'}">
             <icon name="cubes" scale="2"></icon><br>Datasets
         </li>
+        <li class="divider"></li>
         <li @click="go('/projects')"
             :class="{active: active == '/projects'}">
             <icon name="shield" scale="2"></icon><br>Projects
+        </li>
+        <li v-if="config.debug" @click="go('/datatypes')"
+            :class="{active: active == '/datatypes'}">
+            <icon name="cube" scale="2"></icon><br>Datatypes
         </li>
         <li @click="go('/settings')"
             :class="{active: active == '/settings'}">
@@ -162,5 +168,12 @@ ul.items li:hover {
     background-color: #444;
     color: white;
     cursor: pointer;
+}
+ul.items li.divider {
+    border-bottom: 1px solid #444;
+    padding: 0px;
+    margin: 0px;
+    padding-top: 5px;
+    margin-bottom: 5px;
 }
 </style>

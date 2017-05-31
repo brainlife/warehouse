@@ -1,35 +1,25 @@
 <template>
 <div>
-    <pageheader :user="config.user">
+    <pageheader :user="config.user"/>
+    <sidemenu active="/projects"/>
+    <div class="header" v-if="project">
+        <el-button-group style="float: right;" v-if="project._canedit">
+            <el-button @click="remove()" icon="delete">Remove Project</el-button>
+            <el-button @click="edit()" icon="edit">Edit</el-button>
+        </el-button-group>
+        <h1><span class="text-muted"><icon name="shield" scale="1.5"/> Project |</span> {{project.name}}</h1>
+    </div>
+    <div class="page-content" v-if="project" style="margin-top: 80px">
         <!--
-        <el-row :gutter="20">
-            <el-col :span="14">
-                <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
-            </el-col>
-            <el-col :span="10">
-                <el-button v-if="user" @click="newproject()"> <icon name="plus"></icon> Add Project </el-button>
-            </el-col>
-        </el-row>
-        -->
-    </pageheader>
-    <sidemenu active="/projects"></sidemenu>
-    <div class="page-content">
-        <div class="margin20" v-if="project">
-            <el-button-group style="float: right;" v-if="project._canedit">
-                <el-button @click="remove()" icon="delete">Remove Project</el-button>
-                <el-button @click="edit()" icon="edit">Edit</el-button>
-            </el-button-group>
-
+        <div class="margin20">
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item :to="{ path: '/projects' }">Projects</el-breadcrumb-item>
                 <el-breadcrumb-item>{{project._id}}</el-breadcrumb-item>
             </el-breadcrumb>
-            <br>
+        </div>
+        -->
 
-            <h1><icon name="shield" scale="2"/> {{project.name}}</h1>
-        </div><!--margin20-->
-
-        <table class="info" v-if="project">
+        <table class="info">
         <tr>
             <th width="180px;">Description</th>
             <td>{{project.desc}}</td>
@@ -76,6 +66,8 @@ import project from '@/components/project'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
+
+//hello
 
 export default {
     components: { sidemenu, contactlist, project, projectaccess, pageheader, contact },
@@ -144,4 +136,27 @@ export default {
 </script>
 
 <style scoped>
-</style>
+.header {
+background: #666;
+padding: 20px;
+margin-top: 42px;
+height: 30px;
+position: fixed;
+right: 0px;
+left: 90px;
+color: #666;
+z-index: 1;
+border-bottom: 1px solid #666;
+}
+.header h1 {
+color: #eee;
+}
+.header-bottom {
+height: 50px;
+background-color: white;
+position: fixed;
+top: 140px;
+right: 0px;
+left: 90px;
+border-bottom: 1px solid #ddd;
+}</style>

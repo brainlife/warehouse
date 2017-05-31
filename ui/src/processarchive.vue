@@ -201,8 +201,8 @@ export default {
                     instance_id: this.instance._id,
                     task_id: this.instance.config.output_task_id,
                     prov: prov,
-                    name: output.id+" output",
-                    desc: output.id+" output from "+this.instance.name,
+                    name: this.instance.name,
+                    desc: this.instance.desc,
                     project: this.projects[0]._id, //select first project by default (TODO - remember user preference?)
                     tags: tags, 
                     meta: meta,
@@ -247,7 +247,7 @@ export default {
                         title: 'Success',
                         message: 'Successfully archived datasets',
                     });
-                    this.$router.push("/process/"+this.instance._id);
+                    this.$router.push("/datasets/");
                 }).catch(console.error);
             });
         },

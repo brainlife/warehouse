@@ -60,14 +60,28 @@
                             <metadata :metadata="dataset.meta"/>
                             <!--{{dataset.desc || dataset.name}}-->
                             <el-button size="small" type="primary" style="float: right;" 
-                                v-if="!dataset.archiving && !dataset.dataset_id" @click="archive(dataset)">Archive ..</el-button>
+                                v-if="!archiving[dataset.dataset_id] && !dataset.dataset_id" @click="archive(dataset.dataset_id)">Archive</el-button>
                             <el-button size="small" style="float: right;" 
                                 v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)">See Archived Dataset <small>{{dataset.dataset_id}}</small></el-button>
-                            <archiveform v-if="dataset.archiving == true" 
+                            <!--TODO - show only viewer that makes sense for each data type-->
+                            <el-dropdown style="float: right; margin-right: 5px;" @command="view">
+                                <el-button size="small" type="primary">
+                                    View <i class="el-icon-caret-bottom el-icon--right"></i>
+                                </el-button>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/fslview'">FSLView</el-dropdown-item>
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/freeview'">FreeView</el-dropdown-item>
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/mrview'">MRView</el-dropdown-item>
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/fibernavigator'">FiberNavigator</el-dropdown-item>
+                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/brainview'" disabled divided>BrainView</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+
+                            <archiveform v-if="archiving[dataset.dataset_id] == true" 
                                 :instance="instance" 
                                 :input_id ="input_id" 
                                 :task="_output_tasks[task._id]" 
-                                :dataset="dataset" @submitted="archived(dataset)" style="margin-top: 30px;"/>
+                                :dataset="dataset" @submitted="archived(dataset.dataset_id)" style="margin-top: 30px;"/>
                         </el-card>
                     </el-collapse-item>
                 </task>
@@ -91,7 +105,7 @@
                 </transition>
 
                 <transition name="fade">
-                <div v-if="this.newtask_app">
+                <div v-if="this.newtask_app && !this.submitting">
                     <el-form label-width="150px"> 
                         <el-form-item label="Application">
                             <app :app="this.newtask_app" :compact="true" :clickable="false"></app>
@@ -118,11 +132,11 @@
                                     <el-option-group key="brainlife.stage_input" label="Input Datasets">
                                         <el-option v-for="(dataset, idx) in _datasets" 
                                             v-if="dataset.datatype_id == input.datatype._id && dataset.task.name == 'brainlife.stage_input'" :key="idx"
-                                                :value="idx" :label="dataset.name+' | subject:'+dataset.meta.subject">
+                                                :value="idx" :label="'subject:'+dataset.meta.subject + ' | '+dataset.name">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
+                                            <metadata :metadata="dataset.meta"/>
                                             <b>{{dataset.name}}</b> 
-                                            <tags :tags="dataset.datatype_tags"></tags>
-                                            | <metadata :metadata="dataset.meta"/>
+                                            <tags :tags="dataset.datatype_tags"></tags> 
                                         </el-option>
                                     </el-option-group>
                                     <el-option-group key="brainlife.stage_output" label="Produced Datasets">
@@ -138,14 +152,17 @@
                                 <el-alert v-if="input.error" :title="input.error" type="error"/>
                             </el-form-item>
 
-                            <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="typeof v == 'string' || typeof v == 'number'">
+                            <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="!v.type"><!-- v-if="typeof v == 'string' || typeof v == 'number'">-->
                                 <el-input v-if="typeof v == 'string'" v-model="newtask.config[k]"/>
                                 <el-input-number v-if="typeof v == 'number'" v-model="newtask.config[k]" :step="2"/>
+                                <el-checkbox v-if="typeof v == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
                             </el-form-item>
 
+                            <!--
                             <el-form-item>
                                 <div style="border-bottom: 1px solid #ddd;"></div>
                             </el-form-item>
+                            -->
                         </div>
 
                         <el-form-item>
@@ -200,7 +217,10 @@
                     <el-form-item label="Dataset">
                         <el-select v-model="input_dialog.dataset" placeholder="Select Dataset" style="width: 100%;">
                             <el-option-group v-for="(datasets, subject) in input_dialog.datasets_groups" :key="subject" :label="subject">
-                                <el-option v-for="dataset in datasets" :key="dataset._id" :label="subject+' | '+dataset.name" :value="dataset._id">{{dataset.name}}</el-option>
+                                <el-option v-for="dataset in datasets" 
+                                    :key="dataset._id" 
+                                    :label="subject+' | '+datatypes[dataset.datatype].name+' | '+dataset.name+' | '+dataset.create_date" 
+                                    :value="dataset._id"><b>{{datatypes[dataset.datatype].name}}</b> {{dataset.name}} <span class="text-muted">{{dataset.create_date|date}}</span></el-option>
                             </el-option-group>
                         </el-select>
                     </el-form-item>
@@ -272,6 +292,7 @@ export default {
             newtask_app: null,
             newtask_desc: "",
             validated: false,
+            submitting: false,
 
             //dialog
             show_input_dialog: false,
@@ -285,6 +306,7 @@ export default {
             },
 
             selected: JSON.parse(localStorage.getItem('datasets.selected')) || {},
+            archiving: {},
 
             //cache
             tasks: null,
@@ -440,8 +462,8 @@ export default {
                 }
             });
         },
-        view: function(type) {
-            window.open("#/view/"+this.instance._id+"/"+this.output_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
+        view: function(url) {
+            window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
         load: function() {
             //load instance first
@@ -530,6 +552,7 @@ export default {
         close_newprocess: function(cb) {
             this.newtask_app = null;
             this.newprocess = false;
+            this.submitting = false;
         },
 
         stage: function() {
@@ -625,6 +648,7 @@ export default {
                     switch(v.type) {
                     case "string":
                     case "integer":
+                    case "boolean":
                         config[k] = v.default;        
                         break;
                     case "input":
@@ -684,13 +708,11 @@ export default {
             return valid;
         },
 
-        archive: function(dataset) {
-            console.log("opend----------------", dataset);
-            Vue.set(dataset, 'archiving', true);
+        archive: function(dataset_id) {
+            Vue.set(this.archiving, dataset_id, true);
         },
-        archived: function(dataset) {
-            console.log("closed----------------", dataset);
-            Vue.set(dataset, 'archiving', false);
+        archived: function(dataset_id) {
+            Vue.set(this.archiving, dataset_id, false);
         },
 
         //recursively update configuration with given newtask
@@ -731,7 +753,7 @@ export default {
             if(!this.validate()) {
                 this.$notify.error({ title: 'Error', message: 'Please correct the form' });
             } else {
-
+                this.submitting = true;
                 this.newtasks.forEach((newtask, idx)=>{
                     if(!newtask.submit) return;
                     if(this.submit_mode == "single" && idx > 0) return; 
@@ -770,7 +792,8 @@ export default {
                             if(output.files) {
                                 for(var file_id in output.files) {
                                     //find datatype file id
-                                    output.datatype.files.forEach(datatype_file=>{
+                                    var datatype = this.datatypes[output.datatype];
+                                    datatype.files.forEach(datatype_file=>{
                                         if(datatype_file.id == file_id) {
                                             var name = datatype_file.filename||datatype_file.dirname;
                                             symlink.push({ 

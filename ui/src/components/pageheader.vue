@@ -11,28 +11,6 @@
     <div class="menu">
         {{user.profile.fullname||user.profile.username}}
     </div>
-    <!--
-    <el-dropdown @command="handleCommand">
-        <el-button>
-            {{user.profile.fullname||user.profile.username}} <icon name="caret-down"/>
-        </el-button>
-        <el-dropdown-menu slot="dropdown" style="width: 250px;">
-            <el-dropdown-item command="signout">Signout</el-dropdown-item>
-
-            <br>
-            <div style="margin: 0px 0px; padding: 10px; background-color: #f7f7f7;">
-                <h5>Profile</h5>
-                <p><span class="text-muted">Fullname</span><br>{{user.profile.fullname||'(Not Set)'}}</p>
-                <p><span class="text-muted">Email</span><br>{{user.profile.email||'(Not Set)'}}</p>
-                <p>
-                    <span class="text-muted">Gravatar</span><br>
-                    <img :src="'//www.gravatar.com/avatar/'+md5(user.profile.email)+'?=50'"><br>
-                    <el-button size="small" @click="gotog(user.profile.email)">Update at Gravatar</el-button>
-                </p>
-            </div>
-        </el-dropdown-menu>
-    </el-dropdown>
-    -->
 </div>
 </template>
 
@@ -89,7 +67,7 @@ svg.cloud {
     z-index: -1;
     top: 0px;
     left: 0px;
-    opacity: 0.1;
+    opacity: 0.15;
 }
 
 .title {

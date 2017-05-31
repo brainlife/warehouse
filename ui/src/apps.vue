@@ -45,6 +45,12 @@ export default {
     mounted: function() {
         this.$http.get('app', {params: {
             //service: "_upload",
+            find: JSON.stringify({
+                $or: [
+                    { removed: false },
+                    { removed: {$exists: false }},
+                ]
+            })
         }})
         .then(res=>{
             this.apps = res.body.apps;
