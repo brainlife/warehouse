@@ -621,6 +621,10 @@ export default {
             this.$http.get('app', {params: {
                 find: JSON.stringify({
                     "inputs.datatype": {$in: datatype_ids},
+                    $or: [
+                        { removed: false },
+                        { removed: {$exists: false }},
+                    ],
                 }),
                 populate: 'inputs.datatype',
             }})

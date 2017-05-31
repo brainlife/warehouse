@@ -6,7 +6,7 @@
         <appavatar :app="app" style="float: left;margin-right: 15px;"></appavatar>
         <h4 class="appname">{{app.name}}</h4>
         <div class="desc">{{app.desc}}</div>
-        <div class="devs">
+        <div class="devs" v-if="!compact">
             <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
         </div>
         <!--
@@ -26,7 +26,6 @@ import tags from '@/components/tags'
 
 export default {
     components: { contact, appavatar, tags },
-    props: ['app', 'dataset', 'compact', 'appid', 'clickable' ],
     props: {
         app: Object,
         dataset: Object,
