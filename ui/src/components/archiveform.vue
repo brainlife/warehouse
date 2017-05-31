@@ -49,38 +49,57 @@ import projectselector from '@/components/projectselector'
 
 export default {
     components: { projectaccess, projectselector },
+
     data() {
         return {
             form: {
                 instance_id: null,
                 task_id: null,
+                dirname: null,
+
                 prov: {},
                 project: null,
                 tags: [],
                 meta: {},
+
                 name: null,
                 desc: null,
                 datatype: null,
                 datatype_tags: [],
             }, 
-
-            //cache
-            //projects: null,
         }
     },
 
     props: {
         dataset: {required: true}, 
         instance: {required: true}, 
-        task: {required: true}, 
-        input_id: {required: true},
+        output_task: {required: true}, 
+        app: {required: true},
+        dataset_id: {required: true},
     },
     
     mounted: function() {
-        
+        //needed to pull data
         this.form.instance_id = this.instance._id;
-        this.form.task_id = this.task._id;
-        this.form.prov = {output_id: this.input_id}; //this instruct post api to pull from subdir
+        this.form.task_id = this.output_task._id;
+        this.form.dirname = this.dataset_id; //output task should create subdir for each dataset_id
+
+        this.form.prov = {
+            app: app._id,
+            task_id: this.output_task._id,
+            dirname: this.dataset_id,
+        }
+        /*
+        this.form.prov = {
+            output_id: this.input_id, //this instructs post api to pull from subdir
+            deps: this.task.deps,
+            //app: null, //TODO..
+            //config: this.task.config,
+            //instance_id: this.instance._id,
+            //task_id: this.task._id,
+        };
+        */
+
         this.form.name = this.dataset.name;
         this.form.desc = this.dataset.desc;
         this.form.datatype = this.dataset.datatype;
@@ -89,16 +108,7 @@ export default {
         for(var k in this.dataset.meta) {
             Vue.set(this.form.meta, k, this.dataset.meta[k]);
         }
-
-        /*
-        //load projects that user is member of
-        this.$http.get('project', {params: {
-            find: JSON.stringify({members: Vue.config.user.sub}),
-            populate: ' ', //load all default
-        }}).then(res=>{
-            this.projects = res.body.projects;
-        });
-        */
+        console.dir(this.form);
     },
 
     methods: {
@@ -121,7 +131,7 @@ export default {
                 //update task to store 
                 this.dataset.dataset_id = res.body._id;
                 delete this.dataset.archiving;
-                this.task.config.datasets[this.input_id] = this.dataset;
+                this.task.config.datasets[this.dataset_id] = this.dataset;
                 this.$http.put(Vue.config.wf_api+'/task/'+this.task._id, {
                     config: this.task.config,
                 }).then(res=>{

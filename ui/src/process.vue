@@ -54,8 +54,8 @@
                         v-if="_output_tasks[task._id] && _output_tasks[task._id].status == 'finished'">
 
                         <!--insert slot for output datasets-->
-                        <el-card v-for="(dataset, input_id) in _output_tasks[task._id].config.datasets" :key="input_id">
-                            <b>{{input_id}}</b> <tags :tags="dataset.datatype_tags"/>
+                        <el-card v-for="(dataset, did) in _output_tasks[task._id].config.datasets" :key="did">
+                            <b>{{did}}</b> <tags :tags="dataset.datatype_tags"/>
                             <metadata :metadata="dataset.meta"/>
                             <!--{{dataset.desc || dataset.name}}-->
                             <el-button size="small" type="primary" style="float: right;" 
@@ -76,9 +76,11 @@
 
                             <archiveform v-if="archiving[task._id]" 
                                 :instance="instance" 
-                                :input_id ="input_id" 
-                                :task="_output_tasks[task._id]" 
-                                :dataset="dataset" @submitted="archived(task._id)" style="margin-top: 30px;"/>
+                                :app="newtask_app"
+                                :output_task="_output_tasks[task._id]" 
+                                :dataset_id="did"
+                                :dataset="dataset" 
+                                @submitted="archived(task._id)" style="margin-top: 30px;"/>
                         </el-card>
                     </el-collapse-item>
                 </task>
@@ -750,6 +752,7 @@ export default {
                     if(this.submit_mode == "single" && idx > 0) return; 
 
                     this.process_input_config(newtask, newtask.config);
+
                     console.log("submitting newtask", newtask); 
                     this.$http.post(Vue.config.wf_api+'/task', {
                         instance_id: this.instance._id,
@@ -803,11 +806,26 @@ export default {
                             output.meta = agg_meta;
                             datasets[output.id] = output;
                         });
+
+                        /*
+                        //store some extra provenance info needed when user archive output dataset
+                        var _prov = {
+                            app: this.newtask_app._id,
+                            deps: [],
+                        };
+                        for(var input_id in newtask.inputs) {
+                            var input = newtask.inputs[input_id];
+                            var dataset = this._datasets[input.dataset];
+                            debugger;
+                            _prov.deps.push({input_id, dataset: dataset._id});
+                        } 
+                        */
+        
                         this.$http.post(Vue.config.wf_api+'/task', {
                             instance_id: this.instance._id,
                             name: "brainlife.stage_output",
                             service: "soichih/sca-product-raw",
-                            config: { symlink, datasets },
+                            config: { symlink },
                             deps: [ task._id ],
                         }).then(res=>{
                             var output_task = res.body.task;
