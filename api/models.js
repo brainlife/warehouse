@@ -79,25 +79,36 @@ var datasetSchema = mongoose.Schema({
     //physical location of this crate (URI?)
     storage: String, //azure, dc2, sda?, jetstream-swift, etc.. (as configured in /config)
 
+    /*
     //provenance info (if it's derivative) - not set if user uploaded it
     prov: {
         //application that produced this data (not set if user uploaded it)
         app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
 
         //output id of the app (set when dataset is posted)
-        output_id: String, 
+        //output_id: String, 
         
         //dataset used by the application to generate this data
         deps: [{
             input_id: String, 
             dataset: {type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}
         }],
-        //app config used to generate the data
+        
+        //config for main task used to generate the data
         config: mongoose.Schema.Types.Mixed, 
 
-        //instance / task ID from workflow service
+        //instance / output task ID from workflow service
         instance_id: String,
         task_id: String,
+        dirname: String, //subdir that contained the output data
+    },
+    */
+    
+    //not set if user uploaded it. 
+    prov: {
+        app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //application that created this data
+        task_id: String, //output task id
+        dirname: String, //subdir that container the output data
     },
 
     create_date: { type: Date, default: Date.now },
