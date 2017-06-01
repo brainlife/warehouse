@@ -167,38 +167,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             });
         },
 
-        /*
         (task, cb)=>{
-            //load application detail if prov.app exists
-            if(req.body.prov && req.body.prov.app) {
-                db.Apps.findById(req.body.prov.app, (err, app)=>{
-                    if(err) return cb(err);
-                    if(!app) return cb("couldn't find the application specified in the prov");
-
-                    //find file mapping for specified output
-                    var files = null;
-                    app.outputs.forEach(output=>{
-                        if(output.datatype == req.body.datatype) files = output.files; //could be missing
-                    });
-                    cb(null, task, files);
-                });
-            } else cb(null, task, null);
-        },
-        */
-        
-        /*
-        (task, files, cb)=>{
-            //load datatype
-            db.Datatypes.findById(req.body.datatype, (err, datatype)=>{
-                if(err) return cb(err);
-                if(!datatype) return cb("couldn't find specified datatype");
-                cb(null, task, files, datatype);
-            });
-        },
-        */
-
-        (task, cb)=>{
-
             //now create a dataset record
             var dataset = new db.Datasets({
                 user_id: req.user.sub,
@@ -215,8 +184,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 meta: req.body.meta,
             });
             
-            //output_id doesn't come from instance.prov, so I need to add it to prov
-            //dataset.prov.output_id = req.body.output_id;
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);
                 res.json(_dataset);
@@ -244,14 +211,12 @@ function archive(task, dataset, req, cb) {
     var system = config.storage_systems[storage];
     system.upload(dataset, (err, writestream)=>{
 
-        //console.log("download path", task.instance_id+"/"+task._id+"/"+dataset.prov.output_id);
-        
         //download the entire .tar.gz from sca-wf service
         request.get({
             url: config.wf.api+"/resource/download",
             qs: {
                 r: task.resource_id,
-                p: task.instance_id+"/"+task._id+"/"+(dataset.prov.output_id||''),
+                p: task.instance_id+"/"+task._id+"/"+(req.body.dirname||''),
             },
             headers: {
                 authorization: req.headers.authorization, 
