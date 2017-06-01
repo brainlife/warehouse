@@ -195,12 +195,15 @@ export default {
                 });
 
                 var prov = this.instance.config.prov;
-                prov.output_id = output.id;
+                prov.dirname = output.id;
                 
                 var dataset = {
                     instance_id: this.instance._id,
                     task_id: this.instance.config.output_task_id,
+                    dirname: output.id,
+
                     prov: prov,
+
                     name: this.instance.name,
                     desc: this.instance.desc,
                     project: this.projects[0]._id, //select first project by default (TODO - remember user preference?)

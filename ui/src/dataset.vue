@@ -95,7 +95,9 @@
                         </el-col>
                     </el-row>
                     <app :app="dataset.prov.app" :compact="true">
-                        <pre style="background-color: #eee; padding: 10px;">{{dataset.prov.config}}</pre>
+                        <!-- TODO - show application config?
+                        <pre style="background-color: #eee; padding: 10px;">{{dataset.prov}}</pre>
+                        -->
                     </app>
                     <center>
                         <icon class="text-muted" scale="2" name="arrow-down"></icon>

@@ -74,7 +74,7 @@ export default {
         dataset: {required: true}, 
         instance: {required: true}, 
         output_task: {required: true}, 
-        app: {required: true},
+        app_id: {required: true},
         dataset_id: {required: true},
     },
     
@@ -85,20 +85,10 @@ export default {
         this.form.dirname = this.dataset_id; //output task should create subdir for each dataset_id
 
         this.form.prov = {
-            app: app._id,
+            app: this.app_id,
             task_id: this.output_task._id,
             dirname: this.dataset_id,
         }
-        /*
-        this.form.prov = {
-            output_id: this.input_id, //this instructs post api to pull from subdir
-            deps: this.task.deps,
-            //app: null, //TODO..
-            //config: this.task.config,
-            //instance_id: this.instance._id,
-            //task_id: this.task._id,
-        };
-        */
 
         this.form.name = this.dataset.name;
         this.form.desc = this.dataset.desc;
@@ -108,7 +98,7 @@ export default {
         for(var k in this.dataset.meta) {
             Vue.set(this.form.meta, k, this.dataset.meta[k]);
         }
-        console.dir(this.form);
+        //console.dir(this.form);
     },
 
     methods: {
@@ -131,9 +121,9 @@ export default {
                 //update task to store 
                 this.dataset.dataset_id = res.body._id;
                 delete this.dataset.archiving;
-                this.task.config.datasets[this.dataset_id] = this.dataset;
-                this.$http.put(Vue.config.wf_api+'/task/'+this.task._id, {
-                    config: this.task.config,
+                this.output_task.config._prov.output_datasets[this.dataset_id] = this.dataset;
+                this.$http.put(Vue.config.wf_api+'/task/'+this.output_task._id, {
+                    config: this.output_task.config,
                 }).then(res=>{
                     console.log("updated task config.dataset.dataset_id");
                 });
