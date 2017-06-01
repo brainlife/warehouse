@@ -11,7 +11,6 @@ const async = require('async');
 const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
-//const common = require('../common');
 
 router.get('/health', (req, res)=>{
     var status = "ok";
@@ -31,7 +30,6 @@ router.get('/health', (req, res)=>{
 });
 
 router.use('/project', require('./project'));
-//router.use('/crate', require('./crate'));
 router.use('/dataset', require('./dataset'));
 router.use('/app', require('./app'));
 router.use('/datatype', require('./datatype'));

@@ -28,5 +28,10 @@
     "mongoose": "^4.9.9",
     "request": "^2.79.0",
     "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "supertest": "^3.0.0",
+    "chai": "^4.0.1",
+    "mocha": "^3.4.2"
   }
 }
