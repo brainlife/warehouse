@@ -9,9 +9,6 @@
         <div class="devs" v-if="!compact">
             <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
         </div>
-        <!--
-        <pre class="appconfig" v-if="app.config">{{app.config}}</pre>
-        -->
         <slot/>
     </div>
 </el-card>

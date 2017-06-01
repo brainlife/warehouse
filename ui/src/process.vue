@@ -51,10 +51,11 @@
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
                 <task :task="task" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task">
                     <el-collapse-item title="Output Datasets" name="output" slot="output" 
-                        v-if="_output_tasks[task._id] && _output_tasks[task._id].status == 'finished'">
+                        v-if="_output_tasks[task._id] && task.status == 'finished'">
+                        <p v-if="_output_tasks[task._id].status != 'finished'"><icon name="cog" spin/> {{_output_tasks[task._id].status_msg}}</p>
 
                         <!--insert slot for output datasets-->
-                        <el-card v-for="(dataset, did) in _output_tasks[task._id].config.datasets" :key="did">
+                        <el-card v-for="(dataset, did) in _output_tasks[task._id].config._prov.output_datasets" :key="did">
                             <b>{{did}}</b> <tags :tags="dataset.datatype_tags"/>
                             <metadata :metadata="dataset.meta"/>
                             <!--{{dataset.desc || dataset.name}}-->
@@ -76,7 +77,7 @@
 
                             <archiveform v-if="archiving[task._id]" 
                                 :instance="instance" 
-                                :app="newtask_app"
+                                :app_id="_output_tasks[task._id].config._prov.app"
                                 :output_task="_output_tasks[task._id]" 
                                 :dataset_id="did"
                                 :dataset="dataset" 
@@ -771,7 +772,7 @@ export default {
                         // I also need to submit stage_output task
                         //
                         var symlink = [];
-                        var datasets = {};
+                        var output_datasets = {};
                         //aggregate all metadata from inputs to fake output metadata
                         //TOOD - I think each app should produce this (and/or let user override it?)
                         var agg_meta = {};
@@ -804,15 +805,15 @@ export default {
                         
                             //output.name = "process output from ..";
                             output.meta = agg_meta;
-                            datasets[output.id] = output;
+                            output_datasets[output.id] = output;
                         });
 
-                        /*
                         //store some extra provenance info needed when user archive output dataset
                         var _prov = {
                             app: this.newtask_app._id,
-                            deps: [],
+                            output_datasets,
                         };
+                        /*
                         for(var input_id in newtask.inputs) {
                             var input = newtask.inputs[input_id];
                             var dataset = this._datasets[input.dataset];
@@ -825,7 +826,7 @@ export default {
                             instance_id: this.instance._id,
                             name: "brainlife.stage_output",
                             service: "soichih/sca-product-raw",
-                            config: { symlink },
+                            config: { symlink, _prov },
                             deps: [ task._id ],
                         }).then(res=>{
                             var output_task = res.body.task;
