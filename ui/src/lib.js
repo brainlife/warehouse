@@ -66,13 +66,6 @@ function generate_config(app, download_task_id, formconfig) {
             } else if(typeof node === 'object') {
                 if(node.type) {
                     switch(node.type) {
-                    case "string":
-                    case "integer":
-                    case "float":
-                    case "boolean":
-                        //obj[k] = node.value;
-                        obj[k] = formconfig[k];
-                        break;
                     case "input":
                         //find the input 
                         app.inputs.forEach(input=>{
@@ -87,7 +80,7 @@ function generate_config(app, download_task_id, formconfig) {
                         });
                         break;
                     default:
-                        obj[k] = "unknown_template_type";
+                        obj[k] = formconfig[k];
                     }
                 } else handle_obj(node); //recurse
             }
