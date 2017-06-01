@@ -55,7 +55,8 @@
                         <p v-if="_output_tasks[task._id].status != 'finished'"><icon name="cog" spin/> {{_output_tasks[task._id].status_msg}}</p>
 
                         <!--insert slot for output datasets-->
-                        <el-card v-for="(dataset, did) in _output_tasks[task._id].config._prov.output_datasets" :key="did">
+                        <el-card v-if="_output_tasks[task._id].status == 'finished'" 
+                            v-for="(dataset, did) in _output_tasks[task._id].config._prov.output_datasets" :key="did">
                             <b>{{did}}</b> <tags :tags="dataset.datatype_tags"/>
                             <metadata :metadata="dataset.meta"/>
                             <!--{{dataset.desc || dataset.name}}-->
@@ -377,21 +378,6 @@ export default {
             });
             return tasks;
         }
-        
-        /*
-        _input_tasks: function() {
-            return this.tasks.filter(task=>task.name == "brainlife.stage_input");
-        },
-        _input_datasets: function() {
-            var datasets = {};
-            this._input_tasks.forEach(task=>{
-                for(var did in task.config.datasets) {
-                    datasets[did] = task.config.datasets[did];
-                }
-            });
-            return datasets;
-        },
-        */
     },
 
     watch: {
@@ -483,6 +469,16 @@ export default {
             })
             .then(res=>{
                 this.tasks = res.body.tasks;
+
+                //for backward compatibility (remove this eventually)
+                this.tasks.forEach(task=>{
+                    if(task.name != "brainlife.stage_output") return;
+                    if(!task.config) task.config = {};
+                    if(!task.config._prov) task.config._prov = {
+                        app: null,  //I don't think we have this info
+                        output_datasets: task.config.datasets, 
+                    };
+                });
 
                 if(this._datasets.length == 0) {
                     this.show_input_dialog = true;

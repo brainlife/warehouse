@@ -121,7 +121,6 @@ export default {
                 //update task to store 
                 this.dataset.dataset_id = res.body._id;
                 delete this.dataset.archiving;
-                console.log("output_task", this.output_task);
                 this.output_task.config._prov.output_datasets[this.dataset_id] = this.dataset;
                 this.$http.put(Vue.config.wf_api+'/task/'+this.output_task._id, {
                     config: this.output_task.config,
