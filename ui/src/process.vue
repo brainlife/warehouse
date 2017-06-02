@@ -136,7 +136,8 @@
                                                 :value="idx" :label="'subject:'+dataset.meta.subject + ' | '+dataset.name">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
                                             <metadata :metadata="dataset.meta"/>
-                                            <b>{{dataset.name}}</b> 
+                                            <small>{{datatypes[dataset.datatype_id].name}}</small>
+                                            <b>{{dataset.name||''}}</b> 
                                             <tags :tags="dataset.datatype_tags"></tags> 
                                         </el-option>
                                     </el-option-group>
@@ -153,17 +154,11 @@
                                 <el-alert v-if="input.error" :title="input.error" type="error"/>
                             </el-form-item>
 
-                            <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="!v.type"><!-- v-if="typeof v == 'string' || typeof v == 'number'">-->
+                            <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="typeof v !== 'object'">
                                 <el-input v-if="typeof v == 'string'" v-model="newtask.config[k]"/>
                                 <el-input-number v-if="typeof v == 'number'" v-model="newtask.config[k]" :step="2"/>
                                 <el-checkbox v-if="typeof v == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
                             </el-form-item>
-
-                            <!--
-                            <el-form-item>
-                                <div style="border-bottom: 1px solid #ddd;"></div>
-                            </el-form-item>
-                            -->
                         </div>
 
                         <el-form-item>
@@ -349,7 +344,6 @@ export default {
                 if(task.status == "stopped") return;
                 switch(task.name) {
                 case "brainlife.stage_input": 
-                case "brainlife.stage_output": 
                     for(var did in task.config.datasets) {
                         var dataset = task.config.datasets[did];
                         datasets.push({
@@ -357,6 +351,21 @@ export default {
                             datatype_tags: dataset.datatype_tags,
                             name: dataset.name,
                             desc: dataset.desc,
+                            meta: dataset.meta,
+                            task: task,
+                            path: did, //where inside this task the dataset is stored
+                        });
+                    }
+                    break;
+                case "brainlife.stage_output": 
+                    //console.log("stage_output", task.config._prov);
+                    for(var did in task.config._prov.output_datasets) {
+                        var dataset = task.config._prov.output_datasets[did];
+                        datasets.push({
+                            datatype_id: dataset.datatype,
+                            datatype_tags: dataset.datatype_tags,
+                            //name: dataset.name,
+                            //desc: dataset.desc,
                             meta: dataset.meta,
                             task: task,
                             path: did, //where inside this task the dataset is stored
