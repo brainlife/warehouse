@@ -31,9 +31,6 @@ export default {
     },
 
     mounted: function() {
-
-        //this.values = this.value; //copy to my own list
-
         //TODO I should let ui-select/async and let it "search" users
         if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profile');
         profiles.then(res=>{
@@ -44,9 +41,9 @@ export default {
     },
 
     methods: {
-        updateValue: function(value) {
+        updateValue: function(values) {
             //just pass it back to parent
-            this.$emit('input', this.values);
+            this.$emit('input', values);
         }
     },
 }
