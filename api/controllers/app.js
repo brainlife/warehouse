@@ -86,10 +86,12 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  */
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
     req.body.user_id = req.user.sub;//override
+    console.dir(req.body);
     var app = new db.Apps(req.body);
-    app.save(function(err) {
+    app.save(function(err, _app) {
         if (err) return next(err); 
-        app = JSON.parse(JSON.stringify(app));
+        console.dir(_app);
+        app = JSON.parse(JSON.stringify(_app));
         app._canedit = canedit(req.user, app);
         res.json(app);
     });

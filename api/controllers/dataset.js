@@ -109,6 +109,29 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
 /**
  * @apiGroup Dataset
+ * @api {get} /dataset/bibtex/:id   Download BibTex JSON
+ * @apiDescription              Output BibTex JSON content for specified dataset ID
+ *
+ */
+router.get('/bibtex/:id', (req, res, next)=>{
+    db.Datasets.findById(req.params.id, function(err, dataset) {
+        if(err) return next(err);
+        res.set('Content-Type', 'application/x-bibtex');
+        res.write("@misc{https://doi.org/11.1111/b.ds."+dataset._id+",\n")
+        res.write(" doi = {11.1111/b.ds."+dataset._id+"},\n");
+        res.write(" author = {Hayashi, Soichi},\n");
+        res.write(" keywords = {},\n");
+        res.write(" title = {"+dataset.name+"},\n");
+        res.write(" publisher = {BrainLife},\n");
+        res.write(" year = {"+(dataset.create_date.getYear()+1900)+"},\n");
+        res.write("}");
+        res.end();
+    });
+});
+
+
+/**
+ * @apiGroup Dataset
  * @api {post} /dataset                 Create new dataset from wf service task
  * @apiDescription                      Make a request to create a new dataset from wf service taskdir
  *
