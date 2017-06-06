@@ -81,6 +81,8 @@ Vue.filter('filesize', function (num) {
 var apihost = "https://brain-life.org";
 var apihost_ws = "wss://brain-life.org";
 
+console.dir(Vue.config);
+
 switch(process.env.NODE_ENV) {
 case "development": 
     var apihost = "https://soichi7.ppa.iu.edu";

@@ -8,3 +8,4 @@ ui/npm-debug.log
 ui/yarn-error.log
 **/barn
 docker/config
+ui/config/index.js
