@@ -28,12 +28,16 @@
                     </li>
                 </ul>
                 <br>
-                <h3>Produced Datasets</h3>
+                <h3>Output Datasets</h3>
                 <ul style="padding-left: 20px;">
                     <li v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" style="margin-bottom: 10px;">
                         <metadata :metadata="dataset.meta"/>
+                        <b>{{dataset.did}}</b> 
                         {{datatypes[dataset.datatype_id].name}} <tags :tags="dataset.datatype_tags"></tags>
                         <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
+                        <p v-if="dataset.dataset_id">
+                            <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
+                        </p>
                     </li>
                 </ul>
             </div>
@@ -57,13 +61,14 @@
                         <!--insert slot for output datasets-->
                         <el-card v-if="_output_tasks[task._id].status == 'finished'" 
                             v-for="(dataset, did) in _output_tasks[task._id].config._prov.output_datasets" :key="did">
-                            <b>{{did}}</b> <tags :tags="dataset.datatype_tags"/>
                             <metadata :metadata="dataset.meta"/>
-                            <!--{{dataset.desc || dataset.name}}-->
+                            <b>{{did}}</b> 
+                            {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"/>
+
                             <el-button size="small" type="primary" style="float: right;" 
                                 v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id)">Archive</el-button>
                             <el-button size="small" style="float: right;" 
-                                v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)">See Archived Dataset <small>{{dataset.dataset_id}}</small></el-button>
+                                v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
                             <!--TODO - show only viewer that makes sense for each data type-->
                             <el-dropdown style="float: right; margin-right: 5px;" @command="view">
                                 <el-button size="small"> View <i class="el-icon-caret-bottom el-icon--right"></i> </el-button>
@@ -136,11 +141,12 @@
                                                 :value="idx" :label="'subject:'+dataset.meta.subject + ' | '+dataset.name">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
                                             <metadata :metadata="dataset.meta"/>
-                                            <b>{{dataset.name}}</b> 
+                                            <small>{{datatypes[dataset.datatype_id].name}}</small>
+                                            <b>{{dataset.name||''}}</b> 
                                             <tags :tags="dataset.datatype_tags"></tags> 
                                         </el-option>
                                     </el-option-group>
-                                    <el-option-group key="brainlife.stage_output" label="Produced Datasets">
+                                    <el-option-group key="brainlife.stage_output" label="Output Datasets">
                                         <el-option v-for="(dataset, idx) in _datasets" 
                                             v-if="dataset.datatype_id == input.datatype._id && dataset.task.name == 'brainlife.stage_output'" :key="idx"
                                                 :value="idx" :label="dataset.meta.subject+' '+dataset.name">
@@ -153,17 +159,11 @@
                                 <el-alert v-if="input.error" :title="input.error" type="error"/>
                             </el-form-item>
 
-                            <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="!v.type"><!-- v-if="typeof v == 'string' || typeof v == 'number'">-->
+                            <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="typeof v !== 'object'">
                                 <el-input v-if="typeof v == 'string'" v-model="newtask.config[k]"/>
                                 <el-input-number v-if="typeof v == 'number'" v-model="newtask.config[k]" :step="2"/>
                                 <el-checkbox v-if="typeof v == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
                             </el-form-item>
-
-                            <!--
-                            <el-form-item>
-                                <div style="border-bottom: 1px solid #ddd;"></div>
-                            </el-form-item>
-                            -->
                         </div>
 
                         <el-form-item>
@@ -349,16 +349,35 @@ export default {
                 if(task.status == "stopped") return;
                 switch(task.name) {
                 case "brainlife.stage_input": 
-                case "brainlife.stage_output": 
+                    //TODO - I should probably store this in config._prov.input_dataset instead of config.dataset?
                     for(var did in task.config.datasets) {
                         var dataset = task.config.datasets[did];
                         datasets.push({
+                            did,
                             datatype_id: dataset.datatype,
                             datatype_tags: dataset.datatype_tags,
                             name: dataset.name,
                             desc: dataset.desc,
                             meta: dataset.meta,
-                            task: task,
+                            dataset_id: dataset.dataset_id, //if archived already
+                            task,
+                            path: did, //where inside this task the dataset is stored
+                        });
+                    }
+                    break;
+                case "brainlife.stage_output": 
+                    //console.log("stage_output", task.config._prov);
+                    for(var did in task.config._prov.output_datasets) {
+                        var dataset = task.config._prov.output_datasets[did];
+                        datasets.push({
+                            did,
+                            datatype_id: dataset.datatype,
+                            datatype_tags: dataset.datatype_tags,
+                            //name: dataset.name,
+                            //desc: dataset.desc,
+                            meta: dataset.meta,
+                            dataset_id: dataset.dataset_id, //if archived already
+                            task,
                             path: did, //where inside this task the dataset is stored
                         });
                     }

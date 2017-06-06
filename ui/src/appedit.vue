@@ -150,13 +150,12 @@ import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 
 export default {
-    name: "appedit",
     components: { sidemenu, editor, contactlist, pageheader },
     data () {
         return {
             app: {
                 _id: null,
-                admins: [Vue.config.user.sub.toString()],
+                admins: null,
 
                 name: null,
                 desc: null,
@@ -191,22 +190,18 @@ export default {
             }})
             .then(res=>{
                 this.app = res.body.apps[0];
-                this.app.init_admins = this.app.admins;
+                //this.app.init_admins = this.app.admins;
                 this.app._config = JSON.stringify(this.app.config, null, 4);
             });
-        } 
-        //this.$message('This is a message');
+        } else {
+            //init.. (can't do it in data() for some reason (maybe because contact list is not setup?
+            this.app.admins = [Vue.config.user.sub.toString()];
+        }
         /*
-         this.$notify({
-          title: 'Success',
-          message: 'This is a success message',
-          type: 'success'
-        });
-        */
-
         this.$on('editor-update', c=>{
             console.log(c);
         });
+        */
 
         //load datatypes for form
         this.$http.get('datatype', {params: {
@@ -221,8 +216,6 @@ export default {
             console.error(res);
         });
 
-    },
-    computed: {
     },
     methods: {
 
@@ -252,7 +245,6 @@ export default {
                 //new
                 this.$http.post('app', this.app)
                 .then(res=>{
-                    console.dir(res.body);
                     this.$router.push("/app/"+res.body._id);
                 }).catch(err=>{
                     console.error(err);
