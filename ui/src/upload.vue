@@ -40,7 +40,7 @@
 
                     <el-form-item label="Data Type" v-if="datatypes">
                         <el-select v-model="datatype_id" placeholder="Please select" @change="change_datatype" style="width: 100%;">
-                            <el-option v-for="(type,id) in datatypes" key="id" :value="id" :label="type.desc"></el-option>
+                            <el-option v-for="(type,id) in datatypes_with_validator" key="id" :value="id" :label="type.desc"></el-option>
                         </el-select>
                     </el-form-item>
 
@@ -114,21 +114,9 @@
                 </div>
 
                 <div v-if="mode == 'finalize'">
-                    <!--
-                    <div v-if="dataset">
-                        <el-alert type="success" show-icon title="">Your data will be available in warehouse soon</el-alert>
-                    </div>
-                    -->
-
                     <el-form-item v-if="!dataset && copy">
-                        <h4><icon name="cog" spin/> Organizing your input files..</h4>
+                        <b><icon name="cog" spin/></b> Organizing your input files..
                     </el-form-item>
-
-                    <!--
-                    <br>
-                    <el-button @click="mode = 'validate'">Back</el-button>
-                    <el-button type="primary" @click="go('/datasets')">Done!</el-button>
-                    -->
                 </div>
             </el-form>
         </el-card>
@@ -254,8 +242,17 @@ export default {
 
     computed: {
         files: function() {
-         return this.datatypes[this.datatype_id].files;
-        }
+            return this.datatypes[this.datatype_id].files;
+        },
+        datatypes_with_validator: function() {
+            var types = {};
+            for(var id in this.datatypes) { 
+                var type = this.datatypes[id];
+                if(type.validator) types[id] = type;
+            }
+            return types;
+        },
+
     },
 
     methods: {
@@ -355,6 +352,7 @@ export default {
                 console.error(res);
             });
         },
+
         finalize: function() {
             this.mode = "finalize";
             this.copy = null;
@@ -372,7 +370,7 @@ export default {
                 service: "soichih/sca-product-raw",
                 config: { copy },
             }).then(res=>{
-                console.log("submitted copy task");
+                console.log("submitted copy task", res);
                 this.copy = res.body.task;
             }, res=>{
                 console.error(res);
@@ -394,6 +392,8 @@ export default {
 
                 //product: product,
                 meta: this.meta,
+
+                prov: {}, //TODO?
 
                 tags: [], 
 
