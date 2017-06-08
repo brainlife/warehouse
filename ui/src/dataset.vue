@@ -41,8 +41,11 @@
             </td>
         </tr>
         <tr>
-            <th>DOI</th>
-            <td>10.1006/br.d.{{dataset._id}} </td>
+            <th>Citation</th>
+            <td>
+                <p><i>Hayashi, S. (2016). {{dataset.name}} http://doi.org/11.1111/br.d.{{dataset._id}}</i></p> 
+                <el-button size="small" type="primary" @click="bibtex()">BibTex</el-button>
+            </td>
         </tr>
         <tr>
             <th>User Tags</th>
@@ -259,7 +262,10 @@ export default {
             }).catch(err=>{
                 console.error(res);
             });
-        }
+        },
+        bibtex: function() {
+            document.location = '/api/warehouse/dataset/bibtex/'+this.dataset._id;
+        },
     },
 }
 </script>
