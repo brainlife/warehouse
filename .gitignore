@@ -9,3 +9,4 @@ ui/yarn-error.log
 **/barn
 docker/config
 ui/config/index.js
+api/config/jetstream.js

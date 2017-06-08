@@ -19,6 +19,7 @@
   "dependencies": {
     "async": "^2.4.1",
     "body-parser": "^1.17.2",
+    "callback-timeout": "^3.0.0",
     "compression": "^1.6.2",
     "cors": "^2.8.1",
     "express": "^4.15.3",
@@ -26,6 +27,7 @@
     "express-winston": "^2.4.0",
     "mkdirp": "^0.5.1",
     "mongoose": "^4.10.4",
+    "pkgcloud": "^1.4.0",
     "request": "^2.79.0",
     "winston": "^2.3.1"
   },
