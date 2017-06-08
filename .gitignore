@@ -10,3 +10,4 @@ ui/yarn-error.log
 docker/config
 ui/config/index.js
 api/config/jetstream.js
+api/config/index.js

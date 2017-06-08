@@ -100,8 +100,8 @@ exports.storage_systems.dc2 = {
             if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
             cb();
         }, 2000, 'failed to stat '+dc2_path)); 
-    },
-}
+    }, 
+} 
 
 exports.logger = {
     winston: {
