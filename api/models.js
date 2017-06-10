@@ -108,7 +108,7 @@ var datasetSchema = mongoose.Schema({
     prov: {
         app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //application that created this data
         task_id: String, //output task id
-        dirname: String, //subdir that container the output data
+        dirname: String, //subdir that contain the output data (not set if it's on taskdir)
     },
 
     create_date: { type: Date, default: Date.now },

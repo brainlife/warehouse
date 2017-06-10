@@ -89,8 +89,8 @@
                 <h5>{{datatypes[did].name}}</h5>
                 <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
                     <div>
-                        <div @click.stop="remove_selected(dataset)" style="display: inline;">
-                            <icon name="trash"></icon>
+                        <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
+                            <icon name="close"></icon>
                         </div>
                         <small>
                             {{dataset.name}}
@@ -100,7 +100,7 @@
                 </div>
                 <br>
             </div>
-            <el-button size="small" icon="delete" @click="clear_selected()">Unselect All</el-button>
+            <el-button size="small" icon="circle-cross" @click="clear_selected()">Unselect All</el-button>
         </div>
         <div class="select-group" style="background-color: #999;">
             <el-button-group>

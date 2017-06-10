@@ -3,10 +3,10 @@
     <div slot="header">
         <el-row>
             <el-col :span="6">
-                <b>{{id}}</b>
+                <span>{{datatype.name}}</span> 
             </el-col>
             <el-col :span="18">
-                <span>{{datatype.name}}</span> 
+                <b>{{id}}</b>
                 <small class="text-muted">({{datatype.desc}})</small>
                 <tags :tags="datatype_tags"></tags>
             </el-col>

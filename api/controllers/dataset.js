@@ -109,6 +109,29 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
 /**
  * @apiGroup Dataset
+ * @api {get} /dataset/bibtex/:id   Download BibTex JSON
+ * @apiDescription              Output BibTex JSON content for specified dataset ID
+ *
+ */
+router.get('/bibtex/:id', (req, res, next)=>{
+    db.Datasets.findById(req.params.id, function(err, dataset) {
+        if(err) return next(err);
+        res.set('Content-Type', 'application/x-bibtex');
+        res.write("@misc{https://doi.org/11.1111/b.ds."+dataset._id+",\n")
+        res.write(" doi = {11.1111/b.ds."+dataset._id+"},\n");
+        res.write(" author = {Hayashi, Soichi},\n");
+        res.write(" keywords = {},\n");
+        res.write(" title = {"+dataset.name+"},\n");
+        res.write(" publisher = {BrainLife},\n");
+        res.write(" year = {"+(dataset.create_date.getYear()+1900)+"},\n");
+        res.write("}");
+        res.end();
+    });
+});
+
+
+/**
+ * @apiGroup Dataset
  * @api {post} /dataset                 Create new dataset from wf service task
  * @apiDescription                      Make a request to create a new dataset from wf service taskdir
  *
@@ -133,7 +156,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.datatype) return next("datatype id not set");
     if(!req.body.instance_id) return next("instance_id not set");
     if(!req.body.task_id) return next("task_id not set");
-    //if(!req.body.output_id) return next("output_id not set");
     
     async.waterfall([
         cb=>{
@@ -178,11 +200,14 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
                 name: req.body.name,
                 desc: req.body.desc,
-                tags: req.body.tags,
+                tags: req.body.tags||[],
 
-                prov: req.body.prov,
-                meta: req.body.meta,
+                prov: req.body.prov||{},
+                meta: req.body.meta||{},
             });
+
+            logger.debug("creating dataset");
+            //logger.debug(dataset);
             
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);
@@ -207,9 +232,13 @@ function archive(task, dataset, req, cb) {
     //TODO should I error if task status is not finished?
     if(task.status != 'finished') logger.warn('task '+task._id+' status is not finished');
 
-    var storage = "dc2";
+    //TODO pick the best storage based on project?
+    var storage = "jetstream";
     var system = config.storage_systems[storage];
+    logger.debug("obtaining upload stream");
     system.upload(dataset, (err, writestream)=>{
+        if(err) return cb(err);
+        logger.debug("uploading");
 
         //download the entire .tar.gz from sca-wf service
         request.get({
@@ -230,7 +259,7 @@ function archive(task, dataset, req, cb) {
             } else {
                 //success.. set storage
                 logger.info("done!");
-                dataset.storage = "dc2"; 
+                dataset.storage = storage;
                 dataset.save(cb);
             }
         }).pipe(writestream);

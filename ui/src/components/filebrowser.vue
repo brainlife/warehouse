@@ -119,6 +119,12 @@ export default {
                                 case "bvecs": 
                                     type = "text"; break;
                             }
+                            /*
+                            switch(file.filename) {
+                                case "config.json":
+                                    type = "text"; break;
+                            }
+                            */
                     }
                     if(type) {
                         res.text().then(c=>{
