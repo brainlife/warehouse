@@ -210,7 +210,7 @@ export default {
                 if(this.validation && task._id == this.validation._id) {
                     this.validation = task;
                     //for backward compatibility 
-                    if(this.validation && this.validation.products && this.validation.products[0].results) {
+                    if(this.validation.products && this.validation.products[0].results) {
                         //unwrap old structure to new
                         this.validation.products[0] = this.validation.products[0].results;
                     }
