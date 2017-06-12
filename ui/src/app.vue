@@ -13,15 +13,33 @@
         <br>
         <h1>{{app.name}}</h1>
     </div> 
-    <div class="page-content" v-if="app" style="margin-top: 90px; padding-top: 60px;">
+    <div class="page-content" v-if="app" style="margin-top: 45px; padding-top: 60px;">
+        <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
+            <p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>
+            {{app.desc}}
+        </div>
+
         <table class="info">
+        <!--
         <tr>
             <th width="180px;">Description</th>
             <td>{{app.desc}}</td>
         </tr>
+        -->
+        <!--
         <tr v-if="app.avatar">
             <th>Avatar</th>
             <td>{{app.avatar}}</td>
+        </tr>
+        -->
+        <tr v-if="service_stats">
+            <th>Stats</th>
+            <td>
+                <p>{{service_stats.tasks}} Runs</p>
+                <p>{{service_stats.users}} Users</p>
+                <p>Success Rate {{(service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)}}%</p>
+                <!--<pre>{{service_stats}}</pre>-->
+            </td>
         </tr>
         <tr>
             <th>DOI (todo)</th>
@@ -57,6 +75,11 @@
                     <el-tag> {{resource.detail.name}} </el-tag>
                 </p> 
             </td>
+        </tr>
+        <tr>
+            <!--TODO-->
+            <th>Test Status</th>
+            <td><el-tag>Unknown</el-tag></td>
         </tr>
         <tr>
             <th>Configuration Template</th>
@@ -115,11 +138,7 @@ export default {
         return {
             app: null,
             resource: null,
-
-            //project_id: "", //to be selected by the user
-
-            //cache
-            //projects: [],
+            service_stats: null, 
 
             config: Vue.config,
         }
@@ -130,6 +149,7 @@ export default {
             console.log("update", c);
         });
 
+        //load app
         this.$http.get('app', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'inputs.datatype outputs.datatype',
@@ -137,6 +157,21 @@ export default {
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
+
+            Vue.set(this.app, '_rate', 0); //needed..
+
+            //then load task stats
+            //console.dir(this.app);
+            this.$http.get(Vue.config.wf_api+'/task/stats', {params: {
+                service: this.app.github,
+                service_branch: this.app.github_branch,
+            }})
+            .then(res=>{
+                this.service_stats = res.body;
+            }).catch(err=>{
+                console.error(err);
+            });
+
         }).catch(err=>{
             console.error(err);
         });
@@ -147,17 +182,16 @@ export default {
             this.$router.push(path);
         },
 
-
         findbest: function(service) {
-          //find resource where we can run this app
-          this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-              service: service,
-          }})
-          .then(res=>{
-            this.resource = res.body;
-          }, res=>{
-            console.error(res);
-          })
+            //find resource where we can run this app
+            this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
+                service: service,
+            }})
+            .then(res=>{
+                this.resource = res.body;
+            }, res=>{
+                console.error(res);
+            })
         },
 
         remove: function() {
@@ -166,6 +200,14 @@ export default {
                 this.go('/apps');        
             });
         },
+
+        ratechange: function() {
+            this.$http.post('app/'+this.app._id+'/rate', {
+                rate: this.app._rate,
+            }).then(res=>{
+                console.dir(res.body);
+            });
+        }
     },
 }
 </script>

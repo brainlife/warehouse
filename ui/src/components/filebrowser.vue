@@ -100,31 +100,25 @@ export default {
             else {
                 //for small files, download content and display
                 this.$http.get(url).then(res=>{
-                    console.dir(res);
+                    //console.dir(res);
 
                     //set file type (TODO - can't highlight.js do this?)
                     var mime = res.headers.get("Content-Type");
-                    console.log(mime);
+                    //console.log(mime);
                     let type = null;
                     switch(mime) {
-                        case "application/json": type = "json"; break;
-                        case "application/x-sh": type = "bash"; break;
-                        case "text/plain": type = "text"; break;
-                        case "application/octet-stream": 
-                            //for all octet-stream, guess file type from extension
-                            var tokens = file.filename.split(".");
-                            var ext = tokens[tokens.length-1];
-                            switch(ext) {
-                                case "bvals": 
-                                case "bvecs": 
-                                    type = "text"; break;
-                            }
-                            /*
-                            switch(file.filename) {
-                                case "config.json":
-                                    type = "text"; break;
-                            }
-                            */
+                    case "application/json": type = "json"; break;
+                    case "application/x-sh": type = "bash"; break;
+                    case "text/plain": type = "text"; break;
+                    case "application/octet-stream": 
+                        //for all octet-stream, guess file type from extension
+                        var tokens = file.filename.split(".");
+                        var ext = tokens[tokens.length-1];
+                        switch(ext) {
+                        case "bvals": 
+                        case "bvecs": 
+                            type = "text"; break;
+                        }
                     }
                     if(type) {
                         res.text().then(c=>{

@@ -22,7 +22,10 @@
                         <el-input type="text" v-model="project.name" placeholder="Project Name"></el-input>
                     </el-form-item>
                     <el-form-item label="Description">
-                        <el-input type="textarea" v-model="project.desc" placeholder="Enter description for this project."></el-input>
+                        <el-input type="textarea" autosize v-model="project.desc" placeholder="Enter description for this project."></el-input>
+                    </el-form-item>
+                    <el-form-item label="README (markdown)">
+                        <el-input type="textarea" autosize v-model="project.readme" placeholder="Enter extended README content in markdown format."></el-input>
                     </el-form-item>
                     <el-form-item label="Access">
                         <el-select v-model="project.access">

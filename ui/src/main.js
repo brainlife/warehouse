@@ -18,39 +18,25 @@ Vue.use(VueResource)
 
 import warehouse from './warehouse'
 
-//import VueSemantic from 'vue-semantic'
-//Vue.use(VueSemantic)
-
 //element ui
 import '../theme/index.css'
 import ElementUI from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
-//import 'element-ui/lib/theme-default/index.css'
 Vue.use(ElementUI, {locale})
 
 //fontasome
 import 'vue-awesome/icons'
-//import 'vue-awesome/icons/flags' //only include what we need
 import Icon from 'vue-awesome/components/Icon.vue'
 Vue.component('icon', Icon)
 
 import router from './router'
 
-//import 'animate.css/animate.min.css'
-
 Vue.use(require('vue-filter'))
-
-/*
-import filesize from 'filesize'
-Vue.filter('filesize', function(value) {
-    return filesize(value);
-});
-*/
 
 Vue.filter('filesize', function (num) {
 	// jacked from: https://github.com/sindresorhus/pretty-bytes
 	if (typeof num !== 'number' || isNaN(num)) {
-	throw new TypeError('Expected a number');
+        throw new TypeError('Expected a number');
 	}
 
 	var exponent;
@@ -59,11 +45,11 @@ Vue.filter('filesize', function (num) {
 	var units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
 	if (neg) {
-	num = -num;
+        num = -num;
 	}
 
 	if (num < 1) {
-	return (neg ? '-' : '') + num + ' B';
+        return (neg ? '-' : '') + num + ' B';
 	}
 
 	exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1);
@@ -129,17 +115,14 @@ Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 router.beforeEach(function (to, from, next) {
     console.log("scrolling to top");
     window.scrollTo(0, 0);
-    //this crashes the vue
-    //if($(".page-content")) $(".page-content").scrollTo(0,0);
     next();
 })
 
-/* eslint-disable no-new */
 new Vue({
-  el: '#warehouse',
-  router,
-  template: '<warehouse/>',
-  components: { warehouse }
+    el: '#warehouse',
+    router,
+    template: '<warehouse/>',
+    components: { warehouse }
 })
 
 

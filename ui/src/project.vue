@@ -10,19 +10,12 @@
         <h1><span class="text-muted"><icon name="shield" scale="1.5"/> Project |</span> {{project.name}}</h1>
     </div>
     <div class="page-content" v-if="project" style="margin-top: 80px">
-        <!--
-        <div class="margin20">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item :to="{ path: '/projects' }">Projects</el-breadcrumb-item>
-                <el-breadcrumb-item>{{project._id}}</el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
-        -->
-
         <table class="info">
         <tr>
             <th width="180px;">Description</th>
-            <td>{{project.desc}}</td>
+            <td>
+                {{project.desc}}
+            </td>
         </tr>
         <tr>
             <th>Access</th>
@@ -42,6 +35,12 @@
                 <contact v-for="c in project.members" key="c._id" :id="c"></contact>
             </td>
         </tr>
+        <tr v-if="project.readme">
+            <th>README</th>
+            <td>
+                <vue-markdown :source="project.readme"></vue-markdown>
+            </td>
+        </tr>
         <tr>
             <th>TODO</th>
             <td>
@@ -59,6 +58,7 @@
 
 import Vue from 'vue'
 import Router from 'vue-router'
+import VueMarkdown from 'vue-markdown'
 
 import sidemenu from '@/components/sidemenu'
 import contactlist from '@/components/contactlist'
@@ -70,12 +70,11 @@ import projectaccess from '@/components/projectaccess'
 //hello
 
 export default {
-    components: { sidemenu, contactlist, project, projectaccess, pageheader, contact },
+    components: { sidemenu, contactlist, project, projectaccess, pageheader, contact, VueMarkdown },
 
     data () {
         return {
             project: null,
-
             config: Vue.config,
         }
     },
@@ -83,45 +82,12 @@ export default {
     mounted: function() {
         this.$http.get('project', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            //populate: 'inputs.datatype outputs.datatype',
         }})
         .then(res=>{
             this.project = res.body.projects[0];
         }).catch(err=>{
             console.error(err);
         });
-        /*
-        this.projectdialog = $(this.$el).find('.projectdialog');
-        this.projectdialog.modal({
-
-            onApprove: ()=> {
-                if(this.edit._id) {
-                    //update
-                    console.log("update", this.edit._id, this.edit);
-                    this.$http.put('project/'+this.edit._id, this.edit).then(res=>{
-                        //find project that's updated
-                        this.projects.forEach((p)=>{
-                            if(p._id == this.edit._id) {
-                                for(var k in res.body) p[k] = res.body[k];
-                            }
-                        });
-                    }, res=>{
-                        console.error(res);
-                    });
-                } else {
-                    //create
-                    console.log("creating");
-                    console.log(JSON.stringify(this.edit, null, 4));
-                    this.$http.post('project', this.edit).then(res=>{
-                        console.log("created", res.body);
-                        this.projects.push(res.body);
-                    }, res=>{
-                        console.error(res);
-                    });
-                }
-            }
-        });
-        */
     },
 
     methods: {
