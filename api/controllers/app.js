@@ -16,7 +16,36 @@ function canedit(user, rec) {
     }
     return false;
 }
-    
+
+/**
+ * @apiGroup App
+ * @api {post} /app/:id/rate    Rate app
+ * @apiDescription              Rate app in 1-5 scale with given app id
+ *
+ * @apiParam {Number} rate      1-5
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ *
+ * @apiSuccess {Number}         Aggregated rating of the app after this update
+ */
+router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res, next) {
+    //first, find the app
+    db.Apps.findById(req.params.id, function(err, app) {
+        if (err) return next(err); 
+        if(!app) return next(new Error("can't find the app with id:"+req.params.id));
+
+        //then upsert new rate 
+        db.Apprates.findOneAndUpdate({app: req.params.id, user_id: req.user.sub}, {
+            app: req.params.id,
+            user_id: req.user.sub,
+            rate: req.body.rate,
+        }, {upsert:true}, function(err, rate){
+            if (err) return next(err);
+            res.json(reate);
+        });
+    });
+});    
 /**
  * @apiGroup App
  * @api {get} /app              Query apps
@@ -86,11 +115,11 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  */
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
     req.body.user_id = req.user.sub;//override
-    console.dir(req.body);
+    //console.dir(req.body);
     var app = new db.Apps(req.body);
     app.save(function(err, _app) {
         if (err) return next(err); 
-        console.dir(_app);
+        //console.dir(_app);
         app = JSON.parse(JSON.stringify(_app));
         app._canedit = canedit(req.user, app);
         res.json(app);
@@ -125,7 +154,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         if(!app) return res.status(404).end();
 
         //check access
-        console.dir(app);
+        //console.dir(app);
         if(canedit(req.user, app)) {
             //user can't update some fields
             delete req.body.user_id;
@@ -172,5 +201,4 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
 });
 
 module.exports = router;
-
 
