@@ -123,7 +123,7 @@ new Vue({
     el: '#warehouse',
     router,
     template: '<warehouse/>',
-    components: { warehouse }
+    components: { warehouse },
     mounted() {
         //start token refresh
         if(!Vue.config.debug) {
@@ -134,7 +134,7 @@ new Vue({
                         Vue.config.jwt = res.body.jwt;
                         Vue.config.user = jwt_decode(Vue.config.jwt);
                         localStorage.setItem("jwt", res.body.jwt);
-                        console.dir(Vue.config.user);
+                        //console.dir(Vue.config.user);
                     }
                 }).catch(err=>{
                     console.error(err); //TODO - I should send message to auth service?
