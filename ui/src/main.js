@@ -109,6 +109,7 @@ if(Vue.config.user.exp < Date.now()/1000) {
     console.log("jwt expired", Vue.config.user.exp, Date.now()/1000);
     signin();
 }
+console.log("user", Vue.config.user);
 
 Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
@@ -123,6 +124,25 @@ new Vue({
     router,
     template: '<warehouse/>',
     components: { warehouse }
+    mounted() {
+        //start token refresh
+        if(!Vue.config.debug) {
+            setInterval(()=>{
+                console.log("refreshing token");
+                this.$http.post(Vue.config.auth_api+'/refresh').then(res=>{
+                    if(res.body.jwt) {
+                        Vue.config.jwt = res.body.jwt;
+                        Vue.config.user = jwt_decode(Vue.config.jwt);
+                        localStorage.setItem("jwt", res.body.jwt);
+                        console.dir(Vue.config.user);
+                    }
+                }).catch(err=>{
+                    console.error(err); //TODO - I should send message to auth service?
+                    document.location = "/auth#!/signin";
+                });
+            }, 1000*3600); //1hour
+        }
+    }
 })
 
 
