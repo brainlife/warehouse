@@ -158,7 +158,7 @@ export default {
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
 
-            Vue.set(this.app, '_rate', 0); //needed..
+            if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
 
             //then load task stats
             //console.dir(this.app);
@@ -205,7 +205,7 @@ export default {
             this.$http.post('app/'+this.app._id+'/rate', {
                 rate: this.app._rate,
             }).then(res=>{
-                console.dir(res.body);
+                //console.dir(res.body);
             });
         }
     },
