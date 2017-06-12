@@ -233,7 +233,7 @@ function archive(task, dataset, req, cb) {
     if(task.status != 'finished') logger.warn('task '+task._id+' status is not finished');
 
     //TODO pick the best storage based on project?
-    var storage = "jetstream";
+    var storage = config.storage_default();
     var system = config.storage_systems[storage];
     logger.debug("obtaining upload stream");
     system.upload(dataset, (err, writestream)=>{
