@@ -38,6 +38,8 @@ var projectSchema = mongoose.Schema({
     name: String,
     desc: String, 
 
+    readme: String,  //markdown
+
     avatar: String, //url for avatar
 
     //project details
@@ -209,8 +211,21 @@ var appSchema = mongoose.Schema({
 
     create_date: { type: Date, default: Date.now },
 
+    _rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
+
     removed: { type: Boolean, default: false} ,
 });
 exports.Apps = mongoose.model('Apps', appSchema);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// App rating submitte by user
+//
+
+var apprateSchema = mongoose.Schema({
+    user_id: {type: String, index: true}, 
+    app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+    rate: Number, //1-5 scale rating
+});
+exports.Apprates = mongoose.model('Apprates', apprateSchema);
 

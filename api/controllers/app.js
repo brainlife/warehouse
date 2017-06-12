@@ -42,7 +42,24 @@ router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res
             rate: req.body.rate,
         }, {upsert:true}, function(err, rate){
             if (err) return next(err);
-            res.json(reate);
+
+            //aggregate rate from all users
+            db.Apprates.aggregate([
+                { $match: { app: app._id }},
+                { $group: {
+                    _id: "$app",
+                    avgRate: {$avg: "$rate" }
+                }}
+            ]).exec((err, avgret)=>{
+                if(err) return next(err);
+
+                //update the app._rate
+                app._rate = avgret[0].avgRate;
+                app.save();
+                //console.log("new _rate", app._rate);
+
+                res.json({_rate: app._rate});
+            });
         });
     });
 });    
