@@ -8,7 +8,7 @@
     <!--this is where the menu goes-->
     <div class="slot"><slot></slot></div>
 
-    <div class="menu">
+    <div class="menu" @click="goaccount()">
         {{user.profile.fullname||user.profile.username}}
     </div>
 </div>
@@ -34,6 +34,9 @@ export default {
             case "signout":
                 document.location = "/auth#!/signout";
             }
+        },
+        goaccount() {
+            document.location = "/auth#!/settings/account";
         },
         gohome() {
             document.location = "/";
