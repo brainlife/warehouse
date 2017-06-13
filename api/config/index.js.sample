@@ -1,6 +1,7 @@
 const fs = require('fs');
 const winston = require('winston');
 const timeout = require('callback-timeout');
+const child_process = require('child_process');
 
 const mkdirp = require('mkdirp'); //for dc2
 const pkgcloud = require('pkgcloud');
@@ -107,6 +108,36 @@ exports.storage_systems.dc2 = {
         }, 2000, 'failed to stat '+dc2_path)); 
     }, 
 } 
+
+//dcwan/hcp
+const dcwan_hcp_path = "/mnt/auto/dcwan/projects/brainlife/hcp/";
+exports.storage_systems["dcwan/hcp"] = {
+    //return archive_stream to pipe data to
+    upload: (dataset, cb)=>{
+        cb("no upload to dcwan/hcp");
+    },
+    stat: (dataset, cb)=>{
+        //can't obtain stats because we are creating .tar.gz on the fly
+        cb(null, null); 
+    },
+    download: (dataset, cb)=>{
+        var dir = dcwan_hcp_path+dataset.meta.subdir;
+        //var stream = fs.createReadStream(dir+'/'+dataset._id+'.tar.gz');
+        console.log("running tar "+dir);
+        var child = child_process.spawn("tar", ["hcz", "."], {cwd: dir});
+        cb(null, child.stdout);
+        child.stderr.on('data', function(data) {
+            console.error(data.toString());
+        });
+    },
+    test: cb=>{
+        fs.stat(dcwan_hcp_path, timeout((err,stats)=>{
+            if(err) return cb(err);
+            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
+            cb();
+        }, 2000, 'failed to stat '+dcwan_hcp_path)); 
+    }, 
+}
 
 exports.logger = {
     winston: {

@@ -330,7 +330,7 @@ router.get('/download/:id', jwt({
 
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+dataset._id+'.tar.gz');
-                    res.setHeader('Content-Length', stats.size);
+                    if(stats) res.setHeader('Content-Length', stats.size);
                     //res.setHeader('Content-Type', mimetype); //TODO?
                     logger.debug("commencing download");
                     readstream.pipe(res);   
