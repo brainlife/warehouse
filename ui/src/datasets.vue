@@ -190,9 +190,40 @@ export default {
     },
 
     mounted() {
-        this.project_id = this.$route.params.projectid; //could be set to null
-		this.reset_scroll();
-		this.load_datasets();	
+        this.project_id = this.$route.params.projectid;
+
+        this.$http.get('project', {params: {
+            //service: "_upload",
+        }})
+        .then(res=>{
+            this.projects = {};
+            res.body.projects.forEach((p)=>{
+                this.projects[p._id] = p;
+            });
+
+            if(!this.project_id) {
+                console.log("open first one");
+                var pid = localStorage.getItem("last_projectid_used");
+                if(!pid) pid = res.body.projects[0]._id; //just pick one that user has access
+                this.$router.push("/datasets/"+pid);
+            } else {
+                localStorage.setItem("last_projectid_used", this.project_id);
+            }
+
+            return this.$http.get('datatype', {params: {
+                //service: "_upload",
+            }})
+        })
+        .then(res=>{
+            this.datatypes = {};
+            res.body.datatypes.forEach((d)=>{
+                this.datatypes[d._id] = d;
+            });
+
+            setTimeout(this.check_query, 200);
+        }).catch(err=>{
+            console.error(err);
+        });
 
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
     },
@@ -213,31 +244,6 @@ export default {
 		reset_scroll: function() {
 			this.datasets = [];
 			this.cannotLoad = false;
-		},
-		load_datasets: function() {
-			this.$http.get('project', {params: {
-				//service: "_upload",
-			}})
-			.then(res=>{
-				this.projects = {};
-				res.body.projects.forEach((p)=>{
-					this.projects[p._id] = p;
-				});
-
-				return this.$http.get('datatype', {params: {
-					//service: "_upload",
-				}})
-			})
-			.then(res=>{
-				this.datatypes = {};
-				res.body.datatypes.forEach((d)=>{
-					this.datatypes[d._id] = d;
-				});
-
-				setTimeout(this.check_query, 200);
-			}).catch(err=>{
-				console.error(err);
-			});
 		},
 		check_scroll: function(e) {
 			var page_margin = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
