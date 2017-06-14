@@ -369,6 +369,7 @@ export default {
                 name: "input",
                 service: "soichih/sca-product-raw",
                 config: { copy },
+                deps: [], //I can't set deps for upload task.. because it doesn't have real task id
             }).then(res=>{
                 console.log("submitted copy task", res);
                 this.copy = res.body.task;
