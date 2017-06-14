@@ -29,7 +29,6 @@
                 </el-select>
             </el-form-item>
 
-            <!--<h4 style="margin-left: 150px;">Configurations</h4>-->
             <!-- TODO doesn't support nested parameters-->
             <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value !== undefined">
                 <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01">
@@ -119,9 +118,7 @@ export default {
             });
             for(var k in this.app.config) {
                 Vue.set(this.form.config, k, this.app.config[k].default);
-                //Vue.set(this.rules, k, [{required: true, message: 'Please enter'}]);
             }
-
             //process config template
             //TODO - update to handle nested parameters
             for(var k in this.app.config) {
