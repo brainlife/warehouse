@@ -66,6 +66,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiParam {String} access    "public" or "private"
  * @apiParam {String} [name]    User friendly name for this container 
  * @apiParam {String} [desc]    Description for this dataset 
+ * @apiParam {String} [readme]  Markdown content describing this project
  *
  * @apiParam {String[]} admins  Admin IDs
  * @apiParam {String[]} members Members
@@ -95,6 +96,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  * @apiParam {String} [access]  "public" or "private"
  * @apiParam {String} [name]    User friendly name for this container 
  * @apiParam {String} [desc]    Description for this dataset 
+ * @apiParam {String} [readme]  Markdown content describing this project
  *
  * @apiParam {String[]} [admins]  List of admins (auth sub)
  * @apiParam {String[]} [members] List of admins (auth sub)

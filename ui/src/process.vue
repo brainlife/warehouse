@@ -159,6 +159,7 @@
                                 <el-alert v-if="input.error" :title="input.error" type="error"/>
                             </el-form-item>
 
+                            <!--TODO - handle nested config? -->
                             <el-form-item v-for="(v,k) in newtask.config" :label="k" :key="k" v-if="typeof v !== 'object'">
                                 <el-input v-if="typeof v == 'string'" v-model="newtask.config[k]"/>
                                 <el-input-number v-if="typeof v == 'number'" v-model="newtask.config[k]" :step="2"/>
@@ -667,7 +668,7 @@ export default {
                         //don't do anything for input
                         break;
                     default:
-                        config[k] = v.default;        
+                        config[k] = v.default||"";        
                     }
                 } else this.set_default(v); //recurse on primitive
             }

@@ -83,7 +83,7 @@
                 </el-button-group>
                 <br clear="both">
 
-                <div v-if="dataset.prov.app">
+                <div v-if="dataset.prov && dataset.prov.app">
                     <el-row :gutter="10">
                         <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
                             <div @click="go('/dataset/'+dep.dataset._id)">
@@ -97,7 +97,7 @@
                             <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
                         </el-col>
                     </el-row>
-                    <app :app="dataset.prov.app" :compact="true">
+                    <app :app="dataset.prov && dataset.prov.app" :compact="true">
                         <!-- TODO - show application config?
                         <pre style="background-color: #eee; padding: 10px;">{{dataset.prov}}</pre>
                         -->

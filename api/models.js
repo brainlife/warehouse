@@ -38,6 +38,8 @@ var projectSchema = mongoose.Schema({
     name: String,
     desc: String, 
 
+    readme: String,  //markdown
+
     avatar: String, //url for avatar
 
     //project details
@@ -108,7 +110,7 @@ var datasetSchema = mongoose.Schema({
     prov: {
         app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //application that created this data
         task_id: String, //output task id
-        dirname: String, //subdir that container the output data
+        dirname: String, //subdir that contain the output data (not set if it's on taskdir)
     },
 
     create_date: { type: Date, default: Date.now },
@@ -209,8 +211,21 @@ var appSchema = mongoose.Schema({
 
     create_date: { type: Date, default: Date.now },
 
+    _rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
+
     removed: { type: Boolean, default: false} ,
 });
 exports.Apps = mongoose.model('Apps', appSchema);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// App rating submitte by user
+//
+
+var apprateSchema = mongoose.Schema({
+    user_id: {type: String, index: true}, 
+    app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+    rate: Number, //1-5 scale rating
+});
+exports.Apprates = mongoose.model('Apprates', apprateSchema);
 

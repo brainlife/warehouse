@@ -156,7 +156,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.datatype) return next("datatype id not set");
     if(!req.body.instance_id) return next("instance_id not set");
     if(!req.body.task_id) return next("task_id not set");
-    //if(!req.body.output_id) return next("output_id not set");
     
     async.waterfall([
         cb=>{
@@ -201,11 +200,14 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
                 name: req.body.name,
                 desc: req.body.desc,
-                tags: req.body.tags,
+                tags: req.body.tags||[],
 
-                prov: req.body.prov,
-                meta: req.body.meta,
+                prov: req.body.prov||{},
+                meta: req.body.meta||{},
             });
+
+            logger.debug("creating dataset");
+            //logger.debug(dataset);
             
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);
@@ -230,9 +232,13 @@ function archive(task, dataset, req, cb) {
     //TODO should I error if task status is not finished?
     if(task.status != 'finished') logger.warn('task '+task._id+' status is not finished');
 
-    var storage = "dc2";
+    //TODO pick the best storage based on project?
+    var storage = config.storage_default();
     var system = config.storage_systems[storage];
+    logger.debug("obtaining upload stream");
     system.upload(dataset, (err, writestream)=>{
+        if(err) return cb(err);
+        logger.debug("uploading");
 
         //download the entire .tar.gz from sca-wf service
         request.get({
@@ -253,7 +259,7 @@ function archive(task, dataset, req, cb) {
             } else {
                 //success.. set storage
                 logger.info("done!");
-                dataset.storage = "dc2"; 
+                dataset.storage = storage;
                 dataset.save(cb);
             }
         }).pipe(writestream);
@@ -324,7 +330,7 @@ router.get('/download/:id', jwt({
 
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+dataset._id+'.tar.gz');
-                    res.setHeader('Content-Length', stats.size);
+                    if(stats) res.setHeader('Content-Length', stats.size);
                     //res.setHeader('Content-Type', mimetype); //TODO?
                     logger.debug("commencing download");
                     readstream.pipe(res);   

@@ -5,6 +5,7 @@
     <div @click="click()">
         <appavatar :app="app" style="float: left;margin-right: 15px;"></appavatar>
         <h4 class="appname">{{app.name}}</h4>
+        <el-rate v-if="!compact" class="rate" v-model="app._rate"></el-rate>
         <div class="desc">{{app.desc}}</div>
         <div class="devs" v-if="!compact">
             <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
@@ -60,6 +61,14 @@ padding-bottom: 0px;
 }
 .desc {
 height: 150px;
+overflow: auto;
+font-size: 13px;
+color: #666;
+margin: 10px;
+line-height: 140%;
+}
+.rate {
+height: 20px;
 overflow: auto;
 font-size: 13px;
 color: #666;
