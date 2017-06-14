@@ -75,7 +75,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         var limit = 100;
         if(req.query.limit) limit = parseInt(req.query.limit);
         var skip = 0;
-        if(req.query.skip) limit = parseInt(req.query.skip);
+        if(req.query.skip) skip = parseInt(req.query.skip);
     
         //then look for dataset
         db.Datasets
