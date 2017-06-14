@@ -80,6 +80,8 @@ var datasetSchema = mongoose.Schema({
 
     //physical location of this crate (URI?)
     storage: String, //azure, dc2, sda?, jetstream-swift, etc.. (as configured in /config)
+    //any extra storage config (maybe like subdir needed to access the dataset)
+    storage_config: mongoose.Schema.Types.Mixed, 
 
     /*
     //provenance info (if it's derivative) - not set if user uploaded it

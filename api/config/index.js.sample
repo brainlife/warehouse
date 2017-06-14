@@ -121,7 +121,7 @@ exports.storage_systems["dcwan/hcp"] = {
         cb(null, null); 
     },
     download: (dataset, cb)=>{
-        var dir = dcwan_hcp_path+dataset.meta.subdir;
+        var dir = dcwan_hcp_path+dataset.storage_config.subdir;
         //var stream = fs.createReadStream(dir+'/'+dataset._id+'.tar.gz');
         console.log("running tar "+dir);
         var child = child_process.spawn("tar", ["hcz", "."], {cwd: dir});
