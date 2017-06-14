@@ -138,7 +138,7 @@ export default {
     components: { sidemenu, tags, metadata, pageheader, projectmenu },
     data () {
         return {
-            datasets: null,
+            datasets: [],
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
 
@@ -149,7 +149,11 @@ export default {
 
             //cache
             datatypes: null,
-            projects: null, 
+            projects: null,
+	    	skip: 0,
+	    	limit: 1000,
+			cannotLoad: false,
+			loadMargin: window.innerHeight,
 
             config: Vue.config,
         }
@@ -190,31 +194,9 @@ export default {
 
     mounted() {
         this.project_id = this.$route.params.projectid; //could be set to null
+		this.reset_scroll();
 
-        //need to load all project in case user might click on "all"
-        this.$http.get('project', {params: {
-            //service: "_upload",
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.body.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-
-            return this.$http.get('datatype', {params: {
-                //service: "_upload",
-            }})
-        })
-        .then(res=>{
-            this.datatypes = {};
-            res.body.datatypes.forEach((d)=>{
-                this.datatypes[d._id] = d;
-            });
-
-            setTimeout(this.check_query, 200);
-        }).catch(err=>{
-            console.error(err);
-        });
+		this.load_datasets();	
 
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
     },
@@ -224,17 +206,63 @@ export default {
             this.query_dirty = Date.now();
         },
         '$route': function() {
+			this.reset_scroll();
             this.load(function(err) {
                 if(err) console.error(err);
             });
         }
     },
 
-    methods: {
+	methods: {
+		reset_scroll: function() {
+			this.datasets = [];
+			this.skip = 0;
+			this.cannotLoad = false;
+		},
+		load_datasets: function() {
+			this.$http.get('project', {params: {
+				//service: "_upload",
+			}})
+			.then(res=>{
+				this.projects = {};
+				res.body.projects.forEach((p)=>{
+					this.projects[p._id] = p;
+				});
+
+				return this.$http.get('datatype', {params: {
+					//service: "_upload",
+				}})
+			})
+			.then(res=>{
+				this.datatypes = {};
+				res.body.datatypes.forEach((d)=>{
+					this.datatypes[d._id] = d;
+				});
+
+				setTimeout(this.check_query, 200);
+			}).catch(err=>{
+				console.error(err);
+			});
+
+
+		},
+		check_scroll: function(e) {
+			var scrolled = e.target.scrollTop,
+				bottom = e.target.scrollHeight - e.target.getBoundingClientRect().height;
+				if (!this.loading && !this.cannotLoad && scrolled > bottom - this.loadMargin) {
+					this.loading = true;
+					this.load(err => {
+						this.loading = false;
+						if (err) console.error(err);
+					});
+				}
+		},
+
         check_query: function() {
             //debounce to 300 msec
             if(!this.loading && this.query_dirty && this.query_dirty < (Date.now()-300)) {
-                this.query_dirty = null;
+                this.reset_scroll();
+				this.query_dirty = null;
                 this.loading = true;
                 this.load(err=>{
                     this.loading = false;
@@ -250,7 +278,7 @@ export default {
 
         load: function(cb) {
             //console.log("loading datasets with query", this.query);
-            var find = {
+			var find = {
                 removed: false,
             }
             this.project_id = this.$route.params.projectid; //could be set to null
@@ -263,14 +291,19 @@ export default {
             //console.log("loading", find);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
-                limit: 3000, //TODO - I need to implement infinite scrolling
+				        skip: this.skip,
+                limit: this.limit,
                 select: 'datatype datatype_tags project create_date name desc tags meta storage',
+                sort: 'meta -create_date'
             }})
             .then(res=>{
-                this.datasets = res.body.datasets;
+				this.cannotLoad = res.body.datasets.length == 0;
+				this.skip += res.body.datasets.length;
 
                 //set checked flag for each dataset
-                this.datasets.forEach(dataset=>{
+
+				res.body.datasets.forEach(dataset=>{
+					this.datasets.push(dataset);
                     if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
                 });
 
@@ -428,6 +461,14 @@ export default {
             this.$router.push('/process/_new');
         }
     },
+
+	created () {
+		window.addEventListener("scroll", this.check_scroll, true);
+	},
+
+	destroyed () {
+		window.removeEventListener("scroll", this.check_scroll, true);
+	}
 }
 </script>
 
