@@ -150,10 +150,7 @@ export default {
             //cache
             datatypes: null,
             projects: null,
-	    	skip: 0,
-	    	limit: 1000,
 			cannotLoad: false,
-			loadMargin: window.innerHeight,
 
             config: Vue.config,
         }
@@ -195,7 +192,6 @@ export default {
     mounted() {
         this.project_id = this.$route.params.projectid; //could be set to null
 		this.reset_scroll();
-
 		this.load_datasets();	
 
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
@@ -216,7 +212,6 @@ export default {
 	methods: {
 		reset_scroll: function() {
 			this.datasets = [];
-			this.skip = 0;
 			this.cannotLoad = false;
 		},
 		load_datasets: function() {
@@ -243,19 +238,16 @@ export default {
 			}).catch(err=>{
 				console.error(err);
 			});
-
-
 		},
 		check_scroll: function(e) {
-			var scrolled = e.target.scrollTop,
-				bottom = e.target.scrollHeight - e.target.getBoundingClientRect().height;
-				if (!this.loading && !this.cannotLoad && scrolled > bottom - this.loadMargin) {
-					this.loading = true;
-					this.load(err => {
-						this.loading = false;
-						if (err) console.error(err);
-					});
-				}
+			var page_margin = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
+            if (!this.loading && !this.cannotLoad && page_margin < 500) {
+                this.loading = true;
+                this.load(err => {
+                    this.loading = false;
+                    if (err) console.error(err);
+                });
+            }
 		},
 
         check_query: function() {
@@ -291,17 +283,15 @@ export default {
             //console.log("loading", find);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
-				        skip: this.skip,
-                limit: this.limit,
+                skip: this.datasets.length,
+                limit: 50,
                 select: 'datatype datatype_tags project create_date name desc tags meta storage',
                 sort: 'meta -create_date'
             }})
             .then(res=>{
 				this.cannotLoad = res.body.datasets.length == 0;
-				this.skip += res.body.datasets.length;
 
                 //set checked flag for each dataset
-
 				res.body.datasets.forEach(dataset=>{
 					this.datasets.push(dataset);
                     if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
@@ -457,7 +447,7 @@ export default {
             });
         },
 
-        process: function() {
+        Process: function() {
             this.$router.push('/process/_new');
         }
     },
