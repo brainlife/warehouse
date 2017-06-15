@@ -292,7 +292,7 @@ export default {
                 skip: this.datasets.length,
                 limit: 50,
                 select: 'datatype datatype_tags project create_date name desc tags meta storage',
-                sort: 'meta -create_date'
+                sort: 'meta.subject -create_date'
             }})
             .then(res=>{
 				this.cannotLoad = res.body.datasets.length == 0;
@@ -453,7 +453,7 @@ export default {
             });
         },
 
-        Process: function() {
+        process: function() {
             this.$router.push('/process/_new');
         }
     },
