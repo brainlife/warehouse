@@ -15,17 +15,22 @@ const db = require('../models');
 router.get('/health', (req, res)=>{
     var status = "ok";
     var msg = "no issues detected";
+    var storages = {};
 
     //check for storage system status
     async.forEachOf(config.storage_systems, function(system, system_id, next) {
         var system = config.storage_systems[system_id];
-        system.test(next);
+        system.test(err=>{
+            if(err) return next(err);
+            storages[system_id] = "ok";
+            next();
+        });
     }, err=>{
         if(err) {
             status = "failed";
             msg = err.toString();
         }
-        res.json({status, msg});
+        res.json({status, msg, storages});
     });
 });
 
