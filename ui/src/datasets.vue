@@ -92,8 +92,8 @@
                         <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
                             <icon name="close"></icon>
                         </div>
+                        {{dataset.meta.subject}}
                         <small>
-                            {{dataset.name}}
                             <tags :tags="dataset.datatype_tags"></tags>
                         </small>
                     </div>

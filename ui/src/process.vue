@@ -18,9 +18,10 @@
                 <el-button type="primary" size="small" style="float: right; position: relative; top: -8px;"
                     @click="show_input_dialog = true" v-bind:class="{animated: true, headShake: _datasets.length == 0}" icon="plus"> Stage Datasets</el-button>
                 <h3>Input Datasets</h3>
-                <ul style="padding-left: 20px;">
+                <ul style="padding-left: 0px; list-style: none;">
                     <li v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_input'" style="margin-bottom: 10px;">
-                        <metadata :metadata="dataset.meta"/>
+                        <b>{{dataset.meta.subject}}</b>
+                        <!--<el-tag type="primary">{{dataset.meta.subject}}</el-tag>-->
                         {{datatypes[dataset.datatype_id].name}} <tags :tags="dataset.datatype_tags"></tags>
                         <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
                         <br>
@@ -29,10 +30,11 @@
                 </ul>
                 <br>
                 <h3>Output Datasets</h3>
-                <ul style="padding-left: 20px;">
+                <ul style="padding-left: 0px; list-style: none;">
                     <li v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" style="margin-bottom: 10px;">
-                        <metadata :metadata="dataset.meta"/>
-                        <b>{{dataset.did}}</b> 
+                        <b>{{dataset.meta.subject}}</b>
+                        <!--<metadata :metadata="dataset.meta"/>-->
+                        <!--<b>{{dataset.did}}</b>-->
                         {{datatypes[dataset.datatype_id].name}} <tags :tags="dataset.datatype_tags"></tags>
                         <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
                         <p v-if="dataset.dataset_id">
@@ -133,26 +135,28 @@
                             <el-form-item v-if="submit_mode == 'bulk'">
                                 <el-checkbox v-model="newtask.submit">Submit</el-checkbox>
                             </el-form-item>
-                            <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id" :key="input_id">
+                            <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
                                 <el-select @change="revalidate()" v-model="newtask.inputs[input_id].dataset" placeholder="Please select input dataset" style="width: 100%;">
                                     <el-option-group key="brainlife.stage_input" label="Input Datasets">
                                         <el-option v-for="(dataset, idx) in _datasets" 
                                             v-if="dataset.datatype_id == input.datatype._id && dataset.task.name == 'brainlife.stage_input'" :key="idx"
-                                                :value="idx" :label="'subject:'+dataset.meta.subject + ' | '+dataset.name">
+                                                :value="idx" :label="''+dataset.meta.subject + ' '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
-                                            <metadata :metadata="dataset.meta"/>
+                                            <b>{{dataset.meta.subject}}</b> 
+                                            <!--<metadata :metadata="dataset.meta"/>-->
                                             <small>{{datatypes[dataset.datatype_id].name}}</small>
-                                            <b>{{dataset.name||''}}</b> 
+                                            <!--<b>{{dataset.name||''}}</b> -->
                                             <tags :tags="dataset.datatype_tags"></tags> 
                                         </el-option>
                                     </el-option-group>
                                     <el-option-group key="brainlife.stage_output" label="Output Datasets">
                                         <el-option v-for="(dataset, idx) in _datasets" 
                                             v-if="dataset.datatype_id == input.datatype._id && dataset.task.name == 'brainlife.stage_output'" :key="idx"
-                                                :value="idx" :label="dataset.meta.subject+' '+dataset.name">
+                                                :value="idx" :label="dataset.meta.subject+' '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Processing)</span>
-                                            <b>{{dataset.name}}</b> 
-                                            <tags :tags="dataset.datatype_tags"></tags> | <metadata :metadata="dataset.meta"/>
+                                            <b>{{dataset.meta.subject}}</b> 
+                                            <small>{{datatypes[dataset.datatype_id].name}}</small>
+                                            <tags :tags="dataset.datatype_tags"></tags> <!--| <metadata :metadata="dataset.meta"/>-->
                                         </el-option>
                                     </el-option-group>
                                 </el-select>
@@ -222,7 +226,7 @@
                             <el-option-group v-for="(datasets, subject) in input_dialog.datasets_groups" :key="subject" :label="subject">
                                 <el-option v-for="dataset in datasets" 
                                     :key="dataset._id" 
-                                    :label="subject+' | '+datatypes[dataset.datatype].name+' | '+dataset.name+' | '+dataset.create_date" 
+                                    :label="datatypes[dataset.datatype].name+' | '+dataset.name+' | '+dataset.create_date" 
                                     :value="dataset._id"><b>{{datatypes[dataset.datatype].name}}</b> {{dataset.name}} <tags :tags="dataset.datatype_tags"></tags> <span class="text-muted">{{dataset.create_date|date}}</span></el-option>
                             </el-option-group>
                         </el-select>
