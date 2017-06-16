@@ -36,7 +36,7 @@
                     <el-tab-pane label="Github" name="github">
                         <el-form-item>
                             Reponame
-                            <el-input type="text" v-model="app.github" placeholder="org/repo"/>
+                            <el-input type="text" v-model="app.github" @blur="updateGitInput" placeholder="org/repo"/>
                         </el-form-item>
                         <el-form-item>
                             Branch
@@ -218,7 +218,20 @@ export default {
 
     },
     methods: {
-
+        /**
+         * Supports:
+         * github.com/name/project
+         * http://github.com/name/project
+         * https://github.com/name/project
+         *                   https://github.com/name/project
+         * (in the last example, whitespace is automatically trimmed)
+         */
+        trimGit: (text) => text.replace(/^[ \t]*(https?:\/\/)?github\.com\/?/g, ''),
+        
+        updateGitInput: function() {
+            this.app.github = this.trimGit(this.app.github);
+        },
+        
         add: function(it) {
             it.push({
                 id: "",

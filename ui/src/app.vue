@@ -163,7 +163,7 @@ export default {
             //then load task stats
             //console.dir(this.app);
             this.$http.get(Vue.config.wf_api+'/task/stats', {params: {
-                service: this.trimGit(this.app.github),
+                service: this.app.github,
                 service_branch: this.app.github_branch,
             }})
             .then(res=>{
@@ -178,16 +178,6 @@ export default {
     },
 
     methods: {
-        /**
-         * Supports:
-         * github.com/name/project
-         * http://github.com/name/project
-         * https://github.com/name/project
-         *                   https://github.com/name/project
-         * (in the last example, whitespace is automatically trimmed)
-         */
-        trimGit: (text) => text.replace(/^[ \t]*(https?:\/\/)?github\.com\/?/g, ''),
-        
         go: function(path) {
             this.$router.push(path);
         },
