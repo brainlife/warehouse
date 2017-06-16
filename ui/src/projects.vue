@@ -95,6 +95,7 @@ export default {
         this.$http.get('project', {params: {
             find: JSON.stringify({$or: [
                 { members: Vue.config.user.sub}, 
+                { admins: Vue.config.user.sub}, 
                 { access: "public" },
             ]})
         }})
