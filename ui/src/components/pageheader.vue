@@ -70,7 +70,7 @@ svg.cloud {
     z-index: -1;
     top: 0px;
     left: 0px;
-    opacity: 0.15;
+    opacity: 0.1;
 }
 
 .title {

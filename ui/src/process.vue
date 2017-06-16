@@ -20,22 +20,34 @@
                 <h3>Input Datasets</h3>
                 <ul style="padding-left: 0px; list-style: none;">
                     <li v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_input'" style="margin-bottom: 10px;">
+                        <!-- removing task will remove all input datasets that are staged together.. I need to only remove 1.. but how?
+                        <div @click="remove_task(dataset.task._id)" style="display: inline; cursor: pointer;" title="Remove">
+                            <icon name="close"></icon>
+                        </div>
+                        -->
                         <b>{{dataset.meta.subject}}</b>
                         <!--<el-tag type="primary">{{dataset.meta.subject}}</el-tag>-->
-                        {{datatypes[dataset.datatype_id].name}} <tags :tags="dataset.datatype_tags"></tags>
+                        {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
                         <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
+                        <!--
                         <br>
                         <small>{{dataset.name}}</small>
+                        -->
                     </li>
                 </ul>
                 <br>
                 <h3>Output Datasets</h3>
                 <ul style="padding-left: 0px; list-style: none;">
                     <li v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" style="margin-bottom: 10px;">
+                        <!--
+                        <div @click.stop="remove_task(dataset.task._id)" style="display: inline; cursor: pointer;" title="Unselect">
+                            <icon name="close"></icon>
+                        </div>
+                        -->
                         <b>{{dataset.meta.subject}}</b>
                         <!--<metadata :metadata="dataset.meta"/>-->
                         <!--<b>{{dataset.did}}</b>-->
-                        {{datatypes[dataset.datatype_id].name}} <tags :tags="dataset.datatype_tags"></tags>
+                        {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
                         <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
                         <p v-if="dataset.dataset_id">
                             <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
@@ -55,20 +67,25 @@
 
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
-                <task :task="task" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task">
+                <task :task="task" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task_deps">
                     <el-collapse-item title="Output Datasets" name="output" slot="output" 
                         v-if="_output_tasks[task._id] && task.status == 'finished'">
-                        <p v-if="_output_tasks[task._id].status != 'finished'"><icon name="cog" spin/> {{_output_tasks[task._id].status_msg}}</p>
+                        <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
+                            <statusicon status="_output_tasks[task._id].status"/> {{_output_tasks[task._id].status_msg}}
+                        </p>
 
                         <!--insert slot for output datasets-->
                         <el-card v-if="_output_tasks[task._id].status == 'finished'" 
                             v-for="(dataset, did) in _output_tasks[task._id].config._prov.output_datasets" :key="did">
+                            <!--
                             <metadata :metadata="dataset.meta"/>
                             <b>{{did}}</b> 
+                            -->
+                            <b>{{dataset.meta.subject}}</b>
                             {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"/>
 
                             <el-button size="small" type="primary" style="float: right;" 
-                                v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id)">Archive</el-button>
+                                v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id, true)">Archive</el-button>
                             <el-button size="small" style="float: right;" 
                                 v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
                             <!--TODO - show only viewer that makes sense for each data type-->
@@ -89,7 +106,7 @@
                                 :output_task="_output_tasks[task._id]" 
                                 :dataset_id="did"
                                 :dataset="dataset" 
-                                @submitted="archived(task._id)" style="margin-top: 30px;"/>
+                                @submitted="archive(task._id, false)" style="margin-top: 30px;"/>
                         </el-card>
                     </el-collapse-item>
                 </task>
@@ -136,26 +153,29 @@
                                 <el-checkbox v-model="newtask.submit">Submit</el-checkbox>
                             </el-form-item>
                             <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
-                                <el-select @change="revalidate()" v-model="newtask.inputs[input_id].dataset" placeholder="Please select input dataset" style="width: 100%;">
+                                <el-select @change="revalidate()" v-model="newtask.inputs[input_id].dataset" 
+                                    no-data-text="No dataset matches"
+                                    placeholder="Please select input dataset" 
+                                    style="width: 100%;">
                                     <el-option-group key="brainlife.stage_input" label="Input Datasets">
-                                        <el-option v-for="(dataset, idx) in _datasets" 
-                                            v-if="dataset.datatype_id == input.datatype._id && dataset.task.name == 'brainlife.stage_input'" :key="idx"
-                                                :value="idx" :label="''+dataset.meta.subject + ' '+dataset.datatype_tags">
+                                        <el-option v-for="(dataset, idx) in filter_datasets(input)"
+                                            v-if="dataset.task.name == 'brainlife.stage_input'" :key="idx"
+                                                :value="idx" :label="dataset.meta.subject+' | '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
                                             <b>{{dataset.meta.subject}}</b> 
                                             <!--<metadata :metadata="dataset.meta"/>-->
-                                            <small>{{datatypes[dataset.datatype_id].name}}</small>
+                                            <small>{{datatypes[dataset.datatype].name}}</small>
                                             <!--<b>{{dataset.name||''}}</b> -->
                                             <tags :tags="dataset.datatype_tags"></tags> 
                                         </el-option>
                                     </el-option-group>
                                     <el-option-group key="brainlife.stage_output" label="Output Datasets">
-                                        <el-option v-for="(dataset, idx) in _datasets" 
-                                            v-if="dataset.datatype_id == input.datatype._id && dataset.task.name == 'brainlife.stage_output'" :key="idx"
-                                                :value="idx" :label="dataset.meta.subject+' '+dataset.datatype_tags">
+                                        <el-option v-for="(dataset, idx) in filter_datasets(input)" 
+                                            v-if="dataset.task.name == 'brainlife.stage_output'" :key="idx"
+                                                :value="idx" :label="dataset.meta.subject+' | '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Processing)</span>
                                             <b>{{dataset.meta.subject}}</b> 
-                                            <small>{{datatypes[dataset.datatype_id].name}}</small>
+                                            <small>{{datatypes[dataset.datatype].name}}</small>
                                             <tags :tags="dataset.datatype_tags"></tags> <!--| <metadata :metadata="dataset.meta"/>-->
                                         </el-option>
                                     </el-option-group>
@@ -226,8 +246,8 @@
                             <el-option-group v-for="(datasets, subject) in input_dialog.datasets_groups" :key="subject" :label="subject">
                                 <el-option v-for="dataset in datasets" 
                                     :key="dataset._id" 
-                                    :label="datatypes[dataset.datatype].name+' | '+dataset.name+' | '+dataset.create_date" 
-                                    :value="dataset._id"><b>{{datatypes[dataset.datatype].name}}</b> {{dataset.name}} <tags :tags="dataset.datatype_tags"></tags> <span class="text-muted">{{dataset.create_date|date}}</span></el-option>
+                                    :label="subject+' '+datatypes[dataset.datatype].name+' | '+dataset.datatype_tags+ ' | '+dataset.create_date" 
+                                    :value="dataset._id"><b>{{datatypes[dataset.datatype].name}}</b> <tags :tags="dataset.datatype_tags"></tags> <span class="text-muted">{{dataset.create_date|date}}</span></el-option>
                             </el-option-group>
                         </el-select>
                     </el-form-item>
@@ -263,6 +283,7 @@ import statusicon from '@/components/statusicon'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
+const lib = require('./lib');
 var debounce = null;
 
 export default {
@@ -315,7 +336,7 @@ export default {
 
             //cache
             tasks: null,
-            datasets: {}, 
+            //datasets: {}, 
             datatypes: {}, 
 
             config: Vue.config,
@@ -360,7 +381,7 @@ export default {
                         var dataset = task.config.datasets[did];
                         datasets.push({
                             did,
-                            datatype_id: dataset.datatype,
+                            datatype: dataset.datatype,
                             datatype_tags: dataset.datatype_tags,
                             name: dataset.name,
                             desc: dataset.desc,
@@ -377,10 +398,8 @@ export default {
                         var dataset = task.config._prov.output_datasets[did];
                         datasets.push({
                             did,
-                            datatype_id: dataset.datatype,
+                            datatype: dataset.datatype,
                             datatype_tags: dataset.datatype_tags,
-                            //name: dataset.name,
-                            //desc: dataset.desc,
                             meta: dataset.meta,
                             dataset_id: dataset.dataset_id, //if archived already
                             task,
@@ -457,7 +476,15 @@ export default {
             });
         },
         remove_task: function(id) {
-            //the specified task (id) is already removed by <task> component, but I need to remove all tasks that depends on it also
+            this.$http.delete(Vue.config.wf_api+'/task/'+id)
+            .then(res=>{
+                console.log("removed task", task._id);
+            })
+            .catch(err=>{
+                console.error(err); 
+            });
+        },
+        remove_task_deps: function(id) {
             this.tasks.forEach(task=>{
                 if(task.name == "brainlife.stage_output" && task.deps[0] == id) { //assume we only have 1 dep..
                     console.log("found dep to remove", task);
@@ -632,7 +659,7 @@ export default {
             //create list of all datatypes that user has staged / generated
             var datatype_ids = [];
             this._datasets.forEach(dataset=>{
-                if(!~datatype_ids.indexOf(dataset.datatype_id)) datatype_ids.push(dataset.datatype_id);
+                if(!~datatype_ids.indexOf(dataset.datatype)) datatype_ids.push(dataset.datatype);
             });
 
             //now find apps that user can submit
@@ -696,7 +723,7 @@ export default {
                 this.set_default(newtask.config);
                 this.newtask_app.inputs.forEach(input=>{
                     newtask.inputs[input.id] = Object.assign({dataset: null}, input); //copy
-                    if(input.datatype._id == this._datasets[idx].datatype_id) {
+                    if(input.datatype._id == this._datasets[idx].datatype) {
                         newtask.inputs[input.id].dataset = idx;
                     }
                 });
@@ -727,11 +754,13 @@ export default {
             return valid;
         },
 
-        archive: function(task_id) {
-            Vue.set(this.archiving, task_id, true);
+        archive: function(task_id, b) {
+            Vue.set(this.archiving, task_id, b);
         },
-        archived: function(task_id) {
-            Vue.set(this.archiving, task_id, false);
+
+        //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name
+        filter_datasets: function(input) {
+            return lib.filter_datasets(this._datasets, input);
         },
 
         //recursively update configuration with given newtask
