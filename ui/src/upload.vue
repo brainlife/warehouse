@@ -176,6 +176,12 @@ export default {
             mode: "meta",
 
             config: Vue.config,
+            
+            // Time in milliseconds to try and get where data is stored
+            tickTime: 1000,
+            
+            // Number of times to retry before just giving up and redirecting anyways
+            timeoutRequests: 15,
         }
     },
 
@@ -409,9 +415,30 @@ export default {
                     title: 'Success',
                     message: 'Successfully archived a new dataset. Please give a few minutes for your data to propagate to all storages.',
                 });
-                this.go('/dataset/'+res.body._id);
+                
+                this.whatsHappening(res.body._id, 0);
             }, res=>{
                 console.error(res);
+            });
+        },
+        
+        whatsHappening: function(eyeD, numRequests) {
+            if (numRequests == this.timeoutRequests)
+                return this.go(`/dataset/${eyeD}`);
+            
+            this.$http.get(Vue.config.api + "/dataset", {
+                params: {
+                    find: JSON.stringify({ _id: eyeD })
+                }
+            }).then(res => {
+                var d = res.body.datasets[0];
+                if (d.storage)
+                    this.go(`/dataset/${eyeD}`);
+                
+                var self = this;
+                setTimeout(() => self.whatsHappening.call(self, eyeD, ++numRequests), this.tickTime);
+            }, err => {
+                console.error(err);
             });
         },
 
