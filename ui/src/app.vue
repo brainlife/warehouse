@@ -12,7 +12,7 @@
         <br>
         <br>
         <h1>{{app.name}}</h1>
-    </div> 
+    </div>
     <div class="page-content" v-if="app" style="margin-top: 45px; padding-top: 60px;">
         <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
             <p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>
@@ -163,7 +163,7 @@ export default {
             //then load task stats
             //console.dir(this.app);
             this.$http.get(Vue.config.wf_api+'/task/stats', {params: {
-                service: this.app.github,
+                service: this.trimGit(this.app.github),
                 service_branch: this.app.github_branch,
             }})
             .then(res=>{
@@ -178,6 +178,16 @@ export default {
     },
 
     methods: {
+        /**
+         * Supports:
+         * github.com/name/project
+         * http://github.com/name/project
+         * https://github.com/name/project
+         *                   https://github.com/name/project
+         * (in the last example, whitespace is automatically trimmed)
+         */
+        trimGit: (text) => text.replace(/^[ \t]*(https?:\/\/)?github\.com\/?/g, ''),
+        
         go: function(path) {
             this.$router.push(path);
         },
