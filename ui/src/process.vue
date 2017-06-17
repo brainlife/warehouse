@@ -28,7 +28,9 @@
                         <b>{{dataset.meta.subject}}</b>
                         <!--<el-tag type="primary">{{dataset.meta.subject}}</el-tag>-->
                         {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
-                        <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
+                        <small v-if="dataset.task.status != 'finished'" class="text-muted">
+                            <statusicon :status="dataset.task.status"/> Staging ..
+                        </small>
                         <!--
                         <br>
                         <small>{{dataset.name}}</small>
@@ -44,11 +46,13 @@
                             <icon name="close"></icon>
                         </div>
                         -->
-                        <b>{{dataset.meta.subject}}</b>
+                        <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
                         <!--<metadata :metadata="dataset.meta"/>-->
                         <!--<b>{{dataset.did}}</b>-->
                         {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
-                        <statusicon v-if="dataset.task.status != 'finished'" :status="dataset.task.status"/>
+                        <small v-if="dataset.task.status != 'finished'" class="text-muted">
+                            <statusicon :status="dataset.task.status"/> Processing ..
+                        </small>
                         <p v-if="dataset.dataset_id">
                             <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
                         </p>
@@ -71,7 +75,7 @@
                     <el-collapse-item title="Output Datasets" name="output" slot="output" 
                         v-if="_output_tasks[task._id] && task.status == 'finished'">
                         <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
-                            <statusicon status="_output_tasks[task._id].status"/> {{_output_tasks[task._id].status_msg}}
+                            <statusicon :status="_output_tasks[task._id].status"/> Organizing <small>{{_output_tasks[task._id].status_msg}}</small>
                         </p>
 
                         <!--insert slot for output datasets-->
@@ -131,7 +135,7 @@
 
                 <transition name="fade">
                 <div v-if="this.newtask_app && !this.submitting">
-                    <el-form label-width="150px"> 
+                    <el-form label-width="200px"> 
                         <el-form-item label="Application">
                             <app :app="this.newtask_app" :compact="true" :clickable="false"></app>
                         </el-form-item>
@@ -154,13 +158,13 @@
                             </el-form-item>
                             <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
                                 <el-select @change="revalidate()" v-model="newtask.inputs[input_id].dataset" 
-                                    no-data-text="No dataset matches"
+                                    no-data-text="No dataset available for this datatype / tags"
                                     placeholder="Please select input dataset" 
                                     style="width: 100%;">
                                     <el-option-group key="brainlife.stage_input" label="Input Datasets">
                                         <el-option v-for="(dataset, idx) in filter_datasets(input)"
                                             v-if="dataset.task.name == 'brainlife.stage_input'" :key="idx"
-                                                :value="idx" :label="dataset.meta.subject+' | '+dataset.datatype_tags">
+                                                :value="dataset.did" :label="dataset.meta.subject+' | '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
                                             <b>{{dataset.meta.subject}}</b> 
                                             <!--<metadata :metadata="dataset.meta"/>-->
@@ -172,7 +176,7 @@
                                     <el-option-group key="brainlife.stage_output" label="Output Datasets">
                                         <el-option v-for="(dataset, idx) in filter_datasets(input)" 
                                             v-if="dataset.task.name == 'brainlife.stage_output'" :key="idx"
-                                                :value="idx" :label="dataset.meta.subject+' | '+dataset.datatype_tags">
+                                                :value="dataset.did" :label="dataset.meta.subject+' | '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Processing)</span>
                                             <b>{{dataset.meta.subject}}</b> 
                                             <small>{{datatypes[dataset.datatype].name}}</small>
@@ -203,23 +207,23 @@
             </el-card>
             <br>
             <br>
-            <el-card v-if="config.debug">
-                <div slot="header">Debug</div>
-                <div v-if="newtasks">
-                    <h3>newtasks</h3>
-                    <pre v-highlightjs="JSON.stringify(newtasks, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <div v-if="instance">
-                    <h3>instance</h3>
-                    <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <div v-if="tasks">
-                    <h3>tasks</h3>
-                    <div v-for="task in tasks">
-                        <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
-                    </div>
-                </div>
-            </el-card>
+            <div v-if="config.debug">
+                <h3>Debug</h3>
+                <el-collapse v-if="config.debug">
+                    <el-collapse-item title="newtasks" name="newtasks" v-if="newtasks">
+                        <pre v-highlightjs="JSON.stringify(newtasks, null, 4)"><code class="json hljs"></code></pre>
+                    </el-collapse-item> 
+                    <el-collapse-item title="instance" name="instance" v-if="instance">
+                        <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
+                    </el-collapse-item> 
+                    <el-collapse-item title="_datasets" name="_datasets" v-if="_datasets">
+                        <pre v-highlightjs="JSON.stringify(_datasets, null, 4)"><code class="json hljs"></code></pre>
+                    </el-collapse-item> 
+                    <el-collapse-item title="tasks" name="tasks" v-if="tasks">
+                        <pre v-highlightjs="JSON.stringify(tasks, null, 4)"><code class="json hljs"></code></pre>
+                    </el-collapse-item> 
+                </el-collapse>
+            </div>
         </div><!--main-section-->
 
         <el-dialog title="Stage Datasets" :visible.sync="show_input_dialog">
@@ -400,6 +404,8 @@ export default {
                             did,
                             datatype: dataset.datatype,
                             datatype_tags: dataset.datatype_tags,
+                            name: dataset.name,
+                            desc: dataset.desc,
                             meta: dataset.meta,
                             dataset_id: dataset.dataset_id, //if archived already
                             task,
@@ -721,11 +727,19 @@ export default {
                     inputs: {},
                 };
                 this.set_default(newtask.config);
+
+                //preselect the dataset
                 this.newtask_app.inputs.forEach(input=>{
                     newtask.inputs[input.id] = Object.assign({dataset: null}, input); //copy
+
+                    var applicable_datasets = this.filter_datasets(input);
+                    newtask.inputs[input.id].dataset = applicable_datasets.find(dataset=>{return dataset.datatype == input.datatype._id});
+                    
+                    /*
                     if(input.datatype._id == this._datasets[idx].datatype) {
-                        newtask.inputs[input.id].dataset = idx;
+                        newtask.inputs[input.id].dataset = this._datasets[idx].did;
                     }
+                    */
                 });
                 this.newtasks.push(newtask); 
             });
@@ -763,6 +777,12 @@ export default {
             return lib.filter_datasets(this._datasets, input);
         },
 
+        find_dataset: function(did) {
+            return this._datasets.find(dataset=>{
+                return dataset.did == did;
+            });
+        },
+
         //recursively update configuration with given newtask
         process_input_config: function(newtask, config) {
             for(var k in config) { 
@@ -776,7 +796,8 @@ export default {
                         case "input":
                             //find the file
                             var input = newtask.inputs[node.input_id];
-                            var dataset = this._datasets[input.dataset];
+                            //var dataset = this._datasets[input.dataset];
+                            var dataset = this.find_dataset(input.dataset);
                             if(!~newtask.deps.indexOf(dataset.task._id)) newtask.deps.push(dataset.task._id);
                             //then lookup file_id
                             input.datatype.files.forEach(file=>{
@@ -828,7 +849,8 @@ export default {
                         var agg_meta = {};
                         for(var input_id in newtask.inputs) {
                             var input = newtask.inputs[input_id];
-                            var dataset = this._datasets[input.dataset];
+                            //var dataset = this._datasets[input.dataset];
+                            var dataset = this.find_dataset(input.dataset);
                             for(var k in dataset.meta) {
                                 agg_meta[k] = dataset.meta[k];
                             }
@@ -863,14 +885,6 @@ export default {
                             app: this.newtask_app._id,
                             output_datasets,
                         };
-                        /*
-                        for(var input_id in newtask.inputs) {
-                            var input = newtask.inputs[input_id];
-                            var dataset = this._datasets[input.dataset];
-                            debugger;
-                            _prov.deps.push({input_id, dataset: dataset._id});
-                        } 
-                        */
         
                         this.$http.post(Vue.config.wf_api+'/task', {
                             instance_id: this.instance._id,
