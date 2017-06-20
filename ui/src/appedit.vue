@@ -14,10 +14,10 @@
         -->
 
         <h1 v-if="$route.params.id == '_'">New App</h1>
-        <h1 v-else><span class="text-muteD"><icon name="pencil" scale="2"/> Edit App </span> {{app.name}}</h1>
+        <h1 v-else><span class="text-muted"><icon name="pencil" scale="2"/> Edit App </span> {{app.name}}</h1>
     </div>
 
-    <div class="main-section">
+    <div class="main-section" v-if="ready">
         <el-form ref="form" label-width="120px">
             <el-form-item label="Name">
                 <el-input type="text" v-model="app.name" placeholder="Name of application"/>
@@ -76,14 +76,19 @@
                                 <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
                             </el-select>
                         </el-col>
-                        <el-col :span="14">
+                        <el-col :span="14" v-if="input.datatype">
                             <el-button @click="app.inputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
                             Datatype Tags
+                            <!--
                             <el-select v-model="input.datatype_tags" 
                                 style="width: 100%"
                                 multiple filterable allow-create placeholder="Enter datatype tags">
                                 <el-option v-for="tag in input.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
                             </el-select>
+                            -->
+                            <select2 :options="datatypes[input.datatype]._tags" v-model="input.datatype_tags">
+                                <!--<option disabled value="0">Select one</option>-->
+                            </select2>
                         </el-col>
                         </el-row>
                     </el-card>
@@ -107,14 +112,19 @@
                                 <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
                             </el-select>
                         </el-col>
-                        <el-col :span="14">
+                        <el-col :span="14" v-if="output.datatype">
                             <el-button @click="app.outputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
                             Datatype Tags
+                            <!--
                             <el-select v-model="output.datatype_tags" 
                                 style="width: 100%" 
                                 multiple filterable allow-create placeholder="Enter datatype tags">
                                 <el-option v-for="tag in output.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
                             </el-select>
+                            -->
+                            <select2 :options="datatypes[output.datatype]._tags" v-model="output.datatype_tags">
+                                <!--<option disabled value="0">Select one</option>-->
+                            </select2>
                         </el-col>
                         </el-row>
                     </el-card>
@@ -122,9 +132,11 @@
                 <el-button @click="add(app.outputs)" size="small" icon="plus">Add Output</el-button>
             </el-form-item>
 
-            <el-form-item>
-                <el-button style="float: right;" type="primary" icon="check" @click="submit()">Submit</el-button>
+            <el-form-item style="float: right;">
+                <el-button @click="cancel()">Cancel</el-button>
+                <el-button type="primary" icon="check" @click="submit()">Submit</el-button>
             </el-form-item>
+            <br clear="both">
         </el-form>
 
         <el-card v-if="config.debug">
@@ -148,9 +160,10 @@ import 'brace/theme/chrome'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
+import select2 from '@/components/select2'
 
 export default {
-    components: { sidemenu, editor, contactlist, pageheader },
+    components: { sidemenu, editor, contactlist, pageheader, select2 },
     data () {
         return {
             app: {
@@ -170,6 +183,8 @@ export default {
                 inputs: [],
                 outputs: [],
             },
+
+            ready: false,  //ready to render form
 
             //cache
             datatypes: null, //registered datatypes (keyed by datatype_id)
@@ -211,6 +226,36 @@ export default {
             this.datatypes = {};
             res.body.datatypes.forEach((type)=>{
                 this.datatypes[type._id] = type;
+                type._tags = [];
+            });
+
+            //load datatype_tags from all apps
+            this.$http.get('app', {params: {
+                select: 'inputs outputs',
+            }}).then(res=>{
+                //aggregate datatype_tags for each datatype
+                var v = this;
+                function addtag(datatype_id, tag) {
+                    var dt = v.datatypes[datatype_id];
+                    //if(!dt._tags) dt._tags = []; //init
+                    if(!~dt._tags.indexOf(tag)) dt._tags.push(tag);
+                }
+                res.body.apps.forEach(app=>{
+                    app.inputs.forEach(input=>{
+                        if(!input.datatype_tags) return;
+                        input.datatype_tags.forEach(tag=>{
+                            addtag(input.datatype, tag); 
+                        });
+                    });
+                    app.outputs.forEach(output=>{
+                        if(!output.datatype_tags) return;
+                        output.datatype_tags.forEach(tag=>{
+                            addtag(output.datatype, tag); 
+                        });
+                    });
+                });
+
+                this.ready = true;
             });
         }, res=>{
             console.error(res);
@@ -225,6 +270,10 @@ export default {
                 datatype: null,
                 datatype_tags: [],
             });
+        },
+
+        cancel: function() {
+            this.$router.push("/apps");
         },
 
         submit: function() {
