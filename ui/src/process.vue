@@ -91,7 +91,7 @@
                             <!-- 
                             <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app>
                             -->
-                            <h3 style="margin-bottom: 0px; text-transform: uppercase; color: #666;">{{task.name || task.service}}</h3>
+                            <h3 style="margin-bottom: 0px; color: #666;">{{task.service}} <mute>{{task.name}}</mute></h3>
                             <mute>{{task.desc}}</mute>
                         </div>
                     </div><!--header-->
