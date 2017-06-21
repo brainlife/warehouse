@@ -50,9 +50,11 @@
                         <!--<metadata :metadata="dataset.meta"/>-->
                         <!--<b>{{dataset.did}}</b>-->
                         {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
-                        <small v-if="dataset.task.status != 'finished'" class="text-muted">
-                            <statusicon :status="dataset.task.status"/> Processing ..
-                        </small>
+                        <mute>
+                            <small v-if="dataset.task.status != 'finished'">
+                                <statusicon :status="dataset.task.status"/> Processing ..
+                            </small>
+                        </mute>
                         <p v-if="dataset.dataset_id">
                             <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
                         </p>
@@ -71,7 +73,30 @@
 
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
-                <task :task="task" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task_deps">
+                <task :task="task" :prov="task.config._prov" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task_deps">
+                    <div slot="header" class="task-header">
+                        <div v-if="task.config._prov" style="margin-right: 100px;">
+                            {{idx}}
+                            <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app><br>
+                            <b><mute>Inputs</mute></b>
+                            <el-row>
+                            <el-col v-for="(input, input_id) in task.config._prov.inputs" :span="6">
+                                <el-card>
+                                    <b>{{input_id}}</b>
+                                    <tags :tags="input.datatype_tags"></tags>
+                                </el-card>
+                            </el-col>
+                            </el-row>
+                        </div>
+                        <div v-if="!task.config._prov">
+                            {{idx}}
+                            <!-- 
+                            <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app><br>
+                            -->
+                            <h3 style="margin-bottom: 0px; text-transform: uppercase; color: #666;">{{task.name || task.service}}</h3>
+                            <mute>{{task.desc}}</mute>
+                        </div>
+                    </div><!--header-->
                     <el-collapse-item title="Output Datasets" name="output" slot="output" 
                         v-if="_output_tasks[task._id] && task.status == 'finished'">
                         <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
@@ -284,6 +309,7 @@ import app from '@/components/app'
 import archiveform from '@/components/archiveform'
 import projectselector from '@/components/projectselector'
 import statusicon from '@/components/statusicon'
+import mute from '@/components/mute'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -306,6 +332,7 @@ export default {
         archiveform, 
         projectselector,
         statusicon,
+        mute,
     },
 
     data() {
@@ -397,7 +424,6 @@ export default {
                     }
                     break;
                 case "brainlife.stage_output": 
-                    //console.log("stage_output", task.config._prov);
                     for(var did in task.config._prov.output_datasets) {
                         var dataset = task.config._prov.output_datasets[did];
                         datasets.push({
@@ -569,6 +595,7 @@ export default {
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         //look for the task to update
+                        console.log("received task update", this.tasks);
                         this.tasks.forEach(function(t) {
                             if(t._id == msg._id) {
                                 for(var k in msg) t[k] = msg[k];
@@ -731,15 +758,8 @@ export default {
                 //preselect the dataset
                 this.newtask_app.inputs.forEach(input=>{
                     newtask.inputs[input.id] = Object.assign({dataset: null}, input); //copy
-
                     var applicable_datasets = this.filter_datasets(input);
                     newtask.inputs[input.id].dataset = applicable_datasets.find(dataset=>{return dataset.datatype == input.datatype._id});
-                    
-                    /*
-                    if(input.datatype._id == this._datasets[idx].datatype) {
-                        newtask.inputs[input.id].dataset = this._datasets[idx].did;
-                    }
-                    */
                 });
                 this.newtasks.push(newtask); 
             });
@@ -824,6 +844,35 @@ export default {
                     if(this.submit_mode == "single" && idx > 0) return; 
 
                     this.process_input_config(newtask, newtask.config);
+
+                    //prepare _prov
+                    //TODO - I should probably store this provenance collection on warehouse service 
+                    var prov = {
+                        app: {
+                            id: this.newtask_app._id,
+                            name: this.newtask_app.name,
+                            desc: this.newtask_app.desc,
+                            github: this.newtask_app.github,
+                        },
+                        outputs: {},
+                        inputs: {},
+                    };
+                    for(var id in newtask.inputs) {
+                        prov.inputs[id] = {
+                            datatype: newtask.inputs[id].datatype._id,
+                            datatype_tags: newtask.inputs[id].datatype_tags,
+                            dataset: newtask.inputs[id].dataset, //only set if it comes from warehouse dataset
+                        }
+                    }
+                    console.dir(this._datasets);
+                    console.dir(prov);
+                    this.newtask_app.outputs.forEach(output=>{
+                        prov.outputs[output.id] = {
+                            datatype: output.datatype,
+                            datatype_tags: output.datatype_tags,
+                        }
+                    });
+                    newtask.config._prov = prov;
 
                     console.log("submitting newtask", newtask); 
                     this.$http.post(Vue.config.wf_api+'/task', {
@@ -949,5 +998,14 @@ border-bottom: 1px solid #ccc;
 padding: 10px 20px;
 background-color: #ccc;
 box-shadow: inset 0px 2px 2px #999;
+}
+.task-header {
+background-color: white;
+margin: 0px;
+padding: 15px;
+border: 1px solid rgb(230, 230, 230);
+border-bottom: none;
+background-color: #ddd; 
+border-radius: 8px 8px 0 0
 }
 </style>

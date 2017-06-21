@@ -60,7 +60,7 @@
             <td>
                 <appavatar :app="app" style="float: right; margin-left: 10px;"></appavatar>
                 <h3>{{app.name}}</h3>
-                <p>{{app.desc}}</p>
+                <p style="color: #666">{{app.desc}}</p>
             </td>
         </tr>
         <tr>
@@ -185,6 +185,7 @@ import tags from '@/components/tags'
 import pageheader from '@/components/pageheader'
 import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
+import mute from '@/components/mute'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -194,7 +195,7 @@ export default {
     mixins: [
         //require("vue-toaster")
     ],
-    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar },
+    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar, mute },
 
     data () {
         return {

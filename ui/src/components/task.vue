@@ -1,32 +1,31 @@
 <template>
 <div class="task">
-    <!--status-->
-    <el-card title="" :class="task.status" show-icon :closable="false" :body-style="{}">
-        <div style="float: left; padding-left: 5px;">
-            <statusicon :status="task.status" scale="2"/>
-        </div>
-        <div style="float: right">
-            <el-button v-if="task.status == 'failed'" @click="rerun()">Rerun</el-button>
-            <!--<el-button v-if="task.status == 'running'" @click="stop()">Stop</el-button>-->
-            <el-button v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" icon="delete2"></el-button>
-        </div>
-        <div style="margin-left: 50px; margin-right: 100px">
-            <h4>
-                <small style="float: right;">
-                    <time v-if="task.status == 'finished'">Finished at {{task.finish_date|date}}</time>
-                    <time v-if="task.status == 'running'">Started at {{task.start_date|date}}</time>
-                    <time v-if="task.status == 'requested'">Requested at {{task.create_date|date}}</time>
-                    <time v-if="task.status == 'failed'">Failed at {{task.fail_date|date}}</time>
+    <slot name="header">
+        <h3>{{task.name||task.service}}</h3>
+    </slot>
+
+    <!--status indicator-->
+    <el-card :class="task.status" style="clear: both;" body-style="padding: 8px;">
+        <statusicon :status="task.status" scale="1.5" style="float: left; padding: 2px 8px;"/>
+        <div style="padding-left: 45px;">
+            <div style="float: right;">
+                <el-button size="small" type="primary" v-if="task.status == 'failed'" @click="rerun()">Rerun</el-button>
+                <el-button size="small" type="" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" icon="delete2"></el-button>
+            </div>
+            <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
+                <small>
+                    <time v-if="task.status == 'finished'">at {{task.finish_date|date}}</time>
+                    <time v-if="task.status == 'running'">since {{task.start_date|date}}</time>
+                    <time v-if="task.status == 'requested'">at {{task.create_date|date}}</time>
+                    <time v-if="task.status == 'failed'">at {{task.fail_date|date}}</time>
+                    <time v-if="task.status == 'removed'">at {{task.remove_date|date}}</time>
                 </small>
-                <span style="text-transform: uppercase;">{{task.status}}</span> | {{task.desc||task.name}} <small class="text-muted">{{task.service}}</small> 
             </h4>
-            <i>{{task.status_msg}}</i>
+            {{task.status_msg}}
         </div>
     </el-card>
 
     <el-collapse v-model="activeSections">
-        <slot name="output"></slot>
-
         <el-collapse-item title="Configuration" name="config" style="margin: 0px;">
             <!--<el-alert title="todo">display this in more user friendly way</el-alert>-->
             <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
@@ -37,8 +36,10 @@
             <el-alert v-if="!task.resource_id" title="Not yet submitted to computing resource" type="warning"></el-alert>
         </el-collapse-item>
 
+        <slot name="output"></slot>
 
     </el-collapse>
+    <br clear="both">
 </div>
 </template>
 
@@ -47,21 +48,25 @@ import Vue from 'vue'
 
 import filebrowser from '@/components/filebrowser'
 import statusicon from '@/components/statusicon'
+import mute from '@/components/mute'
+import tags from '@/components/tags'
 //import volumeviewer from '@/components/volumeviewer'
 
 export default {
-    components: { filebrowser, statusicon },
+    components: { filebrowser, statusicon, mute, tags },
     name: "contact",
     data () {
         return {
-            activeSections: ['output']
+            activeSections: ['output'],
+            app: null,
         }
     },
     computed: {
     },
+
     mounted: function() {
-        //$(this.$el).find('.ui.accordion').accordion();
     },
+
     methods: {
         rerun() {
             this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.task._id)
@@ -103,20 +108,25 @@ margin-bottom: 0px !important;
 </style>
 
 <style scoped>
-.el-card {
-color: white;
-background-color: gray;
-}
 .el-card.finished {
+color: white;
 background-color: green;
 }
 .el-card.failed {
+color: white;
 background-color: #c00;
 }
 .el-card.running {
+color: white;
 background-color: #2693ff;
 }
 .el-card.requested {
+color: white;
 background-color: #50bfff;
+}
+.el-card.removed,
+.el-card.stopped {
+color: white;
+background-color: gray;
 }
 </style>
