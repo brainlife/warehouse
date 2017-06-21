@@ -55,6 +55,10 @@ export default {
 </script>
 
 <style scoped>
+.el-card.compact {
+border: none;
+box-shadow: none;
+}
 .appname {
 color: #666;
 padding: 10px;

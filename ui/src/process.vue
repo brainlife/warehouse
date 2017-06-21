@@ -25,12 +25,16 @@
                             <icon name="close"></icon>
                         </div>
                         -->
+                        <mute>D{{idx}}</mute> 
                         <b>{{dataset.meta.subject}}</b>
                         <!--<el-tag type="primary">{{dataset.meta.subject}}</el-tag>-->
                         {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
-                        <small v-if="dataset.task.status != 'finished'" class="text-muted">
-                            <statusicon :status="dataset.task.status"/> Staging ..
-                        </small>
+                        <time>{{dataset.create_date|date('%x')}}</time>
+                        <mute>
+                            <small v-if="dataset.task.status != 'finished'">
+                                <statusicon :status="dataset.task.status"/> Staging ..
+                            </small>
+                        </mute>
                         <!--
                         <br>
                         <small>{{dataset.name}}</small>
@@ -46,10 +50,12 @@
                             <icon name="close"></icon>
                         </div>
                         -->
+                        <mute>D{{idx}}</mute> 
                         <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
                         <!--<metadata :metadata="dataset.meta"/>-->
                         <!--<b>{{dataset.did}}</b>-->
                         {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
+                        <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                         <mute>
                             <small v-if="dataset.task.status != 'finished'">
                                 <statusicon :status="dataset.task.status"/> Processing ..
@@ -75,76 +81,91 @@
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
                 <task :task="task" :prov="task.config._prov" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task_deps">
                     <div slot="header" class="task-header">
-                        <div v-if="task.config._prov" style="margin-right: 100px;">
-                            {{idx}}
-                            <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app><br>
-                            <b><mute>Inputs</mute></b>
-                            <el-row>
-                            <el-col v-for="(input, input_id) in task.config._prov.inputs" :span="6">
-                                <el-card>
-                                    <b>{{input_id}}</b>
-                                    <tags :tags="input.datatype_tags"></tags>
-                                </el-card>
-                            </el-col>
-                            </el-row>
+                        <div style="float: left">
+                            <h3><mute>T{{idx}}</mute></h3>
                         </div>
-                        <div v-if="!task.config._prov">
-                            {{idx}}
+                        <div v-if="task.config._prov" style="margin-left: 50px;">
+                            <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app>
+                        </div>
+                        <div v-if="!task.config._prov" style="margin-left: 50px">
                             <!-- 
-                            <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app><br>
+                            <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app>
                             -->
                             <h3 style="margin-bottom: 0px; text-transform: uppercase; color: #666;">{{task.name || task.service}}</h3>
                             <mute>{{task.desc}}</mute>
                         </div>
                     </div><!--header-->
-                    <el-collapse-item title="Output Datasets" name="output" slot="output" 
-                        v-if="_output_tasks[task._id] && task.status == 'finished'">
+
+                    <!--input-->
+                    <el-collapse-item title="Input Datasets" name="input" slot="input" v-if="task.config._prov">
+                        <el-card v-for="(did, input_id) in task.config._prov.inputs" :key="input_id">
+                            <el-row>
+                            <el-col :span="4">
+                                <b>{{input_id}}</b>
+                            </el-col>
+                            <el-col :span="20">
+                                <mute>D{{find_dataset_idx(did)}}</mute>
+                                <!--<metadata :metadata="find_dataset(did).meta"></metadata>-->
+                                <b>{{find_dataset(did).meta.subject}}</b>
+                                {{datatypes[find_dataset(did).datatype].name}}
+                                <tags :tags="find_dataset(did).datatype_tags"></tags>
+                            </el-col>
+                            </el-row>
+                        </el-card>
+                    </el-collapse-item>
+
+                    <!--output-->
+                    <el-collapse-item title="Output Datasets" name="output" slot="output" v-if="_output_tasks[task._id] && task.status == 'finished'">
                         <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
-                            <statusicon :status="_output_tasks[task._id].status"/> Organizing <small>{{_output_tasks[task._id].status_msg}}</small>
+                            <statusicon :status="_output_tasks[task._id].status"/> Organizing Output <small>{{_output_tasks[task._id].status_msg}}</small>
                         </p>
 
                         <!--insert slot for output datasets-->
                         <el-card v-if="_output_tasks[task._id].status == 'finished'" 
-                            v-for="(dataset, did) in _output_tasks[task._id].config._prov.output_datasets" :key="did">
-                            <!--
-                            <metadata :metadata="dataset.meta"/>
-                            <b>{{did}}</b> 
-                            -->
-                            <b>{{dataset.meta.subject}}</b>
-                            {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"/>
+                            v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id">
+                            <el-row>
+                            <el-col :span="4">
+                                <b>{{output_id}}</b>
+                            </el-col>
+                            <el-col :span="20">
+                                <mute>D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}</mute>
+                                <b>{{dataset.meta.subject}}</b>
+                                {{datatypes[dataset.datatype].name}} 
+                                <tags :tags="dataset.datatype_tags"/>
 
-                            <el-button size="small" type="primary" style="float: right;" 
-                                v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id, true)">Archive</el-button>
-                            <el-button size="small" style="float: right;" 
-                                v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
-                            <!--TODO - show only viewer that makes sense for each data type-->
-                            <el-dropdown style="float: right; margin-right: 5px;" @command="view">
-                                <el-button size="small"> View <i class="el-icon-caret-bottom el-icon--right"></i> </el-button>
-                                <el-dropdown-menu slot="dropdown">
-                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/fslview'">FSLView</el-dropdown-item>
-                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/freeview'">FreeView</el-dropdown-item>
-                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/mrview'">MRView</el-dropdown-item>
-                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/fibernavigator'">FiberNavigator</el-dropdown-item>
-                                    <el-dropdown-item :command="_output_tasks[task._id]._id+'/brainview'" disabled divided>BrainView</el-dropdown-item>
-                                </el-dropdown-menu>
-                            </el-dropdown>
+                                <el-button size="small" type="primary" style="float: right;" 
+                                    v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id, true)">Archive</el-button>
+                                <el-button size="small" style="float: right;" 
+                                    v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
+                                <!--TODO - show only viewer that makes sense for each data type-->
+                                <el-dropdown style="float: right; margin-right: 5px;" @command="view">
+                                    <el-button size="small"> View <i class="el-icon-caret-bottom el-icon--right"></i> </el-button>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/fslview'">FSLView</el-dropdown-item>
+                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/freeview'">FreeView</el-dropdown-item>
+                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/mrview'">MRView</el-dropdown-item>
+                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/fibernavigator'">FiberNavigator</el-dropdown-item>
+                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/brainview'" disabled divided>BrainView</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
 
-                            <archiveform v-if="archiving[task._id]" 
-                                :instance="instance" 
-                                :app_id="_output_tasks[task._id].config._prov.app"
-                                :output_task="_output_tasks[task._id]" 
-                                :dataset_id="did"
-                                :dataset="dataset" 
-                                @submitted="archive(task._id, false)" style="margin-top: 30px;"/>
+                                <archiveform v-if="archiving[task._id]" 
+                                    :instance="instance" 
+                                    :app_id="_output_tasks[task._id].config._prov.app"
+                                    :output_task="_output_tasks[task._id]" 
+                                    :dataset_id="output_id"
+                                    :dataset="dataset" 
+                                    @submitted="archive(task._id, false)" style="margin-top: 30px;"/>
+                            </el-col>
+                            </el-row>
                         </el-card>
                     </el-collapse-item>
                 </task>
             </div>
 
-            <br>
-            <el-button v-if="!newprocess" type="primary" @click="start_newprocess()" icon="caret-bottom">New Process</el-button>
+            <el-button v-if="!newprocess" type="primary" @click="start_newprocess()" icon="caret-bottom">New Task</el-button>
             <el-card v-else>
-                <h3 slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Process</h3>
+                <h3 slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h3>
 
                 <!--newprocess form-->
                 <transition name="fade">
@@ -189,8 +210,9 @@
                                     <el-option-group key="brainlife.stage_input" label="Input Datasets">
                                         <el-option v-for="(dataset, idx) in filter_datasets(input)"
                                             v-if="dataset.task.name == 'brainlife.stage_input'" :key="idx"
-                                                :value="dataset.did" :label="dataset.meta.subject+' | '+dataset.datatype_tags">
+                                                :value="dataset.did" :label="'D'+find_dataset_idx(dataset.did)+' | '+dataset.meta.subject+' | '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
+                                            D{{find_dataset_idx(dataset.did)}}
                                             <b>{{dataset.meta.subject}}</b> 
                                             <!--<metadata :metadata="dataset.meta"/>-->
                                             <small>{{datatypes[dataset.datatype].name}}</small>
@@ -201,8 +223,9 @@
                                     <el-option-group key="brainlife.stage_output" label="Output Datasets">
                                         <el-option v-for="(dataset, idx) in filter_datasets(input)" 
                                             v-if="dataset.task.name == 'brainlife.stage_output'" :key="idx"
-                                                :value="dataset.did" :label="dataset.meta.subject+' | '+dataset.datatype_tags">
+                                                :value="dataset.did" :label="'D'+find_dataset_idx(dataset.did)+' | '+dataset.meta.subject+' | '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Processing)</span>
+                                            D{{find_dataset_idx(dataset.did)}}
                                             <b>{{dataset.meta.subject}}</b> 
                                             <small>{{datatypes[dataset.datatype].name}}</small>
                                             <tags :tags="dataset.datatype_tags"></tags> <!--| <metadata :metadata="dataset.meta"/>-->
@@ -411,15 +434,17 @@ export default {
                     for(var did in task.config.datasets) {
                         var dataset = task.config.datasets[did];
                         datasets.push({
-                            did,
+                            did, //"12313123810237128321", "123441aq234234", etc...
                             datatype: dataset.datatype,
                             datatype_tags: dataset.datatype_tags,
                             name: dataset.name,
                             desc: dataset.desc,
                             meta: dataset.meta,
+                            create_date: dataset.create_date,
                             dataset_id: dataset.dataset_id, //if archived already
                             task,
                             path: did, //where inside this task the dataset is stored
+                            //idx: datasets.length,
                         });
                     }
                     break;
@@ -427,15 +452,17 @@ export default {
                     for(var did in task.config._prov.output_datasets) {
                         var dataset = task.config._prov.output_datasets[did];
                         datasets.push({
-                            did,
+                            did: task._id+"/"+did, //"t1", "dwi", etc..
                             datatype: dataset.datatype,
                             datatype_tags: dataset.datatype_tags,
                             name: dataset.name,
                             desc: dataset.desc,
                             meta: dataset.meta,
+                            create_date: task.finish_date, //not sure if this is set?
                             dataset_id: dataset.dataset_id, //if archived already
                             task,
                             path: did, //where inside this task the dataset is stored
+                            //idx: datasets.length,
                         });
                     }
                     break;
@@ -453,7 +480,9 @@ export default {
                 }
             });
             return tasks;
-        }
+        },
+
+
     },
 
     watch: {
@@ -496,6 +525,19 @@ export default {
                     message: 'Updated process detail',
                     type: 'success',
                 });
+            });
+        },
+
+        find_dataset_idx: function(did) {
+            var idx = null;
+            this._datasets.forEach((dataset, _idx)=>{
+                if(dataset.did == did) idx = _idx;
+            });
+            return idx;
+        }, 
+        find_dataset: function(did) {
+            return this._datasets.find(dataset=>{
+                return dataset.did == did;
             });
         },
 
@@ -595,7 +637,7 @@ export default {
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         //look for the task to update
-                        console.log("received task update", this.tasks);
+                        //console.log("received task update", this.tasks);
                         this.tasks.forEach(function(t) {
                             if(t._id == msg._id) {
                                 for(var k in msg) t[k] = msg[k];
@@ -797,11 +839,6 @@ export default {
             return lib.filter_datasets(this._datasets, input);
         },
 
-        find_dataset: function(did) {
-            return this._datasets.find(dataset=>{
-                return dataset.did == did;
-            });
-        },
 
         //recursively update configuration with given newtask
         process_input_config: function(newtask, config) {
@@ -854,24 +891,27 @@ export default {
                             desc: this.newtask_app.desc,
                             github: this.newtask_app.github,
                         },
-                        outputs: {},
+                        //outputs: {},
                         inputs: {},
                     };
                     for(var id in newtask.inputs) {
+                        /*
                         prov.inputs[id] = {
-                            datatype: newtask.inputs[id].datatype._id,
-                            datatype_tags: newtask.inputs[id].datatype_tags,
-                            dataset: newtask.inputs[id].dataset, //only set if it comes from warehouse dataset
+                            //datatype: newtask.inputs[id].datatype._id,
+                            //datatype_tags: newtask.inputs[id].datatype_tags,
+                            //dataset: newtask.inputs[id].dataset, //only set if it comes from warehouse dataset
                         }
+                        */
+                        prov.inputs[id] = newtask.inputs[id].dataset;
                     }
-                    console.dir(this._datasets);
-                    console.dir(prov);
+                    /*
                     this.newtask_app.outputs.forEach(output=>{
                         prov.outputs[output.id] = {
                             datatype: output.datatype,
                             datatype_tags: output.datatype_tags,
                         }
                     });
+                    */
                     newtask.config._prov = prov;
 
                     console.log("submitting newtask", newtask); 
@@ -1000,12 +1040,11 @@ background-color: #ccc;
 box-shadow: inset 0px 2px 2px #999;
 }
 .task-header {
-background-color: white;
 margin: 0px;
 padding: 15px;
 border: 1px solid rgb(230, 230, 230);
 border-bottom: none;
-background-color: #ddd; 
-border-radius: 8px 8px 0 0
+background-color: #fff;
+border-radius: 8px 8px 0 0;
 }
 </style>

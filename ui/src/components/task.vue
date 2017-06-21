@@ -21,11 +21,13 @@
                     <time v-if="task.status == 'removed'">at {{task.remove_date|date}}</time>
                 </small>
             </h4>
-            {{task.status_msg}}
+            <i>{{task.status_msg}}</i>
         </div>
     </el-card>
 
     <el-collapse v-model="activeSections">
+        <slot name="input"></slot>
+
         <el-collapse-item title="Configuration" name="config" style="margin: 0px;">
             <!--<el-alert title="todo">display this in more user friendly way</el-alert>-->
             <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
@@ -57,7 +59,7 @@ export default {
     name: "contact",
     data () {
         return {
-            activeSections: ['output'],
+            activeSections: ['output', 'input'],
             app: null,
         }
     },
@@ -89,7 +91,7 @@ export default {
         remove() {
             this.$http.delete(Vue.config.wf_api+'/task/'+this.task._id)
             .then(res=>{
-                console.dir(res); 
+                this.$notify({ title: 'Removed', message: 'Task removal requested', type: 'success', });
                 this.$emit("remove", this.task._id);
             })
             .catch(err=>{
