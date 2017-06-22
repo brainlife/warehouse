@@ -37,7 +37,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     if(req.query.find) find = JSON.parse(req.query.find);
 
     //TODO I should only allow querying for projects that user has access?
-
     db.Projects.find(find)
     .select(req.query.select)
     .limit(req.query.limit || 0)
