@@ -128,13 +128,14 @@ export default {
 
             //load datasets that this app cares about
             var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
+            //console.log("looking for datasets with datatypes", datatype_ids);
             return this.$http.get('dataset', {params: {
                 find: JSON.stringify({
                     datatype: {$in: datatype_ids},
                     removed: false,
-                })
+                }),
+                limit: 300,
             }})
-
         })
         .then(res=>{
             var datasets = res.body.datasets;

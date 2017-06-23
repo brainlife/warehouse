@@ -117,7 +117,7 @@
                     <!--output-->
                     <el-collapse-item title="Output Datasets" name="output" slot="output" v-if="_output_tasks[task._id] && task.status == 'finished'">
                         <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
-                            <statusicon :status="_output_tasks[task._id].status"/> Organizing Output <small>{{_output_tasks[task._id].status_msg}}</small>
+                            <statusicon :status="_output_tasks[task._id].status"/> Organizing Output <small>{{_output_tasks[task._id].status_msg||'&nbsp;'}}</small>
                         </p>
 
                         <!--insert slot for output datasets-->
@@ -590,7 +590,8 @@ export default {
                         instance_id: this.instance._id,
                         status: {$ne: "removed"},
                         //name: {$ne: "brainlife.novnc"},
-                    })
+                    }),
+                    limit: 2000,
                 }})
             })
             .then(res=>{
