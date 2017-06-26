@@ -117,7 +117,7 @@
                     <!--output-->
                     <el-collapse-item title="Output Datasets" name="output" slot="output" v-if="_output_tasks[task._id] && task.status == 'finished'">
                         <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
-                            <statusicon :status="_output_tasks[task._id].status"/> Organizing Output <small>{{_output_tasks[task._id].status_msg||'&nbsp;'}}</small>
+                            <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output <small>{{_output_tasks[task._id].status_msg||'&nbsp;'}}</small>
                         </p>
 
                         <!--insert slot for output datasets-->
@@ -131,13 +131,14 @@
                                 <mute>D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}</mute>
                                 <b>{{dataset.meta.subject}}</b>
                                 {{datatypes[dataset.datatype].name}} 
-                                <tags :tags="dataset.datatype_tags"/>
+                                <tags :tags="dataset.datatype_tags"></tags>
 
                                 <el-button size="small" type="primary" style="float: right;" 
                                     v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id, true)">Archive</el-button>
                                 <el-button size="small" style="float: right;" 
                                     v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
                                 <!--TODO - show only viewer that makes sense for each data type-->
+                                <!--
                                 <el-dropdown style="float: right; margin-right: 5px;" @command="view">
                                     <el-button size="small"> View <i class="el-icon-caret-bottom el-icon--right"></i> </el-button>
                                     <el-dropdown-menu slot="dropdown">
@@ -148,14 +149,15 @@
                                         <el-dropdown-item :command="_output_tasks[task._id]._id+'/brainview'" disabled divided>BrainView</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
-
+                                -->
+                                <viewerselect @select="view(_output_tasks[task._id]._id, $event)" style="float: right; margin-right: 5px;"></viewerselect>
                                 <archiveform v-if="archiving[task._id]" 
                                     :instance="instance" 
                                     :app_id="_output_tasks[task._id].config._prov.app"
                                     :output_task="_output_tasks[task._id]" 
                                     :dataset_id="output_id"
                                     :dataset="dataset" 
-                                    @submitted="archive(task._id, false)" style="margin-top: 30px;"/>
+                                    @submitted="archive(task._id, false)" style="margin-top: 30px;"></archiveform>
                             </el-col>
                             </el-row>
                         </el-card>
@@ -333,6 +335,7 @@ import archiveform from '@/components/archiveform'
 import projectselector from '@/components/projectselector'
 import statusicon from '@/components/statusicon'
 import mute from '@/components/mute'
+import viewerselect from '@/components/viewerselect'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -341,21 +344,12 @@ var debounce = null;
 
 export default {
     components: { 
-        sidemenu, 
-        contact, 
-        task, 
-        message, 
-        file, 
-        tags, 
-        metadata, 
-        filebrowser, 
-        pageheader, 
-        appavatar,
-        app, 
-        archiveform, 
-        projectselector,
-        statusicon,
-        mute,
+        sidemenu, contact, task, 
+        message, file, tags, 
+        metadata, filebrowser, pageheader, 
+        appavatar, app, archiveform, 
+        projectselector, statusicon, mute,
+        viewerselect,
     },
 
     data() {
@@ -481,8 +475,6 @@ export default {
             });
             return tasks;
         },
-
-
     },
 
     watch: {
@@ -572,7 +564,9 @@ export default {
                 }
             });
         },
-        view: function(url) {
+        view: function(taskid, event) {
+            console.log(taskid, event);
+            var url = taskid+'/'+event;
             window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
         load: function() {

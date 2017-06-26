@@ -36,8 +36,10 @@
         <tr>
             <th>Storage</th>
             <td>
-                <div v-if="dataset.storage">This dataset is currently stored in <b>{{dataset.storage}}</b></div>
-                <el-alert v-else title="Storage field is not set" type="error"> </el-alert>
+                <div v-if="dataset.storage">
+                    This dataset is currently stored in <b>{{dataset.storage}}</b>
+                </div>
+                <el-alert v-else title="Archiving.." type="warning"> </el-alert>
             </td>
         </tr>
         <tr>

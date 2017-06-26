@@ -107,6 +107,8 @@
                 <el-button size="small" type="primary" @click="download()">Download</el-button>
                 <el-button size="small" type="primary" @click="process()">Process</el-button>
             </el-button-group>
+            <viewerselect @select="view"></viewerselect>
+            <!--
             <el-dropdown @command="view">
                 <el-button size="small" type="primary">
                     View<i class="el-icon-caret-bottom el-icon--right"></i>
@@ -118,6 +120,7 @@
                     <el-dropdown-item command="fibernavigator">Fiber Navigator</el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
+            -->
         </div>
     </div>
 </div>
@@ -131,11 +134,12 @@ import pageheader from '@/components/pageheader'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import projectmenu from '@/components/projectmenu'
+import viewerselect from '@/components/viewerselect'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    components: { sidemenu, tags, metadata, pageheader, projectmenu },
+    components: { sidemenu, tags, metadata, pageheader, projectmenu, viewerselect },
     data () {
         return {
             datasets: [],
@@ -382,6 +386,7 @@ export default {
         },
 
         view: function(type) {
+            console.log(type);
             //find novnc resource
             this.$http.get(Vue.config.wf_api+'/resource', {params: {
                 find: JSON.stringify({"config.services.name": "soichih/abcd-novnc"}),
@@ -396,6 +401,7 @@ export default {
                         return this.stage_selected(instance, novnc_resource);
                     }).then(task=>{
                         var download_task = task;
+                        //now let viewer can take over
                         window.open("#/view/"+download_instance._id+"/"+download_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
                     });
                 }

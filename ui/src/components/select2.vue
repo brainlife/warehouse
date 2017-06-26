@@ -20,7 +20,12 @@ export default {
     mounted: function() {
         var vm = this;
         //init select2
-        $(this.$el).select2({data: this.options, tags: true, theme: 'classic'})
+        $(this.$el).select2({
+            data: this.options, 
+            tags: true, 
+            theme: 'classic',
+            //matcher: function(term, text) { console.log("test.........", term, text); return false; },
+        })
         .val(this.value)
         .trigger('change')
         // emit event on change.
