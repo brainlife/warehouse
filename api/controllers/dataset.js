@@ -217,6 +217,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 archive(task, _dataset, req, function(err) {
                     if(err) logger.error(err);
                     //TODO post event?
+                    logger.debug("archive finished");
                 });
             });
         },
@@ -253,16 +254,23 @@ function archive(task, dataset, req, cb) {
         })
         //and pipe it directly to the storage
         .on('response', function(r) {
-            console.log("stream response received");
+            console.log("stream commencing");
             if(r.statusCode != 200) {
                 cb("/resource/download failed "+r.statusCode);
-            } else {
+            }/* else {
                 //success.. set storage
                 logger.info("done!");
                 dataset.storage = storage;
                 dataset.save(cb);
-            }
+            }*/
         }).pipe(writestream);
+        writestream.on('finish', err=>{
+            //really done
+            //logger.debug("checking to see if this message happens after transfer ends"); 
+            logger.info("done!");
+            dataset.storage = storage;
+            dataset.save(cb);
+        });
     });
 }
 
