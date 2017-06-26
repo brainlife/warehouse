@@ -31,12 +31,26 @@ const db = require('../models');
  */
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
+	var skip = req.query.skip || 0;
+	var limit = req.query.limit || 100;
+
     if(req.query.find) find = JSON.parse(req.query.find);
+	
+	if (req.query.distinct) {
+        var sortObj = {};
+        sortObj.$sort = JSON.parse(req.query.sort || JSON.stringify({ '_id': 1 }));
+		db.Datatypes
+        .aggregate([sortObj, { $group: { _id: req.query.distinct } }, { $skip: +skip }, { $limit: +limit }], function(err, results) {
+        	if (err) next(err);
+            res.json(results)
+        })
+        return;
+    }	
 
     db.Datatypes.find(find)
     .select(req.query.select)
-    .limit(req.query.limit || 100)
-    .skip(req.query.skip || 0)
+    .limit(+limit)
+    .skip(+skip)
     .sort(req.query.sort || '_id')
     .exec((err, datatypes)=>{
         if(err) return next(err);

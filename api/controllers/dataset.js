@@ -75,8 +75,20 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         var limit = 100;
         if(req.query.limit) limit = parseInt(req.query.limit);
         var skip = 0;
-        if(req.query.skip) limit = parseInt(req.query.skip);
-    
+        if(req.query.skip) skip = parseInt(req.query.skip);
+   		
+		if (req.query.distinct) {
+			var sortObj = {};
+			sortObj.$sort = JSON.parse(req.query.sort || JSON.stringify({ '_id': 1 }));
+
+			db.Datasets
+			.aggregate([sortObj, { $group: { _id: req.query.distinct } }, { $skip: skip }, { $limit: limit }], function(err, results) {
+				if (err) next(err);
+				res.json(results)
+			})
+			return;
+		}
+
         //then look for dataset
         db.Datasets
         .find({
@@ -90,8 +102,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         .limit(limit)
         .skip(skip)
         .sort(req.query.sort || '_id')
-        .lean()
-        .exec((err, datasets)=>{
+		.lean()
+		.exec((err, datasets)=>{
             if(err) return next(err);
             db.Datasets.count(find).exec((err, count)=>{
                 if(err) return next(err);
