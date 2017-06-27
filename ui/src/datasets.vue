@@ -388,10 +388,17 @@ export default {
         view: function(type) {
             console.log(type);
             //find novnc resource
-            this.$http.get(Vue.config.wf_api+'/resource', {params: {
-                find: JSON.stringify({"config.services.name": "soichih/abcd-novnc"}),
+            this.$http.get(Vue.config.wf_api+'/resource/best', {params: {
+                /*
+                find: JSON.stringify({
+                    "config.services.name": "soichih/abcd-novnc",
+                    active: true,
+                }),
+                */
+                service: "soichih/abcd-novnc",
             }}).then(res=>{
-                var novnc_resource = res.body.resources[0];
+                //var novnc_resource = res.body.resources[0];
+                var novnc_resource = res.body.resource._id;
                 if(!novnc_resource) console.error("faild to find soichih/abcd-novnc resource"); 
                 else {
                     //create download task

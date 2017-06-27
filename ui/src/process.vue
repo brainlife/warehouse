@@ -583,7 +583,6 @@ export default {
                     find: JSON.stringify({
                         instance_id: this.instance._id,
                         status: {$ne: "removed"},
-                        //name: {$ne: "brainlife.novnc"},
                     }),
                     limit: 2000,
                 }})
