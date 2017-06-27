@@ -76,7 +76,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         if(req.query.limit) limit = parseInt(req.query.limit);
         var skip = 0;
         if(req.query.skip) skip = parseInt(req.query.skip);
-<<<<<<< HEAD
    		
 		if (req.query.distinct) {
 			var sortObj = {};
@@ -93,9 +92,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 			return;
 		}
 
-=======
-    
->>>>>>> 8cdf1cc0e1e2cc8d7e031563372748784dd2d051
         //then look for dataset
         db.Datasets
         .find({

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <template>
 <select multiple="true">
     <slot></slot>
@@ -98,7 +97,6 @@ box-sizing: border-box;
 z-index: 9900;
 }
 </style>
-=======
 <template>
 <select multiple="true">
     <slot></slot>
@@ -162,4 +160,3 @@ width: 100%;
 box-sizing: border-box;
 }
 </style>
->>>>>>> 8cdf1cc0e1e2cc8d7e031563372748784dd2d051

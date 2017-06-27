@@ -189,11 +189,8 @@ export default {
                 outputs: [],
             },
 
-<<<<<<< HEAD
-=======
             alltags: [],
 
->>>>>>> 8cdf1cc0e1e2cc8d7e031563372748784dd2d051
             ready: false,  //ready to render form
 
             //cache
@@ -261,9 +258,7 @@ export default {
                     });
                 });
 
-<<<<<<< HEAD
                 this.ready = true;
-=======
                 //finally, load apptags catalog
                 this.load_app_tags().then(tags=>{
                     this.alltags = tags;
