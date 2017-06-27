@@ -141,7 +141,6 @@ export default {
             service_stats: null, 
 
             config: Vue.config,
-            testUrl: "",
         }
     },
 
