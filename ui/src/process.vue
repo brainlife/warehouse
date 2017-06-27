@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <template>
 <div>
     <pageheader :user="config.user"></pageheader>
@@ -1432,7 +1431,6 @@ background-color: #fff;
 border-radius: 8px 8px 0 0;
 }
 </style>
-=======
 <template>
 <div>
     <pageheader :user="config.user"></pageheader>
@@ -2477,4 +2475,3 @@ background-color: #fff;
 border-radius: 8px 8px 0 0;
 }
 </style>
->>>>>>> 8cdf1cc0e1e2cc8d7e031563372748784dd2d051
