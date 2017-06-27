@@ -411,7 +411,7 @@ export default {
             tasks: null,
             //datasets: {}, 
             datatypes: {},
-            limit: 10,
+            limit: 1000,    // number of datasets/subjects/datatypes/datatype_tags to load in chunks
             
             selected_subjects: [],
             selected_datatypes: [],
@@ -585,7 +585,7 @@ export default {
                 removed: false
             };
             if (params.term)
-                find.$text = { $search: params.term };
+                find.$text = { $search: params.term || "" };
             if (this.selected_subjects.length > 0)
                 and.push( { $or: criteria } );
             if (this.selected_datatypes.length > 0)
@@ -670,12 +670,15 @@ export default {
             }
             
             var data = {};
-            var find = {
-                project: this.input_dialog.project,
-                removed: false
+            var find = { $match: {
+                    // project: this.input_dialog.project,
+                    // removed: false
+                    name: {
+                        $regex: params.term || "",
+                        $options: 'i'
+                    }
+                }
             };
-            if (params.term)
-                find.$text = { $search: params.term };
             
             this.$http.get('dataset', { params: {
                 find: JSON.stringify(find),
@@ -719,10 +722,11 @@ export default {
             var data = {};
             var find = {
                 project: this.input_dialog.project,
-                removed: false
+                removed: false,
+                $text: {
+                    $search: params.term || ""
+                }
             };
-            if (params.term)
-                find.$text = { $search: params.term };
             
             this.$http.get('datatype', { params: {
                 limit: this.limit,
@@ -762,14 +766,18 @@ export default {
             }
             
             var data = {};
-            var find = {
-                project: this.input_dialog.project,
-                removed: false
+            var find = { $match: {
+                    // project: this.input_dialog.project,
+                    // removed: false
+                    datatype_tags: {
+                        $regex: params.term || "",
+                        $options: 'i'
+                    }
+                }
             };
-            if (params.term)
-                find.$text = { $search: params.term };
             
             this.$http.get('dataset', { params: {
+                find: JSON.stringify(find),
                 limit: this.limit,
                 skip: (params.page - 1) * this.limit,
                 distinct: '$datatype_tags'
@@ -807,10 +815,6 @@ export default {
         debounce_grab_datasets: function(params, cb) {
             let self = this;
             this.debounce(() => self.grab_datasets(params, cb), 300);
-        },
-        debounce_grab_subjects: function(params, cb) {
-            let self = this;
-            this.debounce(() => self.grab_subjects(params, cb), 300);
         },
         debounce_grab_datatypes: function(params, cb) {
             let self = this;
