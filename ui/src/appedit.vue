@@ -258,6 +258,7 @@ export default {
                     });
                 });
 
+                this.ready = true;
                 //finally, load apptags catalog
                 this.load_app_tags().then(tags=>{
                     this.alltags = tags;
