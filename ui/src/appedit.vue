@@ -266,7 +266,6 @@ export default {
                 }).catch(err=>{
                     console.error(err);
                 });
->>>>>>> 8cdf1cc0e1e2cc8d7e031563372748784dd2d051
             });
         }, res=>{
             console.error(res);
