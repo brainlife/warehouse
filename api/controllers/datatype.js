@@ -39,8 +39,12 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 	if (req.query.distinct) {
         var sortObj = {};
         sortObj.$sort = JSON.parse(req.query.sort || JSON.stringify({ '_id': 1 }));
+		var pipe = [sortObj, { $group: { _id: req.query.distinct } }, { $skip: +skip }, { $limit: +limit }];
+		if (req.query.find)
+			pipe.unshift(JSON.parse(req.query.find));
+
 		db.Datatypes
-        .aggregate([sortObj, { $group: { _id: req.query.distinct } }, { $skip: +skip }, { $limit: +limit }], function(err, results) {
+        .aggregate(pipe, function(err, results) {
         	if (err) next(err);
             res.json(results)
         })
