@@ -76,6 +76,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         if(req.query.limit) limit = parseInt(req.query.limit);
         var skip = 0;
         if(req.query.skip) skip = parseInt(req.query.skip);
+<<<<<<< HEAD
    		
 		if (req.query.distinct) {
 			var sortObj = {};
@@ -92,6 +93,9 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 			return;
 		}
 
+=======
+    
+>>>>>>> 8cdf1cc0e1e2cc8d7e031563372748784dd2d051
         //then look for dataset
         db.Datasets
         .find({
@@ -232,6 +236,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 archive(task, _dataset, req, function(err) {
                     if(err) logger.error(err);
                     //TODO post event?
+                    logger.debug("archive finished");
                 });
             });
         },
@@ -268,16 +273,23 @@ function archive(task, dataset, req, cb) {
         })
         //and pipe it directly to the storage
         .on('response', function(r) {
-            console.log("stream response received");
+            console.log("stream commencing");
             if(r.statusCode != 200) {
                 cb("/resource/download failed "+r.statusCode);
-            } else {
+            }/* else {
                 //success.. set storage
                 logger.info("done!");
                 dataset.storage = storage;
                 dataset.save(cb);
-            }
+            }*/
         }).pipe(writestream);
+        writestream.on('finish', err=>{
+            //really done
+            //logger.debug("checking to see if this message happens after transfer ends"); 
+            logger.info("done!");
+            dataset.storage = storage;
+            dataset.save(cb);
+        });
     });
 }
 

@@ -1,14 +1,13 @@
 <template>
-<el-card :body-style="{padding: '0px'}" 
-    v-if="app" 
+<el-card :body-style="{padding: '0px'}" v-if="app_" 
     :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
-        <appavatar :app="app" style="float: left;margin-right: 15px;"></appavatar>
-        <h4 class="appname">{{app.name}}</h4>
-        <el-rate v-if="!compact" class="rate" v-model="app._rate"></el-rate>
-        <div class="desc">{{app.desc}}</div>
+        <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
+        <h4 class="appname">{{app_.name}}</h4>
+        <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
+        <div class="desc">{{app_.desc}}</div>
         <div class="devs" v-if="!compact">
-            <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
+            <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
         </div>
         <slot/>
     </div>
@@ -33,6 +32,7 @@ export default {
     },
     data () {
         return {
+            app_: null
         }
     },
     mounted: function() {
@@ -41,19 +41,24 @@ export default {
                 find: JSON.stringify({_id: this.appid}),
                 //populate: "project datatype prov.app",
             }}).then(res=>{
-                this.app = res.body.apps[0];
+                this.app_ = res.body.apps[0];
             });
         }
+        if(this.app) this.app_ = this.app;
     },
     methods: {
         click: function() {
-            if(this.clickable) this.$router.push('/app/'+this.app._id);
+            if(this.clickable) this.$router.push('/app/'+this.app_._id);
         },
     },
 }
 </script>
 
 <style scoped>
+.el-card.compact {
+border: none;
+box-shadow: none;
+}
 .appname {
 color: #666;
 padding: 10px;

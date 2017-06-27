@@ -92,8 +92,8 @@
                         <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
                             <icon name="close"></icon>
                         </div>
+                        {{dataset.meta.subject}}
                         <small>
-                            {{dataset.name}}
                             <tags :tags="dataset.datatype_tags"></tags>
                         </small>
                     </div>
@@ -107,6 +107,8 @@
                 <el-button size="small" type="primary" @click="download()">Download</el-button>
                 <el-button size="small" type="primary" @click="process()">Process</el-button>
             </el-button-group>
+            <viewerselect @select="view"></viewerselect>
+            <!--
             <el-dropdown @command="view">
                 <el-button size="small" type="primary">
                     View<i class="el-icon-caret-bottom el-icon--right"></i>
@@ -118,6 +120,7 @@
                     <el-dropdown-item command="fibernavigator">Fiber Navigator</el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
+            -->
         </div>
     </div>
 </div>
@@ -131,11 +134,12 @@ import pageheader from '@/components/pageheader'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import projectmenu from '@/components/projectmenu'
+import viewerselect from '@/components/viewerselect'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    components: { sidemenu, tags, metadata, pageheader, projectmenu },
+    components: { sidemenu, tags, metadata, pageheader, projectmenu, viewerselect },
     data () {
         return {
             datasets: [],
@@ -150,10 +154,7 @@ export default {
             //cache
             datatypes: null,
             projects: null,
-	    	skip: 0,
-	    	limit: 1000,
 			cannotLoad: false,
-			loadMargin: window.innerHeight,
 
             config: Vue.config,
         }
@@ -193,10 +194,40 @@ export default {
     },
 
     mounted() {
-        this.project_id = this.$route.params.projectid; //could be set to null
-		this.reset_scroll();
+        this.project_id = this.$route.params.projectid;
 
-		this.load_datasets();	
+        this.$http.get('project', {params: {
+            //service: "_upload",
+        }})
+        .then(res=>{
+            this.projects = {};
+            res.body.projects.forEach((p)=>{
+                this.projects[p._id] = p;
+            });
+
+            if(!this.project_id) {
+                console.log("open first one");
+                var pid = localStorage.getItem("last_projectid_used");
+                if(!pid) pid = res.body.projects[0]._id; //just pick one that user has access
+                this.$router.push("/datasets/"+pid);
+            } else {
+                localStorage.setItem("last_projectid_used", this.project_id);
+            }
+
+            return this.$http.get('datatype', {params: {
+                //service: "_upload",
+            }})
+        })
+        .then(res=>{
+            this.datatypes = {};
+            res.body.datatypes.forEach((d)=>{
+                this.datatypes[d._id] = d;
+            });
+
+            setTimeout(this.check_query, 200);
+        }).catch(err=>{
+            console.error(err);
+        });
 
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
     },
@@ -216,46 +247,17 @@ export default {
 	methods: {
 		reset_scroll: function() {
 			this.datasets = [];
-			this.skip = 0;
 			this.cannotLoad = false;
 		},
-		load_datasets: function() {
-			this.$http.get('project', {params: {
-				//service: "_upload",
-			}})
-			.then(res=>{
-				this.projects = {};
-				res.body.projects.forEach((p)=>{
-					this.projects[p._id] = p;
-				});
-
-				return this.$http.get('datatype', {params: {
-					//service: "_upload",
-				}})
-			})
-			.then(res=>{
-				this.datatypes = {};
-				res.body.datatypes.forEach((d)=>{
-					this.datatypes[d._id] = d;
-				});
-
-				setTimeout(this.check_query, 200);
-			}).catch(err=>{
-				console.error(err);
-			});
-
-
-		},
 		check_scroll: function(e) {
-			var scrolled = e.target.scrollTop,
-				bottom = e.target.scrollHeight - e.target.getBoundingClientRect().height;
-				if (!this.loading && !this.cannotLoad && scrolled > bottom - this.loadMargin) {
-					this.loading = true;
-					this.load(err => {
-						this.loading = false;
-						if (err) console.error(err);
-					});
-				}
+			var page_margin = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
+            if (!this.loading && !this.cannotLoad && page_margin < 500) {
+                this.loading = true;
+                this.load(err => {
+                    this.loading = false;
+                    if (err) console.error(err);
+                });
+            }
 		},
 
         check_query: function() {
@@ -291,17 +293,15 @@ export default {
             //console.log("loading", find);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
-				        skip: this.skip,
-                limit: this.limit,
+                skip: this.datasets.length,
+                limit: 50,
                 select: 'datatype datatype_tags project create_date name desc tags meta storage',
-                sort: 'meta -create_date'
+                sort: 'meta.subject -create_date'
             }})
             .then(res=>{
 				this.cannotLoad = res.body.datasets.length == 0;
-				this.skip += res.body.datasets.length;
 
                 //set checked flag for each dataset
-
 				res.body.datasets.forEach(dataset=>{
 					this.datasets.push(dataset);
                     if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
@@ -386,11 +386,19 @@ export default {
         },
 
         view: function(type) {
+            console.log(type);
             //find novnc resource
-            this.$http.get(Vue.config.wf_api+'/resource', {params: {
-                find: JSON.stringify({"config.services.name": "soichih/abcd-novnc"}),
+            this.$http.get(Vue.config.wf_api+'/resource/best', {params: {
+                /*
+                find: JSON.stringify({
+                    "config.services.name": "soichih/abcd-novnc",
+                    active: true,
+                }),
+                */
+                service: "soichih/abcd-novnc",
             }}).then(res=>{
-                var novnc_resource = res.body.resources[0];
+                //var novnc_resource = res.body.resources[0];
+                var novnc_resource = res.body.resource._id;
                 if(!novnc_resource) console.error("faild to find soichih/abcd-novnc resource"); 
                 else {
                     //create download task
@@ -400,6 +408,7 @@ export default {
                         return this.stage_selected(instance, novnc_resource);
                     }).then(task=>{
                         var download_task = task;
+                        //now let viewer can take over
                         window.open("#/view/"+download_instance._id+"/"+download_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
                     });
                 }

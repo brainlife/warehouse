@@ -23,7 +23,11 @@
                 <el-input type="text" v-model="app.name" placeholder="Name of application"/>
             </el-form-item>
             <el-form-item label="Description">
-                <el-input type="textarea" v-model="app.desc" placeholder="Enter description for this application."/>
+                <el-input type="textarea" :autosize="{minRows: 4}" v-model="app.desc" placeholder="Enter description for this application."/>
+            </el-form-item>
+            <el-form-item label="Tags">
+                <select2 :options="alltags" v-model="app.tags">
+                </select2>
             </el-form-item>
             <el-form-item label="Developers">
                 <contactlist v-model="app.admins"></contactlist>
@@ -172,6 +176,7 @@ export default {
 
                 name: null,
                 desc: null,
+                tags: [],
                 avatar: null,
 
                 github: null,
@@ -184,6 +189,11 @@ export default {
                 outputs: [],
             },
 
+<<<<<<< HEAD
+=======
+            alltags: [],
+
+>>>>>>> 8cdf1cc0e1e2cc8d7e031563372748784dd2d051
             ready: false,  //ready to render form
 
             //cache
@@ -197,6 +207,7 @@ export default {
             config: Vue.config,
         }
     },
+
     mounted: function() {
         if(this.$route.params.id !== '_') {
             //load app to edit
@@ -212,11 +223,6 @@ export default {
             //init.. (can't do it in data() for some reason (maybe because contact list is not setup?
             this.app.admins = [Vue.config.user.sub.toString()];
         }
-        /*
-        this.$on('editor-update', c=>{
-            console.log(c);
-        });
-        */
 
         //load datatypes for form
         this.$http.get('datatype', {params: {
@@ -255,15 +261,24 @@ export default {
                     });
                 });
 
+<<<<<<< HEAD
                 this.ready = true;
+=======
+                //finally, load apptags catalog
+                this.load_app_tags().then(tags=>{
+                    this.alltags = tags;
+                    this.ready = true;
+                }).catch(err=>{
+                    console.error(err);
+                });
+>>>>>>> 8cdf1cc0e1e2cc8d7e031563372748784dd2d051
             });
         }, res=>{
             console.error(res);
         });
-
     },
-    methods: {
 
+    methods: {
         add: function(it) {
             it.push({
                 id: "",
@@ -299,6 +314,24 @@ export default {
                     console.error(err);
                 });
             } 
+        },
+
+        //load tags from all apps and create a catalog
+        load_app_tags: function() {
+            return new Promise((resolve, reject)=>{
+                this.$http.get('app', {params: {
+                    select: 'tags',
+                }}).then(res=>{
+                    var alltags = []; 
+                    console.dir(res.body.apps);
+                    res.body.apps.forEach(app=>{
+                        if(app.tags) app.tags.forEach(tag=>{
+                            if(!~alltags.indexOf(tag)) alltags.push(tag);
+                        });
+                    });
+                    resolve(alltags);
+                }, reject);
+            });
         }
     },
 }
