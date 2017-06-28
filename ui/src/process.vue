@@ -722,7 +722,6 @@ export default {
             } }).then(res => {
                 var data = [];
                 var howMany = 0;
-                console.log(res.body.datatypes);
                 res.body.datatypes.forEach(datatype => {
                     var name = datatype.name;
                     var object = { id: datatype._id, text: name };
