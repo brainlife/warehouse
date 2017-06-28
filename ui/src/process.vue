@@ -278,54 +278,6 @@
                 </el-collapse>
             </div>
         </div><!--main-section-->
-
-        <el-dialog title="Stage Datasets" :visible.sync="show_input_dialog">
-            <!--<p class="text-muted">need to stage your datasets to be processed.</p>-->
-            <el-tabs v-model="input_dialog.mode">
-                <el-tab-pane label="Selected Datasets" name="selected">
-                    <p class="text-muted" v-if="Object.keys(selected).length == 0">Please go to <a href="#/datasets">Datasets</a> page to select datasets.</p>
-                    <p class="text-muted" v-else>We will stage following datasets you have selected.</p>
-                    <ul style="list-style: none;margin: 0px; padding: 0px; max-height: 200px; overflow: auto;">
-                        <li v-for="(select, did) in selected" :key="did" style="margin-bottom: 2px;">
-                            <metadata :metadata="select.meta"/>
-                            {{select.name}} 
-                            <tags :tags="select.datatype_tags"></tags>
-                        </li>
-                    </ul>
-                </el-tab-pane>
-                <el-tab-pane label="From Warehouse" name="warehouse">
-                    <el-form label-width="120px">
-                    <el-form-item label="Project">
-                        <projectselector v-model="input_dialog.project" @change="input_project_changed(project)"/>
-                    </el-form-item>
-                    <el-form-item label="Subject">
-                        <select2 style="width: 100%; max-width: 100%;" @input="update_selected_subjects" ref="select2_subjects" :dataAdapter="debounce_function(grab_subjects)"></select2>
-                    </el-form-item>
-                    <el-form-item label="Datatype">
-                        <select2 style="width: 100%; max-width: 100%;" @input="update_selected_datatypes" ref="select2_datatypes" :dataAdapter="debounce_function(grab_datatypes)"></select2>
-                    </el-form-item>
-                    <el-form-item label="Datatype Tags">
-                        <select2 style="width: 100%; max-width: 100%;" @input="update_selected_tags" ref="select2_datatypes" :dataAdapter="debounce_function(grab_tags)"></select2>
-                    </el-form-item>
-                    <el-form-item label="Dataset">
-                        <select2 ref="select2_datasets" style="width: 100%; max-width: 100%;" :dataAdapter="debounce_function(grab_datasets)" @input="update_selected_datasets"></select2>
-                        <!--<el-select v-model="input_dialog.dataset" placeholder="Select Dataset" style="width: 100%;">
-                            <el-option-group v-for="(datasets, subject) in input_dialog.datasets_groups" :key="subject" :label="subject">
-                                <el-option v-for="dataset in datasets" 
-                                    :key="dataset._id" 
-                                    :label="subject+' '+datatypes[dataset.datatype].name+' | '+dataset.datatype_tags+ ' | '+dataset.create_date" 
-                                    :value="dataset._id"><b>{{datatypes[dataset.datatype].name}}</b> <tags :tags="dataset.datatype_tags"></tags> <span class="text-muted">{{dataset.create_date|date}}</span></el-option>
-                            </el-option-group>
-                        </el-select>-->
-                    </el-form-item>
-                    </el-form>
-                </el-tab-pane>
-            </el-tabs>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="show_input_dialog = false">Cancel</el-button>
-                <el-button type="primary" @click="stage()" icon="check">Stage</el-button>
-            </span>
-        </el-dialog>
         <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
     </div>
 </div><!--root-->
@@ -384,15 +336,6 @@ export default {
 
             //dialog
             show_input_dialog: false,
-            input_dialog: {
-                mode: "selected",
-
-                //for warehouse download
-                project: null,
-                dataset: null, //selected dataset
-                groups: {}
-            },
-            
 
             tmp: {
                 debounce: {}
@@ -512,252 +455,6 @@ export default {
     },
 
     methods: {
-        generic_adapter: function(params, cb, getWhere, gParams, unique_name, fBody, fText, fId) {
-            this.input_dialog.groups[unique_name] = this.input_dialog.groups[unique_name] || {};
-            if (!('page' in params)) {
-                params.page = 1;
-                this.input_dialog.groups[unique_name] = {};
-            }
-            
-            var data = {};
-            
-            this.$http.get(getWhere, { params: gParams }).then(res => {
-                var data = [];
-                var howMany = 0;
-                
-                fBody(res).forEach(obj => {
-                    var text = fText(obj), id = fId(obj);
-                    var object = { text, id };
-                    
-                    if (!this.input_dialog.groups[unique_name][id])
-                        this.input_dialog.groups[unique_name][id] = true;
-                    else
-                        return;
-                    
-                    // additional filter
-                    if (this.query_filter(object, params.term)) {
-                        ++howMany;
-                        data.push(object);
-                    }
-                });
-                
-                var r = {};
-                r.results = data;
-                r.pagination = {};
-                r.pagination.more = data.length != 0 && howMany == this.limit;
-                cb(r);
-            });
-        },
-        
-        grab_datasets: function(params, cb) {
-            if (!('page' in params)) {
-                params.page = 1;
-                this.input_dialog.datasets_groups = {};
-            }
-            
-            var data = {};
-            var criteria = this.selected_subjects.map((value) => { return { "meta.subject": value }; });
-            var criteria2 = this.selected_datatypes.map((value) => { return { "datatype": value } })
-            var criteria3 = this.selected_tags.map((value) => { return { "datatype_tags": value } })
-            
-            var and = [];
-            
-            var find = {
-                project: this.input_dialog.project,
-                removed: false
-            };
-            if (params.term)
-                find.$text = { $search: params.term || "" };
-            if (this.selected_subjects.length > 0)
-                and.push( { $or: criteria } );
-            if (this.selected_datatypes.length > 0)
-                and.push( { $or: criteria2 } );
-            if (this.selected_tags.length > 0)
-                and.push( { $or: criteria3 } );
-            
-            if (and.length > 0)
-                find.$and = and;
-            
-            this.$http.get('dataset', { params: {
-                find: JSON.stringify(find),
-                limit: this.limit,
-                skip: (params.page - 1) * this.limit,
-                sort: 'meta.subject -create_date'
-            } }).then(res => {
-                var data = [];
-                var option_group_by_subject = {};
-                
-                var shownUp = {};
-                var titlesFor = {};
-                
-                var howMany = 0;
-                
-                res.body.datasets.forEach(dataset=>{
-                    var subject = dataset.meta.subject;
-                    
-                    if(!this.input_dialog.datasets_groups[subject]) {
-                        titlesFor[subject] = false;
-                        this.input_dialog.datasets_groups[subject] = [];
-                    }
-                    else if (!shownUp[subject])
-                        titlesFor[subject] = true;
-                    shownUp[subject] = true;
-                    
-                    option_group_by_subject[subject] = option_group_by_subject[subject] || [];
-                    
-                    this.input_dialog.datasets_groups[subject].push(dataset);
-                    
-                    var text_tags = dataset.datatype_tags.length != 0 ?
-                                    dataset.datatype_tags.toString()
-                                                          .replace(/\[/g, "<")
-                                                          .replace(/\]/g, ">")
-                                                          .replace(/,/g, "> <")
-                                    : "";
-                    var date_text = new Date(dataset.create_date).toString()
-                                                                 .replace(/[ ]*GMT\-.*?$/g, "");
-                    
-                    var object = { id: dataset._id, text: `${this.datatypes[dataset.datatype].name} ${text_tags} | ${date_text}` };
-                    
-                    if (this.query_filter(object, params.term) || this.query_filter({ text: subject }, params.term)) {
-                        ++howMany;
-                        option_group_by_subject[subject].push(object);
-                    }
-                });
-                
-                for (var k in option_group_by_subject) {
-                    var group = option_group_by_subject[k];
-                    var toBeAdded = { text: k, children:group };
-                    if (group.length == 0)
-                        continue;
-                    
-                    if (titlesFor[k])
-                        toBeAdded = group
-                    
-                    data.push(toBeAdded);
-                }
-                
-                var r = {};
-                r.results = data;
-                r.pagination = {};
-                r.pagination.more = data.length != 0 && howMany == this.limit;
-                cb(r);
-            });
-            
-        },
-        
-        grab_subjects: function(params, cb) {
-            var find = { $match: {
-                    name: {
-                        $regex: params.term || "",
-                        $options: 'i'
-                    }
-                }
-            };
-            var gParams = {
-                find: JSON.stringify(find),
-                limit: this.limit,
-                skip: ((params.page || 1) - 1) * this.limit,
-                sort: JSON.stringify({ meta: -1 }),
-                distinct: '$meta'
-            };
-            
-            return this.generic_adapter(params, cb, 'dataset', gParams, 'subjects', (r) => r.body, (o) => o._id.subject, (o) => o._id.subject);
-        },
-        
-        grab_datatypes: function(params, cb) {
-            var find = {
-                name: {
-                    $regex: params.term || "",
-                    $options: 'i'
-                }
-            };
-            var gParams = {
-                find: JSON.stringify(find),
-                limit: this.limit,
-                skip: ((params.page || 1) - 1) * this.limit,
-                sort: "name"
-            };
-            
-            return this.generic_adapter(params, cb, 'datatype', gParams, 'datatypes', (r) => r.body.datatypes, (o) => o.name, (o) => o._id);
-        },
-        
-        grab_tags: function(params, cb) {
-            var find = { $match: {
-                    // project: this.input_dialog.project,
-                    // removed: false
-                    datatype_tags: {
-                        $regex: params.term || "",
-                        $options: 'i'
-                    }
-                }
-            };
-            var gParams = {
-                find: JSON.stringify(find),
-                limit: this.limit,
-                skip: ((params.page || 1) - 1) * this.limit,
-                distinct: '$datatype_tags'
-            };
-            
-            return this.generic_adapter(params, cb, 'dataset', gParams, 'tags', (r) => r.body, (o) => o._id[0], (o) => o._id[0]);
-        },
-        
-        debounce_function: function(f) {
-            return (params, cb) => {
-                let self = this;
-                this.debounce(() => f(params, cb), 300);
-            };
-        },
-        
-        query_filter: function(object, term) {
-            if (!term)
-                return true;
-            
-            return !!~object.text.replace(/[ \t]+/g, "").toLowerCase().indexOf(term.replace(/[ \t]+/g, "").toLowerCase());
-        },
-        
-        debounce: function(f, timeout) {
-            let self = this;
-            let token = Math.random();
-            
-            this.tmp.debounce[f] = token;
-            
-            setTimeout(function() {
-                if (token != self.tmp.debounce[f])
-                    return;
-                f();
-            }, timeout);
-        },
-        
-        // match_dataset: function(term, text) {
-        //     if (this.selected_subjects.length == 0)
-        //         return text;
-            
-        //     for (var subject of this.selected_subjects) {
-        //         var associated_datasets = this.input_dialog.datasets_groups[subject];
-        //         for (var dataset of associated_datasets) {
-        //             if (dataset._id == text.children[0].id)
-        //                 return text;
-        //         }
-        //     }
-            
-        //     return false;
-        // },
-        
-        update_selected_datasets: function(selected) {
-            this.input_dialog.dataset = selected;
-        },
-        
-        update_selected_subjects: function(selected) {
-            this.selected_subjects = selected;
-        },
-        
-        update_selected_datatypes: function(selected) {
-            this.selected_datatypes = selected;
-        },
-        
-        update_selected_tags: function(selected) {
-            this.selected_tags = selected;
-        },
         
         changedesc: function() {
             clearTimeout(debounce);
@@ -1062,7 +759,6 @@ export default {
         process_input_config: function(newtask, config) {
             for(var k in config) { 
                 var node = config[k];
-                
                 //if(node) return;
                 if(node instanceof Array) {
                     console.log("todo.. array!");
@@ -1074,7 +770,6 @@ export default {
                             var input = newtask.inputs[node.input_id];
                             //var dataset = this._datasets[input.dataset];
                             var dataset = this.find_dataset(input.dataset);
-                            
                             if(!~newtask.deps.indexOf(dataset.task._id)) newtask.deps.push(dataset.task._id);
                             //then lookup file_id
                             input.datatype.files.forEach(file=>{
@@ -1268,4 +963,3 @@ background-color: #fff;
 border-radius: 8px 8px 0 0;
 }
 </style>
-
