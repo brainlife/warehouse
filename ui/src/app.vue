@@ -46,6 +46,10 @@
             <td><pre>10.1006/br.a.{{app._id}}</pre></td>
         </tr>
         <tr>
+            <th>Tags</th>
+            <td><tags :tags="app.tags"></tags></td>
+        </tr>
+        <tr>
             <th>Developers</th>
             <td>
                 <contact v-for="c in app.admins" key="c._id" :id="c"></contact>

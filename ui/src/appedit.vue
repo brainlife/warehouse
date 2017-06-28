@@ -26,8 +26,7 @@
                 <el-input type="textarea" :autosize="{minRows: 4}" v-model="app.desc" placeholder="Enter description for this application."/>
             </el-form-item>
             <el-form-item label="Tags">
-                <select2 :options="alltags" v-model="app.tags">
-                </select2>
+                <select2 :options="alltags" v-model="app.tags"></select2>
             </el-form-item>
             <el-form-item label="Developers">
                 <contactlist v-model="app.admins"></contactlist>
@@ -83,16 +82,7 @@
                         <el-col :span="14" v-if="input.datatype">
                             <el-button @click="app.inputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
                             Datatype Tags
-                            <!--
-                            <el-select v-model="input.datatype_tags" 
-                                style="width: 100%"
-                                multiple filterable allow-create placeholder="Enter datatype tags">
-                                <el-option v-for="tag in input.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
-                            </el-select>
-                            -->
-                            <select2 :options="datatypes[input.datatype]._tags" v-model="input.datatype_tags">
-                                <!--<option disabled value="0">Select one</option>-->
-                            </select2>
+                            <select2 :options="datatypes[input.datatype]._tags" v-model="input.datatype_tags"></select2>
                         </el-col>
                         </el-row>
                     </el-card>
@@ -126,9 +116,7 @@
                                 <el-option v-for="tag in output.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
                             </el-select>
                             -->
-                            <select2 :options="datatypes[output.datatype]._tags" v-model="output.datatype_tags">
-                                <!--<option disabled value="0">Select one</option>-->
-                            </select2>
+                            <select2 :options="datatypes[output.datatype]._tags" v-model="output.datatype_tags"></select2>
                         </el-col>
                         </el-row>
                     </el-card>
@@ -206,20 +194,6 @@ export default {
     },
 
     mounted: function() {
-        if(this.$route.params.id !== '_') {
-            //load app to edit
-            this.$http.get('app', {params: {
-                find: JSON.stringify({_id: this.$route.params.id})
-            }})
-            .then(res=>{
-                this.app = res.body.apps[0];
-                //this.app.init_admins = this.app.admins;
-                this.app._config = JSON.stringify(this.app.config, null, 4);
-            });
-        } else {
-            //init.. (can't do it in data() for some reason (maybe because contact list is not setup?
-            this.app.admins = [Vue.config.user.sub.toString()];
-        }
 
         //load datatypes for form
         this.$http.get('datatype', {params: {
@@ -240,7 +214,6 @@ export default {
                 var v = this;
                 function addtag(datatype_id, tag) {
                     var dt = v.datatypes[datatype_id];
-                    //if(!dt._tags) dt._tags = []; //init
                     if(!~dt._tags.indexOf(tag)) dt._tags.push(tag);
                 }
                 res.body.apps.forEach(app=>{
@@ -258,11 +231,27 @@ export default {
                     });
                 });
 
-                this.ready = true;
-                //finally, load apptags catalog
+                //load apptags catalog
                 this.load_app_tags().then(tags=>{
                     this.alltags = tags;
-                    this.ready = true;
+
+                    if(this.$route.params.id !== '_') {
+                        //load app to edit
+                        this.$http.get('app', {params: {
+                            find: JSON.stringify({_id: this.$route.params.id})
+                        }})
+                        .then(res=>{
+                            this.app = res.body.apps[0];
+                            this.app._config = JSON.stringify(this.app.config, null, 4);
+
+                            this.ready = true;
+                        });
+                    } else {
+                        //init.. (can't do it in data() for some reason (maybe because contact list is not setup?
+                        this.app.admins = [Vue.config.user.sub.toString()];
+                        this.ready = true;
+                    }
+
                 }).catch(err=>{
                     console.error(err);
                 });

@@ -1,6 +1,9 @@
 <template>
     <el-select ref="select" :value="project" @input="update" placeholder="Please select" style="width: 100%;">
-        <el-option v-for="project in projects" :label="project.name" :value="project._id" :key="project._id">{{project.name}} <projectaccess :access="project.access"/></el-option>
+        <el-option v-for="project in projects" :label="project.name" :value="project._id" :key="project._id">
+            {{project.name}} 
+            <projectaccess :access="project.access"></projectaccess>
+        </el-option>
     </el-select>
 </template>
 
@@ -22,7 +25,7 @@ export default {
     },
     methods: {
         update: function(value) {
-            localStorage.setItem('projectselector.previous', value);
+            localStorage.setItem('projectselecter.previous', value);
             this.project = value;
             this.$emit('input', value);
         }
@@ -32,7 +35,7 @@ export default {
 
         //set it to previously selected value
         if(!this.project) {
-            var value = localStorage.getItem('projectselector.previous');
+            var value = localStorage.getItem('projectselecter.previous');
             this.project = value; 
             this.$emit('input', value);
         }
