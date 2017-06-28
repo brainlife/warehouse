@@ -422,21 +422,21 @@ export default {
             });
         },
         
-        whatsHappening: function(eyeD, numRequests) {
+        whatsHappening: function(id, numRequests) {
             if (numRequests == this.timeoutRequests)
-                return this.go(`/dataset/${eyeD}`);
+                return this.go(`/dataset/${id}`);
             
             this.$http.get(Vue.config.api + "/dataset", {
                 params: {
-                    find: JSON.stringify({ _id: eyeD })
+                    find: JSON.stringify({ _id: id })
                 }
             }).then(res => {
                 var d = res.body.datasets[0];
                 if (d.storage)
-                    this.go(`/dataset/${eyeD}`);
+                    this.go(`/dataset/${id}`);
                 
                 var self = this;
-                setTimeout(() => self.whatsHappening.call(self, eyeD, ++numRequests), this.tickTime);
+                setTimeout(() => self.whatsHappening.call(self, id, ++numRequests), this.tickTime);
             }, err => {
                 console.error(err);
             });
