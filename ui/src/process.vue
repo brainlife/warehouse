@@ -296,16 +296,16 @@
                         <projectselector v-model="input_dialog.project" @change="input_project_changed(project)"/>
                     </el-form-item>
                     <el-form-item label="Subject">
-                        <select2 style="width: 100%; max-width: 100%;" @input="update_selected_subjects" ref="select2_subjects" :dataAdapter="debounce_grab_subjects"></select2>
+                        <select2 style="width: 100%; max-width: 100%;" @input="update_selected_subjects" ref="select2_subjects" :dataAdapter="debounce_function(grab_subjects)"></select2>
                     </el-form-item>
                     <el-form-item label="Datatype">
-                        <select2 style="width: 100%; max-width: 100%;" @input="update_selected_datatypes" ref="select2_datatypes" :dataAdapter="debounce_grab_datatypes"></select2>
+                        <select2 style="width: 100%; max-width: 100%;" @input="update_selected_datatypes" ref="select2_datatypes" :dataAdapter="debounce_function(grab_datatypes)"></select2>
                     </el-form-item>
                     <el-form-item label="Datatype Tags">
-                        <select2 style="width: 100%; max-width: 100%;" @input="update_selected_tags" ref="select2_datatypes" :dataAdapter="debounce_grab_tags"></select2>
+                        <select2 style="width: 100%; max-width: 100%;" @input="update_selected_tags" ref="select2_datatypes" :dataAdapter="debounce_function(grab_tags)"></select2>
                     </el-form-item>
                     <el-form-item label="Dataset">
-                        <select2 ref="select2_datasets" style="width: 100%; max-width: 100%;" :dataAdapter="debounce_grab_datasets" @input="update_selected_datasets"></select2>
+                        <select2 ref="select2_datasets" style="width: 100%; max-width: 100%;" :dataAdapter="debounce_function(grab_datasets)" @input="update_selected_datasets"></select2>
                         <!--<el-select v-model="input_dialog.dataset" placeholder="Select Dataset" style="width: 100%;">
                             <el-option-group v-for="(datasets, subject) in input_dialog.datasets_groups" :key="subject" :label="subject">
                                 <el-option v-for="dataset in datasets" 
@@ -387,10 +387,7 @@ export default {
                 //for warehouse download
                 project: null,
                 dataset: null, //selected dataset
-                datasets_groups: {}, //group by subject
-                datatypes_groups: {},
-                subjects_groups: {},
-                tags_groups: {}
+                groups: {}
             },
             
             tmp: {
@@ -560,6 +557,43 @@ export default {
     },
 
     methods: {
+        generic_adapter: function(params, cb, getWhere, gParams, unique_name, fBody, fText, fId) {
+            this.input_dialog.groups[unique_name] = this.input_dialog.groups[unique_name] || {};
+            if (!('page' in params)) {
+                params.page = 1;
+                this.input_dialog.groups[unique_name] = {};
+            }
+            
+            var data = {};
+            
+            this.$http.get(getWhere, { params: gParams }).then(res => {
+                var data = [];
+                var howMany = 0;
+                
+                fBody(res).forEach(obj => {
+                    var text = fText(obj), id = fId(obj);
+                    var object = { text, id };
+                    
+                    if (!this.input_dialog.groups[unique_name][id])
+                        this.input_dialog.groups[unique_name][id] = true;
+                    else
+                        return;
+                    
+                    // additional filter
+                    if (this.query_filter(object, params.term)) {
+                        ++howMany;
+                        data.push(object);
+                    }
+                });
+                
+                var r = {};
+                r.results = data;
+                r.pagination = {};
+                r.pagination.more = data.length != 0 && howMany == this.limit;
+                cb(r);
+            });
+        },
+        
         grab_datasets: function(params, cb) {
             if (!('page' in params)) {
                 params.page = 1;
@@ -657,101 +691,42 @@ export default {
         },
         
         grab_subjects: function(params, cb) {
-            if (!('page' in params)) {
-                params.page = 1;
-                this.input_dialog.subjects_groups = {};
-            }
-            
-            var data = {};
             var find = { $match: {
-                    // project: this.input_dialog.project,
-                    // removed: false
                     name: {
                         $regex: params.term || "",
                         $options: 'i'
                     }
                 }
             };
-            
-            this.$http.get('dataset', { params: {
+            var gParams = {
                 find: JSON.stringify(find),
                 limit: this.limit,
-                skip: (params.page - 1) * this.limit,
+                skip: ((params.page || 1) - 1) * this.limit,
                 sort: JSON.stringify({ meta: -1 }),
-                distinct: '$meta',
-            } }).then(res => {
-                var data = [];
-                var howMany = 0;
-                
-                res.body.forEach(obj => {
-                    var subject = obj._id.subject;
-                    var object = { id: subject, text: subject };
-                    
-                    if (!this.input_dialog.subjects_groups[subject])
-                        this.input_dialog.subjects_groups[subject] = true;
-                    else
-                        return;
-                    
-                    if (this.query_filter(object, params.term)) {
-                        ++howMany;
-                        data.push(object);
-                    }
-                });
-                
-                var r = {};
-                r.results = data;
-                r.pagination = {};
-                r.pagination.more = data.length != 0 && howMany == this.limit;
-                cb(r);
-            });
+                distinct: '$meta'
+            };
+            
+            return this.generic_adapter(params, cb, 'dataset', gParams, 'subjects', (r) => r.body, (o) => o._id.subject, (o) => o._id.subject);
         },
         
         grab_datatypes: function(params, cb) {
-            if (!('page' in params)) {
-                params.page = 1;
-                this.input_dialog.datatypes_groups = {};
-            }
-            
-            var data = {};
-            
-            this.$http.get('datatype', { params: {
-                find: JSON.stringify({ name: { $regex: params.term || "", $options: 'i' } }),
+            var find = {
+                name: {
+                    $regex: params.term || "",
+                    $options: 'i'
+                }
+            };
+            var gParams = {
+                find: JSON.stringify(find),
                 limit: this.limit,
-                skip: (params.page - 1) * this.limit,
+                skip: ((params.page || 1) - 1) * this.limit,
                 sort: "name"
-            } }).then(res => {
-                var data = [];
-                var howMany = 0;
-                res.body.datatypes.forEach(datatype => {
-                    var name = datatype.name;
-                    var object = { id: datatype._id, text: name };
-                    
-                    if (!this.input_dialog.datatypes_groups[name])
-                        this.input_dialog.datatypes_groups[name] = true;
-                    else
-                        return;
-                    
-                    if (this.query_filter(object, params.term)) {
-                        ++howMany;
-                        data.push(object);
-                    }
-                });
-                
-                var r = {};
-                r.results = data;
-                r.pagination = {};
-                r.pagination.more = data.length != 0 && howMany == this.limit;
-                cb(r);
-            });
+            };
+            
+            return this.generic_adapter(params, cb, 'datatype', gParams, 'datatypes', (r) => r.body.datatypes, (o) => o.name, (o) => o._id);
         },
         
         grab_tags: function(params, cb) {
-            if (!('page' in params)) {
-                params.page = 1;
-                this.input_dialog.tags_groups = {};
-            }
-            
-            var data = {};
             var find = { $match: {
                     // project: this.input_dialog.project,
                     // removed: false
@@ -761,54 +736,21 @@ export default {
                     }
                 }
             };
-            
-            this.$http.get('dataset', { params: {
+            var gParams = {
                 find: JSON.stringify(find),
                 limit: this.limit,
-                skip: (params.page - 1) * this.limit,
+                skip: ((params.page || 1) - 1) * this.limit,
                 distinct: '$datatype_tags'
-            } }).then(res => {
-                var data = [];
-                var howMany = 0;
-                
-                res.body.forEach(obj => {
-                    var name = obj._id[0];
-                    var object = { id: name, text: name };
-                    
-                    if (!this.input_dialog.tags_groups[name])
-                        this.input_dialog.tags_groups[name] = true;
-                    else
-                        return;
-                    
-                    if (this.query_filter(object, params.term)) {
-                        ++howMany;
-                        data.push(object);
-                    }
-                });
-                
-                var r = {};
-                r.results = data;
-                r.pagination = {};
-                r.pagination.more = data.length != 0 && howMany == this.limit;
-                cb(r);
-            });
+            };
+            
+            return this.generic_adapter(params, cb, 'dataset', gParams, 'tags', (r) => r.body, (o) => o._id[0], (o) => o._id[0]);
         },
         
-        debounce_grab_subjects: function(params, cb) {
-            let self = this;
-            this.debounce(() => self.grab_subjects(params, cb), 300);
-        },
-        debounce_grab_datasets: function(params, cb) {
-            let self = this;
-            this.debounce(() => self.grab_datasets(params, cb), 300);
-        },
-        debounce_grab_datatypes: function(params, cb) {
-            let self = this;
-            this.debounce(() => self.grab_datatypes(params, cb), 300);
-        },
-        debounce_grab_tags: function(params, cb) {
-            let self = this;
-            this.debounce(() => self.grab_tags(params, cb), 300);
+        debounce_function: function(f) {
+            return (params, cb) => {
+                let self = this;
+                this.debounce(() => f(params, cb), 300);
+            };
         },
         
         query_filter: function(object, term) {
@@ -1214,6 +1156,7 @@ export default {
         process_input_config: function(newtask, config) {
             for(var k in config) { 
                 var node = config[k];
+                
                 //if(node) return;
                 if(node instanceof Array) {
                     console.log("todo.. array!");
@@ -1225,6 +1168,7 @@ export default {
                             var input = newtask.inputs[node.input_id];
                             //var dataset = this._datasets[input.dataset];
                             var dataset = this.find_dataset(input.dataset);
+                            
                             if(!~newtask.deps.indexOf(dataset.task._id)) newtask.deps.push(dataset.task._id);
                             //then lookup file_id
                             input.datatype.files.forEach(file=>{
