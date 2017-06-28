@@ -35,6 +35,8 @@ var projectSchema = mongoose.Schema({
     admins: [ String ], //list of users who can administer this project (co-PIs?)
     members: [ String ], //list of users who can access things under this project
 
+    tags: [String], //used to classify projects
+
     name: String,
     desc: String, 
 
@@ -184,6 +186,8 @@ var appSchema = mongoose.Schema({
     
     name: String,
     desc: String, 
+
+    tags: [String], //used to classify apps
 
     avatar: String, //url for avatar
 

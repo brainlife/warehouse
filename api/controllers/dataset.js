@@ -77,21 +77,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         var skip = 0;
         if(req.query.skip) skip = parseInt(req.query.skip);
    		
-		if (req.query.distinct) {
-			var sortObj = {};
-			sortObj.$sort = JSON.parse(req.query.sort || JSON.stringify({ '_id': 1 }));
-			var pipe = [sortObj, { $group: { _id: req.query.distinct } }, { $skip: skip }, { $limit: limit }];
-			if (req.query.find)
-				pipe.unshift(JSON.parse(req.query.find));
-
-			db.Datasets
-			.aggregate(pipe, function(err, results) {
-				if (err) next(err);
-				res.json(results)
-			});
-			return;
-		}
-
         //then look for dataset
         db.Datasets
         .find({
@@ -124,6 +109,39 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
 /**
  * @apiGroup Dataset
+ * @api {get} /dataset/distinct Query distinct values
+ * @apiDescription              Returns all dataset entries accessible to the user has access
+ *
+ * @apiParam {String} distinct  Field(s) to pull distinct values
+ * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
+ * 
+ * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
+ *
+ * @apiSuccess {Object}         List of distinct values
+ */
+router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    var find = {};
+    if(req.query.find) find = JSON.parse(req.query.find);
+    getprojects(req.user, function(err, projects) {
+        if(err) return next(err);
+        var project_ids = projects.map(function(p) { return p._id; });
+        db.Datasets
+        .find({
+            $and: [
+                {project: {$in: project_ids}},
+                find
+            ]
+        })
+        .distinct(req.query.distinct)
+		.exec((err, values)=>{
+            if(err) return next(err);
+            res.json(values);
+        });
+    });
+});
+
+/**
+ * @apiGroup Dataset
  * @api {get} /dataset/bibtex/:id   Download BibTex JSON
  * @apiDescription              Output BibTex JSON content for specified dataset ID
  *
@@ -143,7 +161,6 @@ router.get('/bibtex/:id', (req, res, next)=>{
         res.end();
     });
 });
-
 
 /**
  * @apiGroup Dataset
@@ -272,12 +289,7 @@ function archive(task, dataset, req, cb) {
             console.log("stream commencing");
             if(r.statusCode != 200) {
                 cb("/resource/download failed "+r.statusCode);
-            }/* else {
-                //success.. set storage
-                logger.info("done!");
-                dataset.storage = storage;
-                dataset.save(cb);
-            }*/
+            }
         }).pipe(writestream);
         writestream.on('finish', err=>{
             //really done

@@ -111,6 +111,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  *
  * @apiParam {String} [name]    User friendly name for this app
  * @apiParam {String} [desc]    Description for this app
+ * @apiParam {String[]} [tags]  List of tags to classify this app
  * @apiParam {String} [avatar]  URL for application avatar
  * @apiParam {String} [github]  github id/name for this app
  * @apiParam {Object[]} [inputs]    Input datatypes. Array of {id, datatype, datatype_tags[]}
@@ -132,11 +133,9 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  */
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
     req.body.user_id = req.user.sub;//override
-    //console.dir(req.body);
     var app = new db.Apps(req.body);
     app.save(function(err, _app) {
         if (err) return next(err); 
-        //console.dir(_app);
         app = JSON.parse(JSON.stringify(_app));
         app._canedit = canedit(req.user, app);
         res.json(app);
@@ -151,6 +150,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  *
  * @apiParam {String} [name]    User friendly name for this container 
  * @apiParam {String} [desc]    Description for this dataset 
+ * @apiParam {String[]} [tags]  List of tags to classify this app
  * @apiParam {String} [avatar]  URL for application avatar
  * @apiParam {String} [github]  github id/name for this app
  * @apiParam {Object[]} [inputs]    Input datatypes and tags
@@ -170,8 +170,6 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         if(err) return next(err);
         if(!app) return res.status(404).end();
 
-        //check access
-        //console.dir(app);
         if(canedit(req.user, app)) {
             //user can't update some fields
             delete req.body.user_id;
