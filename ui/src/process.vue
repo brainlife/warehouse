@@ -713,22 +713,15 @@ export default {
             }
             
             var data = {};
-            var find = {
-                project: this.input_dialog.project,
-                removed: false,
-                $text: {
-                    $search: params.term || ""
-                }
-            };
             
             this.$http.get('datatype', { params: {
+                find: JSON.stringify({ name: { $regex: params.term || "", $options: 'i' } }),
                 limit: this.limit,
                 skip: (params.page - 1) * this.limit,
-                sort: "name",
+                sort: "name"
             } }).then(res => {
                 var data = [];
                 var howMany = 0;
-                
                 res.body.datatypes.forEach(datatype => {
                     var name = datatype.name;
                     var object = { id: datatype._id, text: name };
