@@ -32,7 +32,7 @@
                         <time>{{dataset.create_date|date('%x')}}</time>
                         <mute>
                             <small v-if="dataset.task.status != 'finished'">
-                                <statusicon :status="dataset.task.status"/> Staging ..
+                                <statusicon :status="dataset.task.status"></statusicon> Staging ..
                             </small>
                         </mute>
                         <!--
@@ -74,7 +74,10 @@
                 <el-alert type="error" title="">This process has been removed</el-alert>
             </p>
             <p>
-                <el-input type="textarea" placeholder="Process Description" @change="changedesc()" v-model="instance.desc" :autosize="{minRows: 2, maxRows: 5}"/>
+                <el-input type="textarea" placeholder="Process Description" 
+                    @change="changedesc()" 
+                    v-model="instance.desc" 
+                    :autosize="{minRows: 2, maxRows: 5}"></el-input>
             </p>
 
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
@@ -189,7 +192,7 @@
                         </el-form-item>
 
                         <el-form-item label="Description">
-                            <el-input type="textarea" placeholder="Description" v-model="newtask_desc" :autosize="{minRows: 2, maxRows: 5}"/>
+                            <el-input type="textarea" placeholder="Description" v-model="newtask_desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
                         </el-form-item>
 
                         <el-form-item label="">
@@ -234,7 +237,7 @@
                                         </el-option>
                                     </el-option-group>
                                 </el-select>
-                                <el-alert v-if="input.error" :title="input.error" type="error"/>
+                                <el-alert v-if="input.error" :title="input.error" type="error"></el-alert>
                             </el-form-item>
 
                             <!--TODO - handle nested config? -->
@@ -323,6 +326,7 @@
                 <el-button type="primary" @click="stage()" icon="check">Stage</el-button>
             </span>
         </el-dialog>
+        <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
     </div>
 </div><!--root-->
 </template>
@@ -338,14 +342,13 @@ import file from '@/components/file'
 import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
 import pageheader from '@/components/pageheader'
-import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
 import app from '@/components/app'
 import archiveform from '@/components/archiveform'
-import projectselector from '@/components/projectselector'
+import projectselecter from '@/components/projectselecter'
+import datasetselecter from '@/components/datasetselecter'
 import statusicon from '@/components/statusicon'
 import mute from '@/components/mute'
-import select2 from '@/components/select2'
 import viewerselect from '@/components/viewerselect'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -357,10 +360,10 @@ export default {
     components: { 
         sidemenu, contact, task, 
         message, file, tags, 
-        metadata, filebrowser, pageheader, 
+        filebrowser, pageheader, 
         appavatar, app, archiveform, 
-        projectselector, statusicon, mute,
-        select2, viewerselect, 
+        projectselecter, statusicon, mute,
+        viewerselect, datasetselecter,
     },
 
     data() {
@@ -390,18 +393,16 @@ export default {
                 groups: {}
             },
             
+
             tmp: {
                 debounce: {}
             },
             
-            selected: JSON.parse(localStorage.getItem('datasets.selected')) || {},
             archiving: {},
 
             //cache
             tasks: null,
-            //datasets: {}, 
-            datatypes: {},
-            limit: 1000,    // number of datasets/subjects/datatypes/datatype_tags to load in chunks
+            datatypes: {}, 
             
             selected_subjects: [],
             selected_datatypes: [],
@@ -508,52 +509,6 @@ export default {
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
         }
-        // 'input_dialog.project': function(p) {
-        //     this.dataset_options = [];
-        //     this.dataset_subjects = [];
-            
-        //     $(this.$refs.select2_subjects.$el).val('').trigger('change');
-        //     $(this.$refs.select2_datasets.$el).val('').trigger('change');
-        //     console.log(this.$refs.select2_subjects.$el);
-            
-        //     //load datasets under this project (TODO - we should do on-the-fly search eventually)
-        //     this.$http.get('dataset', {params: {
-        //         find: JSON.stringify({
-        //             project: p,
-        //             removed: false,
-        //         }),
-        //         limit: 1000,
-        //         sort: 'meta.subject -create_date'
-        //     }}).then(res=>{
-        //         //group by subject
-        //         this.input_dialog.datasets_groups = {};
-        //         var option_group_by_subject = {};
-                
-        //         res.body.datasets.forEach(dataset=>{
-        //             var subject = dataset.meta.subject;
-        //             if(!this.input_dialog.datasets_groups[subject]) this.input_dialog.datasets_groups[subject] = [];
-        //             option_group_by_subject[subject] = option_group_by_subject[subject] || [];
-                    
-        //             this.input_dialog.datasets_groups[subject].push(dataset);
-                    
-        //             var text_tags = dataset.datatype_tags.length != 0 ?
-        //                             dataset.datatype_tags.toString()
-        //                                                   .replace(/\[/g, "<")
-        //                                                   .replace(/\]/g, ">")
-        //                                                   .replace(/,/g, "> <")
-        //                             : "";
-        //             var date_text = new Date(dataset.create_date).toString()
-        //                                                          .replace(/[ ]*GMT\-.*?$/g, "");
-                    
-        //             option_group_by_subject[subject].push({ id: dataset._id, text: `${this.datatypes[dataset.datatype].name} ${text_tags} | ${date_text}` });
-        //         });
-                
-        //         for (var k in option_group_by_subject) {
-        //             this.dataset_subjects.push(k);
-        //             this.dataset_options.push({ text: k, children:option_group_by_subject[k] })
-        //         }
-        //     });
-        // },
     },
 
     methods: {
@@ -865,7 +820,6 @@ export default {
             });
         },
         view: function(taskid, event) {
-            console.log(taskid, event);
             var url = taskid+'/'+event;
             window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
@@ -968,53 +922,6 @@ export default {
             this.newtask_app = null;
             this.newprocess = false;
             this.submitting = false;
-        },
-
-        stage: function() {
-            if(this.input_dialog.mode == "selected") this.stage_selected();
-            if(this.input_dialog.mode == "warehouse") this.stage_dataset();
-        },
-
-        stage_dataset: function() {
-            //console.log(this.input_dialog);
-            this.show_input_dialog = false;
-            var dids = this.input_dialog.dataset;
-            
-            if(!dids) return;
-            if (!(dids instanceof Array))
-                dids = [dids];
-            
-            this.$http.get('dataset', { params: {
-                find: JSON.stringify({
-                    _id: { $in: dids }
-                })
-            }}).then(res => {
-                var datasets = res.body.datasets;
-                var o = {};
-                
-                datasets.forEach(dataset => {
-                    o[dataset._id]= dataset;
-                });
-                
-                this.submit_stage(o);
-            });
-            
-            //need to look for this dataset
-            // for(var subject in this.input_dialog.datasets_groups) {
-            //     var datasets = this.input_dialog.datasets_groups[subject];
-            //     datasets.forEach(dataset=>{
-            //         if(dataset._id == this.input_dialog.dataset) {
-            //             var o = {};
-            //             o[this.input_dialog.dataset]= dataset;
-            //             this.submit_stage(o);
-            //         }
-            //     });
-            // }
-        },
-
-        stage_selected: function() {
-            this.show_input_dialog = false;
-            this.submit_stage(this.selected);
         },
 
         submit_stage: function(datasets) {
@@ -1150,7 +1057,6 @@ export default {
         filter_datasets: function(input) {
             return lib.filter_datasets(this._datasets, input);
         },
-
 
         //recursively update configuration with given newtask
         process_input_config: function(newtask, config) {

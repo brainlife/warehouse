@@ -7,7 +7,7 @@
         <el-input type="textarea" v-model="form.desc" placeholder="Dataset Desc"></el-input>
     </el-form-item>
     <el-form-item label="Project">
-        <projectselector v-model="form.project"/>
+        <projectselecter v-model="form.project"/>
         <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
     </el-form-item>
     <el-form-item label="User Tags (optional)">
@@ -45,10 +45,10 @@
 import Vue from 'vue'
 
 import projectaccess from '@/components/projectaccess'
-import projectselector from '@/components/projectselector'
+import projectselecter from '@/components/projectselecter'
 
 export default {
-    components: { projectaccess, projectselector },
+    components: { projectaccess, projectselecter },
 
     data() {
         return {

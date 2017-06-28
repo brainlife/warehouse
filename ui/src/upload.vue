@@ -35,7 +35,7 @@
                     </el-form-item>
 
                     <el-form-item label="Project">
-                        <projectselector v-model="project_id"/>
+                        <projectselecter v-model="project_id"/>
                     </el-form-item>
 
                     <el-form-item label="Data Type" v-if="datatypes">
@@ -151,10 +151,10 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import projectaccess from '@/components/projectaccess'
-import projectselector from '@/components/projectselector'
+import projectselecter from '@/components/projectselecter'
 
 export default {
-    components: { sidemenu, pageheader, projectselector},
+    components: { sidemenu, pageheader, projectselecter},
     data () {
         return {
             //user selections
