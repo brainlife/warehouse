@@ -117,7 +117,7 @@
                     <!--output-->
                     <el-collapse-item title="Output Datasets" name="output" slot="output" v-if="_output_tasks[task._id] && task.status == 'finished'">
                         <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
-                            <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output <small>{{_output_tasks[task._id].status_msg||'&nbsp;'}}</small>
+                            <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output <!--<small>{{_output_tasks[task._id].status_msg||'&nbsp;'}}</small>-->
                         </p>
 
                         <!--insert slot for output datasets-->
