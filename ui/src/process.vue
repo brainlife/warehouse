@@ -337,10 +337,6 @@ export default {
             //dialog
             show_input_dialog: false,
 
-            tmp: {
-                debounce: {}
-            },
-            
             archiving: {},
 
             //cache
@@ -455,7 +451,6 @@ export default {
     },
 
     methods: {
-        
         changedesc: function() {
             clearTimeout(debounce);
             debounce = setTimeout(this.save_instance, 1000);        

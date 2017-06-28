@@ -68,7 +68,8 @@ export default {
     //watch for parent value/options change and apply
     watch: {
         options: function (options) {
-            $(this.$el).select2(this.opts)
+            //TODO - at the moment, select2 doesn't seems to remove old options - it *concatenates* options.. bug?
+            $(this.$el).select2({data: options});
         },
         value: function(value) {
             //check to make sure we aren't updateing controller with the same value
