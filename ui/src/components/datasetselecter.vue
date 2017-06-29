@@ -171,74 +171,68 @@ export default {
             // list of dropdown menu items to return
             var dropdown_items = [];
             
+            // compose dropdown item text from dataset
+            function compose_item_text(dataset) {
+                var dropdown_item_text = [];
+                
+                // if there's a datatype, add it to the dropdown string
+                if (dataset.datatype) {
+                    var datatype_name = this.datatypes[dataset.datatype].name;
+                    dropdown_item_text.push(datatype_name);
+                }
+                
+                // if there's datatype tags, add them to the dropdown string
+                if (dataset.datatype_tags) {
+                    // join all datatype tags so that the resultant string looks like:
+                    // <tag1> <tag2> <tag3>
+                    var tags = "";
+                    for (var tag of dataset.datatype_tags)
+                        tags += " <" + tag + "> ";
+                    dropdown_item_text.push(tags);
+                }
+                
+                // if there's a date, add it to the dropdwon string
+                if (dataset.create_date) {
+                    var date = new Date(dataset.create_date).toString();
+                    date = " | " + date;
+                    dropdown_item_text.push(date);
+                }
+                
+                return dropdown_item_text.join(" ");
+            }
+            
             //now load datasets
             this.$http.get('dataset', { params: filter_params })
             .then(res => {
                 var datasets = res.body.datasets;
                 
                 datasets.forEach(dataset => {
+                    
+                    // create catalog of all datasets
                     this.datasets[dataset._id] = dataset;
                     
                     // dropdown menu item to add
-                    var item_to_append = {
-                        id: dataset._id
+                    var item = {
+                        id: dataset._id,
+                        text: compose_item_text.call(this, dataset)
                     };
-                    var subject = null;
-                    var dropdown_item_text = [];
-                    var title = null, show_title = true;
                     
-                    // check if subject name is there, if so, put it in the dropdown item
-                    if (dataset.meta && dataset.meta.subject) {
-                        subject = dataset.meta.subject;
-                        dropdown_item_text.push(subject);
+                    var subject = "(non-existing)";
+                    if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+                    if (!this.input_dialog.datasets_groups[subject]) {
+                        // first time
+                        this.input_dialog.datasets_groups[subject] = true;
+                        
+                        // append - select2 allows me to append item by doing following crap
+                        dropdown_items.push({
+                            text: subject,
+                            children: [item]
+                        });
                     }
                     else {
-                        subject = "no subject name; unique key: " + Math.random();
-                        show_title = false;
+                        // every other time
+                        dropdown_items.push(item);
                     }
-                    
-                    //  check if the subject needs a title or not
-                    if (!this.input_dialog.datasets_groups[subject]) {
-                        this.input_dialog.datasets_groups[subject] = [];
-                        
-                        if (show_title) title = subject;
-                    }
-                    
-                    // if there's a datatype, add it to the dropdown string
-                    if (dataset.datatype) {
-                        var datatype_name = this.datatypes[dataset.datatype].name;
-                        dropdown_item_text.push(datatype_name);
-                    }
-                    
-                    // if there's datatype tags, add them to the dropdown string
-                    if (dataset.datatype_tags) {
-                        // join all datatype tags so that the resultant string looks like:
-                        // <tag1> <tag2> <tag3>
-                        var tags = "";
-                        for (var tag of dataset.datatype_tags)
-                            tags += " <" + tag + "> ";
-                        dropdown_item_text.push(tags);
-                    }
-                    
-                    // if there's a date, add it to the dropdwon string
-                    if (dataset.create_date) {
-                        var date = new Date(dataset.create_date).toString();
-                        date = " | " + date;
-                        dropdown_item_text.push(date);
-                    }
-                    
-                    item_to_append.text = dropdown_item_text.join(" ");
-                    
-                    // if there's a title, place it before this dropdown item
-                    if (title) {
-                        item_to_append = {
-                            text: title,
-                            children: [item_to_append]
-                        };
-                    }
-                    
-                    // add the item to the dropdown menu
-                    dropdown_items.push(item_to_append);
                 });
                 
                 // let select2 know that we're done retrieving items
