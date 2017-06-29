@@ -112,97 +112,149 @@ export default {
             this.$emit('submit', os);
         },
         
-        //TODO - this is complicated/buggy (filtering by suject doesn't work) ... needs to be simplified
         grab_datasets: function(params, cb) {
+            // select2 page parameter -> determines what new 'page' of data to get for the dropdown menu
+            // but it's not set on its initial call, so we have to set it to 1 when it's undefined
             if (!params.page) {
                 params.page = 1;
+                
+                // when we load new dropdown items, we must discard the old ones
                 this.input_dialog.datasets_groups = {};
             }
             
             //construct dataset find query
-            var data = {};
-            var criteria = this.selected_subjects.map((value) => { return { "meta.subject": value }; });
-            var criteria2 = this.selected_datatypes.map((value) => { return { "datatype": value } })
-            //var criteria3 = this.selected_tags.map((value) => { return { "datatype_tags": value } })
-            var and = [];
-            var find = {
-                project: this.input_dialog.project,
-                removed: false,
-            };
-            if (params.term) find.$text = { $search: params.term || "" };
-            if (this.selected_subjects.length > 0) and.push( { $or: criteria } );
-            if (this.selected_datatypes.length > 0) and.push( { $or: criteria2 } );
-            //if (this.selected_tags.length > 0) and.push( { $or: criteria3 } );
-            if (and.length > 0) find.$and = and;
- 
-            //now load datasets
-            var skip = (params.page - 1) * this.limit;
-            console.log("skip", skip, "limit", this.limit);
-            this.$http.get('dataset', { params: {
-                find: JSON.stringify(find),
-                limit: this.limit,
-                skip,
-                sort: 'meta.subject -create_date'
-            } }).then(res => {
-                var data = [];
-                var option_group_by_subject = {};
-                var shownUp = {};
-                var titlesFor = {};
-
-                res.body.datasets.forEach(dataset=>{
-                    
-                    this.datasets[dataset._id] = dataset;
-
-                    //ignore ones that doesn't have subject for now..
-                    if(!dataset.meta || !dataset.meta.subject) return;
-                    var subject = dataset.meta.subject.toString(); //sometime it's not string
-                    
-                    //organize datasets for select2
-                    if(!this.input_dialog.datasets_groups[subject]) {
-                        titlesFor[subject] = false;
-                        this.input_dialog.datasets_groups[subject] = [];
-                    } else if (!shownUp[subject]) titlesFor[subject] = true;
-                    shownUp[subject] = true;
-                    option_group_by_subject[subject] = option_group_by_subject[subject] || [];
-                    this.input_dialog.datasets_groups[subject].push(dataset);
-                    
-                    //stripping text that shouldn't be part of select2? (can't select2 take care of this?)
-                    var text_tags = dataset.datatype_tags.length != 0 ?
-                                    dataset.datatype_tags.toString()
-                                          .replace(/\[/g, "<")
-                                          .replace(/\]/g, ">")
-                                          .replace(/,/g, "> <")
-                                    : "";
-
-                    //filter out dataset that doesn't match the query on various elements (TODO - can't we do this via mongo?)
-                    var date_text = new Date(dataset.create_date).toString().replace(/[ ]*GMT\-.*?$/g, "");
-
-                    //TODO - we should use templateSelection / templateResult to show more customized text/label
-                    //subject should be displayed under templateResult but not on templateSelection
-                    var object = { id: dataset._id, text: `${subject} ${this.datatypes[dataset.datatype].name} ${text_tags} | ${date_text}` };
-                    function query_filter(object, term) {
-                        if (!term) return true;
-                        return !!~object.text.replace(/[ \t]+/g, "").toLowerCase().indexOf(term.replace(/[ \t]+/g, "").toLowerCase());
-                    }
-                    if (query_filter(object, params.term) || query_filter({ text: subject }, params.term)) {
-                        option_group_by_subject[subject].push(object);
+            // first, make sure what is retrieved is coherent with our filters
+            // subject filter
+            // retrieve any dataset that matches any of the selected subjects
+            var subject_filter = [];
+            for (var ii in this.selected_subjects) {
+                var selected_subject = this.selected_subjects[ii];
+                subject_filter.push({
+                    "meta.subject": selected_subject
+                });
+            }
+            
+            // make sure what is retrieved also matches what the user typed in
+            var query_filter = [];
+            if (params.term) {
+                query_filter.push({
+                    "meta.subject": {
+                        $regex: params.term,
+                        $options: 'i'       // case insensitive query search
                     }
                 });
+                query_filter.push({
+                    "datatype": {
+                        $regex: params.term,
+                        $options: 'i'
+                    }
+                });
+                query_filter.push({
+                    "datatype_tags": {
+                        $regex: params.term,
+                        $options: 'i'
+                    }
+                });
+            }
+            
+            // datatype filter
+            // also make sure that each dataset we retrieve matches any of the selected datatypes
+            var datatype_filter = [];
+            for (var ii in this.selected_datatypes) {
+                var selected_datatype = this.selected_datatypes[ii];
+                datatype_filter.push({
+                    "datatype": selected_datatype
+                });
+            }
+            
+            // list of things that must be true for each dataset to have met the conditions for validity
+            var and_statement = [];
+            
+            // if there's a filter for datatypes, subjects, etc., then use it for filtering
+            if (datatype_filter.length > 0) and_statement.push({ $or: datatype_filter });
+            if (subject_filter.length > 0) and_statement.push({ $or: subject_filter });
+            if (query_filter.length > 0) and_statement.push({ $or: query_filter });
+            
+            // make sure all of the and statement values are true
+            var find = { $and: and_statement };
+            find.project = this.input_dialog.project;
+            find.removed = false;
+            
+            // final data retrieval parameters
+            var filter_params = {};
+            filter_params.find = JSON.stringify(find);
+            
+            // other data retrieval options
+            var skip = (params.page - 1) * this.limit;
+            
+            filter_params.limit = this.limit;
+            filter_params.skip = skip;
+            filter_params.sort = 'meta.subject -create_date';
+            
+            // list of dropdown menu items to return
+            var dropdown_items = [];
+            
+            //now load datasets
+            this.$http.get('dataset', { params: filter_params })
+            .then(res => {
+                var datasets = res.body.datasets;
                 
-                //filter out subjects with no datasets (should we really do that?)
-                //also filter out subjects that are already in the list?
-                for (var k in option_group_by_subject) {
-                    var group = option_group_by_subject[k];
-                    var toBeAdded = { text: k, children:group };
-                    if (group.length == 0) continue;
-                    if (titlesFor[k]) toBeAdded = group
-                    data.push(toBeAdded);
-                }
-
+                datasets.forEach(dataset => {
+                    this.datasets[dataset._id] = dataset;
+                    
+                    var item_to_append = {
+                        id: dataset._id
+                    };
+                    var subject = null;
+                    var dropdown_item_text = [];
+                    var title = null;
+                    
+                    // check if subject name is there, if so, put it in the dropdown item
+                    if (dataset.meta && dataset.meta.subject) {
+                        subject = dataset.meta.subject;
+                        dropdown_item_text.push(subject);
+                    }
+                    else subject = "no subject name; unique key: " + Math.random();
+                    
+                    if (!this.input_dialog.datasets_groups[subject]) {
+                        this.input_dialog.datasets_groups[subject] = [];
+                        title = subject;
+                    }
+                    
+                    if (dataset.datatype_tags) {
+                        // join all datatype tags so that the resultant string looks like:
+                        // <tag1> <tag2> <tag3>
+                        var tags = "";
+                        for (var tag of dataset.datatype_tags)
+                            tags += " <" + tag + "> ";
+                        dropdown_item_text.push(tags);
+                    }
+                    
+                    if (dataset.create_date) {
+                        var date = new Date(dataset.create_date);
+                        dropdown_item_text.push(date);
+                    }
+                    
+                    item_to_append.text = dropdown_item_text.join(" ");
+                    
+                    // if there's a title, place it before this item
+                    if (title) {
+                        item_to_append = {
+                            text: title,
+                            children: item_to_append
+                        };
+                    }
+                    
+                    // add the item to the dropdown menu
+                    dropdown_items.push(item_to_append);
+                });
+                
+                // let select2 know that we're done retrieving items
                 cb({
-                    results: data,
+                    results: dropdown_items,
                     pagination: {
-                        more: skip+res.body.datasets.length < res.body.count,
+                        // we should only load more items if there's more items to load
+                        more: skip + res.body.datasets.length < res.body.count,
                     },
                 });
             });
@@ -232,7 +284,6 @@ export default {
                 distinct: 'meta.subject',
             }}).then(res=>{
                 this.subjects = res.body;
-                console.dir(this.subjects);
             });
          }
     },
