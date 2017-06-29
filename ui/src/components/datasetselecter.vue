@@ -205,6 +205,7 @@ export default {
                 datasets.forEach(dataset => {
                     this.datasets[dataset._id] = dataset;
                     
+                    // dropdown menu item to add
                     var item_to_append = {
                         id: dataset._id
                     };
@@ -219,16 +220,19 @@ export default {
                     }
                     else subject = "no subject name; unique key: " + Math.random();
                     
+                    //  check if the subject needs a title or not
                     if (!this.input_dialog.datasets_groups[subject]) {
                         this.input_dialog.datasets_groups[subject] = [];
                         title = subject;
                     }
                     
+                    // if there's a datatype, add it to the dropdown string
                     if (dataset.datatype) {
                         var datatype_name = this.datatypes[dataset.datatype].name;
                         dropdown_item_text.push(datatype_name);
                     }
                     
+                    // if there's datatype tags, add them to the dropdown string
                     if (dataset.datatype_tags) {
                         // join all datatype tags so that the resultant string looks like:
                         // <tag1> <tag2> <tag3>
@@ -238,6 +242,7 @@ export default {
                         dropdown_item_text.push(tags);
                     }
                     
+                    // if there's a date, add it to the dropdwon string
                     if (dataset.create_date) {
                         var date = new Date(dataset.create_date).toString();
                         date = " | " + date;
@@ -246,7 +251,7 @@ export default {
                     
                     item_to_append.text = dropdown_item_text.join(" ");
                     
-                    // if there's a title, place it before this item
+                    // if there's a title, place it before this dropdown item
                     if (title) {
                         item_to_append = {
                             text: title,
