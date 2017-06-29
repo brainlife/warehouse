@@ -134,29 +134,6 @@ export default {
                 });
             }
             
-            // make sure what is retrieved also matches what the user typed in
-            var query_filter = [];
-            if (params.term) {
-                query_filter.push({
-                    "meta.subject": {
-                        $regex: params.term,
-                        $options: 'i'       // case insensitive query search
-                    }
-                });
-                query_filter.push({
-                    "datatype": {
-                        $regex: params.term,
-                        $options: 'i'
-                    }
-                });
-                query_filter.push({
-                    "datatype_tags": {
-                        $regex: params.term,
-                        $options: 'i'
-                    }
-                });
-            }
-            
             // datatype filter
             // also make sure that each dataset we retrieve matches any of the selected datatypes
             var datatype_filter = [];
@@ -173,7 +150,6 @@ export default {
             // if there's a filter for datatypes, subjects, etc., then use it for filtering
             if (datatype_filter.length > 0) and_statement.push({ $or: datatype_filter });
             if (subject_filter.length > 0) and_statement.push({ $or: subject_filter });
-            if (query_filter.length > 0) and_statement.push({ $or: query_filter });
             
             // make sure all of the and statement values are true
             var find = {};
@@ -182,6 +158,10 @@ export default {
             
             find.project = this.input_dialog.project;
             find.removed = false;
+            
+            // user query
+            if (params.term)
+                find.$text = { $search: params.term };
             
             // final data retrieval parameters
             var filter_params = {};
