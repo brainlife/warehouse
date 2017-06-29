@@ -176,7 +176,10 @@ export default {
             if (query_filter.length > 0) and_statement.push({ $or: query_filter });
             
             // make sure all of the and statement values are true
-            var find = { $and: and_statement };
+            var find = {};
+            if (and_statement.length > 0)
+                find.$and = and_statement;
+            
             find.project = this.input_dialog.project;
             find.removed = false;
             
@@ -221,6 +224,11 @@ export default {
                         title = subject;
                     }
                     
+                    if (dataset.datatype) {
+                        var datatype_name = this.datatypes[dataset.datatype].name;
+                        dropdown_item_text.push(datatype_name);
+                    }
+                    
                     if (dataset.datatype_tags) {
                         // join all datatype tags so that the resultant string looks like:
                         // <tag1> <tag2> <tag3>
@@ -231,7 +239,8 @@ export default {
                     }
                     
                     if (dataset.create_date) {
-                        var date = new Date(dataset.create_date);
+                        var date = new Date(dataset.create_date).toString();
+                        date = " | " + date;
                         dropdown_item_text.push(date);
                     }
                     
@@ -241,7 +250,7 @@ export default {
                     if (title) {
                         item_to_append = {
                             text: title,
-                            children: item_to_append
+                            children: [item_to_append]
                         };
                     }
                     
