@@ -191,19 +191,24 @@ export default {
                     };
                     var subject = null;
                     var dropdown_item_text = [];
-                    var title = null;
+                    var title = null, show_title = true;
                     
                     // check if subject name is there, if so, put it in the dropdown item
                     if (dataset.meta && dataset.meta.subject) {
                         subject = dataset.meta.subject;
                         dropdown_item_text.push(subject);
                     }
-                    else subject = "no subject name; unique key: " + Math.random();
+                    else {
+                        subject = "no subject name; unique key: " + Math.random();
+                        show_title = false;
+                    }
                     
                     //  check if the subject needs a title or not
                     if (!this.input_dialog.datasets_groups[subject]) {
                         this.input_dialog.datasets_groups[subject] = [];
-                        title = subject;
+                        
+                        if (show_title)
+                            title = subject;
                     }
                     
                     // if there's a datatype, add it to the dropdown string
