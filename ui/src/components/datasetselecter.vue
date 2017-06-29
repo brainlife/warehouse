@@ -267,7 +267,7 @@ export default {
                 cb({
                     results: dropdown_items,
                     pagination: {
-                        // we should only load more items if there's more items to load
+                        // only load more items if there's more items to load
                         more: skip + res.body.datasets.length < res.body.count,
                     },
                 });
