@@ -152,27 +152,21 @@ export default {
             if (subject_filter.length > 0) and_statement.push({ $or: subject_filter });
             
             // make sure all of the and statement values are true
-            var find = {};
-            if (and_statement.length > 0)
-                find.$and = and_statement;
-            
-            find.project = this.input_dialog.project;
-            find.removed = false;
-            
-            // user query
-            if (params.term)
-                find.$text = { $search: params.term };
+            var find = {
+                project: this.input_dialog.project,
+                removed: false
+            };
+            if (and_statement.length > 0) find.$and = and_statement;
+            if (params.term) find.$text = { $search: params.term };
             
             // final data retrieval parameters
-            var filter_params = {};
-            filter_params.find = JSON.stringify(find);
-            
-            // other data retrieval options
             var skip = (params.page - 1) * this.limit;
-            
-            filter_params.limit = this.limit;
-            filter_params.skip = skip;
-            filter_params.sort = 'meta.subject -create_date';
+            var filter_params = {
+                find: JSON.stringify(find),
+                limit: this.limit,
+                skip: (params.page - 1) * this.limit,
+                sort: "meta.subject -create_date"
+            };
             
             // list of dropdown menu items to return
             var dropdown_items = [];
@@ -207,8 +201,7 @@ export default {
                     if (!this.input_dialog.datasets_groups[subject]) {
                         this.input_dialog.datasets_groups[subject] = [];
                         
-                        if (show_title)
-                            title = subject;
+                        if (show_title) title = subject;
                     }
                     
                     // if there's a datatype, add it to the dropdown string
@@ -253,7 +246,7 @@ export default {
                     results: dropdown_items,
                     pagination: {
                         // only load more items if there's more items to load
-                        more: skip + res.body.datasets.length < res.body.count,
+                        more: filter_params.skip + res.body.datasets.length < res.body.count,
                     },
                 });
             });
