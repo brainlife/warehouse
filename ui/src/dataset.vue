@@ -10,13 +10,7 @@
                 <el-button type="primary" @click="download()" icon="document">Download</el-button>
             </el-button-group>
 
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item :to="{ path: '/datasets' }">Datasets</el-breadcrumb-item>
-                <el-breadcrumb-item> {{dataset._id}}</el-breadcrumb-item>
-            </el-breadcrumb>
-            <br>
-
-            <h1><icon name="cube" scale="2"></icon> {{dataset.name}}</h1>
+            <h1><icon name="cube" scale="2"></icon> Dataset <small class="text-muted">{{dataset._id}}</small></h1>
             <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         </div>
 

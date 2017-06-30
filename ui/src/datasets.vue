@@ -8,6 +8,7 @@
                 <el-input
                     placeholder="Filter Datasets" 
                     icon="search"
+                    @change="change_query_debounce()"
                     v-model="query">
                 </el-input>
             </el-col>
@@ -25,7 +26,7 @@
                     <el-row>
                         <el-col :span="2">&nbsp;</el-col>
                         <el-col :span="6"><h4>Datatype</h4></el-col>
-                        <el-col :span="6"><h4>Name / Desc</h4></el-col>
+                        <el-col :span="6"><h4>Desc</h4></el-col>
                         <el-col :span="6"><h4>Create Date</h4></el-col>
                         <el-col :span="4"><h4>Tags</h4></el-col>
                     </el-row> 
@@ -61,9 +62,8 @@
                                 {{datatypes[dataset.datatype].name}}
                                 <tags :tags="dataset.datatype_tags"></tags> &nbsp;
                             </el-col>
-                            <el-col :span="7" class="ellipsis">
-                                <b>{{dataset.name}}</b><br>
-                                {{dataset.desc}}
+                            <el-col :span="7" class="truncate">
+                                {{dataset.desc||'&nbsp;'}}
                             </el-col>
                             <el-col :span="6">
                                 <time>{{dataset.create_date | date}}</time>
@@ -138,23 +138,25 @@ import viewerselect from '@/components/viewerselect'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
+var debounce = null;
+
 export default {
     components: { sidemenu, tags, metadata, pageheader, projectmenu, viewerselect },
     data () {
         return {
-            datasets: [],
+            datasets: [], //datasets loaded so far
+            datasets_count: null, //number of all datasets on server given current query
+
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
 
-            //query loading
             query: "",
-            query_dirty: 1,
+
             loading: false,
 
             //cache
             datatypes: null,
             projects: null,
-			cannotLoad: false,
 
             config: Vue.config,
         }
@@ -164,10 +166,7 @@ export default {
         //group datasets by subject
         datasets_grouped: function() {
             if(!this.datasets) return null;
-
-            //console.log("grouping");
             var groups = {};
-
             this.datasets.forEach(dataset=>{
                 var subject = "nosub"; //not all datasets has subject tag
                 if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
@@ -194,92 +193,82 @@ export default {
     },
 
     mounted() {
-        this.project_id = this.$route.params.projectid;
-
-        this.$http.get('project', {params: {
-            //service: "_upload",
-        }})
+        this.$http.get('project')
         .then(res=>{
             this.projects = {};
             res.body.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
+            this.check_project_id();
 
-            if(!this.project_id) {
-                console.log("open first one");
-                var pid = localStorage.getItem("last_projectid_used");
-                if(!pid) pid = res.body.projects[0]._id; //just pick one that user has access
-                this.$router.push("/datasets/"+pid);
-            } else {
-                localStorage.setItem("last_projectid_used", this.project_id);
-            }
-
-            return this.$http.get('datatype', {params: {
-                //service: "_upload",
-            }})
+            return this.$http.get('datatype')
         })
         .then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
             });
-
-            setTimeout(this.check_query, 200);
+            this.load();
         }).catch(err=>{
             console.error(err);
         });
-
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
+		window.addEventListener("scroll", this.check_scroll, true);
     },
 
     watch: {
-        query: function(val) {
-            this.query_dirty = Date.now();
-        },
-        '$route': function() {
-			this.reset_scroll();
-            this.load(function(err) {
-                if(err) console.error(err);
-            });
+        //when user select different project, this gets called (mounted() won't be called anymore)
+        $route: function() {
+            this.check_project_id();
+            this.reload();
         }
     },
 
 	methods: {
-		reset_scroll: function() {
+        reload: function() {
 			this.datasets = [];
-			this.cannotLoad = false;
-		},
-		check_scroll: function(e) {
-			var page_margin = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
-            if (!this.loading && !this.cannotLoad && page_margin < 500) {
-                this.loading = true;
-                this.load(err => {
-                    this.loading = false;
-                    if (err) console.error(err);
-                });
-            }
-		},
+            this.datasets_count = null;
+            this.load();
+        },
 
-        check_query: function() {
-            //debounce to 300 msec
-            if(!this.loading && this.query_dirty && this.query_dirty < (Date.now()-300)) {
-                this.reset_scroll();
-				this.query_dirty = null;
-                this.loading = true;
-                this.load(err=>{
-                    this.loading = false;
-                    if(err) console.error(err);
-                    else this.query_dirty = false;
-                    setTimeout(this.check_query, 500);
-                });
+        check_project_id: function() {
+            this.project_id = this.$route.params.projectid;
+            if(!this.project_id) {
+                var pid = localStorage.getItem("last_projectid_used");
+                if(!pid) {
+                    console.log("last_projectid not set.. opening first one");
+                    pid = res.body.projects[0]._id; //just pick one that user has access
+                }
+                this.$router.push("/datasets/"+pid);
             } else {
-                //console.log("waiting", this);
-                setTimeout(this.check_query, 1000);
+                localStorage.setItem("last_projectid_used", this.project_id);
             }
         },
 
-        load: function(cb) {
-            //console.log("loading datasets with query", this.query);
+		check_scroll: function(e) {
+			var page_margin = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
+            if (page_margin < 500) this.load();
+		},
+
+        change_query_debounce: function() {
+            clearTimeout(debounce);
+            debounce = setTimeout(this.change_query, 300);        
+        },
+
+        change_query: function() {
+            //if already loading, then wait
+            if(this.loading) {
+                setTimeout(this.change_query, 300);
+                return;
+            }
+            this.reload();
+        },
+
+        load: function() {
+            if(this.loading) return;
+            if(this.datasets.length === this.datasets_count) return;
+            this.loading = true;
+
 			var find = {
                 removed: false,
             }
@@ -290,7 +279,7 @@ export default {
             if(this.query) {
                 find.$text = {$search: this.query};
             }
-            //console.log("loading", find);
+
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
                 skip: this.datasets.length,
@@ -299,7 +288,7 @@ export default {
                 sort: 'meta.subject -create_date'
             }})
             .then(res=>{
-				this.cannotLoad = res.body.datasets.length == 0;
+                this.datasets_count = res.body.count;
 
                 //set checked flag for each dataset
 				res.body.datasets.forEach(dataset=>{
@@ -307,17 +296,16 @@ export default {
                     if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
                 });
 
-                cb();
-            }).catch(cb);
-        },
-        opendataset: function(dataset) {
-            //console.dir(dataset);
+                this.loading = false;
+            }, err=>{
+                console.error(err);
+                this.loading = false;
+            });
         },
         go: function(path) {
             this.$router.push(path);
         },
         check: function(dataset) {
-            //var did = dataset.datatype._id;
             if(this.selected[dataset._id]) {    
                 Vue.set(dataset, 'checked', false);
                 Vue.delete(this.selected, dataset._id);
@@ -341,7 +329,6 @@ export default {
             this.persist_selected();
         },
         remove_selected: function(dataset) {
-            console.log("removing", dataset);
             //find dataset ref
             this.datasets.forEach(_d=>{
                 if(dataset._id == _d._id) _d.checked = false;
@@ -386,7 +373,6 @@ export default {
         },
 
         view: function(type) {
-            console.log(type);
             //find novnc resource
             this.$http.get(Vue.config.wf_api+'/resource/best', {params: {
                 /*
@@ -471,11 +457,7 @@ export default {
         }
     },
 
-	created () {
-		window.addEventListener("scroll", this.check_scroll, true);
-	},
-
-	destroyed () {
+	destroyed() {
 		window.removeEventListener("scroll", this.check_scroll, true);
 	}
 }
@@ -569,7 +551,7 @@ export default {
     transition: right 0.2s;
     top: 50px;
 }
-.ellipsis {
+.truncate {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; 

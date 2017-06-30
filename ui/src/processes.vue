@@ -15,21 +15,14 @@
         <div v-if="!instances">
             <h2 style="margin: 50px;">Loading ...</h2>
         </div>
-        <el-table v-if="instances" :data="instances" style="width: 100%;" @row-click="click" row-class-name="clickable-row">
-            <el-table-column label="Create Date" prop="create_date" sortable>
+        <el-table v-if="instances" :data="instances" style="width: 100%;" 
+            @row-click="click" row-class-name="clickable-row">
+            <el-table-column label="Create Date" prop="create_date">
                 <template scope="scope">
                     <time>{{scope.row.create_date|date}}</time>
                 </template>
             </el-table-column> 
-            <el-table-column label="Application">
-                <template scope="scope">
-                    <div v-if="scope.row.config.prov">
-                        {{apps[scope.row.config.prov.app].name}}
-                    </div>
-                </template>
-            </el-table-column> 
-            <el-table-column prop="desc" label="Description"/></el-table-column> 
-            <el-table-column label="Status" prop="status" sortable>
+            <el-table-column label="Status" prop="status">
                 <template scope="scope">
                     <el-tag v-if="scope.row.status == 'removed'">
                         <icon name="remove"></icon> Removed</el-tag>
@@ -45,10 +38,33 @@
                         <icon name="help"></icon> Failed</el-tag>
                 </template>
             </el-table-column> 
+            <!--
+            <el-table-column label="Application">
+                <template scope="scope">
+                    <div v-if="scope.row.config.prov">
+                        {{apps[scope.row.config.prov.app].name}}
+                    </div>
+                </template>
+            </el-table-column> 
+            -->
+            <el-table-column label="Description">
+                <template scope="scope">
+                    <!-- for simpleprocess -->
+                    <span v-if="scope.row.config.prov">
+                        <el-tag>Simple: {{apps[scope.row.config.prov.app].name}}</el-tag>
+                    </span>
+                    {{scope.row.desc}}
+                </template>
+            </el-table-column> 
             <el-table-column label="Archived">
                 <template scope="scope">
-                      <el-tag v-if="scope.row.config.dataset_ids || scope.row.config.dataset_id">
-                        <icon name="check"></icon> Archived</el-tag>
+                    <!-- normal process -->
+                    <el-tag type="success" v-if="scope.row.config.dataset_ids">
+                        <icon name="check"></icon> Archived 
+                        <b v-if="scope.row.config.dataset_ids.length>1">
+                            {{scope.row.config.dataset_ids.length}}
+                        </b>
+                    </el-tag>
                 </template>
             </el-table-column> 
         </el-table>
@@ -83,7 +99,6 @@ export default {
         }
     },
     mounted: function() {
-
         //load application details
         this.$http.get('app', {params: {
             /*
@@ -108,7 +123,8 @@ export default {
                     "config.brainlife": true,
                     status: {$ne: "removed"},
                     "config.removing": {$exists: false},
-                })
+                }),
+                sort: '-create_date',
             }});
         })
         .then(res=>{
