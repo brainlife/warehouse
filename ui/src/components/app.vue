@@ -30,12 +30,12 @@ export default {
         appid: String,
         clickable: {type: Boolean, default: true},
     },
-    data () {
+    data() {
         return {
             app_: null
         }
     },
-    mounted: function() {
+    created: function() {
         if(this.appid) {
             this.$http.get('app', {params: {
                 find: JSON.stringify({_id: this.appid}),

@@ -22,7 +22,7 @@
                     <time>{{scope.row.create_date|date}}</time>
                 </template>
             </el-table-column> 
-            <el-table-column label="Status" prop="status">
+            <el-table-column label="Process Status" prop="status">
                 <template scope="scope">
                     <el-tag v-if="scope.row.status == 'removed'">
                         <icon name="remove"></icon> Removed</el-tag>
@@ -56,7 +56,7 @@
                     {{scope.row.desc}}
                 </template>
             </el-table-column> 
-            <el-table-column label="Archived">
+            <el-table-column label="Archived Datasets">
                 <template scope="scope">
                     <!-- normal process -->
                     <el-tag type="success" v-if="scope.row.config.dataset_ids">

@@ -17,7 +17,7 @@
         <div v-for="(apps, tag) in app_groups" key="tag" class="margin20">
             <h2 class="group-heading">{{tag}}</h2> 
             <div v-for="app in apps" key="app._id" class="card">
-                <app :app="app"></app>
+                <app :app="app"></app><br>
             </div>
             <br clear="both">
         </div>
@@ -55,7 +55,8 @@ export default {
             //organize apps into various tags
             this.app_groups = {};
             res.body.apps.forEach(app=>{
-                var tags = app.tags || [ 'miscellaneous' ];
+                var tags = [ 'miscellaneous' ];
+                if(app.tags && app.tags.length > 0) tags = app.tags;
                 tags.forEach(tag=>{
                     if(!this.app_groups[tag]) this.app_groups[tag] = [];
                     this.app_groups[tag].push(app);

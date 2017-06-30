@@ -34,28 +34,39 @@
                 </ul>
                 <br>
                 <h3>Output Datasets</h3>
-                <ul style="padding-left: 0px; list-style: none;">
-                    <li v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" style="margin-bottom: 10px;">
-                        <mute>D{{idx}}</mute> 
-                        <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
-                        <!--<metadata :metadata="dataset.meta"/>-->
-                        <!--<b>{{dataset.did}}</b>-->
-                        {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
-                        <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
-                        <mute>
-                            <small v-if="dataset.task.status != 'finished'">
-                                <statusicon :status="dataset.task.status"/> Processing ..
-                            </small>
-                        </mute>
-                        <p v-if="dataset.dataset_id">
-                            <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
-                        </p>
-                    </li>
-                </ul>
+
+                <div v-for="(dataset, idx) in _datasets" 
+                    :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" 
+                    @click="scrollto(dataset.did)">
+                    <el-card style="margin-bottom: 10px;" class="clickable output" :body-style="{padding: '5px'}">
+
+                    <!-- 
+                        tasks used to organize generated output datasets are hidden, 
+                        so to display the actual task ID of the apps themselves, I assume that 
+                        (task id) - 1 will yeild the correct task ID.
+                        I should probaly generate a unique task ID (within the process)
+                        for each task submitted, then use that as more permanent ID
+                    -->
+                    <mute><b>T{{tasks.indexOf(dataset.task)-1}}</b> <icon name="arrow-right" scale="0.8"></icon></mute> D{{idx}}
+
+                    <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
+                    <!--<metadata :metadata="dataset.meta"/>-->
+                    <!--<b>{{dataset.did}}</b>-->
+                    {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
+                    <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
+                    <mute>
+                        <small v-if="dataset.task.status != 'finished'">
+                            <statusicon :status="dataset.task.status"/>&nbsp;Processing ..
+                        </small>
+                    </mute>
+                    <p v-if="dataset.dataset_id">
+                        <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
+                    </p>
+                </el-card></div>
             </div>
         </div>
 
-        <div class="main-section">
+        <div class="main-section" id="scrolled-area">
             <p v-if="instance.status == 'removed' || instance.config.removing">
                 <el-alert type="error" title="">This process has been removed</el-alert>
             </p>
@@ -81,7 +92,8 @@
                             <h3><mute>T{{idx}}</mute></h3>
                         </div>
                         <div v-if="task.config._prov" style="margin-left: 50px;">
-                            <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app>
+                            <!--task.config._prov.app.id is deprecated -->
+                            <app :appid="task.config._prov.app.id || task.config._prov.app" :compact="true" :clickable="false"></app>
                         </div>
                         <div v-if="!task.config._prov" style="margin-left: 50px">
                             <h3 style="margin-bottom: 0px; color: #666;">{{task.service}} <mute>{{task.name}}</mute></h3>
@@ -110,25 +122,22 @@
                     <!--output-->
                     <div slot="output" v-if="task.status == 'finished'">
 
-                        <!--display custom ui-->
-                        <el-collapse-item title="View" name="view" v-if="task.config._prov && task.config._prov.app">
-                            <appui :uiid="task.config._prov.app.uiid" :task="task"></appui>
-                        </el-collapse-item>
-
                         <!--output datasets-->
                         <el-collapse-item title="Output" name="output" v-if="_output_tasks[task._id]">
                             <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
                                 <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output <small>{{_output_tasks[task._id].status_msg||'&nbsp;'}}</small>
                             </p>
 
-                            <el-card v-if="_output_tasks[task._id].status == 'finished'" 
+                            <el-card v-if="_output_tasks[task._id].status == 'finished'" class="output"
                                 v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id">
                                 <el-row>
                                 <el-col :span="4">
                                     <b>{{output_id}}</b>
                                 </el-col>
                                 <el-col :span="20">
-                                    <mute>D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}</mute>
+                                    <!-- id is used to jump to this data from the sidebar output datasets list -->
+                                    <mute :id="_output_tasks[task._id]._id+'/'+output_id">D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}</mute>
+
                                     <b>{{dataset.meta.subject}}</b>
                                     {{datatypes[dataset.datatype].name}} 
                                     <tags :tags="dataset.datatype_tags"></tags>
@@ -148,6 +157,10 @@
                                 </el-col>
                                 </el-row>
                             </el-card>
+
+                            <!--task.config._prov.app.id is deprecated -->
+                            <appui :appid="task.config._prov.app.id || task.config._prov.app" :task="task"></appui>
+
                         </el-collapse-item>
                     </div><!--output-->
                 </task>
@@ -421,8 +434,6 @@ export default {
             });
             return tasks;
         },
-
-
     },
 
     watch: {
@@ -464,6 +475,12 @@ export default {
             return this._datasets.find(dataset=>{
                 return dataset.did == did;
             });
+        },
+
+        scrollto: function(idx) {
+            var elem = document.getElementById(idx);
+            var top = elem.offsetParent.offsetTop-250;
+            document.getElementById("scrolled-area").scrollTop = top;
         },
 
         go: function(path) {
@@ -779,33 +796,12 @@ export default {
                     //TODO - I should probably store this provenance collection on warehouse service 
                     var prov = {
                         //app: this.newtask_app, //this puts everthhing... too much!
-                        app: {
-                            id: this.newtask_app._id,
-                            name: this.newtask_app.name,
-                            desc: this.newtask_app.desc,
-                            github: this.newtask_app.github,
-                            uiid: this.newtask_app.uiid,
-                        },
+                        app: this.newtask_app._id,
                         inputs: {},
                     };
                     for(var id in newtask.inputs) {
-                        /*
-                        prov.inputs[id] = {
-                            //datatype: newtask.inputs[id].datatype._id,
-                            //datatype_tags: newtask.inputs[id].datatype_tags,
-                            //dataset: newtask.inputs[id].dataset, //only set if it comes from warehouse dataset
-                        }
-                        */
                         prov.inputs[id] = newtask.inputs[id].dataset;
                     }
-                    /*
-                    this.newtask_app.outputs.forEach(output=>{
-                        prov.outputs[output.id] = {
-                            datatype: output.datatype,
-                            datatype_tags: output.datatype_tags,
-                        }
-                    });
-                    */
                     newtask.config._prov = prov;
 
                     console.log("submitting newtask", newtask); 
@@ -894,7 +890,7 @@ export default {
 position: fixed;
 padding: 20px;
 left: 90px;
-right: 350px;
+right: 375px;
 top: 140px;
 bottom: 0px;
 overflow: auto;
@@ -918,7 +914,7 @@ padding-top: 20px;
 position: fixed;
 top: 140px;
 bottom: 0px;
-width: 350px;
+width: 375px;
 right: 0px;
 overflow: auto;
 }
@@ -940,5 +936,13 @@ border: 1px solid rgb(230, 230, 230);
 border-bottom: none;
 background-color: #fff;
 border-radius: 8px 8px 0 0;
+}
+.el-card.output {
+background-color: #d4e4d4;
+border: none;
+}
+.el-card.output.clickable:hover {
+background-color: green;
+color: white;
 }
 </style>

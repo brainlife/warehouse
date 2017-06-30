@@ -114,8 +114,8 @@ console.log("user", Vue.config.user);
 
 Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
+//scroll to top on route update
 router.beforeEach(function (to, from, next) {
-    console.log("scrolling to top");
     window.scrollTo(0, 0);
     next();
 })
