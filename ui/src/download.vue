@@ -5,25 +5,14 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20" v-if="instance && tasks">
-            <!--
-            <button class="ui button primary right floated"
-                v-if="!instance.config.dataset_id && instance.status == 'finished'" @click="archive()"> 
-                <i class="archive icon"></i> Archive Output
-            </button>
-            <button class="ui button right floated"
-                v-if="instance.config.dataset_id" @click="go('/dataset/'+instance.config.dataset_id)">
-                <i class="archive icon"></i> See Archived
-            </button>
-            <button class="ui button right floated" @click="remove()">
-                <i class="trash icon"></i> Remove
-            </button>
-            -->
 
+            <!--
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item :to="{ path: '/datasets' }">Datasets</el-breadcrumb-item>
                 <el-breadcrumb-item>Download {{instance._id}}</el-breadcrumb-item>
             </el-breadcrumb>
             <br>
+            -->
 
             <h1><icon name="download" scale="2"></icon> Download</h1>
             <el-card>
@@ -121,7 +110,7 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             ws.onopen = (e)=>{
-                console.log("websocket opened", this.instance._id);
+                console.log("websocket opened", this.instance._id, "binding to", Vue.config.user.sub+"."+this.instance._id+".#");
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
@@ -138,6 +127,10 @@ export default {
               
             ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
+                if(event.error) {
+                    console.error(event.error);
+                    return;
+                }
                 var msg = event.msg;
                 if(!msg || !msg._id) return; //odd..
                 switch(event.dinfo.exchange) {

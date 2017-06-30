@@ -13,7 +13,7 @@
         <statusicon :status="status" :scale="scale"></statusicon> Finished
     </el-tag>
     <el-tag type="primary" v-else-if="status == 'running'">
-        <statusicon :status="status" :scale="scale"></statusicon> Running
+        <statusicon :status="status" :scale="scale"></statusicon> Processing
     </el-tag>
     <el-tag type="primary" v-else-if="status == 'requested'">
         <statusicon :status="status" :scale="scale"></statusicon> Requested

@@ -37,8 +37,8 @@
 
                 <div v-for="(dataset, idx) in _datasets" 
                     :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" 
-                    @click="scrollto(dataset.did)">
-                    <el-card style="margin-bottom: 10px;" class="clickable output" :body-style="{padding: '5px'}">
+                    @click="scrollto(dataset.task._id)">
+                    <el-card style="margin-bottom: 10px;" class="clickable " :class="{output: dataset.task.status == 'finished'}" :body-style="{padding: '5px'}">
 
                     <!-- 
                         tasks used to organize generated output datasets are hidden, 
@@ -56,7 +56,7 @@
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
-                            <statusicon :status="dataset.task.status"/>&nbsp;Processing ..
+                            <statusicon :status="dataset.task.status"/>Processing
                         </small>
                     </mute>
                     <p v-if="dataset.dataset_id">
@@ -89,7 +89,9 @@
                     <!--header-->
                     <div slot="header" class="task-header">
                         <div style="float: left">
-                            <h3><mute>T{{idx}}</mute></h3>
+                            <!--why using _output_task's id? I use this to jump from the output dataset list on the sidebar.. 
+                            and I am too lazy to lookup the main task id from the output task id-->
+                            <h3 :id="_output_tasks[task._id]._id"><mute>T{{idx}}</mute></h3>
                         </div>
                         <div v-if="task.config._prov" style="margin-left: 50px;">
                             <!--task.config._prov.app.id is deprecated -->
@@ -136,7 +138,9 @@
                                 </el-col>
                                 <el-col :span="20">
                                     <!-- id is used to jump to this data from the sidebar output datasets list -->
-                                    <mute :id="_output_tasks[task._id]._id+'/'+output_id">D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}</mute>
+                                    <mute :id="_output_tasks[task._id]._id+'/'+output_id">
+                                        D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}
+                                    </mute>
 
                                     <b>{{dataset.meta.subject}}</b>
                                     {{datatypes[dataset.datatype].name}} 
@@ -477,9 +481,10 @@ export default {
             });
         },
 
-        scrollto: function(idx) {
-            var elem = document.getElementById(idx);
-            var top = elem.offsetParent.offsetTop-250;
+        scrollto: function(id) {
+            var elem = document.getElementById(id);
+            //var top = elem.offsetParent.offsetTop-250;
+            var top = elem.offsetTop-30;
             document.getElementById("scrolled-area").scrollTop = top;
         },
 
@@ -552,6 +557,7 @@ export default {
 
                 //subscribe to the instance events
                 var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+                console.dir(url);
                 var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
                 ws.onopen = (e)=>{
                     console.log("websocket opened. binding things for", this.instance._id);
@@ -572,6 +578,10 @@ export default {
                   
                 ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
+                    if(event.error) {
+                        console.error(event.error);
+                        return;
+                    }
                     var msg = event.msg;
                     if(!msg || !msg._id) return; //odd..
                     switch(event.dinfo.exchange) {

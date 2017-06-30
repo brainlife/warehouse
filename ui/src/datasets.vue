@@ -24,9 +24,9 @@
                 <el-col :span="4"><h4>Subject</h4></el-col>
                 <el-col :span="20">
                     <el-row>
-                        <el-col :span="2">&nbsp;</el-col>
+                        <el-col :span="1">&nbsp;</el-col>
                         <el-col :span="6"><h4>Datatype</h4></el-col>
-                        <el-col :span="6"><h4>Desc</h4></el-col>
+                        <el-col :span="7"><h4>Desc</h4></el-col>
                         <el-col :span="6"><h4>Create Date</h4></el-col>
                         <el-col :span="4"><h4>Tags</h4></el-col>
                     </el-row> 
@@ -53,12 +53,12 @@
                     @click="go('/dataset/'+dataset._id)"
                     :class="{dataset: true, clickable: true, selected: dataset.checked}">
                         <el-row>
-                            <el-col :span="2">
-                                <div @click.stop="check(dataset)" style="padding: 0px 5px; padding-bottom: 20px;">
+                            <el-col :span="1">
+                                <div @click.stop="check(dataset)" style="padding-left: 3px;">
                                     <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                 </div>
                             </el-col>
-                            <el-col :span="5" :title="datatypes[dataset.datatype].desc">
+                            <el-col :span="6" :title="datatypes[dataset.datatype].desc">
                                 {{datatypes[dataset.datatype].name}}
                                 <tags :tags="dataset.datatype_tags"></tags> &nbsp;
                             </el-col>

@@ -162,6 +162,10 @@ export default {
               
             ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
+                if(event.error) {
+                    console.error(event.error);
+                    return;
+                }
                 var msg = event.msg;
                 if(!msg || !msg._id) return; //odd..
                 if(~msg.name.indexOf("brainlife.novnc")) {

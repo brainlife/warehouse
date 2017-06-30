@@ -15,12 +15,13 @@
             </el-breadcrumb>
             -->
 
-            <div style="float: right; margin-right: 20px;">
-                <br>
-                <span style="text-transform: uppercase;">{{instance.status}}</span> |
-                <time style="margin-top: 15px;">Created at {{instance.create_date|date}}</time>
+            <div style="float: right; margin-right: 20px; margin-top: 10px;">
+                <time style="margin-top: 15px;">Created at <b>{{instance.create_date|date}}</b></time>
             </div>
-            <h1><icon name="send" scale="2"></icon> Process</h1>
+            <h1>
+                <icon name="send" scale="2"></icon> Process
+                <statustag :status="instance.status"></statustag>
+            </h1>
             <el-input type="textarea" placeholder="Description" @change="changedesc()" v-model="instance.desc" :autosize="{minRows: 2, maxRows: 5}"/>
         </div>
 
@@ -177,6 +178,7 @@ import appavatar from '@/components/appavatar'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
 import appui from '@/components/appui'
+import statustag from '@/components/statustag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -191,6 +193,7 @@ export default {
         message, file, tags, 
         metadata, filebrowser, pageheader, 
         appavatar, mute, viewerselect, appui,
+        statustag,
      },
 
     data () {
@@ -281,6 +284,10 @@ export default {
               
             ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
+                if(event.error) {
+                    console.error(event.error);
+                    return;
+                }
                 var msg = event.msg;
                 if(!msg || !msg._id) return; //odd..
                 switch(event.dinfo.exchange) {

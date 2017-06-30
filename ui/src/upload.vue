@@ -210,6 +210,10 @@ export default {
             }
             ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
+                if(event.error) {
+                    console.error(event.error);
+                    return;
+                }
                 var task = event.msg;
                 if(!task) return;
                 if(!task._id) return; //what kind of task is this?
