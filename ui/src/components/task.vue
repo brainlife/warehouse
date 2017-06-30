@@ -91,7 +91,7 @@ export default {
         remove() {
             this.$http.delete(Vue.config.wf_api+'/task/'+this.task._id)
             .then(res=>{
-                this.$notify({ title: 'Removed', message: 'Task removal requested', type: 'success', });
+                this.$notify({ title: 'Removing Tak', message: 'Task removal requested', type: 'success', });
                 this.$emit("remove", this.task._id);
             })
             .catch(err=>{

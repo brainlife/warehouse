@@ -20,11 +20,6 @@
                 <h3>Input Datasets</h3>
                 <ul style="padding-left: 0px; list-style: none;">
                     <li v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_input'" style="margin-bottom: 10px;">
-                        <!-- removing task will remove all input datasets that are staged together.. I need to only remove 1.. but how?
-                        <div @click="remove_task(dataset.task._id)" style="display: inline; cursor: pointer;" title="Remove">
-                            <icon name="close"></icon>
-                        </div>
-                        -->
                         <mute>D{{idx}}</mute> 
                         <b>{{dataset.meta.subject}}</b>
                         <!--<el-tag type="primary">{{dataset.meta.subject}}</el-tag>-->
@@ -35,21 +30,12 @@
                                 <statusicon :status="dataset.task.status"></statusicon> Staging ..
                             </small>
                         </mute>
-                        <!--
-                        <br>
-                        <small>{{dataset.name}}</small>
-                        -->
                     </li>
                 </ul>
                 <br>
                 <h3>Output Datasets</h3>
                 <ul style="padding-left: 0px; list-style: none;">
                     <li v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" style="margin-bottom: 10px;">
-                        <!--
-                        <div @click.stop="remove_task(dataset.task._id)" style="display: inline; cursor: pointer;" title="Unselect">
-                            <icon name="close"></icon>
-                        </div>
-                        -->
                         <mute>D{{idx}}</mute> 
                         <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
                         <!--<metadata :metadata="dataset.meta"/>-->
@@ -82,7 +68,12 @@
 
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
-                <task :task="task" :prov="task.config._prov" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task_deps">
+
+                <task :task="task" 
+                    :prov="task.config._prov" 
+                    v-if="task.name == 'brainlife.process'" 
+                    style="margin-top: 5px;" 
+                    @remove="task_removed">
 
                     <!--header-->
                     <div slot="header" class="task-header">
@@ -483,16 +474,13 @@ export default {
                 this.$router.push('/processes');
             });
         },
-        remove_task: function(id) {
-            this.$http.delete(Vue.config.wf_api+'/task/'+id)
-            .then(res=>{
-                console.log("removed task", task._id);
-            })
-            .catch(err=>{
-                console.error(err); 
+        task_removed: function(id) {
+            //task component has made removal request
+            this.tasks.forEach(task=>{
+                if(task._id == id) task.status = "pending_removal"; //psudo status
             });
-        },
-        remove_task_deps: function(id) {
+
+            //we also need to remove dep tasks
             this.tasks.forEach(task=>{
                 if(task.name == "brainlife.stage_output" && task.deps[0] == id) { //assume we only have 1 dep..
                     console.log("found dep to remove", task);

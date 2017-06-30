@@ -66,6 +66,9 @@
                     Dockerhub
                     <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
                 </div>
+                <div v-if="app.uiid">
+                    UIID {{app.uiid}}
+                </div>
             </td>
         </tr>
         <tr v-if="resource">
@@ -167,7 +170,12 @@ export default {
             //then load task stats
             //console.dir(this.app);
             this.$http.get(Vue.config.wf_api+'/task/stats', {params: {
-                service: this.trimGit(this.app.github),
+
+                //TODO this is raising "Cannot read property 'replace' of null 
+                //fix this, and also apply this on @blur event
+                //service: this.trimGit(this.app.github),
+
+                service: this.app.github, 
                 service_branch: this.app.github_branch,
             }})
             .then(res=>{
@@ -176,7 +184,7 @@ export default {
                 console.error(err);
             });
 
-        }).catch(err=>{
+        }, err=>{
             console.error(err);
         });
     },

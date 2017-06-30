@@ -24,6 +24,8 @@ export default {
         acpcalignment,
         dtiinit,
         freesurfer,
+        life,
+        evaluator,
     },
     props: ['task', 'uiid'],
 }
