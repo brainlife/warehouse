@@ -80,20 +80,6 @@
                                 <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task" :subdir="props.row.id"></file>
                             </el-col>
                             <el-col :span="4">
-                                <!--
-                                <el-dropdown style="float: right;" @command="view">
-                                    <el-button type="primary">
-                                        View <i class="el-icon-caret-bottom el-icon--right"></i>
-                                    </el-button>
-                                    <el-dropdown-menu slot="dropdown">
-                                        <el-dropdown-item command="fslview">FSLView</el-dropdown-item>
-                                        <el-dropdown-item command="freeview">FreeView</el-dropdown-item>
-                                        <el-dropdown-item command="mrview">MRView</el-dropdown-item>
-                                        <el-dropdown-item command="fibernavigator">FiberNavigator</el-dropdown-item>
-                                        <el-dropdown-item command="brainview" disabled divided>BrainView</el-dropdown-item>
-                                    </el-dropdown-menu>
-                                </el-dropdown>
-                                -->
                                 <viewerselect @select="view"></viewerselect>
                             </el-col>
                         </el-row>
@@ -104,7 +90,6 @@
                     <el-table-column prop="datatype.desc" label="Description" width="250"></el-table-column>
                     <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
                 </el-table>
-
             </td>
         </tr>
         <tr>
@@ -189,6 +174,7 @@ import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
+import appui from '@/components/appui'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -202,7 +188,8 @@ export default {
         sidemenu, contact, task, 
         message, file, tags, 
         metadata, filebrowser, pageheader, 
-        appavatar, mute, viewerselect },
+        appavatar, mute, viewerselect, appui,
+     },
 
     data () {
         return {

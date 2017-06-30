@@ -54,6 +54,9 @@
                     </el-tab-pane>
                 </el-tabs>
             </el-form-item>
+            <el-form-item label="UI ID">
+                <el-input type="text" v-model="app.uiid" placeholder="Please leave this blank"/>
+            </el-form-item>
 
             <el-form-item label="Configuration">
                 <!--
@@ -159,7 +162,7 @@ export default {
     data () {
         return {
             app: {
-                _id: null,
+                //_id: null,
                 admins: null,
 
                 name: null,
@@ -252,8 +255,6 @@ export default {
                         this.ready = true;
                     }
 
-                }).catch(err=>{
-                    console.error(err);
                 });
             });
         }, res=>{
