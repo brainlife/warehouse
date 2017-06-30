@@ -83,6 +83,8 @@
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
                 <task :task="task" :prov="task.config._prov" v-if="task.name == 'brainlife.process'" style="margin-top: 5px;" @remove="remove_task_deps">
+
+                    <!--header-->
                     <div slot="header" class="task-header">
                         <div style="float: left">
                             <h3><mute>T{{idx}}</mute></h3>
@@ -91,16 +93,13 @@
                             <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app>
                         </div>
                         <div v-if="!task.config._prov" style="margin-left: 50px">
-                            <!-- 
-                            <app :appid="task.config._prov.app.id" :compact="true" :clickable="false"></app>
-                            -->
                             <h3 style="margin-bottom: 0px; color: #666;">{{task.service}} <mute>{{task.name}}</mute></h3>
                             <mute>{{task.desc}}</mute>
                         </div>
-                    </div><!--header-->
+                    </div>
 
                     <!--input-->
-                    <el-collapse-item title="Input Datasets" name="input" slot="input" v-if="task.config._prov">
+                    <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._prov">
                         <el-card v-for="(did, input_id) in task.config._prov.inputs" :key="input_id">
                             <el-row>
                             <el-col :span="4">
@@ -118,53 +117,48 @@
                     </el-collapse-item>
 
                     <!--output-->
-                    <el-collapse-item title="Output Datasets" name="output" slot="output" v-if="_output_tasks[task._id] && task.status == 'finished'">
-                        <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
-                            <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output <small>{{_output_tasks[task._id].status_msg||'&nbsp;'}}</small>
-                        </p>
+                    <div slot="output" v-if="task.status == 'finished'">
 
-                        <!--insert slot for output datasets-->
-                        <el-card v-if="_output_tasks[task._id].status == 'finished'" 
-                            v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id">
-                            <el-row>
-                            <el-col :span="4">
-                                <b>{{output_id}}</b>
-                            </el-col>
-                            <el-col :span="20">
-                                <mute>D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}</mute>
-                                <b>{{dataset.meta.subject}}</b>
-                                {{datatypes[dataset.datatype].name}} 
-                                <tags :tags="dataset.datatype_tags"></tags>
+                        <!--display custom ui-->
+                        <el-collapse-item title="View" name="view" v-if="task.config._prov && task.config._prov.app">
+                            <appui :uiid="task.config._prov.app.uiid" :task="task"></appui>
+                        </el-collapse-item>
 
-                                <el-button size="small" type="primary" style="float: right;" 
-                                    v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id, true)">Archive</el-button>
-                                <el-button size="small" style="float: right;" 
-                                    v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
-                                <!--TODO - show only viewer that makes sense for each data type-->
-                                <!--
-                                <el-dropdown style="float: right; margin-right: 5px;" @command="view">
-                                    <el-button size="small"> View <i class="el-icon-caret-bottom el-icon--right"></i> </el-button>
-                                    <el-dropdown-menu slot="dropdown">
-                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/fslview'">FSLView</el-dropdown-item>
-                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/freeview'">FreeView</el-dropdown-item>
-                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/mrview'">MRView</el-dropdown-item>
-                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/fibernavigator'">FiberNavigator</el-dropdown-item>
-                                        <el-dropdown-item :command="_output_tasks[task._id]._id+'/brainview'" disabled divided>BrainView</el-dropdown-item>
-                                    </el-dropdown-menu>
-                                </el-dropdown>
-                                -->
-                                <viewerselect @select="view(_output_tasks[task._id]._id, $event)" style="float: right; margin-right: 5px;"></viewerselect>
-                                <archiveform v-if="archiving[task._id]" 
-                                    :instance="instance" 
-                                    :app_id="_output_tasks[task._id].config._prov.app"
-                                    :output_task="_output_tasks[task._id]" 
-                                    :dataset_id="output_id"
-                                    :dataset="dataset" 
-                                    @submitted="archive(task._id, false)" style="margin-top: 30px;"></archiveform>
-                            </el-col>
-                            </el-row>
-                        </el-card>
-                    </el-collapse-item>
+                        <!--output datasets-->
+                        <el-collapse-item title="Output" name="output" v-if="_output_tasks[task._id]">
+                            <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
+                                <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output <small>{{_output_tasks[task._id].status_msg||'&nbsp;'}}</small>
+                            </p>
+
+                            <el-card v-if="_output_tasks[task._id].status == 'finished'" 
+                                v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id">
+                                <el-row>
+                                <el-col :span="4">
+                                    <b>{{output_id}}</b>
+                                </el-col>
+                                <el-col :span="20">
+                                    <mute>D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}</mute>
+                                    <b>{{dataset.meta.subject}}</b>
+                                    {{datatypes[dataset.datatype].name}} 
+                                    <tags :tags="dataset.datatype_tags"></tags>
+
+                                    <el-button size="small" type="primary" style="float: right;" 
+                                        v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id, true)">Archive</el-button>
+                                    <el-button size="small" style="float: right;" 
+                                        v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
+                                    <viewerselect @select="view(_output_tasks[task._id]._id, $event)" style="float: right; margin-right: 5px;"></viewerselect>
+                                    <archiveform v-if="archiving[task._id]" 
+                                        :instance="instance" 
+                                        :app_id="_output_tasks[task._id].config._prov.app"
+                                        :output_task="_output_tasks[task._id]" 
+                                        :dataset_id="output_id"
+                                        :dataset="dataset" 
+                                        @submitted="archive(task._id, false)" style="margin-top: 30px;"></archiveform>
+                                </el-col>
+                                </el-row>
+                            </el-card>
+                        </el-collapse-item>
+                    </div><!--output-->
                 </task>
             </div>
 
@@ -302,6 +296,7 @@ import datasetselecter from '@/components/datasetselecter'
 import statusicon from '@/components/statusicon'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
+import appui from '@/components/appui'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -315,7 +310,7 @@ export default {
         filebrowser, pageheader, 
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
-        viewerselect, datasetselecter,
+        viewerselect, datasetselecter, appui,
     },
 
     data() {
@@ -795,13 +790,14 @@ export default {
                     //prepare _prov
                     //TODO - I should probably store this provenance collection on warehouse service 
                     var prov = {
+                        //app: this.newtask_app, //this puts everthhing... too much!
                         app: {
                             id: this.newtask_app._id,
                             name: this.newtask_app.name,
                             desc: this.newtask_app.desc,
                             github: this.newtask_app.github,
+                            uiid: this.newtask_app.uiid,
                         },
-                        //outputs: {},
                         inputs: {},
                     };
                     for(var id in newtask.inputs) {

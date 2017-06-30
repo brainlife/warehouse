@@ -21,11 +21,12 @@
                     <time v-if="task.status == 'removed'">at {{task.remove_date|date}}</time>
                 </small>
             </h4>
-            <i>{{task.status_msg}}</i>
+            <i>{{task.status_msg||'&nbsp;'}}</i>
         </div>
     </el-card>
 
     <el-collapse v-model="activeSections">
+        <slot name="output"></slot>
         <slot name="input"></slot>
 
         <el-collapse-item title="Configuration" name="config" style="margin: 0px;">
@@ -38,7 +39,6 @@
             <el-alert v-if="!task.resource_id" title="Not yet submitted to computing resource" type="warning"></el-alert>
         </el-collapse-item>
 
-        <slot name="output"></slot>
 
     </el-collapse>
     <br clear="both">
