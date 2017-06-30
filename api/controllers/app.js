@@ -107,7 +107,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 /**
  * @apiGroup App
  * @api {post} /app             Post App
- * @apiDescription              Register new app
+ * @apiDescription              Register new app (don't set id to null)
  *
  * @apiParam {String} [name]    User friendly name for this app
  * @apiParam {String} [desc]    Description for this app
