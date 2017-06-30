@@ -24,18 +24,7 @@
             </el-table-column> 
             <el-table-column label="Process Status" prop="status">
                 <template scope="scope">
-                    <el-tag v-if="scope.row.status == 'removed'">
-                        <icon name="remove"></icon> Removed</el-tag>
-                    <el-tag type="success" v-if="scope.row.status == 'finished'">
-                        <icon name="check"></icon> Finished</el-tag>
-                    <el-tag type="primary" v-if="scope.row.status == 'running'">
-                        <icon name="circle-o-notch" spin></icon> Running</el-tag>
-                    <el-tag type="primary" v-if="scope.row.status == 'requested'">
-                        <icon name="clock-o"></icon> Requested</el-tag>
-                    <el-tag type="danger" v-if="scope.row.status == 'failed'">
-                        <icon name="warning"></icon> Failed</el-tag>
-                    <el-tag type="warning" v-if="scope.row.status == 'unknown'">
-                        <icon name="help"></icon> Failed</el-tag>
+                    <statustag :status="scope.row.status"></statustag>
                 </template>
             </el-table-column> 
             <!--
@@ -82,9 +71,10 @@
 import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
+import statustag from '@/components/statustag'
 
 export default {
-    components: { sidemenu, pageheader },
+    components: { sidemenu, pageheader, statustag },
     data () {
         return {
             instances: null,

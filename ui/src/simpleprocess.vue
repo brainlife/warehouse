@@ -8,12 +8,14 @@
                 <el-button @click="remove()" icon="delete">Remove Process</el-button>
             </el-button-group>
 
+            <!--
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item :to="{ path: '/processes' }">Processes</el-breadcrumb-item>
                 <el-breadcrumb-item>{{instance.name}}</el-breadcrumb-item>
             </el-breadcrumb>
+            -->
 
-            <div style="float: right">
+            <div style="float: right; margin-right: 20px;">
                 <br>
                 <span style="text-transform: uppercase;">{{instance.status}}</span> |
                 <time style="margin-top: 15px;">Created at {{instance.create_date|date}}</time>
