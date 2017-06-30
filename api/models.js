@@ -214,12 +214,15 @@ var appSchema = mongoose.Schema({
         datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
         datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
     })],
-
-    create_date: { type: Date, default: Date.now },
+        
+    //id of custom UI to show output in different plotly based UI
+    //1.. embedded(part of vue) 2.. web ui that's hosted outside (3.. native UI)
+    uiid: String, // "vue/acpcalign"   "vue/dtiinit"             "ext/brainbrowser"
 
     _rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
-
     removed: { type: Boolean, default: false} ,
+
+    create_date: { type: Date, default: Date.now },
 });
 exports.Apps = mongoose.model('Apps', appSchema);
 
