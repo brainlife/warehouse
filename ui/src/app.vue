@@ -104,7 +104,7 @@
                 </div>
             </td>
         </tr>
-        <tr>
+        <tr v-if="app.outputs.length">
             <th>Output Datatypes</th>
             <td>
                 <p class="text-muted">This application produces following output datasets</p>

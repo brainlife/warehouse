@@ -12,16 +12,16 @@
         </el-row>
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
-        <div v-if="!apps" style="margin: 40px;"><h3>Loading ..</h3></div>
-        <div class="margin20" v-if="apps">
+    <div class="page-content">
+        <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
+        <div v-for="(apps, tag) in app_groups" key="tag" class="margin20">
+            <h2 class="group-heading">{{tag}}</h2> 
             <div v-for="app in apps" key="app._id" class="card">
-                <app :app="app"></app><br>
+                <app :app="app"></app>
             </div>
-        </div><!--magin20-->
-        </div><!--page-content-->
-    </div><!--pusher-->
+            <br clear="both">
+        </div>
+    </div><!--page-content-->
 </div><!--root-->
 </template>
 
@@ -35,16 +35,15 @@ export default {
     components: { sidemenu, pageheader, app },
     data () {
         return {
-            apps: null,
+            app_groups: null,
             query: "",
 
             config: Vue.config,
         }
     },
 
-    mounted: function() {
+    created: function() {
         this.$http.get('app', {params: {
-            //service: "_upload",
             find: JSON.stringify({
                 $or: [
                     { removed: false },
@@ -53,11 +52,20 @@ export default {
             })
         }})
         .then(res=>{
-            this.apps = res.body.apps;
+            //organize apps into various tags
+            this.app_groups = {};
+            res.body.apps.forEach(app=>{
+                var tags = app.tags || [ 'miscellaneous' ];
+                tags.forEach(tag=>{
+                    if(!this.app_groups[tag]) this.app_groups[tag] = [];
+                    this.app_groups[tag].push(app);
+                });
+            });
         }, res=>{
             console.error(res);
         });
     },
+
     methods: {
         go: function(path) {
             this.$router.push(path);
@@ -67,9 +75,19 @@ export default {
 </script>
 
 <style scoped>
+.el-card {
+    border: none;
+}
 .card {
     width: 350px; 
     float: left;
     margin-right: 10px;
+}
+.group-heading {
+    color: #999;
+    text-transform: uppercase;
+    font-weight: normal;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
 }
 </style>
