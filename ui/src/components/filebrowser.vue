@@ -33,7 +33,11 @@
             <div class="content" v-if="file.open">
                 <filebrowser :task="task" :path="fullpath+'/'+file.filename" :depth="depth+1"></filebrowser>
             </div>
-            <pre v-if="file.content" v-highlightjs="file.content" class="file-content"><code :class="file.type+' hljs'"></code></pre>
+            <div v-if="file.content" style="position: relative;">
+                <el-button v-if="file.content != '(empty)\n'"
+                    style="position: absolute; top: 0px; right: 0px;" size="mini" @click="download_file(file)" icon="document">Download</el-button>
+                <pre v-highlightjs="file.content" class="file-content"><code :class="file.type+' hljs'"></code></pre>
+            </div>
         </div>
     </div>
 </div>
@@ -106,7 +110,17 @@ export default {
             })
         },
 
+        download_file: function(file) {
+            document.location = this.get_download_url(file);
+        },
+
         click: function(file){
+            if(file.content) {
+                //*close* file
+                file.content = "";
+                return;
+            }
+
             var url = this.get_download_url(file);
 
             if(file.directory) Vue.set(file, 'open', !file.open); //for directory, just open

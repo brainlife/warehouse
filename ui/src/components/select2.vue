@@ -15,6 +15,7 @@ export default {
         'dataAdapter',
 
         'multiple',
+        'tags',
     ],
 
     data() {
@@ -30,7 +31,7 @@ export default {
         this.opts = {
             data: this.options, // <option>
             matcher: this.matcher,
-            tags: true,
+            tags: this.tags,
             multiple: this.multiple,
             //theme: 'classic',
         };

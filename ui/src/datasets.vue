@@ -150,7 +150,7 @@ export default {
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
 
-            query: "",
+            query: localStorage.getItem('datasets.query'),
 
             loading: false,
 
@@ -261,6 +261,7 @@ export default {
                 setTimeout(this.change_query, 300);
                 return;
             }
+            localStorage.setItem('datasets.query', this.query);
             this.reload();
         },
 
