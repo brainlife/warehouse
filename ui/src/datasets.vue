@@ -54,7 +54,7 @@
                     :class="{dataset: true, clickable: true, selected: dataset.checked}">
                         <el-row>
                             <el-col :span="1">
-                                <div @click.stop="check(dataset)" style="padding-left: 3px;">
+                                <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
                                     <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                 </div>
                             </el-col>

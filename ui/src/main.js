@@ -102,11 +102,7 @@ if(!Vue.config.jwt) {
     signin();
 }
 Vue.config.user = jwt_decode(Vue.config.jwt);
-if(!Vue.config.user.exp) {
-    console.log("jwt.exp not set");
-    signin();
-}
-if(Vue.config.user.exp < Date.now()/1000) {
+if(Vue.config.user.exp && Vue.config.user.exp < Date.now()/1000) {
     console.log("jwt expired", Vue.config.user.exp, Date.now()/1000);
     signin();
 }

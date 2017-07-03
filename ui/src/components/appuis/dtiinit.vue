@@ -1,6 +1,6 @@
 <template>
 <div class="dtiinit">
-    <h5>dti_trilin/t1pdd.png</h5>
+    <h3 class="text-muted">T1PDD (Fiber Directions)</h3>
     <img :src="testurl" width="100%"/>
 </div>
 </template>
@@ -18,6 +18,7 @@ export default {
     mounted() {
         var basepath = this.task.instance_id+'/'+this.task._id;
         if(this.subdir) basepath +='/'+this.subdir;
+        console.log("path", basepath);
         this.testurl = Vue.config.wf_api+'/resource/download'+
             '?r='+this.task.resource_id+
             '&p='+encodeURIComponent(basepath+'/dti_trilin/t1pdd.png')+

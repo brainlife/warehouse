@@ -18,28 +18,26 @@
                 <el-button type="primary" size="small" style="float: right; position: relative; top: -8px;"
                     @click="show_input_dialog = true" v-bind:class="{animated: true, headShake: _datasets.length == 0}" icon="plus"> Stage Datasets</el-button>
                 <h3>Input Datasets</h3>
-                <ul style="padding-left: 0px; list-style: none;">
-                    <li v-for="(dataset, idx) in _datasets" :key="idx" v-if="dataset.task.name == 'brainlife.stage_input'" style="margin-bottom: 10px;">
-                        <mute>D{{idx}}</mute> 
-                        <b>{{dataset.meta.subject}}</b>
-                        <!--<el-tag type="primary">{{dataset.meta.subject}}</el-tag>-->
-                        {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
-                        <time>{{dataset.create_date|date('%x')}}</time>
-                        <mute>
-                            <small v-if="dataset.task.status != 'finished'">
-                                <statusicon :status="dataset.task.status"></statusicon> Staging ..
-                            </small>
-                        </mute>
-                    </li>
-                </ul>
+                <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset"
+                    v-if="dataset.task.name == 'brainlife.stage_input'">
+                    <mute>D{{idx}}</mute> 
+                    <b>{{dataset.meta.subject}}</b>
+                    <!--<el-tag type="primary">{{dataset.meta.subject}}</el-tag>-->
+                    {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
+                    <time>{{dataset.create_date|date('%x')}}</time>
+                    <mute>
+                        <small v-if="dataset.task.status != 'finished'">
+                            <statusicon :status="dataset.task.status"></statusicon> Staging ..
+                        </small>
+                        <icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>
+                    </mute>
+                </div>
                 <br>
                 <h3>Output Datasets</h3>
 
-                <div v-for="(dataset, idx) in _datasets" 
-                    :key="idx" v-if="dataset.task.name == 'brainlife.stage_output'" 
-                    @click="scrollto(dataset.task._id)">
-                    <el-card style="margin-bottom: 10px;" class="clickable " :class="{output: dataset.task.status == 'finished'}" :body-style="{padding: '5px'}">
-
+                <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
+                    @click="scrollto(dataset.task._id)"
+                    v-if="dataset.task.name == 'brainlife.stage_output'">
                     <!-- 
                         tasks used to organize generated output datasets are hidden, 
                         so to display the actual task ID of the apps themselves, I assume that 
@@ -58,11 +56,13 @@
                         <small v-if="dataset.task.status != 'finished'">
                             <statusicon :status="dataset.task.status"/>Processing
                         </small>
+
+                        <span v-if="dataset.dataset_id">
+                            <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" type="success" icon="check">Archived</el-button>
+                        </span>
+                        <icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>
                     </mute>
-                    <p v-if="dataset.dataset_id">
-                        <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
-                    </p>
-                </el-card></div>
+                </div>
             </div>
         </div>
 
@@ -95,7 +95,7 @@
                         </div>
                         <div v-if="task.config._prov" style="margin-left: 50px;">
                             <!--task.config._prov.app.id is deprecated -->
-                            <app :appid="task.config._prov.app.id || task.config._prov.app" :compact="true" :clickable="false"></app>
+                            <app :appid="task.config._prov.app.id || task.config._prov.app" :compact="true"></app>
                         </div>
                         <div v-if="!task.config._prov" style="margin-left: 50px">
                             <h3 style="margin-bottom: 0px; color: #666;">{{task.service}} <mute>{{task.name}}</mute></h3>
@@ -105,7 +105,7 @@
 
                     <!--input-->
                     <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._prov">
-                        <el-card v-for="(did, input_id) in task.config._prov.inputs" :key="input_id">
+                        <div v-for="(did, input_id) in task.config._prov.inputs" :key="input_id" style="min-height: 30px;">
                             <el-row>
                             <el-col :span="4">
                                 <b>{{input_id}}</b>
@@ -118,55 +118,51 @@
                                 <tags :tags="find_dataset(did).datatype_tags"></tags>
                             </el-col>
                             </el-row>
-                        </el-card>
+                        </div>
                     </el-collapse-item>
 
                     <!--output-->
-                    <div slot="output" v-if="task.status == 'finished'">
+                    <el-collapse-item title="Output" name="output" slot="output"
+                        v-if="task.status == 'finished' && _output_tasks[task._id]">
+                        <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
+                            <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output
+                        </p>
 
-                        <!--output datasets-->
-                        <el-collapse-item title="Output" name="output" v-if="_output_tasks[task._id]">
-                            <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
-                                <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output <small>{{_output_tasks[task._id].status_msg||'&nbsp;'}}</small>
-                            </p>
+                        <div v-if="_output_tasks[task._id].status == 'finished'"
+                            v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id" 
+                            style="min-height: 30px;">
+                            <el-row>
+                            <el-col :span="4">
+                                <b>{{output_id}}</b>
+                            </el-col>
+                            <el-col :span="20">
+                                <!-- id is used to jump to this data from the sidebar output datasets list -->
+                                <mute :id="_output_tasks[task._id]._id+'/'+output_id">
+                                    D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}
+                                </mute>
 
-                            <el-card v-if="_output_tasks[task._id].status == 'finished'" class="output"
-                                v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id">
-                                <el-row>
-                                <el-col :span="4">
-                                    <b>{{output_id}}</b>
-                                </el-col>
-                                <el-col :span="20">
-                                    <!-- id is used to jump to this data from the sidebar output datasets list -->
-                                    <mute :id="_output_tasks[task._id]._id+'/'+output_id">
-                                        D{{find_dataset_idx(_output_tasks[task._id]._id+"/"+output_id)}}
-                                    </mute>
+                                <b>{{dataset.meta.subject}}</b>
+                                {{datatypes[dataset.datatype].name}} 
+                                <tags :tags="dataset.datatype_tags"></tags>
 
-                                    <b>{{dataset.meta.subject}}</b>
-                                    {{datatypes[dataset.datatype].name}} 
-                                    <tags :tags="dataset.datatype_tags"></tags>
+                                <el-button size="small" type="primary" style="float: right;" 
+                                    v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id, true)">Archive</el-button>
+                                <el-button size="small" style="float: right;" 
+                                    v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
+                                <viewerselect @select="view(_output_tasks[task._id]._id, $event)" style="float: right; margin-right: 5px;"></viewerselect>
+                                <archiveform v-if="archiving[task._id]" 
+                                    :instance="instance" 
+                                    :app_id="_output_tasks[task._id].config._prov.app"
+                                    :output_task="_output_tasks[task._id]" 
+                                    :dataset_id="output_id"
+                                    :dataset="dataset" 
+                                    @submitted="archive(task._id, false)" style="margin-top: 30px;"></archiveform>
+                            </el-col>
+                            </el-row>
 
-                                    <el-button size="small" type="primary" style="float: right;" 
-                                        v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id, true)">Archive</el-button>
-                                    <el-button size="small" style="float: right;" 
-                                        v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
-                                    <viewerselect @select="view(_output_tasks[task._id]._id, $event)" style="float: right; margin-right: 5px;"></viewerselect>
-                                    <archiveform v-if="archiving[task._id]" 
-                                        :instance="instance" 
-                                        :app_id="_output_tasks[task._id].config._prov.app"
-                                        :output_task="_output_tasks[task._id]" 
-                                        :dataset_id="output_id"
-                                        :dataset="dataset" 
-                                        @submitted="archive(task._id, false)" style="margin-top: 30px;"></archiveform>
-                                </el-col>
-                                </el-row>
-                            </el-card>
-
-                            <!--task.config._prov.app.id is deprecated -->
-                            <appui :appid="task.config._prov.app.id || task.config._prov.app" :task="task"></appui>
-
-                        </el-collapse-item>
-                    </div><!--output-->
+                            <datatypeui :datatype="datatypes[dataset.datatype].name" :task="_output_tasks[task._id]" :subdir="output_id"></datatypeui>
+                        </div>
+                    </el-collapse-item>
                 </task>
             </div>
 
@@ -304,7 +300,7 @@ import datasetselecter from '@/components/datasetselecter'
 import statusicon from '@/components/statusicon'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
-import appui from '@/components/appui'
+import datatypeui from '@/components/datatypeui'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -318,7 +314,7 @@ export default {
         filebrowser, pageheader, 
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
-        viewerselect, datasetselecter, appui,
+        viewerselect, datasetselecter, datatypeui,
     },
 
     data() {
@@ -491,11 +487,13 @@ export default {
         go: function(path) {
             this.$router.push(path);
         },
+
         remove_instance: function() {
             this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
                 this.$router.push('/processes');
             });
         },
+
         task_removed: function(id) {
             //task component has made removal request
             this.tasks.forEach(task=>{
@@ -516,10 +514,12 @@ export default {
                 }
             });
         },
+
         view: function(taskid, event) {
             var url = taskid+'/'+event;
             window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
+
         load: function() {
             //load instance first
             this.$http.get(Vue.config.wf_api+'/instance', {params: {
@@ -645,6 +645,8 @@ export default {
                 console.log("submitted download", res.body.task);
                 var task = res.body.task;
                 this.tasks.push(task); 
+
+                if(this.newprocess) this.start_newprocess();
             });
         },
 
@@ -947,6 +949,14 @@ border-bottom: none;
 background-color: #fff;
 border-radius: 8px 8px 0 0;
 }
+.dataset {
+border-bottom: 1px solid #d5d5d5; 
+padding: 5px;
+}
+.dataset.clickable:hover {
+background-color: #eee;
+}
+/*
 .el-card.output {
 background-color: #d4e4d4;
 border: none;
@@ -955,4 +965,5 @@ border: none;
 background-color: green;
 color: white;
 }
+*/
 </style>

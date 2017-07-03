@@ -1,5 +1,5 @@
 <template>
-<select multiple="true">
+<select>
     <slot></slot>
 </select>
 </template>
@@ -7,41 +7,48 @@
 <script>
 import Vue from 'vue'
 export default {
-    props: ['options', 'value', 'matcher', 'dataAdapter'],
+    props: [
+        'options', //select <option>s (not select2 UI options)
+        'value', //preselected values
+
+        'matcher', 
+        'dataAdapter',
+
+        'multiple',
+    ],
 
     data() {
         return {
+            opts: {},
             config: Vue.config,
-            
-            opts: {}
         }
     },
 
     mounted: function() {
         var vm = this;
-        //init select2
-        
-        let forSure = function() {
-            $(this.$el).select2(this.opts)
-            .val(this.value)
-            .trigger('change')
-            // emit event on change.
-            .on('change',function(evt) {
-                // console.dir($(vm.$el).val());
-                vm.$emit('input', $(vm.$el).val());
-            })
-        };
         
         this.opts = {
-            data: this.options,
+            data: this.options, // <option>
             matcher: this.matcher,
             tags: true,
-            theme: 'classic'
+            multiple: this.multiple,
+            //theme: 'classic',
         };
+
+        function init() {
+            $(vm.$el)
+                .select2(vm.opts)
+                .val(vm.value)
+                .trigger('change')
+                .on('change',function(evt) {
+                    vm.$emit('input', $(this).val()); //this causes infinite loop with watch/value
+                })
+        }
         
-        if (this.dataAdapter) {
-            let self = this;
-            
+        if (!this.dataAdapter) {
+            init();
+        } else {
+            //ugly.. wtf select2 v4 !
             $.fn.select2.amd.require([
                 'select2/data/array',
                 'select2/utils'
@@ -49,38 +56,32 @@ export default {
                 var Adapter = function($element, options) {
                     Adapter.__super__.constructor.call(this, $element, options);
                 };
-                
                 Utils.Extend(Adapter, ArrayData);
-                
-                Adapter.prototype.query = self.dataAdapter;
-                
-                self.opts.ajax = {};
-                self.opts.dataAdapter = Adapter;
-                
-                forSure.call(self);
+                Adapter.prototype.query = vm.dataAdapter;
+                vm.opts.ajax = {};
+                vm.opts.dataAdapter = Adapter;
+
+                init();
             });
-            
         }
-        else
-            forSure.call(this);
     },
 
     //watch for parent value/options change and apply
     watch: {
-        options: function (options) {
-            //TODO - at the moment, select2 doesn't seems to remove old options - it *concatenates* options.. bug?
-            $(this.$el).select2({data: options});
-        },
         value: function(value) {
             //check to make sure we aren't updateing controller with the same value
             //this happens if user change value on UI, which triggers change, and parent
             //send change event back.
-            if(JSON.stringify(value) !== JSON.stringify(this.value)) $(this.$el).val(value).trigger('change');
+            if(JSON.stringify(value) != JSON.stringify($(this.$el).val())) {
+                $(this.$el).val(value).trigger('change');
+            }
+        },
+        options: function (options) {
+            $(this.$el).select2({data: options});
         },
     },
 
-    //clean up
-    destroyed: function () {
+    destroy: function () {
         $(this.$el).off().select2('destroy')
     },
 }

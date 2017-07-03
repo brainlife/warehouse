@@ -26,19 +26,18 @@
     </el-card>
 
     <el-collapse v-model="activeSections">
-        <slot name="output"></slot>
-        <slot name="input"></slot>
 
         <el-collapse-item title="Configuration" name="config" style="margin: 0px;">
             <!--<el-alert title="todo">display this in more user friendly way</el-alert>-->
             <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
         </el-collapse-item>
+        <slot name="input"></slot>
+        <slot name="output"></slot>
 
         <el-collapse-item title="Raw Output" name="rawoutput" v-if="task.status != 'removed'">
             <filebrowser v-if="task.resource_id && ~activeSections.indexOf('rawoutput')" :task="task"></filebrowser>
             <el-alert v-if="!task.resource_id" title="Not yet submitted to computing resource" type="warning"></el-alert>
         </el-collapse-item>
-
 
     </el-collapse>
     <br clear="both">

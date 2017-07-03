@@ -38,11 +38,13 @@
         <div v-if="!projects" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="projects">
             <h2 class="group-title">Private Projects</h2>
+            <p class="text-muted">Only the members of project can access datasets inside private projects.</p>
             <div v-for="project in projects" :key="project._id" v-if="project.access == 'private'" style="margin-bottom: 10px;">
                 <projectcard :project="project" class="private-project"/>
             </div>
             <br>
             <h2 class="group-title">Public Projects</h2>
+            <p class="text-muted">Datasets are accessible to any users but only project member can update them.</p>
             <div v-for="project in projects" :key="project._id" v-if="project.access == 'public'" style="margin-bottom: 10px;">
                 <projectcard :project="project" class="public-project"/>
             </div>

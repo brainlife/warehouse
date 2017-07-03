@@ -177,7 +177,7 @@ import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
-import appui from '@/components/appui'
+import datatypeui from '@/components/datatypeui'
 import statustag from '@/components/statustag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -192,7 +192,7 @@ export default {
         sidemenu, contact, task, 
         message, file, tags, 
         metadata, filebrowser, pageheader, 
-        appavatar, mute, viewerselect, appui,
+        appavatar, mute, viewerselect, datatypeui,
         statustag,
      },
 
