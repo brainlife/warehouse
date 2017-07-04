@@ -1,7 +1,7 @@
 <template>
     <el-dialog title="Select Datasets" :visible.sync="visible_">
         <!--<p class="text-muted">need to stage your datasets to be processed.</p>-->
-        <el-tabs v-model="input_dialog.mode">
+        <el-tabs v-model="mode">
               
             <el-tab-pane label="Selected Datasets" name="selected">
                 <p class="text-muted" v-if="Object.keys(selected).length == 0">Please go to <a href="#/datasets">Datasets</a> page to select datasets.</p>
@@ -18,15 +18,15 @@
             <el-tab-pane label="From Warehouse" name="warehouse">
                 <el-form label-width="120px">
                 <el-form-item label="Project">
-                    <projectselecter v-model="input_dialog.project"></projectselecter>
+                    <projectselecter v-model="project"></projectselecter>
                 </el-form-item>
                 <div style="background-color: #eee; padding: 20px 20px 1px 20px; margin-bottom: 10px;">
                     <h4>Filters</h4>
                     <el-form-item label="Subject" v-if="subjects">
-                        <select2 style="width: 100%; max-width: 100%;" @input="selected_subjects = $event" :options="subjects"></select2>
+                        <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
                     </el-form-item>
                     <el-form-item label="Datatype" v-if="datatypes_s2">
-                        <select2 style="width: 100%; max-width: 100%;" @input="selected_datatypes = $event" :options="datatypes_s2"></select2>
+                        <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
                     </el-form-item>
                 </div>
                 <!--
@@ -35,7 +35,7 @@
                 </el-form-item>
                 -->
                 <el-form-item label="Datasets">
-                    <select2 style="width: 100%; max-width: 100%;" :dataAdapter="debounce_grab_datasets" @input="input_dialog.datasets = $event"></select2>
+                    <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
                 </el-form-item>
                 </el-form>
             </el-tab-pane>
@@ -63,38 +63,45 @@ export default {
     data() {
         return {
             visible_: false,
-            input_dialog: {
-                mode: "selected",
+            mode: "selected",
 
-                //for warehouse download
-                project: null,
-                dataset: null, //selected dataset
-                datasets_groups: {}, //group by subject
-            },
-            
+            //datasets selected via datasets page
             selected: JSON.parse(localStorage.getItem('datasets.selected')) || {},
+
+            project: null, //selected project
+            datasets: null, //user selected dataset
+
+            //use selected filter 
             selected_subjects: [],
             selected_datatypes: [],
 
+            datasets_groups: {}, //group by subject
             limit: 50,
 
             //caches
             datatypes: {}, 
+            datatypes_s2: [], 
             subjects: null,
-            datatypes_s2: null,
-            datasets: {}, //list of all datasets loaded
+            alldatasets: {}, //list of all datasets ever loaded
             
             config: Vue.config,
         }
     },
+
     methods: {
         close: function() {
             this.$emit('update:visible', false);
-            //this._visible = false;
+            console.log("resetting dataset");
+
+            //reset form
+            this.selected_subjects = [];
+            this.selected_datatypes = [];
+            this.datasets = [];
         },
+
         submit: function() {
-            if(this.input_dialog.mode == "selected") this.submit_selected();
-            if(this.input_dialog.mode == "warehouse") this.submit_dataset();
+            if(this.mode == "selected") this.submit_selected();
+            if(this.mode == "warehouse") this.submit_dataset();
             this.close();
         },
 
@@ -103,11 +110,9 @@ export default {
         },
 
         submit_dataset: function() {
-            var dids = this.input_dialog.datasets;
-            if(!dids) return;
-            var os = {};
-            dids.forEach(did=>{ 
-                os[did] = this.datasets[did];
+            var os = {}; 
+            this.datasets.forEach(did=>{ 
+                os[did] = this.alldatasets[did];
             });
             this.$emit('submit', os);
         },
@@ -119,7 +124,7 @@ export default {
                 params.page = 1;
                 
                 // when we load new dropdown items, we must discard the old ones
-                this.input_dialog.datasets_groups = {};
+                this.datasets_groups = {};
             }
             
             //construct dataset find query
@@ -153,7 +158,7 @@ export default {
             
             // make sure all of the and statement values are true
             var find = {
-                project: this.input_dialog.project,
+                project: this.project,
                 removed: false
             };
             if (and_statement.length > 0) find.$and = and_statement;
@@ -209,7 +214,7 @@ export default {
                 datasets.forEach(dataset => {
                     
                     // create catalog of all datasets
-                    this.datasets[dataset._id] = dataset;
+                    this.alldatasets[dataset._id] = dataset;
                     
                     // dropdown menu item to add
                     var item = {
@@ -219,9 +224,9 @@ export default {
                     
                     var subject = "(non-existing)";
                     if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
-                    if (!this.input_dialog.datasets_groups[subject]) {
+                    if (!this.datasets_groups[subject]) {
                         // first time
-                        this.input_dialog.datasets_groups[subject] = true;
+                        this.datasets_groups[subject] = true;
                         
                         // append - select2 allows me to append item by doing following crap
                         dropdown_items.push({
@@ -262,10 +267,10 @@ export default {
             this.$emit('update:visible', v);
         },
 
-        "input_dialog.project": function(project) {
+        project: function(project) {
             this.$http.get('dataset/distinct', { params: {
                 find: JSON.stringify({
-                    project: this.input_dialog.project,
+                    project: this.project,
                 }),
                 distinct: 'meta.subject',
             }}).then(res=>{
@@ -273,6 +278,7 @@ export default {
             });
          }
     },
+
 
     mounted: function() {
         this.visible_ = this.visible; //initial value (always false?)
@@ -284,9 +290,6 @@ export default {
             }),
             sort: 'name'
         }}).then(res=>{
-            this.datatypes = {};
-            this.datatypes_s2 = [];
-            
             res.body.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
                 this.datatypes_s2.push({ id: datatype._id, text: datatype.name });

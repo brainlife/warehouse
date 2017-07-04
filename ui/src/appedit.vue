@@ -26,7 +26,7 @@
                 <el-input type="textarea" :autosize="{minRows: 4}" v-model="app.desc" placeholder="Enter description for this application."/>
             </el-form-item>
             <el-form-item label="Tags">
-                <select2 :options="alltags" v-model="app.tags"></select2>
+                <select2 :options="alltags" v-model="app.tags" :multiple="true" :tags="true"></select2>
             </el-form-item>
             <el-form-item label="Developers">
                 <contactlist v-model="app.admins"></contactlist>
@@ -53,9 +53,6 @@
                         </el-form-item> 
                     </el-tab-pane>
                 </el-tabs>
-            </el-form-item>
-            <el-form-item label="UI ID">
-                <el-input type="text" v-model="app.uiid" placeholder="Please leave this blank"/>
             </el-form-item>
 
             <el-form-item label="Configuration">
@@ -85,7 +82,8 @@
                         <el-col :span="14" v-if="input.datatype">
                             <el-button @click="app.inputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
                             Datatype Tags
-                            <select2 :options="datatypes[input.datatype]._tags" v-model="input.datatype_tags"></select2>
+                            <select2 :options="datatypes[input.datatype]._tags" 
+                                v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
                         </el-col>
                         </el-row>
                     </el-card>
@@ -112,14 +110,8 @@
                         <el-col :span="14" v-if="output.datatype">
                             <el-button @click="app.outputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
                             Datatype Tags
-                            <!--
-                            <el-select v-model="output.datatype_tags" 
-                                style="width: 100%" 
-                                multiple filterable allow-create placeholder="Enter datatype tags">
-                                <el-option v-for="tag in output.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
-                            </el-select>
-                            -->
-                            <select2 :options="datatypes[output.datatype]._tags" v-model="output.datatype_tags"></select2>
+                            <select2 :options="datatypes[output.datatype]._tags" 
+                                v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
                         </el-col>
                         </el-row>
                     </el-card>

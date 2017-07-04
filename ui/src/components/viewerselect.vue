@@ -1,6 +1,6 @@
 <template>
 <el-dropdown @command="select">
-    <el-button size="small" type="primary">
+    <el-button size="small">
         View<i class="el-icon-caret-bottom el-icon--right"></i>
     </el-button>
     <el-dropdown-menu slot="dropdown">

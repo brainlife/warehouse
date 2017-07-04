@@ -157,6 +157,7 @@ export default {
     components: { sidemenu, pageheader, projectselecter},
     data () {
         return {
+
             //user selections
             name: "",
             desc: "",
@@ -174,6 +175,9 @@ export default {
             copy: null, //copy task to prep uploaded files
             dataset: null, //geneated when finalize request is sent
             mode: "meta",
+
+            //resource used to upload data and validate data
+            validator_resource: null,
 
             config: Vue.config,
             
@@ -304,17 +308,20 @@ export default {
             file.type = f.type;
             file.progress = {};
 
-            //find resource to upload to
+            //find resource to upload to (we need to upload to where validator service can run)
             this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-                service: "_upload",
+                //service: "_upload",
+                service: this.get_validator(),
             }})
             .then(res=>{
-                var upload_resource = res.body.resource;
+                //TODO - what we don't have any resource to run the validator at the moment?
+
+                this.validator_resource = res.body.resource;
                 var path = this.instance_id+'/upload/'+file.filename;
 
                 var xhr = new XMLHttpRequest();
                 file.xhr = xhr; //so that I can abort it if user wants to
-                xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+upload_resource._id+"/"+btoa(path));
+                xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+this.validator_resource._id+"/"+btoa(path));
                 xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
                 xhr.upload.addEventListener("progress", (evt)=>{
                     file.progress = {loaded: evt.loaded, total: evt.total};
@@ -339,6 +346,13 @@ export default {
                 console.error(res);
             });
         },
+
+        get_validator: function() {
+            var datatype = this.datatypes[this.datatype_id];
+            //TODO - deprecate sca-service-conneval-validate eventually
+            return datatype.validator || "soichih/sca-service-conneval-validate";
+        },
+
         validate: function() {
             this.mode = "validate";
             this.validation = null;
@@ -353,8 +367,9 @@ export default {
             this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: this.instance_id,
                 name: "validation",
-                service: datatype.validator || "soichih/sca-service-conneval-validate", //TODO - deprecate sca-service-conneval-validate eventually
+                service: this.get_validator(),
                 config: config,
+                preferred_resource_id: this.validator_resource, //just in case..
             }).then(res=>{
                 console.log("submitted validation task");
                 this.validation = res.body.task;

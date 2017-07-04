@@ -54,7 +54,7 @@
                     :class="{dataset: true, clickable: true, selected: dataset.checked}">
                         <el-row>
                             <el-col :span="1">
-                                <div @click.stop="check(dataset)" style="padding-left: 3px;">
+                                <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
                                     <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                 </div>
                             </el-col>
@@ -150,7 +150,7 @@ export default {
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
 
-            query: "",
+            query: localStorage.getItem('datasets.query'),
 
             loading: false,
 
@@ -261,6 +261,7 @@ export default {
                 setTimeout(this.change_query, 300);
                 return;
             }
+            localStorage.setItem('datasets.query', this.query);
             this.reload();
         },
 

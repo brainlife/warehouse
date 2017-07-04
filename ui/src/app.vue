@@ -66,9 +66,6 @@
                     Dockerhub
                     <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
                 </div>
-                <div v-if="app.uiid">
-                    UIID {{app.uiid}}
-                </div>
             </td>
         </tr>
         <tr v-if="resource">
