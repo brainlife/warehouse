@@ -126,7 +126,6 @@ export default {
 
     methods: {
         click: function(instance) {
-            console.dir(instance);
             //TODO - really bad way of telling difference between process or workflow
             if(instance.config.prov) this.$router.push("/simpleprocess/"+instance._id);
             else this.$router.push("/process/"+instance._id);
@@ -134,17 +133,7 @@ export default {
         newprocess: function() {
             this.$router.push('/process/_new');
         }
-        /*
-        go: function(path) {
-            this.$notify.info({
-                title: 'Info',
-                message: 'Please select application to submit'
-            });
-            this.$router.push(path);
-        }
-        */
     },
-
 }
 
 </script>

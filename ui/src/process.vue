@@ -427,6 +427,7 @@ export default {
 
         //return brainlife.stage_output tasks that's keyed by the parent task for easy lookup
         _output_tasks: function() {
+            console.log("_output_tasks computing");
             var tasks = {};
             this.tasks.forEach(task=>{
                 if(task.name == "brainlife.stage_output") {
@@ -455,7 +456,6 @@ export default {
         },
 
         save_instance: function() {
-            //console.dir(this.instance.desc);
             this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, this.instance).then(res=>{
                 this.$notify({
                     title: 'Saved',
@@ -558,7 +558,6 @@ export default {
 
                 //subscribe to the instance events
                 var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-                console.dir(url);
                 var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
                 ws.onopen = (e)=>{
                     console.log("websocket opened. binding things for", this.instance._id);
