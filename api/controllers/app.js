@@ -215,5 +215,27 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
     });
 });
 
+/**
+ * @apiGroup Dataset
+ * @api {get} /app/bibtex/:id   Download BibTex JSON for BrainLife Application
+ * @apiDescription              Output BibTex JSON content for specified application ID
+ *
+ */
+router.get('/bibtex/:id', (req, res, next)=>{
+    db.Apps.findById(req.params.id, function(err, app) {
+        if(err) return next(err);
+        res.set('Content-Type', 'application/x-bibtex');
+        res.write("@misc{https://brain-life.org/warehouse/#/app/"+app._id+",\n")
+        //res.write(" doi = {11.1111/b.ds."+app._id+"},\n");
+        res.write(" author = {Hayashi, Soichi},\n");
+        res.write(" keywords = {},\n");
+        res.write(" title = {brainlife application "+app._id+"},\n");
+        res.write(" publisher = {BrainLife},\n");
+        res.write(" year = {"+(app.create_date.getYear()+1900)+"},\n");
+        res.write("}");
+        res.end();
+    });
+});
+
 module.exports = router;
 

@@ -9,10 +9,11 @@ const pkgcloud = require('pkgcloud');
 exports.mongodb = "mongodb://localhost/warehouse";
 
 exports.wf = {
-    api: "https://soichi7.ppa.iu.edu/api/wf",
-    //token used to submit -mover servicer
-    //issue your token from auth service (make sure to chmod 600 this config if you store it here! - instead of reading from another file)
-    //token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3NjYS5pdS5lZHUvYXV0aCIsImlhdCI6MTQ4NzI4NDM2My43MDMsInNjb3BlcyI6eyJzY2EiOlsidXNlciJdfSwic3ViIjoiYnJsaWZlIn0.cawBYJmjjL9n5ijKw7MtB91HanGG_D0dKaOESeWpwBsTCFRmt5EXT12ahxI4RyY68jLdm6nWBPc4hX4Uh5DyeykOuG395NiMjOQFMYhHc01iw56LZj3-dpvkGLNnKuHjiIc-OnTswAvQRbSk3aFOKFNTd_mM0oityhrKHTP_1ZM",
+    api: "https://dev1.soichi.us/api/wf",
+
+    //jwt used to talk to wf service
+    //./auth.js issue --scopes '{"sca": ["user", "admin"] }' --sub 'warehouse'
+    jwt: fs.readFileSync(__dirname+'/wf.jwt', 'ascii').trim(),
 }
 
 exports.express = {
@@ -81,7 +82,7 @@ exports.storage_systems.jetstream = {
 //
 //  dc2
 //
-const dc2_path = "/mnt/auto/dc2/projects/brainlife/s7-warehouse/datasets/";
+const dc2_path = "/mnt/dc2/projects/brainlife/dev1-warehouse/datasets/";
 exports.storage_systems.dc2 = {
     //return archive_stream to pipe data to
     upload: (dataset, cb)=>{
@@ -109,8 +110,8 @@ exports.storage_systems.dc2 = {
     }, 
 } 
 
-//dcwan/hcp
-const dcwan_hcp_path = "/mnt/auto/dcwan/projects/brainlife/hcp/";
+//dcwan/hcp (read only)
+const dcwan_hcp_path = "/mnt/dcwan/projects/brainlife/hcp/";
 exports.storage_systems["dcwan/hcp"] = {
     //return archive_stream to pipe data to
     upload: (dataset, cb)=>{

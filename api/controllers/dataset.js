@@ -150,11 +150,11 @@ router.get('/bibtex/:id', (req, res, next)=>{
     db.Datasets.findById(req.params.id, function(err, dataset) {
         if(err) return next(err);
         res.set('Content-Type', 'application/x-bibtex');
-        res.write("@misc{https://doi.org/11.1111/b.ds."+dataset._id+",\n")
-        res.write(" doi = {11.1111/b.ds."+dataset._id+"},\n");
+        res.write("@misc{https://brain-life.org/warehouse/#/dataset/"+dataset._id+",\n")
+        //res.write(" doi = {11.1111/b.ds."+dataset._id+"},\n");
         res.write(" author = {Hayashi, Soichi},\n");
         res.write(" keywords = {},\n");
-        res.write(" title = {"+dataset.name+"},\n");
+        res.write(" title = {brainlife dataset "+dataset._id+"},\n");
         res.write(" publisher = {BrainLife},\n");
         res.write(" year = {"+(dataset.create_date.getYear()+1900)+"},\n");
         res.write("}");
@@ -175,7 +175,6 @@ router.get('/bibtex/:id', (req, res, next)=>{
  * @apiParam {Object} [prov]            Provenane info {app, deps, config} - don't set if it's uploaded
  * @apiParam {Object} [meta]            Metadata - as prescribed in datatype.meta
  * @apiParam {String[]} datatype_tags   Data type ID for this dataset (from Datatypes)
- * @apiParam {String} [name]            Name for this dataset
  * @apiParam {String} [desc]            Description for this crate
  * @apiParam {String[]} [tags]          List of tags associated with this dataset
  *
@@ -230,7 +229,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 datatype: req.body.datatype,
                 datatype_tags: req.body.datatype_tags,
 
-                name: req.body.name,
+                //name: req.body.name,
                 desc: req.body.desc,
                 tags: req.body.tags||[],
 
