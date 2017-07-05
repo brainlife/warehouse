@@ -8,7 +8,6 @@
 
             <h1 style="margin-bottom: 5px; color: #eee;"><icon name="send" scale="1.5"></icon> Process</h1>
             <div class="text-muted">
-                <!--<span style="text-transform: uppercase;"><statusicon :status="instance.status"/> <b>{{instance.status}}</b></span> |-->
                 <time style="margin-top: 15px;">Created at {{instance.create_date|date}}</time>
             </div>
         </div>
@@ -22,12 +21,11 @@
                     v-if="dataset.task.name == 'brainlife.stage_input'">
                     <mute>D{{idx}}</mute> 
                     <b>{{dataset.meta.subject}}</b>
-                    <!--<el-tag type="primary">{{dataset.meta.subject}}</el-tag>-->
                     {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
                     <time>{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
-                            <statusicon :status="dataset.task.status"></statusicon> Staging ..
+                            <statusicon :status="dataset.task.status"></statusicon> Staging
                         </small>
                         <icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>
                     </mute>
@@ -77,10 +75,8 @@
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
 
-                <task :task="task" 
-                    :prov="task.config._prov" 
-                    v-if="task.name == 'brainlife.process'" 
-                    style="margin-top: 5px;" 
+                <task style="margin-top: 5px;" 
+                    :task="task" :prov="task.config._prov" v-if="task._id && task.name == 'brainlife.process'" 
                     @remove="task_removed">
 
                     <!--header-->
@@ -102,7 +98,8 @@
 
                     <!--input-->
                     <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._prov">
-                        <div v-for="(did, input_id) in task.config._prov.inputs" :key="input_id" style="min-height: 30px;">
+                        <div v-for="(did, input_id) in task.config._prov.inputs" :key="input_id" 
+                        v-if="find_dataset(did)" style="min-height: 30px;">
                             <el-row>
                             <el-col :span="4">
                                 <b>{{input_id}}</b>
@@ -380,6 +377,7 @@ export default {
     computed: {
         //list of available datasets (staged, or generated)
         _datasets: function() {
+            console.log("computing _datasets");
             var datasets = [];
             this.tasks.forEach(task=>{
                 if(task.status == "removed") return;
