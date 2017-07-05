@@ -106,7 +106,12 @@
             <td>
                 <p class="text-muted">This application produces following output datasets</p>
                 <div class="item" v-for="output in app.outputs">
-                    <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags"></datatype>
+                    <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags">
+                        <div v-if="output.files">
+                            <small>Output mapping</small>
+                            <pre v-highlightjs><code class="json hljs">{{output.files}}</code></pre>
+                        </div>
+                    </datatype>
                 </div>
             </td>
         </tr>

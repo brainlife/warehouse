@@ -13,6 +13,7 @@
         </el-row>
     </div>
 
+    <small>Files</small>
     <el-row :gutter="20">
     <el-col :span="6" v-for="file in datatype.files" :key="file.id">
         <el-card class="file">
@@ -21,6 +22,8 @@
         </el-card>
     </el-col>
     </el-row>
+
+    <slot></slot>
 </el-card>
 </template>
 

@@ -1,8 +1,10 @@
 <template>
 <el-form label-width="180px">
+    <!--
     <el-form-item label="Dataset Name">
         <el-input type="text" v-model="form.name" placeholder="Dataset Name"></el-input>
     </el-form-item>
+    -->
     <el-form-item label="Dataset Desc">
         <el-input type="textarea" v-model="form.desc" placeholder="Dataset Desc"></el-input>
     </el-form-item>
@@ -112,20 +114,22 @@ export default {
                 }).then(res=>{
                     this.$notify.success({
                         title: 'Success',
-                        message: 'Successfully archived datasets',
+                        message: 'Successfully archived datasets ',
                     });
                     this.$emit('submitted', this.dataset);
                     //this.$router.push("/process/"+this.instance._id);
                 }).catch(console.error);
 
+                //TODO - Maybe I should store this somewhere else?
                 //update task to store 
                 this.dataset.dataset_id = res.body._id;
                 delete this.dataset.archiving;
+                console.log("updating", this.dataset_id, this.dataset);
                 this.output_task.config._prov.output_datasets[this.dataset_id] = this.dataset;
                 this.$http.put(Vue.config.wf_api+'/task/'+this.output_task._id, {
                     config: this.output_task.config,
                 }).then(res=>{
-                    console.log("updated task config.dataset.dataset_id");
+                    console.log("updated output task", res);
                 });
             });
         },

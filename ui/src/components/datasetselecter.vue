@@ -176,7 +176,6 @@ export default {
             // list of dropdown menu items to return
             var dropdown_items = [];
             
-            // compose dropdown item text from dataset
             function compose_item_text(dataset) {
                 var dropdown_item_text = [];
                 
@@ -233,8 +232,7 @@ export default {
                             text: subject,
                             children: [item]
                         });
-                    }
-                    else {
+                    } else {
                         // every other time
                         dropdown_items.push(item);
                     }
@@ -278,7 +276,6 @@ export default {
             });
          }
     },
-
 
     mounted: function() {
         this.visible_ = this.visible; //initial value (always false?)

@@ -239,7 +239,7 @@ export default {
                     console.log("last_projectid not set.. opening first one");
                     pid = res.body.projects[0]._id; //just pick one that user has access
                 }
-                this.$router.push("/datasets/"+pid);
+                this.$router.replace("/datasets/"+pid);
             } else {
                 localStorage.setItem("last_projectid_used", this.project_id);
             }

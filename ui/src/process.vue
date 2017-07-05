@@ -32,9 +32,9 @@
                         <icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>
                     </mute>
                 </div>
+
                 <br>
                 <h3>Output Datasets</h3>
-
                 <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
                     @click="scrollto(dataset.task._id)"
                     v-if="dataset.task.name == 'brainlife.stage_output'">
@@ -46,10 +46,7 @@
                         for each task submitted, then use that as more permanent ID
                     -->
                     <mute><b>T{{tasks.indexOf(dataset.task)-1}}</b> <icon name="arrow-right" scale="0.8"></icon></mute> D{{idx}}
-
                     <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
-                    <!--<metadata :metadata="dataset.meta"/>-->
-                    <!--<b>{{dataset.did}}</b>-->
                     {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
@@ -110,9 +107,8 @@
                             <el-col :span="4">
                                 <b>{{input_id}}</b>
                             </el-col>
-                            <el-col :span="20">
+                            <el-col :span="20" v-if="find_dataset(did)">
                                 <mute>D{{find_dataset_idx(did)}}</mute>
-                                <!--<metadata :metadata="find_dataset(did).meta"></metadata>-->
                                 <b>{{find_dataset(did).meta.subject}}</b>
                                 {{datatypes[find_dataset(did).datatype].name}}
                                 <tags :tags="find_dataset(did).datatype_tags"></tags>
@@ -122,15 +118,15 @@
                     </el-collapse-item>
 
                     <!--output-->
-                    <el-collapse-item title="Output" name="output" slot="output"
-                        v-if="task.status == 'finished' && _output_tasks[task._id]">
+                    <el-collapse-item title="Output" name="output" slot="output">
+                        <!--
                         <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
                             <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output
                         </p>
+                        -->
 
-                        <div v-if="_output_tasks[task._id].status == 'finished'"
-                            v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id" 
-                            style="min-height: 30px;">
+                        <div v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id" 
+                            style="min-height: 30px;" :class="{'text-muted': _output_tasks[task._id].status != 'finished'}">
                             <el-row>
                             <el-col :span="4">
                                 <b>{{output_id}}</b>
@@ -145,22 +141,30 @@
                                 {{datatypes[dataset.datatype].name}} 
                                 <tags :tags="dataset.datatype_tags"></tags>
 
-                                <el-button size="small" type="primary" style="float: right;" 
-                                    v-if="!archiving[task._id] && !dataset.dataset_id" @click="archive(task._id, true)">Archive</el-button>
-                                <el-button size="small" style="float: right;" 
-                                    v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
-                                <viewerselect @select="view(_output_tasks[task._id]._id, $event)" style="float: right; margin-right: 5px;"></viewerselect>
-                                <archiveform v-if="archiving[task._id]" 
+                                <div style="float: right;">
+                                    <div v-if="_output_tasks[task._id].status == 'finished'">
+                                        <viewerselect @select="view(_output_tasks[task._id]._id, $event)" style="margin-right: 5px;"></viewerselect>
+                                        <el-button size="small" type="primary"
+                                            v-if="!dataset.archiving && !dataset.dataset_id" @click="show_archiveform(dataset)">Archive</el-button>
+                                        <el-button size="small" 
+                                            v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
+                                    </div>
+                                    <statustag v-else :status="_output_tasks[task._id].status"/>
+                                </div>
+
+                                <archiveform v-if="dataset.archiving" 
                                     :instance="instance" 
                                     :app_id="_output_tasks[task._id].config._prov.app"
                                     :output_task="_output_tasks[task._id]" 
                                     :dataset_id="output_id"
                                     :dataset="dataset" 
-                                    @submitted="archive(task._id, false)" style="margin-top: 30px;"></archiveform>
+                                    @submitted="hide_archiveform(dataset)" style="margin-top: 30px;"></archiveform>
+
                             </el-col>
                             </el-row>
 
-                            <datatypeui :datatype="datatypes[dataset.datatype].name" :task="_output_tasks[task._id]" :subdir="output_id"></datatypeui>
+                            <datatypeui v-if="_output_tasks[task._id].status == 'finished'" 
+                                :datatype="datatypes[dataset.datatype].name" :task="_output_tasks[task._id]" :subdir="output_id"></datatypeui>
                         </div>
                     </el-collapse-item>
                 </task>
@@ -298,6 +302,7 @@ import archiveform from '@/components/archiveform'
 import projectselecter from '@/components/projectselecter'
 import datasetselecter from '@/components/datasetselecter'
 import statusicon from '@/components/statusicon'
+import statustag from '@/components/statustag'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
 import datatypeui from '@/components/datatypeui'
@@ -311,7 +316,7 @@ export default {
     components: { 
         sidemenu, contact, task, 
         message, file, tags, 
-        filebrowser, pageheader, 
+        filebrowser, pageheader, statustag,
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
         viewerselect, datasetselecter, datatypeui,
@@ -335,8 +340,6 @@ export default {
 
             //dialog
             show_input_dialog: false,
-
-            archiving: {},
 
             //cache
             tasks: null,
@@ -629,6 +632,13 @@ export default {
         submit_stage: function(datasets) {
             var download = [];
             for(var did in datasets) {
+                //ignore already staged dataset
+                if(this.find_dataset(did)) {
+                    console.log("ignoring staging request on existing dataset", did);
+                    this.$notify.info({ title: 'Info', message: 'Dataset '+did+' is already staged. Skipping.' });
+                    return;
+                }
+
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+did+"?at="+Vue.config.jwt,
                     untar: "gz",
@@ -753,8 +763,16 @@ export default {
             return valid;
         },
 
+        /*
         archive: function(task_id, b) {
             Vue.set(this.archiving, task_id, b);
+        },
+        */
+        show_archiveform: function(dataset) {
+            Vue.set(dataset, 'archiving', true);
+        },
+        hide_archiveform: function(dataset) {
+            Vue.set(dataset, 'archiving', false);
         },
 
         //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name
@@ -840,7 +858,6 @@ export default {
                         var agg_meta = {};
                         for(var input_id in newtask.inputs) {
                             var input = newtask.inputs[input_id];
-                            //var dataset = this._datasets[input.dataset];
                             var dataset = this.find_dataset(input.dataset);
                             for(var k in dataset.meta) {
                                 agg_meta[k] = dataset.meta[k];
@@ -848,6 +865,7 @@ export default {
                         }
                         this.newtask_app.outputs.forEach(output=>{
                             if(output.files) {
+                                //orgnaize symlink file/dir
                                 for(var file_id in output.files) {
                                     //find datatype file id
                                     var datatype = this.datatypes[output.datatype];

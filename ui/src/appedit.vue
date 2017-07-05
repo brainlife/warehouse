@@ -81,7 +81,7 @@
                         </el-col>
                         <el-col :span="14" v-if="input.datatype">
                             <el-button @click="app.inputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
-                            Datatype Tags
+                            Datatype Tags<br>
                             <select2 :options="datatypes[input.datatype]._tags" 
                                 v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
                         </el-col>
@@ -97,9 +97,7 @@
                         <el-row :gutter="20">
                         <el-col :span="4">
                             ID
-                            <el-input v-model="output.id">
-                                <!--<template slot="prepend">ID</template>-->
-                            </el-input>
+                            <el-input v-model="output.id"></el-input>
                         </el-col>
                         <el-col :span="6">
                             Datatype
@@ -109,9 +107,11 @@
                         </el-col>
                         <el-col :span="14" v-if="output.datatype">
                             <el-button @click="app.outputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
-                            Datatype Tags
+                            Datatype Tags<br>
                             <select2 :options="datatypes[output.datatype]._tags" 
                                 v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
+                            Datatype Mapping (optional)
+                            <el-input type="textarea" v-model="output._files" autosize/>
                         </el-col>
                         </el-row>
                     </el-card>
@@ -231,14 +231,19 @@ export default {
                     this.alltags = tags;
 
                     if(this.$route.params.id !== '_') {
-                        //load app to edit
+
+                        //finally time to load app to edit
                         this.$http.get('app', {params: {
                             find: JSON.stringify({_id: this.$route.params.id})
                         }})
                         .then(res=>{
                             this.app = res.body.apps[0];
-                            this.app._config = JSON.stringify(this.app.config, null, 4);
 
+                            //need to do some last minute type conversion
+                            this.app._config = JSON.stringify(this.app.config, null, 4);
+                            this.app.outputs.forEach(output=>{
+                                if(output.files) output._files = JSON.stringify(output.files, null, 4);
+                            });
                             this.ready = true;
                         });
                     } else {
@@ -274,11 +279,20 @@ export default {
                 this.$notify({ showClose: true, message: 'Failed to parse config template.', type: 'error' });
                 return;
             }
+            try {
+                this.app.outputs.forEach(output=>{
+                    output.files = null;
+                    console.log(output._files);
+                    if(output._files) output.files = JSON.parse(output._files);
+                });
+            } catch(err) {
+                this.$notify({ showClose: true, message: 'Failed to parse output mapping', type: 'error' });
+                return;
+            }
             if(this.$route.params.id !== '_') {
                 //update
                 this.$http.put('app/'+this.app._id, this.app)
                 .then(res=>{
-                    console.dir(res.body);
                     this.$router.push("/app/"+this.app._id);
                 });
             } else {
@@ -299,7 +313,6 @@ export default {
                     select: 'tags',
                 }}).then(res=>{
                     var alltags = []; 
-                    console.dir(res.body.apps);
                     res.body.apps.forEach(app=>{
                         if(app.tags) app.tags.forEach(tag=>{
                             if(!~alltags.indexOf(tag)) alltags.push(tag);

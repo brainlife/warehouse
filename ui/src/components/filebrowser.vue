@@ -7,14 +7,14 @@
     </p>
     <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
     <div v-if="files">
-        <el-button-group :style="{marginBottom: '5px', marginLeft: offset}">
+        <el-button-group :style="{marginBottom: '5px', marginLeft: offset, opacity: 0.7}">
             <el-button size="mini" @click="download()" icon="document">Download</el-button>
             <el-button size="mini" @click="load()"><icon scale="0.6" name="refresh"></icon> Refresh</el-button>
         </el-button-group>
 
         <p v-if="files.length == 0" class="text-muted" :style="{marginLeft: offset}">Empty Directory</p>
 
-        <div v-for="file in files" key="file.filename">
+        <div v-for="file in sorted_files" key="file.filename">
             <div class="fileitem" @click="click(file)">
                     <span class="text-muted" :style="{marginLeft: offset}">
                         <icon name="file-o" v-if="!file.directory"></icon>
@@ -34,8 +34,11 @@
                 <filebrowser :task="task" :path="fullpath+'/'+file.filename" :depth="depth+1"></filebrowser>
             </div>
             <div v-if="file.content" style="position: relative;">
-                <el-button v-if="file.content != '(empty)\n'"
-                    style="position: absolute; top: 0px; right: 0px;" size="mini" @click="download_file(file)" icon="document">Download</el-button>
+                <el-button-group v-if="file.content != '(empty)\n'" 
+                    style="position: absolute; top: 0px; right: 0px; opacity: 0.7;">
+                    <el-button size="mini" @click="download_file(file)" icon="document">Download</el-button>
+                    <el-button size="mini" @click="refresh_file(file)"><icon scale="0.6" name="refresh"></icon> Refresh</el-button>
+                </el-button-group>
                 <pre v-highlightjs="file.content" class="file-content"><code :class="file.type+' hljs'"></code></pre>
             </div>
         </div>
@@ -62,7 +65,12 @@ export default {
     computed: {
         offset: function() {
             return this.depth * 15 + 'px';
-        }
+        },
+        sorted_files: function() {
+            return this.files.sort((a, b)=>{
+                return a.attrs.mtime - b.attrs.mtime;
+            });
+        },
     },
 
     props: {
@@ -112,6 +120,11 @@ export default {
 
         download_file: function(file) {
             document.location = this.get_download_url(file);
+        },
+
+        refresh_file: function(file) {
+            file.content = "";
+            this.click(file);
         },
 
         click: function(file){
