@@ -14,7 +14,7 @@
 
         <p v-if="files.length == 0" class="text-muted" :style="{marginLeft: offset}">Empty Directory</p>
 
-        <div v-for="file in sorted_files" key="file.filename">
+        <div v-for="file in files">
             <div class="fileitem" @click="click(file)">
                     <span class="text-muted" :style="{marginLeft: offset}">
                         <icon name="file-o" v-if="!file.directory"></icon>
@@ -66,11 +66,17 @@ export default {
         offset: function() {
             return this.depth * 15 + 'px';
         },
+        /*
         sorted_files: function() {
+            return this.files;
             return this.files.sort((a, b)=>{
+                if(a.attrs.mtime == b.attrs.mtime) {
+                    return a.attrs.filename||a.attrs.dirname > b.attrs.filename||b.attrs.dirname;
+                }
                 return a.attrs.mtime - b.attrs.mtime;
             });
         },
+        */
     },
 
     props: {
@@ -111,7 +117,13 @@ export default {
 
         load: function() {
             this.$http.get(Vue.config.wf_api+'/resource/ls/'+this.task.resource_id+'?path='+encodeURIComponent(this.fullpath)).then(res=>{
-                this.files = res.body.files;
+                this.files = res.body.files.sort((a, b)=>{
+                    if(a.attrs.mtime == b.attrs.mtime) {
+                        return a.attrs.filename||a.attrs.dirname > b.attrs.filename||b.attrs.dirname;
+                    }
+                    return a.attrs.mtime - b.attrs.mtime;
+                });
+
             }).catch(err=>{
                 console.error(err);
                 this.error = err.body.message || err.statusText;
@@ -170,7 +182,10 @@ export default {
                             if(c == "") c = "(empty)";
                             console.log("loading as", type);
                             Vue.set(file, 'type', type);
-                            //last ditch attempt to animte height
+                            file.content = "hello there";
+                            return; 
+
+                            //TODO - can't get slideDown to work via css.. last ditch attempt to animte height
                             var lines = c.trim().split("\n");
                             Vue.set(file, 'content', "");
                             function addline() {

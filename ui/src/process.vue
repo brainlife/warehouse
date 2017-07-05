@@ -156,7 +156,6 @@
                                     :dataset_id="output_id"
                                     :dataset="dataset" 
                                     @submitted="hide_archiveform(dataset)" style="margin-top: 30px;"></archiveform>
-
                             </el-col>
                             </el-row>
 
@@ -370,7 +369,6 @@ export default {
             } else {
                 this.load();
             }
-
         });
     },
 
@@ -480,7 +478,6 @@ export default {
 
         scrollto: function(id) {
             var elem = document.getElementById(id);
-            //var top = elem.offsetParent.offsetTop-250;
             var top = elem.offsetTop-30;
             document.getElementById("scrolled-area").scrollTop = top;
         },
