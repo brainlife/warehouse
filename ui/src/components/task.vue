@@ -21,7 +21,7 @@
                     <time v-if="task.status == 'removed'">at {{task.remove_date|date}}</time>
                 </small>
             </h4>
-            <i>{{task.status_msg||'...'}}</i><!--&nbsp; still collpases the area-->
+            <i>{{task.status_msg.trim()||'...'}}</i><!--&nbsp; still collpases the area-->
         </div>
     </el-card>
 

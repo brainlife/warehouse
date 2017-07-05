@@ -193,12 +193,14 @@
                             <el-input type="textarea" placeholder="Description" v-model="newtask_desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
                         </el-form-item>
 
+                        <!--
                         <el-form-item label="">
                             <el-tabs v-model="submit_mode" type="card">
                                 <el-tab-pane label="Single" name="single"></el-tab-pane>
                                 <el-tab-pane label="Bulk" name="bulk"></el-tab-pane>
                             </el-tabs> 
                         </el-form-item>
+                        -->
 
                         <div v-for="(newtask, newtask_idx) in newtasks" :key="newtask_idx" v-if="submit_mode == 'bulk' || newtask_idx == 0">
                             <!--input-->
@@ -715,6 +717,7 @@ export default {
 
             //create task for each input dataset
             //TODO - hide dataset that doesn't apply to this app
+            /*
             this._datasets.forEach((dataset, idx)=>{
                 var newtask = {
                     submit: true,
@@ -732,6 +735,21 @@ export default {
                 });
                 this.newtasks.push(newtask); 
             });
+            */
+            var newtask = {
+                submit: true,
+                config: Object.assign({}, app.config),
+                deps: [],
+                inputs: {},
+            };
+            this.set_default(newtask.config);
+            this.newtask_app.inputs.forEach(input=>{
+                newtask.inputs[input.id] = Object.assign({dataset: null}, input); //copy
+                //preselect dataset
+                //var applicable_datasets = this.filter_datasets(input);
+                //newtask.inputs[input.id].dataset = applicable_datasets.find(dataset=>{return dataset.datatype == input.datatype._id});
+            });
+            this.newtasks.push(newtask); 
         },
 
         revalidate: function() {
