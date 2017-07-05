@@ -42,7 +42,7 @@ export default {
         this.values = this.value; //init
 
         //TODO I should let ui-select/async and let it "search" users
-        if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profile');
+        if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profile', {params: {where: JSON.stringify({active: true})}});
         profiles.then(res=>{
             this.profiles = [];
             res.body.profiles.forEach(profile=>{
