@@ -11,7 +11,10 @@ import Vue from 'vue'
 //trying to load the entire plotly will cause build to fail
 //bad> import Plotly from 'plotly.js' 
 //Only load component you actually use
-var Plotly = require('plotly');
+var Plotly = require('plotly.js/lib/core');
+Plotly.register([
+    require('plotly.js/lib/pie')
+]);
 
 export default {
     props: ['task', 'subdir'],
