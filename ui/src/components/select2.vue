@@ -97,6 +97,11 @@ box-sizing: border-box;
 </style>
 
 <style>
+/* Hide the 'Searching...' text */
+.select2-results__option.loading-results {
+    display:none;
+}
+
 .select2-dropdown {
 z-index: 9900;
 }
