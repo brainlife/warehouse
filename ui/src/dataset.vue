@@ -39,8 +39,10 @@
         <tr>
             <th>Citation</th>
             <td>
-                <p><i>Hayashi, S. (2016). {{dataset.name}} http://doi.org/11.1111/br.d.{{dataset._id}}</i></p> 
-                <el-button size="small" type="primary" @click="bibtex()">BibTex</el-button>
+                <p>
+                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i>
+                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
+                </p> 
             </td>
         </tr>
         <tr>
@@ -179,6 +181,8 @@ export default {
             dataset: null,
             apps: null,
             derivatives: {},
+
+            selfurl: document.location.href,
 
             config: Vue.config,
         }

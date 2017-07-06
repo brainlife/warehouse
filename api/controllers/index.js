@@ -6,6 +6,7 @@ const router = express.Router();
 const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
+const timeout = require('callback-timeout');
 
 //mine
 const config = require('../config');
@@ -20,11 +21,11 @@ router.get('/health', (req, res)=>{
     //check for storage system status
     async.forEachOf(config.storage_systems, function(system, system_id, next) {
         var system = config.storage_systems[system_id];
-        system.test(err=>{
+        system.test(timeout(err=>{
             if(err) return next(err);
             storages[system_id] = "ok";
             next();
-        });
+        }, 5000)); //5 seconds should be enough.. right?
     }, err=>{
         if(err) {
             status = "failed";

@@ -42,8 +42,13 @@
             </td>
         </tr>
         <tr>
-            <th>DOI (todo)</th>
-            <td><pre>10.1006/br.a.{{app._id}}</pre></td>
+            <th>Citation</th>
+            <td>
+                <p>
+                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i> 
+                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
+                </p> 
+            </td>
         </tr>
         <tr>
             <th>Tags</th>
@@ -149,6 +154,8 @@ export default {
             resource: null,
             service_stats: null, 
 
+            selfurl: document.location.href,
+
             config: Vue.config,
         }
     },
@@ -231,7 +238,10 @@ export default {
             }).then(res=>{
                 //console.dir(res.body);
             });
-        }
+        },
+        bibtex: function() {
+            document.location = '/api/warehouse/app/bibtex/'+this.app._id;
+        },
     },
 }
 </script>

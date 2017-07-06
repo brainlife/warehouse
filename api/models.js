@@ -213,12 +213,11 @@ var appSchema = mongoose.Schema({
         id: String,
         datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
         datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
+
+        //optional output file/dir mapping to datatype file_id
+        files: mongoose.Schema.Types.Mixed,
     })],
         
-    //id of custom UI to show output in different plotly based UI
-    //1.. embedded(part of vue) 2.. web ui that's hosted outside (3.. native UI)
-    uiid: String, // "vue/acpcalign"   "vue/dtiinit"             "ext/brainbrowser"
-
     _rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
     removed: { type: Boolean, default: false} ,
 
@@ -237,4 +236,31 @@ var apprateSchema = mongoose.Schema({
     rate: Number, //1-5 scale rating
 });
 exports.Apprates = mongoose.model('Apprates', apprateSchema);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Project Rules
+//
+// Rule defines following.
+// 1) datasets(datatype/tags) that should exist for each subject
+// 2) for each missing datasets, application / scaler configuration used to generate the missing output dataset
+//      for each input configuration, input datatype/tags to use
+
+var ruleSchema = mongoose.Schema({
+
+    //user submitted this rule (and the instance will be submitted under)
+    user_id: {type: String, index: true}, 
+    
+    //project to store generated data
+    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+
+    //app to submit
+    app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+    app_config: mongoose.Schema.Types.Mixed, 
+
+});
+exports.Rules = mongoose.model('Rules', ruleSchema);
+
+
 

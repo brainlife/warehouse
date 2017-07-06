@@ -8,7 +8,6 @@
 
             <h1 style="margin-bottom: 5px; color: #eee;"><icon name="send" scale="1.5"></icon> Process</h1>
             <div class="text-muted">
-                <!--<span style="text-transform: uppercase;"><statusicon :status="instance.status"/> <b>{{instance.status}}</b></span> |-->
                 <time style="margin-top: 15px;">Created at {{instance.create_date|date}}</time>
             </div>
         </div>
@@ -22,12 +21,11 @@
                     v-if="dataset.task.name == 'brainlife.stage_input'">
                     <mute>D{{idx}}</mute> 
                     <b>{{dataset.meta.subject}}</b>
-                    <!--<el-tag type="primary">{{dataset.meta.subject}}</el-tag>-->
                     {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
                     <time>{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
-                            <statusicon :status="dataset.task.status"></statusicon> Staging ..
+                            <statusicon :status="dataset.task.status"></statusicon> Staging
                         </small>
                         <icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>
                     </mute>
@@ -77,10 +75,8 @@
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
 
-                <task :task="task" 
-                    :prov="task.config._prov" 
-                    v-if="task.name == 'brainlife.process'" 
-                    style="margin-top: 5px;" 
+                <task style="margin-top: 5px;" 
+                    :task="task" :prov="task.config._prov" v-if="task._id && task.name == 'brainlife.process'" 
                     @remove="task_removed">
 
                     <!--header-->
@@ -102,7 +98,8 @@
 
                     <!--input-->
                     <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._prov">
-                        <div v-for="(did, input_id) in task.config._prov.inputs" :key="input_id" style="min-height: 30px;">
+                        <div v-for="(did, input_id) in task.config._prov.inputs" :key="input_id" 
+                        v-if="find_dataset(did)" style="min-height: 30px;">
                             <el-row>
                             <el-col :span="4">
                                 <b>{{input_id}}</b>
@@ -159,7 +156,6 @@
                                     :dataset_id="output_id"
                                     :dataset="dataset" 
                                     @submitted="hide_archiveform(dataset)" style="margin-top: 30px;"></archiveform>
-
                             </el-col>
                             </el-row>
 
@@ -197,12 +193,14 @@
                             <el-input type="textarea" placeholder="Description" v-model="newtask_desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
                         </el-form-item>
 
+                        <!--
                         <el-form-item label="">
                             <el-tabs v-model="submit_mode" type="card">
                                 <el-tab-pane label="Single" name="single"></el-tab-pane>
                                 <el-tab-pane label="Bulk" name="bulk"></el-tab-pane>
                             </el-tabs> 
                         </el-form-item>
+                        -->
 
                         <div v-for="(newtask, newtask_idx) in newtasks" :key="newtask_idx" v-if="submit_mode == 'bulk' || newtask_idx == 0">
                             <!--input-->
@@ -373,13 +371,13 @@ export default {
             } else {
                 this.load();
             }
-
         });
     },
 
     computed: {
         //list of available datasets (staged, or generated)
         _datasets: function() {
+            console.log("computing _datasets");
             var datasets = [];
             this.tasks.forEach(task=>{
                 if(task.status == "removed") return;
@@ -429,6 +427,7 @@ export default {
 
         //return brainlife.stage_output tasks that's keyed by the parent task for easy lookup
         _output_tasks: function() {
+            console.log("_output_tasks computing");
             var tasks = {};
             this.tasks.forEach(task=>{
                 if(task.name == "brainlife.stage_output") {
@@ -457,7 +456,6 @@ export default {
         },
 
         save_instance: function() {
-            //console.dir(this.instance.desc);
             this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, this.instance).then(res=>{
                 this.$notify({
                     title: 'Saved',
@@ -482,7 +480,6 @@ export default {
 
         scrollto: function(id) {
             var elem = document.getElementById(id);
-            //var top = elem.offsetParent.offsetTop-250;
             var top = elem.offsetTop-30;
             document.getElementById("scrolled-area").scrollTop = top;
         },
@@ -560,7 +557,6 @@ export default {
 
                 //subscribe to the instance events
                 var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-                console.dir(url);
                 var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
                 ws.onopen = (e)=>{
                     console.log("websocket opened. binding things for", this.instance._id);
@@ -721,6 +717,7 @@ export default {
 
             //create task for each input dataset
             //TODO - hide dataset that doesn't apply to this app
+            /*
             this._datasets.forEach((dataset, idx)=>{
                 var newtask = {
                     submit: true,
@@ -738,6 +735,21 @@ export default {
                 });
                 this.newtasks.push(newtask); 
             });
+            */
+            var newtask = {
+                submit: true,
+                config: Object.assign({}, app.config),
+                deps: [],
+                inputs: {},
+            };
+            this.set_default(newtask.config);
+            this.newtask_app.inputs.forEach(input=>{
+                newtask.inputs[input.id] = Object.assign({dataset: null}, input); //copy
+                //preselect dataset
+                //var applicable_datasets = this.filter_datasets(input);
+                //newtask.inputs[input.id].dataset = applicable_datasets.find(dataset=>{return dataset.datatype == input.datatype._id});
+            });
+            this.newtasks.push(newtask); 
         },
 
         revalidate: function() {
