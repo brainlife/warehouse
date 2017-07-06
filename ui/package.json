@@ -28,7 +28,6 @@
     "jwt-decode": "^2.2.0",
     "md5": "^2.2.1",
     "opn": "^4.0.2",
-    "plotly": "^1.0.6",
     "plotly.js": "^1.28.3",
     "reconnectingwebsocket": "^1.0.0",
     "select2": "^4.0.3",
