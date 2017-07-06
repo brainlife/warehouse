@@ -12,6 +12,5 @@ ui/config/index.js
 ui/config/dev.env.js
 ui/config/npm-debug.log
 ui/package-lock.json
-./package-lock.json.tmp
 api/config/jetstream.js
 api/config/index.js
