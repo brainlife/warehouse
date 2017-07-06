@@ -10,7 +10,8 @@ ui/yarn-error.log
 docker/config
 ui/config/index.js
 ui/config/dev.env.js
-ui/config/npm-debug.log.tmp
-ui/package-lock.json.tmp
+ui/config/npm-debug.log
+ui/package-lock.json
+./package-lock.json
 api/config/jetstream.js
 api/config/index.js
