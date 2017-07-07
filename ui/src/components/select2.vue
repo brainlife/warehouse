@@ -101,6 +101,10 @@ box-sizing: border-box;
 .select2-results__option.loading-results {
     display:none;
 }
+/* fix some odd indentation issue on the first result option inside each group*/
+.select2-container--default .select2-results__option .select2-results__option {
+    padding-left: 6px;
+}
 
 .select2-dropdown {
 z-index: 9900;
