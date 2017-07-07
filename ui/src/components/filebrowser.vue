@@ -180,10 +180,7 @@ export default {
                             }
 
                             if(c == "") c = "(empty)";
-                            console.log("loading as", type);
                             Vue.set(file, 'type', type);
-                            file.content = "hello there";
-                            return; 
 
                             //TODO - can't get slideDown to work via css.. last ditch attempt to animte height
                             var lines = c.trim().split("\n");

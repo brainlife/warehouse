@@ -1,7 +1,10 @@
 <template>
 <div class="contact">
     <img :src="gurl">
-    <div class="name">{{profile.fullname||'?'}}</div>
+    <div class="name">
+        {{profile.fullname||'?'}}
+        <span v-if="!profile.active">- inactive</span>
+    </div>
     <div class="email">&lt;{{profile.email}}&gt;</div>
 </div>
 </template>
@@ -37,7 +40,7 @@ export default {
     loadprofile: function() {
       if(!this.id) return; //not yet set?
       if(profiles === null) {
-        //console.log("requesting profiles");
+        //load all "active:false"-ones too - so that we can display the status
         profiles = this.$http.get(Vue.config.auth_api+'/profiles');
       }
       //console.log("using profiles");
