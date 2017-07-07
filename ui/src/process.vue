@@ -775,11 +775,6 @@ export default {
             return valid;
         },
 
-        /*
-        archive: function(task_id, b) {
-            Vue.set(this.archiving, task_id, b);
-        },
-        */
         show_archiveform: function(dataset) {
             Vue.set(dataset, 'archiving', true);
         },

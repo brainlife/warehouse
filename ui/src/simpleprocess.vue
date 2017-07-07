@@ -61,9 +61,12 @@
         <tr>
             <th>Application</th>
             <td>
-                <appavatar :app="app" style="float: right; margin-left: 10px;"></appavatar>
+                <!--
+                height<appavatar :app="app" style="float: right; margin-left: 10px;"></appavatar>
                 <h3>{{app.name}}</h3>
                 <p style="color: #666">{{app.desc}}</p>
+                -->
+                <app :app="app" :compact="true"></app>
             </td>
         </tr>
         <tr>
@@ -179,6 +182,7 @@ import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
 import datatypeui from '@/components/datatypeui'
 import statustag from '@/components/statustag'
+import app from '@/components/app'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -193,7 +197,7 @@ export default {
         message, file, tags, 
         metadata, filebrowser, pageheader, 
         appavatar, mute, viewerselect, datatypeui,
-        statustag,
+        statustag, app,
      },
 
     data () {

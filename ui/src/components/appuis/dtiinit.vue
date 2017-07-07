@@ -1,7 +1,11 @@
 <template>
 <div class="dtiinit">
-    <h3 class="text-muted">T1PDD (Fiber Directions)</h3>
-    <img v-if="testurl" :src="testurl" width="100%"/>
+    <!-- I am not sure how useful this is..
+    <a :href="testurl" target="_black">
+        <img v-if="testurl" :src="testurl" width="50%"/>
+    </a>
+    <b class="text-muted">T1PDD (Fiber Directions)</b>
+    -->
 </div>
 </template>
 
