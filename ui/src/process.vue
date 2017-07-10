@@ -645,7 +645,7 @@ export default {
 
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+did+"?at="+Vue.config.jwt,
-                    untar: "gz",
+                    untar: "auto",
                     dir: did,
                 });
             }

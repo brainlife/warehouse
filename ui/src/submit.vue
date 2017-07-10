@@ -286,7 +286,7 @@ export default {
                 for(var input_id in task.inputs) {
                     download.push({
                         url: Vue.config.api+"/dataset/download/"+task.inputs[input_id].dataset+"?at="+Vue.config.jwt,
-                        untar: "gz",
+                        untar: "auto",
                         dir: "inputs/"+input_id,
                     });
                 }

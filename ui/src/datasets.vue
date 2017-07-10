@@ -358,7 +358,7 @@ export default {
             for(var dataset_id in this.selected) {
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
-                    untar: "gz",
+                    untar: "auto",
                     dir: "download/"+dataset_id, 
                 });
             }
