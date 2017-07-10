@@ -38,7 +38,7 @@
             <th>Dataset ID</th>
             <td>
                 <div v-if="!instance.config.dataset_ids">
-                    <p class="text-muted">Not archived yet</p>
+                    <!--<p class="text-muted">Not archived yet</p>-->
                     <el-card v-if="instance.status == 'finished'" style="background-color: #def;">
                         <div slot="header"><b style="color: #2693ff;"><icon name="cubes"/> Archive Output</b></div>
                         <p>The output data will be purged within 25 days of process completion.</p>
@@ -69,10 +69,18 @@
                 <app :app="app" :compact="true"></app>
             </td>
         </tr>
+        <!--
         <tr>
             <th width="180px">Submit Date</th>
             <td>
                 <p>{{instance.create_date|date}}</p>
+            </td>
+        </tr>
+        -->
+        <tr>
+            <th>Configuration</th>
+            <td>
+                <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </td>
         </tr>
         <tr v-if="instance.status == 'finished'">
@@ -133,12 +141,6 @@
                         </template>
                     </el-table-column>
                 </el-table>
-            </td>
-        </tr>
-        <tr>
-            <th>Configuration</th>
-            <td>
-                <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </td>
         </tr>
         </table>

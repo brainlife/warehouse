@@ -6,10 +6,13 @@
         <div class="fixed-top">
             <el-button v-if="!instance.config.removing" @click="remove_instance()" style="float: right;" icon="delete">Remove Process</el-button>
 
-            <h1 style="margin-bottom: 5px; color: #eee;"><icon name="send" scale="1.5"></icon> Process</h1>
-            <div class="text-muted">
-                <time style="margin-top: 15px;">Created at {{instance.create_date|date}}</time>
+            <div style="float: right; margin-right: 20px; margin-top: 10px;">
+                <time style="margin-top: 15px;">Created at <b>{{instance.create_date|date}}</b></time>
             </div>
+            <h1>
+                <icon name="send" scale="1.7"></icon> Process
+                <statustag :status="instance.status"></statustag>
+            </h1>
         </div>
 
         <div class="sidebar">
@@ -933,13 +936,14 @@ position: fixed;
 padding: 20px;
 left: 90px;
 right: 375px;
-top: 140px;
+top: 125px;
 bottom: 0px;
 overflow: auto;
 }
 .fixed-top {
 background-color: #666;
 padding: 20px;
+padding-bottom: 5px;
 color: white;
 position: fixed;
 top: 50px;
@@ -954,7 +958,7 @@ box-shadow: inset 3px 0px 3px #ccc;
 background-color: #ddd;
 padding-top: 20px;
 position: fixed;
-top: 140px;
+top: 125px;
 bottom: 0px;
 width: 375px;
 right: 0px;
