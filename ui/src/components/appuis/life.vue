@@ -82,6 +82,4 @@ export default {
 .im_a_table td {
     width:50%;
 }
-.life {
-}
 </style>

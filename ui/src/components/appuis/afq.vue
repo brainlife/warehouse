@@ -1,6 +1,6 @@
 <template>
 <div>
-    <iframe v-if="testurl" :src="testurl">surfaceview</iframe>
+    <iframe v-if="testurl" :src="testurl">tractview</iframe>
 </div>
 </template>
 
@@ -18,8 +18,8 @@ export default {
     var subdir_string = '&sdir='+encodeURIComponent(this.subdir);
     if (!this.subdir) subdir_string = '';
     
-    this.testurl = '/ui/surfaceview'+
-                   '?free='+this.task._id+
+    this.testurl = '/ui/tractview'+
+                   '?afq='+this.task._id+
                    subdir_string;
   }
 }
