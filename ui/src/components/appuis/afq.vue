@@ -1,6 +1,6 @@
 <template>
 <div>
-    <iframe v-if="testurl" :href="testurl">tractview</iframe>
+    <iframe v-if="testurl" :src="testurl">tractview</iframe>
 </div>
 </template>
 
@@ -28,7 +28,8 @@ export default {
 <style scoped>
 iframe {
   border:none;
+  margin-top:4px;
   width:100%;
-  height:calc(width);
+  height:70%;
 }
 </style>
