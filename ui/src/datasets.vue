@@ -26,7 +26,7 @@
                     <el-row>
                         <el-col :span="1">&nbsp;</el-col>
                         <el-col :span="6"><h4>Datatype</h4></el-col>
-                        <el-col :span="7"><h4>Desc</h4></el-col>
+                        <el-col :span="7"><h4>Description</h4></el-col>
                         <el-col :span="6"><h4>Create Date</h4></el-col>
                         <el-col :span="4"><h4>Tags</h4></el-col>
                     </el-row> 
@@ -59,8 +59,7 @@
                                 </div>
                             </el-col>
                             <el-col :span="6" :title="datatypes[dataset.datatype].desc">
-                                {{datatypes[dataset.datatype].name}}
-                                <tags :tags="dataset.datatype_tags"></tags> &nbsp;
+                                <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
                             </el-col>
                             <el-col :span="7" class="truncate">
                                 {{dataset.desc||'&nbsp;'}}
@@ -86,7 +85,7 @@
         </h4>
         <div class="select-group">
             <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
-                <h5>{{datatypes[did].name}}</h5>
+                <datatypetag :datatype="datatypes[did]"/>
                 <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
                     <div>
                         <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
@@ -135,13 +134,18 @@ import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import projectmenu from '@/components/projectmenu'
 import viewerselect from '@/components/viewerselect'
+import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 var debounce = null;
 
 export default {
-    components: { sidemenu, tags, metadata, pageheader, projectmenu, viewerselect },
+    components: { 
+        sidemenu, tags, metadata, 
+        pageheader, projectmenu, viewerselect,
+        datatypetag
+    },
     data () {
         return {
             datasets: [], //datasets loaded so far

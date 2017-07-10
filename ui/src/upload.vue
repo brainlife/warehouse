@@ -26,10 +26,6 @@
 
             <el-form label-width="120px">
                 <div v-if="mode == 'meta'">
-                    <el-form-item label="Name">
-                        <el-input v-model="name" placeholder="Name of this dataset"></el-input>
-                    </el-form-item>
-
                     <el-form-item label="Description">
                         <el-input type="textarea" v-model="desc" :rows="4" placeholder="Any description (optional)"></el-input>
                     </el-form-item>
@@ -125,7 +121,6 @@
         <el-card v-if="config.debug">
             <div slot="header">debug</div>
             <h3>Name/Desc</h3>
-            {{name}}
             {{desc}}
 
             <h3>Datatype ID</h3>
@@ -159,7 +154,6 @@ export default {
         return {
 
             //user selections
-            name: "",
             desc: "",
             instance_id: null,
             project_id: null, //project id to place new crate in
@@ -411,15 +405,12 @@ export default {
 
                 //info for dataset
                 project: this.project_id,
-                name: this.name,
                 desc: this.desc,
                 datatype: this.datatype_id,
                 datatype_tags: [],
 
                 //product: product,
                 meta: this.meta,
-
-                prov: {}, //TODO?
 
                 tags: [], 
 
@@ -488,7 +479,6 @@ export default {
             let valid = true;
             switch(form) {
             case "meta":
-                if(!this.name) return false;
                 if(!this.project_id) return false;
                 if(!this.datatype_id) return false;
                 this.datatypes[this.datatype_id].meta.forEach(meta=>{

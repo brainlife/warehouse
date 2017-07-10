@@ -84,13 +84,16 @@ export default {
         //needed to pull data
         this.form.instance_id = this.instance._id;
         this.form.task_id = this.output_task._id;
-        this.form.dirname = this.dataset_id; //output task should create subdir for each dataset_id
 
+        //deprecated.. (now set app_id and subdir instead)
         this.form.prov = {
             app: this.app_id,
             task_id: this.output_task._id,
             dirname: this.dataset_id,
         }
+
+        this.form.app_id = this.app_id;
+        this.form.subdir = this.dataset_id; //output task should create subdir for each dataset_id
 
         this.form.name = this.dataset.name;
         this.form.desc = this.dataset.desc;
@@ -100,7 +103,6 @@ export default {
         for(var k in this.dataset.meta) {
             Vue.set(this.form.meta, k, this.dataset.meta[k]);
         }
-        //console.dir(this.form);
     },
 
     methods: {

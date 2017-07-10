@@ -17,11 +17,12 @@
                 <el-button type="primary" size="small" style="float: right; position: relative; top: -8px;"
                     @click="show_input_dialog = true" v-bind:class="{animated: true, headShake: _datasets.length == 0}" icon="plus"> Stage Datasets</el-button>
                 <h3>Input Datasets</h3>
-                <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset"
+                <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
+                    @click="go('/dataset/'+dataset.did)"
                     v-if="dataset.task.name == 'brainlife.stage_input'">
                     <mute>D{{idx}}</mute> 
                     <b>{{dataset.meta.subject}}</b>
-                    {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
+                    <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
                     <time>{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
@@ -45,7 +46,7 @@
                     -->
                     <mute><b>T{{tasks.indexOf(dataset.task)-1}}</b> <icon name="arrow-right" scale="0.8"></icon></mute> D{{idx}}
                     <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
-                    {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
+                    <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
@@ -107,8 +108,8 @@
                             <el-col :span="20" v-if="find_dataset(did)">
                                 <mute>D{{find_dataset_idx(did)}}</mute>
                                 <b>{{find_dataset(did).meta.subject}}</b>
-                                {{datatypes[find_dataset(did).datatype].name}}
-                                <tags :tags="find_dataset(did).datatype_tags"></tags>
+                                <datatypetag :datatype="datatypes[find_dataset(did).datatype]" 
+                                    :tags="find_dataset(did).datatype_tags"></datatypetag>
                             </el-col>
                             </el-row>
                         </div>
@@ -135,8 +136,8 @@
                                 </mute>
 
                                 <b>{{dataset.meta.subject}}</b>
-                                {{datatypes[dataset.datatype].name}} 
-                                <tags :tags="dataset.datatype_tags"></tags>
+                                <datatypetag :datatype="datatypes[dataset.datatype]" 
+                                    :tags="dataset.datatype_tags"></datatypetag>
 
                                 <div style="float: right;">
                                     <div v-if="_output_tasks[task._id].status == 'finished'">
@@ -219,10 +220,10 @@
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
                                             D{{find_dataset_idx(dataset.did)}}
                                             <b>{{dataset.meta.subject}}</b> 
-                                            <!--<metadata :metadata="dataset.meta"/>-->
-                                            <small>{{datatypes[dataset.datatype].name}}</small>
-                                            <!--<b>{{dataset.name||''}}</b> -->
-                                            <tags :tags="dataset.datatype_tags"></tags> 
+                                            <!--
+                                            <datatypetag :datatype="datatypes[dataset.datatype]" 
+                                                :tags="dataset.datatype_tags"></datatypetag>
+                                            -->
                                         </el-option>
                                     </el-option-group>
                                     <el-option-group key="brainlife.stage_output" label="Output Datasets">
@@ -232,8 +233,10 @@
                                             <span v-if="dataset.task.status != 'finished'">(Processing)</span>
                                             D{{find_dataset_idx(dataset.did)}}
                                             <b>{{dataset.meta.subject}}</b> 
-                                            <small>{{datatypes[dataset.datatype].name}}</small>
-                                            <tags :tags="dataset.datatype_tags"></tags> <!--| <metadata :metadata="dataset.meta"/>-->
+                                            <!--
+                                            <datatypetag :datatype="datatypes[dataset.datatype]" 
+                                                :tags="dataset.datatype_tags"></datatypetag>
+                                            -->
                                         </el-option>
                                     </el-option-group>
                                 </el-select>
@@ -304,6 +307,7 @@ import statustag from '@/components/statustag'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
 import datatypeui from '@/components/datatypeui'
+import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -318,6 +322,7 @@ export default {
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
         viewerselect, datasetselecter, datatypeui,
+        datatypetag,
     },
 
     data() {
@@ -775,11 +780,6 @@ export default {
             return valid;
         },
 
-        /*
-        archive: function(task_id, b) {
-            Vue.set(this.archiving, task_id, b);
-        },
-        */
         show_archiveform: function(dataset) {
             Vue.set(dataset, 'archiving', true);
         },

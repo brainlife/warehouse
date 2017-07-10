@@ -169,10 +169,11 @@ router.get('/bibtex/:id', (req, res, next)=>{
  *
  * @apiParam {String} instance_id       WF service Instance ID
  * @apiParam {String} task_id           WF service Task ID (of output task)
+ * @apiParam {Object} [app_id]          Application used to generate this dataset (don't set if it's uploaded)
+ * @apiParam {String} [subdir]          Sub directory to grab the dataset content within the task
  *
  * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
- * @apiParam {Object} [prov]            Provenane info {app, deps, config} - don't set if it's uploaded
  * @apiParam {Object} [meta]            Metadata - as prescribed in datatype.meta
  * @apiParam {String[]} datatype_tags   Data type ID for this dataset (from Datatypes)
  * @apiParam {String} [desc]            Description for this crate
@@ -187,7 +188,16 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.datatype) return next("datatype id not set");
     if(!req.body.instance_id) return next("instance_id not set");
     if(!req.body.task_id) return next("task_id not set");
-    
+
+    var subdir = '';
+    if(req.body.subdir) {
+        //TODO - is this safe enough?
+        if( ~req.body.subdir.indexOf('/') || 
+            ~req.body.subdir.indexOf('..')
+        ) return cb("subdir contains invalid character");
+        subdir = req.body.subdir;
+    }
+
     async.waterfall([
         cb=>{
             //get task
@@ -229,23 +239,25 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 datatype: req.body.datatype,
                 datatype_tags: req.body.datatype_tags,
 
-                //name: req.body.name,
                 desc: req.body.desc,
                 tags: req.body.tags||[],
-
-                prov: req.body.prov||{},
+                prov: {
+                    app: req.body.app_id,
+                    task_id: task._id,
+                    dirname: subdir,
+                },
                 meta: req.body.meta||{},
             });
 
             logger.debug("creating dataset");
-            //logger.debug(dataset);
             
             dataset.save((e, _dataset)=>{
                 if(e) return next(e);
                 res.json(_dataset);
+
                 
                 //then, asynchrnously copy content to the storage
-                archive(task, _dataset, req, function(err) {
+                archive(task, _dataset, req, subdir, function(err) {
                     if(err) logger.error(err);
                     //TODO post event?
                     logger.debug("archive finished");
@@ -256,7 +268,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     ], next); //end-waterfall
 });
 
-function archive(task, dataset, req, cb) {
+function archive(task, dataset, req, subdir, cb) {
     if(!task.resource_id) {
         return cb('task '+task._id+' has no resource_id set');
     }
@@ -277,7 +289,7 @@ function archive(task, dataset, req, cb) {
             url: config.wf.api+"/resource/download",
             qs: {
                 r: task.resource_id,
-                p: task.instance_id+"/"+task._id+"/"+(req.body.dirname||''),
+                p: task.instance_id+"/"+task._id+"/"+subdir,
             },
             headers: {
                 authorization: req.headers.authorization, 

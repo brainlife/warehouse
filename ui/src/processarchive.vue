@@ -123,7 +123,6 @@ export default {
         //load instance first
         this.$http.get(Vue.config.wf_api+'/instance', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            //populate: 'config.project datatype instance.config.prov.deps.dataset',
         }})
         .then(res=>{
             this.instance = res.body.instances[0];
@@ -194,15 +193,11 @@ export default {
                     meta[m.id] = meta_catalog[m.id]; 
                 });
 
-                var prov = this.instance.config.prov;
-                prov.dirname = output.id;
-                
                 var dataset = {
                     instance_id: this.instance._id,
                     task_id: this.instance.config.output_task_id,
-                    dirname: output.id,
-
-                    prov: prov,
+                    app_id: this.instance.config.prov.app,
+                    subdir: output.id,
 
                     name: this.instance.name,
                     desc: this.instance.desc,

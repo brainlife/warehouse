@@ -16,6 +16,11 @@ exports.wf = {
     jwt: fs.readFileSync(__dirname+'/wf.jwt', 'ascii').trim(),
 }
 
+exports.warehouse = {
+    //used by rule handler to submit dataset download request
+    api: "https://dev1.soichi.us/api/warehouse",
+}
+
 exports.express = {
     port: 12501,
     //public key used to validate jwt token
@@ -123,12 +128,19 @@ exports.storage_systems["dcwan/hcp"] = {
     },
     download: (dataset, cb)=>{
         var dir = dcwan_hcp_path+dataset.storage_config.subdir;
-        //var stream = fs.createReadStream(dir+'/'+dataset._id+'.tar.gz');
-        console.log("running tar "+dir);
+        //console.log("running tar "+dir);
+
+        //TODO - if dir doesn't exist, spawn raise error with "Error: spawn tar ENOENT"
+        //I need to make sure that the directory exists before accessing
+        //if I make /health storage info available to the rest of the system,
+        //I can use the last storage status and only allow download if the status is good?
         var child = child_process.spawn("tar", ["hcz", "."], {cwd: dir});
         cb(null, child.stdout);
         child.stderr.on('data', function(data) {
             console.error(data.toString());
+        });
+        child.on('error', (err)=>{
+            console.error(err);
         });
     },
     test: cb=>{

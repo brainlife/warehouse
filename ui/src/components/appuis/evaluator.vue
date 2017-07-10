@@ -1,6 +1,5 @@
 <template>
 <div class="evaluator">
-    <h4 class="title">Pie</h4>
     <div ref="pie"></div>
 </div>
 </template>
@@ -35,6 +34,7 @@ export default {
         */
     },
     mounted() {
+        /*
         Plotly.plot(this.$refs.pie,
         //pass data to draw..
         [
@@ -50,6 +50,7 @@ export default {
             margin: { t: 0, l: 0, b: 0, r: 0 }
         }
         );
+        */
     },
 }
 </script>

@@ -85,36 +85,11 @@ var datasetSchema = mongoose.Schema({
     //any extra storage config (maybe like subdir needed to access the dataset)
     storage_config: mongoose.Schema.Types.Mixed, 
 
-    /*
-    //provenance info (if it's derivative) - not set if user uploaded it
-    prov: {
-        //application that produced this data (not set if user uploaded it)
-        app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
-
-        //output id of the app (set when dataset is posted)
-        //output_id: String, 
-        
-        //dataset used by the application to generate this data
-        deps: [{
-            input_id: String, 
-            dataset: {type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}
-        }],
-        
-        //config for main task used to generate the data
-        config: mongoose.Schema.Types.Mixed, 
-
-        //instance / output task ID from workflow service
-        instance_id: String,
-        task_id: String,
-        dirname: String, //subdir that contained the output data
-    },
-    */
-    
     //not set if user uploaded it. 
     prov: {
         app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //application that created this data
         task_id: String, //output task id
-        dirname: String, //subdir that contain the output data (not set if it's on taskdir)
+        dirname: String, //subdir that contain the output data (not set if it's on base taskdir)
     },
 
     create_date: { type: Date, default: Date.now },
@@ -137,6 +112,7 @@ var datatypeSchema = mongoose.Schema({
     files: [ new mongoose.Schema({
         id: String,
         filename: String,
+        dirname: String, //should use filename instead?
         desc: String,
         ext: String,
         required: Boolean
@@ -237,7 +213,6 @@ var apprateSchema = mongoose.Schema({
 });
 exports.Apprates = mongoose.model('Apprates', apprateSchema);
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Project Rules
@@ -249,15 +224,21 @@ exports.Apprates = mongoose.model('Apprates', apprateSchema);
 
 var ruleSchema = mongoose.Schema({
 
-    //user submitted this rule (and the instance will be submitted under)
+    //user submitted this rule (all rule tasks will be submitted under warehouse admin users)
     user_id: {type: String, index: true}, 
     
-    //project to store generated data
+    //project to look for missing datasets and to archive generated data
     project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
-    //app to submit
+    //app to submit (and scalar config)
     app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
-    app_config: mongoose.Schema.Types.Mixed, 
+    config: mongoose.Schema.Types.Mixed, 
+
+    //when this rule was last handled - used to find *new* datasets 
+    process_date: { type: Date },
+
+    //when the rule is first defined
+    create_date: { type: Date, default: Date.now },
 
 });
 exports.Rules = mongoose.model('Rules', ruleSchema);

@@ -41,8 +41,10 @@ export default {
         }
 
         this.$http.get('project', {params: {
-            find: JSON.stringify({members: Vue.config.user.sub}),
-            populate: ' ', //load all default
+            find: JSON.stringify({$or: [
+                { members: Vue.config.user.sub}, 
+                { access: "public" },
+            ]})
         }}).then(res=>{
             this.projects = res.body.projects;
         });
