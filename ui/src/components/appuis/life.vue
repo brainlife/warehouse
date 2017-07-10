@@ -1,7 +1,6 @@
 <template>
 <div class="life">
-    <h5>TODO..</h5>
-    <img :src="testurl" width="100%"/>
+    <img v-if="testurl" :src="testurl" width="100%"/>
 </div>
 </template>
 
@@ -25,8 +24,3 @@ export default {
     }
 }
 </script>
-
-<style scopes>
-.life {
-}
-</style>
