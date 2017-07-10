@@ -3,12 +3,11 @@
     <div slot="header">
         <el-row>
             <el-col :span="6">
-                <span>{{datatype.name}}</span> 
+                <datatypetag :datatype="datatype" :tags="datatype_tags"/>
             </el-col>
             <el-col :span="18">
                 <b>{{id}}</b>
                 <small class="text-muted">({{datatype.desc}})</small>
-                <tags :tags="datatype_tags"></tags>
             </el-col>
         </el-row>
     </div>
@@ -29,9 +28,10 @@
 
 <script>
 import tags from '@/components/tags'
+import datatypetag from '@/components/datatypetag'
 
 export default {
-    components: { tags },
+    components: { tags, datatypetag },
     props: [ 'datatype', 'datatype_tags', 'id'],
     computed: {
     },
