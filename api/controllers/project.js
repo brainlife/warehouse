@@ -36,9 +36,16 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
 
+    //always load user_id so that we can compute canedit properly
+    var select = null;
+    if(req.query.select) {
+        select = req.query.select;
+        if(!~select.indexOf("admins")) select+=" admins";
+    }
+
     //TODO I should only allow querying for projects that user has access?
     db.Projects.find(find)
-    .select(req.query.select)
+    .select(select)
     .limit(req.query.limit || 0)
     .skip(req.query.skip || 0)
     .sort(req.query.sort || '_id')

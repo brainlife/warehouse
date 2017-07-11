@@ -352,7 +352,7 @@ router.get('/download/:id', jwt({
             logger.debug("user is accessing p", dataset.project);
             logger.debug("user has access to", project_ids);
             if(!~project_ids.indexOf(dataset.project.toString())) {
-                return res.status(404).json({message: "you don't have access to the project that the dataset belongs"});
+                return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
             } 
             
             //open stream
@@ -366,7 +366,7 @@ router.get('/download/:id', jwt({
                 logger.debug("post stats", err, stats);
                 if(err) return next(err);
 
-                system.download(dataset, (err, readstream)=>{
+                system.download(dataset, (err, readstream, filename)=>{
                     if(err) return next(err);
 
                     //file .. just stream using sftp stream
@@ -374,8 +374,10 @@ router.get('/download/:id', jwt({
                     //var mimetype = mime.lookup(fullpath);
                     //logger.debug("mimetype:"+mimetype);
 
+                    if(!filename) filename = dataset._id+'.tar.gz';
+
                     //without attachment, the file will replace the current page
-                    res.setHeader('Content-disposition', 'attachment; filename='+dataset._id+'.tar.gz');
+                    res.setHeader('Content-disposition', 'attachment; filename='+filename);
                     if(stats) res.setHeader('Content-Length', stats.size);
                     //res.setHeader('Content-Type', mimetype); //TODO?
                     logger.debug("commencing download");
