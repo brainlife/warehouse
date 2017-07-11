@@ -197,15 +197,6 @@
                             <el-input type="textarea" placeholder="Description" v-model="newtask_desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
                         </el-form-item>
 
-                        <!--
-                        <el-form-item label="">
-                            <el-tabs v-model="submit_mode" type="card">
-                                <el-tab-pane label="Single" name="single"></el-tab-pane>
-                                <el-tab-pane label="Bulk" name="bulk"></el-tab-pane>
-                            </el-tabs> 
-                        </el-form-item>
-                        -->
-
                         <div v-for="(newtask, newtask_idx) in newtasks" :key="newtask_idx" v-if="submit_mode == 'bulk' || newtask_idx == 0">
                             <!--input-->
                             <el-form-item v-if="submit_mode == 'bulk'">
@@ -219,27 +210,22 @@
                                     <el-option-group key="brainlife.stage_input" label="Input Datasets">
                                         <el-option v-for="(dataset, idx) in filter_datasets(input)"
                                             v-if="dataset.task.name == 'brainlife.stage_input'" :key="idx"
-                                                :value="dataset.did" :label="'D'+find_dataset_idx(dataset.did)+' | '+dataset.meta.subject+' | '+dataset.datatype_tags">
+                                                :value="dataset.did" :label="'D'+find_dataset_idx(dataset.did)+' '+dataset.meta.subject+' '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
                                             D{{find_dataset_idx(dataset.did)}}
                                             <b>{{dataset.meta.subject}}</b> 
-                                            <!--
-                                            <datatypetag :datatype="datatypes[dataset.datatype]" 
-                                                :tags="dataset.datatype_tags"></datatypetag>
-                                            -->
+                                            <small>{{dataset.datatype_tags.toString()}}</small>
                                         </el-option>
                                     </el-option-group>
                                     <el-option-group key="brainlife.stage_output" label="Output Datasets">
                                         <el-option v-for="(dataset, idx) in filter_datasets(input)" 
                                             v-if="dataset.task.name == 'brainlife.stage_output'" :key="idx"
-                                                :value="dataset.did" :label="'D'+find_dataset_idx(dataset.did)+' | '+dataset.meta.subject+' | '+dataset.datatype_tags">
+                                                :value="dataset.did" :label="'T'+(tasks.indexOf(dataset.task)-1)+' > D'+find_dataset_idx(dataset.did)+' | '+dataset.meta.subject+' | '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Processing)</span>
+                                            T{{tasks.indexOf(dataset.task)-1}} <icon name="arrow-right" scale="0.8"></icon>
                                             D{{find_dataset_idx(dataset.did)}}
                                             <b>{{dataset.meta.subject}}</b> 
-                                            <!--
-                                            <datatypetag :datatype="datatypes[dataset.datatype]" 
-                                                :tags="dataset.datatype_tags"></datatypetag>
-                                            -->
+                                            <small>{{dataset.datatype_tags.toString()}}</small>
                                         </el-option>
                                     </el-option-group>
                                 </el-select>
