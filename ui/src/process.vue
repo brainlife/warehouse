@@ -31,7 +31,7 @@
                         <small v-if="dataset.task.status != 'finished'">
                             <statusicon :status="dataset.task.status"></statusicon> Staging
                         </small>
-                        <icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>
+                        <!--<icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>-->
                     </mute>
                 </div>
 
@@ -59,7 +59,9 @@
                         <span v-if="dataset.dataset_id">
                             <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" type="success" icon="check">Archived</el-button>
                         </span>
+                        <!--
                         <icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>
+                        -->
                     </mute>
                 </div>
             </div>
@@ -80,12 +82,11 @@
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
 
                 <task style="margin-top: 5px;" 
-                    :task="task" :prov="task.config._prov" v-if="task._id && task.name == 'brainlife.process'" 
-                    @remove="task_removed">
+                    :task="task" :prov="task.config._prov" v-if="task._id && task.name == 'brainlife.process'" @remove="task_removed">
 
                     <!--header-->
                     <div slot="header" class="task-header">
-                        <div style="float: left">
+                        <div style="float: left" v-if="_output_tasks[task._id]">
                             <!--why using _output_task's id? I use this to jump from the output dataset list on the sidebar.. 
                             and I am too lazy to lookup the main task id from the output task id-->
                             <h3 :id="_output_tasks[task._id]._id"><mute>T{{idx}}</mute></h3>
@@ -113,13 +114,14 @@
                                 <b>{{find_dataset(did).meta.subject}}</b>
                                 <datatypetag :datatype="datatypes[find_dataset(did).datatype]" 
                                     :tags="find_dataset(did).datatype_tags"></datatypetag>
+                                <el-button size="small" @click="download(did)" style="float: right">Download</el-button>
                             </el-col>
                             </el-row>
                         </div>
                     </el-collapse-item>
 
                     <!--output-->
-                    <el-collapse-item title="Output" name="output" slot="output">
+                    <el-collapse-item title="Output" name="output" slot="output" v-if="_output_tasks[task._id]">
                         <!--
                         <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
                             <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output
@@ -810,6 +812,17 @@ export default {
                     } else this.process_input_config(newtask, node); //recurse to child node
                 }
             }
+        },
+
+        download: function(did) {
+            var dataset = this.find_dataset(did);
+            var task = dataset.task;
+            var path = task.instance_id+'/'+task._id+'/'+did
+            var url = Vue.config.wf_api+'/resource/download'+
+                '?r='+task.resource_id+
+                '&p='+encodeURIComponent(path)+
+                '&at='+Vue.config.jwt;
+            document.location = url;
         },
 
         submit_newprocess: function() {

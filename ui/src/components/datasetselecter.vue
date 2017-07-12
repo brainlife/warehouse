@@ -6,11 +6,10 @@
             <el-tab-pane label="Selected Datasets" name="selected">
                 <p class="text-muted" v-if="Object.keys(selected).length == 0">Please go to <a href="#/datasets">Datasets</a> page to select datasets.</p>
                 <p class="text-muted" v-else>We will stage following datasets you have selected.</p>
-                <ul style="list-style: none;margin: 0px; padding: 0px; max-height: 200px; overflow: auto;">
+                <ul style="margin: 0px; padding: 0px; max-height: 200px; overflow: auto;">
                     <li v-for="(select, did) in selected" :key="did" style="margin-bottom: 2px;">
-                        <metadata :metadata="select.meta"></metadata>
-                        {{select.name}} 
-                        <tags :tags="select.datatype_tags"></tags>
+                        <b>{{select.meta.subject}}</b>
+                        <datatypetag :datatype="datatypes[select.datatype]" :tags="select.datatype_tags"></datatypetag>
                     </li>
                 </ul>
             </el-tab-pane>
@@ -54,11 +53,12 @@ import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import projectselecter from '@/components/projectselecter'
 import select2 from '@/components/select2'
+import datatypetag from '@/components/datatypetag'
 
 var debounce = {};
 
 export default {
-    components: { metadata, tags, projectselecter, select2 },
+    components: { metadata, tags, projectselecter, select2, datatypetag },
     props: [ 'visible' ],
     data() {
         return {

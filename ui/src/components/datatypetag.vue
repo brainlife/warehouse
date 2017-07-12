@@ -33,18 +33,18 @@ export default {
 
 <style scope>
 .dt {
-    border-radius: 3px;
     display: inline-block;
+    line-height: 100%;
 }
 .dot {
     display: inline-block;
-    padding: 2px 4px;
+    padding: 4px;
     margin: 0px;
     color: white;
 }
 .tags {
     display: inline-block;
-    padding: 2px 4px;
+    padding: 4px;
     margin: 0px;
     background-color: #eee;
     color: #666;
