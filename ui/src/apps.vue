@@ -78,6 +78,7 @@ export default {
 <style scoped>
 .el-card {
     border: none;
+    box-shadow: 0 0 3px #aaa;
 }
 .card {
     width: 350px; 

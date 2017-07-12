@@ -5,13 +5,15 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20" v-if="instance && app">
+            <!--
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item :to="{ path: '/processes' }">Processes</el-breadcrumb-item>
                 <el-breadcrumb-item :to="{ path: '/process/'+instance._id}">{{instance.name}}</el-breadcrumb-item>
                 <el-breadcrumb-item>Archive Output</el-breadcrumb-item>
             </el-breadcrumb>
-
             <br>
+            -->
+
             <h1><icon name="cubes" scale="2"></icon> Archive Output</h1>
             
             <p class="text-muted">Please populate and submit following form to archive the output datasets generated from this process</p>
@@ -19,18 +21,28 @@
             <el-card>
                 <el-form ref="form" label-width="180px">
                     <div v-for="dataset in datasets" :key="dataset.id" style="border-bottom: 1px solid #ddd; margin-bottom: 20px;">
-                        <h2>{{dataset.prov.output_id}}</h2>
+                        <h3>
+                            {{dataset.subdir||dataset.name}}
+                            <small><datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag></small>
+                        </h3>
+                        <!--
                         <el-form-item label="Name (optional)">
                             <el-input type="text" v-model="dataset.name" placeholder="Dataset Name"></el-input>
                         </el-form-item>
-                        <el-form-item label="Desc (optional)">
-                            <el-input type="text" v-model="dataset.desc" placeholder="Dataset Description"></el-input>
-                        </el-form-item>
+                        -->
                         <el-form-item label="Project">
                             <el-select v-model="dataset.project" placeholder="Please select" style="width: 100%;">
                                 <el-option v-for="project in projects" :label="project.name" :value="project._id" :key="project._id">{{project.name}} <projectaccess :access="project.access"/></el-option>
                             </el-select>
                             <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
+                        </el-form-item>
+                        <el-form-item label="Metadata">
+                            <div v-for="(v,k) in dataset.meta">
+                                <el-input placeholder="Please input" v-model="dataset.meta[k]">
+                                    <template slot="prepend">{{k|uppercase}}</template>
+                                </el-input>
+                            </div>
+                            <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
                         </el-form-item>
                         <el-form-item label="User Tags (optional)">
                             <el-select v-model="dataset.tags" 
@@ -40,6 +52,7 @@
                             </el-select>
                             <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
                         </el-form-item>
+                        <!--
                         <el-form-item label="DataType Tags">
                             <el-select v-model="dataset.datatype_tags" 
                                 style="width: 100%"
@@ -48,13 +61,9 @@
                             </el-select>
                             <p class="text-muted" style="margin-bottom: 0px;">Datatype tags specified by the application configuration. <b>Read-only</b></p>
                         </el-form-item>
-                        <el-form-item label="Metadata">
-                            <div v-for="(v,k) in dataset.meta">
-                                <el-input placeholder="Please input" v-model="dataset.meta[k]">
-                                    <template slot="prepend">{{k|uppercase}}</template>
-                                </el-input>
-                            </div>
-                            <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
+                        -->
+                        <el-form-item label="Description">
+                            <el-input type="textarea" :autosize="{minRows: 2}" v-model="dataset.desc" placeholder="Optional"></el-input>
                         </el-form-item>
                     </div>
                     <el-form-item>
@@ -95,6 +104,7 @@ import pageheader from '@/components/pageheader'
 import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
 import projectaccess from '@/components/projectaccess'
+import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import async from 'async'
@@ -103,7 +113,12 @@ export default {
     mixins: [
         //require("vue-toaster")
     ],
-    components: { sidemenu, contact, task, message, file, tags, metadata, filebrowser, pageheader, appavatar, projectaccess },
+    components: { 
+        sidemenu, contact, task, 
+        message, file, tags, 
+        metadata, filebrowser, pageheader, 
+        appavatar, projectaccess, datatypetag,
+    },
 
     data () {
         return {
@@ -113,6 +128,8 @@ export default {
 
             test: null,
 
+            //cache
+            datatypes: null,
             datasets: [], //used as form
 
             config: Vue.config,
@@ -120,7 +137,8 @@ export default {
     },
 
     mounted: function() {
-        //load instance first
+
+        //start by loading instance
         this.$http.get(Vue.config.wf_api+'/instance', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
         }})
@@ -159,6 +177,15 @@ export default {
                 });
                 return;
             }
+
+            //load datatypes (TODO - I should only load datatypes used by datasets)
+            return this.$http.get('datatype')
+        })
+        .then(res=>{
+            this.datatypes = {};
+            res.body.datatypes.forEach((d)=>{
+                this.datatypes[d._id] = d;
+            });
 
             //load app
             return this.$http.get('app', {params: {

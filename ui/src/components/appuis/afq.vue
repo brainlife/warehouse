@@ -1,5 +1,5 @@
 <template>
-<iframe :src="url">surfaceview</iframe>
+<iframe :src="url">tractview</iframe>
 </template>
 
 <script>
@@ -11,7 +11,7 @@ export default {
         url: function() {
             var subdir_string = '';
             if (this.subdir) subdir_string = '&sdir='+encodeURIComponent(this.subdir);
-            return '/ui/surfaceview'+ '?free='+this.task._id+subdir_string;
+            return '/ui/tractview'+'?afq='+this.task._id+subdir_string;
         }
     }
 }

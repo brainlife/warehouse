@@ -268,7 +268,7 @@ export default {
                 for(var input_id in this.form.inputs) {
                     download.push({
                         url: Vue.config.api+"/dataset/download/"+this.form.inputs[input_id]+"?at="+Vue.config.jwt,
-                        untar: "gz",
+                        untar: "auto",
                         dir: "inputs/"+input_id,
                     });
                 }

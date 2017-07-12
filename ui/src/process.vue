@@ -6,10 +6,13 @@
         <div class="fixed-top">
             <el-button v-if="!instance.config.removing" @click="remove_instance()" style="float: right;" icon="delete">Remove Process</el-button>
 
-            <h1 style="margin-bottom: 5px; color: #eee;"><icon name="send" scale="1.5"></icon> Process</h1>
-            <div class="text-muted">
-                <time style="margin-top: 15px;">Created at {{instance.create_date|date}}</time>
+            <div style="float: right; margin-right: 20px; margin-top: 10px;">
+                <time style="margin-top: 15px;">Created at <b>{{instance.create_date|date}}</b></time>
             </div>
+            <h1>
+                <icon name="send" scale="1.7"></icon> Process
+                <statustag :status="instance.status"></statustag>
+            </h1>
         </div>
 
         <div class="sidebar">
@@ -17,17 +20,18 @@
                 <el-button type="primary" size="small" style="float: right; position: relative; top: -8px;"
                     @click="show_input_dialog = true" v-bind:class="{animated: true, headShake: _datasets.length == 0}" icon="plus"> Stage Datasets</el-button>
                 <h3>Input Datasets</h3>
-                <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset"
+                <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
+                    @click="go('/dataset/'+dataset.did)"
                     v-if="dataset.task.name == 'brainlife.stage_input'">
                     <mute>D{{idx}}</mute> 
                     <b>{{dataset.meta.subject}}</b>
-                    {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
+                    <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
                     <time>{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
                             <statusicon :status="dataset.task.status"></statusicon> Staging
                         </small>
-                        <icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>
+                        <!--<icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>-->
                     </mute>
                 </div>
 
@@ -45,7 +49,7 @@
                     -->
                     <mute><b>T{{tasks.indexOf(dataset.task)-1}}</b> <icon name="arrow-right" scale="0.8"></icon></mute> D{{idx}}
                     <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
-                    {{datatypes[dataset.datatype].name}} <tags :tags="dataset.datatype_tags"></tags>
+                    <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
@@ -55,7 +59,9 @@
                         <span v-if="dataset.dataset_id">
                             <el-button size="mini" @click="go('/dataset/'+dataset.dataset_id)" type="success" icon="check">Archived</el-button>
                         </span>
+                        <!--
                         <icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>
+                        -->
                     </mute>
                 </div>
             </div>
@@ -76,12 +82,11 @@
                 <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
 
                 <task style="margin-top: 5px;" 
-                    :task="task" :prov="task.config._prov" v-if="task._id && task.name == 'brainlife.process'" 
-                    @remove="task_removed">
+                    :task="task" :prov="task.config._prov" v-if="task._id && task.name == 'brainlife.process'" @remove="task_removed">
 
                     <!--header-->
                     <div slot="header" class="task-header">
-                        <div style="float: left">
+                        <div style="float: left" v-if="_output_tasks[task._id]">
                             <!--why using _output_task's id? I use this to jump from the output dataset list on the sidebar.. 
                             and I am too lazy to lookup the main task id from the output task id-->
                             <h3 :id="_output_tasks[task._id]._id"><mute>T{{idx}}</mute></h3>
@@ -107,15 +112,16 @@
                             <el-col :span="20" v-if="find_dataset(did)">
                                 <mute>D{{find_dataset_idx(did)}}</mute>
                                 <b>{{find_dataset(did).meta.subject}}</b>
-                                {{datatypes[find_dataset(did).datatype].name}}
-                                <tags :tags="find_dataset(did).datatype_tags"></tags>
+                                <datatypetag :datatype="datatypes[find_dataset(did).datatype]" 
+                                    :tags="find_dataset(did).datatype_tags"></datatypetag>
+                                <el-button size="small" @click="download(did)" style="float: right">Download</el-button>
                             </el-col>
                             </el-row>
                         </div>
                     </el-collapse-item>
 
                     <!--output-->
-                    <el-collapse-item title="Output" name="output" slot="output">
+                    <el-collapse-item title="Output" name="output" slot="output" v-if="_output_tasks[task._id]">
                         <!--
                         <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
                             <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output
@@ -135,8 +141,8 @@
                                 </mute>
 
                                 <b>{{dataset.meta.subject}}</b>
-                                {{datatypes[dataset.datatype].name}} 
-                                <tags :tags="dataset.datatype_tags"></tags>
+                                <datatypetag :datatype="datatypes[dataset.datatype]" 
+                                    :tags="dataset.datatype_tags"></datatypetag>
 
                                 <div style="float: right;">
                                     <div v-if="_output_tasks[task._id].status == 'finished'">
@@ -193,15 +199,6 @@
                             <el-input type="textarea" placeholder="Description" v-model="newtask_desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
                         </el-form-item>
 
-                        <!--
-                        <el-form-item label="">
-                            <el-tabs v-model="submit_mode" type="card">
-                                <el-tab-pane label="Single" name="single"></el-tab-pane>
-                                <el-tab-pane label="Bulk" name="bulk"></el-tab-pane>
-                            </el-tabs> 
-                        </el-form-item>
-                        -->
-
                         <div v-for="(newtask, newtask_idx) in newtasks" :key="newtask_idx" v-if="submit_mode == 'bulk' || newtask_idx == 0">
                             <!--input-->
                             <el-form-item v-if="submit_mode == 'bulk'">
@@ -215,25 +212,22 @@
                                     <el-option-group key="brainlife.stage_input" label="Input Datasets">
                                         <el-option v-for="(dataset, idx) in filter_datasets(input)"
                                             v-if="dataset.task.name == 'brainlife.stage_input'" :key="idx"
-                                                :value="dataset.did" :label="'D'+find_dataset_idx(dataset.did)+' | '+dataset.meta.subject+' | '+dataset.datatype_tags">
+                                                :value="dataset.did" :label="'D'+find_dataset_idx(dataset.did)+' '+dataset.meta.subject+' '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Staging)</span>
                                             D{{find_dataset_idx(dataset.did)}}
                                             <b>{{dataset.meta.subject}}</b> 
-                                            <!--<metadata :metadata="dataset.meta"/>-->
-                                            <small>{{datatypes[dataset.datatype].name}}</small>
-                                            <!--<b>{{dataset.name||''}}</b> -->
-                                            <tags :tags="dataset.datatype_tags"></tags> 
+                                            <small>{{dataset.datatype_tags.toString()}}</small>
                                         </el-option>
                                     </el-option-group>
                                     <el-option-group key="brainlife.stage_output" label="Output Datasets">
                                         <el-option v-for="(dataset, idx) in filter_datasets(input)" 
                                             v-if="dataset.task.name == 'brainlife.stage_output'" :key="idx"
-                                                :value="dataset.did" :label="'D'+find_dataset_idx(dataset.did)+' | '+dataset.meta.subject+' | '+dataset.datatype_tags">
+                                                :value="dataset.did" :label="'T'+(tasks.indexOf(dataset.task)-1)+' > D'+find_dataset_idx(dataset.did)+' | '+dataset.meta.subject+' | '+dataset.datatype_tags">
                                             <span v-if="dataset.task.status != 'finished'">(Processing)</span>
+                                            T{{tasks.indexOf(dataset.task)-1}} <icon name="arrow-right" scale="0.8"></icon>
                                             D{{find_dataset_idx(dataset.did)}}
                                             <b>{{dataset.meta.subject}}</b> 
-                                            <small>{{datatypes[dataset.datatype].name}}</small>
-                                            <tags :tags="dataset.datatype_tags"></tags> <!--| <metadata :metadata="dataset.meta"/>-->
+                                            <small>{{dataset.datatype_tags.toString()}}</small>
                                         </el-option>
                                     </el-option-group>
                                 </el-select>
@@ -304,6 +298,7 @@ import statustag from '@/components/statustag'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
 import datatypeui from '@/components/datatypeui'
+import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -318,6 +313,7 @@ export default {
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
         viewerselect, datasetselecter, datatypeui,
+        datatypetag,
     },
 
     data() {
@@ -637,7 +633,7 @@ export default {
 
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+did+"?at="+Vue.config.jwt,
-                    untar: "gz",
+                    untar: "auto",
                     dir: did,
                 });
             }
@@ -818,6 +814,17 @@ export default {
             }
         },
 
+        download: function(did) {
+            var dataset = this.find_dataset(did);
+            var task = dataset.task;
+            var path = task.instance_id+'/'+task._id+'/'+did
+            var url = Vue.config.wf_api+'/resource/download'+
+                '?r='+task.resource_id+
+                '&p='+encodeURIComponent(path)+
+                '&at='+Vue.config.jwt;
+            document.location = url;
+        },
+
         submit_newprocess: function() {
             if(!this.validate()) {
                 this.$notify.error({ title: 'Error', message: 'Please correct the form' });
@@ -928,13 +935,14 @@ position: fixed;
 padding: 20px;
 left: 90px;
 right: 375px;
-top: 140px;
+top: 125px;
 bottom: 0px;
 overflow: auto;
 }
 .fixed-top {
 background-color: #666;
 padding: 20px;
+padding-bottom: 5px;
 color: white;
 position: fixed;
 top: 50px;
@@ -949,7 +957,7 @@ box-shadow: inset 3px 0px 3px #ccc;
 background-color: #ddd;
 padding-top: 20px;
 position: fixed;
-top: 140px;
+top: 125px;
 bottom: 0px;
 width: 375px;
 right: 0px;
