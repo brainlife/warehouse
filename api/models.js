@@ -61,7 +61,7 @@ exports.Projects = mongoose.model('Projects', projectSchema);
 //each data is a .tar.gz of a task directory from wf service
 var datasetSchema = mongoose.Schema({
     
-    //user who registered this data
+    //user who submitted this rule. task will run under this user
     user_id: {type: String, index: true},
     
     //project that this data belongs to
@@ -224,7 +224,7 @@ exports.Apprates = mongoose.model('Apprates', apprateSchema);
 
 var ruleSchema = mongoose.Schema({
 
-    //user submitted this rule (all rule tasks will be submitted under warehouse admin users)
+    //user submitted this rule (all tasks will be submitted under this user)
     user_id: {type: String, index: true}, 
     
     //project to look for missing datasets and to archive generated data
@@ -239,7 +239,6 @@ var ruleSchema = mongoose.Schema({
 
     //when the rule is first defined
     create_date: { type: Date, default: Date.now },
-
 });
 exports.Rules = mongoose.model('Rules', ruleSchema);
 
