@@ -5,10 +5,14 @@
     <div class="page-content" v-if="dataset">
 
         <div class="margin20">
-            <el-button-group style="float: right;">
-                <el-button @click="remove()" v-if="dataset._canedit" icon="delete">Remove</el-button>
-                <el-button type="primary" @click="download()" icon="document">Download</el-button>
-            </el-button-group>
+            <div style="float: right">
+                <el-button-group>
+                    <el-button @click="remove()" v-if="dataset._canedit" icon="delete">Remove</el-button>
+
+                    <el-button type="primary" @click="download()" icon="document">Download</el-button>
+                </el-button-group>
+                <viewerselect @select="view"></viewerselect>
+            </div>
 
             <h1><icon name="cube" scale="2"></icon> Dataset <small class="text-muted">{{dataset._id}}</small></h1>
             <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
@@ -171,11 +175,17 @@ import datatype from '@/components/datatype'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
+import viewerselect from '@/components/viewerselect'
 
 const lib = require('./lib');
 
 export default {
-    components: { sidemenu, contact, project, app, tags, datatype, metadata, pageheader, appavatar },
+    components: { 
+        sidemenu, contact, project, 
+        app, tags, datatype, 
+        metadata, pageheader, appavatar,
+        viewerselect,
+     },
     data () {
         return {
             dataset: null,
@@ -269,6 +279,11 @@ export default {
         },
         bibtex: function() {
             document.location = '/api/warehouse/dataset/bibtex/'+this.dataset._id;
+        },
+        view: function(taskid, event) {
+            alert('todo');
+            //var url = taskid+'/'+event;
+            //window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
     },
 }

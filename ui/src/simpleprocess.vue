@@ -94,15 +94,18 @@
                                 <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task" :subdir="props.row.id"></file>
                             </el-col>
                             <el-col :span="4">
-                                <viewerselect @select="view"></viewerselect>
+                                <viewerselect @select="view" size="small"></viewerselect>
                             </el-col>
                         </el-row>
                         </template>
                     </el-table-column>
                     <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description" width="250"></el-table-column>
-                    <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
+                    <el-table-column label="Datatype" width="180">
+                        <template scope="props">
+                            <datatypetag :datatype="props.row.datatype" :tags="props.row.datatype_tags"></datatypetag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
                 </el-table>
             </td>
         </tr>
@@ -123,21 +126,20 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
+                    <el-table-column prop="_dataset" label="Data Type">
+                        <template scope="scope">
+                            <datatypetag :datatype="datatypes[scope.row._dataset.datatype]" :tags="scope.row._dataset.datatype_tags"></datatypetag>
+                        </template>
+                    </el-table-column>
                     <el-table-column prop="_dataset.meta" label="Metadata">
                         <template scope="scope">
                             <metadata v-if="scope.row._dataset" :metadata="scope.row._dataset.meta"></metadata>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
-                        <template scope="scope">
-                            <tags v-if="scope.row._dataset" :tags="scope.row._dataset.datatype_tags"></tags>
-                        </template>
-                    </el-table-column>
+                    <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
                     <el-table-column prop="_dataset.tags" label="User Tags">
                         <template scope="scope" v-if="scope.row._dataset">
-                            <tags v-if="scope.row._dataset" :tags="scope.row._dataset.tags"></tags>
+                            <tags v-if="scope.row.datatype" :tags="scope.row._dataset.tags"></tags>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -185,6 +187,7 @@ import viewerselect from '@/components/viewerselect'
 import datatypeui from '@/components/datatypeui'
 import statustag from '@/components/statustag'
 import app from '@/components/app'
+import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -199,7 +202,7 @@ export default {
         message, file, tags, 
         metadata, filebrowser, pageheader, 
         appavatar, mute, viewerselect, datatypeui,
-        statustag, app,
+        statustag, app, datatypetag, 
      },
 
     data () {
@@ -207,6 +210,9 @@ export default {
             instance: null,
             tasks: null,
             app: null,
+
+            //cache
+            datatypes: null,
 
             config: Vue.config,
         }
@@ -258,6 +264,19 @@ export default {
         })
         .then(res=>{
             this.tasks = res.body.tasks;
+
+            //load datatypes
+            return this.$http.get('datatype', {params: {
+                find: JSON.stringify({
+                    //removed: false,
+                })
+            }});
+        })
+        .then(res=>{
+            this.datatypes = {};
+            res.body.datatypes.forEach(datatype=>{
+                this.datatypes[datatype._id] = datatype;
+            });
 
             //load app
             return this.$http.get('app', {params: {

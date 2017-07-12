@@ -122,12 +122,6 @@
 
                     <!--output-->
                     <el-collapse-item title="Output" name="output" slot="output" v-if="_output_tasks[task._id]">
-                        <!--
-                        <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
-                            <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output
-                        </p>
-                        -->
-
                         <div v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id" 
                             style="min-height: 30px;" :class="{'text-muted': _output_tasks[task._id].status != 'finished'}">
                             <el-row>
@@ -146,7 +140,7 @@
 
                                 <div style="float: right;">
                                     <div v-if="_output_tasks[task._id].status == 'finished'">
-                                        <viewerselect @select="view(_output_tasks[task._id]._id, $event)" style="margin-right: 5px;"></viewerselect>
+                                        <viewerselect @select="view(_output_tasks[task._id]._id, $event)" size="small" style="margin-right: 5px;"></viewerselect>
                                         <el-button size="small" type="primary"
                                             v-if="!dataset.archiving && !dataset.dataset_id" @click="show_archiveform(dataset)">Archive</el-button>
                                         <el-button size="small" 

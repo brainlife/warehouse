@@ -1,6 +1,6 @@
 <template>
 <el-dropdown @command="select">
-    <el-button size="small">
+    <el-button :size="size">
         View<i class="el-icon-caret-bottom el-icon--right"></i>
     </el-button>
     <el-dropdown-menu slot="dropdown">
@@ -15,6 +15,7 @@
 import Vue from 'vue'
 
 export default {
+    props: [ 'size' ],
     components: { },
     data () {
         return {
