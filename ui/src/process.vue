@@ -630,7 +630,6 @@ export default {
                     this.$notify.info({ title: 'Info', message: 'Dataset '+did+' is already staged. Skipping.' });
                     return;
                 }
-
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+did+"?at="+Vue.config.jwt,
                     untar: "auto",
@@ -816,8 +815,15 @@ export default {
 
         download: function(did) {
             var dataset = this.find_dataset(did);
-            var task = dataset.task;
-            var path = task.instance_id+'/'+task._id+'/'+did
+            var task = dataset.task;    
+            if(task.name == "brainlife.stage_input") {
+                //stage input task contains multiple datasets, so I add task_id and did
+                var path = task.instance_id+'/'+task._id+'/'+did;
+            } else {
+                //stage_output contains both task_id and output_id on did, so I don't have to contanetate task._id
+                var path = task.instance_id+'/'+did;
+            }
+            console.dir(path);
             var url = Vue.config.wf_api+'/resource/download'+
                 '?r='+task.resource_id+
                 '&p='+encodeURIComponent(path)+
