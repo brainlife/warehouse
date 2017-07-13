@@ -53,7 +53,7 @@
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
-                            <statusicon :status="dataset.task.status"/>Processing
+                            <statusicon :status="dataset.task.status"/> Organizing
                         </small>
 
                         <span v-if="dataset.dataset_id">
@@ -142,20 +142,20 @@
                                     <div v-if="_output_tasks[task._id].status == 'finished'">
                                         <viewerselect @select="view(_output_tasks[task._id]._id, $event)" size="small" style="margin-right: 5px;"></viewerselect>
                                         <el-button size="small" type="primary"
-                                            v-if="!dataset.archiving && !dataset.dataset_id" @click="show_archiveform(dataset)">Archive</el-button>
+                                            v-if="archiving != dataset._id && !dataset.dataset_id" @click="archiving = dataset._id">Archive</el-button>
                                         <el-button size="small" 
                                             v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
                                     </div>
                                     <statustag v-else :status="_output_tasks[task._id].status"/>
                                 </div>
 
-                                <archiveform v-if="dataset.archiving" 
+                                <archiveform v-if="archiving == dataset._id" 
                                     :instance="instance" 
                                     :app_id="_output_tasks[task._id].config._prov.app"
                                     :output_task="_output_tasks[task._id]" 
                                     :dataset_id="output_id"
                                     :dataset="dataset" 
-                                    @submitted="hide_archiveform(dataset)" style="margin-top: 30px;"></archiveform>
+                                    @submitted="archiving = null" style="margin-top: 30px;"></archiveform>
                             </el-col>
                             </el-row>
 
@@ -336,6 +336,9 @@ export default {
             selected_subjects: [],
             selected_datatypes: [],
             selected_tags: [],
+    
+            //currently open archiving form
+            archiving: null,
 
             config: Vue.config,
         }
@@ -764,12 +767,14 @@ export default {
             return valid;
         },
 
+        /*
         show_archiveform: function(dataset) {
-            Vue.set(dataset, 'archiving', true);
+            this.archiving == dataset._id;
         },
         hide_archiveform: function(dataset) {
-            Vue.set(dataset, 'archiving', false);
+            this.archiving == null;
         },
+        */
 
         //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name
         filter_datasets: function(input) {
