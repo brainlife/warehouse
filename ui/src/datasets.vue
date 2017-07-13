@@ -106,20 +106,7 @@
                 <el-button size="small" type="primary" @click="download()">Download</el-button>
                 <el-button size="small" type="primary" @click="process()">Process</el-button>
             </el-button-group>
-            <viewerselect @select="view"></viewerselect>
-            <!--
-            <el-dropdown @command="view">
-                <el-button size="small" type="primary">
-                    View<i class="el-icon-caret-bottom el-icon--right"></i>
-                </el-button>
-                <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item command="fslview">FSL View</el-dropdown-item>
-                    <el-dropdown-item command="freeview">Free View</el-dropdown-item>
-                    <el-dropdown-item command="mrview">MR View</el-dropdown-item>
-                    <el-dropdown-item command="fibernavigator">Fiber Navigator</el-dropdown-item>
-                </el-dropdown-menu>
-            </el-dropdown>
-            -->
+            <viewerselect @select="view" size="small"></viewerselect>
         </div>
     </div>
 </div>
