@@ -51,7 +51,7 @@ export default new Router({
         { path: '/app/:id/submit', component: appsubmit},
         { path: '/app/:id/edit', component: appedit},
         { path: '/submit', component: submit},
-        { path: '/view/:instanceid/:taskid/:type', component: view},
+        { path: '/view/:instanceid/:taskid/:type/:subdir?', component: view, props: true},
 
         { path: '/projects', component: projects },
         { path: '/project/:id', component: project },

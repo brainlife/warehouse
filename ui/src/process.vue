@@ -53,7 +53,7 @@
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
-                            <statusicon :status="dataset.task.status"/> Organizing
+                            <statusicon :status="dataset.task.status"/> Processing
                         </small>
 
                         <span v-if="dataset.dataset_id">
@@ -140,7 +140,8 @@
 
                                 <div style="float: right;">
                                     <div v-if="_output_tasks[task._id].status == 'finished'">
-                                        <viewerselect @select="view(_output_tasks[task._id]._id, $event)" size="small" style="margin-right: 5px;"></viewerselect>
+                                        <viewerselect @select="view(_output_tasks[task._id]._id, $event, output_id)" :datatype="datatypes[dataset.datatype].name" 
+                                            size="small" style="margin-right: 5px;"></viewerselect>
                                         <el-button size="small" type="primary"
                                             v-if="archiving != dataset._id && !dataset.dataset_id" @click="archiving = dataset._id">Archive</el-button>
                                         <el-button size="small" 
@@ -159,8 +160,10 @@
                             </el-col>
                             </el-row>
 
+                            <!-- need to move to viewerselect..
                             <datatypeui v-if="_output_tasks[task._id].status == 'finished'" 
                                 :datatype="datatypes[dataset.datatype].name" :task="_output_tasks[task._id]" :subdir="output_id"></datatypeui>
+                            -->
                         </div>
                     </el-collapse-item>
                 </task>
@@ -291,7 +294,6 @@ import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
-import datatypeui from '@/components/datatypeui'
 import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -306,7 +308,7 @@ export default {
         filebrowser, pageheader, statustag,
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
-        viewerselect, datasetselecter, datatypeui,
+        viewerselect, datasetselecter,
         datatypetag,
     },
 
@@ -508,9 +510,9 @@ export default {
             });
         },
 
-        view: function(taskid, event) {
-            var url = taskid+'/'+event;
-            window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
+        view: function(taskid, view, subdir) {
+            view = view.replace('/', '.');
+            window.open("#/view/"+this.instance._id+"/"+taskid+'/'+view+'/'+subdir, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
 
         load: function() {

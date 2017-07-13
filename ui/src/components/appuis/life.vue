@@ -1,16 +1,17 @@
 <template>
 <div class="life">
-    <table class="im_a_table">
+    <el-card v-if="stats">
+        <p>
+        Fibers with non-0 evidence <b>{{stats.non0_tracks.toLocaleString()}}</b> out of <b>{{stats.input_tracks.toLocaleString()}}</b> total tracks
+        </p>
+        <el-progress :text-inside="true" :stroke-width="18" :percentage="(stats.non0_tracks/stats.input_tracks)*100" status="success"></el-progress>
+    </el-card>
+    <table>
         <tr>
             <td><div ref="plot"></div></td>
             <td><div ref="w"></div></td>
         </tr>
     </table>
-    <el-card v-if="stats">
-        <span style="">Fibers with non-0 evidence <b>{{stats.non0_tracks.toLocaleString()}}</b></span>
-        <span style="float: right;">out of <b>{{stats.input_tracks.toLocaleString()}}</b> total tracks</span>
-        <el-progress :text-inside="true" :stroke-width="18" :percentage="(stats.non0_tracks/stats.input_tracks)*100" status="success"></el-progress>
-    </el-card>
 </div>
 </template>
 
@@ -58,7 +59,7 @@ export default {
                 //marker: { color: 'blue', }
             }], {
                 //title: rmse.title,
-                height: 200,
+                //height: 200,
                 xaxis: {title: rmse.x.label},
                 yaxis: {title: rmse.y.label},
                 margin: {t: 0, b: 35, r: 0},
@@ -73,7 +74,7 @@ export default {
                 //marker: { color: 'blue', }
             }], {
                 //title: w.title,
-                height: 200,
+                //height: 200,
                 xaxis: {title: 'beta weight' /*w.x.label*/}, //TODO - life.m is currently wrong
                 yaxis: {title: w.y.label},
                 margin: {t: 0, b: 35, r: 0},
@@ -98,10 +99,13 @@ export default {
 </script>
 
 <style scopes>
-.im_a_table {
+table {
     width:100%;
 }
-.im_a_table td {
+table td {
     width:50%;
+}
+.life {
+    margin: 10px;
 }
 </style>

@@ -94,7 +94,7 @@
                                 <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task" :subdir="props.row.id"></file>
                             </el-col>
                             <el-col :span="4">
-                                <viewerselect @select="view" size="small"></viewerselect>
+                                <viewerselect v-if="output_task.status == 'finished'" @select="view(output_task._id, $event, 'output')" size="small" :datatype="props.row.datatype.name"></viewerselect>
                             </el-col>
                         </el-row>
                         </template>
@@ -184,7 +184,6 @@ import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
-import datatypeui from '@/components/datatypeui'
 import statustag from '@/components/statustag'
 import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
@@ -201,7 +200,7 @@ export default {
         sidemenu, contact, task, 
         message, file, tags, 
         metadata, filebrowser, pageheader, 
-        appavatar, mute, viewerselect, datatypeui,
+        appavatar, mute, viewerselect, 
         statustag, app, datatypetag, 
      },
 
@@ -331,8 +330,6 @@ export default {
                     console.error("unknown exchange", event.dinfo.exchange);
                 }
             }
-
- 
         }).catch((err)=>{
             console.error(err);
         });
@@ -383,8 +380,9 @@ export default {
                 this.$router.push('/processes');
             });
         },
-        view: function(type) {
-            window.open("#/view/"+this.instance._id+"/"+this.output_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
+        view: function(taskid, view, subdir) {
+            view = view.replace('/', '.');
+            window.open("#/view/"+this.instance._id+"/"+taskid+'/'+view+'/'+subdir, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
     },
 }

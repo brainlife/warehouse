@@ -281,7 +281,7 @@ export default {
             document.location = '/api/warehouse/dataset/bibtex/'+this.dataset._id;
         },
         view: function(taskid, event) {
-            alert('todo');
+            alert('todo.. please go to datasets / select and view');
             //var url = taskid+'/'+event;
             //window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
