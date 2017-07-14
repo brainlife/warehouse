@@ -293,6 +293,7 @@ export default {
                     name: this.app.name,
                     service: this.app.github,
                     config: lib.generate_config(this.app, download_task._id, this.form.config),
+                    retry: this.app.retry,
                     deps: [ download_task._id ],
                 })
             }).then(res=>{

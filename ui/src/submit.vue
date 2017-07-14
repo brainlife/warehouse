@@ -317,12 +317,12 @@ export default {
                     service: this.app.github, //TODO what if it's docker?
                     config: Object.assign(task.config, lib.generate_config(this.app, task.download_task._id)),
                     deps: [ task.download_task._id ],
+                    retry: this.app.retry,
                 }).then(res=>{
-                    //Vue.set(task, 'main_task',  res.body.task);
                     task.main_task = res.body.task;
                     console.log("submitted main task", task);
                     next_task();
-                });//.catch(next_task);
+                });
             }, cb);
         },
 

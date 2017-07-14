@@ -98,7 +98,7 @@ export default {
 }
 </script>
 
-<style scopes>
+<style scoped>
 table {
     width:100%;
 }

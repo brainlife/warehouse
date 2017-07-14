@@ -863,6 +863,7 @@ export default {
                         service: this.newtask_app.github, //TODO what if it's docker?
                         config: newtask.config,
                         deps: newtask.deps,
+                        retry: this.newtask_app.retry,
                     }).then(res=>{
                         var task = res.body.task;
                         console.log("submitted task", task);

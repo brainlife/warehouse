@@ -35,7 +35,7 @@
         </tr>
         -->
         <tr>
-            <th>Dataset ID</th>
+            <th width="100px">Dataset ID</th>
             <td>
                 <div v-if="!instance.config.dataset_ids">
                     <!--<p class="text-muted">Not archived yet</p>-->
@@ -94,7 +94,7 @@
                                 <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task" :subdir="props.row.id"></file>
                             </el-col>
                             <el-col :span="4">
-                                <viewerselect v-if="output_task.status == 'finished'" @select="view(output_task._id, $event, 'output')" size="small" :datatype="props.row.datatype.name"></viewerselect>
+                                <viewerselect v-if="output_task.status == 'finished'" @select="view(output_task._id, $event, 'output')" :datatype="props.row.datatype.name"></viewerselect>
                             </el-col>
                         </el-row>
                         </template>
