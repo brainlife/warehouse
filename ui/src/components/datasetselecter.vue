@@ -9,7 +9,7 @@
                 <ul style="margin: 0px; padding: 0px; max-height: 200px; overflow: auto;">
                     <li v-for="(select, did) in selected" :key="did" style="margin-bottom: 2px;">
                         <b>{{select.meta.subject}}</b>
-                        <datatypetag :datatype="datatypes[select.datatype]" :tags="select.datatype_tags"></datatypetag>
+                        <datatypetag :datatype="datatypes[select.datatype]" :tags="select.datatype_tags" v-if="datatypes"></datatypetag>
                     </li>
                 </ul>
             </el-tab-pane>
@@ -79,7 +79,7 @@ export default {
             limit: 50,
 
             //caches
-            datatypes: {}, 
+            datatypes: null, 
             datatypes_s2: [], 
             subjects: null,
             alldatasets: {}, //list of all datasets ever loaded
@@ -277,7 +277,7 @@ export default {
          }
     },
 
-    mounted: function() {
+    created: function() {
         this.visible_ = this.visible; //initial value (always false?)
 
         //load datatypes
@@ -287,6 +287,7 @@ export default {
             }),
             sort: 'name'
         }}).then(res=>{
+            this.datatypes = {};
             res.body.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
                 this.datatypes_s2.push({ id: datatype._id, text: datatype.name });
