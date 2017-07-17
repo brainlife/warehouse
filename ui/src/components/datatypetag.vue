@@ -38,13 +38,13 @@ export default {
 }
 .dot {
     display: inline-block;
-    padding: 4px;
+    padding: 0.2em 0.3em;
     margin: 0px;
     color: white;
 }
 .tags {
     display: inline-block;
-    padding: 4px;
+    padding: 0.2em 0.3em;
     margin: 0px;
     background-color: #eee;
     color: #666;
