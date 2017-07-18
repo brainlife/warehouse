@@ -3,8 +3,7 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="page-content" v-if="dataset">
-
-        <div class="margin20">
+        <div style="padding: 20px 20px 10px 20px; background-color: #666; color: white;">
             <div style="float: right">
                 <el-button-group>
                     <el-button @click="remove()" v-if="dataset._canedit" icon="delete">Remove</el-button>
@@ -14,53 +13,22 @@
                 <viewerselect @select="view"></viewerselect>
             </div>
 
-            <h1><icon name="cube" scale="2"></icon> Dataset <small class="text-muted">{{dataset._id}}</small></h1>
+            <!--<h1><icon name="cube" scale="2"></icon> Dataset <small class="text-muted">{{dataset._id}}</small></h1>-->
+            <h1>
+                <datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+            </h1>
+
             <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         </div>
 
         <table class="info">
         <tr>
-            <th width="180px">Create Date</th>
-            <td>{{dataset.create_date|date}}</td>
-        </tr>
-        <tr>
             <th>Description</th>
             <td>{{dataset.desc}}</td>
         </tr>
         <tr>
-            <th>Owner</th>
-            <td><contact :id="dataset.user_id"></contact></td>
-        </tr>
-        <tr>
-            <th>Storage</th>
-            <td>
-                <div v-if="dataset.storage">
-                    This dataset is currently stored in <b>{{dataset.storage}}</b>
-                </div>
-                <el-alert v-else title="Archiving.." type="warning"> </el-alert>
-            </td>
-        </tr>
-        <tr>
-            <th>Citation</th>
-            <td>
-                <p>
-                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i>
-                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
-                </p> 
-            </td>
-        </tr>
-        <tr>
-            <th>User Tags</th>
-            <td>
-                <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
-                <tags :tags="dataset.tags"></tags>
-            </td>
-        </tr>
-        <tr>
-            <th>Data Type</th>
-            <td>
-                <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
-            </td>
+            <th width="180px">Create Date</th>
+            <td>{{dataset.create_date|date}}</td>
         </tr>
         <tr>
             <th>Metadata</th>
@@ -75,6 +43,34 @@
                 <el-card>
                     <project :project="dataset.project"></project>
                 </el-card>
+            </td>
+        </tr>
+        <!--
+        <tr>
+            <th>Owner</th>
+            <td><contact :id="dataset.user_id"></contact></td>
+        </tr>
+        -->
+        <tr>
+            <th>Storage</th>
+            <td>
+                <div v-if="dataset.storage">
+                    This dataset is currently stored in <b>{{dataset.storage}}</b>
+                </div>
+                <el-alert v-else title="Archiving.." type="warning"> </el-alert>
+            </td>
+        </tr>
+        <tr>
+            <th>User Tags</th>
+            <td>
+                <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
+                <tags :tags="dataset.tags"></tags>
+            </td>
+        </tr>
+        <tr>
+            <th>Data Type</th>
+            <td>
+                <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
             </td>
         </tr>
         <tr>
@@ -149,6 +145,15 @@
                 </div>
             </td>
         </tr>
+        <tr>
+            <th>Citation</th>
+            <td>
+                <p>
+                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i>
+                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
+                </p> 
+            </td>
+        </tr>
         </table>
 
         <br>
@@ -176,6 +181,7 @@ import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import viewerselect from '@/components/viewerselect'
+import datatypetag from '@/components/datatypetag'
 
 const lib = require('./lib');
 
@@ -184,7 +190,7 @@ export default {
         sidemenu, contact, project, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
-        viewerselect,
+        viewerselect, datatypetag,
      },
     data () {
         return {

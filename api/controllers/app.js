@@ -114,6 +114,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiParam {String[]} [tags]  List of tags to classify this app
  * @apiParam {String} [avatar]  URL for application avatar
  * @apiParam {String} [github]  github id/name for this app
+ * @apiParam {Number} [retry]   Number of time this app should be retried (0 by default)
  * @apiParam {Object[]} [inputs]    Input datatypes. Array of {id, datatype, datatype_tags[]}
  * @apiParam {Object[]} [outputs]   Output datatypes. same as input datatype
  *

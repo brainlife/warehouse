@@ -1,17 +1,21 @@
 <template>
 <div class="life">
-    <el-card v-if="stats">
+    <div v-if="stats">
         <p>
-        Fibers with non-0 evidence <b>{{stats.non0_tracks.toLocaleString()}}</b> out of <b>{{stats.input_tracks.toLocaleString()}}</b> total tracks
+            Fibers with non-0 evidence <b>{{stats.non0_tracks.toLocaleString()}}</b> 
+            out of <b>{{stats.input_tracks.toLocaleString()}}</b> total tracks
         </p>
         <el-progress :text-inside="true" :stroke-width="18" :percentage="(stats.non0_tracks/stats.input_tracks)*100" status="success"></el-progress>
-    </el-card>
-    <table>
-        <tr>
-            <td><div ref="plot"></div></td>
-            <td><div ref="w"></div></td>
-        </tr>
-    </table>
+    </div>
+    <br>
+    <el-row :gutter="10">
+        <el-col :span="12">
+            <div ref="plot" style="width: 100%;"/>
+        </el-col>
+        <el-col :span="12">
+            <div ref="w" style="width: 100%;"/>
+        </el-col>
+    </el-row>
 </div>
 </template>
 
@@ -27,84 +31,55 @@ export default {
     props: ['task', 'subdir'],
     data() {
         return {
-            testurl: null,
-            plot_life_rmse_title: null,
-            plot_life_w_title: null,
             stats: null,
         }
     },
     mounted() {
         var basepath = this.task.instance_id+'/'+this.task._id;
         if(this.subdir) basepath +='/'+this.subdir;
-        this.testurl = Vue.config.wf_api+'/resource/download'+
+        this.url = Vue.config.wf_api+'/resource/download'+
             '?r='+this.task.resource_id+
             '&p='+encodeURIComponent(basepath+'/life_results.json')+
             '&at='+Vue.config.jwt;
-        
-        this.$http.get(this.testurl)
-        .then(res => {
+        this.$http.get(this.url)
+        .then(res=>{
             var rmse = res.data.out.plot[0];
             var w = res.data.out.plot[1];
             this.stats = res.data.out.stats;
             
-            // don't think we need these for the vue implementation, right?
-            this.plot_life_rmse_title = rmse.title;
-            this.plot_life_w_title = w.title;
-            
             Plotly.plot(this.$refs.plot, [{
                 x: rmse.x.vals,
                 y: rmse.y.vals,
-                //y: rmse, 
-                //type: 'histogram', 
-                //marker: { color: 'blue', }
             }], {
-                //title: rmse.title,
-                //height: 200,
                 xaxis: {title: rmse.x.label},
                 yaxis: {title: rmse.y.label},
-                margin: {t: 0, b: 35, r: 0},
+                //margin: {t: 0, b: 35, r: 0},
             });
             
-            // (originally plot_life_w)
             Plotly.plot(this.$refs.w, [{
                 x: w.x.vals,
                 y: w.y.vals,
-                //y: rmse, 
-                //type: 'histogram', 
-                //marker: { color: 'blue', }
             }], {
-                //title: w.title,
-                //height: 200,
                 xaxis: {title: 'beta weight' /*w.x.label*/}, //TODO - life.m is currently wrong
                 yaxis: {title: w.y.label},
-                margin: {t: 0, b: 35, r: 0},
+                //margin: {t: 0, b: 35, r: 0},
             });
 
-            /*
-            Plotly.newPlot(this.$refs.stat, [
-              {
-                x: ['giraffes', 'orangutans', 'monkeys'],
-                y: [20, 14, 23],
-                type: 'bar',
-              }
-            ], {
-                height: 100,
-                orientation: 'h',
-                margin: {t: 0, b: 35, r: 0},
-            });
-            */
+            this.resize();
+            $(window).on('resize', this.resize);
         });
+    },
+
+    methods: {
+        resize: function() {
+            Plotly.relayout(this.$refs.plot, {width: this.$refs.plot.clientWidth-30});
+            Plotly.relayout(this.$refs.w, {width: this.$refs.w.clientWidth-30});
+        }    
     }
 }
 </script>
 
 <style scoped>
-table {
-    width:100%;
-}
-table td {
-    width:50%;
-}
 .life {
     margin: 10px;
 }
