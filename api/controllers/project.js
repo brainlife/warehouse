@@ -138,8 +138,8 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 /**
  * @apiGroup Project
  * @api {delete} /project/:id
- *                              Remove registered project (only by the user registered it)
- * @apiDescription              Physically remove a project registered on DB.
+ *                              Hide project
+ * @apiDescription              Logically remove project by setting "removed" to true
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -152,7 +152,14 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
         if(!project) return next(new Error("can't find the project with id:"+req.params.id));
         //only superadmin or admin of this test spec can update
         if(canedit(req.user, project)) {
+            /*
             project.remove().then(function() {
+                res.json({status: "ok"});
+            }); 
+            */
+            project.removed = true;
+            project.save(function(err) {
+                if(err) return next(err);
                 res.json({status: "ok"});
             }); 
         } else return res.status(401).end();

@@ -53,6 +53,8 @@ var projectSchema = mongoose.Schema({
     access: {type: String, default: "private" },
     
     create_date: { type: Date, default: Date.now },
+
+    removed: { type: Boolean, default: false },
 });
 exports.Projects = mongoose.model('Projects', projectSchema);
 
@@ -93,6 +95,14 @@ var datasetSchema = mongoose.Schema({
     },
 
     create_date: { type: Date, default: Date.now },
+
+    //validate_date: { type: Date }, //date when the content of this dataset was validated using specified dataset
+    status: String, //(null), stored, invalid, archived, removed
+    status_msg: String,
+
+    archive_date: { type: Date }, //date when the content of this dataset was archived to tape
+    archive_path: String, //htar path
+    archive_file: String, //file name that this dataset is stored as
 
     removed: { type: Boolean, default: false} ,
 })
@@ -171,6 +181,8 @@ var appSchema = mongoose.Schema({
     github: String, //if the app is stored in github
     github_branch: String, //default to "master"
 
+    retry: Number, //not set, or 0 means no retry
+
     dockerhub: String, //if the app is stored in dockerhub
     
     //configuration template
@@ -228,11 +240,17 @@ var ruleSchema = mongoose.Schema({
     user_id: {type: String, index: true}, 
     
     //project to look for missing datasets and to archive generated data
-    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    input_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
-    //app to submit (and scalar config)
+    //app to submit
     app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+    //scalar configs (input configs are used to detect new datasets)
     config: mongoose.Schema.Types.Mixed, 
+
+    //project to store generated dataset
+    output_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    //any tags to set for each output id (object with key(output id)=>array(tags))
+    output_tags: mongoose.Schema.Types.Mixed,
 
     //when this rule was last handled - used to find *new* datasets 
     process_date: { type: Date },
@@ -241,6 +259,5 @@ var ruleSchema = mongoose.Schema({
     create_date: { type: Date, default: Date.now },
 });
 exports.Rules = mongoose.model('Rules', ruleSchema);
-
 
 
