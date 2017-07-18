@@ -5,6 +5,7 @@
     <afq v-else-if="type == 'neuro.afq_output'" :task="tasks[0]" :subdir="subdir"></afq>
     <life v-else-if="type == 'neuro.life_output'" :task="tasks[0]" :subdir="subdir"></life>
     <evaluator v-else-if="type == 'neuro.conneval_output'" :task="tasks[0]" :subdir="subdir"></evaluator>
+    <images v-else-if="type == 'generic.images'" :task="tasks[0]" :subdir="subdir"></images>
 
     <!--assume novnc staging..-->
     {{status}}
@@ -21,13 +22,14 @@ import freesurfer from '@/components/appuis/freesurfer'
 import afq from '@/components/appuis/afq'
 import life from '@/components/appuis/life'
 import evaluator from '@/components/appuis/evaluator'
+import images from '@/components/appuis/images'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
     props: [ 'instanceid', 'taskid', 'type', 'subdir' ],
     components: { 
-        dtiinit, freesurfer, afq, life, evaluator,
+        dtiinit, freesurfer, afq, life, evaluator, images
     },
 
     data () {
@@ -45,12 +47,7 @@ export default {
 
     mounted: function() {
         //TODO - need a better way to know which is which?
-        switch(this.type) {
-        case "neuro.dtiinit_output":
-        case "neuro.freesurfer":
-        case "neuro.afq_output":
-        case "neuro.life_output":
-        case "neuro.conneval_output":
+        if(this.type.indexOf("neuro.") == 0 || this.type.indexOf("generic.") == 0) {
             //load task that contains the data
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({ _id: this.taskid, })
@@ -58,8 +55,7 @@ export default {
             .then(res=>{
                 this.tasks = res.body.tasks;
             });
-            break;
-        default:
+        } else {
             //assume it's abcd-novnc app
             this.open_novnc();
         }

@@ -1,5 +1,5 @@
 <template>
-<div class="dtiinit">
+<div>
     <h3>T1PDD (Fiber Directions)</h3>
     <a :href="testurl" target="_black">
         <img v-if="testurl" :src="testurl" width="50%"/>
@@ -27,8 +27,3 @@ export default {
     }
 }
 </script>
-
-<style scopes>
-.dtiinit {
-}
-</style>
