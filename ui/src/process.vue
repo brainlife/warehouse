@@ -31,7 +31,6 @@
                         <small v-if="dataset.task.status != 'finished'">
                             <statusicon :status="dataset.task.status"></statusicon> Staging
                         </small>
-                        <!--<icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>-->
                     </mute>
                 </div>
 
@@ -53,7 +52,7 @@
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
-                            <statusicon :status="dataset.task.status"/> Processing
+                            <statustag :status="dataset.task.status"/>
                         </small>
 
                         <span v-if="dataset.dataset_id">

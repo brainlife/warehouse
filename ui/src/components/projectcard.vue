@@ -1,8 +1,11 @@
 <template>
 <div @click="click()" class="projectcard">
-    <el-card>
+    <el-card :class="{'project-removed': project.removed}">
         <el-row>
-            <el-col :span="6" class="project-name">{{project.name}}</el-col>
+            <el-col :span="6" class="project-name">
+                {{project.name}} 
+                <el-tag v-if="project.removed">Removed</el-tag>
+            </el-col>
             <el-col :span="10">{{project.desc||'no desc..'}}</el-col>
             <el-col :span="8">
                 <el-button 
@@ -42,5 +45,9 @@ cursor: pointer;
 .project-name {
 font-size: 120%;
 color: #999;
+}
+.project-removed {
+opacity: 0.9;
+background-color: #ddd;
 }
 </style>

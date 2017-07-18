@@ -58,9 +58,15 @@ export default {
 
     mounted: function() {
         this.$http.get('project', {params: {
-            find: JSON.stringify({$or: [
-                { members: Vue.config.user.sub}, 
-                { access: "public" },
+            find: JSON.stringify({$and: [
+                {$or: [
+                    { members: Vue.config.user.sub}, 
+                    { access: "public" },
+                ]},
+                {$or: [
+                    { removed: false },
+                    { removed: {$exists: false }},
+                ]}
             ]})
         }})
         .then(res=>{
@@ -68,7 +74,6 @@ export default {
             res.body.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
-            //console.dir(res.body.projects);
         }).catch(err=>{
             console.error(err);
         });
