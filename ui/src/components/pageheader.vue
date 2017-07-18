@@ -74,15 +74,15 @@ svg.cloud {
 }
 
 .title {
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     position: fixed;
-    font-size: 18pt;
+    font-size: 20pt;
     position: relative;
-    top: 11px;
+    top: 6px;
+    left: 7px;
     margin: 0px;
     margin-left: 5px;
-    left: 8px;
-    font-weight: 700;
-    text-shadow: 1px 1px 1px #888;
+    font-weight: bold;
 }
 .menu {
     position: fixed;

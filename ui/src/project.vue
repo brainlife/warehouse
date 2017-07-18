@@ -9,7 +9,7 @@
         </el-button-group>
         <h1><span class="text-muted"><icon name="shield" scale="1.5"/> Project |</span> {{project.name}}</h1>
     </div>
-    <div class="page-content" v-if="project" style="margin-top: 80px">
+    <div class="page-content" v-if="project" style="margin-top: 70px">
         <table class="info">
         <tr>
             <th width="180px;">Description</th>

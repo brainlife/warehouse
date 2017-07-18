@@ -54,7 +54,10 @@
                     </el-tab-pane>
                 </el-tabs>
             </el-form-item>
-
+            <el-form-item label="Max Retry">
+                <el-input type="text" v-model="app.retry" placeholder="0"/>
+                <p class="text-muted">If a task fails, it will rerun up to this count (0 means no retry)</p>
+            </el-form-item>
             <el-form-item label="Configuration">
                 <!--
                 https://github.com/dhenkes/vue2-ace/issues/5

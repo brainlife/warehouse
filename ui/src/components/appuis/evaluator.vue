@@ -1,6 +1,7 @@
 <template>
 <div class="evaluator">
-    <div ref="pie"></div>
+    <!-- TODO - show rmse / nnz?-->
+    <div ref="plot" style="height: 100%;"></div>
 </div>
 </template>
 
@@ -19,43 +20,93 @@ export default {
     props: ['task', 'subdir'],
     data() {
         return {
-            testurl: null,
+            rmse: null,
+            nnz: null,
         }
     },
     created() {
         //fetch data (construct /resource/download and do $http.get() to load any data
-        /*
         var basepath = this.task.instance_id+'/'+this.task._id;
         if(this.subdir) basepath +='/'+this.subdir;
-        this.testurl = Vue.config.wf_api+'/resource/download'+
+        var url = Vue.config.wf_api+'/resource/download'+
             '?r='+this.task.resource_id+
-            '&p='+encodeURIComponent(basepath+'/output.json')+
+            '&p='+encodeURIComponent(basepath+'/out.json')+
             '&at='+Vue.config.jwt;
-        */
+        this.$http.get(url).then(res=>{
+            //console.dir(res.body);
+            this.nnz = res.body.nnz;
+            this.rmse = res.body.rmse;
+            var ref = res.body.reference;
+    
+            //organize out.json into dataformat that plotly likes
+            var data = [];
+            var gid = 0;
+            ["HCP3T", "STN", "HCP7T"].forEach(group=>{
+                var subgid = 0;
+                ["Subj1", "Subj2", "Subj3", "Subj4"].forEach(subgroup=>{
+                    data.push({
+                        mode: 'markers',
+                        name: group+' - '+subgroup,
+                        x: ref.rmse[gid].mean[subgid],
+                        y: ref.nnz[gid].mean[subgid],
+                        error_x: {
+                            array: ref.rmse[gid].std[subgid],
+                            thickness: 0.5,
+                            width: 1,
+                        },
+                        error_y: {
+                            array: ref.nnz[gid].std[subgid],
+                            thickness: 0.5,
+                            width: 1,
+                        },
+                        marker: {
+                            sizemode: 'area',
+                            size: 10, 
+                            opacity: 0.25,
+                            color: 'hsl('+gid*60+', '+(100-(subgid*25+25))+'%, 30%)',
+                        }
+                    });
+                    subgid++;
+                });
+                gid++;
+            });
+
+            data.push({
+                mode: 'markers',
+                name: 'Your Data',
+                x: [this.rmse],
+                y: [this.nnz],
+                marker: {
+                    sizemode: 'area',
+                    size: 20, 
+                    opacity: 0.9,
+                    color: '#008cba',
+                }
+            });
+
+            this.plot(data);
+        });
     },
+
     mounted() {
-        /*
-        Plotly.plot(this.$refs.pie,
-        //pass data to draw..
-        [
-            {
-                values: [19, 26, 55],
-                labels: ['Residential', 'Non-Residential', 'Utility'],
-                type: 'pie'
-            }
-        ], 
-        //options for plot.ly
-        {
-            autosize: true,
-            margin: { t: 0, l: 0, b: 0, r: 0 }
-        }
-        );
-        */
+    },
+
+    methods: {
+        plot: function(data) {
+            Plotly.plot(this.$refs.plot, data, {
+                xaxis: {title: "Connectome Error (r.m.s.e.)"},
+                yaxis: {title: "Fascicles Number"},
+                margin: {t: 20, l: 50, b: 35}, //, l: 30, r:10, b:30},
+                background: '#f00',
+            });
+            this.resize();
+            $(window).on('resize', this.resize);
+        },
+
+        resize: function() {
+            Plotly.relayout(this.$refs.plot, {width: this.$refs.plot.clientWidth, height: this.$refs.plot.clientHeight});
+        }    
     },
 }
 </script>
 
-<style scopes>
-.evaluator{
-}
-</style>

@@ -20,7 +20,7 @@
     <div class="ui pusher" :class="{rightopen: selected_count}">
         <projectmenu :active="project_id"></projectmenu>
         <div class="fixed-top">
-            <el-row class="header">
+            <el-row class="header" style="padding-right: 16px;">
                 <el-col :span="4"><h4>Subject</h4></el-col>
                 <el-col :span="20">
                     <el-row>
@@ -32,61 +32,72 @@
                     </el-row> 
                 </el-col>
             </el-row>
-
         </div><!--fixed-top-->
 
-        <!--start of dataset list-->
         <div class="page-content">
+            <div v-if="loading" style="margin: 30px;">
+                <h4>Loading ...</h4>
+            </div>
 
-        <div v-if="!datasets_grouped" style="margin: 30px;">
-            <h2>Loading ...</h2>
-        </div>
+            <!--start of dataset list-->
+            <div class="list" v-if="!loading">
+                <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
+                    <el-col :span="4">
+                        <strong>{{subject}}</strong>
+                    </el-col> 
+                    <el-col :span="20">
+                        <div 
+                        v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)"
+                        :class="{dataset: true, clickable: true, selected: dataset.checked}">
+                            <el-row>
+                                <el-col :span="1">
+                                    <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
+                                        <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
+                                    </div>
+                                </el-col>
+                                <el-col :span="6" :title="datatypes[dataset.datatype].desc">
+                                    <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+                                </el-col>
+                                <el-col :span="7" class="truncate">
+                                    {{dataset.desc||'&nbsp;'}}
+                                </el-col>
+                                <el-col :span="6">
+                                    <time>{{dataset.create_date | date}}</time>
+                                </el-col>
+                                <el-col :span="4" style="border-right: 1px solid #red;">
+                                    <tags :tags="dataset.tags"></tags> &nbsp;
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </el-col> 
+                </el-row>
+            </div><!--dataset list-->
 
-        <div class="list" v-if="datasets_grouped">
-            <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
-                <el-col :span="4">
-                    <strong>{{subject}}</strong>
-                </el-col> 
-                <el-col :span="20">
-                    <div 
-                    v-for="dataset in datasets" :key="dataset._id"
-                    @click="go('/dataset/'+dataset._id)"
-                    :class="{dataset: true, clickable: true, selected: dataset.checked}">
-                        <el-row>
-                            <el-col :span="1">
-                                <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
-                                    <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
-                                </div>
-                            </el-col>
-                            <el-col :span="6" :title="datatypes[dataset.datatype].desc">
-                                <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                            </el-col>
-                            <el-col :span="7" class="truncate">
-                                {{dataset.desc||'&nbsp;'}}
-                            </el-col>
-                            <el-col :span="6">
-                                <time>{{dataset.create_date | date}}</time>
-                                &nbsp;
-                            </el-col>
-                            <el-col :span="4">
-                                <tags :tags="dataset.tags"></tags> &nbsp;
-                            </el-col>
-                        </el-row>
-                    </div>
-                </el-col> 
-            </el-row>
-        </div><!--list-->
         </div><!--page-content-->
+
+        <!--dataset detail view-->
+        <!--
+        <div class="dataset-view" :class="{'dataset-view-open':dataset_open}">
+            <div class="dataset-view-header" style="position: fixed;">
+                <el-button size="small" @click="download(dataset_open)" type="primary">Download</el-button>
+                <el-button size="small" @click="dataset_open = null" icon="close">Close</el-button>
+                
+            </div>
+            <div class="dataset-view-detail">
+                <datasetdetail :dataset="dataset_open"></datasetdetail>
+            </div>
+        </div>
+        -->
     </div><!--pusher-->
 
-    <div class="selected-view" v-if="selected_count && datatypes">
+    <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
         <h4 class="header">
             <icon name="check-square"></icon> {{selected_count}} Selected 
         </h4>
         <div class="select-group">
             <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
                 <datatypetag :datatype="datatypes[did]"/>
-                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
+                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+did)">
                     <div>
                         <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
                             <icon name="close"></icon>
@@ -106,22 +117,10 @@
                 <el-button size="small" type="primary" @click="download()">Download</el-button>
                 <el-button size="small" type="primary" @click="process()">Process</el-button>
             </el-button-group>
-            <viewerselect @select="view"></viewerselect>
-            <!--
-            <el-dropdown @command="view">
-                <el-button size="small" type="primary">
-                    View<i class="el-icon-caret-bottom el-icon--right"></i>
-                </el-button>
-                <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item command="fslview">FSL View</el-dropdown-item>
-                    <el-dropdown-item command="freeview">Free View</el-dropdown-item>
-                    <el-dropdown-item command="mrview">MR View</el-dropdown-item>
-                    <el-dropdown-item command="fibernavigator">Fiber Navigator</el-dropdown-item>
-                </el-dropdown-menu>
-            </el-dropdown>
-            -->
+            <viewerselect @select="view" size="small"></viewerselect>
         </div>
     </div>
+
 </div>
 </template>
 
@@ -144,7 +143,7 @@ export default {
     components: { 
         sidemenu, tags, metadata, 
         pageheader, projectmenu, viewerselect,
-        datatypetag
+        datatypetag, 
     },
     data () {
         return {
@@ -153,6 +152,8 @@ export default {
 
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
+
+            //dataset_open: null, //currently "opened" dataset
 
             query: localStorage.getItem('datasets.query'),
 
@@ -196,7 +197,7 @@ export default {
         }
     },
 
-    mounted() {
+    created() {
         this.$http.get('project')
         .then(res=>{
             this.projects = {};
@@ -205,6 +206,7 @@ export default {
             });
             this.check_project_id();
 
+            //load all datatypes
             return this.$http.get('datatype')
         })
         .then(res=>{
@@ -216,6 +218,9 @@ export default {
         }).catch(err=>{
             console.error(err);
         });
+    },
+
+    mounted() {
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
 		window.addEventListener("scroll", this.check_scroll, true);
     },
@@ -271,7 +276,11 @@ export default {
 
         load: function() {
             if(this.loading) return;
-            if(this.datasets.length === this.datasets_count) return;
+            if(this.datasets.length === this.datasets_count) {
+                this.loading = false;
+                return;
+            }
+            console.log("loading dataset");
             this.loading = true;
 
 			var find = {
@@ -310,6 +319,11 @@ export default {
         go: function(path) {
             this.$router.push(path);
         },
+        /*
+        open: function(dataset) {
+            this.dataset_open = dataset;
+        },
+        */
         check: function(dataset) {
             if(this.selected[dataset._id]) {    
                 Vue.set(dataset, 'checked', false);
@@ -470,13 +484,15 @@ export default {
 
 <style scoped>
 .page-content {
-    margin-left: 200px;
-    transition: right 0.2s;
+    margin-left: 225px;
+    transition: right 0.2s, bottom 0.2s;
     top: 85px;
+    overflow-y: scroll;
 }
 .rightopen .page-content {
     right: 250px;
 }
+.rightopen .dataset-view,
 .rightopen .fixed-top {
     right: 250px;
 }
@@ -489,11 +505,15 @@ export default {
     background-color: #444;
     overflow-x: hidden;
     position: fixed;
-    right: 0px;
+    right: -250px;
     width: 250px;
     top: 50px;
     bottom: 0px;
     z-index: 2;
+    transition: right 0.2s;
+}
+.selected-view-open {
+    right: 0px;
 }
 .selected-view .header {
     color: white;
@@ -508,18 +528,44 @@ export default {
     box-sizing: border-box;
     box-shadow: inset 3px 0px 3px #999;
 }
-.header-content {
-    padding-top: 7px;
+.header-content,
+.fixed-top,
+.dataset-view {
     position: fixed;
+    left: 315px;
+}
+.dataset-view {
+    height: 300px;
+    bottom: -300px; 
+    transition: bottom 0.2s;
+    right: 0px;
+}
+.dataset-view-open {
+    bottom: 0px;
+}
+.dataset-view-header {
+    background-color: #ddd;
+    height: 30px;
+    width: 100%;
+    z-index: 2;
+}
+.dataset-view-detail {
+    margin-top: 30px;
+    overflow: auto;
+    height: 270px;
+}
+.header-content {
     top: 0px;
-    left: 300px;
+    padding-top: 7px;
     right: 200px;
     z-index: 2;
 }
+
 .header {
     padding: 10px 0px 3px 10px;
     text-transform: uppercase;
 }
+
 .list .group {
     padding: 5px 0px 5px 10px;
     background-color: white;
@@ -549,8 +595,6 @@ export default {
     background-color: #2693ff;
 }
 .fixed-top {
-    position: fixed;
-    left: 290px;
     right: 0px;
     z-index: 5;
     transition: right 0.2s;

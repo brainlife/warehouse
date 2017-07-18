@@ -35,7 +35,7 @@
         </tr>
         -->
         <tr>
-            <th>Dataset ID</th>
+            <th width="100px">Dataset ID</th>
             <td>
                 <div v-if="!instance.config.dataset_ids">
                     <!--<p class="text-muted">Not archived yet</p>-->
@@ -83,35 +83,6 @@
                 <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </td>
         </tr>
-        <tr v-if="instance.status == 'finished'">
-            <th>Outputs</th>
-            <td>
-                <el-table :data="app.outputs" style="width: 100%" default-expand-all>
-                    <el-table-column type="expand">
-                        <template scope="props">
-                        <el-row :gutter="20">
-                            <el-col :span="20">
-                                <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task" :subdir="props.row.id"></file>
-                            </el-col>
-                            <el-col :span="4">
-                                <viewerselect @select="view"></viewerselect>
-                            </el-col>
-                        </el-row>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="datatype.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description" width="250"></el-table-column>
-                    <el-table-column prop="datatype_tags" label="Tags"></el-table-column>
-                </el-table>
-            </td>
-        </tr>
-        <tr>
-            <th>Task Status</th>
-            <td>
-                <task v-for="task in tasks" key="task._id" :task="task"></task>
-            </td>
-        </tr>
         <tr>
             <th>Inputs</th>
             <td>
@@ -123,24 +94,57 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
-                    <el-table-column prop="_dataset.name" label="Name" width="180"></el-table-column>
-                    <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
+                    <el-table-column prop="_dataset" label="Data Type">
+                        <template scope="scope">
+                            <datatypetag :datatype="datatypes[scope.row._dataset.datatype]" :tags="scope.row._dataset.datatype_tags"></datatypetag>
+                        </template>
+                    </el-table-column>
                     <el-table-column prop="_dataset.meta" label="Metadata">
                         <template scope="scope">
                             <metadata v-if="scope.row._dataset" :metadata="scope.row._dataset.meta"></metadata>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="_dataset.datatype_tags" label="Data Type Tags">
-                        <template scope="scope">
-                            <tags v-if="scope.row._dataset" :tags="scope.row._dataset.datatype_tags"></tags>
-                        </template>
-                    </el-table-column>
+                    <el-table-column prop="_dataset.desc" label="Description"></el-table-column>
                     <el-table-column prop="_dataset.tags" label="User Tags">
                         <template scope="scope" v-if="scope.row._dataset">
-                            <tags v-if="scope.row._dataset" :tags="scope.row._dataset.tags"></tags>
+                            <tags v-if="scope.row.datatype" :tags="scope.row._dataset.tags"></tags>
                         </template>
                     </el-table-column>
                 </el-table>
+            </td>
+        </tr>
+        <tr v-if="instance.status == 'finished'">
+            <th>Outputs</th>
+            <td>
+                <el-table :data="app.outputs" style="width: 100%" default-expand-all>
+                    <el-table-column type="expand">
+                        <template scope="props">
+                            <el-row :gutter="20">
+                                <el-col :span="20">
+                                    <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task" :subdir="props.row.id"></file>
+                                </el-col>
+                                <el-col :span="4">
+                                    <viewerselect v-if="output_task.status == 'finished'" @select="view(output_task._id, $event, 'output')" :datatype="props.row.datatype.name"></viewerselect>
+                                </el-col>
+                            </el-row>
+                            <br>
+                            <filebrowser v-if="output_task.status == 'finished'" :task="output_task" :path="output_task.instance_id+'/'+output_task._id+'/'+props.row.id"/>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
+                    <el-table-column label="Datatype" width="180">
+                        <template scope="props">
+                            <datatypetag :datatype="props.row.datatype" :tags="props.row.datatype_tags"></datatypetag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
+                </el-table>
+            </td>
+        </tr>
+        <tr>
+            <th>Task Status</th>
+            <td>
+                <task v-for="task in tasks" key="task._id" :task="task"></task>
             </td>
         </tr>
         </table>
@@ -182,9 +186,9 @@ import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
-import datatypeui from '@/components/datatypeui'
 import statustag from '@/components/statustag'
 import app from '@/components/app'
+import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -198,8 +202,8 @@ export default {
         sidemenu, contact, task, 
         message, file, tags, 
         metadata, filebrowser, pageheader, 
-        appavatar, mute, viewerselect, datatypeui,
-        statustag, app,
+        appavatar, mute, viewerselect, 
+        statustag, app, datatypetag, 
      },
 
     data () {
@@ -207,6 +211,9 @@ export default {
             instance: null,
             tasks: null,
             app: null,
+
+            //cache
+            datatypes: null,
 
             config: Vue.config,
         }
@@ -258,6 +265,19 @@ export default {
         })
         .then(res=>{
             this.tasks = res.body.tasks;
+
+            //load datatypes
+            return this.$http.get('datatype', {params: {
+                find: JSON.stringify({
+                    //removed: false,
+                })
+            }});
+        })
+        .then(res=>{
+            this.datatypes = {};
+            res.body.datatypes.forEach(datatype=>{
+                this.datatypes[datatype._id] = datatype;
+            });
 
             //load app
             return this.$http.get('app', {params: {
@@ -312,8 +332,6 @@ export default {
                     console.error("unknown exchange", event.dinfo.exchange);
                 }
             }
-
- 
         }).catch((err)=>{
             console.error(err);
         });
@@ -364,8 +382,9 @@ export default {
                 this.$router.push('/processes');
             });
         },
-        view: function(type) {
-            window.open("#/view/"+this.instance._id+"/"+this.output_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
+        view: function(taskid, view, subdir) {
+            view = view.replace('/', '.');
+            window.open("#/view/"+this.instance._id+"/"+taskid+'/'+view+'/'+subdir, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
     },
 }

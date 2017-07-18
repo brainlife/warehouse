@@ -53,7 +53,7 @@
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
-                            <statusicon :status="dataset.task.status"/>Processing
+                            <statusicon :status="dataset.task.status"/> Processing
                         </small>
 
                         <span v-if="dataset.dataset_id">
@@ -122,12 +122,6 @@
 
                     <!--output-->
                     <el-collapse-item title="Output" name="output" slot="output" v-if="_output_tasks[task._id]">
-                        <!--
-                        <p v-if="_output_tasks[task._id].status != 'finished'" class="text-muted">
-                            <statusicon :status="_output_tasks[task._id].status"></statusicon> Organizing Output
-                        </p>
-                        -->
-
                         <div v-for="(dataset, output_id) in _output_tasks[task._id].config._prov.output_datasets" :key="output_id" 
                             style="min-height: 30px;" :class="{'text-muted': _output_tasks[task._id].status != 'finished'}">
                             <el-row>
@@ -146,27 +140,30 @@
 
                                 <div style="float: right;">
                                     <div v-if="_output_tasks[task._id].status == 'finished'">
-                                        <viewerselect @select="view(_output_tasks[task._id]._id, $event)" style="margin-right: 5px;"></viewerselect>
+                                        <viewerselect @select="view(_output_tasks[task._id]._id, $event, output_id)" :datatype="datatypes[dataset.datatype].name" 
+                                            size="small" style="margin-right: 5px;"></viewerselect>
                                         <el-button size="small" type="primary"
-                                            v-if="!dataset.archiving && !dataset.dataset_id" @click="show_archiveform(dataset)">Archive</el-button>
+                                            v-if="archiving != dataset._id && !dataset.dataset_id" @click="archiving = dataset._id">Archive</el-button>
                                         <el-button size="small" 
                                             v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
                                     </div>
                                     <statustag v-else :status="_output_tasks[task._id].status"/>
                                 </div>
 
-                                <archiveform v-if="dataset.archiving" 
+                                <archiveform v-if="archiving == dataset._id" 
                                     :instance="instance" 
                                     :app_id="_output_tasks[task._id].config._prov.app"
                                     :output_task="_output_tasks[task._id]" 
                                     :dataset_id="output_id"
                                     :dataset="dataset" 
-                                    @submitted="hide_archiveform(dataset)" style="margin-top: 30px;"></archiveform>
+                                    @submitted="archiving = null" style="margin-top: 30px;"></archiveform>
                             </el-col>
                             </el-row>
 
+                            <!-- need to move to viewerselect..
                             <datatypeui v-if="_output_tasks[task._id].status == 'finished'" 
                                 :datatype="datatypes[dataset.datatype].name" :task="_output_tasks[task._id]" :subdir="output_id"></datatypeui>
+                            -->
                         </div>
                     </el-collapse-item>
                 </task>
@@ -297,7 +294,6 @@ import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
 import mute from '@/components/mute'
 import viewerselect from '@/components/viewerselect'
-import datatypeui from '@/components/datatypeui'
 import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -312,7 +308,7 @@ export default {
         filebrowser, pageheader, statustag,
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
-        viewerselect, datasetselecter, datatypeui,
+        viewerselect, datasetselecter,
         datatypetag,
     },
 
@@ -342,6 +338,9 @@ export default {
             selected_subjects: [],
             selected_datatypes: [],
             selected_tags: [],
+    
+            //currently open archiving form
+            archiving: null,
 
             config: Vue.config,
         }
@@ -511,9 +510,9 @@ export default {
             });
         },
 
-        view: function(taskid, event) {
-            var url = taskid+'/'+event;
-            window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
+        view: function(taskid, view, subdir) {
+            view = view.replace('/', '.');
+            window.open("#/view/"+this.instance._id+"/"+taskid+'/'+view+'/'+subdir, "", "width=1200,height=800,resizable=no,menubar=no"); 
         },
 
         load: function() {
@@ -630,7 +629,6 @@ export default {
                     this.$notify.info({ title: 'Info', message: 'Dataset '+did+' is already staged. Skipping.' });
                     return;
                 }
-
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+did+"?at="+Vue.config.jwt,
                     untar: "auto",
@@ -771,12 +769,14 @@ export default {
             return valid;
         },
 
+        /*
         show_archiveform: function(dataset) {
-            Vue.set(dataset, 'archiving', true);
+            this.archiving == dataset._id;
         },
         hide_archiveform: function(dataset) {
-            Vue.set(dataset, 'archiving', false);
+            this.archiving == null;
         },
+        */
 
         //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name
         filter_datasets: function(input) {
@@ -816,8 +816,15 @@ export default {
 
         download: function(did) {
             var dataset = this.find_dataset(did);
-            var task = dataset.task;
-            var path = task.instance_id+'/'+task._id+'/'+did
+            var task = dataset.task;    
+            if(task.name == "brainlife.stage_input") {
+                //stage input task contains multiple datasets, so I add task_id and did
+                var path = task.instance_id+'/'+task._id+'/'+did;
+            } else {
+                //stage_output contains both task_id and output_id on did, so I don't have to contanetate task._id
+                var path = task.instance_id+'/'+did;
+            }
+            console.dir(path);
             var url = Vue.config.wf_api+'/resource/download'+
                 '?r='+task.resource_id+
                 '&p='+encodeURIComponent(path)+
@@ -856,6 +863,7 @@ export default {
                         service: this.newtask_app.github, //TODO what if it's docker?
                         config: newtask.config,
                         deps: newtask.deps,
+                        retry: this.newtask_app.retry,
                     }).then(res=>{
                         var task = res.body.task;
                         console.log("submitted task", task);

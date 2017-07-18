@@ -13,7 +13,7 @@
         <br>
         <h1>{{app.name}}</h1>
     </div>
-    <div class="page-content" v-if="app" style="margin-top: 45px; padding-top: 60px;">
+    <div class="page-content" v-if="app" style="margin-top: 90px; padding-top: 30px;">
         <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
             <p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>
             {{app.desc}}
@@ -33,7 +33,7 @@
         </tr>
         -->
         <tr v-if="service_stats">
-            <th>Stats</th>
+            <th width="175px">Stats</th>
             <td>
                 <p>{{service_stats.tasks}} Runs</p>
                 <p>{{service_stats.users}} Users</p>
@@ -71,6 +71,14 @@
                     Dockerhub
                     <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
                 </div>
+            </td>
+        </tr>
+        <tr v-if="app.retry">
+            <th>Retry</th>
+            <td>
+                <p>
+                    If this application fails, it will automatically retry up to <b>{{app.retry}}</b> times
+                </p> 
             </td>
         </tr>
         <tr v-if="resource">

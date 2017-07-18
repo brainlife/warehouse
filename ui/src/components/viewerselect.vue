@@ -1,13 +1,22 @@
 <template>
 <el-dropdown @command="select">
-    <el-button size="small">
+    <el-button :size="size">
         View<i class="el-icon-caret-bottom el-icon--right"></i>
     </el-button>
     <el-dropdown-menu slot="dropdown">
+
+        <el-dropdown-item :command="datatype" v-if="datatype == 'neuro/dtiinit_output'">DTIInit Output</el-dropdown-item>
+        <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/freesurfer'">Surface View</el-dropdown-item>
+        <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/afq_output'">TractView</el-dropdown-item>
+        <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/life_output'">Life Output</el-dropdown-item>
+        <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/conneval_output'">Evaluator Result</el-dropdown-item>
+
+        <!--native UI -- TODO - only show viewer that makes sense for datatype -->
         <el-dropdown-item command="fslview">FSL View</el-dropdown-item>
         <el-dropdown-item command="freeview">Free View</el-dropdown-item>
         <el-dropdown-item command="mrview">MR View</el-dropdown-item>
         <el-dropdown-item command="fibernavigator">Fiber Navigator</el-dropdown-item>
+
     </el-dropdown-menu>
 </el-dropdown>
 </template>
@@ -15,7 +24,9 @@
 import Vue from 'vue'
 
 export default {
-    components: { },
+    props: [ 'size', 'datatype' ],
+    components: { 
+    },
     data () {
         return {
             config: Vue.config,
