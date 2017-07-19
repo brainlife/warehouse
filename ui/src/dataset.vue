@@ -6,9 +6,9 @@
         <div style="padding: 20px 20px 10px 20px; background-color: #666; color: white;">
             <div style="float: right">
                 <el-button-group>
-                    <el-button @click="remove()" v-if="dataset._canedit" icon="delete">Remove</el-button>
+                    <el-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</el-button>
 
-                    <el-button type="primary" @click="download()" icon="document">Download</el-button>
+                    <el-button type="primary" @click="download()" v-if="dataset.storage" icon="document">Download</el-button>
                 </el-button-group>
                 <viewerselect @select="view"></viewerselect>
             </div>
@@ -18,9 +18,9 @@
                 <datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </h1>
 
-            <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         </div>
 
+        <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
         <tr>
             <th>Description</th>
@@ -29,6 +29,15 @@
         <tr>
             <th width="180px">Create Date</th>
             <td>{{dataset.create_date|date}}</td>
+        </tr>
+        <tr>
+            <th>Storage</th>
+            <td>
+                <div v-if="dataset.storage">
+                    This dataset is currently stored in <b>{{dataset.storage}}</b>
+                </div>
+                <el-alert v-else title="Archiving.." type="warning"> </el-alert>
+            </td>
         </tr>
         <tr>
             <th>Metadata</th>
@@ -51,15 +60,6 @@
             <td><contact :id="dataset.user_id"></contact></td>
         </tr>
         -->
-        <tr>
-            <th>Storage</th>
-            <td>
-                <div v-if="dataset.storage">
-                    This dataset is currently stored in <b>{{dataset.storage}}</b>
-                </div>
-                <el-alert v-else title="Archiving.." type="warning"> </el-alert>
-            </td>
-        </tr>
         <tr>
             <th>User Tags</th>
             <td>
@@ -307,5 +307,8 @@ export default {
     width: 325px; 
     float: left;
     margin-right: 10px;
+}
+.el-alert {
+border-radius: inherit;
 }
 </style>

@@ -27,7 +27,7 @@
                         <el-col :span="1">&nbsp;</el-col>
                         <el-col :span="6"><h4>Datatype</h4></el-col>
                         <el-col :span="7"><h4>Description</h4></el-col>
-                        <el-col :span="6"><h4>Create Date</h4></el-col>
+                        <el-col :span="6"><h4>Create&nbsp;Date</h4></el-col>
                         <el-col :span="4"><h4>Tags</h4></el-col>
                     </el-row> 
                 </el-col>

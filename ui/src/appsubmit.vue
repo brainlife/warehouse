@@ -171,7 +171,7 @@ export default {
                     datatype: {$in: datatype_ids},
                     removed: false,
                 }),
-                limit: 1000,
+                limit: 2000,
             }})
         })
         .then(res=>{

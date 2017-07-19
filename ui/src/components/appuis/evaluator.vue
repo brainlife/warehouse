@@ -110,3 +110,8 @@ export default {
 }
 </script>
 
+<style scoped>
+.evaluator {
+}
+</style>
+

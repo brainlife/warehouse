@@ -96,7 +96,8 @@
                     <el-table-column prop="input_id" label="ID" width="180"></el-table-column>
                     <el-table-column prop="_dataset" label="Data Type">
                         <template scope="scope">
-                            <datatypetag :datatype="datatypes[scope.row._dataset.datatype]" :tags="scope.row._dataset.datatype_tags"></datatypetag>
+                            <datatypetag v-if="scope.row._dataset" :datatype="datatypes[scope.row._dataset.datatype]" :tags="scope.row._dataset.datatype_tags"></datatypetag>
+                            <p v-if="!scope.row._dataset">no dataset</p>
                         </template>
                     </el-table-column>
                     <el-table-column prop="_dataset.meta" label="Metadata">
@@ -124,7 +125,7 @@
                                     <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task" :subdir="props.row.id"></file>
                                 </el-col>
                                 <el-col :span="4">
-                                    <viewerselect v-if="output_task.status == 'finished'" @select="view(output_task._id, $event, 'output')" :datatype="props.row.datatype.name"></viewerselect>
+                                    <viewerselect v-if="output_task.status == 'finished'" @select="view(output_task._id, $event, props.row.id)" :datatype="props.row.datatype.name"></viewerselect>
                                 </el-col>
                             </el-row>
                             <br>

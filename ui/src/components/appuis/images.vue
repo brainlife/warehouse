@@ -1,6 +1,6 @@
 <template>
-<el-row style="margin: 10px;">
-    <el-col :span="8" v-for="image in images" :key="image.url">
+<el-row>
+    <el-col :span="6" v-for="image in images" :key="image.url">
         <el-card :body-style="{padding: '0px'}" class="clickable">
         <div @click="click(image)">
             <img v-lazy="image.src" class="image" width="100%">
@@ -36,10 +36,10 @@ export default {
             '&at='+Vue.config.jwt;
         this.$http.get(url).then(res=>{
             console.dir(res.body);
-            res.body.forEach(image=>{
+            res.body.images.forEach(image=>{
                 var src = Vue.config.wf_api+'/resource/download'+
                     '?r='+this.task.resource_id+
-                    '&p='+encodeURIComponent(basepath+'/images/'+image.filename)+
+                    '&p='+encodeURIComponent(basepath+'/'+image.filename)+
                     '&at='+Vue.config.jwt;
                 
                 this.images.push({
@@ -48,12 +48,13 @@ export default {
                     src
                 });
             });
-            console.dir(this.images);
+            //console.dir(this.images);
         });
     },
     methods: {
         click: function(image) {
-            window.open(image.src, "_blank", "width=800,height=800,resizable=no,menubar=no");
+            //window.open(image.src, "_blank", "width=800,height=800,resizable=no,menubar=no");
+            document.location = image.src;
         },
         handler: function(it) {
             console.log("lazy", it);
