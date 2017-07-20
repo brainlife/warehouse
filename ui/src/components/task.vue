@@ -54,6 +54,7 @@ import tags from '@/components/tags'
 //import volumeviewer from '@/components/volumeviewer'
 
 export default {
+    props: ['task'],
     components: { filebrowser, statusicon, mute, tags },
     name: "contact",
     data () {
@@ -98,7 +99,6 @@ export default {
             });
         },
     },
-    props: ['task'],
 }
 </script>
 

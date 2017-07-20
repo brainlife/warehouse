@@ -114,9 +114,21 @@ export default {
         //load project names
         console.log("loading projects");
         this.$http.get('project', {params: {
+            /*
             find: JSON.stringify({$or: [
                 { members: Vue.config.user.sub}, 
                 { access: "public" },
+            ]}),
+            */
+            find: JSON.stringify({$and: [
+                {$or: [
+                    { members: Vue.config.user.sub}, 
+                    { access: "public" },
+                ]},
+                {$or: [
+                    { removed: false },
+                    { removed: {$exists: false }},
+                ]}
             ]}),
             select: 'name',
         }})
@@ -159,7 +171,7 @@ export default {
                     datatype: {$in: datatype_ids},
                     removed: false,
                 }),
-                limit: 1000,
+                limit: 2000,
             }})
         })
         .then(res=>{

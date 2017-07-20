@@ -4,12 +4,13 @@
     <sidemenu active="/projects"/>
     <div class="header" v-if="project">
         <el-button-group style="float: right;" v-if="project._canedit">
-            <el-button @click="remove()" icon="delete">Remove Project</el-button>
+            <el-button @click="remove()" icon="delete" v-if="!project.removed">Remove Project</el-button>
             <el-button @click="edit()" icon="edit">Edit</el-button>
         </el-button-group>
         <h1><span class="text-muted"><icon name="shield" scale="1.5"/> Project |</span> {{project.name}}</h1>
     </div>
     <div class="page-content" v-if="project" style="margin-top: 70px">
+        <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
         <tr>
             <th width="180px;">Description</th>
@@ -37,7 +38,7 @@
         </tr>
         <tr v-if="project.readme">
             <th>README</th>
-            <td>
+            jtd>
                 <vue-markdown :source="project.readme"></vue-markdown>
             </td>
         </tr>
@@ -95,7 +96,14 @@ export default {
             this.$router.push('/project/'+this.project._id+'/edit');
         },
         remove: function() {
-            alert('todo');
+            this.$http.delete('project/'+this.project._id)
+            .then(res=>{
+                this.go('/projects');        
+            });
+        },
+        go: function(path) {
+            console.log(path);
+            this.$router.push(path);
         },
     },
 }
@@ -125,4 +133,9 @@ top: 140px;
 right: 0px;
 left: 90px;
 border-bottom: 1px solid #ddd;
-}</style>
+}
+.el-alert {
+border-radius: inherit;
+}
+
+</style>

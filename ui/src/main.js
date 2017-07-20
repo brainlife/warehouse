@@ -34,6 +34,11 @@ import router from './router'
 
 Vue.use(require('vue-filter'))
 
+//lazy load
+//https://github.com/hilongjw/vue-lazyload
+import VueLazyload from 'vue-lazyload'
+Vue.use(VueLazyload)
+
 Vue.filter('filesize', function (num) {
 	// jacked from: https://github.com/sindresorhus/pretty-bytes
 	if (typeof num !== 'number' || isNaN(num)) {

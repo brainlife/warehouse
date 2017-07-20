@@ -10,6 +10,7 @@
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/afq_output'">TractView</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/life_output'">Life Output</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/conneval_output'">Evaluator Result</el-dropdown-item>
+        <el-dropdown-item :command="datatype" v-else-if="datatype == 'generic/images'">Images</el-dropdown-item>
 
         <!--native UI -- TODO - only show viewer that makes sense for datatype -->
         <el-dropdown-item command="fslview">FSL View</el-dropdown-item>
