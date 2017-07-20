@@ -34,7 +34,8 @@ function getprojects(user, cb) {
             $or: [
                 project_query,
                 {"members": user.sub},
-            ]
+            ],
+            removed: false,
         };
     }
     db.Projects
@@ -330,12 +331,12 @@ router.get('/download/:id', jwt({
                     //var mimetype = mime.lookup(fullpath);
                     //logger.debug("mimetype:"+mimetype);
 
+                    //why is this necessary?
                     if(!filename) filename = dataset._id+'.tar.gz';
 
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+filename);
                     if(stats) res.setHeader('Content-Length', stats.size);
-                    //res.setHeader('Content-Type', mimetype); //TODO?
                     logger.debug("commencing download");
                     readstream.pipe(res);   
                     readstream.on('error', err=>{
@@ -343,9 +344,7 @@ router.get('/download/:id', jwt({
                         //next(err); //this doen't really abort download and emit error message to the user..
                     });
                 });
-                    
             });
-
         });
     });
 });
