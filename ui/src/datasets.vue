@@ -97,7 +97,7 @@
         <div class="select-group">
             <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
                 <datatypetag :datatype="datatypes[did]"/>
-                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+did)">
+                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
                     <div>
                         <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
                             <icon name="close"></icon>
@@ -366,7 +366,7 @@ export default {
             }).then(res=>res.body);
         },
 
-        stage_selected: function(instance, resource) {
+        stage_selected: function(instance/*, resource*/) {
             //create config to download all selected data from archive
             var download = [];
             for(var dataset_id in this.selected) {
@@ -385,7 +385,7 @@ export default {
                 instance_id: instance._id,
                 name: "brainlife.download.stage",
                 service: "soichih/sca-product-raw",
-                preferred_resource_id: resource,
+                //preferred_resource_id: resource,
                 config: { download },
                 remove_date: remove_date,
             }).then(res=>res.body.task);
@@ -393,13 +393,9 @@ export default {
 
         view: function(type) {
             //find novnc resource
+
+            /*
             this.$http.get(Vue.config.wf_api+'/resource/best', {params: {
-                /*
-                find: JSON.stringify({
-                    "config.services.name": "soichih/abcd-novnc",
-                    active: true,
-                }),
-                */
                 service: "soichih/abcd-novnc",
             }}).then(res=>{
                 //var novnc_resource = res.body.resources[0];
@@ -417,6 +413,15 @@ export default {
                         window.open("#/view/"+download_instance._id+"/"+download_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
                     });
                 }
+            });
+            */
+
+            var download_instance = null;
+            this.get_instance().then(instance=>{
+                download_instance = instance;
+                return this.stage_selected(download_instance);
+            }).then(task=>{
+                window.open("#/view/"+download_instance._id+"/"+task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
             });
         },
 
@@ -467,7 +472,6 @@ export default {
             }).then(res=>{
                 this.bids_task = res.body.task;
                 this.$router.push("/download/"+download_instance._id);
-
             });
         },
 

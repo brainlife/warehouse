@@ -78,11 +78,14 @@
             </p>
 
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
-                <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
+
+                <!--
+                <el-input type="textarea" v-if="task.desc" v-model="task.desc"/>
+                -->
+                <p class="text-muted" v-if="task.name == 'brainlife.process' && task.desc">{{task.desc}}</p>
 
                 <task style="margin-top: 5px;" 
                     :task="task" :prov="task.config._prov" v-if="task._id && task.name == 'brainlife.process'" @remove="task_removed">
-
                     <!--header-->
                     <div slot="header" class="task-header">
                         <div style="float: left" v-if="_output_tasks[task._id]">
@@ -92,11 +95,12 @@
                         </div>
                         <div v-if="task.config._prov" style="margin-left: 50px;">
                             <!--task.config._prov.app.id is deprecated -->
-                            <app :appid="task.config._prov.app.id || task.config._prov.app" :compact="true"></app>
+                            <app :appid="task.config._prov.app.id || task.config._prov.app" :compact="true">
+                                <span class="text-muted">{{task.desc}}</span>
+                            </app>
                         </div>
                         <div v-if="!task.config._prov" style="margin-left: 50px">
                             <h3 style="margin-bottom: 0px; color: #666;">{{task.service}} <mute>{{task.name}}</mute></h3>
-                            <mute>{{task.desc}}</mute>
                         </div>
                     </div>
 
