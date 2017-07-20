@@ -97,7 +97,7 @@
         <div class="select-group">
             <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
                 <datatypetag :datatype="datatypes[did]"/>
-                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+did)">
+                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
                     <div>
                         <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
                             <icon name="close"></icon>
