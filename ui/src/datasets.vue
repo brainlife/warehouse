@@ -35,12 +35,10 @@
         </div><!--fixed-top-->
 
         <div class="page-content">
-            <div v-if="loading" style="margin: 30px;">
-                <h4>Loading ...</h4>
-            </div>
+            <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <!--start of dataset list-->
-            <div class="list" v-if="!loading">
+            <div class="list">
                 <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
                     <el-col :span="4">
                         <strong>{{subject}}</strong>
@@ -608,6 +606,13 @@ export default {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; 
+}
+.loading {
+    position: fixed;
+    bottom: 25px;
+    left: 350px; 
+    z-index: 10;
+    opacity: 0.5;  
 }
 </style>
 
