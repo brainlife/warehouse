@@ -144,14 +144,14 @@
                                         <viewerselect @select="view(_output_tasks[task._id]._id, $event, output_id)" :datatype="datatypes[dataset.datatype].name" 
                                             size="small" style="margin-right: 5px;"></viewerselect>
                                         <el-button size="small" type="primary"
-                                            v-if="archiving != dataset._id && !dataset.dataset_id" @click="archiving = dataset._id">Archive</el-button>
+                                            v-if="archiving != _output_tasks[task._id]._id+'/'+output_id  && !dataset.dataset_id" @click="archiving = _output_tasks[task._id]._id+'/'+output_id">Archive</el-button>
                                         <el-button size="small" 
                                             v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
                                     </div>
                                     <statustag v-else :status="_output_tasks[task._id].status"/>
                                 </div>
 
-                                <archiveform v-if="archiving == dataset._id" 
+                                <archiveform v-if="archiving == _output_tasks[task._id]._id+'/'+output_id" 
                                     :instance="instance" 
                                     :app_id="_output_tasks[task._id].config._prov.app"
                                     :output_task="_output_tasks[task._id]" 
@@ -340,7 +340,7 @@ export default {
             selected_datatypes: [],
             selected_tags: [],
     
-            //currently open archiving form
+            //currently open archiving form (_output_tasks[task._id]._id+'/'+output_id)
             archiving: null,
 
             config: Vue.config,
