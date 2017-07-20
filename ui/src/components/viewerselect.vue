@@ -12,7 +12,7 @@
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/conneval_output'">Evaluator Result</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'generic/images'">Images</el-dropdown-item>
 
-        <!--native UI -- TODO - only show viewer that makes sense for datatype -->
+        <!--native UI TODO - only show viewer that makes sense for datatype -->
         <el-dropdown-item command="fslview">FSL View</el-dropdown-item>
         <el-dropdown-item command="freeview">Free View</el-dropdown-item>
         <el-dropdown-item command="mrview">MR View</el-dropdown-item>
@@ -35,7 +35,6 @@ export default {
     },
 	methods: {
         select: function(com) {
-            //console.log("viewselect: ", com);
             this.$emit('select', com);  
         }
     }

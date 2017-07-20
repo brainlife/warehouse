@@ -17,7 +17,6 @@
             <h1>
                 <datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </h1>
-
         </div>
 
         <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
@@ -277,7 +276,7 @@ export default {
                 //console.dir(this.dataset);
                 this.apps = lib.filter_apps(this.dataset, res.body.apps);
             }).catch(err=>{
-                console.error(res);
+                console.error(err);
             });
         },
         bibtex: function() {
