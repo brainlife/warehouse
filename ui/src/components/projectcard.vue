@@ -44,7 +44,7 @@ export default {
 <style scoped>
 .projectcard {
 display:inline-block;
-width:350px;
+width:330px;
 }
 .projectcard .el-card:hover {
 background-color: #eee;
@@ -58,8 +58,9 @@ color: #999;
 .project-description {
 display:inline-block;
 margin-top:8px;
-min-height:140px;
-max-height:140px;
+min-height:130px;
+max-height:130px;
+overflow:hidden;
 text-overflow:ellipsis;
 }
 .project-removed {
@@ -69,7 +70,7 @@ background-color: #ddd;
 
 .devs {
 background-color:#eee;
-margin:-15px;
+margin:0 -15px -15px -15px;
 padding:10px;
 }
 </style>

@@ -158,10 +158,10 @@ export default {
 box-shadow: none;
 }
 .public-project .el-card__body {
-border-left: 3px solid #159957;
+/* border-left: 3px solid #159957; */
 }
 .private-project .el-card__body {
-border-left: 3px solid red;
+/* border-left: 3px solid red; */
 }
 </style>
 
