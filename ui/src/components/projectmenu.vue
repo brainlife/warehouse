@@ -58,16 +58,13 @@ export default {
 
     mounted: function() {
         this.$http.get('project', {params: {
-            find: JSON.stringify({$and: [
-                {$or: [
+            find: JSON.stringify({
+                $or: [
                     { members: Vue.config.user.sub}, 
                     { access: "public" },
-                ]},
-                {$or: [
-                    { removed: false },
-                    { removed: {$exists: false }},
-                ]}
-            ]})
+                ],
+                removed: false,
+            })
         }})
         .then(res=>{
             this.projects = {};

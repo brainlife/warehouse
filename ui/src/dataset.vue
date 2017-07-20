@@ -266,10 +266,7 @@ export default {
                     "find": JSON.stringify({
                         //look for apps that uses my datatype as input
                         "inputs.datatype": this.dataset.datatype._id,
-                        $or: [
-                            { removed: false },
-                            { removed: {$exists: false }},
-                        ],
+                        removed: false,
                     }),
                     "populate": "inputs.datatype", //used by filter_apps
                 }})

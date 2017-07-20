@@ -95,9 +95,7 @@
                         </div>
                         <div v-if="task.config._prov" style="margin-left: 50px;">
                             <!--task.config._prov.app.id is deprecated -->
-                            <app :appid="task.config._prov.app.id || task.config._prov.app" :compact="true">
-                                <span class="text-muted">{{task.desc}}</span>
-                            </app>
+                            <app :appid="task.config._prov.app.id || task.config._prov.app" :compact="true"></app>
                         </div>
                         <div v-if="!task.config._prov" style="margin-left: 50px">
                             <h3 style="margin-bottom: 0px; color: #666;">{{task.service}} <mute>{{task.name}}</mute></h3>
@@ -667,10 +665,7 @@ export default {
             this.$http.get('app', {params: {
                 find: JSON.stringify({
                     "inputs.datatype": {$in: datatype_ids},
-                    $or: [
-                        { removed: false },
-                        { removed: {$exists: false }},
-                    ],
+                    removed: false,
                 }),
                 populate: 'inputs.datatype',
             }})

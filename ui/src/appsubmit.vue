@@ -120,16 +120,13 @@ export default {
                 { access: "public" },
             ]}),
             */
-            find: JSON.stringify({$and: [
-                {$or: [
+            find: JSON.stringify({
+                $or: [
                     { members: Vue.config.user.sub}, 
                     { access: "public" },
-                ]},
-                {$or: [
-                    { removed: false },
-                    { removed: {$exists: false }},
-                ]}
-            ]}),
+                ],
+                removed: false,
+            }),
             select: 'name',
         }})
         .then(res=>{
