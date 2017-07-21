@@ -35,7 +35,8 @@ function getprojects(user, cb) {
                 project_query,
                 {"members": user.sub},
             ],
-            removed: false,
+            //I need to let user query for datasets from removed project also..
+            //removed: false,
         };
     }
     db.Projects
