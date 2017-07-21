@@ -114,22 +114,13 @@ export default {
         //load project names
         console.log("loading projects");
         this.$http.get('project', {params: {
-            /*
-            find: JSON.stringify({$or: [
-                { members: Vue.config.user.sub}, 
-                { access: "public" },
-            ]}),
-            */
-            find: JSON.stringify({$and: [
-                {$or: [
+            find: JSON.stringify({
+                $or: [
                     { members: Vue.config.user.sub}, 
                     { access: "public" },
-                ]},
-                {$or: [
-                    { removed: false },
-                    { removed: {$exists: false }},
-                ]}
-            ]}),
+                ],
+                removed: false,
+            }),
             select: 'name',
         }})
         .then(res=>{
@@ -137,15 +128,13 @@ export default {
             res.body.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
-        }, err=>{
-            console.error(err);
-        });
 
-        //load app detail
-        this.$http.get('app', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'inputs.datatype outputs.datatype',
-        }})
+            //load app detail
+            return this.$http.get('app', {params: {
+                find: JSON.stringify({_id: this.$route.params.id}),
+                populate: 'inputs.datatype outputs.datatype',
+            }})
+        })
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
@@ -165,6 +154,7 @@ export default {
             }
 
             //load datasets that this app cares about
+            //this returns dataset from projects that are removed (we can't filter out removed project because user might want to access it)
             var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
             return this.$http.get('dataset', {params: {
                 find: JSON.stringify({
@@ -181,6 +171,10 @@ export default {
                 //group by project id 
                 var projects = {};
                 lib.filter_datasets(datasets, input).forEach(it=>{
+                
+                    //ignore datasets from removed projects                    
+                    if(!this.projects[it.project]) return;
+
                     if(!projects[it.project]) projects[it.project] = {};
                     projects[it.project][it._id] = it;
                 });
