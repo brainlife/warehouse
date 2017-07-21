@@ -42,6 +42,9 @@
                         <contactlist v-model="project.members"></contactlist>
                         <p class="text-muted">Users who can update the project members</p>
                     </el-form-item>
+                    <el-form-item label="Avatar">
+                        <el-input type="text" v-model="project.avatar" placeholder="URL of project avatar (optional)"/>
+                    </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="check" @click="submit()">Submit</el-button>
                     </el-form-item>
