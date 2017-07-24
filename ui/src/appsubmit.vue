@@ -103,7 +103,6 @@ export default {
             //cache
             datasets: {}, //available datasets grouped by input._id then project_id then array of datasets
             projects: [], //just names
-            datatype_ids: [], //list of datatype ids
 
             config: Vue.config,
         }
