@@ -24,14 +24,6 @@
 
             <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
             <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
-                 <!-- <el-select v-model="form.inputs[input.id]" placeholder="Please select input dataset" style="width: 100%;">
-                    <el-option-group v-for="(group, project_id) in datasets[input.id]" :key="project_id" :label="projects[project_id].name">
-                        <el-option v-for="(dataset, dataset_id) in group" :key="dataset_id" 
-                            :value="dataset_id" :label="projects[project_id].name+' / '+dataset.meta.subject+' '+dataset.datatype_tags.toString()">
-                            {{dataset.meta.subject}} <small class="text-muted">{{dataset.datatype_tags.toString()}}</small> | {{dataset.create_date|date}}
-                        </el-option>
-                    </el-option-group>
-                </el-select>  -->
                   <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false"></select2> 
             </el-form-item>
 
@@ -103,6 +95,7 @@ export default {
             //cache
             datasets: {}, //available datasets grouped by input._id then project_id then array of datasets
             projects: [], //just names
+            datasets_groups: {}, //datasets loaded for a given input - grouped by project id
 
             config: Vue.config,
         }
@@ -176,11 +169,11 @@ export default {
           })
         },
         
-        grab_items: function(input, params, datasets_groups, cb) {
+        grab_items: function(input, params, cb) {
             // essentially the same code from datasetselecter.vue
             if (!params.page) {
                 params.page = 1;
-                datasets_groups = {};
+                this.datasets_groups = {};
             }
             var dropdown_items = [];
             
@@ -210,13 +203,13 @@ export default {
                 return dropdown_item_text.join(" ");
             }
             
-            let limit = 1000, skip = (params.page - 1) * limit;
+            let limit = 50, skip = (params.page - 1) * limit;
             this.$http.get('dataset', { params: {
                 find: JSON.stringify({
                     datatype: input.datatype._id,
                     removed: false,
                 }),
-                sort: "project -create_date",
+                sort: "project meta.subject -create_date",
                 limit,
                 skip
             }})
@@ -224,19 +217,19 @@ export default {
                 // dropdown menu item to add
                 res.body.datasets.forEach(dataset => {
                     var item = {
+                        text: compose_item_text(dataset),
                         id: dataset._id,
-                        text: compose_item_text(dataset)
                     };
                     
-                    var subject = "(non-existing)";
-                    if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
-                    if (!datasets_groups[subject]) {
+                    //var subject = "(non-existing)";
+                    //if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+                    if (!this.datasets_groups[dataset.project]) {
                         // first time
-                        datasets_groups[subject] = true;
+                        this.datasets_groups[dataset.project] = true;
                         
                         // append - select2 allows me to append item by doing following crap
                         dropdown_items.push({
-                            text: subject,
+                            text: this.projects[dataset.project].name,
                             children: [item]
                         });
                     } else {
@@ -259,7 +252,7 @@ export default {
         // waits 300ms (unless interrupted by more keystrokes), then calls grab_items
         debounce_grab_items: function(input) {
             // 'global' variables
-            let debounce, datasets_groups = {};
+            let debounce;
             
             // return a new grab_items event that can be called for each input datatype
             // params + cb are input from select2
@@ -273,7 +266,7 @@ export default {
                 }
                 debounce = setTimeout(function() {
                     debounce = null;
-                    vm.grab_items(input, params, datasets_groups, cb);
+                    vm.grab_items(input, params, cb);
                 }, 300);
             }
         },
