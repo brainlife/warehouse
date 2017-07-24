@@ -13,11 +13,11 @@
         <h1>{{project.name}}</h1>
     </div>
     <div class="page-content" v-if="project" style="margin-top: 80px; padding-top: 30px">
-        <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
         <div style="margin-left: 130px; margin-bottom: 20px; min-height: 20px;">
             <!--<p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>-->
             {{project.desc}}
         </div>
+        <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
         <tr>
             <th>Access</th>

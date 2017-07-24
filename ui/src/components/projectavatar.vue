@@ -1,6 +1,7 @@
 <template>
 <div class="projectavatar">
-    <img :src="project.avatar || 'http://eightbitavatar.herokuapp.com/?id='+project._id+'@3&s=male&size='+width" :width="width" :height="height"></img>
+    <!--herokuapp.com doesn't seem to scale well if all images are loaded simultanously .. so using v-lazy-->
+    <img v-lazy="project.avatar || 'http://eightbitavatar.herokuapp.com/?id='+project._id+'@3&s=male&size='+width" :width="width" :height="height"></img>
 </div>
 </template>
 
