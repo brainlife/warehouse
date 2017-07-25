@@ -3,6 +3,7 @@
     <div @click="click()">
         <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
         <h4 class="name">{{app_.name}}</h4>
+        <h5 class="github">{{app_.github}}</h5>
         <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
         <div class="desc">{{app_.desc||'no desc..'}}</div>
         <div class="devs" v-if="!compact">
@@ -61,8 +62,12 @@ transition: box-shadow 0.5s;
 background-color: white;
 }
 .appcard.clickable:hover .name,
+.appcard.clickable:hover .github,
 .appcard.clickable:hover .desc {
 color: #2693ff;
+}
+.appcard.clickable:hover .github {
+opacity: 0.7;
 }
 .appcard:hover {
 box-shadow: 2px 2px 4px #999;
@@ -76,6 +81,11 @@ color: #666;
 padding: 0px;
 padding-top: 10px;
 }
+.github {
+opacity: 0.4;
+font-family: monospace;
+font-size: 80%;
+}
 .desc {
 height: 130px;
 font-size: 13px;
@@ -83,6 +93,7 @@ color: #666;
 line-height: 140%;
 text-overflow:ellipsis;
 overflow: hidden;
+margin: 10px 10px;
 }
 .rate {
 height: 20px;
@@ -96,6 +107,12 @@ line-height: 140%;
 .image {
 width: 100%;
 display: block;
+}
+h5 {
+opacity: 0.7;
+}
+.compact h5 {
+display: none;
 }
 .compact .name {
 padding: 5px 0px;
@@ -117,7 +134,7 @@ margin-bottom: 0px;
   margin-right: -1em;
   padding-right: 1em;
   margin-bottom: 0px;
-    margin-top: 0px;
+  margin-top: 0px;
 }
 /* create the ... */
 .compact .desc :before {

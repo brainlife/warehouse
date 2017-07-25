@@ -74,11 +74,24 @@ export default {
                 this.task = res.body.tasks[0];
                 console.log("polling", this.task.status, this.task.status_msg);
                 if(this.task.status == 'finished') cb();
-                else setTimeout(()=>{this.wait(cb)}, 1000);
+                else if(this.task.status == 'removed') {
+                    this.rerun();
+                    setTimeout(()=>{this.wait(cb)}, 5000);
+                } else setTimeout(()=>{this.wait(cb)}, 1000);
             });
         },
 
-        open_novnc: function() {
+        rerun() {
+            this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.taskid)
+            .then(res=>{
+                console.dir(res); 
+            })
+            .catch(err=>{
+                console.error(err); 
+            });
+        },
+
+        open_novnc() {
             this.get_instance_singleton("novnc").then((instance)=>{
                 console.log("using instance", instance);
                 var task_name = "brainlife.novnc";
@@ -131,7 +144,7 @@ export default {
             });
         },
  
-        check_status: function() {
+        check_status() {
             if(this.novnc_task.status == "running") {
                 var msgpart = this.novnc_task.status_msg.trim();
                 if(msgpart == "running") {
@@ -157,7 +170,7 @@ export default {
             */
         },
 
-        get_instance_singleton: function() {
+        get_instance_singleton() {
             return new Promise((resolve, reject) => {
                 //console.log("querying instance");
                 this.$http.get(Vue.config.wf_api+'/instance', {params: {
@@ -183,7 +196,7 @@ export default {
             });
         },
 
-        subscribe_ws: function() {
+        subscribe_ws() {
             var instanceid = this.novnc_task.instance_id;
             var taskid = this.novnc_task._id;
 

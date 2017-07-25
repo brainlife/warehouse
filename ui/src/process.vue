@@ -21,8 +21,7 @@
                     @click="show_input_dialog = true" v-bind:class="{animated: true, headShake: _datasets.length == 0}" icon="plus"> Stage Datasets</el-button>
                 <h3>Input Datasets</h3>
                 <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
-                    @click="go('/dataset/'+dataset.did)"
-                    v-if="dataset.task.name == 'brainlife.stage_input'">
+                    @click="go('/dataset/'+dataset.did)" v-if="dataset.task.name == 'brainlife.stage_input'">
                     <mute>D{{idx}}</mute> 
                     <b>{{dataset.meta.subject}}</b>
                     <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
@@ -37,8 +36,7 @@
                 <br>
                 <h3>Output Datasets</h3>
                 <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
-                    @click="scrollto(dataset.task._id)"
-                    v-if="dataset.task.name == 'brainlife.stage_output'">
+                    @click="scrollto(dataset.task._id)" v-if="dataset.task.name == 'brainlife.stage_output'">
                     <!-- 
                         tasks used to organize generated output datasets are hidden, 
                         so to display the actual task ID of the apps themselves, I assume that 
@@ -91,7 +89,7 @@
                         <div style="float: left" v-if="_output_tasks[task._id]">
                             <!--why using _output_task's id? I use this to jump from the output dataset list on the sidebar.. 
                             and I am too lazy to lookup the main task id from the output task id-->
-                            <h3 :id="_output_tasks[task._id]._id"><mute>T{{idx}}</mute></h3>
+                            <h3 :id="_output_tasks[task._id]._id" :title="task._id"><mute>T{{idx}}</mute></h3>
                         </div>
                         <div v-if="task.config._prov" style="margin-left: 50px;">
                             <!--task.config._prov.app.id is deprecated -->
@@ -160,11 +158,6 @@
                                     @submitted="archiving = null" style="margin-top: 30px;"></archiveform>
                             </el-col>
                             </el-row>
-
-                            <!-- need to move to viewerselect..
-                            <datatypeui v-if="_output_tasks[task._id].status == 'finished'" 
-                                :datatype="datatypes[dataset.datatype].name" :task="_output_tasks[task._id]" :subdir="output_id"></datatypeui>
-                            -->
                         </div>
                     </el-collapse-item>
                 </task>
