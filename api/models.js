@@ -14,7 +14,8 @@ if(config.debug) {
 
 exports.init = (cb)=>{
     mongoose.connect(config.mongodb, {
-        server: { reconnectTries: Number.MAX_VALUE }
+        //TODO - isn't auto_reconnect set by default?
+        server: { auto_reconnect: true, reconnectTries: Number.MAX_VALUE }
     }, err=>{
         if(err) return cb(err);
         logger.info("connected to mongo");
@@ -236,6 +237,9 @@ exports.Apprates = mongoose.model('Apprates', apprateSchema);
 
 var ruleSchema = mongoose.Schema({
 
+    name: String,
+    desc: String, 
+
     //user submitted this rule (all tasks will be submitted under this user)
     user_id: {type: String, index: true}, 
     
@@ -253,10 +257,13 @@ var ruleSchema = mongoose.Schema({
     output_tags: mongoose.Schema.Types.Mixed,
 
     //when this rule was last handled - used to find *new* datasets 
-    process_date: { type: Date },
+    //process_date: { type: Date },
 
     //when the rule is first defined
     create_date: { type: Date, default: Date.now },
+
+    removed: { type: Boolean, default: false} ,
+    active: { type: Boolean, default: true} ,
 });
 exports.Rules = mongoose.model('Rules', ruleSchema);
 

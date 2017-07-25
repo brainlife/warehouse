@@ -25,15 +25,22 @@ exports.warehouse = {
     api: "https://dev1.soichi.us/api/warehouse",
 }
 
+//for archive service
 exports.archive = {
     //remporary path used to store downloaded datasets before shipping to hsi
     tmp: "/mnt/scratch/hayashis/archive-tmp",
 }
 
+//for event handler
 exports.event = {
     amqp: {
         url: "amqp://warehouse:gowarehouse123@localhost:5672/brainlife"
     },
+}
+
+//for rule handler
+exports.rule = {
+    max_task_per_rule: 30, //limit number of concurrently running tasks submission
 }
 
 exports.express = {
