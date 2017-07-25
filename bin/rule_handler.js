@@ -23,13 +23,16 @@ db.init(function(err) {
 });
 
 function run() {
-	db.Rules.find().exec((err, rules)=>{
+	db.Rules.find({
+        active: true,
+        removed: false,
+    }).exec((err, rules)=>{
 		if(err) throw err;
 
         async.eachSeries(rules, (rule, next_rule)=>{
             handle_rule(rule, next_rule);
         }, err=>{
-            if(err) throw err;
+            if(err) logger.error(err);
             logger.debug("done with all rules - sleeping for a while");
             //db.disconnect();
             setTimeout(run, 1000*60);
@@ -139,7 +142,7 @@ function handle_rule(rule, cb) {
     });
 
     function handle_subject(subject, next_subject) {
-        if(running > config.max_task_per_rule) {
+        if(running >= config.max_task_per_rule) {
             logger.info("reached max running task.. skipping the rest of subjects", subject, running);
             return next_subject();
         }
@@ -147,11 +150,11 @@ function handle_rule(rule, cb) {
         ////////////////////////////////////////////////////////////
         //debug (only handle subjects that starts with 10)
         if(subject.toString().search(/^10/)) {
-            logger.debug("skipping subjects that doesn't start with 10..", subject);
+            //logger.debug("skipping subjects that doesn't start with 10..", subject);
             return next_subject();
         }
 
-        logger.debug("handling subject", subject);//, running);
+        logger.debug("handling subject", subject, running);
 
         //debug
         //fs.writeFileSync("app."+new Date().getTime(), JSON.stringify(app, null, 4));
@@ -174,7 +177,7 @@ function handle_rule(rule, cb) {
             .exec((err, dataset)=>{
                 if(err) return next_output(err);
                 if(!dataset) {
-                    //logger.debug("found missing datasest", JSON.stringify(query, null, 4));
+                    //logger.debug("found missing output datasest ", JSON.stringify(query, null, 4));
                     missing = true;
                 }
                 next_output();
@@ -238,7 +241,8 @@ function handle_rule(rule, cb) {
                 datatype: input.datatype,
                 "meta.subject": subject,
             }
-            if(input.datatype_tags.length > 0) query.datatype_tags = { $all: input.datatype_tags };
+            //if(input.datatype_tags.length > 0) query.datatype_tags = { $all: input.datatype_tags };
+
             //logger.debug(JSON.stringify(query, null, 4));
             db.Datasets.findOne(query)
             .populate('datatype')
@@ -246,11 +250,31 @@ function handle_rule(rule, cb) {
             .lean()
             .exec((err, dataset)=>{
                 if(err) return next_input(err);
+                
+
                 if(!dataset) {
-                    //logger.debug("input missing", input.id);
+                    logger.debug("found input missing", input.id, JSON.stringify(query, null, 4));
                     missing = true;
                     return next_input();
                 }
+                
+                //apply tags
+                var match = true;
+                input.datatype_tags.forEach(tag=>{
+                    if(tag[0] == "!") {
+                        //negative: make sure tag doesn't exist
+                        if(~dataset.datatype_tags.indexOf(tag.substring(1))) match = false;
+                    } else {
+                        //positive: make sure tag exists
+                        if(!~dataset.datatype_tags.indexOf(tag)) match = false;
+                    }
+                });
+                if(!match) {
+                    logger.debug("tag mismatch", input.id);
+                    missing = true;
+                    return next_input();
+                }
+
                 inputs[input.id] = dataset;
                 
                 //load status of task that produced this dataset
@@ -365,6 +389,7 @@ function handle_rule(rule, cb) {
                     var input = inputs[input_id];
                     if(input.prov && input.prov._task && input.prov._task.status == 'finished') {
                         //we still have the datasets staged.. just use that
+                        var task = input.prov._task;
                         body.config.symlink.push({ 
                             src: "../../"+task.instance_id+"/"+task._id+"/"+input.prov.dirname, //TODO - not sure if this is the right path?
                             dest: input_id 
