@@ -7,17 +7,18 @@
             <el-button @click="remove()" icon="delete" v-if="!project.removed">Remove Project</el-button>
             <el-button @click="edit()" icon="edit">Edit</el-button>
         </el-button-group>
-        <h1><span class="text-muted"><icon name="shield" scale="1.5"/> Project |</span> {{project.name}}</h1>
+        <projectavatar :project="project" style="float: left; margin-right: 20px; margin-top: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></projectavatar>
+        <br>
+        <br>
+        <h1>{{project.name}}</h1>
     </div>
-    <div class="page-content" v-if="project" style="margin-top: 70px">
+    <div class="page-content" v-if="project" style="margin-top: 80px; padding-top: 30px">
+        <div style="margin-left: 130px; margin-bottom: 20px; min-height: 20px;">
+            <!--<p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>-->
+            {{project.desc}}
+        </div>
         <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
-        <tr>
-            <th width="180px;">Description</th>
-            <td>
-                {{project.desc}}
-            </td>
-        </tr>
         <tr>
             <th>Access</th>
             <td>
@@ -38,7 +39,7 @@
         </tr>
         <tr v-if="project.readme">
             <th>README</th>
-            jtd>
+            <td>
                 <vue-markdown :source="project.readme"></vue-markdown>
             </td>
         </tr>
@@ -67,11 +68,14 @@ import project from '@/components/project'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
-
-//hello
+import projectavatar from '@/components/projectavatar'
 
 export default {
-    components: { sidemenu, contactlist, project, projectaccess, pageheader, contact, VueMarkdown },
+    components: { 
+        sidemenu, contactlist, project, 
+        projectaccess, pageheader, contact, 
+        VueMarkdown, projectavatar 
+    },
 
     data () {
         return {
@@ -113,8 +117,9 @@ export default {
 .header {
 background: #666;
 padding: 20px;
+padding-bottom: 30px;
 margin-top: 42px;
-height: 30px;
+height: 40px;
 position: fixed;
 right: 0px;
 left: 90px;
