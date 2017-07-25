@@ -176,35 +176,6 @@ export default {
             // list of dropdown menu items to return
             var dropdown_items = [];
             
-            function compose_item_text(dataset) {
-                var dropdown_item_text = [];
-                
-                // if there's a datatype, add it to the dropdown string
-                if (dataset.datatype) {
-                    var datatype_name = this.datatypes[dataset.datatype].name;
-                    dropdown_item_text.push(datatype_name);
-                }
-                
-                // if there's datatype tags, add them to the dropdown string
-                if (dataset.datatype_tags) {
-                    // join all datatype tags so that the resultant string looks like:
-                    // <tag1> <tag2> <tag3>
-                    var tags = "";
-                    for (var tag of dataset.datatype_tags)
-                        tags += " <" + tag + "> ";
-                    dropdown_item_text.push(tags);
-                }
-                
-                // if there's a date, add it to the dropdwon string
-                if (dataset.create_date) {
-                    var date = new Date(dataset.create_date).toString();
-                    date = " | " + date;
-                    dropdown_item_text.push(date);
-                }
-                
-                return dropdown_item_text.join(" ");
-            }
-            
             //now load datasets
             this.$http.get('dataset', { params: filter_params })
             .then(res => {
@@ -215,14 +186,17 @@ export default {
                     // create catalog of all datasets
                     this.alldatasets[dataset._id] = dataset;
                     
+                    var subject = "(non-existing)";
+                    if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+                    
                     // dropdown menu item to add
                     var item = {
                         id: dataset._id,
-                        text: compose_item_text.call(this, dataset)
+                        text: subject,
+                        date: dataset.create_date,
+                        tags: dataset.datatype_tags
                     };
                     
-                    var subject = "(non-existing)";
-                    if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
                     if (!this.datasets_groups[subject]) {
                         // first time
                         this.datasets_groups[subject] = true;

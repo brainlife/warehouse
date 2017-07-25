@@ -21,12 +21,20 @@
 
     <div class="content" v-if="app && projects">
         <el-form :model="form" ref="form" label-position="left" label-width="200px">
-
             <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
             <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
-                  <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false"></select2> 
+                <table style="width:100%;">
+                    <tr>
+                        <td style="width:40%">
+                            <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'"></projectselecter>
+                        </td>
+                        <td style="width:60%">
+                            <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'"></select2>
+                        </td>
+                    </tr>
+                </table>
             </el-form-item>
-
+            
             <!-- TODO doesn't support nested parameters-->
             <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value !== undefined">
                 <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01">
@@ -70,6 +78,7 @@ import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import select2 from '@/components/select2'
+import projectselecter from '@/components/projectselecter'
 
 const lib = require('./lib');
 
@@ -77,7 +86,7 @@ export default {
     components: { 
         sidemenu, contact, project, 
         tags, metadata, pageheader, 
-        appavatar, select2
+        appavatar, select2, projectselecter
      },
 
     data () {
@@ -89,6 +98,7 @@ export default {
                 desc: "",
                 //project_id: localStorage.getItem("last_projectid_used")||"", 
                 inputs: {},
+                projects: {},
                 config: {},
             },
 
@@ -96,7 +106,7 @@ export default {
             datasets: {}, //available datasets grouped by input._id then project_id then array of datasets
             projects: [], //just names
             datasets_groups: {}, //datasets loaded for a given input - grouped by project id
-
+            
             config: Vue.config,
         }
     },
@@ -177,48 +187,32 @@ export default {
             }
             var dropdown_items = [];
             
-            // function that composes the dropdown item text from a given dataset
-            function compose_item_text(dataset) {
-                var dropdown_item_text = [];
+            let limit = 50, skip = (params.page - 1) * limit,
                 
-                if (dataset.meta && dataset.meta.subject) dropdown_item_text.push(dataset.meta.subject);
-                
-                // if there's datatype tags, add them to the dropdown string
-                if (dataset.datatype_tags) {
-                    // join all datatype tags so that the resultant string looks like:
-                    // <tag1> <tag2> <tag3>
-                    var tags = "";
-                    for (var tag of dataset.datatype_tags)
-                        tags += " <" + tag + "> ";
-                    dropdown_item_text.push(tags);
-                }
-                
-                // if there's a date, add it to the dropdwon string
-                if (dataset.create_date) {
-                    var date = new Date(dataset.create_date).toString();
-                    date = " | " + date;
-                    dropdown_item_text.push(date);
-                }
-                
-                return dropdown_item_text.join(" ");
-            }
-            
-            let limit = 50, skip = (params.page - 1) * limit;
-            this.$http.get('dataset', { params: {
-                find: JSON.stringify({
+                find_raw = {
                     datatype: input.datatype._id,
-                    removed: false,
-                }),
+                    removed: false
+                };
+            if (params.term) find_raw.$text = { $search: params.term };
+            if (this.form.projects[input.id]) find_raw.project = this.form.projects[input.id];
+            
+            this.$http.get('dataset', { params: {
+                find: JSON.stringify(find_raw),
                 sort: "project meta.subject -create_date",
                 limit,
                 skip
             }})
             .then(res => {
-                // dropdown menu item to add
                 res.body.datasets.forEach(dataset => {
+                    var subject = "(non-existing)";
+                    if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+                    
+                    // dropdown menu item to add
                     var item = {
-                        text: compose_item_text(dataset),
                         id: dataset._id,
+                        text: subject,
+                        date: dataset.create_date,
+                        tags: dataset.datatype_tags
                     };
                     
                     //var subject = "(non-existing)";
@@ -266,7 +260,7 @@ export default {
                 }
                 debounce = setTimeout(function() {
                     debounce = null;
-                    vm.grab_items(input, params, cb);
+                    vm.grab_items.call(vm, input, params, cb);
                 }, 300);
             }
         },
@@ -420,7 +414,7 @@ export default {
                 console.error(err);
             });
         }
-    },
+    }
 }
 </script>
 
@@ -437,5 +431,3 @@ background-color: white;
 padding: 20px;
 }
 </style>
-
-
