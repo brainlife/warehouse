@@ -23,11 +23,11 @@
         <el-form :model="form" ref="form" label-position="left" label-width="200px">
             <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
             <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
-                <el-row style="width:100%;">
+                <el-row :gutter="1">
                     <el-col :span="8" style="padding-right:7px;">
                         <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'"></projectselecter>
                     </el-col>
-                    <el-col :span="16">
+                    <el-col :span="15">
                         <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'"></select2>
                     </el-col>
                 </el-row>
