@@ -18,7 +18,6 @@ const db = require('../api/models');
 
 db.init(function(err) {
     if(err) throw err;
-
     run();
 });
 
@@ -26,9 +25,10 @@ function run() {
 	db.Rules.find({
         active: true,
         removed: false,
-    }).exec((err, rules)=>{
+    })
+    .populate('app output_project input_project')
+    .exec((err, rules)=>{
 		if(err) throw err;
-
         async.eachSeries(rules, (rule, next_rule)=>{
             handle_rule(rule, next_rule);
         }, err=>{
@@ -43,7 +43,6 @@ function run() {
 function handle_rule(rule, cb) {
 
     var jwt = null;
-    var app = null;
     var subjects = null;
     var running = null; //number of currently running tasks for this rule
 
@@ -101,6 +100,7 @@ function handle_rule(rule, cb) {
             });
         },
 
+        /*
         //first load the app we might be submitting
         next=>{
             db.Apps.findById(rule.app)
@@ -117,12 +117,13 @@ function handle_rule(rule, cb) {
                 next();
             });
         },
+        */
 
         //enumerate all subjects under rule's project
         next=>{
             logger.debug("enum subjects");
             db.Datasets.find({
-                project: rule.input_project,
+                project: rule.input_project._id,
             })
             .distinct("meta.subject", (err, _subjects)=>{
                 if(err) return next(err);
@@ -161,9 +162,10 @@ function handle_rule(rule, cb) {
 
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var missing = false;
-        async.eachSeries(app.outputs, (output, next_output)=>{
+        //logger.debug(JSON.stringify(app.outputs, null, 4));
+        async.eachSeries(rule.app.outputs, (output, next_output)=>{
             var query = {
-                project: rule.output_project,
+                project: rule.output_project._id,
                 removed: false,
                 datatype: output.datatype._id,
                 "meta.subject": subject,
@@ -196,7 +198,7 @@ function handle_rule(rule, cb) {
                     logger.info("outputs missing, but so are inputs.. skipping");
                     next_subject();
                 } else {
-                    logger.info("found inputs.. submitting task");
+                    logger.info("found all inputs.. submitting task");
                     
                     //see if we've already submitted task for this output
                     get_submitted_task(subject, (err, submitted)=>{
@@ -214,6 +216,13 @@ function handle_rule(rule, cb) {
     }
 
     function get_submitted_task(subject, next) {
+        /*
+        console.dir({
+                    "config._prov.rule": rule._id,
+                    "config._prov.subject": subject,
+                    status: { $ne: "removed" },
+        });
+        */
         request.get({
             url: config.wf.api+"/task", json: true,
             headers: { authorization: "Bearer "+jwt },
@@ -233,14 +242,19 @@ function handle_rule(rule, cb) {
     function find_inputs(subject, next) {
         var missing = false;
         var inputs = {};
-        async.eachSeries(app.inputs, (input, next_input)=>{
+        async.eachSeries(rule.app.inputs, (input, next_input)=>{
             //logger.debug("looking for input ", JSON.stringify(input, null, 4));
             var query = {
-                project: rule.input_project,
+                project: rule.input_project._id,
                 removed: false,
                 datatype: input.datatype,
                 "meta.subject": subject,
             }
+
+            //allow user to override which project to load input datasets from
+            if(rule.input_project_override && rule.input_project_override[input.id]) {
+                query.project = rule.input_project_override[input.id];
+            } 
             //if(input.datatype_tags.length > 0) query.datatype_tags = { $all: input.datatype_tags };
 
             //logger.debug(JSON.stringify(query, null, 4));
@@ -250,10 +264,9 @@ function handle_rule(rule, cb) {
             .lean()
             .exec((err, dataset)=>{
                 if(err) return next_input(err);
-                
 
                 if(!dataset) {
-                    logger.debug("found input missing", input.id, JSON.stringify(query, null, 4));
+                    logger.debug("found missing input", input.id, JSON.stringify(query, null, 4));
                     missing = true;
                     return next_input();
                 }
@@ -309,9 +322,8 @@ function handle_rule(rule, cb) {
         var task_out = null;
 		var meta = {}; //metadata to store for archived dataset
 
-        //console.log(JSON.stringify(inputs, null, 4));
-
-        var instance_name = "brainlife.rule."+rule._id+"."+subject;
+        var instance_name = "brainlife.rule project:"+rule.output_project._id+" subject:"+subject;
+        var instance_desc = "rule:"+rule.name+" for project:"+rule.output_project.name+" subject:"+subject;
 
         //prepare for stage / app / archive
         async.series([
@@ -324,7 +336,6 @@ function handle_rule(rule, cb) {
                     qs: {
                         find: JSON.stringify({
                             name: instance_name,
-                            //status: {$ne: "removed"},
                             "config.removing": {$exists: false},
                         }),
                     },
@@ -348,7 +359,7 @@ function handle_rule(rule, cb) {
                     headers: { authorization: "Bearer "+jwt },
                     body: {
                         name: instance_name,
-                        desc: "process for "+instance_name,
+                        desc: instance_desc,
                         
                         //TODO let's show under process page so I can debug
                         config: {
@@ -391,15 +402,16 @@ function handle_rule(rule, cb) {
                         //we still have the datasets staged.. just use that
                         var task = input.prov._task;
                         body.config.symlink.push({ 
-                            src: "../../"+task.instance_id+"/"+task._id+"/"+input.prov.dirname, //TODO - not sure if this is the right path?
-                            dest: input_id 
+                            src: "../../"+task.instance_id+"/"+task._id+"/"+input.prov.dirname, 
+                            dest: input._id 
                         }); 
                         body.deps.push(task._id);
                     } else {
+                        //we don't have it.. need to download
                         body.config.download.push({
                             url: config.warehouse.api+"/dataset/download/"+input._id+"?at="+jwt,
                             untar: "auto",
-                            dir: input_id,
+                            dir: input._id,
                         });
                     }
                 }
@@ -429,11 +441,11 @@ function handle_rule(rule, cb) {
 
             //submit the app task!
             next=>{
-                var _config = Object.assign(rule.config, resolve_config(app.config, inputs, task_stage));
+                var _config = Object.assign(rule.config, resolve_config(rule.app.config, inputs, task_stage));
 
                 //set some process ui _prov
                 _config._prov = {
-                    app: app._id,
+                    app: rule.app._id,
                     rule: rule._id,
                     subject: subject,
                     inputs: {},
@@ -446,10 +458,10 @@ function handle_rule(rule, cb) {
                 var body = {
                     instance_id: instance._id,
                     name: "brainlife.process",
-                    desc: "running applicaiton "+app.name+" for subject:"+rule._id+" subject:"+subject,
-                    service: app.github,
-                    service_branch: app.github_branch,
-                    retry: app.retry,
+                    desc: "running application:"+rule.app.name+" for rule:"+rule.name+" for subject:"+subject,
+                    service: rule.app.github,
+                    service_branch: rule.app.github_branch,
+                    retry: rule.app.retry,
 
                     config: _config,
                     deps: [ task_stage._id ], 
@@ -470,10 +482,10 @@ function handle_rule(rule, cb) {
             next=>{
                 var symlink = [];
                 var output_datasets = {}; //for prov
-                console.log("---------------------------------------------------------------------");
-                console.log(JSON.stringify(app.outputs, null, 4));
-                console.log("---------------------------------------------------------------------");
-				app.outputs.forEach(output=>{
+                //console.log("---------------------------------------------------------------------");
+                //console.log(JSON.stringify(app.outputs, null, 4));
+                //console.log("---------------------------------------------------------------------");
+				rule.app.outputs.forEach(output=>{
 					if(output.files) {
 						//has output file mapping.. organize symlink file/dir
                         for(var file_id in output.files) {
@@ -499,7 +511,7 @@ function handle_rule(rule, cb) {
                         
                         //if this is set, handle_task will auto-archive output datasets
                         archive: {
-                            project: rule.output_project,  
+                            project: rule.output_project._id,  
                             tags: rule.output_tags[output.id], 
                         }
                     }); 
@@ -508,7 +520,7 @@ function handle_rule(rule, cb) {
 
                 //for process ui _prov
                 var _prov = {
-                    app: app._id,
+                    app: rule.app._id,
                     output_datasets,
                 };
                     
@@ -519,7 +531,7 @@ function handle_rule(rule, cb) {
                     body: {
                         instance_id: instance._id,
                         name: "brainlife.stage_output",
-                        desc: "staging output for subject:"+rule._id+" subject:"+subject,
+                        desc: "staging output for rule:"+rule._id+" subject:"+subject,
                         service: "soichih/sca-product-raw",
                         config: { symlink, _prov },
                         deps: [ task_app._id ],
@@ -528,6 +540,10 @@ function handle_rule(rule, cb) {
                     task_out = _body.task;
                     logger.debug("submitted out task", task_out);
                     console.log(JSON.stringify(_body, null, 4));
+
+                    //debug..terminate after one
+                    //process.exit(1);
+
                     next(err);
                 });
             },
@@ -552,7 +568,8 @@ function resolve_config(config, inputs, task_stage) {
                 //find file
                 dataset.datatype.files.forEach(file=>{
                     if(file.id == v.file_id) {
-                        out[k] = "../"+task_stage._id+"/"+v.input_id+"/"+(file.filename||file.dirname);
+                        //out[k] = "../"+task_stage._id+"/"+v.input_id+"/"+(file.filename||file.dirname);
+                        out[k] = "../"+task_stage._id+"/"+dataset._id+"/"+(file.filename||file.dirname);
                     }
                 });
                 break;

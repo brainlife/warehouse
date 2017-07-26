@@ -245,6 +245,9 @@ var ruleSchema = mongoose.Schema({
     
     //project to look for missing datasets and to archive generated data
     input_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    
+    //if user wants to override where the input data comes from, specify projects IDs keyed by input id
+    input_project_override: mongoose.Schema.Types.Mixed,
 
     //app to submit
     app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
@@ -255,6 +258,7 @@ var ruleSchema = mongoose.Schema({
     output_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
     //any tags to set for each output id (object with key(output id)=>array(tags))
     output_tags: mongoose.Schema.Types.Mixed,
+
 
     //when this rule was last handled - used to find *new* datasets 
     //process_date: { type: Date },
