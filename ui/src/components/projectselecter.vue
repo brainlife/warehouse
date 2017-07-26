@@ -18,7 +18,7 @@ export default {
             project: null, //selected
             enumerated_projects: [], // [{id, text}, ...]
 
-            config: Vue.config,
+            // config: Vue.config,   // never used
         }
     },
     methods: {
