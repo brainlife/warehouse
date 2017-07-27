@@ -1,11 +1,11 @@
 <template>
-<el-card :body-style="{padding: '0px'}" v-if="app_" 
-    :class="{'compact': compact, 'clickable': clickable}">
+<el-card :body-style="{padding: '0px'}" v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
         <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
-        <h4 class="appname">{{app_.name}}</h4>
+        <h4 class="name">{{app_.name}}</h4>
+        <h5 class="github">{{app_.github}}</h5>
         <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
-        <div class="desc">{{app_.desc}}</div>
+        <div class="desc">{{app_.desc||'no desc..'}}</div>
         <div class="devs" v-if="!compact">
             <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
         </div>
@@ -55,22 +55,45 @@ export default {
 </script>
 
 <style scoped>
-.el-card.compact {
+.appcard {
+transition: box-shadow 0.5s;
+}
+.appcard.clickable {
+background-color: white;
+}
+.appcard.clickable:hover .name,
+.appcard.clickable:hover .github,
+.appcard.clickable:hover .desc {
+color: #2693ff;
+}
+.appcard.clickable:hover .github {
+opacity: 0.7;
+}
+.appcard:hover {
+box-shadow: 2px 2px 4px #999;
+}
+.appcard.compact {
 border: none;
 box-shadow: none;
 }
-.appname {
+.name {
 color: #666;
-padding: 10px;
-padding-bottom: 0px;
+padding: 0px;
+padding-top: 10px;
+}
+.github {
+opacity: 0.4;
+font-family: monospace;
+font-size: 80%;
 }
 .desc {
-height: 150px;
-overflow: auto;
+height: 130px;
 font-size: 13px;
 color: #666;
-margin: 10px;
 line-height: 140%;
+text-overflow:ellipsis;
+overflow: hidden;
+margin: 10px 10px;
 }
 .rate {
 height: 20px;
@@ -85,7 +108,13 @@ line-height: 140%;
 width: 100%;
 display: block;
 }
-.compact .appname {
+h5 {
+opacity: 0.7;
+}
+.compact h5 {
+display: none;
+}
+.compact .name {
 padding: 5px 0px;
 margin-bottom: 0px;
 }
@@ -105,7 +134,7 @@ margin-bottom: 0px;
   margin-right: -1em;
   padding-right: 1em;
   margin-bottom: 0px;
-    margin-top: 0px;
+  margin-top: 0px;
 }
 /* create the ... */
 .compact .desc :before {

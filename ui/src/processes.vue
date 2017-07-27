@@ -91,14 +91,7 @@ export default {
     mounted: function() {
         //load application details
         this.$http.get('app', {params: {
-            /*
-            find: JSON.stringify({
-                _id: this.$route.params.id,
-                "config.brainlife": true,
-                status: {$ne: "removed"},
-                "config.removing": {$exists: false},
-            })
-            */
+            find: JSON.stringify({ removed: false })
         }})
         .then(res=>{
             this.apps = {};

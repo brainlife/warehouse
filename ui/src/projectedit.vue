@@ -5,6 +5,7 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20">
+            <!--
             <el-breadcrumb separator="/">
                 <el-breadcrumb-item :to="{ path: '/projects' }">Projects</el-breadcrumb-item>
                 <el-breadcrumb-item v-if="project._id" :to="{ path: '/project/'+project._id }">{{project._id}}</el-breadcrumb-item>
@@ -12,6 +13,7 @@
                 <el-breadcrumb-item v-if="!project._id">New Project</el-breadcrumb-item>
             </el-breadcrumb>
             <br>
+            -->
 
             <h1 v-if="$route.params.id == '_'">New Project</h1>
             <h1 v-else><icon name="pencil" scale="2"/> Edit {{project.name}}</h1>
@@ -41,6 +43,9 @@
                     <el-form-item label="Members">
                         <contactlist v-model="project.members"></contactlist>
                         <p class="text-muted">Users who can update the project members</p>
+                    </el-form-item>
+                    <el-form-item label="Avatar">
+                        <el-input type="text" v-model="project.avatar" placeholder="URL of project avatar (optional)"/>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="check" @click="submit()">Submit</el-button>

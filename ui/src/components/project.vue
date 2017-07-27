@@ -1,5 +1,7 @@
 <template>
 <div>
+    <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
+    
   <table class="info">
   <tr>
       <th width="130px">Name</th>

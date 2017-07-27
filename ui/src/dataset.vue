@@ -6,21 +6,20 @@
         <div style="padding: 20px 20px 10px 20px; background-color: #666; color: white;">
             <div style="float: right">
                 <el-button-group>
-                    <el-button @click="remove()" v-if="dataset._canedit" icon="delete">Remove</el-button>
+                    <el-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</el-button>
 
-                    <el-button type="primary" @click="download()" icon="document">Download</el-button>
+                    <el-button type="primary" @click="download()" v-if="dataset.storage" icon="document">Download</el-button>
                 </el-button-group>
-                <viewerselect @select="view"></viewerselect>
+                <viewerselect @select="view" :datatype="dataset.datatype.name"></viewerselect>
             </div>
 
             <!--<h1><icon name="cube" scale="2"></icon> Dataset <small class="text-muted">{{dataset._id}}</small></h1>-->
             <h1>
                 <datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </h1>
-
-            <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         </div>
 
+        <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
         <tr>
             <th>Description</th>
@@ -29,6 +28,15 @@
         <tr>
             <th width="180px">Create Date</th>
             <td>{{dataset.create_date|date}}</td>
+        </tr>
+        <tr>
+            <th>Storage</th>
+            <td>
+                <div v-if="dataset.storage">
+                    This dataset is currently stored in <b>{{dataset.storage}}</b>
+                </div>
+                <el-alert v-else title="Archiving.." type="warning"> </el-alert>
+            </td>
         </tr>
         <tr>
             <th>Metadata</th>
@@ -51,15 +59,6 @@
             <td><contact :id="dataset.user_id"></contact></td>
         </tr>
         -->
-        <tr>
-            <th>Storage</th>
-            <td>
-                <div v-if="dataset.storage">
-                    This dataset is currently stored in <b>{{dataset.storage}}</b>
-                </div>
-                <el-alert v-else title="Archiving.." type="warning"> </el-alert>
-            </td>
-        </tr>
         <tr>
             <th>User Tags</th>
             <td>
@@ -266,10 +265,7 @@ export default {
                     "find": JSON.stringify({
                         //look for apps that uses my datatype as input
                         "inputs.datatype": this.dataset.datatype._id,
-                        $or: [
-                            { removed: false },
-                            { removed: {$exists: false }},
-                        ],
+                        removed: false,
                     }),
                     "populate": "inputs.datatype", //used by filter_apps
                 }})
@@ -280,16 +276,70 @@ export default {
                 //console.dir(this.dataset);
                 this.apps = lib.filter_apps(this.dataset, res.body.apps);
             }).catch(err=>{
-                console.error(res);
+                console.error(err);
             });
         },
         bibtex: function() {
             document.location = '/api/warehouse/dataset/bibtex/'+this.dataset._id;
         },
-        view: function(taskid, event) {
-            alert('todo.. please go to datasets / select and view');
+        get_instance: function() {
+            //first create an instance to download things to
+            return this.$http.post(Vue.config.wf_api+'/instance', {
+                name: "brainlife.download",
+                config: {
+                    selected: this.selected,
+                }
+            }).then(res=>res.body);
+        },
+        view: function(view) {
             //var url = taskid+'/'+event;
             //window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
+
+            function openview(task) {
+                view = view.replace('/', '.');
+                window.open("#/view/"+task.instance_id+"/"+task._id+"/"+view+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+            }
+
+            //first, query for the viewing task to see if it already exist
+            var name = "brainlife.view "+this.dataset._id+ " "+view;
+            this.$http.get(Vue.config.wf_api+'/task', {params: {
+                find: JSON.stringify({ name })
+            }})
+            .then(res=>{
+                if(res.body.count == 1) {
+                    openview(res.body.tasks[0]);
+                } else {
+                    var download_instance = null;
+                    this.get_instance().then(instance=>{
+                        download_instance = instance;
+
+                        var download = [];
+                        download.push({
+                            url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
+                            untar: "auto",
+                            //dir: "download/"+this.dataset._id, 
+                            dir: "output",
+                        });
+
+                        //remove in 48 hours (abcd-novnc should terminate in 24 hours)
+                        var remove_date = new Date();
+                        remove_date.setDate(remove_date.getDate()+2);
+
+                        return this.$http.post(Vue.config.wf_api+'/task', {
+                            instance_id: download_instance._id,
+                            name,
+                            service: "soichih/sca-product-raw",
+                            //preferred_resource_id: resource,
+                            config: { download },
+                            remove_date: remove_date,
+                        }).then(res=>res.body.task);
+                        return this.stage_selected(download_instance);
+                    }).then(task=>{
+                        openview(task);
+                    });
+                }
+            });
+
         },
     },
 }
@@ -307,5 +357,8 @@ export default {
     width: 325px; 
     float: left;
     margin-right: 10px;
+}
+.el-alert {
+border-radius: inherit;
 }
 </style>

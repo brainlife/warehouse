@@ -1,26 +1,24 @@
 <template>
-    <el-select ref="select" :value="project" @input="update" placeholder="Please select" style="width: 100%;">
-        <el-option v-for="project in projects" :label="project.name" :value="project._id" :key="project._id">
-            {{project.name}} 
-            <projectaccess :access="project.access"></projectaccess>
-        </el-option>
-    </el-select>
+    <div>
+        <select2 v-if="enumerated_projects" ref="select" :value="project" @input="update" :placeholder="placeholder||'Please Select'" style="width:100%;" :options="enumerated_projects"></select2>
+    </div>
 </template>
 
 <script>
 import Vue from 'vue'
 
 import projectaccess from '@/components/projectaccess'
+import select2 from '@/components/select2'
 
 export default {
-    components: { projectaccess },
-    props: [ 'value' ],
+    components: { projectaccess, select2 },
+    props: [ 'value', 'placeholder' ],
     data() {
         return {
-            projects: null,
-            project: null,
+            project: null, //selected
+            enumerated_projects: [], // [{id, text}, ...]
 
-            config: Vue.config,
+            // config: Vue.config,   // never used
         }
     },
     methods: {
@@ -41,12 +39,21 @@ export default {
         }
 
         this.$http.get('project', {params: {
-            find: JSON.stringify({$or: [
-                { members: Vue.config.user.sub}, 
-                { access: "public" },
-            ]})
+            find: JSON.stringify({
+                $or: [
+                    { members: Vue.config.user.sub}, 
+                    { access: "public" },
+                ],
+                removed: false,
+            })
         }}).then(res=>{
-            this.projects = res.body.projects;
+            //group by public / private
+            res.body.projects.forEach(project=>{
+                this.enumerated_projects.push({
+                    id: project._id,
+                    text: project.name
+                });
+            });
         });
     }
 }

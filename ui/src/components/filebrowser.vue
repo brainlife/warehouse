@@ -87,7 +87,7 @@ export default {
 
     watch: {
         task: function(v) {
-            alert('task update detected by filebroser - need to refresh content')
+            console.log('todo.. task update detected by filebroser - need to refresh content');
         }
     },
 

@@ -33,49 +33,6 @@
             <icon name="cog" scale="2"></icon><br>Settings
         </li>
     </ul>
-    <!--<projectmenu></projectmenu>-->
-    <!--
-    <el-menu class="menu" :router="true" :default-active="active" theme="dark">
-        <el-menu-item index="/" v-if="config.debug"><icon name="tachometer"></icon>Dashboard</el-menu-item>
-        <el-menu-item index="/apps"><icon name="th-large"></icon>Apps</el-menu-item>
-        <el-menu-item index="/processes"><icon name="paper-plane"></icon>Process</el-menu-item>
-        <el-menu-item index="/projects"><icon name="shield"></icon>Projects</el-menu-item>
-
-        <el-submenu index="/datasets"> 
-            <template slot="title"><icon name="cubes"></icon>Datasets</template>
-            <el-menu-item-group title="Private Projects">
-                <el-menu-item :index="'/datasets/'+project_id" 
-                    v-for="(project, project_id) in projects" 
-                    v-if="project.access == 'public'"
-                    key="project_id">{{project.name}}</el-menu-item>
-            </el-menu-item-group>
-            <el-menu-item-group title="Public Projects">
-                <el-menu-item :index="'/datasets/'+project_id" 
-                    v-for="(project, project_id) in projects" 
-                    v-if="project.access == 'private'"
-                    key="project_id">{{project.name}}</el-menu-item>
-            </el-menu-item-group>
-        </el-submenu>
-
-        <el-submenu v-if="config.debug" index="needed"> 
-            <template slot="title"><icon name="flask"></icon>Test</template>
-            <el-menu-item-group title="Group One">
-                <el-menu-item index="1-1">item one</el-menu-item>
-                <el-menu-item index="1-2">item one</el-menu-item>
-            </el-menu-item-group>
-            <el-menu-item-group title="Group Two">
-                <el-menu-item index="1-3">item three</el-menu-item>
-            </el-menu-item-group>
-            <el-submenu index="1-4">
-                <template slot="title">item four</template>
-                <el-menu-item index="1-4-1">item one</el-menu-item>
-            </el-submenu>
-        </el-submenu>
-        <el-menu-item index="/settings" @click="open_settings()">
-            <icon name="cog"></icon>Settings
-        </el-menu-item>
-    </el-menu>
-    -->
 </div>
 </template>
 
@@ -89,27 +46,11 @@ export default {
     data () {
         return {
             
-            projects: null, 
-
             config: Vue.config,
         }
     },
 	props: { active: String },
 	mounted: function() {
-		//$(this.$el).find('.ui.dropdown').dropdown();
-
-        this.$http.get('project', {params: {
-            //service: "_upload",
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.body.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-
-        }).catch(err=>{
-            console.error(err);
-        });
 	},
     methods: {
         /*

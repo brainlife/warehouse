@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/soichih/warehouse#readme",
   "dependencies": {
+    "amqp": "^0.2.6",
     "async": "^2.4.1",
     "body-parser": "^1.17.2",
     "callback-timeout": "^3.0.0",
@@ -29,6 +30,7 @@
     "mongoose": "^4.11.1",
     "pkgcloud": "^1.4.0",
     "request": "^2.79.0",
+    "tar": "^3.1.5",
     "winston": "^2.3.1"
   },
   "devDependencies": {

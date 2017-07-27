@@ -36,6 +36,8 @@ export default {
 body {
 background-color: #f0f0f0;
 color: #444;
+height:100%;
+overflow: hidden;
 }
 body, textarea, input, table {
 font-family: 'Roboto', sans-serif;

@@ -21,8 +21,7 @@
                     @click="show_input_dialog = true" v-bind:class="{animated: true, headShake: _datasets.length == 0}" icon="plus"> Stage Datasets</el-button>
                 <h3>Input Datasets</h3>
                 <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
-                    @click="go('/dataset/'+dataset.did)"
-                    v-if="dataset.task.name == 'brainlife.stage_input'">
+                    @click="go('/dataset/'+dataset.did)" v-if="dataset.task.name == 'brainlife.stage_input'">
                     <mute>D{{idx}}</mute> 
                     <b>{{dataset.meta.subject}}</b>
                     <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
@@ -31,15 +30,13 @@
                         <small v-if="dataset.task.status != 'finished'">
                             <statusicon :status="dataset.task.status"></statusicon> Staging
                         </small>
-                        <!--<icon v-else-if="dataset.task.status == 'finished'" name="check" style="color: green;"/>-->
                     </mute>
                 </div>
 
                 <br>
                 <h3>Output Datasets</h3>
                 <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
-                    @click="scrollto(dataset.task._id)"
-                    v-if="dataset.task.name == 'brainlife.stage_output'">
+                    @click="scrollto(dataset.task._id)" v-if="dataset.task.name == 'brainlife.stage_output'">
                     <!-- 
                         tasks used to organize generated output datasets are hidden, 
                         so to display the actual task ID of the apps themselves, I assume that 
@@ -53,7 +50,7 @@
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
                         <small v-if="dataset.task.status != 'finished'">
-                            <statusicon :status="dataset.task.status"/> Processing
+                            <statustag :status="dataset.task.status"/>
                         </small>
 
                         <span v-if="dataset.dataset_id">
@@ -79,17 +76,20 @@
             </p>
 
             <div v-for="(task, idx) in tasks" :key="idx" class="process">
-                <div v-if="task.name == 'brainlife.stage_input'"></div><!--we don't show input-->
+
+                <!--
+                <el-input type="textarea" v-if="task.desc" v-model="task.desc"/>
+                -->
+                <p class="text-muted" v-if="task.name == 'brainlife.process' && task.desc">{{task.desc}}</p>
 
                 <task style="margin-top: 5px;" 
                     :task="task" :prov="task.config._prov" v-if="task._id && task.name == 'brainlife.process'" @remove="task_removed">
-
                     <!--header-->
                     <div slot="header" class="task-header">
                         <div style="float: left" v-if="_output_tasks[task._id]">
                             <!--why using _output_task's id? I use this to jump from the output dataset list on the sidebar.. 
                             and I am too lazy to lookup the main task id from the output task id-->
-                            <h3 :id="_output_tasks[task._id]._id"><mute>T{{idx}}</mute></h3>
+                            <h3 :id="_output_tasks[task._id]._id" :title="task._id"><mute>T{{idx}}</mute></h3>
                         </div>
                         <div v-if="task.config._prov" style="margin-left: 50px;">
                             <!--task.config._prov.app.id is deprecated -->
@@ -97,7 +97,6 @@
                         </div>
                         <div v-if="!task.config._prov" style="margin-left: 50px">
                             <h3 style="margin-bottom: 0px; color: #666;">{{task.service}} <mute>{{task.name}}</mute></h3>
-                            <mute>{{task.desc}}</mute>
                         </div>
                     </div>
 
@@ -143,14 +142,14 @@
                                         <viewerselect @select="view(_output_tasks[task._id]._id, $event, output_id)" :datatype="datatypes[dataset.datatype].name" 
                                             size="small" style="margin-right: 5px;"></viewerselect>
                                         <el-button size="small" type="primary"
-                                            v-if="archiving != dataset._id && !dataset.dataset_id" @click="archiving = dataset._id">Archive</el-button>
+                                            v-if="archiving != _output_tasks[task._id]._id+'/'+output_id  && !dataset.dataset_id" @click="archiving = _output_tasks[task._id]._id+'/'+output_id">Archive</el-button>
                                         <el-button size="small" 
                                             v-if="dataset.dataset_id" @click="go('/dataset/'+dataset.dataset_id)" icon="check">Archived</el-button>
                                     </div>
                                     <statustag v-else :status="_output_tasks[task._id].status"/>
                                 </div>
 
-                                <archiveform v-if="archiving == dataset._id" 
+                                <archiveform v-if="archiving == _output_tasks[task._id]._id+'/'+output_id" 
                                     :instance="instance" 
                                     :app_id="_output_tasks[task._id].config._prov.app"
                                     :output_task="_output_tasks[task._id]" 
@@ -159,11 +158,6 @@
                                     @submitted="archiving = null" style="margin-top: 30px;"></archiveform>
                             </el-col>
                             </el-row>
-
-                            <!-- need to move to viewerselect..
-                            <datatypeui v-if="_output_tasks[task._id].status == 'finished'" 
-                                :datatype="datatypes[dataset.datatype].name" :task="_output_tasks[task._id]" :subdir="output_id"></datatypeui>
-                            -->
                         </div>
                     </el-collapse-item>
                 </task>
@@ -339,7 +333,7 @@ export default {
             selected_datatypes: [],
             selected_tags: [],
     
-            //currently open archiving form
+            //currently open archiving form (_output_tasks[task._id]._id+'/'+output_id)
             archiving: null,
 
             config: Vue.config,
@@ -664,10 +658,7 @@ export default {
             this.$http.get('app', {params: {
                 find: JSON.stringify({
                     "inputs.datatype": {$in: datatype_ids},
-                    $or: [
-                        { removed: false },
-                        { removed: {$exists: false }},
-                    ],
+                    removed: false,
                 }),
                 populate: 'inputs.datatype',
             }})

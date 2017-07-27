@@ -19,44 +19,16 @@ const db = require('../api/models');
 db.init(function(err) {
     if(err) throw err;
 
-	/*
-    //simulate rule record
-    var rule = {
-        _id: "123456",
-
-        //rule can be applied to a specific project
-        project: "58bfa5d07a92c43c7d9e5484", //development
-
-        //application to run
-        app: "58cdf136e13a50849b258836", //mrtrix tracking
-        //app: "58d15dece13a50849b258842", //life
-
-        //configuration used to run the app (excluding inputs - inputs will be set automatically
-        config: {
-            lmax: 6,
-            fibers_max: 900000,
-            fibers: 400000,
-        },
-
-        //for each input that the app requires, it will look for any new datasets that matches that criteria
-        //process_date is used to look for *new* datasets
-        //gets updated when the rule is triggered
-        process_date: new Date("2017-05-01"), 
-
-        //when application finishes,
-        archive: {
-        }
-    }
-	*/
-
 	db.Rules.find().exec((err, rules)=>{
 		if(err) throw err;
         console.log(JSON.stringify(rules, null, 4));
 
-        //TODO - handle all rules
-        var rule = rules[0];
-        handle_rule(rules[0], err=>{
+        async.eachSeries(rules, (rule, next_rule)=>{
+            handle_rule(rule, next_rule);
+        }, err=>{
             if(err) throw err;
+            logger.debug("done with all rules");
+            db.disconnect();
         });
 	});
 });
@@ -67,11 +39,13 @@ function handle_rule(rule, cb) {
     var process_date = rule.process_date; //keep old date to compare things against..
     var app = null;
     var subjects = null;
-   
+
+    /* 
     //DEBUG----------------------------------------------------------------------------------------------------------------------------
     //this lets me rerun rule that I just handled
     process_date = new Date("2017-05-01");
     //DEBUG----------------------------------------------------------------------------------------------------------------------------
+    */
 
     //prepare for stage / app / archive
     async.series([
@@ -98,11 +72,17 @@ function handle_rule(rule, cb) {
 
         //first load the app we might be submitting
         next=>{
-            db.Apps.findById(rule.app, (err, _app)=>{
+            db.Apps.findById(rule.app)
+			.populate('outputs.datatype')
+            .lean() // so that I can set meta?
+			.exec((err, _app)=>{
                 if(err) return next(err);
                 console.log(_app.name);
                 console.dir(_app.config);  
                 app = _app;
+                //console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+                //console.log(JSON.stringify(app.outputs, null, 4));
+                //console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
                 next();
             });
         },
@@ -111,7 +91,7 @@ function handle_rule(rule, cb) {
         next=>{
             logger.debug("enum subjects");
             db.Datasets.find({
-                project: rule.project,
+                project: rule.input_project,
             })
             .distinct("meta.subject", (err, _subjects)=>{
                 if(err) return next(err);
@@ -126,12 +106,15 @@ function handle_rule(rule, cb) {
         },
     ], err=>{
         if(err) return cb(err);
-        logger.debug("done processing rule");
+        logger.debug("done processing all rules");
         cb();
     });
 
     function handle_subject(subject, next_subject) {
         logger.debug("handling subject", subject);
+
+        //debug
+        //fs.writeFileSync("app."+new Date().getTime(), JSON.stringify(app, null, 4));
 
         //for each input.. see there is any new datasets created since last process_date
         var foundnew = false;
@@ -139,7 +122,7 @@ function handle_rule(rule, cb) {
         async.eachSeries(app.inputs, (input, next_input)=>{
             
             var query = {
-                project: rule.project,
+                project: rule.input_project,
                 removed: false,
                 datatype: input.datatype,
             }
@@ -190,18 +173,22 @@ function handle_rule(rule, cb) {
             }
 
             submit_tasks(subject, inputs, next_subject);
-            
-        }, err=>{
+        });
+        /*
+        , err=>{
             if(err) return cb(err);
             logger.info("all done");
         });
+        */
     }
 
-    function submit_tasks(subject, inputs, next_subject) {
+    function submit_tasks(subject, inputs, cb) {
         var instance_name = "brainlife.rule."+rule._id+"."+subject;
         var instance = null;
         var task_stage = null;
         var task_app = null;
+        var task_out = null;
+		var meta = {}; //metadata to store for archived dataset
 
         //prepare for stage / app / archive
         async.series([
@@ -212,12 +199,19 @@ function handle_rule(rule, cb) {
                     url: config.wf.api+"/instance", json: true,
                     headers: { authorization: "Bearer "+jwt },
                     qs: {
-                        find: JSON.stringify({name: instance_name}),
+                        find: JSON.stringify({
+                            name: instance_name,
+                            //status: {$ne: "removed"},
+                            "config.removing": {$exists: false},
+                        }),
                     },
                 }, (err, res, body)=>{
                     if(err) return next(err);
                     instance = body.instances[0];
-                    if(instance) logger.debug("using instance", instance.name);
+                    if(instance) {
+                        logger.debug("using instance");
+                        logger.debug(JSON.stringify(instance, null, 4));
+                    }
                     next();
                 });
             },
@@ -231,7 +225,12 @@ function handle_rule(rule, cb) {
                     headers: { authorization: "Bearer "+jwt },
                     body: {
                         name: instance_name,
-                        //config: {}
+                        desc: "process for "+instance_name,
+                        
+                        //TODO let's show under process page so I can debug
+                        config: {
+                            brainlife: true,
+                        }
                     },
                 }, (err, res, body)=>{
                     instance = body;
@@ -239,32 +238,44 @@ function handle_rule(rule, cb) {
                 });
             },
 
-            //submit staging task
+            //submit input staging task
             next=>{
+                //process UI prov..
+                var datasets = {};
+                for(var input_id in inputs) {
+                    var input = inputs[input_id];
+                    datasets[input._id] = Object.assign({}, input);
+                    datasets[input._id].datatype = datasets[input._id].datatype._id; //unpopulate datatype to keep it clean
+                }
+
                 var body = {
                     instance_id: instance._id,
-                    name: "staging input for subject:"+rule._id+" subject:"+subject,
+                    name: "brainlife.stage_input",
+                    desc: "staging input for subject:"+rule._id+" subject:"+subject,
                     service: "soichih/sca-product-raw",
 
                     config: {
                         symlink: [], //for datasets that we have tasks for
-                        download: [] //for datasets that produced task no longer exists
+                        download: [], //for datasets that produced task no longer exists
+                        datasets,
                     },
                     deps: [],
                 }
 
                 for(var input_id in inputs) {
-                    var task = inputs[input_id].prov._task;
+                    var input = inputs[input_id];
+                    var task = input.prov._task;
                     if(task && task.status == 'finished') {
-                        //we still have the datasets!
+                        //we still have the datasets staged.. just use that
                         body.config.symlink.push({ 
-                            src: "../../"+task.instance_id+"/"+task._id+"/"+input_id, //TODO - not sure if this is the right path?
+                            src: "../../"+task.instance_id+"/"+task._id+"/"+input.prov.dirname, //TODO - not sure if this is the right path?
                             dest: input_id 
                         }); 
                         body.deps.push(task._id);
                     } else {
+                        logger.debug("input dataset:"+input._id+" is no longer staged on task that generated it.."+task._id+"("+task.status+") Need to download it again");
                         body.config.download.push({
-                            url: config.warehouse.api+"/dataset/download/"+inputs[input_id]._id+"?at="+jwt,
+                            url: config.warehouse.api+"/dataset/download/"+input._id+"?at="+jwt,
                             untar: "auto",
                             dir: input_id,
                         });
@@ -278,21 +289,45 @@ function handle_rule(rule, cb) {
                 }, (err, res, _body)=>{
                     console.log(JSON.stringify(_body, null, 4));
                     task_stage = _body.task;
-                    logger.debug("submitted staging task", task_stage);
+                    logger.debug("submitted staging task");//, task_stage);
                     next(err);
                 });
             },
 
-
-            //submit app task
             next=>{
+                //aggregate metadata (TODO - I really need just subject?)
+				for(var input_id in inputs) {
+					var input = inputs[input_id];
+					for(var k in input.meta) {
+						meta[k] = input.meta[k];
+					}
+				}
+                next();
+            },
+
+            //submit the app task!
+            next=>{
+                var _config = Object.assign(rule.config, resolve_config(app.config, inputs, task_stage));
+
+                //set some process ui _prov
+                _config._prov = {
+                    app: app._id,
+                    inputs: {},
+                }
+                for(var input_id in inputs) {
+                    var input = inputs[input_id];
+                    _config._prov.inputs[input_id] = input._id;
+                }
+                
                 var body = {
                     instance_id: instance._id,
-                    name: "running applicaiton "+app.name+" for subject:"+rule._id+" subject:"+subject,
+                    name: "brainlife.process",
+                    desc: "running applicaiton "+app.name+" for subject:"+rule._id+" subject:"+subject,
                     service: app.github,
                     service_branch: app.github_branch,
+                    retry: app.retry,
 
-                    config: Object.assign(rule.config, resolve_config(app.config, inputs, task_stage)),
+                    config: _config,
                     deps: [ task_stage._id ], 
                 }
                 request.post({
@@ -306,10 +341,73 @@ function handle_rule(rule, cb) {
                     next(err);
                 });
             },
-        ], err=>{
-            logger.debug("TODO - move to next subject");
-            //next_subject(err);
-        });
+
+            //submit output organize task
+            next=>{
+                var symlink = [];
+                var output_datasets = {}; //for prov
+                console.log("---------------------------------------------------------------------");
+                console.log(JSON.stringify(app.outputs, null, 4));
+                console.log("---------------------------------------------------------------------");
+				app.outputs.forEach(output=>{
+					if(output.files) {
+						//has output file mapping.. organize symlink file/dir
+                        for(var file_id in output.files) {
+                            //find datatype file id in datatype definition
+                            output.datatype.files.forEach(datatype_file=>{
+                                if(datatype_file.id == file_id) {
+                                    var name = datatype_file.filename||datatype_file.dirname;
+                                    symlink.push({ 
+                                        "src": "../"+task_app._id+"/"+output.files[file_id], 
+                                        "dest": output.id+"/"+name 
+                                    });
+                                }
+                            });
+                        }
+					} else {
+						//copy everything under taskdir
+						symlink.push({"src": "../"+task_app._id, "dest": output.id});
+					}
+
+					output_datasets[output.id] = Object.assign({}, output, {
+                        meta,
+                        datatype: output.datatype._id, //override to unpopulate
+                        
+                        //if this is set, handle_task will auto-archive output datasets
+                        archive: {
+                            project: rule.output_project,  
+                            tags: rule.output_tags[output.id], 
+                        }
+                    }); 
+                    //console.log(JSON.stringify(output_datasets, null, 4));
+				});
+
+                //for process ui _prov
+                var _prov = {
+                    app: app._id,
+                    output_datasets,
+                };
+                    
+                //submit task
+                request.post({
+                    url: config.wf.api+'/task', json: true, 
+                    headers: { authorization: "Bearer "+jwt },
+                    body: {
+                        instance_id: instance._id,
+                        name: "brainlife.stage_output",
+                        desc: "staging output for subject:"+rule._id+" subject:"+subject,
+                        service: "soichih/sca-product-raw",
+                        config: { symlink, _prov },
+                        deps: [ task_app._id ],
+                    },
+                }, (err, res, _body)=>{
+                    console.log(JSON.stringify(_body, null, 4));
+                    task_out = _body.task;
+                    logger.debug("submitted out task", task_out);
+                    next(err);
+                });
+            },
+        ], cb);
     }
 }
 

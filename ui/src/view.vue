@@ -1,14 +1,23 @@
 <template>
-<div v-if="tasks">
-    <dtiinit v-if="type == 'neuro.dtiinit_output'" :task="tasks[0]" :subdir="subdir"></dtiinit>
-    <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="tasks[0]" :subdir="subdir"></freesurfer>
-    <afq v-else-if="type == 'neuro.afq_output'" :task="tasks[0]" :subdir="subdir"></afq>
-    <life v-else-if="type == 'neuro.life_output'" :task="tasks[0]" :subdir="subdir"></life>
-    <evaluator v-else-if="type == 'neuro.conneval_output'" :task="tasks[0]" :subdir="subdir"></evaluator>
-
-    <!--assume novnc staging..-->
-    {{status}}
-    <pre>{{novnc_task}}</pre>
+<div>
+    <div v-if="task && task.status == 'finished'">
+        <dtiinit v-if="type == 'neuro.dtiinit_output'" :task="task" :subdir="subdir"></dtiinit>
+        <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="task" :subdir="subdir"></freesurfer>
+        <afq v-else-if="type == 'neuro.afq_output'" :task="task" :subdir="subdir"></afq>
+        <life v-else-if="type == 'neuro.life_output'" :task="task" :subdir="subdir"></life>
+        <evaluator v-else-if="type == 'neuro.conneval_output'" :task="task" :subdir="subdir"></evaluator>
+        <images v-else-if="type == 'generic.images'" :task="task" :subdir="subdir"></images>
+        <div v-else style="margin: 20px;">
+            <h2>Staging Data</h2>
+            <task :task="task"/>
+            <h2>Starting Viewer</h2>
+            <task :task="novnc_task"/>
+        </div>
+    </div>
+    <div v-else style="margin: 20px;">
+        <h2>Staging Data</h2>
+        <task :task="task"/>
+    </div>
 </div>
 </template>
 
@@ -21,13 +30,15 @@ import freesurfer from '@/components/appuis/freesurfer'
 import afq from '@/components/appuis/afq'
 import life from '@/components/appuis/life'
 import evaluator from '@/components/appuis/evaluator'
+import images from '@/components/appuis/images'
+import task from '@/components/task'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
     props: [ 'instanceid', 'taskid', 'type', 'subdir' ],
     components: { 
-        dtiinit, freesurfer, afq, life, evaluator,
+        dtiinit, freesurfer, afq, life, evaluator, images, task
     },
 
     data () {
@@ -35,37 +46,18 @@ export default {
             instance: null,
             error: null,
 
-            //for novnc view
-            tasks: null,
-            novnc_task: null,
-
-            status: null,
+            task: null, //input task
+            novnc_task: null, //novnc task for novnc based views
         }
     },
 
     mounted: function() {
-        //TODO - need a better way to know which is which?
-        switch(this.type) {
-        case "neuro.dtiinit_output":
-        case "neuro.freesurfer":
-        case "neuro.afq_output":
-        case "neuro.life_output":
-        case "neuro.conneval_output":
-            //load task that contains the data
-            this.$http.get(Vue.config.wf_api+'/task', {params: {
-                find: JSON.stringify({ _id: this.taskid, })
-            }})
-            .then(res=>{
-                this.tasks = res.body.tasks;
-            });
-            break;
-        default:
-            //assume it's abcd-novnc app
-            this.open_novnc();
-        }
-    },
-
-    computed: {
+        this.wait(()=>{
+            //need to submit novnc task for novnc views //TODO - need a better way to know which is which?
+            if(!~this.type.indexOf(".")) {
+                this.open_novnc();
+            }
+        });
     },
 
     methods: {
@@ -73,7 +65,33 @@ export default {
             this.$router.push(path);
         },
 
-        open_novnc: function() {
+        //wait for the data task to finish
+        wait: function(cb) {
+            this.$http.get(Vue.config.wf_api+'/task', {params: {
+                find: JSON.stringify({ _id: this.taskid, })
+            }})
+            .then(res=>{
+                this.task = res.body.tasks[0];
+                console.log("polling", this.task.status, this.task.status_msg);
+                if(this.task.status == 'finished') cb();
+                else if(this.task.status == 'removed') {
+                    this.rerun();
+                    setTimeout(()=>{this.wait(cb)}, 5000);
+                } else setTimeout(()=>{this.wait(cb)}, 1000);
+            });
+        },
+
+        rerun() {
+            this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.taskid)
+            .then(res=>{
+                console.dir(res); 
+            })
+            .catch(err=>{
+                console.error(err); 
+            });
+        },
+
+        open_novnc() {
             this.get_instance_singleton("novnc").then((instance)=>{
                 console.log("using instance", instance);
                 var task_name = "brainlife.novnc";
@@ -126,13 +144,10 @@ export default {
             });
         },
  
-        check_status: function() {
-            //console.dir(this.novnc_task);
-            this.status = "unknown";
-            switch(this.novnc_task.status) {
-            case "running": 
-                this.status = this.novnc_task.status_msg.trim();
-                if(this.status == "running") {
+        check_status() {
+            if(this.novnc_task.status == "running") {
+                var msgpart = this.novnc_task.status_msg.trim();
+                if(msgpart == "running") {
                     //load url.txt
                     var path = this.novnc_task.instance_id+'/'+this.novnc_task._id+'/url.txt'
                     var url = Vue.config.wf_api+'/resource/download'+
@@ -140,21 +155,22 @@ export default {
                         '&p='+encodeURIComponent(path)+
                         '&at='+Vue.config.jwt;
                     this.$http.get(url).then(function(res) {
+                        //load novnc!
                         document.location = res.body;
                     }, function(err) {
                         console.error(err);
                     });
                 }
-            case "finished":
-                this.status = "finished";
-                console.log("TODO novnc finished! -- need to restart?");
-                break;
-            default:
-                this.status = this.novnc_task.status;
             }
+            /*
+            case "finished":
+                console.error("TODO novnc finished! -- need to restart?");
+                break;
+            }
+            */
         },
 
-        get_instance_singleton: function() {
+        get_instance_singleton() {
             return new Promise((resolve, reject) => {
                 //console.log("querying instance");
                 this.$http.get(Vue.config.wf_api+'/instance', {params: {
@@ -180,7 +196,7 @@ export default {
             });
         },
 
-        subscribe_ws: function() {
+        subscribe_ws() {
             var instanceid = this.novnc_task.instance_id;
             var taskid = this.novnc_task._id;
 

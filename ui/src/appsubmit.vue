@@ -21,19 +21,18 @@
 
     <div class="content" v-if="app && projects">
         <el-form :model="form" ref="form" label-position="left" label-width="200px">
-
             <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
             <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
-                <el-select v-model="form.inputs[input.id]" placeholder="Please select input dataset" style="width: 100%;">
-                    <el-option-group v-for="(group, project_id) in datasets[input.id]" :key="project_id" :label="projects[project_id].name">
-                        <el-option v-for="(dataset, dataset_id) in group" :key="dataset_id" 
-                            :value="dataset_id" :label="projects[project_id].name+' / '+dataset.meta.subject+' '+dataset.datatype_tags.toString()">
-                            {{dataset.meta.subject}} <small class="text-muted">{{dataset.datatype_tags.toString()}}</small> | {{dataset.create_date|date}}
-                        </el-option>
-                    </el-option-group>
-                </el-select>
+                <el-row :gutter="1">
+                    <el-col :span="8" style="padding-right:7px;">
+                        <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'"></projectselecter>
+                    </el-col>
+                    <el-col :span="15">
+                        <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'"></select2>
+                    </el-col>
+                </el-row>
             </el-form-item>
-
+            
             <!-- TODO doesn't support nested parameters-->
             <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value !== undefined">
                 <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01">
@@ -77,6 +76,7 @@ import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import select2 from '@/components/select2'
+import projectselecter from '@/components/projectselecter'
 
 const lib = require('./lib');
 
@@ -84,7 +84,7 @@ export default {
     components: { 
         sidemenu, contact, project, 
         tags, metadata, pageheader, 
-        appavatar, select2
+        appavatar, select2, projectselecter
      },
 
     data () {
@@ -96,13 +96,15 @@ export default {
                 desc: "",
                 //project_id: localStorage.getItem("last_projectid_used")||"", 
                 inputs: {},
+                projects: {},
                 config: {},
             },
 
             //cache
             datasets: {}, //available datasets grouped by input._id then project_id then array of datasets
             projects: [], //just names
-
+            datasets_groups: {}, //datasets loaded for a given input - grouped by project id
+            
             config: Vue.config,
         }
     },
@@ -114,10 +116,13 @@ export default {
         //load project names
         console.log("loading projects");
         this.$http.get('project', {params: {
-            find: JSON.stringify({$or: [
-                { members: Vue.config.user.sub}, 
-                { access: "public" },
-            ]}),
+            find: JSON.stringify({
+                $or: [
+                    { members: Vue.config.user.sub}, 
+                    { access: "public" },
+                ],
+                removed: false,
+            }),
             select: 'name',
         }})
         .then(res=>{
@@ -125,15 +130,13 @@ export default {
             res.body.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
-        }, err=>{
-            console.error(err);
-        });
 
-        //load app detail
-        this.$http.get('app', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'inputs.datatype outputs.datatype',
-        }})
+            //load app detail
+            return this.$http.get('app', {params: {
+                find: JSON.stringify({_id: this.$route.params.id}),
+                populate: 'inputs.datatype outputs.datatype',
+            }})
+        })
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
@@ -152,54 +155,6 @@ export default {
                 if(v.type && v.default !== undefined) v.value = v.default;
             }
 
-            //load datasets that this app cares about
-            var datatype_ids = this.app.inputs.map((input)=>input.datatype._id);
-            return this.$http.get('dataset', {params: {
-                find: JSON.stringify({
-                    datatype: {$in: datatype_ids},
-                    removed: false,
-                }),
-                limit: 1000,
-            }})
-        })
-        .then(res=>{
-            var datasets = res.body.datasets;
-            if(res.body.count > 1000) console.error("dataset count is exceeding limit");
-            this.app.inputs.forEach((input)=>{
-                //group by project id 
-                var projects = {};
-                lib.filter_datasets(datasets, input).forEach(it=>{
-                    if(!projects[it.project]) projects[it.project] = {};
-                    projects[it.project][it._id] = it;
-                });
-                Vue.set(this.datasets, input.id, projects);
-            });
-
-            //find preselected datasets
-            if(this.$route.query.dataset) {
-                datasets.forEach(dataset=>{
-                    if(dataset._id == this.$route.query.dataset) preselect_dataset = dataset;
-                }); 
-            }
-
-            /* broken..
-            //and use it to preselect
-            var subject = null;
-            if(preselect_dataset && preselect_dataset.meta) subject = preselect_dataset.meta.subject;
-            for(var project_id in this.datasets) {
-                console.log("project_id", project_id);
-                var datasets = this.datasets[project_id];
-                for(var input_id in datasets) {
-                    console.log("input_id", input_id);
-                    var dataset = datasets[input_id];
-                    if(preselect_dataset == dataset) this.form.inputs[input_id] = dataset._id;
-                    else {
-                        //select first one that has matching subject
-                        if(dataset.meta.subject == subject) this.form.inputs[input_id] = dataset._id;
-                    }
-                }
-            }
-            */
         }).catch(err=>{
             console.error(err);
         });
@@ -209,7 +164,7 @@ export default {
         go: function(path) {
             this.$router.push(path);
         },
-
+        
         findbest: function(service) {
           //find resource where we can run this app
           this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
@@ -221,12 +176,99 @@ export default {
             console.error(res);
           })
         },
+        
+        grab_items: function(input, params, cb) {
+            // essentially the same code from datasetselecter.vue
+            if (!params.page) {
+                params.page = 1;
+                this.datasets_groups = {};
+            }
+            var dropdown_items = [];
+            
+            let limit = 50, skip = (params.page - 1) * limit,
+                
+                find_raw = {
+                    datatype: input.datatype._id,
+                    removed: false
+                };
+            if (params.term) find_raw.$text = { $search: params.term };
+            if (this.form.projects[input.id]) find_raw.project = this.form.projects[input.id];
+            
+            this.$http.get('dataset', { params: {
+                find: JSON.stringify(find_raw),
+                sort: "project meta.subject -create_date",
+                limit,
+                skip
+            }})
+            .then(res => {
+                res.body.datasets.forEach(dataset => {
+                    var subject = "(non-existing)";
+                    if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+                    
+                    // dropdown menu item to add
+                    var item = {
+                        id: dataset._id,
+                        text: subject,
+                        date: dataset.create_date,
+                        tags: dataset.datatype_tags
+                    };
+                    
+                    //var subject = "(non-existing)";
+                    //if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+                    if (!this.datasets_groups[dataset.project]) {
+                        // first time
+                        this.datasets_groups[dataset.project] = true;
+                        
+                        // append - select2 allows me to append item by doing following crap
+                        dropdown_items.push({
+                            text: this.projects[dataset.project].name,
+                            children: [item]
+                        });
+                    } else {
+                        // every other time
+                        dropdown_items.push(item);
+                    }
+                });
+                
+                // let select2 know that we're done retrieving items
+                cb({
+                    results: dropdown_items,
+                    pagination: {
+                        // only load more items if there's more items to load
+                        more: skip + res.body.datasets.length < res.body.count,
+                    },
+                });
+            });
+        },
+        
+        // waits 300ms (unless interrupted by more keystrokes), then calls grab_items
+        debounce_grab_items: function(input) {
+            // 'global' variables
+            let debounce;
+            
+            // return a new grab_items event that can be called for each input datatype
+            // params + cb are input from select2
+            return (params, cb) => {
+                let vm = this;
+                
+                // debounce handling without lodash
+                if (debounce) {
+                    clearTimeout(debounce);
+                    debounce = null;
+                }
+                debounce = setTimeout(function() {
+                    debounce = null;
+                    vm.grab_items.call(vm, input, params, cb);
+                }, 300);
+            }
+        },
 
         submit: function() {
 
             //make sure all inputs are selected
             var validated = true;
             for(var k in this.form.inputs) {
+                console.log(k, this.form.inputs[k]);
                 if(!this.form.inputs[k]) validated = false;
             }
             if(!validated) {
@@ -370,7 +412,7 @@ export default {
                 console.error(err);
             });
         }
-    },
+    }
 }
 </script>
 
@@ -387,5 +429,3 @@ background-color: white;
 padding: 20px;
 }
 </style>
-
-

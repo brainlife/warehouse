@@ -10,6 +10,7 @@ export default {
     props: [
         'options', //select <option>s (not select2 UI options)
         'value', //preselected values
+        'placeholder',
 
         'matcher', 
         'dataAdapter',
@@ -28,14 +29,46 @@ export default {
     mounted: function() {
         var vm = this;
         
+        function format(data) {
+            var result = document.createElement('div');
+            result.classList.add('menu-item');
+            
+            if (data.header) result.classList.add('header');
+            
+            // if there's text, add it
+            if (data.text) result.innerHTML += "<span class='text'>"+ascii_escape(data.text)+"</span>";
+            
+            // if there's tags, add them
+            if (data.tags) {
+                data.tags.forEach(tag => {
+                    result.innerHTML += "<span class='tag'>"+ascii_escape(tag)+"</span>";
+                });
+            }
+            
+            // if there's a date, add it
+            if (data.date) result.innerHTML += "<span class='date'>"+ascii_escape(new Date(data.date).toString())+"</span>";
+            
+            return result;
+        }
+        
         this.opts = {
             data: this.options, // <option>
             matcher: this.matcher,
             tags: this.tags,
             multiple: this.multiple,
+            templateResult: format,
+            templateSelection: format,
+            placeholder: this.placeholder
             //theme: 'classic',
         };
-
+        
+        // escape a string to ascii codes
+        function ascii_escape(string) {
+            var escaped = "";
+            for (var char of string) escaped += "&#"+char.charCodeAt(0)+";";
+            return escaped;
+        }
+        
         function init() {
             $(vm.$el)
                 .select2(vm.opts)
@@ -97,6 +130,33 @@ box-sizing: border-box;
 </style>
 
 <style>
+/* Menu Item Styling  */
+.menu-item {
+    display:inline-block;
+}
+.menu-item .date {
+    margin-left:10px;
+    color:#999;
+}
+.menu-item .tag {
+    margin-left:4px;
+    padding:4px;
+    background:#eee;
+    color:black !important;
+    border-radius:3px;
+    color:#999;
+}
+
+.select2-results__option {
+    font-family:Roboto;
+    font-size:14px;
+    color:black !important;
+}
+
+.select2-results__option--highlighted {
+    background-color:#ddd !important;
+}
+
 /* Hide the 'Searching...' text */
 .select2-results__option.loading-results {
     display:none;
@@ -107,6 +167,6 @@ box-sizing: border-box;
 }
 
 .select2-dropdown {
-z-index: 9900;
+    z-index: 9900;
 }
 </style>
