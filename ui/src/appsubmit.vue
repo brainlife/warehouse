@@ -28,7 +28,7 @@
                         <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'"></projectselecter>
                     </el-col>
                     <el-col :span="15">
-                        <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'"></select2>
+                        <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'" @input="debugging"></select2>
                     </el-col>
                 </el-row>
             </el-form-item>
@@ -142,9 +142,9 @@ export default {
             if(this.app.github) this.findbest(this.app.github);
 
             //prepare form inputs
-            this.app.inputs.forEach((input)=>{
-                Vue.set(this.form.inputs, input.id, null);
-            });
+            // this.app.inputs.forEach((input)=>{
+            //     Vue.set(this.form.inputs, input.id, null);
+            // });
             for(var k in this.app.config) {
                 Vue.set(this.form.config, k, this.app.config[k].default);
             }
@@ -154,7 +154,8 @@ export default {
                 var v = this.app.config[k];
                 if(v.type && v.default !== undefined) v.value = v.default;
             }
-
+            
+            this.preselect_single_items();
         }).catch(err=>{
             console.error(err);
         });
@@ -163,6 +164,29 @@ export default {
     methods: {
         go: function(path) {
             this.$router.push(path);
+        },
+        
+		debugging: function(items) {
+			console.log(items, this.form.inputs);
+		},
+
+        // TODO: Currently not working, but why? Fix needed
+        // if there's only 1 applicable dataset for a given input, pre-select it
+        preselect_single_items: function() {
+            this.app.inputs.forEach(input => {
+                this.grab_items(input, {}, data => {
+                    //if there's only 1 applicable dataset...
+                    if (data.results.length == 1) {
+						var results = data.results[0];
+						if (results.children) {
+							if (results.children.length != 1) return;
+							results = results.children[0];
+						}
+                        //select it
+						Vue.set(this.form.inputs, input.id, results.id);
+                    }
+                });
+            });
         },
         
         findbest: function(service) {
