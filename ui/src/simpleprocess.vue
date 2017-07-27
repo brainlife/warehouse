@@ -8,13 +8,6 @@
                 <el-button @click="remove()" icon="delete">Remove Process</el-button>
             </el-button-group>
 
-            <!--
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item :to="{ path: '/processes' }">Processes</el-breadcrumb-item>
-                <el-breadcrumb-item>{{instance.name}}</el-breadcrumb-item>
-            </el-breadcrumb>
-            -->
-
             <div style="float: right; margin-right: 20px; margin-top: 10px;">
                 <time style="margin-top: 15px;">Created at <b>{{instance.create_date|date}}</b></time>
             </div>
@@ -35,7 +28,7 @@
         </tr>
         -->
         <tr>
-            <th width="100px">Dataset ID</th>
+            <th width="150px">Dataset ID</th>
             <td>
                 <div v-if="!instance.config.dataset_ids">
                     <!--<p class="text-muted">Not archived yet</p>-->
