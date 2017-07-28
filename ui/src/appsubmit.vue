@@ -105,7 +105,6 @@ export default {
             //cache
             datasets: {}, //available datasets grouped by input._id then project_id then array of datasets
             projects: [], //just names
-            datasets_groups: {}, //datasets loaded for a given input - grouped by project id
             
             config: Vue.config,
         }
@@ -175,11 +174,7 @@ export default {
                     //if there's only 1 applicable dataset...
                     if (data.results.length == 1) {
 						let result = data.results[0];
-						if (result.children) {
-							if (result.children.length != 1) return;
-							result = result.children[0];
-						}
-                        //first add it to the list of options to choose from
+						//first add it to the list of options to choose from
                         this.form.options[input.id] = data.results;
                         //then select it
                         this.form.inputs[input.id] = result.id;
@@ -202,20 +197,17 @@ export default {
         
         grab_items: function(input, params, cb) {
             // essentially the same code from datasetselecter.vue
-            if (!params.page) {
-                params.page = 1;
-                this.datasets_groups = {};
-            }
+            if (!params.page) params.page = 1;
             var dropdown_items = [];
             
             let limit = 50, skip = (params.page - 1) * limit,
                 
                 find_raw = {
+                    project: this.form.projects[input.id],
                     datatype: input.datatype._id,
                     removed: false
                 };
             if (params.term) find_raw.$text = { $search: params.term };
-            if (this.form.projects[input.id]) find_raw.project = this.form.projects[input.id];
             
             this.$http.get('dataset', { params: {
                 find: JSON.stringify(find_raw),
@@ -229,30 +221,14 @@ export default {
                     var subject = "(non-existing)";
                     if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
                     
-                    // dropdown menu item to add
-                    var item = {
+                    // add dropdown menu item
+                    dropdown_items.push({
                         id: dataset._id,
                         text: subject,
                         date: dataset.create_date,
                         datatype: dataset.datatype,
                         tags: dataset.datatype_tags
-                    };
-                    
-                    //var subject = "(non-existing)";
-                    //if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
-                    if (!this.datasets_groups[dataset.project]) {
-                        // first time
-                        this.datasets_groups[dataset.project] = true;
-                        
-                        // append - select2 allows me to append item by doing following crap
-                        dropdown_items.push({
-                            text: this.projects[dataset.project].name,
-                            children: [item]
-                        });
-                    } else {
-                        // every other time
-                        dropdown_items.push(item);
-                    }
+                    });
                 });
                 
                 // let select2 know that we're done retrieving items
