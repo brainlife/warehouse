@@ -64,7 +64,7 @@ export default {
                 tags: [],
                 meta: {},
 
-                name: null,
+                //name: null,
                 desc: null,
                 datatype: null,
                 datatype_tags: [],
@@ -95,7 +95,7 @@ export default {
         this.form.app_id = this.app_id;
         this.form.subdir = this.dataset_id; //output task should create subdir for each dataset_id
 
-        this.form.name = this.dataset.name;
+        //this.form.name = this.dataset.name;
         this.form.desc = this.dataset.desc;
         this.form.datatype = this.dataset.datatype;
         this.form.datatype_tags = this.dataset.datatype_tags;
