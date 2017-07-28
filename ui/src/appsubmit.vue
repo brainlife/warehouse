@@ -154,7 +154,8 @@ export default {
                 var v = this.app.config[k];
                 if(v.type && v.default !== undefined) v.value = v.default;
             }
-
+            
+            this.preselect_single_items();
         }).catch(err=>{
             console.error(err);
         });
@@ -163,6 +164,27 @@ export default {
     methods: {
         go: function(path) {
             this.$router.push(path);
+        },
+        
+        // TODO: Not sure why this doesn't work, hours of debugging fun!
+        // if there's only 1 applicable dataset for a given input, pre-select it
+        preselect_single_items: function() {
+            this.app.inputs.forEach(input => {
+                this.grab_items(input, {}, data => {
+                    //if there's only 1 applicable dataset...
+                    if (data.results.length == 1) {
+						let result = data.results[0];
+						if (result.children) {
+							if (result.children.length != 1) return;
+							result = result.children[0];
+						}
+                        //select it
+                        console.log(result.id);
+                        this.form.inputs[input.id] = result.id;
+                        // Vue.set(this.form.inputs, input.id, result.id);
+                    }
+                });
+            });
         },
         
         findbest: function(service) {
@@ -270,7 +292,6 @@ export default {
             //make sure all inputs are selected
             var validated = true;
             for(var k in this.form.inputs) {
-                console.log(k, this.form.inputs[k]);
                 if(!this.form.inputs[k]) validated = false;
             }
             if(!validated) {
