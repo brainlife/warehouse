@@ -171,7 +171,7 @@ export default {
                 limit: this.limit,
                 skip: (params.page - 1) * this.limit,
                 sort: 'meta.subject -create_date',
-                populate: 'datatype', 
+                //populate: 'datatype', 
             };
             
             // list of dropdown menu items to return
@@ -196,7 +196,7 @@ export default {
                         id: dataset._id,
                         //text: subject,
                         date: dataset.create_date,
-                        datatype: dataset.datatype,
+                        datatype: this.datatypes[dataset.datatype],
                         tags: dataset.datatype_tags
                     };
                     

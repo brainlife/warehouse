@@ -50,11 +50,11 @@
 
                     <el-form-item>
                         <el-button @click="back()">Back</el-button>
-                        <el-button type="primary" @click="next()" :disabled="!is_valid('meta')">Next</el-button>
+                        <el-button type="primary" @click="prep_upload()" :disabled="!is_valid('meta')">Next</el-button>
                     </el-form-item>
                 </div><!--meta-->
 
-                <div v-if="mode == 'upload'">
+                <div v-if="mode == 'upload' && tasks.upload && tasks.upload.resource_id">
                     <el-form-item  v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id">
                         <el-card v-if="datatype_id" style="margin-left: 10px;">
                             <!--<div slot="header"><small class="text-muted">{{file.ext}}</small></div>-->
@@ -83,22 +83,22 @@
                     </el-form-item>
                 </div>
 
-                <div v-if="mode == 'validate'">
-                    <el-form-item v-if="!validation.products">
+                <div v-if="mode == 'validate' && tasks.validation">
+                    <el-form-item v-if="!tasks.validation.products">
                         <h4><icon name="cog" spin/> Validating..</h4>
-                        <pre v-if="config.debug" v-highlightjs="JSON.stringify(validation, null, 4)"><code class="json hljs"></code></pre>
+                        <pre v-if="config.debug" v-highlightjs="JSON.stringify(tasks.validation, null, 4)"><code class="json hljs"></code></pre>
                     </el-form-item>
 
-                    <div v-if="validation && validation.status == 'finished' && validation.products">
+                    <div v-if="tasks.validation && tasks.validation.status == 'finished' && tasks.validation.products">
                         <el-form-item>
-                            <p v-if="validation.status != 'finished'">{{validation.status_msg}}</p>
-                            <el-alert :title="msg" type="error" show-icon v-for="(msg,idx) in validation.products[0].errors" :key="idx"></el-alert>
-                            <el-alert :title="msg" type="warning" show-icon  v-for="(msg,idx) in validation.products[0].warnings" :key="idx"></el-alert>
-                            <el-alert title="Your data looks good! Please check information below and click Archive button." show-icon type="success" v-if="validation.products[0].errors.length == 0"></el-alert>
+                            <p v-if="tasks.validation.status != 'finished'">{{tasks.validation.status_msg}}</p>
+                            <el-alert :title="msg" type="error" show-icon v-for="(msg,idx) in tasks.validation.products[0].errors" :key="idx"></el-alert>
+                            <el-alert :title="msg" type="warning" show-icon  v-for="(msg,idx) in tasks.validation.products[0].warnings" :key="idx"></el-alert>
+                            <el-alert title="Your data looks good! Please check information below and click Archive button." show-icon type="success" v-if="tasks.validation.products[0].errors.length == 0"></el-alert>
                         </el-form-item>
             
                         <!--show info-->
-                        <el-form-item v-for="(v, k) in validation.products[0]" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
+                        <el-form-item v-for="(v, k) in tasks.validation.products[0]" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
                             <pre v-highlightjs="v"><code class="text hljs"></code></pre>
                         </el-form-item>
                     </div>
@@ -110,7 +110,7 @@
                 </div>
 
                 <div v-if="mode == 'finalize'">
-                    <el-form-item v-if="!dataset && copy">
+                    <el-form-item v-if="!dataset && tasks.copy">
                         <b><icon name="cog" spin/></b> Organizing your input files..
                     </el-form-item>
                 </div>
@@ -132,8 +132,12 @@
             <h3>Meta</h3>
             <pre v-if="meta" v-highlightjs="JSON.stringify(meta, null, 4)"><code class="json hljs"></code></pre>
 
+            <h3>upload</h3>
+            <pre v-if="meta" v-highlightjs="JSON.stringify(tasks.upload, null, 4)"><code class="json hljs"></code></pre>
             <h3>Validation</h3>
-            <pre v-if="meta" v-highlightjs="JSON.stringify(validation, null, 4)"><code class="json hljs"></code></pre>
+            <pre v-if="meta" v-highlightjs="JSON.stringify(tasks.validation, null, 4)"><code class="json hljs"></code></pre>
+            <h3>Copy</h3>
+            <pre v-if="meta" v-highlightjs="JSON.stringify(tasks.copy, null, 4)"><code class="json hljs"></code></pre>
         </el-card>
     </div><!--page-content -->
 </div>
@@ -160,41 +164,48 @@ export default {
             datatype_id: "",
             meta: {},
 
-            //cache
-            datatypes: null, //registered datatypes (keyed by datatype_id)
-            //projects: null,
+            tasks: {
+                upload: null, //task where I can upload to
+                validation: null, //task entry for validation
+                copy: null, //copy task to prep uploaded files
+            },
 
-            //state
-            validation: null, //task entry for validation
-            copy: null, //copy task to prep uploaded files
             dataset: null, //geneated when finalize request is sent
             mode: "meta",
 
             //resource used to upload data and validate data
             validator_resource: null,
-
-            config: Vue.config,
             
             // Time in milliseconds to try and get where data is stored
             tickTime: 1000,
             
             // Number of times to retry before just giving up and redirecting anyways
             timeoutRequests: 15,
+
+            //cache
+            datatypes: null, //registered datatypes (keyed by datatype_id)
+            config: Vue.config,
         }
     },
 
-    mounted: function() {
-
-        //initialize instance / resource ids if we haven't done yet
-        if(this.initialized) return;
-        this.initialized = true;
+    mounted() {
         console.log("uploader mounted - creating instance");
-
         this.$http.post(Vue.config.wf_api+'/instance', {
             name: "_upload",
         }).then(res=>{
             this.instance_id = res.body._id;
-            console.log("subscribe to event service", this.instance_id);
+
+            //load datatypes
+            return this.$http.get('datatype', {params: {
+                //service: "_upload",
+            }});
+        }).then(res=>{
+            this.datatypes = {};
+            res.body.datatypes.forEach((type)=>{
+                this.datatypes[type._id] = type;
+            });
+
+            //lastly, subscribe to the whole instance task events
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             ws.onopen = (e)=>{
@@ -214,37 +225,29 @@ export default {
                 }
                 var task = event.msg;
                 if(!task) return;
-                if(!task._id) return; //what kind of task is this?
-                if(this.validation && task._id == this.validation._id) {
-                    this.validation = task;
+                //if(!task._id) return; //what kind of task is this?
+                if(this.tasks.validation && task._id == this.tasks.validation._id) {
+                    this.tasks.validation = task;
+                    /*
                     //for backward compatibility 
-                    if(this.validation.products && this.validation.products[0].results) {
+                    if(this.tasks.validation.products && this.tasks.validation.products[0].results) {
                         //unwrap old structure to new
-                        this.validation.products[0] = this.validation.products[0].results;
+                        this.tasks.validation.products[0] = this.tasks.validation.products[0].results;
                     }
+                    */
                 }
-                if(this.copy && task._id == this.copy._id) {
-                    this.copy = task;
+                if(this.tasks.copy && task._id == this.tasks.copy._id) {
+                    this.tasks.copy = task;
                     if(task.status == "finished") {
                         this.archive();
                     }
                 }
+                if(this.tasks.upload && task._id == this.tasks.upload._id) {
+                    this.tasks.upload = task;
+                }
             }
-        }, res=>{
-            console.error(res);
-        });
-
-        //load datatypes
-        this.$http.get('datatype', {params: {
-            //service: "_upload",
-        }})
-        .then(res=>{
-            this.datatypes = {};
-            res.body.datatypes.forEach((type)=>{
-                this.datatypes[type._id] = type;
-            });
-        }, res=>{
-            console.error(res);
+        }).catch(err=>{
+            console.error(err);
         });
     },
 
@@ -260,7 +263,6 @@ export default {
             }
             return types;
         },
-
     },
 
     methods: {
@@ -278,14 +280,6 @@ export default {
             this.$router.push('/datasets');
         },
 
-        next: function() {
-            console.log("switching mode");
-            switch(this.mode) {
-                case "meta": this.mode = "upload"; break;
-            }
-            console.log(this.mode);
-        },
-
         go: function(path) {
             this.$router.push(path);
         },
@@ -297,65 +291,50 @@ export default {
         },
         
         upload: function(file, f) {
+            if(!this.tasks.upload.resource_id) return;
+
             file.local_filename  = f.name;
             file.size = f.size;
             file.type = f.type;
             file.progress = {};
 
-            //find resource to upload to (we need to upload to where validator service can run)
-            this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-                //service: "_upload",
-                service: this.get_validator(),
-            }})
-            .then(res=>{
-                //TODO - what we don't have any resource to run the validator at the moment?
-
-                this.validator_resource = res.body.resource;
-                var path = this.instance_id+'/upload/'+file.filename;
-
-                var xhr = new XMLHttpRequest();
-                file.xhr = xhr; //so that I can abort it if user wants to
-                xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+this.validator_resource._id+"/"+btoa(path));
-                xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
-                xhr.upload.addEventListener("progress", (evt)=>{
-                    file.progress = {loaded: evt.loaded, total: evt.total};
-                    //$("#file_"+file.id).progress({percent: evt.loaded*100/evt.total});
-                    //console.dir(file.progress);
+            var path = this.instance_id+'/'+this.tasks.upload._id+'/'+file.filename;
+            var xhr = new XMLHttpRequest();
+            file.xhr = xhr; //so that I can abort it if user wants to
+            xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+this.tasks.upload.resource_id+"/"+btoa(path));
+            xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
+            xhr.upload.addEventListener("progress", (evt)=>{
+                file.progress = {loaded: evt.loaded, total: evt.total};
+                this.$forceUpdate();
+            }, false);
+            xhr.addEventListener("load", (evt)=>{
+                if(evt.target.status == "200") {
+                    file.uploaded = true;
                     this.$forceUpdate();
-                }, false);
-                xhr.addEventListener("load", (evt)=>{
-                    if(evt.target.status == "200") {
-                        file.uploaded = true;
-                        this.$forceUpdate();
-                    } else {
-                        var msg = JSON.parse(evt.target.response);
-                        //console.error(msg);
-                    }
-                }, false);
-                xhr.addEventListener("error", (evt)=>{
-                    console.error(evt);
-                });
-                xhr.send(f);
-            }, res=>{
-                console.error(res);
+                } else {
+                    var msg = JSON.parse(evt.target.response);
+                }
+            }, false);
+            xhr.addEventListener("error", (evt)=>{
+                console.error(evt);
             });
+            xhr.send(f);
         },
 
-        get_validator: function() {
+        get_validator() {
             var datatype = this.datatypes[this.datatype_id];
-            //TODO - deprecate sca-service-conneval-validate eventually
             return datatype.validator || "soichih/sca-service-conneval-validate";
         },
 
-        validate: function() {
+        validate() {
             this.mode = "validate";
-            this.validation = null;
+            this.tasks.validation = null;
 
             //create validator config
             var config = {};
             var datatype = this.datatypes[this.datatype_id];
-            datatype.files.forEach(function(file) {
-                config[file.id] = "../upload/"+file.filename;
+            datatype.files.forEach(file=>{
+                config[file.id] = "../"+this.tasks.upload._id+"/"+file.filename;
             });
             //and submit
             this.$http.post(Vue.config.wf_api+'/task', {
@@ -363,24 +342,27 @@ export default {
                 name: "validation",
                 service: this.get_validator(),
                 config: config,
-                preferred_resource_id: this.validator_resource, //just in case..
+                //preferred_resource_id: this.validator_resource, 
+                deps: [ this.tasks.upload._id ], 
             }).then(res=>{
                 console.log("submitted validation task");
-                this.validation = res.body.task;
+                this.tasks.validation = res.body.task;
             }, res=>{
                 console.error(res);
             });
         },
 
-        finalize: function() {
+        finalize() {
             this.mode = "finalize";
-            this.copy = null;
+
+            //why do I need to do this?
+            this.tasks.copy = null;
             this.dataset = null;
 
             //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
             var copy = [];
-            this.files.forEach(function(file) {
-                copy.push({src: "../upload/"+file.filename, dest: file.filename});
+            this.files.forEach(file=>{
+                copy.push({src: "../"+this.tasks.upload._id+"/"+file.filename, dest: file.filename});
             });
             //and submit copy
             this.$http.post(Vue.config.wf_api+'/task', {
@@ -388,16 +370,16 @@ export default {
                 name: "input",
                 service: "soichih/sca-product-raw",
                 config: { copy },
-                deps: [], //I can't set deps for upload task.. because it doesn't have real task id
+                deps: [ this.tasks.upload._id ], 
             }).then(res=>{
                 console.log("submitted copy task", res);
-                this.copy = res.body.task;
+                this.tasks.copy = res.body.task;
             }, res=>{
                 console.error(res);
             });
         },
 
-        archive: function() {
+        archive() {
             if(this.dataset) return; //already archived
 
             //finally, make a request to finalize the task directory
@@ -416,7 +398,7 @@ export default {
 
                 //datasource
                 instance_id: this.instance_id,
-                task_id: this.copy._id, //we archive data from copy task
+                task_id: this.tasks.copy._id, //we archive data from copy task
 
             }).then(res=>{
                 console.log("submitted dataset request");
@@ -465,12 +447,40 @@ export default {
             this.$forceUpdate();
         },
 
-        change_datatype: function() {
+        change_datatype() {
             //need to reset all meta properties to be reactive
             this.meta = {};
             this.datatypes[this.datatype_id].meta.forEach(meta=>{
                 //console.log("setting meta", meta.id);
                 Vue.set(this.meta, meta.id, "");
+            });
+        },
+
+        prep_upload() {
+            //find resource that I can run validator
+            this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
+                service: this.get_validator(),
+            }}).then(res=>{
+                if(!res.body.resource) { 
+                    //TODO - not tested
+                    this.$notify.error({ title: 'Server Busy', message: 'Validator service is busy. Please try again later' });
+                    rerturn;
+                }
+                this.validator_resource = res.body.resource;
+
+                //submit noop to upload files on the resource where validator can run
+                return this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: this.instance_id,
+                    name: "upload",
+                    service: "soichih/sca-service-noop",
+                    preferred_resource_id: this.validator_resource, 
+                });
+            }).then(res=>{
+                console.log("upload task submitted");
+                this.tasks.upload = res.body.task;
+                this.mode = "upload"; 
+            }).catch(err=>{
+                console.error(err);
             });
         },
 

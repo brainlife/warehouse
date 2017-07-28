@@ -37,6 +37,7 @@ export default {
 .dt {
     display: inline-block;
     line-height: 100%;
+    white-space: nowrap;
 }
 .dot {
     display: inline-block;

@@ -164,8 +164,6 @@ export default {
         
         // if there's only 1 applicable dataset for a given input, pre-select it
         preselect_single_items: function(input) {
-            return (() => {
-            
             this.grab_items(input, {}, data => {
                 //if there's only 1 applicable dataset...
                 if (data.results.length == 1) {
@@ -181,8 +179,6 @@ export default {
                     Vue.set(this.form.inputs, input.id, undefined);
                 }
             });
-            
-            }).call(this);
         },
         
         findbest: function(service) {

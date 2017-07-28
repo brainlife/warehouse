@@ -25,15 +25,8 @@
                             {{dataset.subdir||dataset.name}}
                             <small><datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag></small>
                         </h3>
-                        <!--
-                        <el-form-item label="Name (optional)">
-                            <el-input type="text" v-model="dataset.name" placeholder="Dataset Name"></el-input>
-                        </el-form-item>
-                        -->
                         <el-form-item label="Project">
-                            <el-select v-model="dataset.project" placeholder="Please select" style="width: 100%;">
-                                <el-option v-for="project in projects" :label="project.name" :value="project._id" :key="project._id">{{project.name}} <projectaccess :access="project.access"/></el-option>
-                            </el-select>
+                            <projectselecter v-model="dataset.project"/>
                             <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
                         </el-form-item>
                         <el-form-item label="Metadata">
@@ -103,21 +96,17 @@ import tags from '@/components/tags'
 import pageheader from '@/components/pageheader'
 import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
-import projectaccess from '@/components/projectaccess'
+import projectselecter from '@/components/projectselecter'
 import datatypetag from '@/components/datatypetag'
 
-import ReconnectingWebSocket from 'reconnectingwebsocket'
 import async from 'async'
 
 export default {
-    mixins: [
-        //require("vue-toaster")
-    ],
     components: { 
         sidemenu, contact, task, 
         message, file, tags, 
         metadata, filebrowser, pageheader, 
-        appavatar, projectaccess, datatypetag,
+        appavatar, projectselecter, datatypetag,
     },
 
     data () {
@@ -161,22 +150,6 @@ export default {
                     }
                 });
             });
-
-            //load projects that user is member of
-            return this.$http.get('project', {params: {
-                find: JSON.stringify({members: Vue.config.user.sub}),
-                populate: ' ', //load all default
-            }})
-        })
-        .then(res=>{
-            this.projects = res.body.projects;
-            if(this.projects.length == 0) {
-                this.$notify.error({
-                    title: 'Error',
-                    message: 'You have no project you are member of. Please create a project first.'
-                });
-                return;
-            }
 
             //load datatypes (TODO - I should only load datatypes used by datasets)
             return this.$http.get('datatype')
@@ -228,7 +201,7 @@ export default {
 
                     name: this.instance.name,
                     desc: this.instance.desc,
-                    project: this.projects[0]._id, //select first project by default (TODO - remember user preference?)
+                    project: null,
                     tags: tags, 
                     meta: meta,
                     datatype: output.datatype._id,
