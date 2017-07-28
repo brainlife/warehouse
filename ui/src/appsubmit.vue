@@ -28,7 +28,7 @@
                         <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'"></projectselecter>
                     </el-col>
                     <el-col :span="15">
-                        <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'"></select2>
+                        <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'" :options="form.options[input.id]"></select2>
                     </el-col>
                 </el-row>
             </el-form-item>
@@ -96,6 +96,8 @@ export default {
                 desc: "",
                 //project_id: localStorage.getItem("last_projectid_used")||"", 
                 inputs: {},
+                options: {}, // explicit options to load (temporary)
+                
                 projects: {},
                 config: {},
             },
@@ -166,7 +168,6 @@ export default {
             this.$router.push(path);
         },
         
-        // TODO: Not sure why this doesn't work, hours of debugging fun!
         // if there's only 1 applicable dataset for a given input, pre-select it
         preselect_single_items: function() {
             this.app.inputs.forEach(input => {
@@ -178,10 +179,10 @@ export default {
 							if (result.children.length != 1) return;
 							result = result.children[0];
 						}
-                        //select it
-                        console.log(result.id);
+                        //first add it to the list of options to choose from
+                        this.form.options[input.id] = data.results;
+                        //then select it
                         this.form.inputs[input.id] = result.id;
-                        // Vue.set(this.form.inputs, input.id, result.id);
                     }
                 });
             });
