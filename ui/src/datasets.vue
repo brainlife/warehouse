@@ -46,7 +46,7 @@
                     <el-col :span="20">
                         <div 
                         v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)"
-                        :class="{dataset: true, clickable: true, selected: dataset.checked}">
+                        :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}">
                             <el-row>
                                 <el-col :span="1">
                                     <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
@@ -56,7 +56,7 @@
                                 <el-col :span="6" :title="datatypes[dataset.datatype].desc">
                                     <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
                                 </el-col>
-                                <el-col :span="7" class="truncate">
+                                <el-col :span="7">
                                     {{dataset.desc||'&nbsp;'}}
                                 </el-col>
                                 <el-col :span="6">
@@ -602,7 +602,7 @@ export default {
     transition: right 0.2s;
     top: 50px;
 }
-.truncate {
+.truncate .el-col {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; 
