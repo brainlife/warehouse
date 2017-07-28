@@ -10,6 +10,7 @@ export default {
     props: [
         'options', //select <option>s (not select2 UI options)
         'value', //preselected values
+
         'placeholder',
 
         'matcher', 
@@ -17,6 +18,9 @@ export default {
 
         'multiple',
         'tags',
+
+        'templateResult',
+        'templateFormat',
     ],
 
     data() {
@@ -74,8 +78,9 @@ export default {
                 .select2(vm.opts)
                 .val(vm.value)
                 .trigger('change')
-                .on('change',function(evt) {
-                    vm.$emit('input', $(this).val()); //this causes infinite loop with watch/value
+                .on('change',function() {
+                    //vm.$emit('input', this.value); //doesn't work
+                    vm.$emit('input', $(this).val()); //val() returns array for multiselect
                 })
         }
         
@@ -103,10 +108,12 @@ export default {
     //watch for parent value/options change and apply
     watch: {
         value: function(value) {
+            console.log("parent value changed to", value);
             //check to make sure we aren't updateing controller with the same value
             //this happens if user change value on UI, which triggers change, and parent
             //send change event back.
             if(JSON.stringify(value) != JSON.stringify($(this.$el).val())) {
+                console.log("changig select2 to ", value);
                 $(this.$el).val(value).trigger('change');
             }
         },
@@ -116,7 +123,7 @@ export default {
     },
 
     destroy: function () {
-        $(this.$el).off().select2('destroy')
+        $(this.$el).off().select2('destroy');
     },
 }
 </script>

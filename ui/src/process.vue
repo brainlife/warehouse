@@ -103,7 +103,7 @@
                     <!--input-->
                     <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._prov">
                         <div v-for="(did, input_id) in task.config._prov.inputs" :key="input_id" 
-                        v-if="find_dataset(did)" style="min-height: 30px;">
+                            v-if="find_dataset(did)" style="min-height: 30px;">
                             <el-row>
                             <el-col :span="4">
                                 <b>{{input_id}}</b>
@@ -113,7 +113,12 @@
                                 <b>{{find_dataset(did).meta.subject}}</b>
                                 <datatypetag :datatype="datatypes[find_dataset(did).datatype]" 
                                     :tags="find_dataset(did).datatype_tags"></datatypetag>
-                                <el-button size="small" @click="download(did)" style="float: right">Download</el-button>
+                                <div style="float: right">
+                                    <el-button v-if="find_dataset(did).task.status == 'finished'" size="small" @click="download(did)">Download</el-button>
+                                    <div v-else class="text-muted">
+                                        {{find_dataset(did).task.status_msg}} 
+                                    </div>
+                                </div>
                             </el-col>
                             </el-row>
                         </div>
@@ -810,10 +815,10 @@ export default {
             var task = dataset.task;    
             if(task.name == "brainlife.stage_input") {
                 //stage input task contains multiple datasets, so I add task_id and did
-                var path = task.instance_id+'/'+task._id+'/'+did;
+                var path = task.instance_id+'/'+task._id+'/'+did; //did should be t1, freesurfer, etc..
             } else {
                 //stage_output contains both task_id and output_id on did, so I don't have to contanetate task._id
-                var path = task.instance_id+'/'+did;
+                var path = task.instance_id+'/'+did; //should be output task_id
             }
             console.dir(path);
             var url = Vue.config.wf_api+'/resource/download'+
