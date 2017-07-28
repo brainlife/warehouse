@@ -30,6 +30,8 @@ router.get('/health', (req, res)=>{
         if(err) {
             status = "failed";
             msg = err.toString();
+
+            logger.error(status, msg, storages);
         }
         res.json({status, msg, storages});
     });

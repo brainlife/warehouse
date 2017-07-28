@@ -487,7 +487,7 @@ function handle_rule(rule, cb) {
                 //console.log("---------------------------------------------------------------------");
 				rule.app.outputs.forEach(output=>{
 					if(output.files) {
-						//has output file mapping.. organize symlink file/dir
+						//app has output file mapping.. organize symlink file/dir
                         for(var file_id in output.files) {
                             //find datatype file id in datatype definition
                             output.datatype.files.forEach(datatype_file=>{
