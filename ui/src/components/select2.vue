@@ -8,8 +8,8 @@
 import Vue from 'vue'
 export default {
     props: [
+        'value', 
         'options', //select <option>s (not select2 UI options)
-        'value', //preselected values
 
         'placeholder',
 
@@ -20,7 +20,7 @@ export default {
         'tags',
 
         'templateResult',
-        'templateFormat',
+        'templateSelection',
     ],
 
     data() {
@@ -32,25 +32,23 @@ export default {
 
     mounted: function() {
         var vm = this;
-        
-        function format(data) {
+        function default_format(data) {
             var result = document.createElement('div');
             result.classList.add('menu-item');
-            
+
             if (data.header) result.classList.add('header');
             
-            // if there's text, add it
-            if (data.text) result.innerHTML += "<span class='text'>"+ascii_escape(data.text)+"</span>";
-            
-            // if there's tags, add them
-            if (data.tags) {
+            if (data.text) result.innerHTML += "<b>"+ascii_escape(data.text)+"</b> ";
+
+            if (data.datatype && data.tags) {
+                result.innerHTML += data.datatype.name;
                 data.tags.forEach(tag => {
                     result.innerHTML += "<span class='tag'>"+ascii_escape(tag)+"</span>";
                 });
             }
             
             // if there's a date, add it
-            if (data.date) result.innerHTML += "<span class='date'>"+ascii_escape(new Date(data.date).toString())+"</span>";
+            if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleDateString()+"</time>";
             
             return result;
         }
@@ -60,8 +58,8 @@ export default {
             matcher: this.matcher,
             tags: this.tags,
             multiple: this.multiple,
-            templateResult: format,
-            templateSelection: format,
+            templateResult: this.templateResult || default_format,
+            templateSelection: this.templateSelection || default_format,
             placeholder: this.placeholder
             //theme: 'classic',
         };
@@ -84,9 +82,8 @@ export default {
                 })
         }
         
-        if (!this.dataAdapter) {
-            init();
-        } else {
+        if (!this.dataAdapter) init();
+        else {
             //ugly.. wtf select2 v4 !
             $.fn.select2.amd.require([
                 'select2/data/array',
@@ -105,10 +102,11 @@ export default {
         }
     },
 
+    /*
     //watch for parent value/options change and apply
     watch: {
         value: function(value) {
-            console.log("parent value changed to", value);
+            console.log("select2: parent value changed to", value);
             //check to make sure we aren't updateing controller with the same value
             //this happens if user change value on UI, which triggers change, and parent
             //send change event back.
@@ -121,6 +119,7 @@ export default {
             $(this.$el).select2({data: options});
         },
     },
+    */
 
     destroy: function () {
         $(this.$el).off().select2('destroy');
@@ -141,9 +140,10 @@ box-sizing: border-box;
 .menu-item {
     display:inline-block;
 }
-.menu-item .date {
+.menu-item time {
     margin-left:10px;
     color:#999;
+    float: right;
 }
 .menu-item .tag {
     margin-left:4px;

@@ -15,11 +15,13 @@ export default {
     computed: {
         name: function() {
             //trim fist token
+            if(!this.datatype) return "unknown";
             return this.datatype.name.split("/").splice(1).join("/");
         }
     },
     data() {
         //map datatype.name to 0 - 360
+        if(!this.datatype) return {color: "gray"};
         var hash = hashCode(this.datatype.name);
         return {
             color: "hsl("+(hash%360)+", 50%, 60%)"

@@ -1,7 +1,10 @@
 <template>
-    <div>
-        <select2 v-if="enumerated_projects" ref="select" :value="project" @input="update" :placeholder="placeholder||'Please Select'" style="width:100%;" :options="enumerated_projects"></select2>
-    </div>
+<div v-if="options">
+    <select2 style="width: 100%"
+        v-model="selected" 
+        :options="options">
+    </select2>
+</div>
 </template>
 
 <script>
@@ -12,32 +15,20 @@ import select2 from '@/components/select2'
 
 export default {
     components: { projectaccess, select2 },
-    props: [ 'value', 'placeholder' ],
+    props: [ 'value' ],
     data() {
         return {
-            project: null, //selected
-            enumerated_projects: [], // [{id, text}, ...]
-
-            // config: Vue.config,   // never used
+            selected: null, 
+            options: null, 
         }
     },
-    methods: {
-        update: function(value) {
-            localStorage.setItem('projectselecter.previous', value);
-            this.project = value;
-            this.$emit('input', value);
+    watch: {
+        selected: function() {
+            localStorage.setItem('projectselecter.previous', this.selected);
+            this.$emit('input', this.selected);
         }
     },
     mounted: function() {
-        this.project = this.value;
-
-        //set it to previously selected value
-        if(!this.project) {
-            var value = localStorage.getItem('projectselecter.previous');
-            this.project = value; 
-            this.$emit('input', value);
-        }
-
         this.$http.get('project', {params: {
             find: JSON.stringify({
                 $or: [
@@ -47,13 +38,16 @@ export default {
                 removed: false,
             })
         }}).then(res=>{
-            //group by public / private
+            this.options = [];
             res.body.projects.forEach(project=>{
-                this.enumerated_projects.push({
+                this.options.push({
                     id: project._id,
-                    text: project.name
+                    text: project.name,
                 });
             });
+
+            this.selected = this.value || localStorage.getItem('projectselecter.previous') || this.options[0].id;
+            console.log("projectselecter init with", this.selected, this.options);
         });
     }
 }

@@ -197,6 +197,7 @@ export default {
             this.$http.get('dataset', { params: {
                 find: JSON.stringify(find_raw),
                 sort: "project meta.subject -create_date",
+                populate: "datatype",
                 limit,
                 skip
             }})
@@ -210,6 +211,7 @@ export default {
                         id: dataset._id,
                         text: subject,
                         date: dataset.create_date,
+                        datatype: dataset.datatype,
                         tags: dataset.datatype_tags
                     };
                     

@@ -156,7 +156,7 @@ export default {
             //user selections
             desc: "",
             instance_id: null,
-            project_id: null, //project id to place new crate in
+            project_id: null,
             datatype_id: "",
             meta: {},
 
