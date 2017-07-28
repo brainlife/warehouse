@@ -25,7 +25,7 @@
             <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
                 <el-row :gutter="1">
                     <el-col :span="8" style="padding-right:7px;">
-                        <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'"></projectselecter>
+                        <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'" @input="preselect_single_items(input)"></projectselecter>
                     </el-col>
                     <el-col :span="15">
                         <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'" :options="form.options[input.id]"></select2>
@@ -111,9 +111,6 @@ export default {
     },
 
     mounted: function() {
-        //console.log("query query", this.$route.query);
-        var preselect_dataset = null;
-
         //load project names
         console.log("loading projects");
         this.$http.get('project', {params: {
@@ -155,8 +152,6 @@ export default {
                 var v = this.app.config[k];
                 if(v.type && v.default !== undefined) v.value = v.default;
             }
-            
-            this.preselect_single_items();
         }).catch(err=>{
             console.error(err);
         });
@@ -168,19 +163,26 @@ export default {
         },
         
         // if there's only 1 applicable dataset for a given input, pre-select it
-        preselect_single_items: function() {
-            this.app.inputs.forEach(input => {
-                this.grab_items(input, {}, data => {
-                    //if there's only 1 applicable dataset...
-                    if (data.results.length == 1) {
-						let result = data.results[0];
-						//first add it to the list of options to choose from
-                        this.form.options[input.id] = data.results;
-                        //then select it
-                        this.form.inputs[input.id] = result.id;
-                    }
-                });
+        preselect_single_items: function(input) {
+            return (() => {
+            
+            this.grab_items(input, {}, data => {
+                //if there's only 1 applicable dataset...
+                if (data.results.length == 1) {
+                    let result = data.results[0];
+                    //first add it to the list of options to choose from
+                    Vue.set(this.form.options, input.id, data.results);
+                    //then select it
+                    Vue.set(this.form.inputs, input.id, result.id);
+                }
+                else { // more than one, clear the selection
+                    // clear select2 selection using only options
+                    Vue.set(this.form.options, input.id, []);
+                    Vue.set(this.form.inputs, input.id, undefined);
+                }
             });
+            
+            }).call(this);
         },
         
         findbest: function(service) {
