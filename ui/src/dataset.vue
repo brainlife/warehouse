@@ -145,6 +145,14 @@
             </td>
         </tr>
         <tr>
+            <th>Uploaded by</th>
+            <td>
+                <p>
+                    <contact :id="dataset.user_id"/>
+                </p> 
+            </td>
+        </tr>
+        <tr>
             <th>Citation</th>
             <td>
                 <p>

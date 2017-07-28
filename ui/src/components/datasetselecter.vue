@@ -170,7 +170,8 @@ export default {
                 find: JSON.stringify(find),
                 limit: this.limit,
                 skip: (params.page - 1) * this.limit,
-                sort: "meta.subject -create_date"
+                sort: 'meta.subject -create_date',
+                populate: 'datatype', 
             };
             
             // list of dropdown menu items to return
@@ -182,6 +183,7 @@ export default {
                 var datasets = res.body.datasets;
                 
                 datasets.forEach(dataset => {
+                    //console.dir(dataset);
                     
                     // create catalog of all datasets
                     this.alldatasets[dataset._id] = dataset;
@@ -192,8 +194,9 @@ export default {
                     // dropdown menu item to add
                     var item = {
                         id: dataset._id,
-                        text: subject,
+                        //text: subject,
                         date: dataset.create_date,
+                        datatype: dataset.datatype,
                         tags: dataset.datatype_tags
                     };
                     

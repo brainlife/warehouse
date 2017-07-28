@@ -91,7 +91,7 @@ export default {
     mounted: function() {
         //load application details
         this.$http.get('app', {params: {
-            find: JSON.stringify({ removed: false })
+            find: JSON.stringify({ removed: false }),
         }})
         .then(res=>{
             this.apps = {};
@@ -107,6 +107,7 @@ export default {
                     status: {$ne: "removed"},
                     "config.removing": {$exists: false},
                 }),
+                limit: 2000,
                 sort: '-create_date',
             }});
         })
