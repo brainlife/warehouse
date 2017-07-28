@@ -28,7 +28,7 @@
                         <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'"></projectselecter>
                     </el-col>
                     <el-col :span="15">
-                        <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'" @input="debugging"></select2>
+                        <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'"></select2>
                     </el-col>
                 </el-row>
             </el-form-item>
