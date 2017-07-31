@@ -300,11 +300,11 @@ export default {
             }).then(res=>res.body);
         },
         view: function(view) {
-            //var url = taskid+'/'+event;
-            //window.open("#/view/"+this.instance._id+"/"+url, "", "width=1200,height=800,resizable=no,menubar=no"); 
-
             function openview(task) {
                 view = view.replace('/', '.');
+                console.log("instatnce", task.instance_id);
+                console.log("task", task._id);
+                console.log("view", view);
                 window.open("#/view/"+task.instance_id+"/"+task._id+"/"+view+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
             }
 

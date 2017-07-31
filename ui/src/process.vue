@@ -10,7 +10,7 @@
                 <time style="margin-top: 15px;">Created at <b>{{instance.create_date|date}}</b></time>
             </div>
             <h1>
-                <icon name="send" scale="1.7"></icon> Process
+                <icon name="send" scale="1.7"></icon> Process(v1)
                 <statustag :status="instance.status"></statustag>
             </h1>
         </div>
@@ -157,9 +157,10 @@
                                 <archiveform v-if="archiving == _output_tasks[task._id]._id+'/'+output_id" 
                                     :instance="instance" 
                                     :app_id="_output_tasks[task._id].config._prov.app"
-                                    :output_task="_output_tasks[task._id]" 
-                                    :dataset_id="output_id"
+                                    :task="_output_tasks[task._id]" 
+                                    :output_id="output_id"
                                     :dataset="dataset" 
+                                    :datatype="datatypes[dataset.datatype]"
                                     @submitted="archiving = null" style="margin-top: 30px;"></archiveform>
                             </el-col>
                             </el-row>
@@ -356,15 +357,7 @@ export default {
             res.body.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
             });
-
-            //then load process
-            if(this.$route.params.id == "_new") {
-                this.submit_instance(instance=>{
-                    this.$router.push("/process/"+instance._id);
-                });
-            } else {
-                this.load();
-            }
+            this.load();
         });
     },
 
@@ -604,20 +597,6 @@ export default {
                 }
             }).catch((err)=>{
                 console.error(err);
-            });
-        },
-
-        submit_instance: function(cb) {
-            //first create an instance to host all tasks 
-            var instance = null;
-            this.$http.post(Vue.config.wf_api+'/instance', {
-                name: "brainlife.process",
-                config: {
-                    brainlife: true,
-                },
-            }).then(res=>{
-                console.log("created instance", res.body);
-                cb(res.body);
             });
         },
 

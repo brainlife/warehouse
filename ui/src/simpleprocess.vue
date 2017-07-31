@@ -254,7 +254,8 @@ export default {
                 find: JSON.stringify({
                     instance_id: this.instance._id,
                     //name: {$ne: "brainlife.novnc"},
-                })
+                }),
+                sort: 'create_date',
             }})
         })
         .then(res=>{
@@ -286,14 +287,12 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             ws.onopen = (e)=>{
-                //console.log("websocket opened", this.instance._id);
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: Vue.config.user.sub+"."+this.instance._id+".#",
                     }
                 }));
-                //console.log("binding to instance", this.instance._id);
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",

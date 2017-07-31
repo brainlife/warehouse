@@ -5,14 +5,6 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20" v-if="instance && app">
-            <!--
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item :to="{ path: '/processes' }">Processes</el-breadcrumb-item>
-                <el-breadcrumb-item :to="{ path: '/process/'+instance._id}">{{instance.name}}</el-breadcrumb-item>
-                <el-breadcrumb-item>Archive Output</el-breadcrumb-item>
-            </el-breadcrumb>
-            <br>
-            -->
 
             <h1><icon name="cubes" scale="2"></icon> Archive Output</h1>
             
@@ -45,16 +37,6 @@
                             </el-select>
                             <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
                         </el-form-item>
-                        <!--
-                        <el-form-item label="DataType Tags">
-                            <el-select v-model="dataset.datatype_tags" 
-                                style="width: 100%"
-                                multiple filterable allow-create disabled placeholder="No datatype tags">
-                                <el-option v-for="tag in dataset.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
-                            </el-select>
-                            <p class="text-muted" style="margin-bottom: 0px;">Datatype tags specified by the application configuration. <b>Read-only</b></p>
-                        </el-form-item>
-                        -->
                         <el-form-item label="Description">
                             <el-input type="textarea" :autosize="{minRows: 2}" v-model="dataset.desc" placeholder="Optional"></el-input>
                         </el-form-item>
@@ -194,19 +176,28 @@ export default {
                 });
 
                 var dataset = {
+                    project: null,
                     instance_id: this.instance._id,
                     task_id: this.instance.config.output_task_id,
-                    app_id: this.instance.config.prov.app,
-                    subdir: output.id,
 
-                    name: this.instance.name,
-                    desc: this.instance.desc,
-                    project: null,
-                    tags: tags, 
-                    meta: meta,
+                    app_id: this.instance.config.prov.app,
                     datatype: output.datatype._id,
                     datatype_tags: output.datatype_tags,
+                    files: {},
+
+                    meta: meta,
+                    desc: this.instance.desc, //default
+                    tags: tags, 
                 }
+
+                //I need to subdir all output files with output.id
+                console.dir(output.datatype.files);
+                dataset.files = {};
+                output.datatype.files.forEach(file=>{
+                    dataset.files[file.id] = output.id+"/"+(file.filename||file.dirname);
+                });
+                console.dir(dataset.files);
+
                 this.datasets.push(dataset);
             });
 
