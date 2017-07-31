@@ -47,7 +47,7 @@ export default {
             });
 
             this.selected = this.value || localStorage.getItem('projectselecter.previous') || this.options[0].id;
-            console.log("projectselecter init with", this.selected, this.options);
+            //console.log("projectselecter init with", this.selected, this.options);
         });
     }
 }

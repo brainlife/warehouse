@@ -5,14 +5,6 @@
     <div class="ui pusher">
         <div class="page-content">
         <div class="margin20" v-if="instance && app">
-            <!--
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item :to="{ path: '/processes' }">Processes</el-breadcrumb-item>
-                <el-breadcrumb-item :to="{ path: '/process/'+instance._id}">{{instance.name}}</el-breadcrumb-item>
-                <el-breadcrumb-item>Archive Output</el-breadcrumb-item>
-            </el-breadcrumb>
-            <br>
-            -->
 
             <h1><icon name="cubes" scale="2"></icon> Archive Output</h1>
             
@@ -45,16 +37,6 @@
                             </el-select>
                             <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
                         </el-form-item>
-                        <!--
-                        <el-form-item label="DataType Tags">
-                            <el-select v-model="dataset.datatype_tags" 
-                                style="width: 100%"
-                                multiple filterable allow-create disabled placeholder="No datatype tags">
-                                <el-option v-for="tag in dataset.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
-                            </el-select>
-                            <p class="text-muted" style="margin-bottom: 0px;">Datatype tags specified by the application configuration. <b>Read-only</b></p>
-                        </el-form-item>
-                        -->
                         <el-form-item label="Description">
                             <el-input type="textarea" :autosize="{minRows: 2}" v-model="dataset.desc" placeholder="Optional"></el-input>
                         </el-form-item>

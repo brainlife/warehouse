@@ -36,15 +36,15 @@
                 </template>
             </el-table-column> 
             -->
-            <el-table-column label="Description">
+            <el-table-column label="Type">
                 <template scope="scope">
-                    <!-- for simpleprocess -->
-                    <span v-if="scope.row.config.prov">
-                        <el-tag>Simple: {{apps[scope.row.config.prov.app].name}}</el-tag>
-                    </span>
-                    {{scope.row.desc}}
+                     {{scope.row.config.type}}
+                    <small class="text-muted" v-if="scope.row.config.type == 'simple'">
+                        {{apps[scope.row.config.prov.app].name}}
+                    </small> 
                 </template>
             </el-table-column> 
+            <el-table-column label="Description" prop="desc"></el-table-column> 
             <el-table-column label="Archived Datasets">
                 <template scope="scope">
                     <!-- normal process -->
@@ -121,12 +121,30 @@ export default {
     methods: {
         click: function(instance) {
             //TODO - really bad way of telling difference between process or workflow
-            if(instance.config.prov) this.$router.push("/simpleprocess/"+instance._id);
-            else this.$router.push("/process/"+instance._id);
+            switch(instance.config.type) {
+            case "simple": 
+                this.$router.push("/simpleprocess/"+instance._id); break;
+            case "v1": 
+                this.$router.push("/process/"+instance._id); break;
+            case "v2": 
+                this.$router.push("/process2/"+instance._id); break;
+            default:
+                alert("unknown process type");
+            }
         },
+
         newprocess: function() {
-            this.$router.push('/process/_new');
-        }
+            this.$http.post(Vue.config.wf_api+'/instance', {
+                //name: "brainlife.process",
+                config: {
+                    brainlife: true,
+                    type: "v2",
+                },
+            }).then(res=>{
+                var instance = res.body;
+                this.$router.push("/process2/"+instance._id);
+            });
+        },
     },
 }
 

@@ -1,0 +1,89 @@
+<template>
+<el-form label-width="150px">
+    <el-form-item label="Dataset Desc">
+        <el-input type="textarea" v-model="desc" placeholder="Dataset Desc"></el-input>
+    </el-form-item>
+    <el-form-item label="Project">
+        <projectselecter v-model="project"/>
+        <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
+    </el-form-item>
+    <el-form-item label="User Tags (optional)">
+        <el-select v-model="tags" 
+            style="width: 100%"
+            multiple filterable allow-create placeholder="Enter tags">
+            <el-option v-for="tag in tags" key="tag" :label="tag" :value="tag"></el-option>
+        </el-select>
+        <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
+    </el-form-item>
+    <!--
+    <el-form-item label="DataType Tags">
+        <el-select v-model="form.datatype_tags" 
+            style="width: 100%"
+            multiple filterable allow-create disabled placeholder="No datatype tags">
+            <el-option v-for="tag in form.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
+        </el-select>
+        <p class="text-muted" style="margin-bottom: 0px;"><b>Read-only</b> Datatype tags specified by the application configuration.</p>
+    </el-form-item>
+    -->
+    <el-form-item label="Metadata">
+        <div v-for="(v,k) in output.meta">
+            <el-input placeholder="Please Edit meta" v-model="output.meta[k]">
+                <template slot="prepend">{{k|uppercase}}</template>
+            </el-input>
+        </div>
+        <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
+    </el-form-item>
+    <el-form-item label=" ">
+        <el-button @click="cancel()">Cancel</el-button>
+        <el-button type="primary" icon="check" @click="submit()">Archive</el-button>
+    </el-form-item>
+</el-form>
+</template>
+
+<script>
+import Vue from 'vue'
+
+import projectaccess from '@/components/projectaccess'
+import projectselecter from '@/components/projectselecter'
+
+export default {
+    props: {
+        task: {required: true},
+        output: {required: true},
+        //datatype: {required: true},
+    },
+
+    components: { projectaccess, projectselecter },
+    data() {
+        return {
+            desc: this.output.desc,
+            project: null,
+            tags: [],
+        }
+    },
+    
+    mounted: function() {
+    },
+
+    methods: {
+        submit: function() {
+            this.$http.post('dataset', {
+                project: this.project,                 
+                task_id: this.task._id,
+                app_id: this.task.config._app,
+                datatype: this.output.datatype,
+                datatype_tags: this.output.datatype_Tags,
+                files: this.output.files,
+                meta: this.output.meta,
+                desc: this.desc,
+                tags: this.tags, 
+            }).then(res=>{
+                this.$emit('done', res.body);
+            });
+        },
+        cancel: function() {
+            this.$emit('done');
+        }
+    },
+}
+</script>

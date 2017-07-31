@@ -216,13 +216,6 @@ function handle_rule(rule, cb) {
     }
 
     function get_submitted_task(subject, next) {
-        /*
-        console.dir({
-                    "config._prov.rule": rule._id,
-                    "config._prov.subject": subject,
-                    status: { $ne: "removed" },
-        });
-        */
         request.get({
             url: config.wf.api+"/task", json: true,
             headers: { authorization: "Bearer "+jwt },
@@ -481,7 +474,7 @@ function handle_rule(rule, cb) {
             //submit output organize task
             next=>{
                 var symlink = [];
-                var output_datasets = {}; //for prov
+                var _outputs = [];
                 //console.log("---------------------------------------------------------------------");
                 //console.log(JSON.stringify(app.outputs, null, 4));
                 //console.log("---------------------------------------------------------------------");
@@ -505,25 +498,18 @@ function handle_rule(rule, cb) {
 						symlink.push({"src": "../"+task_app._id, "dest": output.id});
 					}
 
-					output_datasets[output.id] = Object.assign({}, output, {
+					_outputs.push(Object.assign({}, output, {
                         meta,
                         datatype: output.datatype._id, //override to unpopulate
                         
                         //if this is set, handle_task will auto-archive output datasets
                         archive: {
                             project: rule.output_project._id,  
-                            tags: rule.output_tags[output.id], 
+                            tags: rule.output_tags[output.id],  //??
                         }
-                    }); 
-                    //console.log(JSON.stringify(output_datasets, null, 4));
+                    })); 
 				});
 
-                //for process ui _prov
-                var _prov = {
-                    app: rule.app._id,
-                    output_datasets,
-                };
-                    
                 //submit task
                 request.post({
                     url: config.wf.api+'/task', json: true, 
@@ -533,7 +519,7 @@ function handle_rule(rule, cb) {
                         name: "brainlife.stage_output",
                         desc: "staging output for rule:"+rule._id+" subject:"+subject,
                         service: "soichih/sca-product-raw",
-                        config: { symlink, _prov },
+                        config: { symlink, _app: rule.app._id, _outputs},
                         deps: [ task_app._id ],
                     },
                 }, (err, res, _body)=>{
