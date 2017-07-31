@@ -116,13 +116,21 @@
                                         <el-button size="small" type="primary"
                                             :disable="archiving == output.did" @click="archiving = output.did">Archive</el-button>
 
-                                        <!--list of archived datasets-->
-                                        {{output._datasets}}
-                                        <ul>
-                                            <li v-for="dataset in output._datasets" _key="dataset._id" @click="go('/dataset/'+dataset._id)">{{dataset._id}}</li>
-                                        </ul>
                                     </div>
                                     <!--<statustag v-else :status="task.status"/>-->
+                                </div>
+
+                                <!--list of archived datasets-->
+                                <div v-if="findarchived(task, output).length > 0">
+                                    <br>
+                                    <b><mute>Archived Datasets</mute></b>
+                                    <ul class="archived">
+                                        <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/dataset/'+dataset._id)" class="clickable">
+                                            {{dataset.desc}}
+                                            <tags :tags="dataset.tags"/>
+                                            <!--<small>{{dataset._id}}</small>-->
+                                        </li>
+                                    </ul>
                                 </div>
 
                                 <archiveform v-if="archiving == output.did" 
@@ -284,6 +292,7 @@ export default {
             //cache
             tasks: null,
             datatypes: {}, 
+            archived: [], //archived datasets from this processj
             
             //currently open archiving form (_output_tasks[task._id]._id+'/'+output_id)
             archiving: null,
@@ -413,7 +422,6 @@ export default {
 
                 //load datasets archived from this process
                 var task_ids = this.tasks.map(task=>task._id); 
-                console.dir(task_ids);
                 return this.$http.get('dataset', {params: {
                     find: JSON.stringify({
                         "prov.instance_id": this.instance._id,
@@ -421,16 +429,13 @@ export default {
                 }})
             })
             .then(res=>{
-                //console.dir(res.body);
-                this.tasks.forEach(task=>{
-                    if(!task._datasets) task._datasets = [];
-                });
+                /*
                 res.body.datasets.forEach(dataset=>{
-                    var task = this.findtask(dataset.prov.task_id);
-                    if(!task) return; //odd..
-                    console.log("looing fr", dataset.prov.task_id, task);
-                    task._datasets.push(dataset);
+                    this.archived[dataset.prov.task_id+"."+dataset.prov.output_id] = dataset;
+                    this.archived[dataset.prov.task_id+"."+dataset.prov.output_id] = dataset;
                 });
+                */
+                this.archived = res.body.datasets;
 
                 //open input dialog if there are no datasets (new process?)
                 if(this._datasets.length == 0) {
@@ -488,6 +493,12 @@ export default {
 
         close_newprocess: function(cb) {
             this.newprocess = false;
+        },
+
+        findarchived: function(task, output) {
+            return this.archived.filter(dataset=>{
+                return (dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
+            });
         },
 
         start_newprocess: function() {
@@ -626,10 +637,7 @@ export default {
 
         done_archive: function(dataset) {
             this.archiving = null;
-            if(dataset) {
-                console.log("archived dataset!");
-                console.dir(dataset);
-            }
+            if(dataset) this.archived.push(dataset);
         },
 
         submit_stage: function(datasets) {
@@ -813,5 +821,13 @@ background-color: #eee;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; 
+}
+ul.archived {
+list-style: none;
+margin: 0px;
+padding: 0px;
+}
+ul.archived li {
+padding: 5px;
 }
 </style>

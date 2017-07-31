@@ -176,19 +176,28 @@ export default {
                 });
 
                 var dataset = {
+                    project: null,
                     instance_id: this.instance._id,
                     task_id: this.instance.config.output_task_id,
-                    app_id: this.instance.config.prov.app,
-                    subdir: output.id,
 
-                    name: this.instance.name,
-                    desc: this.instance.desc,
-                    project: null,
-                    tags: tags, 
-                    meta: meta,
+                    app_id: this.instance.config.prov.app,
                     datatype: output.datatype._id,
                     datatype_tags: output.datatype_tags,
+                    files: {},
+
+                    meta: meta,
+                    desc: this.instance.desc, //default
+                    tags: tags, 
                 }
+
+                //I need to subdir all output files with output.id
+                console.dir(output.datatype.files);
+                dataset.files = {};
+                output.datatype.files.forEach(file=>{
+                    dataset.files[file.id] = output.id+"/"+(file.filename||file.dirname);
+                });
+                console.dir(dataset.files);
+
                 this.datasets.push(dataset);
             });
 

@@ -157,9 +157,10 @@
                                 <archiveform v-if="archiving == _output_tasks[task._id]._id+'/'+output_id" 
                                     :instance="instance" 
                                     :app_id="_output_tasks[task._id].config._prov.app"
-                                    :output_task="_output_tasks[task._id]" 
-                                    :dataset_id="output_id"
+                                    :task="_output_tasks[task._id]" 
+                                    :output_id="output_id"
                                     :dataset="dataset" 
+                                    :datatype="datatypes[dataset.datatype]"
                                     @submitted="archiving = null" style="margin-top: 30px;"></archiveform>
                             </el-col>
                             </el-row>

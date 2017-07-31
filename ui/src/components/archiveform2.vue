@@ -69,8 +69,9 @@ export default {
         submit: function() {
             this.$http.post('dataset', {
                 project: this.project,                 
-                task_id: this.task._id,
                 app_id: this.task.config._app,
+                task_id: this.task._id,
+                output_id: this.output.id,
                 datatype: this.output.datatype,
                 datatype_tags: this.output.datatype_Tags,
                 files: this.output.files,
