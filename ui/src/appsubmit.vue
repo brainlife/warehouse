@@ -282,6 +282,7 @@ export default {
             var instance = null;
             var inst_config = {
                 brainlife: true,
+                type: "simple",
                 output_task_id: null, //will be set once submitted
 
                 //TODO - may deprecate.. I need to support multiple tasks 

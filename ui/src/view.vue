@@ -95,6 +95,7 @@ export default {
             this.get_instance_singleton("novnc").then((instance)=>{
                 console.log("using instance", instance);
                 var task_name = "brainlife.novnc";
+                //var hourago = new Date(Date.now() - 3600*1000); //1hour ago
                 //look for novnc task running for specified instance/task
                 this.$http.get(Vue.config.wf_api+'/task', {params: {
                     find: JSON.stringify({
@@ -103,6 +104,7 @@ export default {
                         "config.input_instance_id": this.instanceid,
                         "config.input_task_id": this.taskid,
                         "config.type": this.type,
+                        //"create_date": { $gte: hourago },
                     })
                 }})
                 .then(res=>{
@@ -118,6 +120,7 @@ export default {
                                 "input_instance_id": this.instanceid,
                                 "input_task_id": this.taskid,
                                 "type": this.type,
+                                "subdir": this.subdir,
                             },
                             deps: [ this.taskid ], 
                         })
@@ -234,5 +237,6 @@ export default {
 body {
 margin: 0px;
 padding: 0px;
+overflow: inherit;
 }
 </style>
