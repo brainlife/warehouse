@@ -444,6 +444,14 @@ export default {
     },
 
     methods: {
+        // On New Task dialogue, (for each input,) if there is only one input dataset to choose, then choose it
+        preselect_single_items: function(input, newtask) {
+            var datasets = this.filter_datasets(input);
+            if (datasets.length == 1) {
+                Vue.set(newtask.inputs[input.id], 'dataset', datasets[0].did);
+            }
+        },
+        
         changedesc: function() {
             clearTimeout(debounce);
             debounce = setTimeout(this.save_instance, 1000);        
@@ -738,8 +746,11 @@ export default {
                 //preselect dataset
                 //var applicable_datasets = this.filter_datasets(input);
                 //newtask.inputs[input.id].dataset = applicable_datasets.find(dataset=>{return dataset.datatype == input.datatype._id});
+                
+                this.preselect_single_items(input, newtask);
             });
-            this.newtasks.push(newtask); 
+            
+            this.newtasks.push(newtask);
         },
 
         revalidate: function() {
