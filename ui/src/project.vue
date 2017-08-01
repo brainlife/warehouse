@@ -149,6 +149,14 @@ export default {
 </script>
 
 <style scoped>
+.datasets_link {
+color:#44f;
+cursor:pointer;
+font-weight:bold;
+}
+.datasets_link:hover {
+color:#88f;
+}
 .header {
 background: #666;
 padding: 20px;
