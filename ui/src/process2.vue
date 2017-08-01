@@ -109,6 +109,7 @@
                                 <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                                 <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
                                 <mute>(d.{{output.did}})</mute>
+                                <el-tag v-if="output.archive" type="primary">Auto Archive</el-tag>
                                 <div style="float: right;">
                                     <div v-if="task.status == 'finished'">
                                         <viewerselect @select="view(task._id, $event, output.subdir)" :datatype="datatypes[output.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
@@ -126,7 +127,9 @@
                                     <b><mute>Archived Datasets</mute></b>
                                     <ul class="archived">
                                         <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/dataset/'+dataset._id)" class="clickable">
-                                            {{dataset.desc}}
+                                            <icon name="cubes"></icon>
+                                            <b>{{projects[dataset.project].name}}</b>
+                                            <mute>{{dataset.desc}}</mute>
                                             <tags :tags="dataset.tags"/>
                                             <!--<small>{{dataset._id}}</small>-->
                                         </li>
@@ -167,8 +170,8 @@
                             <app :app="newtask.app" :compact="true" :clickable="false"></app>
                         </el-form-item>
 
-                        <el-form-item label="Description">
-                            <el-input type="textarea" placeholder="Description" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
+                        <el-form-item label="Task Description">
+                            <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
                         </el-form-item>
 
                         <!--input-->
@@ -198,7 +201,32 @@
                             <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
                         </el-form-item>
 
-                        <el-form-item>
+    
+                        <el-form-item label=" ">
+                            <div v-if="!newtask.archive.enable">
+                                <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive output dataset when finished
+                            </div>
+                            <el-card v-if="newtask.archive.enable">
+                                <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive output dataset when finished
+                                <p>
+                                    <b>Dataset Description</b>
+                                    <el-input type="textarea" placeholder="Optional" v-model="newtask.archive.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
+                                </p>
+                                <p>
+                                    <b>Project</b> <mute>where you'd like to store this datasets</mute>
+                                    <projectselecter v-model="newtask.archive.project"/>
+                                </p>
+                                <p>
+                                    <b>Tags</b> <mute>you'd like to add to this dataset to make it easier to search / organize</mute>
+                                    <el-select v-model="newtask.archive.tags" style="width: 100%"
+                                        multiple filterable allow-create placeholder="Optional">
+                                        <el-option v-for="tag in newtask.archive.tags" key="tag" :label="tag" :value="tag"></el-option>
+                                    </el-select>
+                                </p>
+                            </el-card>
+                        </el-form-item>
+
+                        <el-form-item label=" ">
                             <el-button @click="close_newprocess()">Cancel</el-button>
                             <el-button type="primary" @click="submit_newprocess()" :disabled="!newtask.valid">Submit</el-button>
                         </el-form-item>
@@ -293,6 +321,7 @@ export default {
             tasks: null,
             datatypes: {}, 
             archived: [], //archived datasets from this processj
+            projects: null,
             
             //currently open archiving form (_output_tasks[task._id]._id+'/'+output_id)
             archiving: null,
@@ -307,6 +336,16 @@ export default {
             res.body.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
             });
+
+            return this.$http.get('project', {params: {
+                select: 'name',
+            }});
+        }).then(res=>{
+            this.projects = {};
+            res.body.projects.forEach(project=>{
+                this.projects[project._id] = project;
+            });
+            console.dir(this.projects);
             this.load();
         });
     },
@@ -425,16 +464,11 @@ export default {
                 return this.$http.get('dataset', {params: {
                     find: JSON.stringify({
                         "prov.instance_id": this.instance._id,
+                        removed: false,
                     })
                 }})
             })
             .then(res=>{
-                /*
-                res.body.datasets.forEach(dataset=>{
-                    this.archived[dataset.prov.task_id+"."+dataset.prov.output_id] = dataset;
-                    this.archived[dataset.prov.task_id+"."+dataset.prov.output_id] = dataset;
-                });
-                */
                 this.archived = res.body.datasets;
 
                 //open input dialog if there are no datasets (new process?)
@@ -561,11 +595,18 @@ export default {
         selectapp: function(app) {
             this.newtask = {
                 app,
-                desc: "",
+                desc: "", //task desk
                 config: Object.assign({}, app.config),
                 deps: [], //list of task ids that provides data
                 inputs: {},
-                archive: {}, //TODO - allow user to auto-achive when the task is finished
+
+                archive: {
+                    enable: false,
+                    project: null,
+                    tags: "",
+                    desc: "",
+                },
+
                 valid: false,
             };
             this.set_default(this.newtask.config);
@@ -726,7 +767,7 @@ export default {
             var _outputs = [];
             var did = this.next_did();
             this.newtask.app.outputs.forEach(output=>{
-                _outputs.push({
+                var output_req = {
                     id: output.id,
                     did: did++,
                     datatype: output.datatype,
@@ -734,7 +775,13 @@ export default {
                     desc: output.id+ " from "+this.newtask.app.name,
                     meta,
                     files: output.files,
-                });
+                };
+                if(this.newtask.archive.enable) output_req.archive = {
+                    project: this.newtask.archive.project,
+                    desc: this.newtask.archive.desc,
+                    tags: this.newtask.archive.tags,
+                }
+                _outputs.push(output_req);
             });
             this.newtask.config._outputs = _outputs;
 

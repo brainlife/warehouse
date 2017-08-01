@@ -317,11 +317,6 @@ export default {
         go: function(path) {
             this.$router.push(path);
         },
-        /*
-        open: function(dataset) {
-            this.dataset_open = dataset;
-        },
-        */
         check: function(dataset) {
             if(this.selected[dataset._id]) {    
                 Vue.set(dataset, 'checked', false);
@@ -390,30 +385,6 @@ export default {
         },
 
         view: function(type) {
-            //find novnc resource
-
-            /*
-            this.$http.get(Vue.config.wf_api+'/resource/best', {params: {
-                service: "soichih/abcd-novnc",
-            }}).then(res=>{
-                //var novnc_resource = res.body.resources[0];
-                var novnc_resource = res.body.resource._id;
-                if(!novnc_resource) console.error("faild to find soichih/abcd-novnc resource"); 
-                else {
-                    //create download task
-                    var download_instance = null;
-                    this.get_instance().then(instance=>{
-                        download_instance = instance;
-                        return this.stage_selected(instance, novnc_resource);
-                    }).then(task=>{
-                        var download_task = task;
-                        //now let viewer can take over
-                        window.open("#/view/"+download_instance._id+"/"+download_task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
-                    });
-                }
-            });
-            */
-
             var download_instance = null;
             this.get_instance().then(instance=>{
                 download_instance = instance;
@@ -474,7 +445,15 @@ export default {
         },
 
         process: function() {
-            this.$router.push('/process/_new');
+            this.$http.post(Vue.config.wf_api+'/instance', {
+                config: {
+                    brainlife: true,
+                    type: "v2",
+                },
+            }).then(res=>{
+                var instance = res.body;
+                this.$router.push("/process2/"+instance._id);
+            });
         }
     },
 
