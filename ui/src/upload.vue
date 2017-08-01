@@ -4,13 +4,6 @@
     <sidemenu active="/datasets"></sidemenu>
     <div class="page-content">
         <div class="margin20">
-            <!--
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item :to="{ path: '/datasets' }">Datasets</el-breadcrumb-item>
-                <el-breadcrumb-item>Upload</el-breadcrumb-item>
-            </el-breadcrumb>
-            <br>
-            -->
             <h1><icon name="upload" scale="2"></icon> Upload Dataset</h1>
         </div><!--margin20-->
 
@@ -19,8 +12,7 @@
                 <el-steps :space="200" :active="get_active_tab()">
                     <el-step title="Metadata" icon="edit" description="Choose datatype and enter information"></el-step>
                     <el-step title="Upload" icon="upload" description="Upload all required files"></el-step>
-                    <el-step title="Validate" icon="picture" description="Validate your files"></el-step>
-                    <el-step title="Archive" icon="picture" description="Finalize and archive your data to Brain Life warehouse"></el-step>
+                    <el-step title="Validate" icon="check" description="Validate your files"></el-step>
                 </el-steps>
             </div>
 
@@ -54,6 +46,11 @@
                     </el-form-item>
                 </div><!--meta-->
 
+                <div v-if="mode == 'upload' && tasks.upload && !tasks.upload.resource_id">
+                    <mute>Waiting for resource where we can upload files becomes available..  <icon name="cog" spin/></mute>
+                    <pre>{{tasks.upload}}</pre>
+                </div>
+
                 <div v-if="mode == 'upload' && tasks.upload && tasks.upload.resource_id">
                     <el-form-item  v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id">
                         <el-card v-if="datatype_id" style="margin-left: 10px;">
@@ -85,8 +82,8 @@
 
                 <div v-if="mode == 'validate' && tasks.validation">
                     <el-form-item v-if="!tasks.validation.products">
-                        <h4><icon name="cog" spin/> Validating..</h4>
-                        <pre v-if="config.debug" v-highlightjs="JSON.stringify(tasks.validation, null, 4)"><code class="json hljs"></code></pre>
+                        <!--<pre v-if="config.debug" v-highlightjs="JSON.stringify(tasks.validation, null, 4)"><code class="json hljs"></code></pre>-->
+                        <task :task="tasks.validation"/>
                     </el-form-item>
 
                     <div v-if="tasks.validation && tasks.validation.status == 'finished' && tasks.validation.products">
@@ -99,19 +96,16 @@
             
                         <!--show info-->
                         <el-form-item v-for="(v, k) in tasks.validation.products[0]" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
-                            <pre v-highlightjs="v"><code class="text hljs"></code></pre>
+                            <pre v-highlightjs="v" v-if="typeof v == 'string'"><code class="text hljs"></code></pre>
+                            <div v-else>
+                                <pre>{{v}}</pre>
+                            </div>
                         </el-form-item>
                     </div>
 
                     <el-form-item>
                         <el-button @click="mode = 'upload'">Back</el-button>
                         <el-button type="primary" @click="finalize()">Archive !</el-button>
-                    </el-form-item>
-                </div>
-
-                <div v-if="mode == 'finalize'">
-                    <el-form-item v-if="!dataset && tasks.copy">
-                        <b><icon name="cog" spin/></b> Organizing your input files..
                     </el-form-item>
                 </div>
             </el-form>
@@ -136,8 +130,6 @@
             <pre v-if="meta" v-highlightjs="JSON.stringify(tasks.upload, null, 4)"><code class="json hljs"></code></pre>
             <h3>Validation</h3>
             <pre v-if="meta" v-highlightjs="JSON.stringify(tasks.validation, null, 4)"><code class="json hljs"></code></pre>
-            <h3>Copy</h3>
-            <pre v-if="meta" v-highlightjs="JSON.stringify(tasks.copy, null, 4)"><code class="json hljs"></code></pre>
         </el-card>
     </div><!--page-content -->
 </div>
@@ -151,9 +143,10 @@ import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import projectaccess from '@/components/projectaccess'
 import projectselecter from '@/components/projectselecter'
+import task from '@/components/task'
 
 export default {
-    components: { sidemenu, pageheader, projectselecter},
+    components: { sidemenu, pageheader, projectselecter, task},
     data () {
         return {
 
@@ -167,23 +160,14 @@ export default {
             tasks: {
                 upload: null, //task where I can upload to
                 validation: null, //task entry for validation
-                copy: null, //copy task to prep uploaded files
             },
 
-            dataset: null, //geneated when finalize request is sent
             mode: "meta",
-
-            //resource used to upload data and validate data
             validator_resource: null,
             
-            // Time in milliseconds to try and get where data is stored
-            tickTime: 1000,
-            
-            // Number of times to retry before just giving up and redirecting anyways
-            timeoutRequests: 15,
-
             //cache
             datatypes: null, //registered datatypes (keyed by datatype_id)
+
             config: Vue.config,
         }
     },
@@ -194,11 +178,8 @@ export default {
             name: "_upload",
         }).then(res=>{
             this.instance_id = res.body._id;
-
-            //load datatypes
-            return this.$http.get('datatype', {params: {
-                //service: "_upload",
-            }});
+            //load all datatypes
+            return this.$http.get('datatype');
         }).then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach((type)=>{
@@ -226,24 +207,11 @@ export default {
                 var task = event.msg;
                 if(!task) return;
                 //if(!task._id) return; //what kind of task is this?
-                if(this.tasks.validation && task._id == this.tasks.validation._id) {
-                    this.tasks.validation = task;
-                    /*
-                    //for backward compatibility 
-                    if(this.tasks.validation.products && this.tasks.validation.products[0].results) {
-                        //unwrap old structure to new
-                        this.tasks.validation.products[0] = this.tasks.validation.products[0].results;
-                    }
-                    */
-                }
-                if(this.tasks.copy && task._id == this.tasks.copy._id) {
-                    this.tasks.copy = task;
-                    if(task.status == "finished") {
-                        this.archive();
-                    }
-                }
                 if(this.tasks.upload && task._id == this.tasks.upload._id) {
                     this.tasks.upload = task;
+                }
+                if(this.tasks.validation && task._id == this.tasks.validation._id) {
+                    this.tasks.validation = task;
                 }
             }
         }).catch(err=>{
@@ -271,7 +239,6 @@ export default {
                 case "meta": return 1;
                 case "upload": return 2;
                 case "validate": return 3;
-                case "finalize": return 4;
             }
         },
 
@@ -288,172 +255,6 @@ export default {
             var files = e.target.files || e.dataTransfer.files;
             if(!files.length) return;
             this.upload(file, files[0]); //only upload first one
-        },
-        
-        upload: function(file, f) {
-            if(!this.tasks.upload.resource_id) return;
-
-            file.local_filename  = f.name;
-            file.size = f.size;
-            file.type = f.type;
-            file.progress = {};
-
-            var path = this.instance_id+'/'+this.tasks.upload._id+'/'+file.filename;
-            var xhr = new XMLHttpRequest();
-            file.xhr = xhr; //so that I can abort it if user wants to
-            xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+this.tasks.upload.resource_id+"/"+btoa(path));
-            xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
-            xhr.upload.addEventListener("progress", (evt)=>{
-                file.progress = {loaded: evt.loaded, total: evt.total};
-                this.$forceUpdate();
-            }, false);
-            xhr.addEventListener("load", (evt)=>{
-                if(evt.target.status == "200") {
-                    file.uploaded = true;
-                    this.$forceUpdate();
-                } else {
-                    var msg = JSON.parse(evt.target.response);
-                }
-            }, false);
-            xhr.addEventListener("error", (evt)=>{
-                console.error(evt);
-            });
-            xhr.send(f);
-        },
-
-        get_validator() {
-            var datatype = this.datatypes[this.datatype_id];
-            return datatype.validator || "soichih/sca-service-conneval-validate";
-        },
-
-        validate() {
-            this.mode = "validate";
-            this.tasks.validation = null;
-
-            //create validator config
-            var config = {};
-            var datatype = this.datatypes[this.datatype_id];
-            datatype.files.forEach(file=>{
-                config[file.id] = "../"+this.tasks.upload._id+"/"+file.filename;
-            });
-            //and submit
-            this.$http.post(Vue.config.wf_api+'/task', {
-                instance_id: this.instance_id,
-                name: "validation",
-                service: this.get_validator(),
-                config: config,
-                //preferred_resource_id: this.validator_resource, 
-                deps: [ this.tasks.upload._id ], 
-            }).then(res=>{
-                console.log("submitted validation task");
-                this.tasks.validation = res.body.task;
-            }, res=>{
-                console.error(res);
-            });
-        },
-
-        finalize() {
-            this.mode = "finalize";
-
-            //why do I need to do this?
-            this.tasks.copy = null;
-            this.dataset = null;
-
-            //create validator config (let's just use soichih/sca-service-conneval-validate for now..)
-            var copy = [];
-            this.files.forEach(file=>{
-                copy.push({src: "../"+this.tasks.upload._id+"/"+file.filename, dest: file.filename});
-            });
-            //and submit copy
-            this.$http.post(Vue.config.wf_api+'/task', {
-                instance_id: this.instance_id,
-                name: "input",
-                service: "soichih/sca-product-raw",
-                config: { copy },
-                deps: [ this.tasks.upload._id ], 
-            }).then(res=>{
-                console.log("submitted copy task", res);
-                this.tasks.copy = res.body.task;
-            }, res=>{
-                console.error(res);
-            });
-        },
-
-        archive() {
-            if(this.dataset) return; //already archived
-
-            //finally, make a request to finalize the task directory
-            this.$http.post('dataset', {
-
-                //info for dataset
-                project: this.project_id,
-                desc: this.desc,
-                datatype: this.datatype_id,
-                datatype_tags: [],
-
-                //product: product,
-                meta: this.meta,
-
-                tags: [], 
-
-                //datasource
-                instance_id: this.instance_id,
-                task_id: this.tasks.copy._id, //we archive data from copy task
-
-            }).then(res=>{
-                console.log("submitted dataset request");
-                this.dataset = res.body; //without this, same dataset maybe archived over and over...
-                this.$notify.success({
-                    title: 'Success',
-                    message: 'Successfully archived a new dataset. Please give a few minutes for your data to propagate to all storages.',
-                });
-                
-                this.whatsHappening(res.body._id, 0);
-            }, res=>{
-                console.error(res);
-            });
-        },
-        
-        whatsHappening: function(id, numRequests) {
-            if (numRequests == this.timeoutRequests)
-                return this.go(`/dataset/${id}`);
-            
-            this.$http.get(Vue.config.api + "/dataset", {
-                params: {
-                    find: JSON.stringify({ _id: id })
-                }
-            }).then(res => {
-                var d = res.body.datasets[0];
-                if (d.storage)
-                    this.go(`/dataset/${id}`);
-                
-                var self = this;
-                setTimeout(() => self.whatsHappening.call(self, id, ++numRequests), this.tickTime);
-            }, err => {
-                console.error(err);
-            });
-        },
-
-        clearfile: function(file) {
-            file.uploaded = null;
-            file.progress = null;
-            this.$forceUpdate();
-        },
-
-        cancelupload: function(file) {
-            file.xhr.abort();
-            file.uploaded = null;
-            file.progress = null;
-            this.$forceUpdate();
-        },
-
-        change_datatype() {
-            //need to reset all meta properties to be reactive
-            this.meta = {};
-            this.datatypes[this.datatype_id].meta.forEach(meta=>{
-                //console.log("setting meta", meta.id);
-                Vue.set(this.meta, meta.id, "");
-            });
         },
 
         prep_upload() {
@@ -507,6 +308,122 @@ export default {
             }
             return valid;
         },
+        
+        upload: function(file, f) {
+            if(!this.tasks.upload.resource_id) return;
+
+            file.local_filename  = f.name;
+            file.size = f.size;
+            file.type = f.type;
+            file.progress = {};
+
+            var path = this.instance_id+'/'+this.tasks.upload._id+'/'+file.filename;
+            var xhr = new XMLHttpRequest();
+            file.xhr = xhr; //so that I can abort it if user wants to
+            xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+this.tasks.upload.resource_id+"/"+btoa(path));
+            xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
+            xhr.upload.addEventListener("progress", (evt)=>{
+                file.progress = {loaded: evt.loaded, total: evt.total};
+                this.$forceUpdate();
+            }, false);
+            xhr.addEventListener("load", (evt)=>{
+                if(evt.target.status == "200") {
+                    file.uploaded = true;
+                    this.$forceUpdate();
+                    console.log("file uploade complete", file);
+                } else {
+                    var msg = JSON.parse(evt.target.response);
+                }
+            }, false);
+            xhr.addEventListener("error", (evt)=>{
+                console.error(evt);
+            });
+            xhr.send(f);
+        },
+
+        get_validator() {
+            return this.datatypes[this.datatype_id].validator;
+        },
+
+        validate() {
+            this.mode = "validate";
+            this.tasks.validation = null;
+
+            //create validator config
+            var config = {};
+            var datatype = this.datatypes[this.datatype_id];
+            datatype.files.forEach(file=>{
+                config[file.id] = "../"+this.tasks.upload._id+"/"+file.filename;
+            });
+            //and submit
+            this.$http.post(Vue.config.wf_api+'/task', {
+                instance_id: this.instance_id,
+                name: "validation",
+                service: this.get_validator(),
+                config: config,
+                //preferred_resource_id: this.validator_resource, 
+                deps: [ this.tasks.upload._id ], 
+            }).then(res=>{
+                console.log("submitted validation task");
+                this.tasks.validation = res.body.task;
+            }, res=>{
+                console.error(res);
+            });
+        },
+
+        finalize() {
+            this.mode = "finalize";
+            this.$http.post('dataset', {
+
+                project: this.project_id,
+                task_id: this.tasks.upload._id, 
+
+                //app_id
+                //output_id
+
+                datatype: this.datatype_id,
+                datatype_tags: [],
+                //file - I shouldn't have to map it - uploader should upload files to the correct file name
+
+                meta: this.meta,
+                desc: this.desc,
+                tags: [], 
+
+            }).then(res=>{
+                console.log("submitted dataset request");
+                var dataset = res.body;
+                this.$notify.success({
+                    title: 'Success',
+                    message: 'Successfully uploaded a new dataset. Please give a few minutes for your data to become available.',
+                });
+                this.$router.push("/dataset/"+dataset._id);
+            }, res=>{
+                console.error(res);
+            });
+        },
+
+        clearfile: function(file) {
+            file.uploaded = null;
+            file.progress = null;
+            this.$forceUpdate();
+        },
+
+        cancelupload: function(file) {
+            file.xhr.abort();
+            file.uploaded = null;
+            file.progress = null;
+            this.$forceUpdate();
+        },
+
+        change_datatype() {
+            //need to reset all meta properties to be reactive
+            this.meta = {};
+            this.datatypes[this.datatype_id].meta.forEach(meta=>{
+                //console.log("setting meta", meta.id);
+                Vue.set(this.meta, meta.id, "");
+            });
+        },
+
 
     },
 }
@@ -519,6 +436,9 @@ export default {
 .ui.header.status,
 label.meta-field-name {
     text-transform: uppercase;
+}
+pre {
+line-height: 130%;
 }
 </style>
 
