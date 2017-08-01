@@ -19,6 +19,13 @@
         </div>
         <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
+            <tr>
+            <th>Stats</th>
+            <td>
+                <div class="datasets_link" @click="go('/datasets/'+project._id)" v-if="datasets_attribs.num_datasets">Datasets: {{ datasets_attribs.num_datasets }}</div>
+                <div v-if="datasets_attribs.num_subjects">Subjects: {{ datasets_attribs.num_subjects }}</div>
+            </td>
+        </tr>
         <tr>
             <th>Access</th>
             <td>
@@ -80,6 +87,11 @@ export default {
     data () {
         return {
             project: null,
+            datasets_attribs: {
+                num_datasets: null,
+                num_subjects: null
+            },
+            
             config: Vue.config,
         }
     },
@@ -90,7 +102,30 @@ export default {
         }})
         .then(res=>{
             this.project = res.body.projects[0];
-        }).catch(err=>{
+            
+            return this.$http.get('dataset', {params: {
+                find: JSON.stringify({
+                    project: this.project._id,
+                    removed: false
+                })
+            }});
+        })
+        .then(res => {
+            this.datasets_attribs.num_datasets = res.body.count;
+            console.log(this.datasets_attribs);
+            
+            return this.$http.get('dataset/distinct', {params: {
+                find: JSON.stringify({
+                    project: this.project._id,
+                    removed: false
+                }),
+                distinct: 'meta.subject'
+            }})
+        })
+        .then(res => {
+            this.datasets_attribs.num_subjects = res.body.length;
+        })
+        .catch(err=>{
             console.error(err);
         });
     },
