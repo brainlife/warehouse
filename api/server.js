@@ -32,10 +32,10 @@ app.use(function(err, req, res, next) {
     if(typeof err == "string") err = {message: err};
 
     //log this error
-    logger.info(err);
+    logger.error(err);
     if(err.name) switch(err.name) {
     case "UnauthorizedError":
-        logger.info(req.headers); //dump headers for debugging purpose..
+        logger.debug(req.headers); //dump headers for debugging purpose..
         break;
     }
 

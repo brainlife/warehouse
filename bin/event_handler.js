@@ -59,23 +59,14 @@ db.init(err=>{
             logger.info("queues ready");
         });
     });
-
 });
 
-
 function handle_task(task, cb) {
-    //console.dir(task);
-    //handle task archival request
-    if( task.status == "finished" && 
-        task.name == "brainlife.stage_output" &&
-        task.config._prov) {
+    if(task.status == "finished" && task.config && task.config._outputs) {
         logger.info("handling task", task._id, task.status, task.name);
-        //console.dir(task.config._prov);  
-
-        async.eachOfSeries(task.config._prov.output_datasets, (dataset, output_id, next_dataset)=>{
-            //logger.debug(output_id, dataset);
-            if(!dataset.archive) return next_dataset();
-            archive_dataset(task, output_id, dataset, next_dataset);
+        async.eachSeries(task.config._outputs, (output, next_output)=>{
+            if(!output.archive) return next_output();
+            archive_dataset(task, output, next_output);
         }, cb);
     } else {
         logger.debug("ignoring task", task._id, task.status, task.name);
@@ -83,70 +74,75 @@ function handle_task(task, cb) {
     }
 }
 
-function archive_dataset(task, output_id, dataset, cb) {
-    logger.debug("archive request made", dataset);
-    
-    //see if this dataset is already archived
-    //logger.debug("before----------------------------");
-    db.Datasets.findOne({
-        "prov.task_id": task._id,
-        "prov.dirname": output_id,
-    }).exec((err,_dataset)=>{
-        logger.debug(err, _dataset);
-        if(err) return cb(err);
-        if(_dataset) {
-            logger.info("already archived");
-            return cb();
-        }
-        logger.debug("not yet archived.. archciving");
+function archive_dataset(task, output, cb) {
+    logger.debug("archive request made", output);
 
-        //looks like we haven't archive this dataset yet.. create a dataset record!
-		var _dataset = new db.Datasets({
-			user_id: task.user_id,
+    var dataset = null;
+    var datatype = null;
+	var auth = null;
 
-			project: dataset.archive.project,
-			datatype: dataset.datatype,
-			datatype_tags: dataset.datatype_tags,
+    async.series([
+        next=>{
+            logger.debug("see if this dataset is already archived");
+            db.Datasets.findOne({
+                "prov.task_id": task._id,
+                "prov.output_id": output.id,
+            }).exec((err,_dataset)=>{
+                if(err) return cb(err);
+                if(_dataset) {
+                    logger.info("already archived");
+                    return cb();
+                }
+                logger.debug("not yet archived.. proceeding", task._id, output.id);
+                next();
+            });
+        },
 
-            tags: dataset.archive.tags,
+        next=>{
+            logger.debug("registering dataset now");
+            new db.Datasets({
+                user_id: task.user_id,
 
-			desc: "",
-			prov: {
-				app: dataset.app_id,
-				task_id: task._id,
-				dirname: output_id,
-			},
-			meta: dataset.meta||{},
-		});
+                project: output.archive.project,
+                datatype: output.datatype,
+                datatype_tags: output.datatype_tags,
 
-        /*
-        //"tags" is optional
-        if(dataset.archive.tags && dataset.archive.tags[output_id]) {
-            _dataset.tags = dataset.archive.tags[output_id];
-        }
-		console.dir(_dataset.toString());
-        */
+                desc: output.archive.desc,
+                tags: output.archive.tags||[],
 
-		//issue jwt to download dataset
-		request.get({
-			url: config.auth.api+"/jwt/"+task.user_id, json: true,
-			headers: { authorization: "Bearer "+config.auth.jwt },
-		}, (err, res, body)=>{
-			if(err) return next(err);
-			if(res.statusCode != 200) return cb("couldn't obtain user jwt code:"+res.statusCode);
-			var auth = "Bearer "+body.jwt;
+                prov: {
+                    instance_id: task.instance_id,
+                    task_id: task._id,
+                    app: task.config._app,
+                    output_id: output.id,
+                },
+                meta: output.meta||{},
+            }).save((err, _dataset)=>{
+                dataset = _dataset;
+                next(err);
+            });
+        },
 
-			//now create dataset and start data transfer
-			logger.debug("saving dataset record and archiving");
-			_dataset.save(err=>{
-				if(err) return cb(err);
-				common.archive(task, _dataset, auth, output_id, cb);
+		next=>{
+			logger.debug("issue jwt to download dataset");
+			request.get({
+				url: config.auth.api+"/jwt/"+task.user_id, json: true,
+				headers: { authorization: "Bearer "+config.auth.jwt },
+			}, (err, res, body)=>{
+				if(err) return next(err);
+				if(res.statusCode != 200) return cb("couldn't obtain user jwt code:"+res.statusCode);
+				auth = "Bearer "+body.jwt;
+				next();
 			});
-		});
-    });
+		},
+
+		next=>{
+            logger.debug("transfering data from task");
+            common.archive_task(task, dataset, output.datatype, output.files, auth, next);
+		},
+    ], cb);
 }
 
 function handle_instance(instance, cb) {
     console.dir(instance);
-    //cb();
 }

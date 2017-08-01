@@ -7,13 +7,29 @@ const winston = require('winston');
 const jwt = require('express-jwt');
 const async = require('async');
 const request = require('request');
-const fs = require('fs');
 
 //mine
 const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
+
+/*
+String.prototype.addSlashes = function() {
+  //  discuss at: http://locutus.io/php/addslashes/
+  // original by: Kevin van Zonneveld (http://kvz.io)
+  // improved by: Ates Goral (http://magnetiq.com)
+  // improved by: marrtins
+  // improved by: Nate
+  // improved by: Onno Marsman (https://twitter.com/onnomarsman)
+  // improved by: Brett Zamir (http://brett-zamir.me)
+  // improved by: Oskar Larsson Högfeldt (http://oskar-lh.name/)
+  //    input by: Denny Wardhana
+  //   example 1: addslashes("kevin's birthday")
+  //   returns 1: "kevin\\'s birthday"
+  return this.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0')
+}
+*/
 
 function canedit(user, rec) {
     if(user) {
@@ -170,15 +186,16 @@ router.get('/bibtex/:id', (req, res, next)=>{
  * @api {post} /dataset                 Create new dataset from wf service task
  * @apiDescription                      Make a request to create a new dataset from wf service taskdir
  *
- * @apiParam {String} instance_id       WF service Instance ID
+ * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} task_id           WF service Task ID (of output task)
  * @apiParam {Object} [app_id]          Application used to generate this dataset (don't set if it's uploaded)
- * @apiParam {String} [subdir]          Sub directory to grab the dataset content within the task
+ * @apiParam {String} [output_id]       Output ID of the app_id (not set if uploaded)
  *
- * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
+ * @apiParam {String[]} datatype_tags   Datatype tags to set
+ * @apiParam {Object} [files]           File mapping to override default file path given by datatype
+ *
  * @apiParam {Object} [meta]            Metadata - as prescribed in datatype.meta
- * @apiParam {String[]} datatype_tags   Data type ID for this dataset (from Datatypes)
  * @apiParam {String} [desc]            Description for this crate
  * @apiParam {String[]} [tags]          List of tags associated with this dataset
  *
@@ -186,23 +203,22 @@ router.get('/bibtex/:id', (req, res, next)=>{
  * @apiSuccess {Object}                 Dataset created
  *                              
  */
-router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-    if(!req.body.project) return next("project id not set");
-    if(!req.body.datatype) return next("datatype id not set");
-    if(!req.body.instance_id) return next("instance_id not set");
-    if(!req.body.task_id) return next("task_id not set");
+router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
+    if(!req.body.project) return cb("project id not set");
+    if(!req.body.datatype) return cb("datatype id not set");
+    if(!req.body.task_id) return cb("task_id not set");
+	if(!req.body.files) req.body.files = {};
+    
+	//TODO - files (especially file.dirname) must be well validated.
 
-    var subdir = '';
-    if(req.body.subdir) {
-        //TODO - is this safe enough?
-        if( ~req.body.subdir.indexOf('/') || 
-            ~req.body.subdir.indexOf('..')
-        ) return cb("subdir contains invalid character");
-        subdir = req.body.subdir;
-    }
+    var task = null;
+    var datatype = null;
+    var dataset = null;
+	var tmpdir = null;
+	var cleantmp = null;
 
-    async.waterfall([
-        cb=>{
+    async.series([
+        next=>{
             //get task
             request.get({
                 url: config.wf.api+"/task",
@@ -214,28 +230,30 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 headers: {
                     authorization: req.headers.authorization, 
                 }
-            }, cb);
-        },
-
-        (_res, ret, cb)=>{
-            //make sure user owns this instance
-            if(ret.tasks.length != 1) return cb("couldn't find task");
-            var task = ret.tasks[0];
-            if(task.user_id != req.user.sub) return cb("you don't own this instance");
-            
-            //make sure user is member of the project selected
-            db.Projects.findById(req.body.project, (err, project)=>{
-                if(err) return cb(err);
-                if(!project) return cb("couldn't find the project");
-                //TODO should I only allow members but not admin?
-                if(!~project.admins.indexOf(req.user.sub) && !~project.members.indexOf(req.user.sub)) return cb("you are not member of this project");
-                cb(null, task);
+            }, (err, _res, ret)=>{
+                if(ret.tasks.length != 1) return next("couldn't find task");
+                var _task = ret.tasks[0];
+                if(_task.user_id != req.user.sub) return next("you don't own this instance");
+                if(!_task.resource_id) return next("resource_id not set");
+                if(_task.status != "finished") return next("task not in finished state");
+                
+                //make sure user is member of the project selected
+                db.Projects.findById(req.body.project, (err, project)=>{
+                    if(err) return next(err);
+                    if(!project) return next("couldn't find the project");
+                    //TODO should I only allow members but not admin?
+                    if(!~project.admins.indexOf(req.user.sub) && !~project.members.indexOf(req.user.sub)) 
+                        return next("you are not member of this project");
+                    logger.debug("task loaded", _task);
+                    task = _task;
+                    next();
+                });
             });
         },
 
-        (task, cb)=>{
-            //now create a dataset record
-            var dataset = new db.Datasets({
+        next=>{
+			logger.debug("registering new dataset record");
+            new db.Datasets({
                 user_id: req.user.sub,
 
                 project: req.body.project,
@@ -244,30 +262,32 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
                 desc: req.body.desc,
                 tags: req.body.tags||[],
+
+                //should be deprecate with neo4j, but still used by UI
+                //also used by event_handler to see if the task output is archived already or not
                 prov: {
-                    app: req.body.app_id,
+                    instance_id: task.instance_id,
                     task_id: task._id,
-                    dirname: subdir,
+                    app: req.body.app_id,
+                    output_id: req.body.output_id,
                 },
                 meta: req.body.meta||{},
-            });
-
-            logger.debug("creating dataset");
-            
-            dataset.save((e, _dataset)=>{
-                if(e) return next(e);
-                res.json(_dataset);
-                
-                //then, asynchrnously copy content to the storage
-                common.archive(task, _dataset, req.headers.authorization, subdir, function(err) {
-                    if(err) logger.error(err);
-                    //TODO post event?
-                    logger.debug("archive finished");
-                });
+            }).save((err, _dataset)=>{
+        		dataset = _dataset;
+                res.json(dataset); //not respond back to the caller - but processing has just began
+                next(err);
             });
         },
 
-    ], next); //end-waterfall
+        next=>{
+            logger.debug("transfering data");
+            common.archive_task(task, dataset, req.body.datatype, req.body.files, req.headers.authorization, next);
+        },
+
+    ], err=>{
+        if(err) logger.error(err);
+        else logger.debug("all done archiving");    
+	});
 });
 
 //this API allows user to download any files under user's workflow directory
@@ -321,7 +341,7 @@ router.get('/download/:id', jwt({
             }, 1000*3);
             system.stat(dataset, (err, stats)=>{
                 clearTimeout(stat_timer);
-                logger.debug("post stats", err, stats);
+                logger.debug(JSON.stringify(stats, null, 4));
                 if(err) return next(err);
 
                 system.download(dataset, (err, readstream, filename)=>{
@@ -338,7 +358,7 @@ router.get('/download/:id', jwt({
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+filename);
                     if(stats) res.setHeader('Content-Length', stats.size);
-                    logger.debug("commencing download");
+                    logger.debug("sent headers.. commencing download");
                     readstream.pipe(res);   
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);

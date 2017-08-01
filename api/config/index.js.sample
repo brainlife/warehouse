@@ -87,6 +87,7 @@ exports.storage_systems.jetstream = {
     upload: (dataset, cb)=>{
         //make sure container exists (if it exists, it's noop)
         var name = dataset.project.toString();
+        console.log("creating container", name);
         js_storage.createContainer({
             name: name,
             metadata: {

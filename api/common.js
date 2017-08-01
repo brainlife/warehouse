@@ -1,51 +1,107 @@
 
 const request = require('request');
 const winston = require('winston');
+const tmp = require('tmp');
+const mkdirp = require('mkdirp');
+const path = require('path');
+const child_process = require('child_process');
+const fs = require('fs');
+const async = require('async');
 
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
+const db = require('./models');
 
-exports.archive = function(task, dataset, authorization, subdir, cb) {
-    if(!task.resource_id) {
-        return cb('task '+task._id+' has no resource_id set');
-    }
-
-    //TODO should I error if task status is not finished?
-    if(task.status != 'finished') logger.warn('task '+task._id+' status is not finished');
-
-    //TODO pick the best storage based on project?
-    var storage = config.storage_default();
-    var system = config.storage_systems[storage];
-    logger.debug("obtaining upload stream");
-    system.upload(dataset, (err, writestream)=>{
+exports.archive_task = function(task, dataset, datatype_id, files_override, auth, cb) {
+    if(!files_override) files_override = {};
+   
+    //start by pulling datatype detail
+    db.Datatypes.findById(datatype_id, (err, datatype)=>{
         if(err) return cb(err);
-        logger.debug("uploading");
+        if(!datatype) return cb("couoldn't find specified datatype:"+datatype_id);
+        logger.debug("datatype loaded", datatype.toString());
 
-        //download the entire .tar.gz from sca-wf service
-        request.get({
-            url: config.wf.api+"/resource/download",
-            qs: {
-                r: task.resource_id,
-                p: task.instance_id+"/"+task._id+"/"+subdir,
-            },
-            headers: {
-                //authorization: req.headers.authorization, 
-                authorization,
-            }
-        })
-        //and pipe it directly to the storage
-        .on('response', function(r) {
-            console.log("stream commencing");
-            if(r.statusCode != 200) {
-                cb("/resource/download failed "+r.statusCode);
-            }
-        }).pipe(writestream);
-        writestream.on('finish', err=>{
-            //really done
-            //logger.debug("checking to see if this message happens after transfer ends"); 
-            logger.info("done!");
-            dataset.storage = storage;
-            dataset.save(cb);
+        //create temp directory to download things
+        tmp.dir({unsafeCleanup: true}, (err, tmpdir, cleantmp)=>{
+            if(err) return cb(err);
+            var input_ok = true;
+            //now download all files to temp directory
+            async.eachSeries(datatype.files, (file, next_file)=>{
+                logger.debug("processing file", file.toString());
+                var writestream = null;
+                var srcpath = null;
+                if(file.filename) {
+                    //files can be downloaded directly to tmpdir
+                    srcpath = task.instance_id+"/"+task._id+"/"+(files_override[file.id]||file.filename);
+                    var fullpath = tmpdir+"/"+file.filename;
+                    mkdirp.sync(path.dirname(fullpath)); //make sure the path exitsts
+                    logger.debug("downloading from", srcpath, "and write to", fullpath);
+                    writestream = fs.createWriteStream(fullpath);
+                    writestream.on('finish', ()=>{
+                        if(!input_ok) return next_file("input failed for download");
+                        logger.debug("download complete");
+                        next_file()
+                    });
+                }
+                if(file.dirname) {
+                    //directory has to be unzip/tar-edto tmpdir
+                    srcpath = task.instance_id+"/"+task._id+"/"+(files_override[file.id]||file.dirname);
+                    var fullpath = tmpdir+"/"+file.dirname;
+                    mkdirp.sync(path.dirname(fullpath)); //make sure the path exists
+                    logger.debug("downloading from", srcpath, "and untar to", fullpath);
+                    var untar = child_process.spawn("tar", ["xz"], {cwd: fullpath});
+                    writestream = untar.stdout;
+                    untar.on('close', code=>{
+                        if(code) return next_file("untar files with code:"+code);
+                        if(!input_ok) return next_file("input failed for download/untar");
+                        logger.debug("download/tar complete");
+                        next_file();
+                    });
+                }
+
+                //now start feeding the writestream
+                request.get({
+                    url: config.wf.api+"/resource/download",
+                    qs: {
+                        r: task.resource_id, p: srcpath,
+                    },
+                    headers: { authorization: auth }
+                })
+                .on('response', function(r) {
+                    if(r.statusCode != 200) {
+                        logger.error("/resource/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth);
+                        input_ok = false;
+                    }
+                }).pipe(writestream);
+            }, err=>{
+                if(err) {
+                    logger.error("failed to store all files under tmpdir");
+                    cleantmp(); 
+                    return cb(err);
+                }
+                
+                //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
+                var storage = config.storage_default();
+                var system = config.storage_systems[storage];
+                logger.debug("obtaining upload stream for ", storage);
+                system.upload(dataset, (err, writestream)=>{
+                    if(err) return next(err);
+                    var tar = child_process.spawn("tar", ["hcz", "."], {cwd: tmpdir});
+                    tar.on('close', code=>{
+                        cleantmp();
+                        if(code) {
+                            dataset.desc = "Failed to archive with code:"+code;
+                            dataset.status = "failed";
+                        } else {
+                            dataset.storage = storage;
+                            dataset.status = "stored";
+                        }
+                        dataset.save(cb);
+                    });
+                    logger.debug("streaming to storage");
+                    tar.stdout.pipe(writestream);
+                });
+            });
         });
     });
 }

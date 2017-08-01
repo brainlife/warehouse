@@ -91,14 +91,18 @@ var datasetSchema = mongoose.Schema({
     //not set if user uploaded it. 
     prov: {
         app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //application that created this data
+        instance_id: String, //output task's instance_id
         task_id: String, //output task id
-        dirname: String, //subdir that contain the output data (not set if it's on base taskdir)
+        output_id: String, //output task's output id
     },
 
     create_date: { type: Date, default: Date.now },
 
-    //validate_date: { type: Date }, //date when the content of this dataset was validated using specified dataset
-    status: String, //(null), stored, invalid, archived, removed
+    status: { type: String, default: "storing" },
+    //storing (default)
+    //stored (dataset is stored on storage system, but not yet archive), 
+    //failed (failed to store to storage system)
+    //archived (dataset is stored on storage system and on sda)
     status_msg: String,
 
     archive_date: { type: Date }, //date when the content of this dataset was archived to tape
