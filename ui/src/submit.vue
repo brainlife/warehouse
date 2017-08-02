@@ -157,6 +157,7 @@ export default {
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({
                     datatype: {$in: datatype_ids},
+                    storage: {$exists: true},
                     removed: false,
                 })
             }}).then(res=>{

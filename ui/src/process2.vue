@@ -621,6 +621,7 @@ export default {
                 
                 this.preselect_single_items(input, this.newtask);
             });
+            this.validate(); //for preselect
         },
 
         validate: function(val) {
@@ -628,12 +629,8 @@ export default {
             //make sure all inputs are selected
             for(var input_id in this.newtask.inputs) {
                 var input = this.newtask.inputs[input_id];
-                if(input.dataset_idx === '') {
-                    console.log(input_id, " set to empty", input);
-                    valid = false;
-                }
+                if(input.dataset_idx === '') valid = false;
             }
-            console.log("validating", valid);
             this.newtask.valid = valid;
         },
 

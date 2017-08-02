@@ -159,6 +159,7 @@ export default {
             // make sure all of the and statement values are true
             var find = {
                 project: this.project,
+                storage: {$exists: true},
                 removed: false
             };
             if (and_statement.length > 0) find.$and = and_statement;

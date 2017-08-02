@@ -106,6 +106,7 @@ export default {
             return this.$http.get('dataset', {params: {
                 find: JSON.stringify({
                     project: this.project._id,
+                    storage: {$exists: true},
                     removed: false
                 })
             }});

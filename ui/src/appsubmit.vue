@@ -203,6 +203,7 @@ export default {
                 find_raw = {
                     project: this.form.projects[input.id],
                     datatype: input.datatype._id,
+                    storage: {$exists: true}, 
                     removed: false
                 };
             if (params.term) find_raw.$text = { $search: params.term };
