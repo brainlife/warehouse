@@ -23,7 +23,7 @@
 
                 <h3>Datasets</h3>
                 <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)">
-                    t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon>
+                    <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
                     <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
                     <b v-else class="text-muted">(no subject)</b>
                     <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
@@ -76,7 +76,7 @@
                                 {{input.id}}
                             </el-col>
                             <el-col :span="20">
-                                t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon>
+                                <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
                                 <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                                 <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
                                 <mute>
