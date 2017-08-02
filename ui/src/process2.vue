@@ -389,6 +389,13 @@ export default {
     },
 
     methods: {
+        preselect_single_items: function(input, newtask) {
+            var datasets = this.filter_datasets(input);
+            if (datasets.length == 1) {
+                Vue.set(newtask.inputs[input.id], 'dataset_idx', datasets[0].idx);
+            }
+        },
+        
         findtask: function(id) {
             var found = null;
             this.tasks.forEach(task=>{
@@ -611,6 +618,8 @@ export default {
             this.newtask.app.inputs.forEach(input=>{
                 var input_copy = Object.assign({dataset_idx: ''}, input);
                 Vue.set(this.newtask.inputs, input.id, input_copy);
+                
+                this.preselect_single_items(input, this.newtask);
             });
         },
 
