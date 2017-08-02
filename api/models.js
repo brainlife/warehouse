@@ -94,6 +94,7 @@ var datasetSchema = mongoose.Schema({
         instance_id: String, //output task's instance_id
         task_id: String, //output task id
         output_id: String, //output task's output id
+        subdir: String, //subdir that contained the actual output. often output_id == subdir
     },
 
     create_date: { type: Date, default: Date.now },
@@ -263,9 +264,8 @@ var ruleSchema = mongoose.Schema({
     //any tags to set for each output id (object with key(output id)=>array(tags))
     output_tags: mongoose.Schema.Types.Mixed,
 
-
-    //when this rule was last handled - used to find *new* datasets 
-    //process_date: { type: Date },
+    //only process subjects that ends with this if set
+    subject_match: String,
 
     //when the rule is first defined
     create_date: { type: Date, default: Date.now },

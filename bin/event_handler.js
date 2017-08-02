@@ -115,6 +115,7 @@ function archive_dataset(task, output, cb) {
                     task_id: task._id,
                     app: task.config._app,
                     output_id: output.id,
+                    subdir: output.subdir,
                 },
                 meta: output.meta||{},
             }).save((err, _dataset)=>{
@@ -138,7 +139,7 @@ function archive_dataset(task, output, cb) {
 
 		next=>{
             logger.debug("transfering data from task");
-            common.archive_task(task, dataset, output.datatype, output.files, auth, next);
+            common.archive_task(task, dataset, output.files, auth, next);
 		},
     ], cb);
 }
