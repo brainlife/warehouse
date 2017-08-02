@@ -9,7 +9,8 @@
         <statusicon :status="task.status" scale="1.5" style="float: left; padding: 2px 8px;"/>
         <div style="padding-left: 45px;">
             <div style="float: right;">
-                <el-button size="small" type="danger" v-if="task.status == 'failed'" @click="rerun()">Rerun</el-button>
+                <el-button size="small" type="" v-if="task.status != 'running'" @click="rerun()">Rerun</el-button>
+                <el-button size="small" type="" v-if="task.status != 'stopped'" @click="stop()">Stop</el-button>
                 <el-button size="small" type="" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" icon="delete2"></el-button>
             </div>
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
@@ -131,3 +132,5 @@ color: white;
 background-color: gray;
 }
 </style>
+
+

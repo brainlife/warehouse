@@ -5,7 +5,6 @@
     <div v-if="instance && tasks">
         <div class="fixed-top">
             <el-button v-if="!instance.config.removing" @click="remove_instance()" style="float: right;" icon="delete">Remove Process</el-button>
-
             <div style="float: right; margin-right: 20px; margin-top: 10px;">
                 <time style="margin-top: 15px;">Created at <b>{{instance.create_date|date}}</b></time>
             </div>
@@ -75,7 +74,7 @@
                             <el-col :span="4" class="truncate">
                                 {{input.id}}
                             </el-col>
-                            <el-col :span="20">
+                            <el-col :span="20" v-if="findtask(input.task_id)">
                                 <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
                                 <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                                 <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
@@ -109,22 +108,21 @@
                                 <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                                 <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
                                 <mute>(d.{{output.did}})</mute>
-                                <el-tag v-if="output.archive" type="primary">Auto Archive</el-tag>
+                                <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
                                 <div style="float: right;">
                                     <div v-if="task.status == 'finished'">
                                         <viewerselect @select="view(task._id, $event, output.subdir)" :datatype="datatypes[output.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
                                         <el-button size="small" @click="download(task, output)">Download</el-button>
                                         <el-button size="small" type="primary"
-                                            :disable="archiving == output.did" @click="archiving = output.did">Archive</el-button>
+                                            :disable="archiving === output.did" @click="archiving = output.did">Archive</el-button>
 
                                     </div>
                                     <!--<statustag v-else :status="task.status"/>-->
                                 </div>
 
                                 <!--list of archived datasets-->
-                                <div v-if="findarchived(task, output).length > 0">
-                                    <br>
-                                    <b><mute>Archived Datasets</mute></b>
+                                <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
+                                    <div class="archived-datasets-title">Archived Datasets</div>
                                     <ul class="archived">
                                         <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/dataset/'+dataset._id)" class="clickable">
                                             <icon name="cubes"></icon>
@@ -136,7 +134,7 @@
                                     </ul>
                                 </div>
 
-                                <archiveform v-if="archiving == output.did" 
+                                <archiveform v-if="archiving === output.did" 
                                     :task="task" 
                                     :output="output" 
                                     @done="done_archive" style="margin-top: 30px;"></archiveform>
@@ -363,7 +361,7 @@ export default {
                         task,
                         id: output.id,
                         did: output.did, 
-                        idx: datasets.length, //for filtered list to find the index
+                        idx: datasets.length, //for filtered list to find the index (may not be the same as did if dataset is removed)
                         dataset_id: output.dataset_id, //only set if it's archived (or from stage in)
                         datatype: output.datatype,
                         datatype_tags: output.datatype_tags,
@@ -654,9 +652,11 @@ export default {
 
                             //use file path specified in datatype..
                             var file = input.datatype.files.find(file=>file.id == node.file_id);
-                            //but override it if filemapping from the input dataset is provided
-                            if(dataset.files && dataset.files[node.input_id]) file = dataset.files[node.file_id];
                             config[k] = base+"/"+(file.filename||file.dirname);
+                            //but override it if filemapping from the input dataset is provided
+                            if(dataset.files && dataset.files[node.input_id]) {
+                                config[k] = base+"/"+dataset.files[node.file_id];
+                            }
                             break;
                         default:
                             config[k] = "unknown_template_type";
@@ -713,8 +713,8 @@ export default {
             }
             this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: this.instance._id,
-                name: "brainlife.stage_input",
-                desc: "Stage Input for "+task.name,
+                name: "Staging input dataset",
+                //desc: "Stage Input for "+task.name,
                 service: "soichih/sca-product-raw",
                 config: { download, _outputs, _tid: this.next_tid() },
             }).then(res=>{
@@ -869,6 +869,15 @@ background-color: #eee;
     overflow: hidden;
     text-overflow: ellipsis; 
 }
+.archived-datasets {
+border-left: 3px solid #ddd;
+padding-left: 8px;
+margin: 3px;
+}
+.archived-datasets-title {
+color: #aaa;
+font-weight: bold;
+}
 ul.archived {
 list-style: none;
 margin: 0px;
@@ -878,3 +887,12 @@ ul.archived li {
 padding: 5px;
 }
 </style>
+
+<style>
+.sidebar .statusicon-failed {
+background-color: #c00;
+color: white;
+padding: 0px 5px;
+}
+</style>
+
