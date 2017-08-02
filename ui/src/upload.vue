@@ -265,7 +265,7 @@ export default {
                 if(!res.body.resource) { 
                     //TODO - not tested
                     this.$notify.error({ title: 'Server Busy', message: 'Validator service is busy. Please try again later' });
-                    rerturn;
+                    return;
                 }
                 this.validator_resource = res.body.resource;
 
