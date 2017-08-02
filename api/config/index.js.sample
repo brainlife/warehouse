@@ -146,17 +146,16 @@ exports.storage_systems["dcwan/hcp"] = {
         cb("no upload to dcwan/hcp");
     },
     stat: (dataset, cb)=>{
-        //can't obtain stats because we are creating .tar.gz on the fly
-        cb(null, null); 
+        //can't obtain stats for .tar.gz because we are creating it on the fly
+        //but I can still check for the directory to exist and respond error
+        var dir = dcwan_hcp_path+dataset.storage_config.subdir;
+        fs.stat(dir, (err,stats)=>{
+            //stats is for the directory.. so I can't return it
+            cb(err, null); 
+        });
     },
     download: (dataset, cb)=>{
         var dir = dcwan_hcp_path+dataset.storage_config.subdir;
-        //console.log("running tar "+dir);
-
-        //TODO - if dir doesn't exist, spawn raise error with "Error: spawn tar ENOENT"
-        //I need to make sure that the directory exists before accessing
-        //if I make /health storage info available to the rest of the system,
-        //I can use the last storage status and only allow download if the status is good?
         var child = child_process.spawn("tar", ["hc", "."], {cwd: dir});
         cb(null, child.stdout, dataset._id+".tar");
         child.stderr.on('data', function(data) {

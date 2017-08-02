@@ -34,7 +34,6 @@ function run() {
         }, err=>{
             if(err) logger.error(err);
             logger.debug("done with all rules - sleeping for a while");
-            //db.disconnect();
             setTimeout(run, 1000*60);
         });
 	});
@@ -47,13 +46,6 @@ function handle_rule(rule, cb) {
     var running = null; //number of currently running tasks for this rule
 
     logger.info("handling rule", JSON.stringify(rule, null, 4));
-
-    /* 
-    //DEBUG----------------------------------------------------------------------------------------------------------------------------
-    //this lets me rerun rule that I just handled
-    process_date = new Date("2017-05-01");
-    //DEBUG----------------------------------------------------------------------------------------------------------------------------
-    */
 
     //prepare for stage / app / archive
     async.series([
@@ -71,15 +63,6 @@ function handle_rule(rule, cb) {
             });
         },
 
-        /*
-        //update process date
-        next=>{
-            //update process_date so that we don't process this again (even if rest of processing fails)
-            rule.process_date = new Date();
-            rule.save(next);
-        },
-        */
-
         //get number of tasks currently running for this rule
         next=>{
             request.get({
@@ -87,7 +70,7 @@ function handle_rule(rule, cb) {
                 headers: { authorization: "Bearer "+jwt },
                 qs: {
                     find: JSON.stringify({
-                        "config._prov.rule": rule._id,
+                        "config._rule.id": rule._id,
                         status: {$in : ["running", "requested"]},
                     }),
                     limit: 1, //I just need count but can't be 0
@@ -100,30 +83,13 @@ function handle_rule(rule, cb) {
             });
         },
 
-        /*
-        //first load the app we might be submitting
-        next=>{
-            db.Apps.findById(rule.app)
-			.populate('outputs.datatype')
-            .lean() // so that I can set meta?
-			.exec((err, _app)=>{
-                if(err) return next(err);
-                console.log(_app.name);
-                console.dir(_app.config);  
-                app = _app;
-                //console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-                //console.log(JSON.stringify(app.outputs, null, 4));
-                //console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-                next();
-            });
-        },
-        */
-
         //enumerate all subjects under rule's project
         next=>{
             logger.debug("enum subjects");
             db.Datasets.find({
                 project: rule.input_project._id,
+                storage: { $exists: true },
+                removed: false,
             })
             .distinct("meta.subject", (err, _subjects)=>{
                 if(err) return next(err);
@@ -157,25 +123,20 @@ function handle_rule(rule, cb) {
 
         logger.debug("handling subject", subject, running);
 
-        //debug
-        //fs.writeFileSync("app."+new Date().getTime(), JSON.stringify(app, null, 4));
-
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var missing = false;
-        //logger.debug(JSON.stringify(app.outputs, null, 4));
         async.eachSeries(rule.app.outputs, (output, next_output)=>{
             var query = {
                 project: rule.output_project._id,
-                removed: false,
                 datatype: output.datatype._id,
                 "meta.subject": subject,
+                storage: { $exists: true },
+                removed: false,
             }
             if(output.datatype_tags.length > 0) query.datatype_tags = { $all: output.datatype_tags };
             if(rule.output_tags[output.id]) query.tags = { $all: rule.output_tags[output.id] }; //TODO - test me
             db.Datasets.findOne(query)
             .populate('datatype')
-            //.sort('-create_date')
-            //.lean()
             .exec((err, dataset)=>{
                 if(err) return next_output(err);
                 if(!dataset) {
@@ -204,7 +165,7 @@ function handle_rule(rule, cb) {
                     get_submitted_task(subject, (err, submitted)=>{
                         if(err) return next_subject(err);
                         if(submitted) {
-                            logger.debug("task already submitted");
+                            logger.debug("task already submitted:",submitted._id, submitted.status);
                             return next_subject();
                         }
                         running++;
@@ -221,8 +182,8 @@ function handle_rule(rule, cb) {
             headers: { authorization: "Bearer "+jwt },
             qs: {
                 find: JSON.stringify({
-                    "config._prov.rule": rule._id,
-                    "config._prov.subject": subject,
+                    "config._rule.id": rule._id,
+                    "config._rule.subject": subject,
                     status: { $ne: "removed" },
                 }),
             },
@@ -239,18 +200,17 @@ function handle_rule(rule, cb) {
             //logger.debug("looking for input ", JSON.stringify(input, null, 4));
             var query = {
                 project: rule.input_project._id,
-                removed: false,
                 datatype: input.datatype,
                 "meta.subject": subject,
+                storage: { $exists: true },
+                removed: false,
             }
 
             //allow user to override which project to load input datasets from
             if(rule.input_project_override && rule.input_project_override[input.id]) {
                 query.project = rule.input_project_override[input.id];
             } 
-            //if(input.datatype_tags.length > 0) query.datatype_tags = { $all: input.datatype_tags };
 
-            //logger.debug(JSON.stringify(query, null, 4));
             db.Datasets.findOne(query)
             .populate('datatype')
             .sort('-create_date') //find the latest one
@@ -259,7 +219,7 @@ function handle_rule(rule, cb) {
                 if(err) return next_input(err);
 
                 if(!dataset) {
-                    logger.debug("found missing input", input.id, JSON.stringify(query, null, 4));
+                    logger.debug("input missing", input.id, JSON.stringify(query, null, 4));
                     missing = true;
                     return next_input();
                 }
@@ -294,7 +254,7 @@ function handle_rule(rule, cb) {
                         },
                     }, (err, res, body)=>{
                         if(err) return next_input(err);
-                        dataset.prov._task = body.tasks[0];
+                        dataset.prov._task = body.tasks[0]; //only used while we process this dataset
                         next_input();
                     });
                 } else {
@@ -314,6 +274,10 @@ function handle_rule(rule, cb) {
         var task_app = null;
         var task_out = null;
 		var meta = {}; //metadata to store for archived dataset
+        var next_tid = null;
+
+        var _app_inputs = []; 
+        var deps = [];
 
         var instance_name = "brainlife.rule project:"+rule.output_project._id+" subject:"+subject;
         var instance_desc = "rule:"+rule.name+" for project:"+rule.output_project.name+" subject:"+subject;
@@ -330,6 +294,7 @@ function handle_rule(rule, cb) {
                         find: JSON.stringify({
                             name: instance_name,
                             "config.removing": {$exists: false},
+                            "config.status": {$ne: "removed"},
                         }),
                     },
                 }, (err, res, body)=>{
@@ -337,7 +302,7 @@ function handle_rule(rule, cb) {
                     instance = body.instances[0];
                     if(instance) {
                         logger.debug("using instance id:", instance._id);
-                        //logger.debug(JSON.stringify(instance, null, 4));
+                        logger.debug(JSON.stringify(instance, null, 4));
                     }
                     next();
                 });
@@ -353,10 +318,9 @@ function handle_rule(rule, cb) {
                     body: {
                         name: instance_name,
                         desc: instance_desc,
-                        
-                        //TODO let's show under process page so I can debug
                         config: {
                             brainlife: true,
+                            type: "v2",
                         }
                     },
                 }, (err, res, body)=>{
@@ -364,65 +328,106 @@ function handle_rule(rule, cb) {
                     next(err);
                 });
             },
-
-            //submit input staging task
+            
+            //find next tid by counting number of tasks (including removed)
             next=>{
-                //process UI prov..
-                var datasets = {};
-                for(var input_id in inputs) {
-                    var input = inputs[input_id];
-                    datasets[input._id] = Object.assign({}, input);
-                    datasets[input._id].datatype = datasets[input._id].datatype._id; //unpopulate datatype to keep it clean
-                }
-
-                var body = {
-                    instance_id: instance._id,
-                    name: "brainlife.stage_input",
-                    desc: "staging input for rule:"+rule._id+" subject:"+subject,
-                    service: "soichih/sca-product-raw",
-
-                    config: {
-                        symlink: [], //for datasets that we have tasks for
-                        download: [], //for datasets that produced task no longer exists
-                        datasets,
+                request.get({
+                    url: config.wf.api+"/task", json: true,
+                    headers: { authorization: "Bearer "+jwt },
+                    qs: {
+                        find: JSON.stringify({
+                            "instance_id": instance._id,
+                        }),
+                        limit: 1, //I am interested in just count
                     },
-                    deps: [],
-                }
+                }, (err, res, body)=>{
+                    if(err) return next(err);
+                    next_tid = body.count;
+                    next();
+                });
+            },
 
+            //submit input staging task for datasets that aren't staged yet
+            next=>{
+                var did = next_tid*10;
+                var _outputs = [];
+                var downloads = [];
                 for(var input_id in inputs) {
                     var input = inputs[input_id];
-                    if(input.prov && input.prov._task && input.prov._task.status == 'finished') {
-                        //we still have the datasets staged.. just use that
-                        var task = input.prov._task;
-                        body.config.symlink.push({ 
-                            src: "../../"+task.instance_id+"/"+task._id+"/"+input.prov.dirname, 
-                            dest: input._id 
-                        }); 
-                        body.deps.push(task._id);
+                    input.input_id = input_id;
+                    if(input.prov && input.prov._task && input.prov._task.status == 'finished'
+                        //I should be able to use task from other instance if I update process_input_config
+                        //but for now, let's just use dataset from the same process
+                        //so that UI will make more sense (won't show data from other instance)
+                        && input.prov._task.instance_id == instance._id 
+                    ) {
+                        //we still have the datasets staged (most likely from this process) use it..
+                        deps.push(input.prov._task._id);
+                        _app_inputs.push(Object.assign({}, input, {
+                            datatype: input.datatype._id, //unpopulate datatype to keep it clean
+                            did: did++,
+                            //dataset_id: input._id,
+                            task_id: input.prov._task._id,
+                            prov: null, //remove dataset prov
+                        }));
                     } else {
-                        //we don't have it.. need to download
-                        body.config.download.push({
+                        //we don't have it.. need to stage from warehouse
+                        downloads.push({
                             url: config.warehouse.api+"/dataset/download/"+input._id+"?at="+jwt,
                             untar: "auto",
                             dir: input._id,
                         });
+                        var output = Object.assign({}, input, {
+                            datatype: input.datatype._id, //unpopulate datatype to keep it clean
+                            did: did++,
+                            subdir: input._id,
+                            prov: null, //remove dataset prov
+                        });
+                        _outputs.push(output);
+                        _app_inputs.push(output);
                     }
                 }
 
+                //nothing to download, then proceed to submitting the app
+                if(downloads.length == 0) {
+                    next();
+                }
+
+                //need to submit download task first.
                 request.post({
                     url: config.wf.api+'/task', json: true, 
                     headers: { authorization: "Bearer "+jwt },
-                    body,
+                    body: {
+                        instance_id: instance._id,
+                        name: "Staging Input",
+                        //desc: "staging input for rule:"+rule._id+" subject:"+subject,
+                        service: "soichih/sca-product-raw",
+
+                        config: {
+                            download: downloads,
+                            _outputs,
+                            _tid: next_tid++,
+                        },
+                        deps: [],
+                    },
                 }, (err, res, _body)=>{
+                    if(err) return next(err);
                     task_stage = _body.task;
+
+                    //reset task_id 
+                    _app_inputs.forEach(input=>{
+                        if(!input.task_id) input.task_id = task_stage._id;
+                    });
+                    deps.push(task_stage._id);
+
                     logger.debug("submitted staging task");//, task_stage);
                     console.log(JSON.stringify(_body, null, 4));
-                    next(err);
+                    next();
                 });
             },
 
+            //aggregate metadata (TODO - I really need just subject?)
             next=>{
-                //aggregate metadata (TODO - I really need just subject?)
 				for(var input_id in inputs) {
 					var input = inputs[input_id];
 					for(var k in input.meta) {
@@ -434,43 +439,66 @@ function handle_rule(rule, cb) {
 
             //submit the app task!
             next=>{
-                var _config = Object.assign(rule.config, resolve_config(rule.app.config, inputs, task_stage));
+                var did = next_tid*10;
 
-                //set some process ui _prov
-                _config._prov = {
-                    app: rule.app._id,
-                    rule: rule._id,
-                    subject: subject,
-                    inputs: {},
-                }
-                for(var input_id in inputs) {
-                    var input = inputs[input_id];
-                    _config._prov.inputs[input_id] = input._id;
-                }
-                
-                var body = {
-                    instance_id: instance._id,
-                    name: "brainlife.process",
-                    desc: "running application:"+rule.app.name+" for rule:"+rule.name+" for subject:"+subject,
-                    service: rule.app.github,
-                    service_branch: rule.app.github_branch,
-                    retry: rule.app.retry,
+                //console.log("dumping _app_inputs");
+                //console.dir(_app_inputs);
 
-                    config: _config,
-                    deps: [ task_stage._id ], 
-                }
+                var _config = Object.assign(
+                    rule.config, 
+                    process_input_config(rule.app.config, inputs, _app_inputs, task_stage), 
+                    {
+                        _app: rule.app._id,
+                        _rule: {
+                            id: rule._id,
+                            subject,
+                        },
+                        _inputs: _app_inputs,
+                        _outputs: [],
+                        _tid: next_tid++,
+                    }
+                );
+
+				rule.app.outputs.forEach(output=>{
+                    _config._outputs.push({
+                        id: output.id,
+                        did: did++,
+                        datatype: output.datatype,
+                        datatype_tags: output.datatype_tags,
+                        desc: output.desc,
+                        meta: meta,
+                        archive: {
+                            project: rule.output_project._id,  
+                            desc: "dataset archived by rule handler",
+                            tags: rule.output_tags[output.id],  //??
+                        }
+                    });
+                });
+
                 request.post({
                     url: config.wf.api+'/task', json: true, 
                     headers: { authorization: "Bearer "+jwt },
-                    body,
+                    body: {
+                        instance_id: instance._id,
+                        name: "brainlife.process",
+                        desc: "running application:"+rule.app.name+" for rule:"+rule.name+" for subject:"+subject,
+                        service: rule.app.github,
+                        service_branch: rule.app.github_branch,
+                        retry: rule.app.retry,
+
+                        config: _config,
+                        deps,
+                    }
                 }, (err, res, _body)=>{
                     task_app = _body.task;
                     logger.debug("submitted app task", task_app);
                     console.log(JSON.stringify(_body, null, 4));
+
                     next(err);
                 });
             },
 
+            /*
             //submit output organize task
             next=>{
                 var symlink = [];
@@ -533,31 +561,39 @@ function handle_rule(rule, cb) {
                     next(err);
                 });
             },
+            */
+
         ], cb);
     }
 }
 
-function resolve_config(config, inputs, task_stage) {
+function process_input_config(config, inputs, datasets, task_stage) {
     function walk(node, out) {
         for(var k in node) {
             var v = node[k];
             if(v.type === undefined) {
                 //must be grouping object.. traverse to child 
-                console.log("groupingn ", k);
+                //console.log("groupingn ", k);
                 out[k] = {};
                 walk(v, out[k]);
                 continue;
             }
             switch(v.type) {
             case "input":
-                var dataset = inputs[v.input_id];
-                //find file
-                dataset.datatype.files.forEach(file=>{
-                    if(file.id == v.file_id) {
-                        //out[k] = "../"+task_stage._id+"/"+v.input_id+"/"+(file.filename||file.dirname);
-                        out[k] = "../"+task_stage._id+"/"+dataset._id+"/"+(file.filename||file.dirname);
-                    }
-                });
+                var input = inputs[v.input_id];
+                var dataset = datasets.find(d=>d.input_id == v.input_id);
+
+                var base = "../"+dataset.task_id;
+                if(dataset.subdir) base+="/"+dataset.subdir;
+
+                //console.log("looking for ",v.input_id, dataset);
+                //find file specified in datatype..
+                var file = input.datatype.files.find(file=>file.id == v.file_id);
+                out[k] = base+"/"+(file.filename||file.dirname);
+                //but override it if filemaping from the input dataset is specified.
+                if(dataset.files && dataset.files[node.input_id]) {
+                    out[k] = base+"/"+dataset.files[node.file_id];
+                }
                 break;
             case "integer":
             case "string":
