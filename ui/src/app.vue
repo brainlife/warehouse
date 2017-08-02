@@ -81,17 +81,17 @@
                 </p> 
             </td>
         </tr>
-        <tr v-if="resources">
+        <tr>
             <th>Computing Resource</th>
             <td>
-                <el-alert :closable="false" title="" type="error" v-if="!preferred_resource.detail">
+                <el-alert :closable="false" title="" type="error" v-if="!resources">
                     There is no computing resource to run this currently.
                 </el-alert>
-                <p v-if="preferred_resource.detail">
+                <p v-else>
                     This service can currently run on 
-                    <el-tag> {{preferred_resource.detail.name}} (Preferred)</el-tag>
-                     <el-tag v-for="(resource, _id) in resources" :key="resource._id" v-if="resource.detail && resource.detail.name != preferred_resource.detail.name">
-                        {{resource.detail.name}}
+                    <el-tag> {{preferred_resource.name}} (Best)</el-tag>
+                     <el-tag v-for="resource in resources" :key="resource.id" v-if="resource.id != preferred_resource._id" style="margin-right:3px;">
+                        {{resource.name}}
                     </el-tag> 
                 </p> 
             </td>
@@ -230,14 +230,13 @@ export default {
                 service
             }})
             .then(res => {
-                this.preferred_resource = res.body;
-                
-                return this.$http.get(Vue.config.wf_api + '/resource', {params: {
-                    service
-                }});
-            })
-            .then(res => {
-                this.resources = res.body.resources;
+                this.preferred_resource = res.body.resource;
+                this.resources = res.body.considered
+                .sort((a, b) => {
+                    if (a.score < b.score) return 1;
+                    if (a.score > b.score) return -1;
+                    return 0;
+                });
             })
             .catch(err => {
                 console.error(err);
