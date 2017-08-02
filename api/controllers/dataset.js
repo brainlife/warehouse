@@ -190,6 +190,7 @@ router.get('/bibtex/:id', (req, res, next)=>{
  * @apiParam {String} task_id           WF service Task ID (of output task)
  * @apiParam {Object} [app_id]          Application used to generate this dataset (don't set if it's uploaded)
  * @apiParam {String} [output_id]       Output ID of the app_id (not set if uploaded)
+ * @apiParam {String} [subdir]          Subdirectory where all files are actually stored under the task output
  *
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
  * @apiParam {String[]} datatype_tags   Datatype tags to set
@@ -270,6 +271,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                     task_id: task._id,
                     app: req.body.app_id,
                     output_id: req.body.output_id,
+                    subdir: req.body.subdir,
                 },
                 meta: req.body.meta||{},
             }).save((err, _dataset)=>{
@@ -281,7 +283,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 
         next=>{
             logger.debug("transfering data");
-            common.archive_task(task, dataset, req.body.datatype, req.body.files, req.headers.authorization, next);
+            common.archive_task(task, dataset, req.body.files, req.headers.authorization, next);
         },
 
     ], err=>{

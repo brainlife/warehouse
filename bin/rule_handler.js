@@ -114,10 +114,8 @@ function handle_rule(rule, cb) {
             return next_subject();
         }
 
-        ////////////////////////////////////////////////////////////
-        //debug (only handle subjects that starts with 10)
-        if(subject.toString().search(/^10/)) {
-            //logger.debug("skipping subjects that doesn't start with 10..", subject);
+        if(rule.subject_match && !subject.match(rule.subject_match)) {
+            logger.info("subject", subject, "doesn't match", rule.subject_match);
             return next_subject();
         }
 
