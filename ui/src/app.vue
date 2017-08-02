@@ -6,7 +6,7 @@
         <el-button-group style="float: right;">
             <el-button @click="remove()" v-if="app._canedit" icon="delete">Remove</el-button>
             <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</el-button>
-            <el-button type="primary" v-if="resource && !resource.nomatch" @click="go('/app/'+app._id+'/submit')"icon="caret-right">Submit</el-button>
+            <el-button type="primary" v-if="preferred_resource && !preferred_resource.nomatch" @click="go('/app/'+app._id+'/submit')"icon="caret-right">Submit</el-button>
         </el-button-group>
         <appavatar :app="app" style="float: left; margin-right: 20px; margin-top: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
         <br>
@@ -81,15 +81,18 @@
                 </p> 
             </td>
         </tr>
-        <tr v-if="resource">
+        <tr>
             <th>Computing Resource</th>
             <td>
-                <el-alert :closable="false" title="" type="error" v-if="!resource.detail">
+                <el-alert :closable="false" title="" type="error" v-if="!resources">
                     There is no computing resource to run this currently.
                 </el-alert>
-                <p v-if="resource.detail">
+                <p v-else>
                     This service can currently run on 
-                    <el-tag> {{resource.detail.name}} </el-tag>
+                    <el-tag> {{preferred_resource.name}} (Best)</el-tag>
+                     <el-tag v-for="resource in resources" :key="resource.id" v-if="resource.id != preferred_resource._id" style="margin-right:3px;">
+                        {{resource.name}}
+                    </el-tag> 
                 </p> 
             </td>
         </tr>
@@ -135,8 +138,8 @@
             <div slot="header">Debug</div>
             <h3>App</h3>
             <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-            <h3>Resource</h3>
-            <pre v-highlightjs="JSON.stringify(resource, null, 4)"><code class="json hljs"></code></pre>
+            <h3>Preferred Resource</h3>
+            <pre v-highlightjs="JSON.stringify(preferred_resource, null, 4)"><code class="json hljs"></code></pre>
         </el-card>
     </div><!--page-content-->
 </div><!--root-->
@@ -159,7 +162,8 @@ export default {
     data () {
         return {
             app: null,
-            resource: null,
+            preferred_resource: null,
+            resources: null,
             service_stats: null, 
 
             selfurl: document.location.href,
@@ -180,7 +184,7 @@ export default {
         }})
         .then(res=>{
             this.app = res.body.apps[0];
-            if(this.app.github) this.findbest(this.app.github);
+            if(this.app.github) this.find_resources(this.app.github);
 
             if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
 
@@ -220,17 +224,23 @@ export default {
         go: function(path) {
             this.$router.push(path);
         },
-
-        findbest: function(service) {
-            //find resource where we can run this app
-            this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-                service: service,
+        
+        find_resources: function(service) {
+            this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
+                service
             }})
-            .then(res=>{
-                this.resource = res.body;
-            }, res=>{
-                console.error(res);
+            .then(res => {
+                this.preferred_resource = res.body.resource;
+                this.resources = res.body.considered
+                .sort((a, b) => {
+                    if (a.score < b.score) return 1;
+                    if (a.score > b.score) return -1;
+                    return 0;
+                });
             })
+            .catch(err => {
+                console.error(err);
+            });
         },
 
         remove: function() {
