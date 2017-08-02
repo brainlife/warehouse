@@ -74,6 +74,7 @@ export default {
                 output_id: this.output.id,
                 datatype: this.output.datatype,
                 datatype_tags: this.output.datatype_Tags,
+                subdir: this.output.subdir, //subdir that contains the actual content under the task
                 files: this.output.files,
                 meta: this.output.meta,
                 desc: this.desc,
