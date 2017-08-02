@@ -33,9 +33,10 @@
             <th>Storage</th>
             <td>
                 <div v-if="dataset.storage">
+                    <el-tag>{{dataset.status}}</el-tag>
                     This dataset is currently stored in <b>{{dataset.storage}}</b>
                 </div>
-                <el-alert v-else title="Archiving.." type="warning"> </el-alert>
+                <p style="color: #2693ff;" v-if="!dataset.storage"><b><icon name="cog" :spin="true"/> Archiving ...</b></p> 
             </td>
         </tr>
         <tr>
