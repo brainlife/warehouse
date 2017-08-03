@@ -257,7 +257,7 @@ export default {
         },
         comma_separated_tags: function(tags) {
             // strip trailing whitespace after start/commas
-            tags = tags.replace(/^[ \t]+/g, '').replace(/,[ \t]+/g, ',');
+            tags = tags.split(",").map(s => s.trim()).join(",");
             
             if (this.dataset) {
                 if (tags == "") this.dataset.tags = [];
