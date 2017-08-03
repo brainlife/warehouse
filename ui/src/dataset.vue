@@ -42,7 +42,18 @@
         <tr>
             <th>Metadata</th>
             <td>
-                <metadata :metadata="dataset.meta"></metadata>
+                <div v-if="!editing.meta">
+                    <metadata :metadata="dataset.meta"></metadata>
+                    <el-button @click="editing.meta=true" style="float:right;">Edit</el-button>
+                </div>
+                <div v-else v-for="(m, id) in dataset.meta" :key="id">
+                    <el-input type="text" v-model="dataset.meta[id]">
+                        <template slot="prepend"><span style="text-transform: uppercase;">{{id}}</span></template>
+                    </el-input>
+                    <div>
+                        <el-button @click="editing.meta=false" type="primary" style="float:right;">Done</el-button>
+                    </div>
+                </div>
             </td>
         </tr>
         <tr>
@@ -207,6 +218,11 @@ export default {
             derivatives: {},
 
             selfurl: document.location.href,
+            
+            editing: {
+                meta: false,
+                tags: false
+            },
 
             config: Vue.config,
         }
@@ -223,6 +239,7 @@ export default {
         this.load(this.$route.params.id);
     },
     methods: {
+        log: console.log,
         opendataset: function(dataset) {
             console.dir(dataset);
         },
