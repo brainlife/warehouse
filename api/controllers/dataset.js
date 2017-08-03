@@ -317,9 +317,6 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
         if(canedit(req.user, dataset)) {
             //user can't update some fields
-            delete req.body.user_id;
-            delete req.body.create_date;
-            
             if (typeof req.body.desc == 'string') dataset.desc = req.body.desc;
             if (req.body.tags instanceof Array) dataset.tags = req.body.tags;
             if (typeof req.body.meta == 'object') dataset.meta = req.body.meta;
