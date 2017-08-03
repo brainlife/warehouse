@@ -26,6 +26,7 @@
                     <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
                     <b v-else class="text-muted">(no subject)</b>
                     <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+                    <small v-for="(tag,idx) in dataset.tags" :key="idx">| {{tag}}</small>
                     <mute>(d.{{dataset.did}})</mute> 
                     <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
                     <mute>
@@ -79,6 +80,7 @@
                                 <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                                 <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
                                 <mute>
+                                    <small v-for="(tag,idx) in input.tags" :key="idx">| {{tag}}</small>
                                     (d.{{input.did}})
                                 </mute>
                                 <mute v-if="findtask(input.task_id).status != 'finished'">
@@ -107,7 +109,10 @@
                             <el-col :span="20">
                                 <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                                 <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
-                                <mute>(d.{{output.did}})</mute>
+                                <mute>
+                                    <small v-for="(tag,idx) in output.tags" :key="idx">| {{tag}}</small>
+                                    (d.{{output.did}})
+                                </mute>
                                 <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
                                 <div style="float: right;">
                                     <div v-if="task.status == 'finished'">
@@ -366,6 +371,7 @@ export default {
                         datatype: output.datatype,
                         datatype_tags: output.datatype_tags,
                         desc: output.desc,
+                        tags: output.tags,
                         meta: output.meta||{},
                         create_date: output.create_date,
                         subdir: output.subdir, //set if the dataset is stored under subdir of task_dir
@@ -470,6 +476,7 @@ export default {
                     find: JSON.stringify({
                         "prov.instance_id": this.instance._id,
                         removed: false,
+                        //include ones that are not yet stored (storage: null)
                     })
                 }})
             })
