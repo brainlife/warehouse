@@ -87,6 +87,7 @@ function archive_dataset(task, output, cb) {
             db.Datasets.findOne({
                 "prov.task_id": task._id,
                 "prov.output_id": output.id,
+                //removed: false, //archive again if user removes the dataset
             }).exec((err,_dataset)=>{
                 if(err) return cb(err);
                 if(_dataset) {

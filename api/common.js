@@ -50,10 +50,10 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     //directory has to be unzip/tar-edto tmpdir
                     srcpath += (files_override[file.id]||file.dirname);
                     var fullpath = tmpdir+"/"+file.dirname;
-                    mkdirp.sync(path.dirname(fullpath)); //make sure the path exists
+                    mkdirp.sync(fullpath); //don't need to path.dirname() here
                     logger.debug("downloading from", srcpath, "and untar to", fullpath);
                     var untar = child_process.spawn("tar", ["xz"], {cwd: fullpath});
-                    writestream = untar.stdout;
+                    writestream = untar.stdin;
                     untar.on('close', code=>{
                         if(code) return next_file("untar files with code:"+code);
                         if(!input_ok) return next_file("input failed for download/untar");

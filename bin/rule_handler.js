@@ -160,16 +160,17 @@ function handle_rule(rule, cb) {
                     logger.info("outputs missing, but so are inputs.. skipping");
                     next_subject();
                 } else {
-                    logger.info("found all inputs.. submitting task");
                     
                     //see if we've already submitted task for this output
                     get_submitted_task(subject, (err, submitted)=>{
                         if(err) return next_subject(err);
                         if(submitted) {
-                            logger.debug("task already submitted:",submitted._id, submitted.status);
+                            logger.info("task already submitted:",submitted._id, submitted.status);
                             return next_subject();
                         }
                         running++;
+
+                        logger.info("output missing, and we have all inputs! submitting tasks");
                         submit_tasks(subject, inputs, next_subject);
                     });
                 }
@@ -472,7 +473,7 @@ function handle_rule(rule, cb) {
                         meta: meta,
                         archive: {
                             project: rule.output_project._id,  
-                            desc: "dataset archived by rule handler",
+                            desc: rule.name,
                             tags: rule.output_tags[output.id],
                         }
                     });
