@@ -393,9 +393,7 @@ function handle_rule(rule, cb) {
                 }
 
                 //nothing to download, then proceed to submitting the app
-                if(downloads.length == 0) {
-                    next();
-                }
+                if(downloads.length == 0) return next();
 
                 //need to submit download task first.
                 request.post({
