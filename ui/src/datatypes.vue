@@ -72,17 +72,11 @@ export default {
             
             ]})
             */
+            sort: 'name'
         }})
         .then(res=>{
             this.datatypes = res.body.datatypes;
             this.count = res.body.count;
-            
-            // sort datatypes by name
-            this.datatypes.sort((a, b) => {
-                if (a.name > b.name) return 1;
-                if (a.name < b.name) return -1;
-                return 0;
-            });
         }).catch(err=>{
             console.error(err);
         });
