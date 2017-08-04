@@ -257,11 +257,11 @@ export default {
         },
         comma_separated_tags: function(tags) {
             // strip trailing whitespace after start/commas
-            tags = tags.replace(/^[ \t]+/g, '').replace(/,[ \t]+/g, ',');
+            tags = tags.split(",").map(s => s.trim());
             
             if (this.dataset) {
-                if (tags == "") this.dataset.tags = [];
-                else this.dataset.tags = tags.split(",");
+                if (tags.length == 1 && tags[0] == "") this.dataset.tags = [];
+                else this.dataset.tags = tags;
             }
         }
     },
