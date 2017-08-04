@@ -16,20 +16,9 @@
     <div class="page-content">
         <div v-if="!datatypes" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="datatypes">
-            <!--
-            <h2 class="group-title">Private Datatypes</h2>
-            <div v-for="datatype in datatypes" :key="datatype._id" v-if="datatype.access == 'private'" style="margin-bottom: 10px;">
-                <datatypecard :datatype="datatype" class="private-datatype"/>
-            </div>
-            <br>
-            <h2 class="group-title">Public Datatypes</h2>
-            <div v-for="datatype in datatypes" :key="datatype._id" v-if="datatype.access == 'public'" style="margin-bottom: 10px;">
-                <datatypecard :datatype="datatype" class="public-datatype"/>
-            </div>
-            -->
             <h2 class="text-muted">Datatypes</h2>
             <div v-for="datatype in datatypes" :key="datatype._id" style="margin-bottom: 10px;">
-                {{datatype}}
+                <datatype :datatype="datatype"></datatype>
             </div>
             
         </div>
@@ -87,6 +76,13 @@ export default {
         .then(res=>{
             this.datatypes = res.body.datatypes;
             this.count = res.body.count;
+            this.datatypes.forEach(d => console.log(d.name));
+            // sort datatypes by name
+            this.datatypes.sort((a, b) => {
+                if (a.name > b.name) return 1;
+                if (a.name < b.name) return -1;
+                return 0;
+            });
         }).catch(err=>{
             console.error(err);
         });
