@@ -170,7 +170,7 @@
                 <div v-if="newtask.app">
                     <el-form label-width="200px"> 
                         <el-form-item label="Application">
-                            <app :app="newtask.app" :compact="true" :clickable="false"></app>
+                            <app :app="newtask.app" :compact="false" :clickable="false"></app>
                         </el-form-item>
 
                         <el-form-item label="Task Description">
@@ -185,7 +185,7 @@
                                 style="width: 100%;">
                                 <el-option v-for="dataset in filter_datasets(input)" :key="dataset.idx"
                                         :value="dataset.idx" 
-                                        :label="dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject+' | '+dataset.datatype_tags+' (d.'+dataset.did+')'">
+                                        :label="dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject+' > '+dataset.datatype_tags+' | '+dataset.tags+' (d.'+dataset.did+')'">
                                     <span v-if="dataset.task.status != 'finished'">(Processing)</span>
                                     {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
                                     <b>{{dataset.meta.subject}}</b> 
@@ -202,8 +202,13 @@
                             <el-input-number v-if="v.type == 'integer'" v-model="newtask.config[k]"/>
                             <el-input v-if="v.type == 'string'" v-model="newtask.config[k]"/>
                             <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
+                            <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" placeholder="Select">
+                                <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
+                                    <b>{{option.label}}</b>
+                                    <small> - {{option.desc}}</small>
+                                </el-option>
+                            </el-select>
                         </el-form-item>
-
     
                         <el-form-item label=" ">
                             <div v-if="!newtask.archive.enable">
@@ -371,7 +376,7 @@ export default {
                         datatype: output.datatype,
                         datatype_tags: output.datatype_tags,
                         desc: output.desc,
-                        tags: output.tags,
+                        tags: output.tags||[],
                         meta: output.meta||{},
                         create_date: output.create_date,
                         subdir: output.subdir, //set if the dataset is stored under subdir of task_dir
