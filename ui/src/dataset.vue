@@ -23,7 +23,18 @@
         <table class="info">
         <tr>
             <th>Description</th>
-            <td>{{dataset.desc}}</td>
+            <td>
+                <div v-if="!editing.desc">
+                    <span>{{dataset.desc}}</span>
+                    <el-button v-if="dataset._canedit" @click="editing.desc=true" style="float:right;">Edit</el-button>
+                </div>
+                <div v-else>
+                    <el-input type="text" v-model="dataset.desc"></el-input>
+                    <div>
+                        <el-button @click="serverUpdate(editing.desc=false)" type="primary" style="float:right;">Done</el-button>
+                    </div>
+                </div>
+            </td>
         </tr>
         <tr>
             <th width="180px">Create Date</th>
@@ -42,7 +53,18 @@
         <tr>
             <th>Metadata</th>
             <td>
-                <metadata :metadata="dataset.meta"></metadata>
+                <div v-if="!editing.meta">
+                    <metadata :metadata="dataset.meta"></metadata>
+                    <el-button v-if="dataset._canedit" @click="editing.meta=true" style="float:right;">Edit</el-button>
+                </div>
+                <div v-else v-for="(m, id) in dataset.meta" :key="id">
+                    <el-input type="text" v-model="dataset.meta[id]">
+                        <template slot="prepend"><span style="text-transform: uppercase;">{{id}}</span></template>
+                    </el-input>
+                    <div>
+                        <el-button @click="serverUpdate(editing.meta=false)" type="primary" style="float:right;">Done</el-button>
+                    </div>
+                </div>
             </td>
         </tr>
         <tr>
@@ -63,8 +85,17 @@
         <tr>
             <th>User Tags</th>
             <td>
-                <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
-                <tags :tags="dataset.tags"></tags>
+                <div v-if="!editing.tags">
+                    <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
+                    <tags :tags="dataset.tags"></tags>
+                    <el-button v-if="dataset._canedit" @click="editing.tags=true" style="float:right;">Edit</el-button>
+                </div>
+                <div v-else v-for="(m, id) in dataset.meta" :key="id">
+                    <el-input type="text" v-model="comma_separated_tags"></el-input>
+                    <div>
+                        <el-button @click="serverUpdate(editing.tags=false)" type="primary" style="float:right;">Done</el-button>
+                    </div>
+                </div>
             </td>
         </tr>
         <tr>
@@ -207,6 +238,13 @@ export default {
             derivatives: {},
 
             selfurl: document.location.href,
+            
+            editing: {
+                desc: false,
+                meta: false,
+                tags: false
+            },
+            comma_separated_tags: null,
 
             config: Vue.config,
         }
@@ -216,6 +254,15 @@ export default {
         '$route' (to, from) {
             //console.log(to, from);
             this.load(this.$route.params.id);
+        },
+        comma_separated_tags: function(tags) {
+            // strip trailing whitespace after start/commas
+            tags = tags.split(",").map(s => s.trim());
+            
+            if (this.dataset) {
+                if (tags.length == 1 && tags[0] == "") this.dataset.tags = [];
+                else this.dataset.tags = tags;
+            }
         }
     },
 
@@ -223,6 +270,12 @@ export default {
         this.load(this.$route.params.id);
     },
     methods: {
+        log: console.log,
+        
+        serverUpdate() {
+            this.$http.put(Vue.config.api+'/dataset/'+this.dataset._id, this.dataset);
+        },
+        
         opendataset: function(dataset) {
             console.dir(dataset);
         },
@@ -234,8 +287,7 @@ export default {
             alert("TODO..");
         },
         download: function() {
-            let url = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
-            document.location = url;
+            document.location = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
         },
         remove: function() {
             this.$http.delete('dataset/'+this.dataset._id)
@@ -255,7 +307,8 @@ export default {
                     return;
                 }
                 this.dataset = res.body.datasets[0];
-
+                this.comma_separated_tags = this.dataset.tags.join(", ");
+                
                 //console.log("looking for derivatives", this.dataset);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify({"prov.deps.dataset": id}),

@@ -292,6 +292,45 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 	});
 });
 
+/**
+ * @apiGroup Dataset
+ * @api {put} /dataset/:id      Update Dataset
+ *                              
+ * @apiDescription              Update Dataset
+ *
+ * @apiParam {String} [desc]    Description for this dataset 
+ * @apiParam {String[]} [tags]  List of tags to classify this dataset
+ * * @apiParam {String[]} [meta]  Metadata for this dataset
+ *
+ * @apiParam {String[]} [admins]  List of admins (auth sub)
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ *
+ * @apiSuccess {Object}         Updated Dataset
+ */
+router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    var id = req.params.id;
+    db.Datasets.findById(id, (err, dataset)=>{
+        if(err) return next(err);
+        if(!dataset) return res.status(404).end();
+
+        if(canedit(req.user, dataset)) {
+            //user can't update some fields
+            if (typeof req.body.desc == 'string') dataset.desc = req.body.desc;
+            if (req.body.tags instanceof Array) dataset.tags = req.body.tags;
+            if (typeof req.body.meta == 'object') dataset.meta = req.body.meta;
+            
+            dataset.save((err)=>{
+                if(err) return next(err);
+                dataset = JSON.parse(JSON.stringify(dataset));
+                dataset._canedit = canedit(req.user, dataset);
+                res.json(dataset);
+            });
+        } else return res.status(401).end("you are not administartor of this dataset");
+    });
+});
+
 //this API allows user to download any files under user's workflow directory
 //TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
 //doing so increases the chance of user misusing the token, but unless I use HTML5 File API
