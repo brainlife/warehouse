@@ -76,7 +76,7 @@ export default {
         .then(res=>{
             this.datatypes = res.body.datatypes;
             this.count = res.body.count;
-            this.datatypes.forEach(d => console.log(d.name));
+            
             // sort datatypes by name
             this.datatypes.sort((a, b) => {
                 if (a.name > b.name) return 1;
