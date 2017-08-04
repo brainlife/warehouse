@@ -45,6 +45,9 @@ function handle_rule(rule, cb) {
     var subjects = null;
     var running = null; //number of currently running tasks for this rule
 
+    if(!rule.input_tags) rule.input_tags = {};
+    if(!rule.output_tags) rule.output_tags = {};
+
     logger.info("handling rule", JSON.stringify(rule, null, 4));
 
     //prepare for stage / app / archive
@@ -132,7 +135,7 @@ function handle_rule(rule, cb) {
                 removed: false,
             }
             if(output.datatype_tags.length > 0) query.datatype_tags = { $all: output.datatype_tags };
-            if(rule.output_tags[output.id]) query.tags = { $all: rule.output_tags[output.id] }; //TODO - test me
+            if(rule.output_tags[output.id]) query.tags = { $all: rule.output_tags[output.id] }; 
             db.Datasets.findOne(query)
             .populate('datatype')
             .exec((err, dataset)=>{
@@ -157,16 +160,17 @@ function handle_rule(rule, cb) {
                     logger.info("outputs missing, but so are inputs.. skipping");
                     next_subject();
                 } else {
-                    logger.info("found all inputs.. submitting task");
                     
                     //see if we've already submitted task for this output
                     get_submitted_task(subject, (err, submitted)=>{
                         if(err) return next_subject(err);
                         if(submitted) {
-                            logger.debug("task already submitted:",submitted._id, submitted.status);
+                            logger.info("task already submitted:",submitted._id, submitted.status);
                             return next_subject();
                         }
                         running++;
+
+                        logger.info("output missing, and we have all inputs! submitting tasks");
                         submit_tasks(subject, inputs, next_subject);
                     });
                 }
@@ -203,11 +207,13 @@ function handle_rule(rule, cb) {
                 storage: { $exists: true },
                 removed: false,
             }
-
             //allow user to override which project to load input datasets from
             if(rule.input_project_override && rule.input_project_override[input.id]) {
                 query.project = rule.input_project_override[input.id];
             } 
+            if(rule.input_tags[input.id]) {
+                query.tags = { $all: rule.input_tags[input.id] }; 
+            }
 
             db.Datasets.findOne(query)
             .populate('datatype')
@@ -217,7 +223,7 @@ function handle_rule(rule, cb) {
                 if(err) return next_input(err);
 
                 if(!dataset) {
-                    logger.debug("input missing", input.id, JSON.stringify(query, null, 4));
+                    logger.debug("input missing", input.id);//, JSON.stringify(query, null, 4));
                     missing = true;
                     return next_input();
                 }
@@ -387,9 +393,7 @@ function handle_rule(rule, cb) {
                 }
 
                 //nothing to download, then proceed to submitting the app
-                if(downloads.length == 0) {
-                    next();
-                }
+                if(downloads.length == 0) return next();
 
                 //need to submit download task first.
                 request.post({
@@ -467,8 +471,8 @@ function handle_rule(rule, cb) {
                         meta: meta,
                         archive: {
                             project: rule.output_project._id,  
-                            desc: "dataset archived by rule handler",
-                            tags: rule.output_tags[output.id],  //??
+                            desc: rule.name,
+                            tags: rule.output_tags[output.id],
                         }
                     });
                 });
