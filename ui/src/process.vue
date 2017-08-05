@@ -234,7 +234,7 @@
                             <!--TODO - handle nested config? -->
                             <el-form-item v-for="(v,k) in newtask_app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
                                 <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01">
-                                <el-input-number v-if="v.type == 'integer'" v-model="newtask.config[k]"/>
+                                <el-input type="number" v-if="v.type == 'integer'" v-model.number="newtask.config[k]"/>
                                 <el-input v-if="v.type == 'string'" v-model="newtask.config[k]"/>
                                 <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
                                 <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" placeholder="Select">

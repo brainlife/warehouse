@@ -198,11 +198,12 @@
 
                         <!--TODO - handle nested config? -->
                         <el-form-item v-for="(v,k) in newtask.app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
-                            <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01">
-                            <el-input-number v-if="v.type == 'integer'" v-model="newtask.config[k]"/>
-                            <el-input v-if="v.type == 'string'" v-model="newtask.config[k]"/>
+                            <!--<p class="text-muted" v-if="v.desc">{{v.desc}}</p>-->
+                            <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01" :placeholder="v.placeholder">
+                            <el-input type="number" v-if="v.type == 'integer'" v-model.number="newtask.config[k]" :placeholder="v.placeholder"/>
+                            <el-input v-if="v.type == 'string'" v-model="newtask.config[k]" :placeholder="v.placeholder"/>
                             <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
-                            <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" placeholder="Select">
+                            <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder">
                                 <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
                                     <b>{{option.label}}</b>
                                     <small> - {{option.desc}}</small>
@@ -596,16 +597,8 @@ export default {
         set_default: function(config) {
             for(var k in config) {
                 var v = config[k];
-                if(v.type) {
-                    //assume it's edge
-                    switch(v.type) {
-                    case "input":
-                        //don't do anything for input
-                        break;
-                    default:
-                        config[k] = v.default;//||"";        
-                    }
-                } else this.set_default(v); //recurse on primitive
+                if(!v.type) this.set_default(v); //primitive should recurse
+                else if(v.type != "input") config[k] = v.default||"";
             }
         },
 
