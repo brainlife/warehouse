@@ -5,63 +5,118 @@ const winston = require('winston');
 const mongoose = require('mongoose');
 const async = require('async');
 const request = require('request');
+const redis = require('redis');
 
 const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
-db.init(err=>{
-    if(err) throw err;
+// TODO  Look for failed tasks and report to the user/dev?
 
-    const acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-    acon.on('error', err=>{
-        throw err;
-    });
-    acon.on('ready', ()=>{
-        logger.info("amqp connection ready");
+logger.info("starting event handler");
 
-        //ensure queues/binds and subscribe
-        async.series([
-
-            next=>{
-                acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
-                    logger.debug("binding wf.task > warehouse.task");
-                    task_q.bind('wf.task', '#');
-                    task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
-                        handle_task(task, err=>{
-                            if(err) logger.error(err)
-                            else task_q.shift();
-                        });
-                    });
-
-                    next();
-                });
-            },
-
-            next=>{
-                acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
-                    logger.debug("binding wf.instance > warehouse.instance");
-                    instance_q.bind('wf.instance', '#');
-                    instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
-                        handle_instance(instance, err=>{
-                            if(err) logger.error(err)
-                            else instance_q.shift();
-                        });
-                    });
-
-                    next();
-                });
-            },
-
-        ], err=>{
-            if(err) throw err;
-            logger.info("queues ready");
+//init and start 
+var acon = null;
+var rcon = null;
+async.series([
+        
+    //connect to mongo
+    db.init,
+   
+    //connect to amqp
+    next=>{
+        //logger.debug("connecting amqp");
+        acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+        acon.on('error', next);
+        acon.on('ready', ()=>{
+            logger.info("amqp connection ready");
+            next();
         });
-    });
+    },
+
+    //connect to redis
+    next=>{
+        //logger.debug("connecting redis");
+        rcon = redis.createClient(config.redis.port, config.redis.server);
+        rcon.on('error', next);
+        rcon.on('ready', ()=>{
+            logger.info("redis connection ready");
+            next();
+        });
+    },
+
+    //start health check
+    next=>{
+        setInterval(health_check, 1000*60*5);
+        next();
+    },
+ 
+    //ensure queues/binds and subscribe to task events
+    next=>{
+        logger.debug("subscribing to task event");
+        acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
+            logger.debug("binding wf.task > warehouse.task");
+            task_q.bind('wf.task', '#');
+            task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
+                handle_task(task, err=>{
+                    if(err) logger.error(err)
+                    else task_q.shift();
+                });
+            });
+            next();
+        });
+    },
+    
+    //ensure queues/binds and subscribe to instance events
+    next=>{
+        logger.debug("subscribing to instance event");
+        acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
+            logger.debug("binding wf.instance > warehouse.instance");
+            instance_q.bind('wf.instance', '#');
+            instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
+                handle_instance(instance, err=>{
+                    if(err) logger.error(err)
+                    else instance_q.shift();
+                });
+            });
+
+            next();
+        });
+    },
+], err=>{
+    if(err) throw err;
+    logger.info("application started");
 });
 
+var _counts = {
+    tasks: 0,
+}
+
+function health_check() {
+    var report = {
+        status: "ok",
+        messages: [],
+        date: new Date(),
+        counts: _counts,
+        maxage: 1000*60*5, 
+    }
+
+    if(_counts.tasks == 0) {
+        report.status = "failed";
+        report.messages.push("tasks counts is 0");
+    }
+
+    rcon.set("health.warehouse.event."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
+
+    //reset counter
+    _counts.tasks = 0;
+
+}
+
 function handle_task(task, cb) {
+    _counts.tasks++;
+
     if(task.status == "finished" && task.config && task.config._outputs) {
         logger.info("handling task", task._id, task.status, task.name);
         async.eachSeries(task.config._outputs, (output, next_output)=>{
@@ -146,5 +201,6 @@ function archive_dataset(task, output, cb) {
 }
 
 function handle_instance(instance, cb) {
-    console.dir(instance);
+    logger.error("TODO",instance);
+    cb();
 }
