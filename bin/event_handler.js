@@ -48,24 +48,8 @@ async.series([
 
     //start health check
     next=>{
-        setInterval(health_check, 1000*60*5);
+        setInterval(health_check, 1000*60*3);
         next();
-    },
- 
-    //ensure queues/binds and subscribe to task events
-    next=>{
-        logger.debug("subscribing to task event");
-        acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
-            logger.debug("binding wf.task > warehouse.task");
-            task_q.bind('wf.task', '#');
-            task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
-                handle_task(task, err=>{
-                    if(err) logger.error(err)
-                    else task_q.shift();
-                });
-            });
-            next();
-        });
     },
     
     //ensure queues/binds and subscribe to instance events
@@ -76,46 +60,76 @@ async.series([
             instance_q.bind('wf.instance', '#');
             instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
                 handle_instance(instance, err=>{
-                    if(err) logger.error(err)
-                    else instance_q.shift();
+                    if(err) {
+                        logger.error(err)
+                        //continue .. TODO - maybe I should report the failed event to failed queue?
+                    }
+                    instance_q.shift();
                 });
             });
-
             next();
         });
     },
+ 
+    //ensure queues/binds and subscribe to task events
+    next=>{
+        logger.debug("subscribing to task event");
+        acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
+            logger.debug("binding wf.task > warehouse.task");
+            task_q.bind('wf.task', '#');
+            task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
+                handle_task(task, err=>{
+                    if(err) {
+                        logger.error(err)
+                        //TODO - maybe I should report the failed event to failed queue?
+                    }
+                    task_q.shift();
+                });
+            });
+            next();
+        });
+    },
+    
 ], err=>{
     if(err) throw err;
     logger.info("application started");
 });
 
-var _counts = {
-    tasks: 0,
+var _health = {
+    last_task_date: new Date(), //when the last task task was handled
 }
 
 function health_check() {
+    //logger.debug("health check");
     var report = {
         status: "ok",
         messages: [],
         date: new Date(),
-        counts: _counts,
+        //counts: _counts,
+        _health,
         maxage: 1000*60*5, 
     }
 
+    /*
     if(_counts.tasks == 0) {
         report.status = "failed";
         report.messages.push("tasks counts is 0");
+    }
+    */
+    if(Date.now() - _health.last_task_date > 1000*60*15) {
+        report.status = "failed";
+        report.messages.push("it's been a while since last task was handled");
     }
 
     rcon.set("health.warehouse.event."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
 
     //reset counter
-    _counts.tasks = 0;
-
+    //_counts.tasks = 0;
 }
 
 function handle_task(task, cb) {
-    _counts.tasks++;
+    //_counts.tasks++;
+    _health.last_task_date = new Date();
 
     if(task.status == "finished" && task.config && task.config._outputs) {
         logger.info("handling task", task._id, task.status, task.name);
@@ -201,6 +215,7 @@ function archive_dataset(task, output, cb) {
 }
 
 function handle_instance(instance, cb) {
-    logger.error("TODO",instance);
+    logger.debug("TODO",instance);
     cb();
 }
+

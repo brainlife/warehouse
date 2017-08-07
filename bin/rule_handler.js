@@ -35,6 +35,7 @@ function health_check() {
         messages: "ok",
         counts: _counts,
         date: new Date(),
+        maxage: 1000*60*3,
     }
 
     if(_counts.rules == 0) {
@@ -444,6 +445,7 @@ function handle_rule(rule, cb) {
                             dir: input._id,
                         });
                         var output = Object.assign({}, input, {
+                            id: input._id,
                             datatype: input.datatype._id, //unpopulate datatype to keep it clean
                             did: did++,
                             subdir: input._id,
