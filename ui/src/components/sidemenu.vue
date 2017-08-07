@@ -11,15 +11,15 @@
             :class="{active: active == '/apps'}" >
             <icon name="th-large" scale="2" ></icon><br>Apps
         </li>
-        <li @click="go('/processes')"
-            :class="{active: active == '/processes'}">
-            <icon name="paper-plane" scale="2"></icon><br>Process
-        </li>
         <li @click="go('/datasets')"
             :class="{active: active == '/datasets'}">
             <icon name="cubes" scale="2"></icon><br>Datasets
         </li>
-        <li class="divider"></li>
+        <li @click="go('/processes')"
+            :class="{active: active == '/processes'}">
+            <icon name="paper-plane" scale="2"></icon><br>Process
+        </li>
+        <!--<li class="divider"></li>-->
         <li @click="go('/projects')"
             :class="{active: active == '/projects'}">
             <icon name="shield" scale="2"></icon><br>Projects

@@ -104,7 +104,7 @@
                         <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
                             <el-row>
                             <el-col :span="4" class="truncate">
-                                {{output.id}}
+                                {{output.id||'(no id)'}}
                             </el-col>
                             <el-col :span="20">
                                 <b v-if="output.meta.subject">{{output.meta.subject}}</b>
@@ -819,7 +819,7 @@ export default {
 <style scoped>
 .main-section {
 position: fixed;
-padding: 20px;
+padding: 5px;
 left: 90px;
 right: 375px;
 top: 125px;

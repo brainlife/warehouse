@@ -15,7 +15,9 @@
 
             <!--<h1><icon name="cube" scale="2"></icon> Dataset <small class="text-muted">{{dataset._id}}</small></h1>-->
             <h1>
-                <datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+                <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3)">
+                    <div v-if="dataset.meta" style="display: inline-block; padding: 5px 10px; background-color: #fff; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+                </div>
             </h1>
         </div>
 
@@ -44,10 +46,13 @@
             <th>Storage</th>
             <td>
                 <div v-if="dataset.storage">
-                    <el-tag>{{dataset.status}}</el-tag>
+                    <!--<el-tag>{{dataset.status}}</el-tag>-->
                     This dataset is currently stored in <b>{{dataset.storage}}</b>
                 </div>
-                <p style="color: #2693ff;" v-if="!dataset.storage"><b><icon name="cog" :spin="true"/> Archiving ...</b></p> 
+                <p style="color: #2693ff;" v-if="dataset.status != 'stored'"><b>
+                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true"/> 
+                    {{dataset.status}}</b>
+                </p> 
             </td>
         </tr>
         <tr>
@@ -408,6 +413,9 @@ export default {
 </script>
 
 <style scoped>
+h1 datatypetag {
+border: 3px solid white;
+}
 .ui.text.menu {
     margin: 0;
 }
