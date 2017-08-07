@@ -96,7 +96,7 @@ function handle_rule(rule, cb) {
             });
         },
 
-        //get tasks currently running for this rule
+        //get tasks submitted for this rule
         next=>{
             request.get({
                 url: config.wf.api+"/task", json: true,
@@ -104,19 +104,21 @@ function handle_rule(rule, cb) {
                 qs: {
                     find: JSON.stringify({
                         "config._rule.id": rule._id,
-                        status: {$in : ["running", "requested"]},
+                        //status: {$in : ["running", "requested"]},
+                        status: {$ne: "removed"},
                     }),
                     populate: 'config._rule.subject',
                 },
             }, (err, res, body)=>{
                 if(err) return next(err);
-                running = body.count;
-                logger.debug("running tasks", running);
-
                 tasks = {};
+                running = 0;
                 body.tasks.forEach(task=>{
+                    if(task.status == "running" || task.status == "requested") running++;
                     tasks[task.config._rule.subject] = task;
                 });
+
+                logger.debug("running/rquested tasks", running);
                 next();
             });
         },
