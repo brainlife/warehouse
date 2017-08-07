@@ -32,7 +32,7 @@ var _counts = {
 function health_check() {
     var report = {
         status: "ok",
-        messages: "ok",
+        messages: [],
         counts: _counts,
         date: new Date(),
         maxage: 1000*60*3,
@@ -78,7 +78,8 @@ function handle_rule(rule, cb) {
     if(!rule.input_tags) rule.input_tags = {};
     if(!rule.output_tags) rule.output_tags = {};
 
-    logger.info("handling rule", JSON.stringify(rule, null, 4));
+    //logger.info("handling rule", JSON.stringify(rule, null, 4));
+    logger.info("handling rule ----------------------- ", rule._id.toString());
 
     //prepare for stage / app / archive
     async.series([
@@ -98,16 +99,17 @@ function handle_rule(rule, cb) {
 
         //get tasks submitted for this rule
         next=>{
+            var limit = 5000;
             request.get({
                 url: config.wf.api+"/task", json: true,
                 headers: { authorization: "Bearer "+jwt },
                 qs: {
                     find: JSON.stringify({
                         "config._rule.id": rule._id,
-                        //status: {$in : ["running", "requested"]},
                         status: {$ne: "removed"},
                     }),
-                    populate: 'config._rule.subject',
+                    select: 'status config._rule.subject',
+                    limit,
                 },
             }, (err, res, body)=>{
                 if(err) return next(err);
@@ -118,7 +120,11 @@ function handle_rule(rule, cb) {
                     tasks[task.config._rule.subject] = task;
                 });
 
-                logger.debug("running/rquested tasks", running);
+                if(body.tasks.length == limit) {
+                    return next("too many tasks submitted for this rule");
+                }
+
+                logger.debug("running/requested tasks", running);
                 next();
             });
         },
@@ -155,16 +161,16 @@ function handle_rule(rule, cb) {
         }
 
         if(rule.subject_match && !subject.match(rule.subject_match)) {
-            logger.info("subject", subject, "doesn't match", rule.subject_match);
+            //logger.info("subject", subject, "doesn't match", rule.subject_match);
             return next_subject();
         }
 
         if(tasks[subject]) {
-            logger.info("task already submitted", subject);
+            logger.info("task already submitted for subject:", subject, tasks[subject]._id);
             return next_subject();
         }
 
-        logger.debug("handling subject", subject, running);
+        logger.debug("handling subject", subject);
 
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var missing = false;
@@ -208,25 +214,6 @@ function handle_rule(rule, cb) {
             });
         });
     }
-
-    /*
-    function get_submitted_task(subject, next) {
-        request.get({
-            url: config.wf.api+"/task", json: true,
-            headers: { authorization: "Bearer "+jwt },
-            qs: {
-                find: JSON.stringify({
-                    "config._rule.id": rule._id,
-                    "config._rule.subject": subject,
-                    status: { $ne: "removed" },
-                }),
-            },
-        }, (err, res, body)=>{
-            if(err) return next(err);
-            return next(null, body.tasks[0]);
-        });
-    }
-    */
 
     function find_inputs(subject, next) {
         var missing = false;
@@ -322,7 +309,6 @@ function handle_rule(rule, cb) {
 
         var instance_name = "brainlife.rule project:"+rule.output_project._id+" subject:"+subject;
         var instance_desc = "rule:"+rule.name+" for project:"+rule.output_project.name+" subject:"+subject;
-
         running++;
 
         //prepare for stage / app / archive
