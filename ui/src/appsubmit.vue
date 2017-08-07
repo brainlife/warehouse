@@ -35,10 +35,17 @@
             
             <!-- TODO doesn't support nested parameters-->
             <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value !== undefined">
+                <p class="text-muted" v-if="v.desc">{{v.desc}}</p>
                 <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01">
                 <el-input-number v-if="v.type == 'integer'" v-model="form.config[k]"></el-input-number>
                 <el-input v-if="v.type == 'string'" v-model="form.config[k]"></el-input>
                 <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox>
+                <el-select v-if="v.type == 'enum'" v-model="form.config[k]" placeholder="Select">
+                    <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
+                        <b>{{option.label}}</b>
+                        <small> - {{option.desc}}</small>
+                    </el-option>
+                </el-select>
             </el-form-item>
 
             <el-form-item label="Description">

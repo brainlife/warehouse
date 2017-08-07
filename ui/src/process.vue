@@ -189,7 +189,7 @@
                 <div v-if="this.newtask_app && !this.submitting">
                     <el-form label-width="200px"> 
                         <el-form-item label="Application">
-                            <app :app="this.newtask_app" :compact="true" :clickable="false"></app>
+                            <app :app="this.newtask_app" :compact="false" :clickable="false"></app>
                         </el-form-item>
 
                         <el-form-item label="Description">
@@ -237,6 +237,12 @@
                                 <el-input-number v-if="v.type == 'integer'" v-model="newtask.config[k]"/>
                                 <el-input v-if="v.type == 'string'" v-model="newtask.config[k]"/>
                                 <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
+                                <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" placeholder="Select">
+                                    <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
+                                        <b>{{option.label}}</b>
+                                        <small> - {{option.desc}}</small>
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                         </div>
 

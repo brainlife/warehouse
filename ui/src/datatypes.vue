@@ -16,7 +16,7 @@
     <div class="page-content">
         <div v-if="!datatypes" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="datatypes">
-            <h2 class="text-muted">Datatypes</h2>
+            <h2 class="group-title">Datatypes</h2>
             <div v-for="datatype in datatypes" :key="datatype._id" style="margin-bottom: 10px;">
                 <datatype :datatype="datatype"></datatype>
             </div>
@@ -105,5 +105,7 @@ box-shadow: none;
 <style scope>
 .group-title {
 color: #999;
+padding-bottom: 10px;
+border-bottom: 1px solid #ddd;
 }
 </style>
