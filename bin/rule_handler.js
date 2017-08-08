@@ -235,59 +235,50 @@ function handle_rule(rule, cb) {
                 query.tags = { $all: rule.input_tags[input.id] }; 
             }
 
-            db.Datasets.findOne(query)
+            db.Datasets.find(query)
             .populate('datatype')
             .sort('-create_date') //find the latest one
             .lean()
-            .exec((err, dataset)=>{
+            .exec((err, datasets)=>{
                 if(err) return next_input(err);
 
+                /*
                 if(!dataset) {
                     logger.debug("input missing", input.id);//, JSON.stringify(query, null, 4));
                     missing = true;
                     return next_input();
                 }
-                
-                //apply tags
-                var match = true;
-                input.datatype_tags.forEach(tag=>{
-                    if(tag[0] == "!") {
-                        //negative: make sure tag doesn't exist
-                        if(~dataset.datatype_tags.indexOf(tag.substring(1))) match = false;
-                    } else {
-                        //positive: make sure tag exists
-                        if(!~dataset.datatype_tags.indexOf(tag)) match = false;
-                    }
+                */
+                //find first dataset that matches all tags
+                var matching_dataset = null;
+                datasets.forEach(dataset=>{
+                    var match = true;
+                    input.datatype_tags.forEach(tag=>{
+                        if(tag[0] == "!") {
+                            //negative: make sure tag doesn't exist
+                            if(~dataset.datatype_tags.indexOf(tag.substring(1))) match = false;
+                        } else {
+                            //positive: make sure tag exists
+                            if(!~dataset.datatype_tags.indexOf(tag)) match = false;
+                        }
+                    });
+                    if(match) matching_dataset = dataset;
                 });
+
+                /*
                 if(!match) {
                     logger.debug("tag mismatch", input.id);
                     missing = true;
                     return next_input();
                 }
-
-                inputs[input.id] = dataset;
-                
-                /*
-                //load status of task that produced this dataset
-                if(dataset.prov && dataset.prov.task_id) {
-                    //logger.debug("loading task status", dataset.prov.task_id);
-                    request.get({
-                        url: config.wf.api+"/task", json: true,
-                        headers: { authorization: "Bearer "+jwt },
-                        qs: {
-                            find: JSON.stringify({_id: dataset.prov.task_id}),
-                        },
-                    }, (err, res, body)=>{
-                        if(err) return next_input(err);
-                        dataset.prov._task = body.tasks[0]; //only used while we process this dataset
-                        next_input();
-                    });
-                } else {
-                    //no prov.. probably uploaded / imported
-                    next_input();
-                }
                 */
-                next_input();
+                if(!matching_dataset) {
+                    missing = true;
+                    logger.debug("no matching input", input.id);
+                } 
+
+                inputs[input.id] = matching_dataset;
+                next_input(); 
             });
         }, err=>{
             if(err) return next(err);
@@ -517,10 +508,11 @@ function handle_rule(rule, cb) {
                         datatype_tags: output.datatype_tags,
                         desc: output.desc,
                         meta: meta,
+                        tags: rule.output_tags[output.id], 
                         archive: {
                             project: rule.output_project._id,  
                             desc: rule.name,
-                            tags: rule.output_tags[output.id],
+                            tags: rule.output_tags[output.id], //deprecated by parent's tags.. (remove this eventually)
                         }
                     });
                 });

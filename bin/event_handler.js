@@ -48,7 +48,7 @@ async.series([
 
     //start health check
     next=>{
-        setInterval(health_check, 1000*60*3);
+        setInterval(health_check, 1000*60);
         next();
     },
     
@@ -95,8 +95,14 @@ async.series([
     logger.info("application started");
 });
 
+/*
 var _health = {
     last_task_date: new Date(), //when the last task task was handled
+}
+*/
+var _counts = {
+    tasks: 0,
+    instances: 0,
 }
 
 function health_check() {
@@ -105,31 +111,33 @@ function health_check() {
         status: "ok",
         messages: [],
         date: new Date(),
-        //counts: _counts,
-        _health,
-        maxage: 1000*60*5, 
+        counts: _counts,
+        //_health,
+        maxage: 1000*60*3, 
+    }
+
+    if(_counts.tasks == 0) {
+        report.status = "failed";
+        report.messages.push("task event counts is low");
     }
 
     /*
-    if(_counts.tasks == 0) {
-        report.status = "failed";
-        report.messages.push("tasks counts is 0");
-    }
-    */
     if(Date.now() - _health.last_task_date > 1000*60*15) {
         report.status = "failed";
         report.messages.push("it's been a while since last task was handled");
     }
+    */
 
     rcon.set("health.warehouse.event."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
 
     //reset counter
-    //_counts.tasks = 0;
+    _counts.tasks = 0;
+    _counts.instances = 0;
 }
 
 function handle_task(task, cb) {
-    //_counts.tasks++;
-    _health.last_task_date = new Date();
+    _counts.tasks++;
+    //_health.last_task_date = new Date();
 
     if(task.status == "finished" && task.config && task.config._outputs) {
         logger.info("handling task", task._id, task.status, task.name);
@@ -178,7 +186,7 @@ function archive_dataset(task, output, cb) {
                 datatype_tags: output.datatype_tags,
 
                 desc: output.archive.desc,
-                tags: output.archive.tags||[],
+                tags: output.tags||output.archive.tags||[], //output.archive.tags is deprecated (remove it eventually)
 
                 prov: {
                     instance_id: task.instance_id,
@@ -215,6 +223,8 @@ function archive_dataset(task, output, cb) {
 }
 
 function handle_instance(instance, cb) {
+    _counts.instances++;
+
     logger.debug("TODO",instance);
     cb();
 }

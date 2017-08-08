@@ -368,7 +368,7 @@ router.get('/download/:id', jwt({
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
             if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
-            logger.debug("user is accessing p", dataset.project);
+            //logger.debug("user is accessing project:", dataset.project.toString());
             logger.debug("user has access to", project_ids);
             if(!~project_ids.indexOf(dataset.project.toString())) {
                 return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
@@ -377,9 +377,9 @@ router.get('/download/:id', jwt({
             //open stream
             var system = config.storage_systems[dataset.storage];
             var stat_timer = setTimeout(function() {
-                logger.debug("stat timer called");
-                next("filesystem maybe offline today");
-            }, 1000*3);
+                logger.debug("timeout while calling stat on "+dataset.storage);
+                next("stat timeout - filesystem maybe offline today:"+dataset.storage);
+            }, 1000*15);
             system.stat(dataset, (err, stats)=>{
                 clearTimeout(stat_timer);
                 logger.debug(JSON.stringify(stats, null, 4));
