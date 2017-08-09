@@ -7,6 +7,7 @@
         <life v-else-if="type == 'neuro.life_output'" :task="task" :subdir="subdir"></life>
         <evaluator v-else-if="type == 'neuro.conneval_output'" :task="task" :subdir="subdir"></evaluator>
         <images v-else-if="type == 'generic.images'" :task="task" :subdir="subdir"></images>
+        <volumeviewer v-else-if="type == 'neuro.anat.t1w'" :task="task" :subdir="subdir"></volumeviewer>
         <div v-else style="margin: 20px;">
             <h2>Staging Data</h2>
             <task :task="task"/>
@@ -31,6 +32,8 @@ import afq from '@/components/appuis/afq'
 import life from '@/components/appuis/life'
 import evaluator from '@/components/appuis/evaluator'
 import images from '@/components/appuis/images'
+import volumeviewer from '@/components/appuis/volumeviewer'
+
 import task from '@/components/task'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -38,7 +41,8 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 export default {
     props: [ 'instanceid', 'taskid', 'type', 'subdir' ],
     components: { 
-        dtiinit, freesurfer, afq, life, evaluator, images, task
+        dtiinit, freesurfer, afq, life, evaluator, images, volumeviewer,
+        task
     },
 
     data () {
