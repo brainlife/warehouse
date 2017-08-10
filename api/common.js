@@ -91,6 +91,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 logger.debug("obtaining upload stream for ", storage);
                 system.upload(dataset, (err, writestream)=>{
                     if(err) return next(err);
+                    //gzip tmpdir, tar, and send to writestream
                     var tar = child_process.spawn("tar", ["hcz", "."], {cwd: tmpdir});
                     tar.on('close', code=>{
                         cleantmp();
@@ -101,6 +102,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             dataset.storage = storage;
                             dataset.status = "stored";
                         }
+                        logger.debug("streaming finished with code:", code);
                         dataset.save(cb);
                     });
                     logger.debug("streaming to storage");

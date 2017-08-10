@@ -48,7 +48,7 @@ async.series([
 
     //start health check
     next=>{
-        setInterval(health_check, 1000*60);
+        setInterval(health_check, 1000*60*3); //It has to be long enough - when it needs to transfer data
         next();
     },
     
@@ -113,7 +113,7 @@ function health_check() {
         date: new Date(),
         counts: _counts,
         //_health,
-        maxage: 1000*60*3, 
+        maxage: 1000*60*6,  //should be double the check frequency to avoid going stale while development
     }
 
     if(_counts.tasks == 0) {
@@ -164,7 +164,7 @@ function archive_dataset(task, output, cb) {
             db.Datasets.findOne({
                 "prov.task_id": task._id,
                 "prov.output_id": output.id,
-                //removed: false, //archive again if user removes the dataset
+                removed: false, //archive again if user removes the dataset
             }).exec((err,_dataset)=>{
                 if(err) return cb(err);
                 if(_dataset) {

@@ -4,6 +4,7 @@
   "description": "Service that allows data warehousing and workfow orchestration",
   "main": "index.js",
   "scripts": {
+    "apidoc": "apidoc -i api/ -o ui/apidoc/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

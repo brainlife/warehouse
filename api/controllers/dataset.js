@@ -32,6 +32,7 @@ String.prototype.addSlashes = function() {
 */
 
 function canedit(user, rec) {
+    if(!rec.user_id) return false;
     if(user) {
         if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
         //if(~rec.admins.indexOf(user.sub.toString())) return true;
@@ -67,7 +68,7 @@ function getprojects(user, cb) {
  *
  * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
  * @apiParam {Object} [sort]    Mongo sort object - defaults to _id. Enter in string format like "-name%20desc"
- * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
+ * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter (default all)
  * @apiParam {Number} [limit]   Maximum number of records to return - defaults to 100
  * @apiParam {Number} [skip]    Record offset for pagination (default to 0)
  * @apiParam {String} [populate] Fields to populate - default to "project datatype"
@@ -81,11 +82,16 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     if(req.query.find) find = JSON.parse(req.query.find);
 
     var select = null;
+
+    /*
+    //I shouldn't mess with select, because user might set exclusion query llie "-prov" which conflicts with inclusion.
+    //I need to let user know that, to get _canedit set, they need to make sure user_id field is selected
     if(req.query.select) {
         select = req.query.select;
         //always load user_id so that we can compute canedit properly
         if(!~select.indexOf("user_id")) select+=" user_id";
     }
+    */
 
     getprojects(req.user, function(err, projects) {
         if(err) return next(err);
@@ -316,11 +322,10 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         if(!dataset) return res.status(404).end();
 
         if(canedit(req.user, dataset)) {
-            //user can't update some fields
-            if (typeof req.body.desc == 'string') dataset.desc = req.body.desc;
-            if (req.body.tags instanceof Array) dataset.tags = req.body.tags;
-            if (typeof req.body.meta == 'object') dataset.meta = req.body.meta;
-            
+            //types are checked by mongoose
+            if (req.body.desc) dataset.desc = req.body.desc;
+            if (req.body.tags) dataset.tags = req.body.tags;
+            if (req.body.meta) dataset.meta = req.body.meta;
             dataset.save((err)=>{
                 if(err) return next(err);
                 dataset = JSON.parse(JSON.stringify(dataset));

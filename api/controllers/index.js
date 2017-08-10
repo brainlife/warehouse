@@ -14,7 +14,6 @@ const db = require('../models');
 const health = require('../health');
 
 router.get('/health', (req, res)=>{
-    logger.debug("healgh api");
     health.get_reports((err, reports)=>{
         if(err) return next(err);
         var status = "ok";

@@ -20,7 +20,7 @@ db.init(function(err) {
     rcon.on('error', err=>{throw err});
     rcon.on('ready', ()=>{
         logger.info("connected to redis");
-        setInterval(health_check, 1000*60); //start checking health 
+        setInterval(health_check, 1000*60*2); //start checking health 
         run();
     });
 });
@@ -35,7 +35,7 @@ function health_check() {
         messages: [],
         counts: _counts,
         date: new Date(),
-        maxage: 1000*60*3,
+        maxage: 1000*60*4,
     }
 
     if(_counts.rules == 0) {
