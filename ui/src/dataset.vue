@@ -13,7 +13,6 @@
                 <viewerselect @select="view" :datatype="dataset.datatype.name"></viewerselect>
             </div>
 
-            <!--<h1><icon name="cube" scale="2"></icon> Dataset <small class="text-muted">{{dataset._id}}</small></h1>-->
             <h1>
                 <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3)">
                     <div v-if="dataset.meta" style="display: inline-block; padding: 5px 10px; background-color: #fff; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
@@ -26,15 +25,18 @@
         <tr>
             <th>Description</th>
             <td>
-                <div v-if="!editing.desc">
-                    <span>{{dataset.desc}}</span>
-                    <el-button v-if="dataset._canedit" @click="editing.desc=true" style="float:right;">Edit</el-button>
+                <div v-if="dataset._canedit">
+                    <el-row>
+                        <el-col :span="20">
+                            <el-input type="textarea" v-model="dataset.desc" @change="dirty.desc = true"></el-input>
+                        </el-col>
+                        <el-col :span="4">
+                            <el-button v-if="dirty.desc" @click="update_dataset('desc')" type="primary" style="float:right;">Update</el-button>
+                        </el-col>
+                    </el-row>
                 </div>
                 <div v-else>
-                    <el-input type="text" v-model="dataset.desc"></el-input>
-                    <div>
-                        <el-button @click="serverUpdate(editing.desc=false)" type="primary" style="float:right;">Done</el-button>
-                    </div>
+                    {{dataset.desc}}
                 </div>
             </td>
         </tr>
@@ -45,30 +47,35 @@
         <tr>
             <th>Storage</th>
             <td>
-                <div v-if="dataset.storage">
-                    <!--<el-tag>{{dataset.status}}</el-tag>-->
+                <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
+                    <icon name="cog" :spin="true"/> Storing ...
+                </span> 
+                <span v-if="dataset.status == 'stored'">
                     This dataset is currently stored in <b>{{dataset.storage}}</b>
-                </div>
-                <p style="color: #2693ff;" v-if="dataset.status != 'stored'"><b>
-                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true"/> 
-                    {{dataset.status}}</b>
-                </p> 
+                </span> 
+                <span v-if="dataset.status == 'failed'">
+                    <icon name="exclamation"/> Failed to store on warehouse
+                </span> 
+                <span v-if="dataset.status == 'archived'">
+                    This dataset is currently stored in <b>{{dataset.storage}}</b> and archived in the permanent tape backup.
+                </span> 
             </td>
         </tr>
         <tr>
             <th>Metadata</th>
             <td>
-                <div v-if="!editing.meta">
-                    <metadata :metadata="dataset.meta"></metadata>
-                    <el-button v-if="dataset._canedit" @click="editing.meta=true" style="float:right;">Edit</el-button>
+                <div v-if="dataset._canedit">
+                    <el-row>
+                        <el-col :span="6" v-for="(m, id) in dataset.meta" :key="id">
+                            <el-input type="text" v-model="dataset.meta[id]" @change="dirty.meta = true">
+                                <template slot="prepend"><span style="text-transform: uppercase;">{{id}}</span></template>
+                            </el-input>
+                        </el-col>
+                    </el-row>
+                    <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
                 </div>
                 <div v-else v-for="(m, id) in dataset.meta" :key="id">
-                    <el-input type="text" v-model="dataset.meta[id]">
-                        <template slot="prepend"><span style="text-transform: uppercase;">{{id}}</span></template>
-                    </el-input>
-                    <div>
-                        <el-button @click="serverUpdate(editing.meta=false)" type="primary" style="float:right;">Done</el-button>
-                    </div>
+                    <metadata :metadata="dataset.meta"></metadata>
                 </div>
             </td>
         </tr>
@@ -81,25 +88,16 @@
                 </el-card>
             </td>
         </tr>
-        <!--
-        <tr>
-            <th>Owner</th>
-            <td><contact :id="dataset.user_id"></contact></td>
-        </tr>
-        -->
         <tr>
             <th>User Tags</th>
             <td>
-                <div v-if="!editing.tags">
+                <div v-if="dataset._canedit && alltags">
+                    <select2 :options="alltags" v-model="dataset.tags" :multiple="true" :tags="true" @input="dirty.tags = true"></select2>
+                    <el-button v-if="dirty.tags" @click="update_dataset('tags')" type="primary" style="float:right;">Update</el-button>
+                </div>
+                <div v-else>
                     <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
                     <tags :tags="dataset.tags"></tags>
-                    <el-button v-if="dataset._canedit" @click="editing.tags=true" style="float:right;">Edit</el-button>
-                </div>
-                <div v-else v-for="(m, id) in dataset.meta" :key="id">
-                    <el-input type="text" v-model="comma_separated_tags"></el-input>
-                    <div>
-                        <el-button @click="serverUpdate(editing.tags=false)" type="primary" style="float:right;">Done</el-button>
-                    </div>
                 </div>
             </td>
         </tr>
@@ -112,6 +110,7 @@
         <tr>
             <th>Provenance / Derivative</th>
             <td>
+                <p class="text-muted">TODO</p>
                 <el-button-group style="float: right;">
                     <el-button size="small" @click="download_prov()" icon="document">Download Provenance</el-button>
                 </el-button-group>
@@ -131,17 +130,27 @@
                             <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
                         </el-col>
                     </el-row>
-                    <app :app="dataset.prov && dataset.prov.app" :compact="true">
-                        <!-- TODO - show application config?
-                        <pre style="background-color: #eee; padding: 10px;">{{dataset.prov}}</pre>
-                        -->
-                    </app>
-                    <center>
+
+                    <task v-if="task" :task="task">
+                        <div slot="header">
+                            <div v-if="task.config._app" style="padding-bottom: 10px;">
+                                <app :appid="task.config._app" :compact="true">
+                                    <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
+                                </app>
+                            </div>
+                            <div v-else>
+                                <h3>{{task.name}}</h3>
+                            </div>
+                        </div>
+                    </task>
+                    <app v-if="!task && dataset.prov.app" :app="dataset.prov.app" :compact="true"></app>
+                    <center style="padding: 10px">
                         <icon class="text-muted" scale="2" name="arrow-down"></icon>
                     </center>
+
                 </div>
                 <div v-else>
-                    <center>
+                    <center style="padding: 10px">
                         <el-card><icon name="upload"/> User Upload</el-card>
                         <icon class="text-muted" scale="2" name="arrow-down"></icon>
                     </center>
@@ -226,6 +235,8 @@ import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import viewerselect from '@/components/viewerselect'
 import datatypetag from '@/components/datatypetag'
+import select2 from '@/components/select2'
+import task from '@/components/task'
 
 const lib = require('./lib');
 
@@ -234,22 +245,24 @@ export default {
         sidemenu, contact, project, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
-        viewerselect, datatypetag,
+        viewerselect, datatypetag, select2, task,
      },
     data () {
         return {
             dataset: null,
+            task: null, //task that produced this dataset (optional)
             apps: null,
             derivatives: {},
 
             selfurl: document.location.href,
             
-            editing: {
+            dirty: {
                 desc: false,
                 meta: false,
                 tags: false
             },
-            comma_separated_tags: null,
+
+            alltags: null,
 
             config: Vue.config,
         }
@@ -257,9 +270,9 @@ export default {
 
     watch: {
         '$route' (to, from) {
-            //console.log(to, from);
             this.load(this.$route.params.id);
         },
+        /*
         comma_separated_tags: function(tags) {
             // strip trailing whitespace after start/commas
             tags = tags.split(",").map(s => s.trim());
@@ -269,23 +282,22 @@ export default {
                 else this.dataset.tags = tags;
             }
         }
+        */
     },
 
     mounted: function() {
         this.load(this.$route.params.id);
     },
     methods: {
-        log: console.log,
-        
-        serverUpdate() {
-            this.$http.put(Vue.config.api+'/dataset/'+this.dataset._id, this.dataset);
+        update_dataset: function(elem) {
+            this.$http.put(Vue.config.api+'/dataset/'+this.dataset._id, this.dataset).then(res=>{this.$notify("saved")});
+            this.dirty[elem] = false;
         },
         
         opendataset: function(dataset) {
             console.dir(dataset);
         },
         go: function(path) {
-            console.log(path);
             this.$router.push(path);
         },
         download_prov: function() {
@@ -301,7 +313,6 @@ export default {
             });
         },
         load: function(id) {
-            console.log("looking for ", id);
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 populate: "project datatype prov.app prov.deps.dataset",
@@ -312,20 +323,36 @@ export default {
                     return;
                 }
                 this.dataset = res.body.datasets[0];
-                this.comma_separated_tags = this.dataset.tags.join(", ");
-                
-                //console.log("looking for derivatives", this.dataset);
-                this.$http.get('dataset', {params: {
-                    find: JSON.stringify({"prov.deps.dataset": id}),
-                }}).then(res=>{
-                    //group by task_id
-                    this.derivatives = {}; //reset
-                    res.body.datasets.forEach(dataset=>{
-                        var task_id = dataset.prov.task_id || Math.random(); //create random task id if it's missing (backwared compatibility)
-                        if(!this.derivatives[task_id]) this.derivatives[task_id] = [];
-                        this.derivatives[task_id].push(dataset);
+
+                //optionally, load task info
+                if(this.dataset.prov && this.dataset.prov.task_id) {
+                    this.$http.get(Vue.config.wf_api+'/task', {params: {
+                        find: JSON.stringify({"_id": this.dataset.prov.task_id}),
+                    }}).then(res=>{
+                        this.task = res.body.tasks[0];
                     });
-                }); 
+                }
+
+                //load tags from other datasets in this project
+                return this.$http.get('dataset/distinct', {params: {
+                    find: JSON.stringify({"project": this.dataset.project}),
+                    distinct: 'tags',
+                }});
+            }).then(res=>{
+                this.alltags = res.body;
+                    
+                //console.log("looking for derivatives", this.dataset);
+                return this.$http.get('dataset', {params: {
+                    find: JSON.stringify({"prov.deps.dataset": id}),
+                }});
+            }).then(res=>{
+                //group by task_id
+                this.derivatives = {}; //reset
+                res.body.datasets.forEach(dataset=>{
+                    var task_id = dataset.prov.task_id || Math.random(); //create random task id if it's missing (backwared compatibility)
+                    if(!this.derivatives[task_id]) this.derivatives[task_id] = [];
+                    this.derivatives[task_id].push(dataset);
+                });
 
                 console.log("looking for app that uses this data", this.dataset.datatype._id);
                 return this.$http.get('app', {params: {
@@ -340,7 +367,6 @@ export default {
             .then(res=>{
                 //should I do this via computed?
                 if(!res) return;
-                //console.dir(this.dataset);
                 this.apps = lib.filter_apps(this.dataset, res.body.apps);
             }).catch(err=>{
                 console.error(err);
@@ -430,5 +456,11 @@ border: 3px solid white;
 }
 .el-alert {
 border-radius: inherit;
+}
+.task .task-desc {
+margin-top: 10px; 
+padding: 5px 10px; 
+font-size: 90%; 
+background-color: #e0e0e0;
 }
 </style>
