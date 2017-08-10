@@ -1,25 +1,53 @@
 #!/usr/bin/env node
+
 const winston = require('winston');
 const async = require('async');
 const request = require('request');
 const fs = require('fs');
+const redis = require('redis');
 
 const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../api/models');
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// TODOs
-//
-// * Look for finished tasks and archive data
-// * Look for failed tasks and report to the user / disable rule?
-//
+// TODO Disable rule if failurer rate is too high?
+
+var rcon = null;
 
 db.init(function(err) {
     if(err) throw err;
-    run();
+    rcon = redis.createClient(config.redis.port, config.redis.server);
+    rcon.on('error', err=>{throw err});
+    rcon.on('ready', ()=>{
+        logger.info("connected to redis");
+        setInterval(health_check, 1000*60); //start checking health 
+        run();
+    });
 });
+
+var _counts = {
+    rules: 0,
+}
+
+function health_check() {
+    var report = {
+        status: "ok",
+        messages: [],
+        counts: _counts,
+        date: new Date(),
+        maxage: 1000*60*3,
+    }
+
+    if(_counts.rules == 0) {
+        report.status = "failed";
+        report.messages.push("no rules handled");
+    }
+
+    rcon.set("health.warehouse.rule."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
+
+    //reset counter
+    _counts.rules = 0;
+}
 
 function run() {
 	db.Rules.find({
@@ -40,15 +68,18 @@ function run() {
 }
 
 function handle_rule(rule, cb) {
+    _counts.rules++;
 
     var jwt = null;
     var subjects = null;
     var running = null; //number of currently running tasks for this rule
+    var tasks = null; //tasks submitted for this rule
 
     if(!rule.input_tags) rule.input_tags = {};
     if(!rule.output_tags) rule.output_tags = {};
 
-    logger.info("handling rule", JSON.stringify(rule, null, 4));
+    //logger.info("handling rule", JSON.stringify(rule, null, 4));
+    logger.info("handling rule ----------------------- ", rule._id.toString());
 
     //prepare for stage / app / archive
     async.series([
@@ -66,22 +97,34 @@ function handle_rule(rule, cb) {
             });
         },
 
-        //get number of tasks currently running for this rule
+        //get tasks submitted for this rule
         next=>{
+            var limit = 5000;
             request.get({
                 url: config.wf.api+"/task", json: true,
                 headers: { authorization: "Bearer "+jwt },
                 qs: {
                     find: JSON.stringify({
                         "config._rule.id": rule._id,
-                        status: {$in : ["running", "requested"]},
+                        status: {$ne: "removed"},
                     }),
-                    limit: 1, //I just need count but can't be 0
+                    select: 'status config._rule.subject',
+                    limit,
                 },
             }, (err, res, body)=>{
                 if(err) return next(err);
-                running = body.count;
-                logger.debug("running tasks", running);
+                tasks = {};
+                running = 0;
+                body.tasks.forEach(task=>{
+                    if(task.status == "running" || task.status == "requested") running++;
+                    tasks[task.config._rule.subject] = task;
+                });
+
+                if(body.tasks.length == limit) {
+                    return next("too many tasks submitted for this rule");
+                }
+
+                logger.debug("running/requested tasks", running);
                 next();
             });
         },
@@ -118,11 +161,16 @@ function handle_rule(rule, cb) {
         }
 
         if(rule.subject_match && !subject.match(rule.subject_match)) {
-            logger.info("subject", subject, "doesn't match", rule.subject_match);
+            //logger.info("subject", subject, "doesn't match", rule.subject_match);
             return next_subject();
         }
 
-        logger.debug("handling subject", subject, running);
+        if(tasks[subject]) {
+            logger.info("task already submitted for subject:", subject, tasks[subject]._id);
+            return next_subject();
+        }
+
+        logger.debug("handling subject", subject);
 
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var missing = false;
@@ -160,38 +208,10 @@ function handle_rule(rule, cb) {
                     logger.info("outputs missing, but so are inputs.. skipping");
                     next_subject();
                 } else {
-                    
-                    //see if we've already submitted task for this output
-                    get_submitted_task(subject, (err, submitted)=>{
-                        if(err) return next_subject(err);
-                        if(submitted) {
-                            logger.info("task already submitted:",submitted._id, submitted.status);
-                            return next_subject();
-                        }
-                        running++;
-
-                        logger.info("output missing, and we have all inputs! submitting tasks");
-                        submit_tasks(subject, inputs, next_subject);
-                    });
+                    logger.info("output missing, and we have all inputs! submitting tasks");
+                    submit_tasks(subject, inputs, next_subject);
                 }
             });
-        });
-    }
-
-    function get_submitted_task(subject, next) {
-        request.get({
-            url: config.wf.api+"/task", json: true,
-            headers: { authorization: "Bearer "+jwt },
-            qs: {
-                find: JSON.stringify({
-                    "config._rule.id": rule._id,
-                    "config._rule.subject": subject,
-                    status: { $ne: "removed" },
-                }),
-            },
-        }, (err, res, body)=>{
-            if(err) return next(err);
-            return next(null, body.tasks[0]);
         });
     }
 
@@ -215,56 +235,50 @@ function handle_rule(rule, cb) {
                 query.tags = { $all: rule.input_tags[input.id] }; 
             }
 
-            db.Datasets.findOne(query)
+            db.Datasets.find(query)
             .populate('datatype')
             .sort('-create_date') //find the latest one
             .lean()
-            .exec((err, dataset)=>{
+            .exec((err, datasets)=>{
                 if(err) return next_input(err);
 
+                /*
                 if(!dataset) {
                     logger.debug("input missing", input.id);//, JSON.stringify(query, null, 4));
                     missing = true;
                     return next_input();
                 }
-                
-                //apply tags
-                var match = true;
-                input.datatype_tags.forEach(tag=>{
-                    if(tag[0] == "!") {
-                        //negative: make sure tag doesn't exist
-                        if(~dataset.datatype_tags.indexOf(tag.substring(1))) match = false;
-                    } else {
-                        //positive: make sure tag exists
-                        if(!~dataset.datatype_tags.indexOf(tag)) match = false;
-                    }
+                */
+                //find first dataset that matches all tags
+                var matching_dataset = null;
+                datasets.forEach(dataset=>{
+                    var match = true;
+                    input.datatype_tags.forEach(tag=>{
+                        if(tag[0] == "!") {
+                            //negative: make sure tag doesn't exist
+                            if(~dataset.datatype_tags.indexOf(tag.substring(1))) match = false;
+                        } else {
+                            //positive: make sure tag exists
+                            if(!~dataset.datatype_tags.indexOf(tag)) match = false;
+                        }
+                    });
+                    if(match) matching_dataset = dataset;
                 });
+
+                /*
                 if(!match) {
                     logger.debug("tag mismatch", input.id);
                     missing = true;
                     return next_input();
                 }
+                */
+                if(!matching_dataset) {
+                    missing = true;
+                    logger.debug("no matching input", input.id);
+                } 
 
-                inputs[input.id] = dataset;
-                
-                //load status of task that produced this dataset
-                if(dataset.prov && dataset.prov.task_id) {
-                    //logger.debug("loading task status", dataset.prov.task_id);
-                    request.get({
-                        url: config.wf.api+"/task", json: true,
-                        headers: { authorization: "Bearer "+jwt },
-                        qs: {
-                            find: JSON.stringify({_id: dataset.prov.task_id}),
-                        },
-                    }, (err, res, body)=>{
-                        if(err) return next_input(err);
-                        dataset.prov._task = body.tasks[0]; //only used while we process this dataset
-                        next_input();
-                    });
-                } else {
-                    //no prov.. probably uploaded / imported
-                    next_input();
-                }
+                inputs[input.id] = matching_dataset;
+                next_input(); 
             });
         }, err=>{
             if(err) return next(err);
@@ -282,9 +296,11 @@ function handle_rule(rule, cb) {
 
         var _app_inputs = []; 
         var deps = [];
+        var tasks = {};
 
         var instance_name = "brainlife.rule project:"+rule.output_project._id+" subject:"+subject;
         var instance_desc = "rule:"+rule.name+" for project:"+rule.output_project.name+" subject:"+subject;
+        running++;
 
         //prepare for stage / app / archive
         async.series([
@@ -351,6 +367,31 @@ function handle_rule(rule, cb) {
                 });
             },
 
+            //load current task statuses of all input datasets
+            next=>{
+                //get tasks IDs that I care about
+                var ids = []; 
+                for(var input_id in inputs) {
+                    var input = inputs[input_id];
+                    if(input.prov && input.prov.task_id) ids.push(input.prov.task_id);
+                }
+                //load them
+                request.get({
+                    url: config.wf.api+"/task", json: true,
+                    headers: { authorization: "Bearer "+jwt },
+                    qs: {
+                        find: JSON.stringify({_id: {$in: ids}}),
+                    },
+                }, (err, res, body)=>{
+                    if(err) return next(err);
+                    //create id>task mapping
+                    body.tasks.forEach(task=>{
+                        tasks[task._id] = task;
+                    });
+                    next();
+                });
+            },
+            
             //submit input staging task for datasets that aren't staged yet
             next=>{
                 var did = next_tid*10;
@@ -359,19 +400,20 @@ function handle_rule(rule, cb) {
                 for(var input_id in inputs) {
                     var input = inputs[input_id];
                     input.input_id = input_id;
-                    if(input.prov && input.prov._task && input.prov._task.status == 'finished'
-                        //I should be able to use task from other instance if I update process_input_config
-                        //but for now, let's just use dataset from the same process
-                        //so that UI will make more sense (won't show data from other instance)
-                        && input.prov._task.instance_id == instance._id 
-                    ) {
+                    var task = null;
+                    if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
+                
+                    //I should be able to use task from other instance if I update process_input_config
+                    //but for now, let's just use dataset from the same process
+                    //so that UI will make more sense (won't show data from other instance)
+                    if(task && task.status == 'finished' && task.instance_id == instance._id) {
                         //we still have the datasets staged (most likely from this process) use it..
-                        deps.push(input.prov._task._id);
+                        deps.push(task._id);
                         _app_inputs.push(Object.assign({}, input, {
                             datatype: input.datatype._id, //unpopulate datatype to keep it clean
                             did: did++,
                             //dataset_id: input._id,
-                            task_id: input.prov._task._id,
+                            task_id: task._id,
                             prov: null, //remove dataset prov
                         }));
                     } else {
@@ -382,6 +424,7 @@ function handle_rule(rule, cb) {
                             dir: input._id,
                         });
                         var output = Object.assign({}, input, {
+                            id: input._id,
                             datatype: input.datatype._id, //unpopulate datatype to keep it clean
                             did: did++,
                             subdir: input._id,
@@ -442,10 +485,6 @@ function handle_rule(rule, cb) {
             //submit the app task!
             next=>{
                 var did = next_tid*10;
-
-                //console.log("dumping _app_inputs");
-                //console.dir(_app_inputs);
-
                 var _config = Object.assign(
                     rule.config, 
                     process_input_config(rule.app.config, inputs, _app_inputs, task_stage), 
@@ -469,10 +508,11 @@ function handle_rule(rule, cb) {
                         datatype_tags: output.datatype_tags,
                         desc: output.desc,
                         meta: meta,
+                        tags: rule.output_tags[output.id], 
                         archive: {
                             project: rule.output_project._id,  
                             desc: rule.name,
-                            tags: rule.output_tags[output.id],
+                            tags: rule.output_tags[output.id], //deprecated by parent's tags.. (remove this eventually)
                         }
                     });
                 });
@@ -500,71 +540,6 @@ function handle_rule(rule, cb) {
                 });
             },
 
-            /*
-            //submit output organize task
-            next=>{
-                var symlink = [];
-                var _outputs = [];
-                //console.log("---------------------------------------------------------------------");
-                //console.log(JSON.stringify(app.outputs, null, 4));
-                //console.log("---------------------------------------------------------------------");
-				rule.app.outputs.forEach(output=>{
-					if(output.files) {
-						//app has output file mapping.. organize symlink file/dir
-                        for(var file_id in output.files) {
-                            //find datatype file id in datatype definition
-                            output.datatype.files.forEach(datatype_file=>{
-                                if(datatype_file.id == file_id) {
-                                    var name = datatype_file.filename||datatype_file.dirname;
-                                    symlink.push({ 
-                                        "src": "../"+task_app._id+"/"+output.files[file_id], 
-                                        "dest": output.id+"/"+name 
-                                    });
-                                }
-                            });
-                        }
-					} else {
-						//copy everything under taskdir
-						symlink.push({"src": "../"+task_app._id, "dest": output.id});
-					}
-
-					_outputs.push(Object.assign({}, output, {
-                        meta,
-                        datatype: output.datatype._id, //override to unpopulate
-                        
-                        //if this is set, handle_task will auto-archive output datasets
-                        archive: {
-                            project: rule.output_project._id,  
-                            tags: rule.output_tags[output.id],  //??
-                        }
-                    })); 
-				});
-
-                //submit task
-                request.post({
-                    url: config.wf.api+'/task', json: true, 
-                    headers: { authorization: "Bearer "+jwt },
-                    body: {
-                        instance_id: instance._id,
-                        name: "brainlife.stage_output",
-                        desc: "staging output for rule:"+rule._id+" subject:"+subject,
-                        service: "soichih/sca-product-raw",
-                        config: { symlink, _app: rule.app._id, _outputs},
-                        deps: [ task_app._id ],
-                    },
-                }, (err, res, _body)=>{
-                    task_out = _body.task;
-                    logger.debug("submitted out task", task_out);
-                    console.log(JSON.stringify(_body, null, 4));
-
-                    //debug..terminate after one
-                    //process.exit(1);
-
-                    next(err);
-                });
-            },
-            */
-
         ], cb);
     }
 }
@@ -575,7 +550,6 @@ function process_input_config(config, inputs, datasets, task_stage) {
             var v = node[k];
             if(v.type === undefined) {
                 //must be grouping object.. traverse to child 
-                //console.log("groupingn ", k);
                 out[k] = {};
                 walk(v, out[k]);
                 continue;
@@ -588,8 +562,6 @@ function process_input_config(config, inputs, datasets, task_stage) {
                 var base = "../"+dataset.task_id;
                 if(dataset.subdir) base+="/"+dataset.subdir;
 
-                //console.log("looking for ",v.input_id, dataset);
-                //find file specified in datatype..
                 var file = input.datatype.files.find(file=>file.id == v.file_id);
                 out[k] = base+"/"+(file.filename||file.dirname);
                 //but override it if filemaping from the input dataset is specified.

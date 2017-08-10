@@ -78,9 +78,11 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 }).pipe(writestream);
             }, err=>{
                 if(err) {
-                    logger.error("failed to store all files under tmpdir");
+                    logger.error(err);
                     cleantmp(); 
-                    return cb(err);
+                    dataset.desc = "Failed to store all files under tmpdir";
+                    dataset.status = "failed";
+                    return dataset.save(cb);
                 }
                 
                 //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage

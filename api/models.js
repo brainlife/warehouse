@@ -13,6 +13,7 @@ if(config.debug) {
 }
 
 exports.init = (cb)=>{
+    logger.debug("init db");
     mongoose.connect(config.mongodb, {
         //TODO - isn't auto_reconnect set by default?
         server: { auto_reconnect: true, reconnectTries: Number.MAX_VALUE }
