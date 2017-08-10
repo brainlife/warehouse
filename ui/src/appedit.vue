@@ -279,7 +279,7 @@ export default {
             try {
                 this.app.config = JSON.parse(this.app._config);     
             } catch(err) {
-                this.$notify({ showClose: true, message: 'Failed to parse config template.', type: 'error' });
+                this.$notify({ text: 'Failed to parse config template.', type: 'error' });
                 return;
             }
             try {
@@ -289,7 +289,7 @@ export default {
                     if(output._files) output.files = JSON.parse(output._files);
                 });
             } catch(err) {
-                this.$notify({ showClose: true, message: 'Failed to parse output mapping', type: 'error' });
+                this.$notify({ test: 'Failed to parse output mapping', type: 'error' });
                 return;
             }
             if(this.$route.params.id !== '_') {

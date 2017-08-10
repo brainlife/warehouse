@@ -25,6 +25,10 @@ import ElementUI from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
 Vue.use(ElementUI, {locale})
 
+//overridden element-ui ugly $notify..
+import Notifications from 'vue-notification'
+Vue.use(Notifications)
+
 //fontasome
 import 'vue-awesome/icons'
 import Icon from 'vue-awesome/components/Icon.vue'

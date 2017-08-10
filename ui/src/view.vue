@@ -11,6 +11,7 @@
         <div v-else style="margin: 20px;">
             <h2>Staging Data</h2>
             <task :task="task"/>
+            <br>
             <h2>Starting Viewer</h2>
             <task :task="novnc_task"/>
         </div>

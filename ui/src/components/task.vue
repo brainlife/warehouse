@@ -1,7 +1,7 @@
 <template>
 <div class="task">
     <slot name="header">
-        <h3>{{task.name||task.service}}</h3>
+        <h3><icon name="paper-plane"></icon> {{task.name||task.service}}</h3>
     </slot>
 
     <!--status indicator-->
@@ -10,7 +10,7 @@
         <div style="padding-left: 45px;">
             <div style="float: right;">
                 <el-button size="small" type="" v-if="task.status != 'running'" @click="rerun()">Rerun</el-button>
-                <el-button size="small" type="" v-if="task.status != 'stopped'" @click="stop()">Stop</el-button>
+                <el-button size="small" type="" v-if="task.status == 'requested' || task.status == 'running'" @click="stop()">Stop</el-button>
                 <el-button size="small" type="" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" icon="delete2"></el-button>
             </div>
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
@@ -27,7 +27,6 @@
     </el-card>
 
     <el-collapse v-model="activeSections">
-
         <el-collapse-item title="Configuration" name="config" style="margin: 0px;">
             <!--<el-alert title="todo">display this in more user friendly way</el-alert>-->
             <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
@@ -41,7 +40,6 @@
         </el-collapse-item>
 
     </el-collapse>
-    <br clear="both">
 </div>
 </template>
 
@@ -52,7 +50,6 @@ import filebrowser from '@/components/filebrowser'
 import statusicon from '@/components/statusicon'
 import mute from '@/components/mute'
 import tags from '@/components/tags'
-//import volumeviewer from '@/components/volumeviewer'
 
 export default {
     props: ['task'],
@@ -61,7 +58,6 @@ export default {
     data () {
         return {
             activeSections: ['output', 'input'],
-            app: null,
         }
     },
     computed: {
@@ -92,7 +88,7 @@ export default {
         remove() {
             this.$http.delete(Vue.config.wf_api+'/task/'+this.task._id)
             .then(res=>{
-                this.$notify({ title: 'Removing Task', message: 'Task removal requested', type: 'success', });
+                this.$notify({ title: 'Removing Task', text: 'Task removal requested', type: 'success', });
                 this.$emit("remove", this.task._id);
             })
             .catch(err=>{

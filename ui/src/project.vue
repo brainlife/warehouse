@@ -14,16 +14,23 @@
     </div>
     <div class="page-content" v-if="project" style="margin-top: 80px; padding-top: 30px">
         <div style="margin-left: 130px; margin-bottom: 20px; min-height: 20px;">
-            <!--<p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>-->
-            {{project.desc}}
+            <p style="line-height: 150%;">{{project.desc}}</p>
         </div>
         <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
             <tr>
             <th>Stats</th>
             <td>
-                <div class="datasets_link" @click="go('/datasets/'+project._id)" v-if="datasets_attribs.num_datasets">Datasets: {{ datasets_attribs.num_datasets }}</div>
-                <div v-if="datasets_attribs.num_subjects">Subjects: {{ datasets_attribs.num_subjects }}</div>
+                <el-row>
+                    <el-col :span="8" v-if="datasets_attribs.num_subjects">
+                        <h3>{{datasets_attribs.num_subjects}}</h3>
+                        <h5 class="text-muted">Subjects</h5>
+                    </el-col>
+                    <el-col :span="8" v-if="datasets_attribs.num_datasets">
+                        <h3>{{datasets_attribs.num_datasets}}</h3>
+                        <h5 class="text-muted">Datasets</h5>
+                    </el-col>
+                </el-row>
             </td>
         </tr>
         <tr>

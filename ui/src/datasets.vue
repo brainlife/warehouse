@@ -21,13 +21,14 @@
         <projectmenu :active="project_id"></projectmenu>
         <div class="fixed-top">
             <el-row class="header" style="padding-right: 16px;">
-                <el-col :span="4"><h4>Subject</h4></el-col>
-                <el-col :span="20">
+                <el-col :span="3"><h4>Subject</h4></el-col>
+                <el-col :span="21">
                     <el-row>
                         <el-col :span="1">&nbsp;</el-col>
-                        <el-col :span="6"><h4>Datatype</h4></el-col>
-                        <el-col :span="7"><h4>Description</h4></el-col>
-                        <el-col :span="6"><h4>Create&nbsp;Date</h4></el-col>
+                        <el-col :span="3"><h4>Storage</h4></el-col>
+                        <el-col :span="5"><h4>Datatype</h4></el-col>
+                        <el-col :span="6"><h4>Description</h4></el-col>
+                        <el-col :span="5"><h4>Create&nbsp;Date</h4></el-col>
                         <el-col :span="4"><h4>Tags</h4></el-col>
                     </el-row> 
                 </el-col>
@@ -40,10 +41,10 @@
             <!--start of dataset list-->
             <div class="list">
                 <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
-                    <el-col :span="4">
+                    <el-col :span="3">
                         <strong>{{subject}}</strong>
                     </el-col> 
-                    <el-col :span="20">
+                    <el-col :span="21">
                         <div 
                         v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)"
                         :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}">
@@ -53,13 +54,19 @@
                                         <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                     </div>
                                 </el-col>
-                                <el-col :span="6" :title="datatypes[dataset.datatype].desc">
+                                <el-col :span="3">
+                                    {{dataset.storage}}
+                                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true"/>
+                                    <icon v-if="dataset.status == 'failed'" name="exclamation"/>
+                                    <icon v-if="dataset.status == 'archived'" name="archive"/>
+                                </el-col>
+                                <el-col :span="5" :title="datatypes[dataset.datatype].desc">
                                     <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
                                 </el-col>
-                                <el-col :span="7">
+                                <el-col :span="6">
                                     {{dataset.desc||'&nbsp;'}}
                                 </el-col>
-                                <el-col :span="6">
+                                <el-col :span="5">
                                     <time>{{dataset.create_date | date}}</time>
                                 </el-col>
                                 <el-col :span="4" style="border-right: 1px solid #red;">
@@ -70,22 +77,7 @@
                     </el-col> 
                 </el-row>
             </div><!--dataset list-->
-
         </div><!--page-content-->
-
-        <!--dataset detail view-->
-        <!--
-        <div class="dataset-view" :class="{'dataset-view-open':dataset_open}">
-            <div class="dataset-view-header" style="position: fixed;">
-                <el-button size="small" @click="download(dataset_open)" type="primary">Download</el-button>
-                <el-button size="small" @click="dataset_open = null" icon="close">Close</el-button>
-                
-            </div>
-            <div class="dataset-view-detail">
-                <datasetdetail :dataset="dataset_open"></datasetdetail>
-            </div>
-        </div>
-        -->
     </div><!--pusher-->
 
     <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
@@ -296,7 +288,7 @@ export default {
                 find: JSON.stringify(find),
                 skip: this.datasets.length,
                 limit: 50,
-                select: 'datatype datatype_tags project create_date name desc tags meta storage',
+                select: '-prov',
                 sort: 'meta.subject -create_date'
             }})
             .then(res=>{
@@ -539,7 +531,7 @@ export default {
     top: 0px;
     padding-top: 7px;
     right: 200px;
-    z-index: 2;
+    z-index: 10;
 }
 
 .header {
@@ -566,7 +558,7 @@ export default {
 .list .dataset {
     padding: 3px 0px;
     margin-bottom: 1px;
-    transition: background-color 0.2s;
+    transition: background-color 0.3s;
 }
 .list .dataset.clickable:hover {
     background-color: #ccc;

@@ -2,14 +2,16 @@
 <el-card :body-style="{padding: '0px'}" v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
         <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
-        <h4 class="name">{{app_.name}}</h4>
-        <h5 class="github">{{app_.github}}</h5>
-        <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
-        <div class="desc">{{app_.desc||'no desc..'}}</div>
+        <div style="margin-left: 90px;">
+            <h4 class="name">{{app_.name}}</h4>
+            <h5 class="github">{{app_.github}}</h5>
+            <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
+            <div class="desc" :style="{height: descheight}">{{app_.desc||'no desc..'}}</div>
+            <slot/>
+        </div>
         <div class="devs" v-if="!compact">
             <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
         </div>
-        <slot/>
     </div>
 </el-card>
 </template>
@@ -29,6 +31,7 @@ export default {
         compact: Boolean,
         appid: String,
         clickable: {type: Boolean, default: true},
+        descheight: Number,
     },
     data() {
         return {
@@ -87,20 +90,19 @@ font-family: monospace;
 font-size: 80%;
 }
 .desc {
-height: 130px;
+max-height: 130px;
 font-size: 13px;
 color: #666;
 line-height: 140%;
 text-overflow:ellipsis;
 overflow: hidden;
-margin: 10px 10px;
+margin: 10px 0px;
 }
 .rate {
 height: 20px;
 overflow: auto;
 font-size: 13px;
 color: #666;
-margin: 10px;
 line-height: 140%;
 }
 

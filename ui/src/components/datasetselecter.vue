@@ -91,9 +91,8 @@ export default {
     methods: {
         close: function() {
             this.$emit('update:visible', false);
-            console.log("resetting dataset");
 
-            //reset form
+            console.log("resetting datasetselecter");
             this.selected_subjects = [];
             this.selected_datatypes = [];
             this.datasets = [];
@@ -200,7 +199,7 @@ export default {
                         datatype: this.datatypes[dataset.datatype],
                         tags: dataset.datatype_tags
                     };
-                    
+
                     if (!this.datasets_groups[subject]) {
                         // first time
                         this.datasets_groups[subject] = true;
@@ -238,6 +237,7 @@ export default {
     watch: {
         visible: function(v) {
             this.visible_ = v;
+            
         },
         visible_: function(v) {
             this.$emit('update:visible', v);

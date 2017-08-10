@@ -16,9 +16,7 @@
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div v-for="(apps, tag) in app_groups" key="tag" class="margin20">
             <h2 class="group-heading">{{tag}}</h2> 
-            <div v-for="app in apps" key="app._id" class="card">
-                <app :app="app"></app><br>
-            </div>
+            <app v-for="app in apps" key="app._id" :app="app" class="card" :descheight="130"></app>
             <br clear="both">
         </div>
     </div><!--page-content-->

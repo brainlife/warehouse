@@ -228,7 +228,7 @@ export default {
 
         submit: function() {
             if(!this.validate()) {
-                this.$notify.error({ title: 'Error', message: 'Validation failed' });
+                this.$notify({ title: 'Error', text: 'Validation failed' });
             } else {
                 this.submit_instance().then(instance=>{
                     console.log("submitted instance", instance);

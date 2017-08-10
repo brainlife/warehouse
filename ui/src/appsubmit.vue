@@ -159,9 +159,6 @@ export default {
     },
 
     methods: {
-        go: function(path) {
-            this.$router.push(path);
-        },
         
         // if there's only 1 applicable dataset for a given input, pre-select it
         preselect_single_items: function(input) {
@@ -272,11 +269,7 @@ export default {
                 if(!this.form.inputs[k]) validated = false;
             }
             if(!validated) {
-                this.$notify({
-                    title: 'Missing Input',
-                    message: 'Please select all inputs',
-                    type: 'error'
-                });
+                this.$notify({ title: 'Missing Input', text: 'Please select all inputs', type: 'error' });
                 return;
             }
 
@@ -386,9 +379,8 @@ export default {
                 //then request for notifications
                 return this.request_notifications(instance, inst_config.output_task_id);
             }).then(res=>{
-                //all good!
-                //localStorage.setItem("last_projectid_used", this.project_id);
-                this.go('/simpleprocess/'+instance._id);
+                //all done
+                this.$router.push("/processes/"+instance._id);
             }).catch(err=>{
                 console.error(err);
             });

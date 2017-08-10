@@ -10,10 +10,10 @@ import download from '@/download'
 import view from '@/view'
 
 import processes from '@/processes'
-import simpleprocess from '@/simpleprocess'
-import process from '@/process'
-import processarchive from '@/processarchive'
-import process2 from '@/process2'
+//import simpleprocess from '@/simpleprocess'
+//import process from '@/process'
+//import processarchive from '@/processarchive'
+//import process2 from '@/process2'
 
 import apps from '@/apps'
 import app from '@/app'
@@ -41,13 +41,14 @@ export default new Router({
         { path: '/upload', component: upload},
         { path: '/dataset/:id', component: dataset},
         { path: '/download/:id', component: download},
-        { path: '/processes', component: processes},
+        { path: '/processes/:id?', component: processes},
 
+        /*
         { path: '/simpleprocess/:id', component: simpleprocess},
         { path: '/process/:id', component: process},
         { path: '/process/:id/archive', component: processarchive},
-
         { path: '/process2/:id', component: process2},
+        */
             
         { path: '/apps', component: apps },
         { path: '/app/:id', component: app },
