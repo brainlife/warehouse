@@ -34,11 +34,18 @@
             </el-form-item>
             
             <!-- TODO doesn't support nested parameters-->
-            <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.value !== undefined">
-                <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01">
-                <el-input-number v-if="v.type == 'integer'" v-model="form.config[k]"></el-input-number>
-                <el-input v-if="v.type == 'string'" v-model="form.config[k]"></el-input>
+            <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
+                <!--<p class="text-muted" v-if="v.desc">{{v.desc}}</p>-->
+                <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01" :placeholder="v.placeholder">
+                <el-input type="number" v-if="v.type == 'integer'" v-model.number="form.config[k]" :placeholder="v.placeholder"></el-input>
+                <el-input v-if="v.type == 'string'" v-model="form.config[k]" :placeholder="v.placeholder"></el-input>
                 <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox>
+                <el-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder">
+                    <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
+                        <b>{{option.label}}</b>
+                        <small> - {{option.desc}}</small>
+                    </el-option>
+                </el-select>
             </el-form-item>
 
             <el-form-item label="Description">
@@ -139,18 +146,12 @@ export default {
             this.app = res.body.apps[0];
             if(this.app.github) this.findbest(this.app.github);
 
-            //prepare form inputs
-            // this.app.inputs.forEach((input)=>{
-            //     Vue.set(this.form.inputs, input.id, null);
-            // });
-            for(var k in this.app.config) {
-                Vue.set(this.form.config, k, this.app.config[k].default);
-            }
-            //process config template
             //TODO - update to handle nested parameters
             for(var k in this.app.config) {
                 var v = this.app.config[k];
-                if(v.type && v.default !== undefined) v.value = v.default;
+                if(v.type && v.type != "input") {
+                    Vue.set(this.form.config, k, v.default);
+                }
             }
         }).catch(err=>{
             console.error(err);
@@ -158,9 +159,6 @@ export default {
     },
 
     methods: {
-        go: function(path) {
-            this.$router.push(path);
-        },
         
         // if there's only 1 applicable dataset for a given input, pre-select it
         preselect_single_items: function(input) {
@@ -241,7 +239,7 @@ export default {
             });
         },
         
-        // waits 300ms (unless interrupted by more keystrokes), then calls grab_items
+        // wait a bit (unless interrupted by more keystrokes), then calls grab_items
         debounce_grab_items: function(input) {
             // 'global' variables
             let debounce;
@@ -259,7 +257,7 @@ export default {
                 debounce = setTimeout(function() {
                     debounce = null;
                     vm.grab_items.call(vm, input, params, cb);
-                }, 300);
+                }, 200);
             }
         },
 
@@ -271,11 +269,7 @@ export default {
                 if(!this.form.inputs[k]) validated = false;
             }
             if(!validated) {
-                this.$notify({
-                    title: 'Missing Input',
-                    message: 'Please select all inputs',
-                    type: 'error'
-                });
+                this.$notify({ title: 'Missing Input', text: 'Please select all inputs', type: 'error' });
                 return;
             }
 
@@ -385,9 +379,8 @@ export default {
                 //then request for notifications
                 return this.request_notifications(instance, inst_config.output_task_id);
             }).then(res=>{
-                //all good!
-                //localStorage.setItem("last_projectid_used", this.project_id);
-                this.go('/simpleprocess/'+instance._id);
+                //all done
+                this.$router.push("/processes/"+instance._id);
             }).catch(err=>{
                 console.error(err);
             });

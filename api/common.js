@@ -50,10 +50,10 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     //directory has to be unzip/tar-edto tmpdir
                     srcpath += (files_override[file.id]||file.dirname);
                     var fullpath = tmpdir+"/"+file.dirname;
-                    mkdirp.sync(path.dirname(fullpath)); //make sure the path exists
+                    mkdirp.sync(fullpath); //don't need to path.dirname() here
                     logger.debug("downloading from", srcpath, "and untar to", fullpath);
                     var untar = child_process.spawn("tar", ["xz"], {cwd: fullpath});
-                    writestream = untar.stdout;
+                    writestream = untar.stdin;
                     untar.on('close', code=>{
                         if(code) return next_file("untar files with code:"+code);
                         if(!input_ok) return next_file("input failed for download/untar");
@@ -78,9 +78,11 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 }).pipe(writestream);
             }, err=>{
                 if(err) {
-                    logger.error("failed to store all files under tmpdir");
+                    logger.error(err);
                     cleantmp(); 
-                    return cb(err);
+                    dataset.desc = "Failed to store all files under tmpdir";
+                    dataset.status = "failed";
+                    return dataset.save(cb);
                 }
                 
                 //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
@@ -89,6 +91,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 logger.debug("obtaining upload stream for ", storage);
                 system.upload(dataset, (err, writestream)=>{
                     if(err) return next(err);
+                    //gzip tmpdir, tar, and send to writestream
                     var tar = child_process.spawn("tar", ["hcz", "."], {cwd: tmpdir});
                     tar.on('close', code=>{
                         cleantmp();
@@ -99,6 +102,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             dataset.storage = storage;
                             dataset.status = "stored";
                         }
+                        logger.debug("streaming finished with code:", code);
                         dataset.save(cb);
                     });
                     logger.debug("streaming to storage");

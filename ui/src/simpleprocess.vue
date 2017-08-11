@@ -1,82 +1,20 @@
 <template>
-<div>
-    <pageheader :user="config.user"></pageheader>
-    <sidemenu active="/processes"></sidemenu>
-    <div class="page-content" v-if="instance && tasks && app">
-        <div class="margin20">
-            <el-button-group style="float: right;">
-                <el-button @click="remove()" icon="delete">Remove Process</el-button>
-            </el-button-group>
-
-            <div style="float: right; margin-right: 20px; margin-top: 10px;">
-                <time style="margin-top: 15px;">Created at <b>{{instance.create_date|date}}</b></time>
-            </div>
-            <h1>
-                <icon name="send" scale="2"></icon> Process
-                <statustag :status="instance.status"></statustag>
-            </h1>
-            <el-input type="textarea" placeholder="Description" @change="changedesc()" v-model="instance.desc" :autosize="{minRows: 2, maxRows: 5}"/>
-        </div>
-
-        <table class="info">
-        <!--
-        <tr>
-            <th width="200px">Description</th>
-            <td>
-                {{instance.desc}}
-            </td>
-        </tr>
-        -->
-        <tr>
-            <th width="150px">Dataset ID</th>
-            <td>
-                <div v-if="!instance.config.dataset_ids">
-                    <!--<p class="text-muted">Not archived yet</p>-->
-                    <el-card v-if="instance.status == 'finished'" style="background-color: #def;">
-                        <div slot="header"><b style="color: #2693ff;"><icon name="cubes"/> Archive Output</b></div>
-                        <p>The output data will be purged within 25 days of process completion.</p>
-                        <p>Please archive if you'd like to persist the output datasets as part of your project.</p>
-                        <el-button size="large" type="primary" @click="go('/process/'+instance._id+'/archive')">
-                            <icon name="archive"></icon> Archive Output
-                        </el-button>
-                    </el-card>
-                </div>
-                <div v-if="instance.config.dataset_ids">
-                    <span class="text-muted">Output from this process is archived in the warehouse as dataset(s)</span>
-                    <ul>
-                        <li v-for="id in instance.config.dataset_ids" :key="id">
-                            <el-button type="text" @click="go('/dataset/'+id)">{{id}}</el-button>
-                        </li>
-                    </ul>
-                </div>
-            </td>
-        </tr>
-        <tr>
+<div v-if="instance">
+    <div class="main-section" id="scrolled-area">
+        <table class="info" style="width: 100%; box-sizing: border-box;">
+        <tr v-if="app">
             <th>Application</th>
             <td>
-                <!--
-                height<appavatar :app="app" style="float: right; margin-left: 10px;"></appavatar>
-                <h3>{{app.name}}</h3>
-                <p style="color: #666">{{app.desc}}</p>
-                -->
-                <app :app="app" :compact="true"></app>
+                <app :app="app"></app>
             </td>
         </tr>
-        <!--
-        <tr>
-            <th width="180px">Submit Date</th>
-            <td>
-                <p>{{instance.create_date|date}}</p>
-            </td>
-        </tr>
-        -->
         <tr>
             <th>Configuration</th>
             <td>
                 <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </td>
         </tr>
-        <tr>
+        <tr v-if="datatypes">
             <th>Inputs</th>
             <td>
                 <el-table :data="instance.config.prov.deps" style="width: 100%">
@@ -107,7 +45,7 @@
                 </el-table>
             </td>
         </tr>
-        <tr v-if="instance.status == 'finished'">
+        <tr v-if="app && tasks && instance.status == 'finished'">
             <th>Outputs</th>
             <td>
                 <el-table :data="app.outputs" style="width: 100%" default-expand-all>
@@ -136,9 +74,40 @@
             </td>
         </tr>
         <tr>
+            <th width="150px">Archived Datasets</th>
+            <td>
+                <div v-if="!instance.config.dataset_ids && !show_archive">
+                    <el-card v-if="instance.status == 'finished'" style="background-color: #def;">
+                        <div slot="header"><b style="color: #2693ff;"><icon name="cubes"/> Archive Output</b></div>
+                        <p>The output data will be purged within 25 days of process completion.</p>
+                        <p>Please archive if you'd like to persist the output datasets as part of your project.</p>
+                        <el-button type="primary" @click="show_archive = true">
+                            <icon name="archive"></icon> Archive Output
+                        </el-button>
+                    </el-card>
+                    <p class="text-muted" v-else>Not archived yet</p>
+                </div>
+                <div v-if="instance.config.dataset_ids">
+                    <span class="text-muted">Output from this process is archived in the warehouse as dataset(s)</span>
+                    <ul>
+                        <li v-for="id in instance.config.dataset_ids" :key="id">
+                            <el-button type="text" @click="go('/dataset/'+id)">{{id}}</el-button>
+                        </li>
+                    </ul>
+                </div>
+                <div v-if="show_archive">
+                    <h3>Archive Outputs</h3>
+                    <simpleprocessarchive @close="show_archive = false" :instance="instance"/>
+                </div>
+            </td>
+        </tr>
+        <tr v-if="tasks">
             <th>Task Status</th>
             <td>
-                <task v-for="task in tasks" key="task._id" :task="task"></task>
+                <div v-for="task in tasks" key="task._id">
+                    <task :task="task"></task>
+                    <br>
+                </div>
             </td>
         </tr>
         </table>
@@ -161,8 +130,8 @@
                 <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
             </div>
         </el-card>
-    </div><!--page-content-->
-</div><!--root-->
+    </div><!--main section-->
+</div>
 </template>
 
 <script>
@@ -184,62 +153,51 @@ import statustag from '@/components/statustag'
 import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
 
+import simpleprocessarchive from '@/simpleprocessarchive'
+
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
-var debounce = null;
-
 export default {
-    mixins: [
-        //require("vue-toaster")
-    ],
+    props: [ 'instance' ],
+
     components: { 
         sidemenu, contact, task, 
         message, file, tags, 
         metadata, filebrowser, pageheader, 
         appavatar, mute, viewerselect, 
         statustag, app, datatypetag, 
+        simpleprocessarchive,
      },
 
     data () {
         return {
-            instance: null,
             tasks: null,
             app: null,
-
-            //cache
+            ws: null, //websocket
+            show_archive: false, 
             datatypes: null,
-
             config: Vue.config,
         }
     },
 
     mounted: function() {
-        //load instance first
-        this.$http.get(Vue.config.wf_api+'/instance', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-            //populate: 'config.project datatype instance.config.prov.deps.dataset',
+        //for backward compatibility
+        if(this.instance.config.dataset_id) {
+            this.instance.config.dataset_ids = [this.instance.config.dataset_id];
+        }
+        if(this.instance.config.main_task_id) {
+            this.instance.config.output_task_id = this.instance.config.main_task_id;
+        }
+
+        //load datasets used for prov.deps
+        var dataset_ids = [];
+        if(this.instance.config.prov.deps) this.instance.config.prov.deps.forEach(dep=>{
+            dataset_ids.push(dep.dataset);
+        });
+        this.$http.get('dataset', {params: {
+            find: JSON.stringify({_id: dataset_ids}),
+            populate: ' ', //load all default
         }})
-        .then(res=>{
-            this.instance = res.body.instances[0];
-
-            //for backward compatibility
-            if(this.instance.config.dataset_id) {
-                this.instance.config.dataset_ids = [this.instance.config.dataset_id];
-            }
-            if(this.instance.config.main_task_id) {
-                this.instance.config.output_task_id = this.instance.config.main_task_id;
-            }
-
-            //load datasets used for prov.deps
-            var dataset_ids = [];
-            if(this.instance.config.prov.deps) this.instance.config.prov.deps.forEach(dep=>{
-                dataset_ids.push(dep.dataset);
-            });
-            return this.$http.get('dataset', {params: {
-                find: JSON.stringify({_id: dataset_ids}),
-                populate: ' ', //load all default
-            }})
-        })
         .then(res=>{
             res.body.datasets.forEach((dataset)=>{
                 this.instance.config.prov.deps.forEach(dep=>{
@@ -248,19 +206,6 @@ export default {
                     }
                 });
             });
-
-            //load tasks
-            return this.$http.get(Vue.config.wf_api+'/task', {params: {
-                find: JSON.stringify({
-                    instance_id: this.instance._id,
-                    //name: {$ne: "brainlife.novnc"},
-                }),
-                sort: 'create_date',
-            }})
-        })
-        .then(res=>{
-            this.tasks = res.body.tasks;
-
             //load datatypes
             return this.$http.get('datatype', {params: {
                 find: JSON.stringify({
@@ -274,7 +219,7 @@ export default {
                 this.datatypes[datatype._id] = datatype;
             });
 
-            //load app
+            //load apps
             return this.$http.get('app', {params: {
                 find: JSON.stringify({_id: this.instance.config.prov.app}),
                 populate: 'inputs.datatype outputs.datatype',
@@ -283,51 +228,14 @@ export default {
         .then(res=>{
             this.app = res.body.apps[0];
 
-            //subscribe to the instance events
-            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-            var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
-            ws.onopen = (e)=>{
-                ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.task",
-                        key: Vue.config.user.sub+"."+this.instance._id+".#",
-                    }
-                }));
-                ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.instance",
-                        key: Vue.config.user.sub+"."+this.instance._id,
-                    }
-                }));
-            }
-              
-            ws.onmessage = (json)=>{
-                var event = JSON.parse(json.data);
-                if(event.error) {
-                    console.error(event.error);
-                    return;
-                }
-                var msg = event.msg;
-                if(!msg || !msg._id) return; //odd..
-                switch(event.dinfo.exchange) {
-                case "wf.task":
-                    //look for the task to update
-                    this.tasks.forEach(function(t) {
-                      if(t._id == msg._id) {
-                          for(var k in msg) t[k] = msg[k];
-                      }
-                    });
-                    break;
-                case "wf.instance":
-                    this.instance = msg;    
-                    break;
-                default:
-                    console.error("unknown exchange", event.dinfo.exchange);
-                }
-            }
-        }).catch((err)=>{
-            console.error(err);
+            //lastly, load things under specified instance
+            this.load();
         });
+    },
+
+    destroyed() {
+        console.log("disconnecting from ws");
+        this.ws.close();
     },
 
     computed: {
@@ -349,36 +257,97 @@ export default {
         }
     },
 
-    methods: {
-        changedesc: function() {
-            clearTimeout(debounce);
-            debounce = setTimeout(this.save_instance, 1000);        
+    watch: {
+        'instance': function() {
+            console.log("instance updated");
+            document.getElementById("scrolled-area").scrollTop = 0;
+            this.load();
         },
+    },
 
-        save_instance: function() {
-            console.dir(this.instance.desc);
-            this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, this.instance).then(res=>{
-                this.$notify({
-                    title: 'Saved',
-                    message: 'Updated process detail',
-                    type: 'success',
+    methods: {
+        load() {
+
+            this.show_archive = false;
+            if(this.ws) this.ws.close(); //reconnect
+
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+
+                this.$http.get(Vue.config.wf_api+'/task', {params: {
+                    find: JSON.stringify({
+                        instance_id: this.instance._id,
+                    }),
+                    sort: 'create_date',
+                }})
+                .then(res=>{
+                    this.tasks = res.body.tasks;
+
+                    //subscribe to the instance events
+                    this.ws.send(JSON.stringify({
+                        bind: {
+                            ex: "wf.task",
+                            key: Vue.config.user.sub+"."+this.instance._id+".#",
+                        }
+                    }));
+                    this.ws.send(JSON.stringify({
+                        bind: {
+                            ex: "wf.instance",
+                            key: Vue.config.user.sub+"."+this.instance._id,
+                        }
+                    }));
+                  
+                    this.ws.onmessage = (json)=>{
+                        var event = JSON.parse(json.data);
+                        if(event.error) {
+                            console.error(event.error);
+                            return;
+                        }
+                        var msg = event.msg;
+                        if(!msg || !msg._id) return; //odd..
+                        switch(event.dinfo.exchange) {
+                        case "wf.task":
+                            //look for the task to update
+                            var t = this.tasks.find(t=>t._id == msg._id);
+                            if(!t) this.tasks.push(msg); //new task?
+                            else for(var k in msg) t[k] = msg[k];
+                            break;
+                        case "wf.instance":
+                            this.instance = msg; //TODO shouldn't mutate prop
+                            break;
+                        default:
+                            console.error("unknown exchange", event.dinfo.exchange);
+                        }
+                    }
+                }).catch((err)=>{
+                    console.error(err);
                 });
-            });
+            } //ws.onopen
         },
 
         go: function(path) {
             this.$router.push(path);
         },
         remove: function() {
-            //this.messages.push({msg: "Removed", cls: {info: true}});
-            this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
-                this.$router.push('/processes');
-            });
+            this.$emit('remove', this.instance);
         },
+
         view: function(taskid, view, subdir) {
-            view = view.replace('/', '.');
-            window.open("#/view/"+this.instance._id+"/"+taskid+'/'+view+'/'+subdir, "", "width=1200,height=800,resizable=no,menubar=no"); 
+            this.$emit('view', {instanceid: this.instance._id, taskid,view,subdir});
         },
     },
 }
 </script>
+
+<style scoped>
+.main-section {
+position: fixed;
+left: 390px;
+right: 0px;
+top: 110px;
+bottom: 0px;
+overflow: auto;
+}
+</style>
+

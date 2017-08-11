@@ -11,9 +11,10 @@
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/life_output'">Life Output</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/conneval_output'">Evaluator Result</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'generic/images'">Images</el-dropdown-item>
+        <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/anat/t1w'">VolumeViewer</el-dropdown-item>
 
         <!--native UI TODO - only show viewer that makes sense for datatype -->
-        <el-dropdown-item command="fslview">FSL View</el-dropdown-item>
+        <el-dropdown-item command="fslview" divided>FSL View</el-dropdown-item>
         <el-dropdown-item command="freeview">Free View</el-dropdown-item>
         <el-dropdown-item command="mrview">MR View</el-dropdown-item>
         <el-dropdown-item command="fibernavigator">Fiber Navigator</el-dropdown-item>

@@ -1,16 +1,6 @@
 <template>
 <div class="projectmenu">
-    <div class="header">
-        <h4>Projects</h4>
-    </div>
-    <!--
-    <div class="project" @click="go('/datasets')"
-        :class="{active: !active}">
-        <h5>All</h5>
-        <small class="text-muted">Search datasets from all projects</small>
-    </div>
-    -->
-
+    <h3>Projects</h3>
     <h4>
         <icon name="caret-down" scale="1"></icon>&nbsp;
         Private <icon name="lock"></icon> 
@@ -95,6 +85,12 @@ export default {
     left: 90px;
     overflow-y: auto;
     z-index: 2;
+}
+h3 {
+    padding: 10px 20px;
+    color: #777;
+    text-transform: uppercase;
+    margin-bottom: 0px;
 }
 h4 {
     padding: 10px 20px;

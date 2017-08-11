@@ -57,10 +57,10 @@ export default {
     top: 0px;
     left: 0px;
     right: 0px;
-    box-shadow: 0px 2px 3px rgba(0,0,0,0.5);
+    box-shadow: 0px 2px 3px rgba(0,0,0,0.3);
     background-image: linear-gradient(120deg, #2693ff, #159957);
     color: white;
-    z-index: 2;
+    z-index: 10;
 }
 
 svg.cloud {
@@ -78,8 +78,8 @@ svg.cloud {
     position: fixed;
     font-size: 20pt;
     position: relative;
-    top: 6px;
-    left: 7px;
+    top: 5px;
+    left: 13px;
     margin: 0px;
     margin-left: 5px;
     font-weight: bold;
@@ -93,7 +93,7 @@ svg.cloud {
 .slot {
     position: fixed;
     top: 7px;
-    left: 150px;
+    left: 170px;
     right: 250px;
     width: 50%;
 }

@@ -5,63 +5,140 @@ const winston = require('winston');
 const mongoose = require('mongoose');
 const async = require('async');
 const request = require('request');
+const redis = require('redis');
 
 const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
-db.init(err=>{
-    if(err) throw err;
+// TODO  Look for failed tasks and report to the user/dev?
 
-    const acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-    acon.on('error', err=>{
-        throw err;
-    });
-    acon.on('ready', ()=>{
-        logger.info("amqp connection ready");
+logger.info("starting event handler");
 
-        //ensure queues/binds and subscribe
-        async.series([
-
-            next=>{
-                acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
-                    logger.debug("binding wf.task > warehouse.task");
-                    task_q.bind('wf.task', '#');
-                    task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
-                        handle_task(task, err=>{
-                            if(err) logger.error(err)
-                            else task_q.shift();
-                        });
-                    });
-
-                    next();
-                });
-            },
-
-            next=>{
-                acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
-                    logger.debug("binding wf.instance > warehouse.instance");
-                    instance_q.bind('wf.instance', '#');
-                    instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
-                        handle_instance(instance, err=>{
-                            if(err) logger.error(err)
-                            else instance_q.shift();
-                        });
-                    });
-
-                    next();
-                });
-            },
-
-        ], err=>{
-            if(err) throw err;
-            logger.info("queues ready");
+//init and start 
+var acon = null;
+var rcon = null;
+async.series([
+        
+    //connect to mongo
+    db.init,
+   
+    //connect to amqp
+    next=>{
+        //logger.debug("connecting amqp");
+        acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+        acon.on('error', next);
+        acon.on('ready', ()=>{
+            logger.info("amqp connection ready");
+            next();
         });
-    });
+    },
+
+    //connect to redis
+    next=>{
+        //logger.debug("connecting redis");
+        rcon = redis.createClient(config.redis.port, config.redis.server);
+        rcon.on('error', next);
+        rcon.on('ready', ()=>{
+            logger.info("redis connection ready");
+            next();
+        });
+    },
+
+    //start health check
+    next=>{
+        setInterval(health_check, 1000*60*3); //It has to be long enough - when it needs to transfer data
+        next();
+    },
+    
+    //ensure queues/binds and subscribe to instance events
+    next=>{
+        logger.debug("subscribing to instance event");
+        acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
+            logger.debug("binding wf.instance > warehouse.instance");
+            instance_q.bind('wf.instance', '#');
+            instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
+                handle_instance(instance, err=>{
+                    if(err) {
+                        logger.error(err)
+                        //continue .. TODO - maybe I should report the failed event to failed queue?
+                    }
+                    instance_q.shift();
+                });
+            });
+            next();
+        });
+    },
+ 
+    //ensure queues/binds and subscribe to task events
+    next=>{
+        logger.debug("subscribing to task event");
+        acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
+            logger.debug("binding wf.task > warehouse.task");
+            task_q.bind('wf.task', '#');
+            task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
+                handle_task(task, err=>{
+                    if(err) {
+                        logger.error(err)
+                        //TODO - maybe I should report the failed event to failed queue?
+                    }
+                    task_q.shift();
+                });
+            });
+            next();
+        });
+    },
+    
+], err=>{
+    if(err) throw err;
+    logger.info("application started");
 });
 
+/*
+var _health = {
+    last_task_date: new Date(), //when the last task task was handled
+}
+*/
+var _counts = {
+    tasks: 0,
+    instances: 0,
+}
+
+function health_check() {
+    //logger.debug("health check");
+    var report = {
+        status: "ok",
+        messages: [],
+        date: new Date(),
+        counts: _counts,
+        //_health,
+        maxage: 1000*60*6,  //should be double the check frequency to avoid going stale while development
+    }
+
+    if(_counts.tasks == 0) {
+        report.status = "failed";
+        report.messages.push("task event counts is low");
+    }
+
+    /*
+    if(Date.now() - _health.last_task_date > 1000*60*15) {
+        report.status = "failed";
+        report.messages.push("it's been a while since last task was handled");
+    }
+    */
+
+    rcon.set("health.warehouse.event."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
+
+    //reset counter
+    _counts.tasks = 0;
+    _counts.instances = 0;
+}
+
 function handle_task(task, cb) {
+    _counts.tasks++;
+    //_health.last_task_date = new Date();
+
     if(task.status == "finished" && task.config && task.config._outputs) {
         logger.info("handling task", task._id, task.status, task.name);
         async.eachSeries(task.config._outputs, (output, next_output)=>{
@@ -87,6 +164,7 @@ function archive_dataset(task, output, cb) {
             db.Datasets.findOne({
                 "prov.task_id": task._id,
                 "prov.output_id": output.id,
+                removed: false, //archive again if user removes the dataset
             }).exec((err,_dataset)=>{
                 if(err) return cb(err);
                 if(_dataset) {
@@ -108,7 +186,7 @@ function archive_dataset(task, output, cb) {
                 datatype_tags: output.datatype_tags,
 
                 desc: output.archive.desc,
-                tags: output.archive.tags||[],
+                tags: output.tags||output.archive.tags||[], //output.archive.tags is deprecated (remove it eventually)
 
                 prov: {
                     instance_id: task.instance_id,
@@ -145,5 +223,9 @@ function archive_dataset(task, output, cb) {
 }
 
 function handle_instance(instance, cb) {
-    console.dir(instance);
+    _counts.instances++;
+
+    logger.debug("TODO",instance);
+    cb();
 }
+

@@ -13,10 +13,10 @@
         <br>
         <h1>{{app.name}}</h1>
     </div>
-    <div class="page-content" v-if="app" style="margin-top: 90px; padding-top: 30px;">
+    <div class="page-content" v-if="app" style="margin-top: 75px; padding-top: 30px;">
         <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
             <p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>
-            {{app.desc}}
+            <p style="line-height: 150%;">{{app.desc}}</p>
         </div>
 
         <table class="info">
@@ -35,10 +35,20 @@
         <tr v-if="service_stats">
             <th width="175px">Stats</th>
             <td>
-                <p>{{service_stats.tasks}} Runs</p>
-                <p>{{service_stats.users}} Users</p>
-                <p>Success Rate {{(service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)}}%</p>
-                <!--<pre>{{service_stats}}</pre>-->
+                <el-row>
+                    <el-col :span="8">
+                        <h3>{{service_stats.tasks}}</h3>
+                        <h5 class="text-muted">Total Runs</h5>
+                    </el-col>
+                    <el-col :span="8">
+                        <h3>{{service_stats.users}}</h3>
+                        <h5 class="text-muted">Users</h5>
+                    </el-col>
+                    <el-col :span="8">
+                        <h3>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)) | toFixed(1)}}% </h3>
+                        <h5 class="text-muted">Success Rate</h5>
+                    </el-col>
+                </el-row>
             </td>
         </tr>
         <tr>

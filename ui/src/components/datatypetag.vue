@@ -16,7 +16,9 @@ export default {
         name: function() {
             //trim fist token
             if(!this.datatype) return "unknown";
-            return this.datatype.name.split("/").splice(1).join("/");
+            var tokens = this.datatype.name.split("/");
+            if(tokens.length > 1) tokens = tokens.splice(1);
+            return tokens.join("/");
         }
     },
     data() {

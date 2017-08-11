@@ -8,11 +8,16 @@ const winston = require('winston');
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
 
+//use native promise for mongoose
+//without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated
+mongoose.Promise = global.Promise; 
+
 if(config.debug) {
     mongoose.set('debug', true);
 }
 
 exports.init = (cb)=>{
+    logger.debug("init db");
     mongoose.connect(config.mongodb, {
         //TODO - isn't auto_reconnect set by default?
         server: { auto_reconnect: true, reconnectTries: Number.MAX_VALUE }
@@ -250,6 +255,8 @@ var ruleSchema = mongoose.Schema({
     
     //project to look for missing datasets and to archive generated data
     input_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    //any tags to look for each input id (object with key(output id)=>array(tags))
+    input_tags: mongoose.Schema.Types.Mixed,
     
     //if user wants to override where the input data comes from, specify projects IDs keyed by input id
     input_project_override: mongoose.Schema.Types.Mixed,

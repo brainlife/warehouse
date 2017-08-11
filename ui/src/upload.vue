@@ -264,7 +264,7 @@ export default {
             }}).then(res=>{
                 if(!res.body.resource) { 
                     //TODO - not tested
-                    this.$notify.error({ title: 'Server Busy', message: 'Validator service is busy. Please try again later' });
+                    this.$notify({ type: 'error', title: 'Server Busy', text: 'Validator service is busy. Please try again later' });
                     return;
                 }
                 this.validator_resource = res.body.resource;
@@ -392,10 +392,7 @@ export default {
             }).then(res=>{
                 console.log("submitted dataset request");
                 var dataset = res.body;
-                this.$notify.success({
-                    title: 'Success',
-                    message: 'Successfully uploaded a new dataset. Please give a few minutes for your data to become available.',
-                });
+                this.$notify({ type: 'success', text: 'Successfully uploaded a new dataset. Please give a few minutes for your data to become available.', });
                 this.$router.push("/dataset/"+dataset._id);
             }, res=>{
                 console.error(res);

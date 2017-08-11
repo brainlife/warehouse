@@ -102,12 +102,8 @@ export default {
                 this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, {
                     config: this.instance.config,
                 }).then(res=>{
-                    this.$notify.success({
-                        title: 'Success',
-                        message: 'Successfully archived datasets ',
-                    });
+                    this.$notify({ type: 'success', text: 'Successfully archived datasets ', });
                     this.$emit('submitted', this.dataset);
-                    //this.$router.push("/process/"+this.instance._id);
                 }).catch(console.error);
 
                 //TODO - Maybe I should store this somewhere else?

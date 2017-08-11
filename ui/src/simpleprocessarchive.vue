@@ -1,68 +1,57 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
-    <sidemenu active="/processes"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
-        <div class="margin20" v-if="instance && app">
-
-            <h1><icon name="cubes" scale="2"></icon> Archive Output</h1>
-            
-            <p class="text-muted">Please populate and submit following form to archive the output datasets generated from this process</p>
-
-            <el-card>
-                <el-form ref="form" label-width="180px">
-                    <div v-for="dataset in datasets" :key="dataset.id" style="border-bottom: 1px solid #ddd; margin-bottom: 20px;">
-                        <h3>
-                            {{dataset.subdir||dataset.name}}
-                            <small><datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag></small>
-                        </h3>
-                        <el-form-item label="Project">
-                            <projectselecter v-model="dataset.project"/>
-                            <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
-                        </el-form-item>
-                        <el-form-item label="Metadata">
-                            <div v-for="(v,k) in dataset.meta">
-                                <el-input placeholder="Please input" v-model="dataset.meta[k]">
-                                    <template slot="prepend">{{k|uppercase}}</template>
-                                </el-input>
-                            </div>
-                            <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
-                        </el-form-item>
-                        <el-form-item label="User Tags (optional)">
-                            <el-select v-model="dataset.tags" 
-                                style="width: 100%"
-                                multiple filterable allow-create placeholder="Enter tags">
-                                <el-option v-for="tag in dataset.tags" key="tag" :label="tag" :value="tag"></el-option>
-                            </el-select>
-                            <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
-                        </el-form-item>
-                        <el-form-item label="Description">
-                            <el-input type="textarea" :autosize="{minRows: 2}" v-model="dataset.desc" placeholder="Optional"></el-input>
-                        </el-form-item>
+    <el-card>
+        <el-form ref="form" label-width="180px">
+            <div v-for="dataset in datasets" :key="dataset.id" style="border-bottom: 1px solid #ddd; margin-bottom: 20px;">
+                <h3>
+                    {{dataset.subdir||dataset.name}}
+                    <small><datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag></small>
+                </h3>
+                <el-form-item label="Project">
+                    <projectselecter v-model="dataset.project"/>
+                    <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
+                </el-form-item>
+                <el-form-item label="Metadata">
+                    <div v-for="(v,k) in dataset.meta">
+                        <el-input placeholder="Please input" v-model="dataset.meta[k]">
+                            <template slot="prepend">{{k|uppercase}}</template>
+                        </el-input>
                     </div>
-                    <el-form-item>
-                        <el-button type="primary" icon="check" @click="submit()">Submit</el-button>
-                    </el-form-item>
-                </el-form>
-            </el-card>
-
-            <br>
-            <el-card v-if="config.debug">
-                <div slot="header">Debug</div>
-                <div v-if="instance">
-                    <h3>datasets</h3>
-                    <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
-                    <h3>instance</h3>
-                    <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
-                    <h3>app</h3>
-                    <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-            </el-card>
-        </div><!--margin20-->
-        </div><!--page-content-->
-    </div><!--pusher-->
-</div><!--root-->
+                    <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
+                </el-form-item>
+                <el-form-item label="User Tags (optional)">
+                    <el-select v-model="dataset.tags" 
+                        style="width: 100%"
+                        multiple filterable allow-create placeholder="Enter tags">
+                        <el-option v-for="tag in dataset.tags" key="tag" :label="tag" :value="tag"></el-option>
+                    </el-select>
+                    <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
+                </el-form-item>
+                <el-form-item label="Description">
+                    <el-input type="textarea" :autosize="{minRows: 2}" v-model="dataset.desc" placeholder="Optional"></el-input>
+                </el-form-item>
+            </div>
+            <el-form-item>
+                <el-button @click="cancel()">Cancel</el-button>
+                <el-button type="primary" icon="check" @click="submit()">Archive</el-button>
+            </el-form-item>
+        </el-form>
+    </el-card>
+    <!--
+    <br>
+    <el-card v-if="config.debug">
+        <div slot="header">Debug</div>
+        <div v-if="instance">
+            <h3>datasets</h3>
+            <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
+            <h3>instance</h3>
+            <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
+            <h3>app</h3>
+            <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+        </div>
+    </el-card>
+    -->
+</div>
 </template>
 
 <script>
@@ -75,7 +64,6 @@ import task from '@/components/task'
 import file from '@/components/file'
 import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
-import pageheader from '@/components/pageheader'
 import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
 import projectselecter from '@/components/projectselecter'
@@ -84,16 +72,17 @@ import datatypetag from '@/components/datatypetag'
 import async from 'async'
 
 export default {
+    props: [ 'instance' ],
+
     components: { 
         sidemenu, contact, task, 
         message, file, tags, 
-        metadata, filebrowser, pageheader, 
+        metadata, filebrowser, 
         appavatar, projectselecter, datatypetag,
     },
 
     data () {
         return {
-            instance: null,
             app: null,
             projects: null,
 
@@ -108,21 +97,12 @@ export default {
     },
 
     mounted: function() {
-
-        //start by loading instance
-        this.$http.get(Vue.config.wf_api+'/instance', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-        }})
-        .then(res=>{
-            this.instance = res.body.instances[0];
-
-            //load datasets used for prov.deps (used to aggregate metadata)
-            var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
-            return this.$http.get('dataset', {params: {
+        //load datasets used for prov.deps (used to aggregate metadata)
+        var dataset_ids = this.instance.config.prov.deps.map(dep=>dep.dataset);
+        this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: dataset_ids}),
                 populate: ' ', //load all default
-            }})
-        })
+        }})
         .then(res=>{
             //dereference prov.deps with real dataset object
             res.body.datasets.forEach(dataset=>{
@@ -207,9 +187,8 @@ export default {
     },
 
     methods: {
-
-        go: function(path) {
-            this.$router.push(path);
+        cancel: function() {
+            this.$emit('close');
         },
         submit: function() {
             //request archive for *each* output datasets
@@ -221,10 +200,7 @@ export default {
                 }, next);
             }, err=>{
                 if(err) {
-                    this.$notify.error({
-                        title: 'Error',
-                        message: err.toString()
-                    });
+                    this.$notify({ type: 'error', text: err.toString() });
                     return;
                 }
 
@@ -232,11 +208,9 @@ export default {
                 this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, {
                     config: this.instance.config,
                 }).then(res=>{
-                    this.$notify.success({
-                        title: 'Success',
-                        message: 'Successfully archived datasets',
-                    });
-                    this.$router.push("/datasets/");
+                    this.$notify({ type: 'success', text: 'Successfully archived datasets', });
+                    //this.$router.push("/datasets/");
+                    this.$emit('close');
                 }).catch(console.error);
             });
         },

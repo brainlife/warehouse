@@ -1,261 +1,252 @@
 <template>
-<div>
-    <pageheader :user="config.user"></pageheader>
-    <sidemenu active="/processes"></sidemenu>
-    <div v-if="instance && tasks">
-        <div class="fixed-top">
-            <el-button v-if="!instance.config.removing" @click="remove_instance()" style="float: right;" icon="delete">Remove Process</el-button>
-            <div style="float: right; margin-right: 20px; margin-top: 10px;">
-                <time style="margin-top: 15px;">Created at <b>{{instance.create_date|date}}</b></time>
-            </div>
-            <h1>
-                <icon name="send" scale="1.7"></icon> Process
-                <statustag :status="instance.status"></statustag>
-            </h1>
-        </div>
-
-        <div class="sidebar">
-            <div style="margin: 0px 10px;">
-                <el-button type="primary" size="small" style="float: right; position: relative; top: -8px;"
-                    :class="{animated: true, headShake: _datasets.length == 0}" 
-                    @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
-
-                <h3>Datasets</h3>
-                <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)">
-                    <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
-                    <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
-                    <b v-else class="text-muted">(no subject)</b>
-                    <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                    <mute>(d.{{dataset.did}})</mute> 
-                    <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
-                    <mute>
-                        <small v-if="dataset.task.status != 'finished'">
-                            <statusicon :status="dataset.task.status"></statusicon> 
-                        </small>
-                    </mute>
-                </div>
+<div v-if="instance">
+    <div class="sidebar">
+        <div style="margin: 0px 10px;">
+            <el-button type="primary" size="small" style="float: right; position: relative; top: -8px;"
+                :class="{animated: true, headShake: _datasets.length == 0}" 
+                @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
+            <h3>Datasets</h3>
+            <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)">
+                <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
+                <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
+                <b v-else class="text-muted">(no subject)</b>
+                <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+                <small v-for="(tag,idx) in dataset.tags" :key="idx">| {{tag}}</small>
+                <mute>(d.{{dataset.did}})</mute> 
+                <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
+                <mute>
+                    <small v-if="dataset.task.status != 'finished'">
+                        <statusicon :status="dataset.task.status"></statusicon> 
+                    </small>
+                </mute>
             </div>
         </div>
+    </div>
 
-        <div class="main-section" id="scrolled-area">
-            <p v-if="instance.status == 'removed' || instance.config.removing">
-                <el-alert type="error" title="">This process has been removed</el-alert>
-            </p>
-            <p>
-                <el-input type="textarea" 
-                    placeholder="Process Description" 
-                    @change="changedesc()" 
-                    v-model="instance.desc" 
-                    :autosize="{minRows: 2, maxRows: 5}"></el-input>
-            </p>
-
-            <div v-for="task in tasks" :key="task._id" class="process">
-                <p class="text-muted" v-if="task.desc">{{task.desc}}</p>
-
-                <task style="margin-top: 5px;" :task="task">
-                    <!--header-->
-                    <div slot="header" class="task-header">
-                        <div style="float: right">
-                            <h4 :id="task._id" :title="task._id"><mute>t.{{task.config._tid}}</mute></h4>
-                        </div>
-                        <div v-if="task.config._app" style="margin-right: 80px;">
-                            <app :appid="task.config._app" :compact="true"></app>
-                        </div>
-                        <div v-else style="margin-right: 80px;">
-                            <h3>{{task.name}}</h3>
-                        </div>
+    <div class="main-section" id="scrolled-area">
+        <p v-if="instance.status == 'removed' || instance.config.removing">
+            <el-alert type="error" title="">This process has been removed</el-alert>
+        </p>
+        <div v-if="tasks" v-for="task in tasks" :key="task._id">
+            <task :task="task">
+                <!--header-->
+                <div slot="header" class="task-header">
+                    <div style="float: right">
+                        <h4 :id="task._id" :title="task._id"><mute>t.{{task.config._tid}}</mute></h4>
                     </div>
+                    <div v-if="task.config._app" style="margin-right: 40px;">
+                        <app :appid="task.config._app" :compact="true">
+                            <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
+                        </app>
+                    </div>
+                    <div v-else>
+                        <h4 style="margin: 0px;" class="text-muted"><icon name="paper-plane"/>&nbsp;&nbsp;&nbsp;{{task.name}}</h4>
+                    </div>
+                </div>
 
-                    <!--input-->
-                    <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._inputs">
-                        <div v-for="input in task.config._inputs" :key="input.did" 
-                            style="padding: 3px 5px;" class="clickable" @click="scrollto(input.task_id)">
-                            <el-row>
-                            <el-col :span="4" class="truncate">
-                                {{input.id}}
-                            </el-col>
-                            <el-col :span="20" v-if="findtask(input.task_id)">
-                                <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
-                                <b v-if="input.meta.subject">{{input.meta.subject}}</b>
-                                <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
-                                <mute>
-                                    (d.{{input.did}})
-                                </mute>
-                                <mute v-if="findtask(input.task_id).status != 'finished'">
-                                    <statusicon :status="findtask(input.task_id).status"></statusicon> 
-                                </mute>
-                                <!--
-                                <div style="float: right">
-                                    <div style="display: inline-block;">
-                                        <viewerselect @select="view(input.task_id, $event, input.subdir)" :datatype="datatypes[input.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
-                                        <el-button v-if="findtask(input.task_id).status == 'finished'" size="small" @click.stop="download(findtask(input.task_id), input)">Download</el-button>
-                                    </div>
+                <!--input-->
+                <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._inputs">
+                    <div v-for="input in task.config._inputs" :key="input.did" 
+                        style="padding: 3px 5px;" class="clickable" @click="scrollto(input.task_id)">
+                        <el-row>
+                        <el-col :span="4" class="truncate">
+                            {{input.id}}
+                        </el-col>
+                        <el-col :span="20" v-if="findtask(input.task_id)">
+                            <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
+                            <b v-if="input.meta.subject">{{input.meta.subject}}</b>
+                            <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
+                            <mute>
+                                <small v-for="(tag,idx) in input.tags" :key="idx">| {{tag}} </small>
+                                (d.{{input.did}})
+                            </mute>
+                            <mute v-if="findtask(input.task_id).status != 'finished'">
+                                <statusicon :status="findtask(input.task_id).status"></statusicon> 
+                            </mute>
+                            <!--
+                            <div style="float: right">
+                                <div style="display: inline-block;">
+                                    <viewerselect @select="view(input.task_id, $event, input.subdir)" :datatype="datatypes[input.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
+                                    <el-button v-if="findtask(input.task_id).status == 'finished'" size="small" @click.stop="download(findtask(input.task_id), input)">Download</el-button>
                                 </div>
-                                -->
-                            </el-col>
-                            </el-row>
-                        </div>
-                    </el-collapse-item>
+                            </div>
+                            -->
+                        </el-col>
+                        </el-row>
+                    </div>
+                </el-collapse-item>
 
-                    <!--output-->
-                    <el-collapse-item title="Output" name="output" slot="output">
-                        <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
-                            <el-row>
-                            <el-col :span="4" class="truncate">
-                                {{output.id}}
-                            </el-col>
-                            <el-col :span="20">
-                                <b v-if="output.meta.subject">{{output.meta.subject}}</b>
-                                <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
-                                <mute>(d.{{output.did}})</mute>
-                                <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
-                                <div style="float: right;">
-                                    <div v-if="task.status == 'finished'">
-                                        <viewerselect @select="view(task._id, $event, output.subdir)" :datatype="datatypes[output.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
-                                        <el-button size="small" @click="download(task, output)">Download</el-button>
-                                        <el-button size="small" type="primary"
-                                            :disable="archiving === output.did" @click="archiving = output.did">Archive</el-button>
+                <!--output-->
+                <el-collapse-item title="Output" name="output" slot="output">
+                    <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
+                        <el-row>
+                        <el-col :span="4" class="truncate">
+                            {{output.id||'(no id)'}}
+                        </el-col>
+                        <el-col :span="20">
+                            <b v-if="output.meta.subject">{{output.meta.subject}}</b>
+                            <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
+                            <mute>
+                                <small v-for="(tag,idx) in output.tags" :key="idx">| {{tag}}</small>
+                                (d.{{output.did}})
+                            </mute>
+                            <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
+                            <div style="float: right;">
+                                <div v-if="task.status == 'finished'">
+                                    <viewerselect @select="view(task._id, $event, output.subdir)" :datatype="datatypes[output.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
+                                    <el-button size="small" @click="download(task, output)">Download</el-button>
+                                    <el-button size="small" type="primary"
+                                        :disable="archiving === output.did" @click="archiving = output.did">Archive</el-button>
 
-                                    </div>
-                                    <!--<statustag v-else :status="task.status"/>-->
                                 </div>
+                                <!--<statustag v-else :status="task.status"/>-->
+                            </div>
 
-                                <!--list of archived datasets-->
-                                <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
-                                    <div class="archived-datasets-title">Archived Datasets</div>
-                                    <ul class="archived">
-                                        <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/dataset/'+dataset._id)" class="clickable">
-                                            <icon name="cubes"></icon>
-                                            <b>{{projects[dataset.project].name}}</b>
-                                            <mute>{{dataset.desc}}</mute>
-                                            <tags :tags="dataset.tags"/>
-                                            <!--<small>{{dataset._id}}</small>-->
-                                        </li>
-                                    </ul>
-                                </div>
+                            <!--list of archived datasets-->
+                            <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
+                                <div class="archived-datasets-title">Archived Datasets</div>
+                                <ul class="archived">
+                                    <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/dataset/'+dataset._id)" class="clickable">
+                                        <icon name="cubes"></icon>
+                                        <b>{{projects[dataset.project].name}}</b>
+                                        <mute>{{dataset.desc}}</mute>
+                                        <tags :tags="dataset.tags"/>
+                                        <!--<small>{{dataset._id}}</small>-->
+                                    </li>
+                                </ul>
+                            </div>
 
-                                <archiveform v-if="archiving === output.did" 
-                                    :task="task" 
-                                    :output="output" 
-                                    @done="done_archive" style="margin-top: 30px;"></archiveform>
-                            </el-col>
-                            </el-row>
-                        </div>
-                    </el-collapse-item>
-                </task>
-            </div>
+                            <archiveform v-if="archiving === output.did" 
+                                :task="task" 
+                                :output="output" 
+                                @done="done_archive" style="margin-top: 30px;"></archiveform>
+                        </el-col>
+                        </el-row>
+                    </div>
+                </el-collapse-item>
+            </task>
+        </div>
 
-            <el-button v-if="!newprocess" type="primary" @click="start_newprocess()" icon="caret-bottom">New Task</el-button>
-            <el-card v-else>
-                <h3 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h3>
+        <el-card v-if="apps && apps.length > 0">
+            <h3 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h3>
 
-                <!--newprocess form-->
-                <transition name="fade">
-                <div v-if="!newtask.app">
-                    <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
-                    <div v-for="app in apps" :key="app._id" @click="selectapp(app)">
+            <!--newprocess form-->
+            <transition name="fade">
+            <div v-if="!newtask.app">
+                <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
+                <el-row>
+                <el-col :span="12" v-for="app in apps" :key="app._id" style="margin-bottom: 3px;">
+                    <div @click="selectapp(app)">
                         <app :app="app" :compact="true" :clickable="false" class="clickable"/>
                     </div>
-                    <br>
-                    <el-button @click="close_newprocess()">Cancel</el-button>
-                </div>
-                </transition>
-
-                <transition name="fade">
-                <div v-if="newtask.app">
-                    <el-form label-width="200px"> 
-                        <el-form-item label="Application">
-                            <app :app="newtask.app" :compact="true" :clickable="false"></app>
-                        </el-form-item>
-
-                        <el-form-item label="Task Description">
-                            <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
-                        </el-form-item>
-
-                        <!--input-->
-                        <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
-                            <el-select @change="validate()" v-model="input.dataset_idx" 
-                                no-data-text="No dataset available for this datatype / tags"
-                                placeholder="Please select input dataset" 
-                                style="width: 100%;">
-                                <el-option v-for="dataset in filter_datasets(input)" :key="dataset.idx"
-                                        :value="dataset.idx" 
-                                        :label="dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject+' | '+dataset.datatype_tags+' (d.'+dataset.did+')'">
-                                    <span v-if="dataset.task.status != 'finished'">(Processing)</span>
-                                    {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
-                                    <b>{{dataset.meta.subject}}</b> 
-                                    <small>{{dataset.datatype_tags.toString()}}</small>
-                                    (d.{{dataset.did}})
-                                </el-option>
-                            </el-select>
-                            <!--<el-alert v-if="input.error" :title="input.error" type="error"></el-alert>-->
-                        </el-form-item>
-
-                        <!--TODO - handle nested config? -->
-                        <el-form-item v-for="(v,k) in newtask.app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
-                            <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01">
-                            <el-input-number v-if="v.type == 'integer'" v-model="newtask.config[k]"/>
-                            <el-input v-if="v.type == 'string'" v-model="newtask.config[k]"/>
-                            <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
-                        </el-form-item>
-
-    
-                        <el-form-item label=" ">
-                            <div v-if="!newtask.archive.enable">
-                                <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive output dataset when finished
-                            </div>
-                            <el-card v-if="newtask.archive.enable">
-                                <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive output dataset when finished
-                                <p>
-                                    <b>Dataset Description</b>
-                                    <el-input type="textarea" placeholder="Optional" v-model="newtask.archive.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
-                                </p>
-                                <p>
-                                    <b>Project</b> <mute>where you'd like to store this datasets</mute>
-                                    <projectselecter v-model="newtask.archive.project"/>
-                                </p>
-                                <p>
-                                    <b>Tags</b> <mute>you'd like to add to this dataset to make it easier to search / organize</mute>
-                                    <el-select v-model="newtask.archive.tags" style="width: 100%"
-                                        multiple filterable allow-create placeholder="Optional">
-                                        <el-option v-for="tag in newtask.archive.tags" key="tag" :label="tag" :value="tag"></el-option>
-                                    </el-select>
-                                </p>
-                            </el-card>
-                        </el-form-item>
-
-                        <el-form-item label=" ">
-                            <el-button @click="close_newprocess()">Cancel</el-button>
-                            <el-button type="primary" @click="submit_newprocess()" :disabled="!newtask.valid">Submit</el-button>
-                        </el-form-item>
-                         
-                    </el-form>
-                </div>
-                </transition>
-            </el-card>
-            <br>
-            <br>
-            <div v-if="config.debug">
-                <h3>Debug</h3>
-                <el-collapse v-if="config.debug">
-                    <el-collapse-item title="newtask" name="newtask" v-if="newtask">
-                        <pre v-highlightjs="JSON.stringify(newtask, null, 4)"><code class="json hljs"></code></pre>
-                    </el-collapse-item> 
-                    <el-collapse-item title="instance" name="instance" v-if="instance">
-                        <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
-                    </el-collapse-item> 
-                    <el-collapse-item title="_datasets" name="_datasets" v-if="_datasets">
-                        <pre v-highlightjs="JSON.stringify(_datasets, null, 4)"><code class="json hljs"></code></pre>
-                    </el-collapse-item> 
-                    <el-collapse-item title="tasks" name="tasks" v-if="tasks">
-                        <pre v-highlightjs="JSON.stringify(tasks, null, 4)"><code class="json hljs"></code></pre>
-                    </el-collapse-item> 
-                </el-collapse>
+                </el-col>
+                </el-row>
+                <br>
             </div>
-        </div><!--main-section-->
-        <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
-    </div>
-</div><!--root-->
+            </transition>
+
+            <transition name="fade">
+            <div v-if="newtask.app">
+                <el-form label-width="200px"> 
+                    <el-form-item label="Application">
+                        <app :app="newtask.app" :compact="false" :clickable="false"></app>
+                    </el-form-item>
+
+                    <el-form-item label="Task Description">
+                        <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
+                    </el-form-item>
+
+                    <!--input-->
+                    <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
+                        <el-select @change="validate()" v-model="input.dataset_idx" 
+                            no-data-text="No dataset available for this datatype / tags"
+                            placeholder="Please select input dataset" 
+                            style="width: 100%;">
+                            <el-option v-for="dataset in filter_datasets(input)" :key="dataset.idx"
+                                    :value="dataset.idx" 
+                                    :label="dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject+' > '+dataset.datatype_tags+' | '+dataset.tags+' (d.'+dataset.did+')'">
+                                <span v-if="dataset.task.status != 'finished'">(Processing)</span>
+                                {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
+                                <b>{{dataset.meta.subject}}</b> 
+                                <small>{{dataset.datatype_tags.toString()}}</small>
+                                (d.{{dataset.did}})
+                            </el-option>
+                        </el-select>
+                        <!--<el-alert v-if="input.error" :title="input.error" type="error"></el-alert>-->
+                    </el-form-item>
+
+                    <!--TODO - handle nested config? -->
+                    <el-form-item v-for="(v,k) in newtask.app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
+                        <!--<p class="text-muted" v-if="v.desc">{{v.desc}}</p>-->
+                        <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01" :placeholder="v.placeholder">
+                        <el-input type="number" v-if="v.type == 'integer'" v-model.number="newtask.config[k]" :placeholder="v.placeholder"/>
+                        <el-input v-if="v.type == 'string'" v-model="newtask.config[k]" :placeholder="v.placeholder"/>
+                        <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
+                        <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder">
+                            <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
+                                <b>{{option.label}}</b>
+                                <small> - {{option.desc}}</small>
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+
+                    <el-form-item label=" ">
+                        <div v-if="!newtask.archive.enable">
+                            <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive all output datasets when finished
+                        </div>
+                        <el-card v-if="newtask.archive.enable">
+                            <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive all output datasets when finished
+                            <p>
+                                <b>Dataset Description</b>
+                                <el-input type="textarea" placeholder="Optional" v-model="newtask.archive.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
+                            </p>
+                            <p>
+                                <b>Project</b> <mute>where you'd like to store this datasets</mute>
+                                <projectselecter v-model="newtask.archive.project"/>
+                            </p>
+                            <!-- I need to let user specify tags for each output datsets, and tags are now set under config.output - not config.output.archive
+                            <p>
+                                <b>Tags</b> <mute>you'd like to add to this dataset to make it easier to search / organize</mute>
+                                <el-select v-model="newtask.archive.tags" style="width: 100%"
+                                    multiple filterable allow-create placeholder="Optional">
+                                    <el-option v-for="tag in newtask.archive.tags" key="tag" :label="tag" :value="tag"></el-option>
+                                </el-select>
+                            </p>
+                            -->
+                        </el-card>
+                    </el-form-item>
+
+                    <el-form-item label=" ">
+                        <el-button @click="reset_newprocess()">Cancel</el-button>
+                        <el-button type="primary" @click="submit_newprocess()" :disabled="!newtask.valid">Submit</el-button>
+                    </el-form-item>
+                     
+                </el-form>
+            </div>
+            </transition>
+        </el-card>
+        <br>
+        <br>
+        <div v-if="config.debug">
+            <h3>Debug</h3>
+            <el-collapse v-if="config.debug">
+                <el-collapse-item title="newtask" name="newtask" v-if="newtask">
+                    <pre v-highlightjs="JSON.stringify(newtask, null, 4)"><code class="json hljs"></code></pre>
+                </el-collapse-item> 
+                <el-collapse-item title="instance" name="instance" v-if="instance">
+                    <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
+                </el-collapse-item> 
+                <el-collapse-item title="_datasets" name="_datasets" v-if="_datasets">
+                    <pre v-highlightjs="JSON.stringify(_datasets, null, 4)"><code class="json hljs"></code></pre>
+                </el-collapse-item> 
+                <el-collapse-item title="tasks" name="tasks" v-if="tasks">
+                    <pre v-highlightjs="JSON.stringify(tasks, null, 4)"><code class="json hljs"></code></pre>
+                </el-collapse-item> 
+            </el-collapse>
+        </div>
+    </div><!--main-section-->
+    <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
+</div>
 </template>
 
 <script>
@@ -283,9 +274,10 @@ import datatypetag from '@/components/datatypetag'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const lib = require('./lib');
-var debounce = null;
 
 export default {
+    props: [ 'instance' ],
+
     components: { 
         sidemenu, contact, task, 
         message, file, tags, 
@@ -298,10 +290,7 @@ export default {
 
     data() {
         return {
-            instance: null,
-
             //things for newprocess
-            newprocess: false, //set to true while submitting new process
             apps: null, //application user can run with selected data
             newtask: {
                 app: null,
@@ -321,20 +310,21 @@ export default {
             archived: [], //archived datasets from this processj
             projects: null,
             
-            //currently open archiving form (_output_tasks[task._id]._id+'/'+output_id)
-            archiving: null,
+            archiving: null, //currently open archiving form (_output_tasks[task._id]._id+'/'+output_id)
+
+            ws: null, //websocket
 
             config: Vue.config,
         }
     },
 
     mounted() {
+        console.log("mounting process2");
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
             });
-
             return this.$http.get('project', {params: {
                 select: 'name',
             }});
@@ -343,14 +333,21 @@ export default {
             res.body.projects.forEach(project=>{
                 this.projects[project._id] = project;
             });
-            console.dir(this.projects);
+
             this.load();
         });
+    },
+
+    destroyed() {
+        console.log("disconnecting from ws");
+        this.ws.close();
     },
 
     computed: {
         //list of available datasets (staged, or generated)
         _datasets: function() {
+            if(!this.tasks) return [];
+
             var datasets = [];
             this.tasks.forEach(task=>{
                 if(task.status == "removed") return;
@@ -366,6 +363,7 @@ export default {
                         datatype: output.datatype,
                         datatype_tags: output.datatype_tags,
                         desc: output.desc,
+                        tags: output.tags||[],
                         meta: output.meta||{},
                         create_date: output.create_date,
                         subdir: output.subdir, //set if the dataset is stored under subdir of task_dir
@@ -378,10 +376,10 @@ export default {
     },
 
     watch: {
-        '$route': function() {
-            this.load(function(err) {
-                if(err) console.error(err);
-            });
+        'instance': function() {
+            console.log("instance updated");
+            document.getElementById("scrolled-area").scrollTop = 0;
+            this.load();
         },
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
@@ -404,24 +402,10 @@ export default {
             return found;
         },
 
-        changedesc: function() {
-            clearTimeout(debounce);
-            debounce = setTimeout(this.save_instance, 2000);        
-        },
-
-        save_instance: function() {
-            this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, this.instance).then(res=>{
-                this.$notify({
-                    title: 'Saved',
-                    message: 'Updated process detail',
-                    type: 'success',
-                });
-            });
-        },
-
         scrollto: function(id) {
             var elem = document.getElementById(id);
             var top = elem.offsetTop-30;
+            console.log("scrolling to ", id);
             document.getElementById("scrolled-area").scrollTop = top;
         },
 
@@ -429,29 +413,18 @@ export default {
             this.$router.push(path);
         },
 
-        remove_instance: function() {
-            this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
-                this.$router.push('/processes');
-            });
-        },
-
         view: function(taskid, view, subdir) {
-            view = view.replace('/', '.');
-            var path = "#/view/"+this.instance._id+"/"+taskid+'/'+view;
-            if(subdir) path += '/'+subdir;
-            window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
+            this.$emit('view', {instanceid: this.instance._id, taskid,view,subdir});
         },
 
         load() {
-            //load instance first
-            this.$http.get(Vue.config.wf_api+'/instance', {params: {
-                find: JSON.stringify({_id: this.$route.params.id}),
-            }})
-            .then(res=>{
-                this.instance = res.body.instances[0];
-
-                //load tasks
-                return this.$http.get(Vue.config.wf_api+'/task', {params: {
+            //(re)connect to websocket
+            if(this.ws) this.ws.close();
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+                console.log("connected to websocket ..loading tasks");
+                this.$http.get(Vue.config.wf_api+'/task', {params: {
                     find: JSON.stringify({
                         instance_id: this.instance._id,
                         status: {$ne: "removed"},
@@ -460,90 +433,92 @@ export default {
                     limit: 2000,
                     sort: 'create_date',
                 }})
-            })
-            .then(res=>{
-                this.tasks = res.body.tasks;
+                .then(res=>{
+                    this.tasks = res.body.tasks;
+                    this.update_apps();
 
-                //load datasets archived from this process
-                var task_ids = this.tasks.map(task=>task._id); 
-                return this.$http.get('dataset', {params: {
-                    find: JSON.stringify({
-                        "prov.instance_id": this.instance._id,
-                        removed: false,
-                    })
-                }})
-            })
-            .then(res=>{
-                this.archived = res.body.datasets;
+                    console.log("loading archived datasets for all tasks");
+                    var task_ids = this.tasks.map(task=>task._id); 
+                    return this.$http.get('dataset', {params: {
+                        find: JSON.stringify({
+                            "prov.instance_id": this.instance._id,
+                            removed: false,
+                        })
+                    }})
+                })
+                .then(res=>{
+                    this.archived = res.body.datasets;
 
-                //open input dialog if there are no datasets (new process?)
-                if(this._datasets.length == 0) {
-                    this.show_input_dialog = true;
-                }
+                    //open input dialog if there are no datasets (new process?)
+                    if(this._datasets.length == 0) {
+                        this.show_input_dialog = true;
+                    }
 
-                //subscribe to the instance events
-                var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-                var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
-                ws.onopen = (e)=>{
-                    console.log("websocket opened. binding things for", this.instance._id);
-                    ws.send(JSON.stringify({
+                    console.log("binding to websocket for all things", this.instance._id);
+                    this.ws.send(JSON.stringify({
                         bind: {
                             ex: "wf.task",
                             key: Vue.config.user.sub+"."+this.instance._id+".#",
                         }
                     }));
-                    ws.send(JSON.stringify({
+                    this.ws.send(JSON.stringify({
                         bind: {
                             ex: "wf.instance",
                             key: Vue.config.user.sub+"."+this.instance._id,
                         }
                     }));
-                }
-                  
-                ws.onmessage = (json)=>{
-                    var event = JSON.parse(json.data);
-                    if(event.error) {
-                        console.error(event.error);
-                        return;
-                    }
-                    var msg = event.msg;
-                    if(!msg || !msg._id) return; //odd..
-                    switch(event.dinfo.exchange) {
-                    case "wf.task":
-                        //look for the task to update
-                        //console.log("received task update", this.tasks);
-                        this.tasks.forEach(function(t) {
-                            if(t._id == msg._id) {
-                                for(var k in msg) t[k] = msg[k];
+                    this.ws.onmessage = (json)=>{
+                        var event = JSON.parse(json.data);
+                        if(event.error) {
+                            console.error(event.error);
+                            return;
+                        }
+                        var msg = event.msg;
+                        if(!msg || !msg._id) return; //odd..
+                        switch(event.dinfo.exchange) {
+                        case "wf.task":
+                            var t = this.tasks.find(t=>t._id == msg._id);
+                            if(!t) {
+                                //new task?
+                                this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
+                                this.tasks.push(msg); 
+                                this.update_apps();
+                                Vue.nextTick(()=>{
+                                    this.scrollto(msg._id);
+                                });
+                            } else {
+                                //update
+                                if(t.status != msg.status) this.$notify("t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg);
+                                for(var k in msg) {
+                                    t[k] = msg[k];
+                                }
                             }
-                        });
-                        break;
-                    case "wf.instance":
-                        this.instance = msg;    
-                        break;
-                    default:
-                        console.error("unknown exchange", event.dinfo.exchange);
+                            break;
+                        case "wf.instance":
+                            //TODO - shouldn't mutate prop
+                            this.instance.status = msg.status; 
+                            break;
+                        default:
+                            console.error("unknown exchange", event.dinfo.exchange);
+                        }
                     }
-                }
-            }).catch((err)=>{
-                console.error(err);
-            });
+                }).catch((err)=>{
+                    console.error(err);
+                });
+            } //websocket onopen
         },
-
-        close_newprocess: function(cb) {
-            this.newprocess = false;
-        },
-
         findarchived: function(task, output) {
             return this.archived.filter(dataset=>{
                 return (dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
             });
         },
 
-        start_newprocess: function() {
+        reset_newprocess: function() {
             this.newtask.app = null;
-            this.newprocess = true;
+            this.scrollto("newtaskdialog");
+        },
 
+        update_apps: function() {
             //create list of all datatypes that user has staged / generated
             var datatype_ids = [];
             this._datasets.forEach(dataset=>{
@@ -572,10 +547,6 @@ export default {
                     });
                     if(match) this.apps.push(app);
                 });
-                console.log("matching apps", this.apps);
-                Vue.nextTick(()=>{
-                    this.scrollto("newtaskdialog");
-                });
             }).catch(err=>{
                 console.error(err);
             });
@@ -584,16 +555,8 @@ export default {
         set_default: function(config) {
             for(var k in config) {
                 var v = config[k];
-                if(v.type) {
-                    //assume it's edge
-                    switch(v.type) {
-                    case "input":
-                        //don't do anything for input
-                        break;
-                    default:
-                        config[k] = v.default;//||"";        
-                    }
-                } else this.set_default(v); //recurse on primitive
+                if(!v.type) this.set_default(v); //primitive should recurse
+                else if(v.type != "input") Vue.set(config, k, v.default);
             }
         },
 
@@ -608,7 +571,7 @@ export default {
                 archive: {
                     enable: false,
                     project: null,
-                    tags: "",
+                    //tags: "",
                     desc: "",
                 },
 
@@ -618,10 +581,10 @@ export default {
             this.newtask.app.inputs.forEach(input=>{
                 var input_copy = Object.assign({dataset_idx: ''}, input);
                 Vue.set(this.newtask.inputs, input.id, input_copy);
-                
                 this.preselect_single_items(input, this.newtask);
             });
             this.validate(); //for preselect
+            this.scrollto("newtaskdialog");
         },
 
         validate: function(val) {
@@ -699,7 +662,7 @@ export default {
                     if(dataset.dataset_id == dataset_id) found = true;
                 });
                 if(found) {
-                    this.$notify.info({ title: 'Info', message: 'Dataset '+dataset_id+' is already staged. Skipping.' });
+                    this.$notify('Dataset(s) specified is already staged. Skipping.');
                     return;
                 }
 
@@ -719,16 +682,14 @@ export default {
             }
             this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: this.instance._id,
-                name: "Staging input dataset",
+                name: "Staging Input Dataset",
                 //desc: "Stage Input for "+task.name,
                 service: "soichih/sca-product-raw",
                 config: { download, _outputs, _tid: this.next_tid() },
             }).then(res=>{
                 console.log("submitted download", res.body.task);
                 var task = res.body.task;
-                this.tasks.push(task); 
-
-                if(this.newprocess) this.start_newprocess();
+                //this.tasks.push(task); 
             });
         },
 
@@ -785,7 +746,7 @@ export default {
                 if(this.newtask.archive.enable) output_req.archive = {
                     project: this.newtask.archive.project,
                     desc: this.newtask.archive.desc,
-                    tags: this.newtask.archive.tags,
+                    //tags: this.newtask.archive.tags, //deprecated - store this under output_req
                 }
                 _outputs.push(output_req);
             });
@@ -801,10 +762,10 @@ export default {
                 deps: this.newtask.deps,
                 retry: this.newtask.app.retry,
             }).then(res=>{
+                this.newtask.app = null;
                 var task = res.body.task;
-                console.log("submitted task", task);
-                this.tasks.push(task);
-                this.close_newprocess();
+                //this.tasks.push(task);
+                this.update_apps();
             });
         },
     },
@@ -814,36 +775,22 @@ export default {
 <style scoped>
 .main-section {
 position: fixed;
-padding: 20px;
-left: 90px;
-right: 375px;
-top: 125px;
+left: 390px;
+right: 300px;
+top: 110px;
 bottom: 0px;
 overflow: auto;
 }
-.fixed-top {
-background-color: #666;
-padding: 20px;
-padding-bottom: 5px;
-color: white;
-position: fixed;
-top: 50px;
-left: 90px;
-right: 0px;
-height: 50px;
-z-index: 1;
-border-bottom: 1px solid #666;
-}
 .sidebar {
-box-shadow: inset 3px 0px 3px #ccc;
 background-color: #ddd;
 padding-top: 20px;
 position: fixed;
-top: 125px;
+top: 110px;
 bottom: 0px;
-width: 375px;
+width: 300px;
 right: 0px;
 overflow: auto;
+font-size: 90%;
 }
 .sidebar h3 {
 color: #999;
@@ -851,17 +798,23 @@ padding-bottom: 10px;
 margin-bottom: 15px;
 border-bottom: 1px solid #ccc;
 }
-.process-output {
-padding: 10px 20px;
-background-color: #ccc;
-box-shadow: inset 0px 2px 2px #999;
-}
 .task-header {
 margin: 0px;
 padding: 15px;
 border: 1px solid rgb(230, 230, 230);
 border-bottom: none;
 background-color: #fff;
+}
+.task {
+box-shadow: 0px 2px 4px #999;
+margin: 0px;
+margin-bottom: 20px;
+}
+.task .task-desc {
+margin-top: 10px; 
+padding: 5px 10px; 
+font-size: 90%; 
+background-color: #e0e0e0;
 }
 .dataset {
 border-bottom: 1px solid #d5d5d5; 
@@ -893,12 +846,3 @@ ul.archived li {
 padding: 5px;
 }
 </style>
-
-<style>
-.sidebar .statusicon-failed {
-background-color: #c00;
-color: white;
-padding: 0px 5px;
-}
-</style>
-

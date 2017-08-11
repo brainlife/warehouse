@@ -34,5 +34,16 @@ import statusicon from '@/components/statusicon'
 export default {
     components: { statusicon },
     props: [ 'status', 'scale' ],
+    /*
+    mounted: function() {
+        if(!this.scale) this.scale = 0.4;
+    }
+    */
 }
 </script>
+
+<style>
+span.el-tag {
+border-radius: 0px;
+}
+</style>

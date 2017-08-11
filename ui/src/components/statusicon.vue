@@ -7,6 +7,7 @@
     <icon v-if="status == 'removed'" :scale="scale" name="trash"></icon>
     <icon v-if="status == 'stop_requested'" :scale="scale" name="hand-paper-o"></icon>
     <icon v-if="status == 'stopped'" :scale="scale" name="hand-paper-o"></icon>
+    <icon v-if="status == null" :scale="scale" name="question"></icon>
 </span>
 </template>
 

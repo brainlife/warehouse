@@ -125,30 +125,6 @@ export default {
         },
 
         submit: function() {
-            /*
-            try {
-                this.project.config = JSON.parse(this.app._config);     
-            } catch(err) {
-                this.$notify({ showClose: true, message: 'Failed to parse config template.', type: 'error' });
-                return;
-            }
-            console.log("submitting", this.app);
-            if(this.app._id !== '_') {
-                //update
-                this.$http.put('app/'+this.app._id, this.app)
-                .then(res=>{
-                    console.dir(res.body);
-                    this.$router.push("/app/"+this.app._id);
-                });
-            } else {
-                //new
-                this.$http.post('app', this.app)
-                .then(res=>{
-                    console.dir(res.body);
-                    this.$router.push("/app/"+res.body._id);
-                });
-            } 
-            */
             if(this.project._id) {
                 //update
                 this.$http.put('project/'+this.project._id, this.project).then(res=>{

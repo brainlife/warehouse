@@ -32,6 +32,7 @@ String.prototype.addSlashes = function() {
 */
 
 function canedit(user, rec) {
+    if(!rec.user_id) return false;
     if(user) {
         if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
         //if(~rec.admins.indexOf(user.sub.toString())) return true;
@@ -67,7 +68,7 @@ function getprojects(user, cb) {
  *
  * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
  * @apiParam {Object} [sort]    Mongo sort object - defaults to _id. Enter in string format like "-name%20desc"
- * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
+ * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter (default all)
  * @apiParam {Number} [limit]   Maximum number of records to return - defaults to 100
  * @apiParam {Number} [skip]    Record offset for pagination (default to 0)
  * @apiParam {String} [populate] Fields to populate - default to "project datatype"
@@ -81,11 +82,16 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     if(req.query.find) find = JSON.parse(req.query.find);
 
     var select = null;
+
+    /*
+    //I shouldn't mess with select, because user might set exclusion query llie "-prov" which conflicts with inclusion.
+    //I need to let user know that, to get _canedit set, they need to make sure user_id field is selected
     if(req.query.select) {
         select = req.query.select;
         //always load user_id so that we can compute canedit properly
         if(!~select.indexOf("user_id")) select+=" user_id";
     }
+    */
 
     getprojects(req.user, function(err, projects) {
         if(err) return next(err);
@@ -292,6 +298,44 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 	});
 });
 
+/**
+ * @apiGroup Dataset
+ * @api {put} /dataset/:id      Update Dataset
+ *                              
+ * @apiDescription              Update Dataset
+ *
+ * @apiParam {String} [desc]    Description for this dataset 
+ * @apiParam {String[]} [tags]  List of tags to classify this dataset
+ * * @apiParam {String[]} [meta]  Metadata for this dataset
+ *
+ * @apiParam {String[]} [admins]  List of admins (auth sub)
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ *
+ * @apiSuccess {Object}         Updated Dataset
+ */
+router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    var id = req.params.id;
+    db.Datasets.findById(id, (err, dataset)=>{
+        if(err) return next(err);
+        if(!dataset) return res.status(404).end();
+
+        if(canedit(req.user, dataset)) {
+            //types are checked by mongoose
+            if (req.body.desc) dataset.desc = req.body.desc;
+            if (req.body.tags) dataset.tags = req.body.tags;
+            if (req.body.meta) dataset.meta = req.body.meta;
+            dataset.save((err)=>{
+                if(err) return next(err);
+                dataset = JSON.parse(JSON.stringify(dataset));
+                dataset._canedit = canedit(req.user, dataset);
+                res.json(dataset);
+            });
+        } else return res.status(401).end("you are not administartor of this dataset");
+    });
+});
+
 //this API allows user to download any files under user's workflow directory
 //TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
 //doing so increases the chance of user misusing the token, but unless I use HTML5 File API
@@ -329,7 +373,7 @@ router.get('/download/:id', jwt({
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
             if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
-            logger.debug("user is accessing p", dataset.project);
+            //logger.debug("user is accessing project:", dataset.project.toString());
             logger.debug("user has access to", project_ids);
             if(!~project_ids.indexOf(dataset.project.toString())) {
                 return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
@@ -338,9 +382,9 @@ router.get('/download/:id', jwt({
             //open stream
             var system = config.storage_systems[dataset.storage];
             var stat_timer = setTimeout(function() {
-                logger.debug("stat timer called");
-                next("filesystem maybe offline today");
-            }, 1000*3);
+                logger.debug("timeout while calling stat on "+dataset.storage);
+                next("stat timeout - filesystem maybe offline today:"+dataset.storage);
+            }, 1000*15);
             system.stat(dataset, (err, stats)=>{
                 clearTimeout(stat_timer);
                 logger.debug(JSON.stringify(stats, null, 4));

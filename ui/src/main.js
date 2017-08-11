@@ -3,11 +3,8 @@
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
 import 'select2/dist/css/select2.css'
-
 import 'highlight.js/styles/default.css'
-//import 'vue2-animate/dist/vue2-animate.min.css'
 
-//import hljs from 'highlight.js'
 import VueHighlightJS from 'vue-highlightjs'
 Vue.use(VueHighlightJS)
 
@@ -25,6 +22,10 @@ import ElementUI from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
 Vue.use(ElementUI, {locale})
 
+//overridden element-ui ugly $notify..
+import Notifications from 'vue-notification'
+Vue.use(Notifications)
+
 //fontasome
 import 'vue-awesome/icons'
 import Icon from 'vue-awesome/components/Icon.vue'
@@ -34,8 +35,6 @@ import router from './router'
 
 Vue.use(require('vue-filter'))
 
-//lazy load
-//https://github.com/hilongjw/vue-lazyload
 import VueLazyload from 'vue-lazyload'
 Vue.use(VueLazyload)
 
@@ -75,8 +74,6 @@ var apihost_ws = "wss://"+process.env.HOSTNAME;
 
 switch(process.env.NODE_ENV) {
 case "development": 
-    //var apihost = "https://soichi7.ppa.iu.edu";
-    //var apihost_ws = "wss://soichi7.ppa.iu.edu";
     Vue.config.debug = true;
     break;
 case "production":

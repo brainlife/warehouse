@@ -6,10 +6,11 @@
             <el-tab-pane label="Selected Datasets" name="selected">
                 <p class="text-muted" v-if="Object.keys(selected).length == 0">Please go to <a href="#/datasets">Datasets</a> page to select datasets.</p>
                 <p class="text-muted" v-else>We will stage following datasets you have selected.</p>
-                <ul style="margin: 0px; padding: 0px; max-height: 200px; overflow: auto;">
+                <ul style="padding-left: 20px; max-height: 200px; overflow: auto; font-size: 90%;">
                     <li v-for="(select, did) in selected" :key="did" style="margin-bottom: 2px;">
                         <b>{{select.meta.subject}}</b>
                         <datatypetag :datatype="datatypes[select.datatype]" :tags="select.datatype_tags" v-if="datatypes"></datatypetag>
+                        <small v-for="(tag,idx) in select.tags" :key="idx">| {{tag}} </small>
                     </li>
                 </ul>
             </el-tab-pane>
@@ -91,9 +92,8 @@ export default {
     methods: {
         close: function() {
             this.$emit('update:visible', false);
-            console.log("resetting dataset");
 
-            //reset form
+            console.log("resetting datasetselecter");
             this.selected_subjects = [];
             this.selected_datatypes = [];
             this.datasets = [];
@@ -200,7 +200,7 @@ export default {
                         datatype: this.datatypes[dataset.datatype],
                         tags: dataset.datatype_tags
                     };
-                    
+
                     if (!this.datasets_groups[subject]) {
                         // first time
                         this.datasets_groups[subject] = true;
@@ -238,6 +238,7 @@ export default {
     watch: {
         visible: function(v) {
             this.visible_ = v;
+            
         },
         visible_: function(v) {
             this.$emit('update:visible', v);
