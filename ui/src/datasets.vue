@@ -70,22 +70,7 @@
                     </el-col> 
                 </el-row>
             </div><!--dataset list-->
-
         </div><!--page-content-->
-
-        <!--dataset detail view-->
-        <!--
-        <div class="dataset-view" :class="{'dataset-view-open':dataset_open}">
-            <div class="dataset-view-header" style="position: fixed;">
-                <el-button size="small" @click="download(dataset_open)" type="primary">Download</el-button>
-                <el-button size="small" @click="dataset_open = null" icon="close">Close</el-button>
-                
-            </div>
-            <div class="dataset-view-detail">
-                <datasetdetail :dataset="dataset_open"></datasetdetail>
-            </div>
-        </div>
-        -->
     </div><!--pusher-->
 
     <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
@@ -366,7 +351,8 @@ export default {
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
                     untar: "auto",
-                    dir: "download/"+dataset_id, 
+                    //dir: "download/"+dataset_id, 
+                    dir: dataset_id, 
                 });
             }
 
@@ -412,7 +398,7 @@ export default {
                     var subject = null;
                     if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
 
-                    var download_path = "../"+download_task._id+"/download/"+dataset_id;
+                    var download_path = "../"+download_task._id+"/"+dataset_id;
 
                     //TODO - figure out process name from dataset.prov
                     var process_name = "someprocess";
@@ -429,7 +415,6 @@ export default {
                             dest: "download/derivatives/"+process_name+"/"+subject+"/"+dataname+"/"+subject+"_"+(file.filename||file.dirname),
                         });
                     });
-
                 }
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: download_instance._id,
