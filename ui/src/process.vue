@@ -616,16 +616,8 @@ export default {
         set_default: function(config) {
             for(var k in config) {
                 var v = config[k];
-                if(v.type) {
-                    //assume it's edge
-                    switch(v.type) {
-                    case "input":
-                        //don't do anything for input
-                        break;
-                    default:
-                        config[k] = v.default;//||"";        
-                    }
-                } else this.set_default(v); //recurse on primitive
+                if(!v.type) this.set_default(v); //primitive should recurse
+                else if(v.type != "input") Vue.set(config, k, v.default);
             }
         },
 

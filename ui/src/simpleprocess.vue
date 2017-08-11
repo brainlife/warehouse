@@ -173,14 +173,9 @@ export default {
         return {
             tasks: null,
             app: null,
-
             ws: null, //websocket
-            
-            show_archive: false, //
-
-            //cache
+            show_archive: false, 
             datatypes: null,
-
             config: Vue.config,
         }
     },

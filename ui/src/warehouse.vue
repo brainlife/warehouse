@@ -118,24 +118,24 @@ margin-bottom: 6px;
 }
 
 table.info {
-    width: 100%;
-    font-size: 13px;
-    border-spacing: 1px;
+width: 100%;
+font-size: 13px;
+border-spacing: 1px;
 }
 table.info tr {
-    background-color: white;
+background-color: white;
 }
 table.info th {
-    color: #777; 
-    text-align: left;
-    vertical-align: top;
-    padding: 10px;
-    margin: 0px;
-    font-weight: 600;
+color: #777; 
+text-align: left;
+vertical-align: top;
+padding: 10px;
+margin: 0px;
+font-weight: 600;
 }
 table.info td {
-    padding: 10px;
-    line-height: 140%;
+padding: 10px;
+line-height: 140%;
 }
 .el-table__header-wrapper thead div {
 color: gray !important;
@@ -148,11 +148,16 @@ border-radius: 0px !important;
 margin-bottom: 10px !important;
 }
 .navigation {
-    color: #999;
-    margin-bottom: 15px;
+color: #999;
+margin-bottom: 15px;
 }
 time {
 opacity: 0.8;
+}
+
+/*not sure, but something is setting font-size to 12px..*/
+.el-dropdown__icon {
+font-size: 14px;
 }
 </style>
 

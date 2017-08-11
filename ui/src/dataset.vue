@@ -304,7 +304,9 @@ export default {
             alert("TODO..");
         },
         download: function() {
-            document.location = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
+            var url = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
+            document.location = url;
+            console.log(url);
         },
         remove: function() {
             this.$http.delete('dataset/'+this.dataset._id)

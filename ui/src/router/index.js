@@ -10,10 +10,6 @@ import download from '@/download'
 import view from '@/view'
 
 import processes from '@/processes'
-//import simpleprocess from '@/simpleprocess'
-//import process from '@/process'
-//import processarchive from '@/processarchive'
-//import process2 from '@/process2'
 
 import apps from '@/apps'
 import app from '@/app'
@@ -31,6 +27,8 @@ import datatypeedit from '@/datatypeedit'
 
 import settings from '@/settings'
 
+import test from '@/test'
+
 Vue.use(Router)
 
 export default new Router({
@@ -43,13 +41,6 @@ export default new Router({
         { path: '/download/:id', component: download},
         { path: '/processes/:id?', component: processes},
 
-        /*
-        { path: '/simpleprocess/:id', component: simpleprocess},
-        { path: '/process/:id', component: process},
-        { path: '/process/:id/archive', component: processarchive},
-        { path: '/process2/:id', component: process2},
-        */
-            
         { path: '/apps', component: apps },
         { path: '/app/:id', component: app },
         { path: '/app/:id/submit', component: appsubmit},
@@ -66,6 +57,8 @@ export default new Router({
         { path: '/datatype/:id/edit', component: datatypeedit },
 
         { path: '/settings', component: settings},
+
+        { path: '/test', component: test},
     ]
 })
 
