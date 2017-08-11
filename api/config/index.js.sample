@@ -79,11 +79,15 @@ exports.storage_systems.jetstream = {
         }); 
     },
     stat: (dataset, cb)=>{
-        var name = dataset.project.toString();
-        var filename = dataset._id;
-        if(dataset.storage_config && dataset.storage_config.version) filename += ".tar";
-        else filename += ".tar.gz"; //old ones were using .tar.gz
-        js_storage.getFile(name, filename, (err,_stats)=>{
+        var contname = dataset.project.toString();
+        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
+
+        if(dataset.storage_config && dataset.storage_config.filename) {
+            contname = dataset.storage_config.contname;
+            filename = dataset.storage_config.filename;
+        }
+
+        js_storage.getFile(contname, filename, (err,_stats)=>{
             if(err) return cb(err);
             cb(null, {
                 size: _stats.size,
@@ -92,32 +96,32 @@ exports.storage_systems.jetstream = {
         });
     },
     upload: (dataset, cb)=>{
+        var contname = dataset.project.toString();
+        var filename = dataset._id+'.tar';
+        console.log("uploading dataset", contname, filename);
+    
         //make sure container exists (if it exists, it's noop)
-        var name = dataset.project.toString();
-        //console.log("creating container", name);
         js_storage.createContainer({
-            name: name,
+            name: contname,
             metadata: {
-                //TODO..
-                //project_name:  
+                //TODO..project_name?
             },
         }, (err, container)=> {
             if(err) return cb(err);
-            console.log("uploading dataset", name, dataset._id+".tar");
-            dataset.storage_config = {
-                version: 2
-            }
-            var stream = js_storage.upload({container: name, remote: dataset._id+'.tar'});
+            dataset.storage_config = { contname, filename };
+            var stream = js_storage.upload({container, remote: filename});
             cb(null, stream);
         });
     },
     download: (dataset, cb)=>{
-        var name = dataset.project.toString();
-        var filename = dataset._id;
-        if(dataset.storage_config && dataset.storage_config.version) filename += ".tar";
-        else filename += ".tar.gz"; //old ones were using .tar.gz
-        var stream = js_storage.download({container: name, remote: filename});
-        console.log("downloading as", filename, dataset.storage_config);
+        var contname = dataset.project.toString();
+        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
+
+        if(dataset.storage_config && dataset.storage_config.filename) {
+            contname = dataset.storage_config.contname;
+            filename = dataset.storage_config.filename;
+        }
+        var stream = js_storage.download({container: contname, remote: filename});
         cb(null, stream, filename);
     },
 }
@@ -136,27 +140,24 @@ exports.storage_systems.dc2 = {
         }, 2000, 'failed to stat '+dc2_path)); 
     }, 
     stat: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project;
-        var filename = dataset._id;
-        if(dataset.storage_config && dataset.storage_config.version) filename += ".tar";
-        else filename += ".tar.gz"; //old ones were using .tar.gz
+        var dir = dc2_path+dataset.project.toString();
+        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
+        if(dataset.storage_config && dataset.storage_config.filename) filename = dataset.storage_config.filename;
         fs.stat(dir+"/"+filename, cb);
     },
     upload: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project;
-        dataset.storage_config = {
-            version: 2
-        }
+        var dir = dc2_path+dataset.project.toString();
+        var filename = dataset._id+".tar"; 
+        dataset.storage_config = { dir, filename }
         mkdirp(dir, (err)=>{
             if(err) return cb(err);
-            cb(null, fs.createWriteStream(dir+'/'+dataset._id+'.tar'));
+            cb(null, fs.createWriteStream(dir+'/'+filename));
         });
     },
     download: (dataset, cb)=>{
         var dir = dc2_path+dataset.project.toString();
-        var filename = dataset._id;
-        if(dataset.storage_config && dataset.storage_config.version) filename += ".tar";
-        else filename += ".tar.gz"; //old ones were using .tar.gz
+        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
+        if(dataset.storage_config && dataset.storage_config.filename) filename = dataset.storage_config.filename;
         var stream = fs.createReadStream(dir+"/"+filename);
         cb(null, stream, filename);
     },
@@ -184,6 +185,7 @@ exports.storage_systems["dcwan/hcp"] = {
         });
     },
     upload: (dataset, cb)=>{
+        //dataset.storage_config = { dir, filename }
         cb("no upload to dcwan/hcp");
     },
     download: (dataset, cb)=>{
