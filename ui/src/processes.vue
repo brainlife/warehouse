@@ -4,15 +4,17 @@
     <sidemenu active="/processes"></sidemenu>
 
     <div class="page-top" v-if="selected">
-        <el-button v-if="!selected.config.removing" style="float: right;" @click="remove()" icon="delete" title="Remove this process"/>
-        <statusicon :status="selected.status" :scale="2" style="float: left; opacity: 0.6;"/>
+        <div style="margin: 10px; float: right;">
+            <el-button v-if="!selected.config.removing" @click="remove()" icon="delete" title="Remove this process"/>
+        </div>
+        <statusicon :status="selected.status" :scale="2" style="width: 40px; text-align: center; float: left; margin: 10px;opacity: 0.6;"/>
         <!--<b class="text-muted" style="float: left; margin-top: 8px;">Description</b>-->
-        <div style="margin-left: 50px; margin-right: 100px;">
+        <div style="margin-left: 60px; margin-right: 100px;">
             <div v-if="editdesc">
-                <el-input type="textarea" placeholder="Process Description" style="position: relative; top: -6px;"
+                <el-input type="textarea" placeholder="Process Description" style="padding-top: 3px;"
                     @change="changedesc()" v-model="selected.desc" :rows="2"></el-input>
             </div>
-            <p v-else @click="editdesc = true" style="height: 100%;" class="clickable text-muted">{{selected.desc||'no description'}}</p>
+            <p v-else @click="editdesc = true" style="height: 100%;padding: 10px;" class="clickable text-muted">{{selected.desc||'no description'}}</p>
         </div>
     </div>
 
@@ -201,15 +203,14 @@ export default {
 
 <style scoped>
 .page-top {
-height: 40px;
-padding: 10px;
-box-shadow: 0px 1px 1px rgba(0,0,0,0.4);
+height: 60px;
+box-shadow: 0px 1px 1px rgba(0,0,0,0.2);
 position: fixed;
 top: 50px;
 right: 0px;
 left:390px;
 z-index: 1;
-background-color: #ccc;
+background-color: #eee;
 overflow: hidden;
 }
 .page-content {

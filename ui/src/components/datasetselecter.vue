@@ -6,10 +6,11 @@
             <el-tab-pane label="Selected Datasets" name="selected">
                 <p class="text-muted" v-if="Object.keys(selected).length == 0">Please go to <a href="#/datasets">Datasets</a> page to select datasets.</p>
                 <p class="text-muted" v-else>We will stage following datasets you have selected.</p>
-                <ul style="margin: 0px; padding: 0px; max-height: 200px; overflow: auto;">
+                <ul style="padding-left: 20px; max-height: 200px; overflow: auto; font-size: 90%;">
                     <li v-for="(select, did) in selected" :key="did" style="margin-bottom: 2px;">
                         <b>{{select.meta.subject}}</b>
                         <datatypetag :datatype="datatypes[select.datatype]" :tags="select.datatype_tags" v-if="datatypes"></datatypetag>
+                        <small v-for="(tag,idx) in select.tags" :key="idx">| {{tag}} </small>
                     </li>
                 </ul>
             </el-tab-pane>

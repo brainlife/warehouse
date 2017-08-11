@@ -57,7 +57,7 @@
                             <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                             <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
                             <mute>
-                                <small v-for="(tag,idx) in input.tags" :key="idx">| {{tag}}</small>
+                                <small v-for="(tag,idx) in input.tags" :key="idx">| {{tag}} </small>
                                 (d.{{input.did}})
                             </mute>
                             <mute v-if="findtask(input.task_id).status != 'finished'">
@@ -482,6 +482,7 @@ export default {
                                 //new task?
                                 this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
                                 this.tasks.push(msg); 
+                                this.update_apps();
                                 Vue.nextTick(()=>{
                                     this.scrollto(msg._id);
                                 });
@@ -555,7 +556,7 @@ export default {
             for(var k in config) {
                 var v = config[k];
                 if(!v.type) this.set_default(v); //primitive should recurse
-                else if(v.type != "input") config[k] = v.default||"";
+                else if(v.type != "input") Vue.set(config, k, v.default);
             }
         },
 
@@ -689,7 +690,6 @@ export default {
                 console.log("submitted download", res.body.task);
                 var task = res.body.task;
                 //this.tasks.push(task); 
-                this.update_apps();
             });
         },
 

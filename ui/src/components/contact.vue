@@ -58,7 +58,7 @@ export default {
 }
 </script>
 
-<style scope>
+<style scoped>
 .contact {
 display: inline-block;
 height: 22px;

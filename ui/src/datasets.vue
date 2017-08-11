@@ -444,7 +444,7 @@ export default {
                 },
             }).then(res=>{
                 var instance = res.body;
-                this.$router.push("/process2/"+instance._id);
+                this.$router.push("/processes/"+instance._id);
             });
         }
     },
@@ -549,7 +549,6 @@ export default {
     color: #999;
 }
 .list .group {
-    /*margin-bottom: 1px;*/
     font-size: 12px;
 }
 .list .group:not(:last-child) {
