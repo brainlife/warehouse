@@ -10,7 +10,7 @@ services:
   - mongodb
 
 script:
-  - ./test/install.sh && npm run cover
+  - npm run cover
 
 env:
 #  - TEST_USERNAME=test
