@@ -66,23 +66,24 @@ exports.storage_default = function() {
 }
 
 //
-//  jetstream
-//  //https://github.com/pkgcloud/pkgcloud/blob/master/examples/storage/rackspace.js
+// jetstream
+// //https://github.com/pkgcloud/pkgcloud/blob/master/examples/storage/rackspace.js
 //
 const js_config = require(__dirname+'/jetstream');
 const js_storage = pkgcloud.storage.createClient(js_config);
 exports.storage_systems.jetstream = {
-    //TODO..
     test: cb=>{
         js_storage.getContainers((err,containers)=>{
             if(err) return cb(err);
-            //console.dir(containers);
             cb();
         }); 
     },
     stat: (dataset, cb)=>{
         var name = dataset.project.toString();
-        js_storage.getFile(name, dataset._id+'.tar.gz', (err,_stats)=>{
+        var filename = dataset._id;
+        if(dataset.storage_config && dataset.storage_config.version) filename += ".tar";
+        else filename += ".tar.gz"; //old ones were using .tar.gz
+        js_storage.getFile(name, filename, (err,_stats)=>{
             if(err) return cb(err);
             cb(null, {
                 size: _stats.size,
@@ -93,7 +94,7 @@ exports.storage_systems.jetstream = {
     upload: (dataset, cb)=>{
         //make sure container exists (if it exists, it's noop)
         var name = dataset.project.toString();
-        console.log("creating container", name);
+        //console.log("creating container", name);
         js_storage.createContainer({
             name: name,
             metadata: {
@@ -102,39 +103,31 @@ exports.storage_systems.jetstream = {
             },
         }, (err, container)=> {
             if(err) return cb(err);
-            var stream = js_storage.upload({container: name, remote: dataset._id+'.tar.gz'});
+            console.log("uploading dataset", name, dataset._id+".tar");
+            dataset.storage_config = {
+                version: 2
+            }
+            var stream = js_storage.upload({container: name, remote: dataset._id+'.tar'});
             cb(null, stream);
         });
     },
     download: (dataset, cb)=>{
         var name = dataset.project.toString();
-        var stream = js_storage.download({container: name, remote: dataset._id+'.tar.gz'});
-        cb(null, stream);
+        var filename = dataset._id;
+        if(dataset.storage_config && dataset.storage_config.version) filename += ".tar";
+        else filename += ".tar.gz"; //old ones were using .tar.gz
+        var stream = js_storage.download({container: name, remote: filename});
+        console.log("downloading as", filename, dataset.storage_config);
+        cb(null, stream, filename);
     },
 }
 
 //
-//  dc2
+// dc2
 //
 const dc2_path = "/mnt/dc2/projects/brainlife/dev1-warehouse/datasets/";
 exports.storage_systems.dc2 = {
     //return archive_stream to pipe data to
-    upload: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project;
-        mkdirp(dir, (err)=>{
-            if(err) return cb(err);
-            cb(null, fs.createWriteStream(dir+'/'+dataset._id+'.tar.gz'));
-        });
-    },
-    stat: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project;
-        fs.stat(dir+'/'+dataset._id+'.tar.gz', cb);
-    },
-    download: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project;
-        var stream = fs.createReadStream(dir+'/'+dataset._id+'.tar.gz');
-        cb(null, stream);
-    },
     test: cb=>{
         fs.stat(dc2_path, timeout((err,stats)=>{
             if(err) return cb(err);
@@ -142,15 +135,45 @@ exports.storage_systems.dc2 = {
             cb();
         }, 2000, 'failed to stat '+dc2_path)); 
     }, 
+    stat: (dataset, cb)=>{
+        var dir = dc2_path+dataset.project;
+        var filename = dataset._id;
+        if(dataset.storage_config && dataset.storage_config.version) filename += ".tar";
+        else filename += ".tar.gz"; //old ones were using .tar.gz
+        fs.stat(dir+"/"+filename, cb);
+    },
+    upload: (dataset, cb)=>{
+        var dir = dc2_path+dataset.project;
+        dataset.storage_config = {
+            version: 2
+        }
+        mkdirp(dir, (err)=>{
+            if(err) return cb(err);
+            cb(null, fs.createWriteStream(dir+'/'+dataset._id+'.tar'));
+        });
+    },
+    download: (dataset, cb)=>{
+        var dir = dc2_path+dataset.project.toString();
+        var filename = dataset._id;
+        if(dataset.storage_config && dataset.storage_config.version) filename += ".tar";
+        else filename += ".tar.gz"; //old ones were using .tar.gz
+        var stream = fs.createReadStream(dir+"/"+filename);
+        cb(null, stream, filename);
+    },
 } 
 
-//dcwan/hcp (read only)
+//
+// dcwan/hcp (read only)
+//
 const dcwan_hcp_path = "/mnt/dcwan/projects/brainlife/hcp/";
 exports.storage_systems["dcwan/hcp"] = {
-    //return archive_stream to pipe data to
-    upload: (dataset, cb)=>{
-        cb("no upload to dcwan/hcp");
-    },
+    test: cb=>{
+        fs.stat(dcwan_hcp_path, timeout((err,stats)=>{
+            if(err) return cb(err);
+            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
+            cb();
+        }, 2000, 'failed to stat '+dcwan_hcp_path)); 
+    }, 
     stat: (dataset, cb)=>{
         //can't obtain stats for .tar.gz because we are creating it on the fly
         //but I can still check for the directory to exist and respond error
@@ -159,6 +182,9 @@ exports.storage_systems["dcwan/hcp"] = {
             //stats is for the directory.. so I can't return it
             cb(err, null); 
         });
+    },
+    upload: (dataset, cb)=>{
+        cb("no upload to dcwan/hcp");
     },
     download: (dataset, cb)=>{
         var dir = dcwan_hcp_path+dataset.storage_config.subdir;
@@ -171,13 +197,6 @@ exports.storage_systems["dcwan/hcp"] = {
             console.error(err);
         });
     },
-    test: cb=>{
-        fs.stat(dcwan_hcp_path, timeout((err,stats)=>{
-            if(err) return cb(err);
-            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
-            cb();
-        }, 2000, 'failed to stat '+dcwan_hcp_path)); 
-    }, 
 }
 
 exports.logger = {

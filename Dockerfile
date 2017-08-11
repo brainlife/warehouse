@@ -2,8 +2,7 @@ FROM node:6
 
 MAINTAINER Soichi Hayashi <hayashis@iu.edu>
 
-#for occasional debugging
-RUN apt-get update && apt install -y vim 
+RUN apt-get update && apt install -y vim
 
 RUN npm install http-server -g && \
     npm install pm2 -g && \

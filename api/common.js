@@ -91,8 +91,10 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 logger.debug("obtaining upload stream for ", storage);
                 system.upload(dataset, (err, writestream)=>{
                     if(err) return next(err);
-                    //gzip tmpdir, tar, and send to writestream
-                    var tar = child_process.spawn("tar", ["hcz", "."], {cwd: tmpdir});
+                    //tar tmpdir, zip, and send to writestream
+                    //var tar = child_process.spawn("tar", ["hcz", "."], {cwd: tmpdir});
+                    var tar = child_process.spawn("tar", ["hc", "."], {cwd: tmpdir});
+                    //var zip = child_process.spawn("pigz", ["-p", "5"]);
                     tar.on('close', code=>{
                         cleantmp();
                         if(code) {
@@ -106,6 +108,8 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         dataset.save(cb);
                     });
                     logger.debug("streaming to storage");
+                    //tar.stdout.pipe(zip.stdin);
+                    //zip.stdout.pipe(writestream);
                     tar.stdout.pipe(writestream);
                 });
             });
