@@ -1,0 +1,23 @@
+language: node_js
+
+node_js:
+  - 6.9.1
+
+install:
+  - npm install
+
+services: 
+  - mongodb
+
+script:
+  - ./test/install.sh && npm run cover
+
+env:
+#  - TEST_USERNAME=test
+#  - TEST_PASSWORD=testpass
+
+# Send coverage data to Coveralls
+after_script: "cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js"
+
+#notifications:
+#  slack: research-technologies:izdZdry8NEjrDmTjbHL5dCA8
