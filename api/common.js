@@ -14,8 +14,7 @@ const db = require('./models');
 
 exports.archive_task = function(task, dataset, files_override, auth, cb) {
     if(!files_override) files_override = {};
-
-    logger.debug(JSON.stringify(dataset, null, 4));
+    //logger.debug(JSON.stringify(dataset, null, 4));
    
     //start by pulling datatype detail
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
@@ -82,7 +81,9 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     cleantmp(); 
                     dataset.desc = "Failed to store all files under tmpdir";
                     dataset.status = "failed";
-                    return dataset.save(cb);
+                    return dataset.save(_err=>{
+                        cb(err);
+                    });
                 }
                 
                 //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
@@ -91,8 +92,10 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 logger.debug("obtaining upload stream for ", storage);
                 system.upload(dataset, (err, writestream)=>{
                     if(err) return next(err);
-                    //gzip tmpdir, tar, and send to writestream
-                    var tar = child_process.spawn("tar", ["hcz", "."], {cwd: tmpdir});
+                    //tar tmpdir, zip, and send to writestream
+                    //var tar = child_process.spawn("tar", ["hcz", "."], {cwd: tmpdir});
+                    var tar = child_process.spawn("tar", ["hc", "."], {cwd: tmpdir});
+                    //var zip = child_process.spawn("pigz", ["-p", "5"]);
                     tar.on('close', code=>{
                         cleantmp();
                         if(code) {
@@ -103,9 +106,13 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             dataset.status = "stored";
                         }
                         logger.debug("streaming finished with code:", code);
-                        dataset.save(cb);
+                        dataset.save(_err=>{
+                            cb(code);
+                        });
                     });
                     logger.debug("streaming to storage");
+                    //tar.stdout.pipe(zip.stdin);
+                    //zip.stdout.pipe(writestream);
                     tar.stdout.pipe(writestream);
                 });
             });
