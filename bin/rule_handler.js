@@ -73,7 +73,7 @@ function handle_rule(rule, cb) {
     var jwt = null;
     var subjects = null;
     var running = null; //number of currently running tasks for this rule
-    var tasks = null; //tasks submitted for this rule
+    var rule_tasks = null; //tasks submitted for this rule (grouped by subject name)
 
     if(!rule.input_tags) rule.input_tags = {};
     if(!rule.output_tags) rule.output_tags = {};
@@ -97,7 +97,7 @@ function handle_rule(rule, cb) {
             });
         },
 
-        //get tasks submitted for this rule
+        //get all tasks submitted for this rule
         next=>{
             var limit = 5000;
             request.get({
@@ -106,6 +106,7 @@ function handle_rule(rule, cb) {
                 qs: {
                     find: JSON.stringify({
                         "config._rule.id": rule._id,
+                        "config._app": {$exists: true}, //don't want staging task
                         status: {$ne: "removed"},
                     }),
                     select: 'status config._rule.subject',
@@ -113,13 +114,14 @@ function handle_rule(rule, cb) {
                 },
             }, (err, res, body)=>{
                 if(err) return next(err);
-                tasks = {};
+                rule_tasks = {};
                 running = 0;
                 body.tasks.forEach(task=>{
                     if(task.status == "running" || task.status == "requested") running++;
-                    tasks[task.config._rule.subject] = task;
+                    rule_tasks[task.config._rule.subject] = task;
                 });
 
+                logger.debug(body.tasks.length+" tasks submitted for this rule");
                 if(body.tasks.length == limit) {
                     return next("too many tasks submitted for this rule");
                 }
@@ -131,10 +133,10 @@ function handle_rule(rule, cb) {
 
         //enumerate all subjects under rule's project
         next=>{
-            logger.debug("enum subjects");
+            //logger.debug("enum subjects");
             db.Datasets.find({
                 project: rule.input_project._id,
-                storage: { $exists: true },
+                //storage: { $exists: true },
                 removed: false,
             })
             .distinct("meta.subject", (err, _subjects)=>{
@@ -161,12 +163,12 @@ function handle_rule(rule, cb) {
         }
 
         if(rule.subject_match && !subject.match(rule.subject_match)) {
-            //logger.info("subject", subject, "doesn't match", rule.subject_match);
+            //logger.debug("subject", subject, "doesn't match", rule.subject_match);
             return next_subject();
         }
 
-        if(tasks[subject]) {
-            logger.info("task already submitted for subject:", subject, tasks[subject]._id);
+        if(rule_tasks[subject]) {
+            logger.debug("task already submitted for subject:", subject, rule_tasks[subject]._id, rule_tasks[subject].status);
             return next_subject();
         }
 
@@ -189,7 +191,7 @@ function handle_rule(rule, cb) {
             .exec((err, dataset)=>{
                 if(err) return next_output(err);
                 if(!dataset) {
-                    //logger.debug("found missing output datasest ", JSON.stringify(query, null, 4));
+                    //logger.debug("dataset missing ", JSON.stringify(query, null, 4));
                     missing = true;
                 }
                 next_output();
@@ -242,13 +244,6 @@ function handle_rule(rule, cb) {
             .exec((err, datasets)=>{
                 if(err) return next_input(err);
 
-                /*
-                if(!dataset) {
-                    logger.debug("input missing", input.id);//, JSON.stringify(query, null, 4));
-                    missing = true;
-                    return next_input();
-                }
-                */
                 //find first dataset that matches all tags
                 var matching_dataset = null;
                 datasets.forEach(dataset=>{
@@ -265,16 +260,10 @@ function handle_rule(rule, cb) {
                     if(match) matching_dataset = dataset;
                 });
 
-                /*
-                if(!match) {
-                    logger.debug("tag mismatch", input.id);
-                    missing = true;
-                    return next_input();
-                }
-                */
                 if(!matching_dataset) {
                     missing = true;
                     logger.debug("no matching input", input.id);
+                    //logger.debug(JSON.stringify(query, null, 4));
                 } 
 
                 inputs[input.id] = matching_dataset;
@@ -357,16 +346,20 @@ function handle_rule(rule, cb) {
                     qs: {
                         find: JSON.stringify({
                             "instance_id": instance._id,
+                            //need to include removed ones for correrct tid
                         }),
-                        limit: 1, //I am interested in just count
                     },
                 }, (err, res, body)=>{
                     if(err) return next(err);
                     next_tid = body.count;
+                    body.tasks.forEach(task=>{
+                        tasks[task._id] = task;
+                    });
                     next();
                 });
             },
 
+            /*
             //load current task statuses of all input datasets
             next=>{
                 //get tasks IDs that I care about
@@ -391,6 +384,7 @@ function handle_rule(rule, cb) {
                     next();
                 });
             },
+            */
             
             //submit input staging task for datasets that aren't staged yet
             next=>{
@@ -400,24 +394,55 @@ function handle_rule(rule, cb) {
                 for(var input_id in inputs) {
                     var input = inputs[input_id];
                     input.input_id = input_id;
-                    var task = null;
-                    if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
-                
-                    //I should be able to use task from other instance if I update process_input_config
-                    //but for now, let's just use dataset from the same process
-                    //so that UI will make more sense (won't show data from other instance)
-                    if(task && task.status == 'finished' && task.instance_id == instance._id) {
-                        //we still have the datasets staged (most likely from this process) use it..
-                        deps.push(task._id);
-                        _app_inputs.push(Object.assign({}, input, {
-                            datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                            did: did++,
-                            //dataset_id: input._id,
-                            task_id: task._id,
-                            prov: null, //remove dataset prov
-                        }));
-                    } else {
-                        //we don't have it.. need to stage from warehouse
+
+                    function canuse_source() {
+                        var task = null;
+                        if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
+                        if(task && task.status != 'removed'/* && task.instance_id == instance._id*/) {
+                            logger.debug("found the task generated the input dataset");
+                            //we still have the datasets staged (most likely from this process) use it..
+                            deps.push(task._id); 
+                            _app_inputs.push(Object.assign({}, input, {
+                                datatype: input.datatype._id, //unpopulate datatype to keep it clean
+                                did: did++,
+                                task_id: task._id,
+                                prov: null, //remove dataset prov
+                            }));
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    function canuse_staged() {
+                        //see if there are input task that has the dataset already staged
+                        var task = null;
+                        var output = null;
+                        //logger.debug("looking for sca-product-raw tasks", tasks);
+                        for(var task_id in tasks) {
+                            task = tasks[task_id];
+                            if(task.service == "soichih/sca-product-raw" && task.status != 'removed') {
+                                //logger.debug("checking for already staged output", task.config._outputs);
+                                output = task.config._outputs.find(o=>o._id == input._id);
+                            }
+                        }
+                        if(output) {
+                            logger.debug("found the input dataset already staged previously");
+                            deps.push(task._id); 
+                            _app_inputs.push(Object.assign({}, input, {
+                                datatype: input.datatype._id, //unpopulate datatype to keep it clean
+                                did: did++,
+                                task_id: task._id,
+                                subdir: output.subdir, 
+                                prov: null, //remove dataset prov
+                            }));
+                            return true;
+                        }
+                        return false;
+                    }
+                    
+                    if(!canuse_source() && !canuse_staged()) {
+                        //we don't have it.. we need to stage from warehouse
+                        logger.debug("couldn't find staged dataset.. need to load from warehouse");
                         downloads.push({
                             url: config.warehouse.api+"/dataset/download/"+input._id+"?at="+jwt,
                             untar: "auto",
@@ -450,6 +475,10 @@ function handle_rule(rule, cb) {
 
                         config: {
                             download: downloads,
+                            _rule: {
+                                id: rule._id,
+                                subject,
+                            },
                             _outputs,
                             _tid: next_tid++,
                         },

@@ -399,7 +399,7 @@ router.get('/download/:id', jwt({
                     //logger.debug("mimetype:"+mimetype);
 
                     //why is this necessary?
-                    if(!filename) filename = dataset._id+'.tar.gz';
+                    //if(!filename) filename = dataset._id+'.tar';
 
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+filename);
