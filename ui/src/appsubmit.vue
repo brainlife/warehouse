@@ -196,14 +196,15 @@ export default {
             if (!params.page) params.page = 1;
             var dropdown_items = [];
             
-            let limit = 50, skip = (params.page - 1) * limit,
-                
-                find_raw = {
-                    project: this.form.projects[input.id],
-                    datatype: input.datatype._id,
-                    storage: {$exists: true}, 
-                    removed: false
-                };
+            let limit = 100;
+            let skip = (params.page - 1) * limit;
+            let find_raw = {
+                project: this.form.projects[input.id],
+                datatype: input.datatype._id,
+                storage: {$exists: true}, 
+                removed: false
+            };
+
             if (params.term) find_raw.$text = { $search: params.term };
             
             this.$http.get('dataset', { params: {
@@ -214,10 +215,12 @@ export default {
                 skip
             }})
             .then(res => {
-                res.body.datasets.forEach(dataset => {
-                    var subject = "(non-existing)";
+                let filtered_datasets = lib.filter_datasets(res.body.datasets, input);
+                //console.log("filtered", res.body.datasets, filtered_datasets);
+                filtered_datasets.forEach(dataset => {
+                    var subject = "N/A";
                     if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
-                    
+
                     // add dropdown menu item
                     dropdown_items.push({
                         id: dataset._id,
@@ -227,6 +230,12 @@ export default {
                         tags: dataset.datatype_tags
                     });
                 });
+
+                //if all items are filtered out by filter_datasets, we endup *adding* an empty array to select2 for this page
+                //and select2 gets confused..
+                if(dropdown_items.length == 0) {
+                    alert("items are filterded out - select2 paging will break");
+                }
                 
                 // let select2 know that we're done retrieving items
                 cb({

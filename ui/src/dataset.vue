@@ -53,11 +53,14 @@
                 <span v-if="dataset.status == 'stored'">
                     This dataset is currently stored in <b>{{dataset.storage}}</b>
                 </span> 
-                <span v-if="dataset.status == 'failed'">
-                    <icon name="exclamation"/> Failed to store on warehouse
+                <span v-if="dataset.status == 'failed'" style="color: red;">
+                    <icon name="exclamation-triangle"/> Failed to store on warehouse
                 </span> 
                 <span v-if="dataset.status == 'archived'">
                     This dataset is currently stored in <b>{{dataset.storage}}</b> and archived in the permanent tape backup.
+                </span> 
+                <span v-if="!dataset.status">
+                    Status is unknown
                 </span> 
             </td>
         </tr>
@@ -185,9 +188,11 @@
             <td>
                 <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
-                <div v-for="app in apps" key="app._id" class="card">
+                <el-row>
+                <el-col :span="8" v-for="app in apps" :key="app._id" style="margin-bottom: 3px">
                     <app :app="app" :dataset="dataset" :compact="true"></app>
-                </div>
+                </el-col>
+                </el-row>
             </td>
         </tr>
         <tr>

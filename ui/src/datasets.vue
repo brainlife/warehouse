@@ -25,11 +25,10 @@
                 <el-col :span="21">
                     <el-row>
                         <el-col :span="1">&nbsp;</el-col>
-                        <el-col :span="3"><h4>Storage</h4></el-col>
                         <el-col :span="5"><h4>Datatype</h4></el-col>
-                        <el-col :span="6"><h4>Description</h4></el-col>
+                        <el-col :span="8"><h4>Description</h4></el-col>
                         <el-col :span="5"><h4>Create&nbsp;Date</h4></el-col>
-                        <el-col :span="4"><h4>Tags</h4></el-col>
+                        <el-col :span="5"><h4>Tags</h4></el-col>
                     </el-row> 
                 </el-col>
             </el-row>
@@ -54,22 +53,20 @@
                                         <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                     </div>
                                 </el-col>
-                                <el-col :span="3">
-                                    {{dataset.storage}}
-                                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true"/>
-                                    <icon v-if="dataset.status == 'failed'" name="exclamation"/>
-                                    <icon v-if="dataset.status == 'archived'" name="archive"/>
-                                </el-col>
                                 <el-col :span="5" :title="datatypes[dataset.datatype].desc">
                                     <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+                                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;"/>
+                                    <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;"/>
+                                    <icon v-if="dataset.status == 'archived'" name="archive"/>
+                                    <icon v-if="!dataset.status" name="question-circle" style="color: olive;"/>
                                 </el-col>
-                                <el-col :span="6">
+                                <el-col :span="8">
                                     {{dataset.desc||'&nbsp;'}}
                                 </el-col>
                                 <el-col :span="5">
                                     <time>{{dataset.create_date | date}}</time>
                                 </el-col>
-                                <el-col :span="4" style="border-right: 1px solid #red;">
+                                <el-col :span="5">
                                     <tags :tags="dataset.tags"></tags> &nbsp;
                                 </el-col>
                             </el-row>
