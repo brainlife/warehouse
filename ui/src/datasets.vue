@@ -46,7 +46,7 @@
                     <el-col :span="21">
                         <div 
                         v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)"
-                        :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}">
+                        :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}" v-if="Math.abs(page - dataset.page) <= 2">
                             <el-row>
                                 <el-col :span="1">
                                     <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
@@ -145,6 +145,7 @@ export default {
             query: localStorage.getItem('datasets.query'),
 
             loading: false,
+            page: 1,
 
             //cache
             datatypes: null,
@@ -226,7 +227,7 @@ export default {
             this.datasets_count = null;
             this.load();
         },
-
+        
         check_project_id: function() {
             this.project_id = this.$route.params.projectid;
             if(!this.project_id) {
@@ -242,9 +243,12 @@ export default {
         },
 
 		check_scroll: function(e) {
-			var page_margin = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
-            if (page_margin < 500) this.load();
-		},
+            var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;/*,
+                page_margin_top = e.target.scrollHeight;*/
+            
+            if (page_margin_bottom < 500) this.load();
+            // else if (page_margin_top < 500) this.prevPage();
+        },
 
         change_query_debounce: function() {
             clearTimeout(debounce);
@@ -267,7 +271,6 @@ export default {
                 this.loading = false;
                 return;
             }
-            console.log("loading dataset");
             this.loading = true;
 
 			var find = {
@@ -280,19 +283,22 @@ export default {
             if(this.query) {
                 find.$text = {$search: this.query};
             }
-
+            
+            var limit = 6;
+            this.page = (this.datasets.length - this.datasets.length % 6) / 6 + 1;
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
                 skip: this.datasets.length,
-                limit: 50,
+                limit,
                 select: '-prov',
                 sort: 'meta.subject -create_date'
             }})
             .then(res=>{
                 this.datasets_count = res.body.count;
-
+                
                 //set checked flag for each dataset
 				res.body.datasets.forEach(dataset=>{
+                    dataset.page = this.page - 1;
 					this.datasets.push(dataset);
                     if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
                 });
