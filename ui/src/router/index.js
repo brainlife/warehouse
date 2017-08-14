@@ -15,7 +15,6 @@ import apps from '@/apps'
 import app from '@/app'
 import appedit from '@/appedit'
 import appsubmit from '@/appsubmit'
-import submit from '@/submit'
 
 import projects from '@/projects'
 import project from '@/project'
@@ -45,7 +44,6 @@ export default new Router({
         { path: '/app/:id', component: app },
         { path: '/app/:id/submit', component: appsubmit},
         { path: '/app/:id/edit', component: appedit},
-        { path: '/submit', component: submit},
         { path: '/view/:instanceid/:taskid/:type/:subdir?', component: view, props: true},
 
         { path: '/projects', component: projects },
