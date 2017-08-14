@@ -8,30 +8,17 @@
             <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</el-button>
             <el-button type="primary" v-if="preferred_resource && !preferred_resource.nomatch" @click="go('/app/'+app._id+'/submit')"icon="caret-right">Submit</el-button>
         </el-button-group>
-        <appavatar :app="app" style="float: left; margin-right: 20px; margin-top: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
-        <br>
-        <br>
+        <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
         <h1>{{app.name}}</h1>
     </div>
-    <div class="page-content" v-if="app" style="margin-top: 75px; padding-top: 30px;">
+    <div class="page-content" v-if="app" style="margin-top: 80px;">
         <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
+            <br>
             <p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>
             <p style="line-height: 150%;">{{app.desc}}</p>
         </div>
 
         <table class="info">
-        <!--
-        <tr>
-            <th width="180px;">Description</th>
-            <td>{{app.desc}}</td>
-        </tr>
-        -->
-        <!--
-        <tr v-if="app.avatar">
-            <th>Avatar</th>
-            <td>{{app.avatar}}</td>
-        </tr>
-        -->
         <tr v-if="service_stats">
             <th width="175px">Stats</th>
             <td>
@@ -278,16 +265,12 @@ export default {
 .ui.text.menu {
 margin: 0;
 }
-.dataset:hover {
-cursor: pointer;
-background-color: #ddd;
-}
 .header {
 background: #666;
 padding: 20px;
-padding-bottom: 30px;
-margin-top: 42px;
+margin-top: 50px;
 height: 40px;
+top: 0px;
 position: fixed;
 right: 0px;
 left: 90px;

@@ -85,8 +85,7 @@
                         <el-col :span="14" v-if="input.datatype">
                             <el-button @click="app.inputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
                             Datatype Tags<br>
-                            <select2 :options="datatypes[input.datatype]._tags" 
-                                v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
+                            <select2 :options="datatypes[input.datatype]._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
                         </el-col>
                         </el-row>
                     </el-card>
@@ -204,6 +203,9 @@ export default {
                 type._tags = [];
             });
 
+            //console.log("datatypes");
+            //console.dir(this.datatypes);
+
             //load datatype_tags from all apps
             this.$http.get('app', {params: {
                 select: 'inputs outputs',
@@ -220,12 +222,14 @@ export default {
                         input.datatype_tags.forEach(tag=>{
                             addtag(input.datatype, tag); 
                         });
+                        //console.log("input" ,input.datatype, this.datatypes[input.datatype]);
                     });
                     app.outputs.forEach(output=>{
                         if(!output.datatype_tags) return;
                         output.datatype_tags.forEach(tag=>{
                             addtag(output.datatype, tag); 
                         });
+                        //console.log("output" ,output.datatype, this.datatypes[output.datatype]);
                     });
                 });
 

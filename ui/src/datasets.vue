@@ -38,6 +38,7 @@
             <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <!--start of dataset list-->
+<<<<<<< HEAD
             <div class="list" ref="list">
                 <v-infinite-scroll :loading="loading" @top="previousPage" @bottom="nextPage" :offset="20" style="max-height:80vh; overflow: auto;">
                     <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
@@ -75,6 +76,43 @@
                         </el-col> 
                     </el-row>
                 </v-infinite-scroll>
+=======
+            <div class="list">
+                <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
+                    <el-col :span="3">
+                        <strong>{{subject}}</strong>
+                    </el-col> 
+                    <el-col :span="21">
+                        <div 
+                        v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)"
+                        :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}" v-if="Math.abs(page - dataset.page) <= 2">
+                            <el-row>
+                                <el-col :span="1">
+                                    <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
+                                        <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
+                                    </div>
+                                </el-col>
+                                <el-col :span="5" :title="datatypes[dataset.datatype].desc">
+                                    <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+                                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;"/>
+                                    <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;"/>
+                                    <icon v-if="dataset.status == 'archived'" name="archive"/>
+                                    <icon v-if="!dataset.status" name="question-circle" style="color: olive;"/>
+                                </el-col>
+                                <el-col :span="8">
+                                    {{dataset.desc||'&nbsp;'}}
+                                </el-col>
+                                <el-col :span="5">
+                                    <time>{{dataset.create_date | date}}</time>
+                                </el-col>
+                                <el-col :span="5">
+                                    <tags :tags="dataset.tags"></tags> &nbsp;
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </el-col> 
+                </el-row>
+>>>>>>> 8b39dc7b93aed018da62fc290740edbdca3a7169
             </div><!--dataset list-->
         </div><!--page-content-->
     </div><!--pusher-->
@@ -232,6 +270,7 @@ export default {
             this.load();
         },
         
+<<<<<<< HEAD
         previousPage: function() {
             console.log("getting prev page");
             if (this.page == 1) return;
@@ -245,6 +284,8 @@ export default {
             this.load();
         },
 
+=======
+>>>>>>> 8b39dc7b93aed018da62fc290740edbdca3a7169
         check_project_id: function() {
             this.project_id = this.$route.params.projectid;
             if(!this.project_id) {
@@ -258,9 +299,19 @@ export default {
                 localStorage.setItem("last_projectid_used", this.project_id);
             }
         },
+<<<<<<< HEAD
         
         above_viewport: function(a, b, c) {
             console.log(a, b, c);
+=======
+
+		check_scroll: function(e) {
+            var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;/*,
+                page_margin_top = e.target.scrollHeight;*/
+            
+            if (page_margin_bottom < 500) this.load();
+            // else if (page_margin_top < 500) this.prevPage();
+>>>>>>> 8b39dc7b93aed018da62fc290740edbdca3a7169
         },
 
         change_query_debounce: function() {
@@ -284,7 +335,6 @@ export default {
                 this.loading = false;
                 return;
             }
-            console.log("loading dataset");
             this.loading = true;
 
 			var find = {
@@ -299,18 +349,26 @@ export default {
             }
             
             var limit = 6;
+<<<<<<< HEAD
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
                 skip: (this.page - 1) * limit,
+=======
+            this.page = (this.datasets.length - this.datasets.length % 6) / 6 + 1;
+            this.$http.get('dataset', {params: {
+                find: JSON.stringify(find),
+                skip: this.datasets.length,
+>>>>>>> 8b39dc7b93aed018da62fc290740edbdca3a7169
                 limit,
                 select: '-prov',
                 sort: 'meta.subject -create_date'
             }})
             .then(res=>{
                 this.datasets_count = res.body.count;
-
+                
                 //set checked flag for each dataset
 				res.body.datasets.forEach(dataset=>{
+                    dataset.page = this.page - 1;
 					this.datasets.push(dataset);
                     if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
                 });

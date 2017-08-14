@@ -211,13 +211,15 @@ export default {
                 find: JSON.stringify(find_raw),
                 sort: "project meta.subject -create_date",
                 populate: "datatype",
+                datatype_tags: input.datatype_tags,
                 limit,
                 skip
             }})
             .then(res => {
-                let filtered_datasets = lib.filter_datasets(res.body.datasets, input);
+                //let filtered_datasets = lib.filter_datasets(res.body.datasets, input);
                 //console.log("filtered", res.body.datasets, filtered_datasets);
-                filtered_datasets.forEach(dataset => {
+                //filtered_datasets.forEach(dataset => {
+                res.body.datasets.forEach(dataset => {
                     var subject = "N/A";
                     if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
 

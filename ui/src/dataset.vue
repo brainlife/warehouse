@@ -1,25 +1,24 @@
 <template>
-<div>
+<div v-if="dataset">
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
-    <div class="page-content" v-if="dataset">
-        <div style="padding: 20px 20px 10px 20px; background-color: #666; color: white;">
-            <div style="float: right">
-                <el-button-group>
-                    <el-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</el-button>
-
-                    <el-button type="primary" @click="download()" v-if="dataset.storage" icon="document">Download</el-button>
-                </el-button-group>
-                <viewerselect @select="view" :datatype="dataset.datatype.name"></viewerselect>
+    <div class="header" vi-if="dataset">
+        <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
+        <el-button-group style="float: right;">
+            <el-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</el-button>
+            <el-button type="primary" @click="download()" v-if="dataset.storage" icon="document">Download</el-button>
+        </el-button-group>
+        <h1>
+            <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3)">
+                <div v-if="dataset.meta" style="display: inline-block; padding: 5px 10px; background-color: #fff; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </div>
-
-            <h1>
-                <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3)">
-                    <div v-if="dataset.meta" style="display: inline-block; padding: 5px 10px; background-color: #fff; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
-                </div>
-            </h1>
+        </h1>
+    </div>
+    <div class="page-content" v-if="dataset" style="margin-top: 80px;">
+        <!--
+        <div style="padding: 20px 20px 10px 20px; background-color: #666; color: white;">
         </div>
-
+        -->
         <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
         <tr>
@@ -455,6 +454,20 @@ border: 3px solid white;
 .dataset:hover {
     cursor: pointer;
     background-color: #ddd;
+}
+.header {
+background: #666;
+padding: 20px;
+padding-bottom: 20px;
+margin-top: 50px;
+height: 40px;
+position: fixed;
+top: 0px;
+right: 0px;
+left: 90px;
+color: #666;
+z-index: 1;
+border-bottom: 1px solid #666;
 }
 .card {
     width: 325px; 

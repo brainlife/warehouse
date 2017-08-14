@@ -98,9 +98,8 @@ export default {
 
         open_novnc() {
             this.get_instance_singleton("novnc").then((instance)=>{
-                console.log("using instance", instance);
+                //console.log("using instance", instance);
                 var task_name = "brainlife.novnc";
-                //var hourago = new Date(Date.now() - 3600*1000); //1hour ago
                 //look for novnc task running for specified instance/task
                 this.$http.get(Vue.config.wf_api+'/task', {params: {
                     find: JSON.stringify({

@@ -1,25 +1,23 @@
 <template>
 <div v-if="instance">
     <div class="sidebar">
-        <div style="margin: 0px 10px;">
-            <el-button type="primary" size="small" style="float: right; position: relative; top: -8px;"
-                :class="{animated: true, headShake: _datasets.length == 0}" 
-                @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
-            <h3>Datasets</h3>
-            <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)">
-                <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
-                <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
-                <b v-else class="text-muted">(no subject)</b>
-                <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                <small v-for="(tag,idx) in dataset.tags" :key="idx">| {{tag}}</small>
-                <mute>(d.{{dataset.did}})</mute> 
-                <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
-                <mute>
-                    <small v-if="dataset.task.status != 'finished'">
-                        <statusicon :status="dataset.task.status"></statusicon> 
-                    </small>
-                </mute>
-            </div>
+        <el-button type="primary" size="small" style="float: right; margin: 5px;"
+            :class="{animated: true, headShake: _datasets.length == 0}" 
+            @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
+        <h3>Datasets</h3>
+        <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)">
+            <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
+            <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
+            <b v-else class="text-muted">(no subject)</b>
+            <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+            <small v-for="(tag,idx) in dataset.tags" :key="idx">| {{tag}}</small>
+            <mute>(d.{{dataset.did}})</mute> 
+            <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
+            <mute>
+                <small v-if="dataset.task.status != 'finished'">
+                    <statusicon :status="dataset.task.status"></statusicon> 
+                </small>
+            </mute>
         </div>
     </div>
 
@@ -789,7 +787,6 @@ overflow: auto;
 }
 .sidebar {
 background-color: #ddd;
-padding-top: 20px;
 position: fixed;
 top: 110px;
 bottom: 0px;
@@ -800,9 +797,8 @@ font-size: 90%;
 }
 .sidebar h3 {
 color: #999;
-padding-bottom: 10px;
-margin-bottom: 15px;
-border-bottom: 1px solid #ccc;
+padding: 10px;
+margin: 0px;
 }
 .task-header {
 margin: 0px;
