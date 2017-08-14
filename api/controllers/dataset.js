@@ -69,6 +69,8 @@ function getprojects(user, cb) {
  * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
  * @apiParam {Object} [sort]    Mongo sort object - defaults to _id. Enter in string format like "-name%20desc"
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter (default all)
+ * @apiParam {String[]} [datatype_tags]  
+ *                              List of datatype tags to filter (you can use exlusion tags also)
  * @apiParam {Number} [limit]   Maximum number of records to return - defaults to 100
  * @apiParam {Number} [skip]    Record offset for pagination (default to 0)
  * @apiParam {String} [populate] Fields to populate - default to "project datatype"
@@ -78,47 +80,41 @@ function getprojects(user, cb) {
  * @apiSuccess {Object}         List of datasets (maybe limited / skipped) and total count
  */
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
-    var find = {};
-    if(req.query.find) find = JSON.parse(req.query.find);
-
-    var select = null;
-
-    /*
-    //I shouldn't mess with select, because user might set exclusion query llie "-prov" which conflicts with inclusion.
-    //I need to let user know that, to get _canedit set, they need to make sure user_id field is selected
-    if(req.query.select) {
-        select = req.query.select;
-        //always load user_id so that we can compute canedit properly
-        if(!~select.indexOf("user_id")) select+=" user_id";
+    var ands = [];
+    if(req.query.find) ands.push(JSON.parse(req.query.find));
+    if(req.query.datatype_tags) {
+        req.query.datatype_tags.forEach(tag=>{ 
+            if(tag[0] == "!") {
+                ands.push({datatype_tags: {$ne: tag.substring(1)}});
+            } else {
+                ands.push({datatype_tags: tag});
+            }
+        });
     }
-    */
 
     getprojects(req.user, function(err, projects) {
         if(err) return next(err);
         var project_ids = projects.map(function(p) { return p._id; });
+        ands.push({project: {$in: project_ids}});
 
         var limit = 100;
         if(req.query.limit) limit = parseInt(req.query.limit);
         var skip = 0;
         if(req.query.skip) skip = parseInt(req.query.skip);
+
+        console.dir(ands);
    		
         //then look for dataset
-        db.Datasets
-        .find({
-            $and: [
-                {project: {$in: project_ids}},
-                find
-            ]
-        })
+        db.Datasets.find({ $and: ands })
         .populate(req.query.populate || '') //all by default
-        .select(select)
+        .select(req.query.select)
         .limit(limit)
         .skip(skip)
         .sort(req.query.sort || '_id')
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
-            db.Datasets.count(find).exec((err, count)=>{
+            db.Datasets.count({$and: ands}).exec((err, count)=>{
                 if(err) return next(err);
                 
                 //adding some derivatives
