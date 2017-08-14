@@ -34,7 +34,7 @@
                     <div style="float: right">
                         <h4 :id="task._id" :title="task._id"><mute>t.{{task.config._tid}}</mute></h4>
                     </div>
-                    <div v-if="task.config._app" style="margin-right: 40px;">
+                    <div v-if="task.config._app" style="margin-right: 30px;">
                         <app :appid="task.config._app" :compact="true">
                             <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
                         </app>
@@ -111,6 +111,12 @@
                                         <b>{{projects[dataset.project].name}}</b>
                                         <mute>{{dataset.desc}}</mute>
                                         <tags :tags="dataset.tags"/>
+
+                                        <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
+                                            <icon name="cog" :spin="true"/> Storing ...
+                                        </span> 
+                                        <span v-else>{{dataset.status}}</span>
+
                                         <!--<small>{{dataset._id}}</small>-->
                                     </li>
                                 </ul>
@@ -844,5 +850,14 @@ padding: 0px;
 }
 ul.archived li {
 padding: 5px;
+}
+</style>
+
+<style>
+.sidebar .statusicon-failed {
+color: #c00;
+}
+.sidebar .statusicon-running {
+color: #2693ff;
 }
 </style>

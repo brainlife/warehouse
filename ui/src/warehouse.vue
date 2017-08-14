@@ -6,7 +6,7 @@
         </transition>
         -->
         <router-view></router-view>
-        <notifications />
+        <notifications position="bottom right"/>
     </div>
 </template>
 

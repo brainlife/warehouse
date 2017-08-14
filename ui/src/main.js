@@ -24,7 +24,7 @@ Vue.use(ElementUI, {locale})
 
 //overridden element-ui ugly $notify..
 import Notifications from 'vue-notification'
-Vue.use(Notifications)
+Vue.use(Notifications);
 
 //fontasome
 import 'vue-awesome/icons'
