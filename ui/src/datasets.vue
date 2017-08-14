@@ -46,7 +46,7 @@
                     <el-col :span="21">
                         <div 
                         v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)"
-                        :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}" v-if="Math.abs(page - dataset.page) <= 2">
+                        :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}">
                             <el-row>
                                 <el-col :span="1">
                                     <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
@@ -284,12 +284,11 @@ export default {
                 find.$text = {$search: this.query};
             }
             
-            var limit = 6;
             this.page = (this.datasets.length - this.datasets.length % 6) / 6 + 1;
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
                 skip: this.datasets.length,
-                limit,
+                limit: 100,
                 select: '-prov',
                 sort: 'meta.subject -create_date'
             }})

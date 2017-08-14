@@ -233,12 +233,6 @@ export default {
                     });
                 });
 
-                //if all items are filtered out by filter_datasets, we endup *adding* an empty array to select2 for this page
-                //and select2 gets confused..
-                if(dropdown_items.length == 0) {
-                    alert("items are filterded out - select2 paging will break");
-                }
-                
                 // let select2 know that we're done retrieving items
                 cb({
                     results: dropdown_items,
