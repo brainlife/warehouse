@@ -38,41 +38,43 @@
             <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <!--start of dataset list-->
-            <div class="list">
-                <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
-                    <el-col :span="3">
-                        <strong>{{subject}}</strong>
-                    </el-col> 
-                    <el-col :span="21">
-                        <div 
-                        v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)"
-                        :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}">
-                            <el-row>
-                                <el-col :span="1">
-                                    <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
-                                        <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
-                                    </div>
-                                </el-col>
-                                <el-col :span="5" :title="datatypes[dataset.datatype].desc">
-                                    <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;"/>
-                                    <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;"/>
-                                    <icon v-if="dataset.status == 'archived'" name="archive"/>
-                                    <icon v-if="!dataset.status" name="question-circle" style="color: olive;"/>
-                                </el-col>
-                                <el-col :span="8">
-                                    {{dataset.desc||'&nbsp;'}}
-                                </el-col>
-                                <el-col :span="5">
-                                    <time>{{dataset.create_date | date}}</time>
-                                </el-col>
-                                <el-col :span="5">
-                                    <tags :tags="dataset.tags"></tags> &nbsp;
-                                </el-col>
-                            </el-row>
-                        </div>
-                    </el-col> 
-                </el-row>
+            <div class="list" ref="list">
+                <v-infinite-scroll :loading="loading" @top="previousPage" @bottom="nextPage" :offset="20" style="max-height:80vh; overflow: auto;">
+                    <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
+                        <el-col :span="3">
+                            <strong>{{subject}}</strong>
+                        </el-col> 
+                        <el-col :span="21">
+                            <div 
+                            v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)"
+                            :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}">
+                                <el-row>
+                                    <el-col :span="1">
+                                        <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
+                                            <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
+                                        </div>
+                                    </el-col>
+                                    <el-col :span="5" :title="datatypes[dataset.datatype].desc">
+                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+                                        <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;"/>
+                                        <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;"/>
+                                        <icon v-if="dataset.status == 'archived'" name="archive"/>
+                                        <icon v-if="!dataset.status" name="question-circle" style="color: olive;"/>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        {{dataset.desc||'&nbsp;'}}
+                                    </el-col>
+                                    <el-col :span="5">
+                                        <time>{{dataset.create_date | date}}</time>
+                                    </el-col>
+                                    <el-col :span="5">
+                                        <tags :tags="dataset.tags"></tags> &nbsp;
+                                    </el-col>
+                                </el-row>
+                            </div>
+                        </el-col> 
+                    </el-row>
+                </v-infinite-scroll>
             </div><!--dataset list-->
         </div><!--page-content-->
     </div><!--pusher-->
@@ -122,6 +124,8 @@ import projectmenu from '@/components/projectmenu'
 import viewerselect from '@/components/viewerselect'
 import datatypetag from '@/components/datatypetag'
 
+import vInfiniteScroll from 'v-infinite-scroll'
+
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 var debounce = null;
@@ -130,13 +134,14 @@ export default {
     components: { 
         sidemenu, tags, metadata, 
         pageheader, projectmenu, viewerselect,
-        datatypetag, 
+        datatypetag, vInfiniteScroll
     },
     data () {
         return {
             datasets: [], //datasets loaded so far
             datasets_count: null, //number of all datasets on server given current query
-
+            dataset_elements: {},
+            
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
 
@@ -145,6 +150,7 @@ export default {
             query: localStorage.getItem('datasets.query'),
 
             loading: false,
+            page: 1,
 
             //cache
             datatypes: null,
@@ -209,7 +215,6 @@ export default {
 
     mounted() {
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
-		window.addEventListener("scroll", this.check_scroll, true);
     },
 
     watch: {
@@ -226,6 +231,19 @@ export default {
             this.datasets_count = null;
             this.load();
         },
+        
+        previousPage: function() {
+            console.log("getting prev page");
+            if (this.page == 1) return;
+            --this.page;
+            this.load();
+        },
+        
+        nextPage: function() {
+            console.log("getting next page");
+            ++this.page;
+            this.load();
+        },
 
         check_project_id: function() {
             this.project_id = this.$route.params.projectid;
@@ -240,11 +258,10 @@ export default {
                 localStorage.setItem("last_projectid_used", this.project_id);
             }
         },
-
-		check_scroll: function(e) {
-			var page_margin = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
-            if (page_margin < 500) this.load();
-		},
+        
+        above_viewport: function(a, b, c) {
+            console.log(a, b, c);
+        },
 
         change_query_debounce: function() {
             clearTimeout(debounce);
@@ -280,11 +297,12 @@ export default {
             if(this.query) {
                 find.$text = {$search: this.query};
             }
-
+            
+            var limit = 6;
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
-                skip: this.datasets.length,
-                limit: 50,
+                skip: (this.page - 1) * limit,
+                limit,
                 select: '-prov',
                 sort: 'meta.subject -create_date'
             }})
@@ -444,11 +462,7 @@ export default {
                 this.$router.push("/processes/"+instance._id);
             });
         }
-    },
-
-	destroyed() {
-		window.removeEventListener("scroll", this.check_scroll, true);
-	}
+    }
 }
 </script>
 
