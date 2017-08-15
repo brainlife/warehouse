@@ -477,10 +477,4 @@ border-bottom: 1px solid #666;
 .el-alert {
 border-radius: inherit;
 }
-.task .task-desc {
-margin-top: 10px; 
-padding: 5px 10px; 
-font-size: 90%; 
-background-color: #e0e0e0;
-}
 </style>

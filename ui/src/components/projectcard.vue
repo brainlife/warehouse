@@ -1,7 +1,6 @@
 <template>
 <el-card :body-style="{padding: '0px'}" class="projectcard clickable" :class="{'project-removed': project.removed}">
     <div @click="click()">
-        <!--<el-button v-if="project._canedit" type="text" class="editbutton" @click.stop="edit()">Edit</el-button>-->
         <projectavatar :project="project" style="float: left;margin-right: 15px;"></projectavatar>
         <h4 class="name">{{project.name}}</h4>
         <div class="desc">
@@ -37,27 +36,17 @@ export default {
 </script>
 
 <style scoped>
-
-.editbutton {
-display: none;
-float: right; 
-margin-right: 10px;
-}
-
 .projectcard {
 transition: box-shadow 0.5s;
 }
 .projectcard.clickable {
 background-color: white;
 }
-.projectcard:hover {
+.projectcard.clickable:hover {
 cursor: pointer;
 box-shadow: 2px 2px 4px #999;
+background-color: #f3f3f3;
 }
-.projectcard:hover .editbutton {
-display: inline-block;
-}
-
 .name {
 color: #666;
 padding: 0px;

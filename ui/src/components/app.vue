@@ -64,10 +64,8 @@ transition: box-shadow 0.5s;
 .appcard.clickable {
 background-color: white;
 }
-.appcard.clickable:hover .name,
-.appcard.clickable:hover .github,
-.appcard.clickable:hover .desc {
-color: #2693ff;
+.appcard.clickable:hover {
+background-color: #f3f3f3;
 }
 .appcard.clickable:hover .github {
 opacity: 0.7;
@@ -94,9 +92,10 @@ max-height: 130px;
 font-size: 13px;
 color: #666;
 line-height: 140%;
-text-overflow:ellipsis;
 overflow: hidden;
 margin: 10px 0px;
+margin-right: 10px;
+text-overflow:ellipsis;
 }
 .rate {
 height: 20px;
@@ -116,51 +115,18 @@ opacity: 0.7;
 .compact h5 {
 display: none;
 }
+.compact h4.name {
+padding: 5px;
+font-size: 90%;
+}
 .compact .name {
 padding: 5px 0px;
 margin-bottom: 0px;
 }
-/* styles for '...' */ 
 .compact .desc {
-  /* hide text if it more than N lines  */
-  overflow: hidden;
-  /* for set '...' in absolute position */
-  position: relative; 
-  /* use this value to count block height */
-  line-height: 1.3em;
-  /* max-height = line-height (1.2) * lines max number (3) */
-  max-height: 3.7em; 
-  /* fix problem when last visible word doesn't adjoin right side  */
-  text-align: justify;  
-  /* place for '...' */
-  margin-right: -1em;
-  padding-right: 1em;
-  margin-bottom: 0px;
-  margin-top: 0px;
-}
-/* create the ... */
-.compact .desc :before {
-  /* points in the end */
-  content: '...';
-  /* absolute position */
-  position: absolute;
-  /* set position to right bottom corner of block */
-  right: 0;
-  bottom: 0;
-}
-/* hide ... if we have text, which is less than or equal to max lines */
-.compact .desc:after {
-  /* points in the end */
-  content: '';
-  /* absolute position */
-  position: absolute;
-  /* set position to right bottom corner of text */
-  right: 0;
-  /* set width and height */
-  width: 1em;
-  height: 1em;
-  margin-top: 0.2em;
-  /* bg color = bg color under block */
+margin: 5px;
+margin-top: 0px;
+font-size: 85%;
 }
 .devs {
     background-color: #eee;

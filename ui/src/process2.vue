@@ -10,7 +10,7 @@
             <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
             <b v-else class="text-muted">(no subject)</b>
             <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-            <small v-for="(tag,idx) in dataset.tags" :key="idx">| {{tag}}</small>
+            <small v-for="(tag,idx) in dataset.tags" :key="idx"> | {{tag}}</small>
             <mute>(d.{{dataset.did}})</mute> 
             <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
             <mute>
@@ -20,7 +20,6 @@
             </mute>
         </div>
     </div>
-
     <div class="main-section" id="scrolled-area">
         <p v-if="instance.status == 'removed' || instance.config.removing">
             <el-alert type="error" title="">This process has been removed</el-alert>
@@ -55,7 +54,7 @@
                             <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                             <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
                             <mute>
-                                <small v-for="(tag,idx) in input.tags" :key="idx">| {{tag}} </small>
+                                <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                                 (d.{{input.did}})
                             </mute>
                             <mute v-if="findtask(input.task_id).status != 'finished'">
@@ -75,7 +74,7 @@
                 </el-collapse-item>
 
                 <!--output-->
-                <el-collapse-item title="Output" name="output" slot="output">
+                <el-collapse-item title="Output" name="output" slot="output" v-if="task.config._outputs.length > 0">
                     <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
                         <el-row>
                         <el-col :span="4" class="truncate">
@@ -85,7 +84,7 @@
                             <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                             <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
                             <mute>
-                                <small v-for="(tag,idx) in output.tags" :key="idx">| {{tag}}</small>
+                                <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                                 (d.{{output.did}})
                             </mute>
                             <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
@@ -139,9 +138,9 @@
             <div v-if="!newtask.app">
                 <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
                 <el-row>
-                <el-col :span="12" v-for="app in apps" :key="app._id" style="margin-bottom: 3px;">
+                <el-col :span="12" v-for="app in apps" :key="app._id">
                     <div @click="selectapp(app)">
-                        <app :app="app" :compact="true" :clickable="false" class="clickable"/>
+                        <app :app="app" :compact="true" :clickable="false" class="clickable" :descheight="65"/>
                     </div>
                 </el-col>
                 </el-row>
@@ -153,7 +152,7 @@
             <div v-if="newtask.app">
                 <el-form label-width="200px"> 
                     <el-form-item label="Application">
-                        <app :app="newtask.app" :compact="false" :clickable="false"></app>
+                        <app :app="newtask.app" :compact="false"></app>
                     </el-form-item>
 
                     <el-form-item label="Task Description">
@@ -341,7 +340,7 @@ export default {
             this.load();
         });
     },
-
+    
     destroyed() {
         console.log("disconnecting from ws");
         this.ws.close();
