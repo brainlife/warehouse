@@ -811,7 +811,7 @@ box-shadow: 0px 2px 4px #999;
 margin: 0px;
 margin-bottom: 20px;
 }
-.task .task-desc {
+.task-desc {
 margin-top: 10px; 
 padding: 5px 10px; 
 font-size: 90%; 

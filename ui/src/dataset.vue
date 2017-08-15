@@ -400,9 +400,9 @@ export default {
             }
 
             //first, query for the viewing task to see if it already exist
-            var name = "brainlife.view "+this.dataset._id+ " "+view;
+            var name = "brainlife.view "+this.dataset._id;
             this.$http.get(Vue.config.wf_api+'/task', {params: {
-                find: JSON.stringify({ name })
+                find: JSON.stringify({ name, status: { $ne: "removed" } })
             }})
             .then(res=>{
                 if(res.body.count == 1) {
@@ -476,5 +476,11 @@ border-bottom: 1px solid #666;
 }
 .el-alert {
 border-radius: inherit;
+}
+.task-desc {
+margin-top: 10px; 
+padding: 5px 10px; 
+font-size: 90%; 
+background-color: #e0e0e0;
 }
 </style>

@@ -117,7 +117,7 @@ display: none;
 }
 .compact h4.name {
 padding: 5px;
-font-size: 90%;
+font-size: 95%;
 }
 .compact .name {
 padding: 5px 0px;
@@ -126,7 +126,7 @@ margin-bottom: 0px;
 .compact .desc {
 margin: 5px;
 margin-top: 0px;
-font-size: 85%;
+font-size: 90%;
 }
 .devs {
     background-color: #eee;
