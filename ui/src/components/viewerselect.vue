@@ -37,6 +37,7 @@ export default {
     },
 	methods: {
         select: function(com) {
+            console.log("selected", com);
             this.$emit('select', com);  
         }
     }

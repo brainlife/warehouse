@@ -385,6 +385,7 @@ export default {
                 download_instance = instance;
                 return this.stage_selected(download_instance);
             }).then(task=>{
+                //if type contains /, I need to replace it with . (see processes/view.vue)
                 window.open("#/view/"+download_instance._id+"/"+task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
             });
         },

@@ -392,11 +392,11 @@ export default {
         },
         view: function(view) {
             function openview(task) {
-                view = view.replace('/', '.');
+                var _view = view.split('/').join('.'); //replace all / with .
                 console.log("instatnce", task.instance_id);
                 console.log("task", task._id);
-                console.log("view", view);
-                window.open("#/view/"+task.instance_id+"/"+task._id+"/"+view+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+                console.log("view", _view);
+                window.open("#/view/"+task.instance_id+"/"+task._id+"/"+_view+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
             }
 
             //first, query for the viewing task to see if it already exist
