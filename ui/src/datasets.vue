@@ -41,13 +41,11 @@
             <div class="list">
                 <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
                     <el-col :span="3">
-                        <strong>{{subject}}</strong>
+                        <strong>{{subject}} ({{datasets[0].idx}})</strong>
                     </el-col> 
                     <el-col :span="21">
-                        <div 
-                        v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)"
-                        :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}">
-                            <el-row>
+                        <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}" v-if="!!visible[dataset._id]" v-bind:style="'display:inline-block; width:100%; height:'+dataset_item_size+'px; max-height:'+dataset_item_size+'px;'">
+                            <el-row v-observe-visibility="dataset_visibility_changed(dataset._id)">
                                 <el-col :span="1">
                                     <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
                                         <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
@@ -71,6 +69,7 @@
                                 </el-col>
                             </el-row>
                         </div>
+                        <div v-else v-bind:style="'display:inline-block; width:100%; height:'+dataset_item_size+'px; max-height:'+dataset_item_size+'px;'"></div>
                     </el-col> 
                 </el-row>
             </div><!--dataset list-->
@@ -124,6 +123,9 @@ import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
+import { ObserveVisibility } from 'vue-observe-visibility/dist/vue-observe-visibility'
+Vue.directive('observe-visibility', ObserveVisibility);
+
 var debounce = null;
 
 export default {
@@ -145,8 +147,9 @@ export default {
             query: localStorage.getItem('datasets.query'),
 
             loading: false,
-            page: 1,
-
+            dataset_item_size: 32,
+            visible: {},    // contains which datasets are visible, by id
+            
             //cache
             datatypes: null,
             projects: null,
@@ -210,7 +213,7 @@ export default {
 
     mounted() {
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
-		window.addEventListener("scroll", this.check_scroll, true);
+		window.addEventListener("scroll", this.page_scrolled, true);
     },
 
     watch: {
@@ -241,8 +244,17 @@ export default {
                 localStorage.setItem("last_projectid_used", this.project_id);
             }
         },
-
-		check_scroll: function(e) {
+        
+        dataset_visibility_changed: function(_id) {
+            var vm = this;
+            return function(isVisible, entry) {
+            
+            Vue.set(vm.visible, _id, isVisible);
+            
+            };
+        },
+        
+		page_scrolled: function(e) {
             var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;/*,
                 page_margin_top = e.target.scrollHeight;*/
             
@@ -284,7 +296,6 @@ export default {
                 find.$text = {$search: this.query};
             }
             
-            this.page = (this.datasets.length - this.datasets.length % 6) / 6 + 1;
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
                 skip: this.datasets.length,
@@ -297,7 +308,6 @@ export default {
                 
                 //set checked flag for each dataset
 				res.body.datasets.forEach(dataset=>{
-                    dataset.page = this.page - 1;
 					this.datasets.push(dataset);
                     if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
                 });
@@ -453,7 +463,7 @@ export default {
     },
 
 	destroyed() {
-		window.removeEventListener("scroll", this.check_scroll, true);
+		window.removeEventListener("scroll", this.page_scrolled, true);
 	}
 }
 </script>
@@ -558,8 +568,8 @@ export default {
     border-bottom: 1px solid #eee;
 }
 .list .dataset {
-    padding: 3px 0px;
-    margin-bottom: 1px;
+    /* padding: 3px 0px;
+    margin-bottom: 1px; */
     transition: background-color 0.3s;
 }
 .list .dataset.clickable:hover {
