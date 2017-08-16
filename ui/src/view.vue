@@ -9,7 +9,7 @@
         <images v-else-if="type == 'generic.images'" :task="task" :subdir="subdir"></images>
         <volumeviewer v-else-if="type == 'neuro.anat.t1w'" :task="task" :subdir="subdir"></volumeviewer>
         <div v-else-if="type == 'raw'" style="padding: 15px; background-color: white;">
-            <filebrowser :task="task" :path="task.instance_id+'/'+task._id+'/'+subdir"></filebrowser>
+            <filebrowser :task="task" :path="task.instance_id+'/'+task._id+'/'+(subdir||'')"></filebrowser>
         </div>
         <div v-else style="margin: 20px;">
             <h2>Staging Data</h2>

@@ -120,6 +120,7 @@ margin-bottom: 6px;
 table.info {
 width: 100%;
 border-spacing: 1px;
+font-size: 13px;
 }
 table.info tr {
 background-color: white;

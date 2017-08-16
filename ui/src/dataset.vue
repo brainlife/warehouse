@@ -189,7 +189,7 @@
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
                 <el-row>
                 <el-col :span="8" v-for="app in apps" :key="app._id" style="margin-bottom: 3px">
-                    <app :app="app" :dataset="dataset" :compact="true"></app>
+                    <app :app="app" :dataset="dataset" :compact="true" :descheight="65"></app>
                 </el-col>
                 </el-row>
             </td>
