@@ -44,8 +44,8 @@
                         <strong>{{subject}} ({{datasets[0].idx}})</strong>
                     </el-col> 
                     <el-col :span="21">
-                        <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}" v-if="!!visible[dataset._id]" v-bind:style="'display:inline-block; width:100%; height:'+dataset_item_size+'px; max-height:'+dataset_item_size+'px;'">
-                            <el-row v-observe-visibility="dataset_visibility_changed(dataset._id)">
+                        <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}" v-bind:style="'display:inline-block; width:100%; height:'+dataset_item_size+'px; max-height:'+dataset_item_size+'px;'">
+                            <el-row v-observe-visibility="dataset_visibility_changed(dataset._id)" v-if="isVisible">
                                 <el-col :span="1">
                                     <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
                                         <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
@@ -69,7 +69,6 @@
                                 </el-col>
                             </el-row>
                         </div>
-                        <div v-else v-bind:style="'display:inline-block; width:100%; height:'+dataset_item_size+'px; max-height:'+dataset_item_size+'px;'"></div>
                     </el-col> 
                 </el-row>
             </div><!--dataset list-->
@@ -243,6 +242,10 @@ export default {
             } else {
                 localStorage.setItem("last_projectid_used", this.project_id);
             }
+        },
+        
+        isVisible: function() {
+            return visible[dataset._id];
         },
         
         dataset_visibility_changed: function(_id) {
