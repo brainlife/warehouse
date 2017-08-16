@@ -41,7 +41,7 @@
             <div class="list">
                 <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject">
                     <el-col :span="3">
-                        <strong>{{subject}} ({{datasets[0].idx}})</strong>
+                        <strong>{{subject}}</strong>
                     </el-col> 
                     <el-col :span="21">
                         <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}" v-bind:style="'display:inline-block; width:100%; height:'+dataset_item_size+'px; max-height:'+dataset_item_size+'px;'">
@@ -567,8 +567,8 @@ export default {
     border-bottom: 1px solid #eee;
 }
 .list .dataset {
-    /* padding: 3px 0px;
-    margin-bottom: 1px; */
+     padding: 3px 0px;
+    margin-bottom: 1px; 
     transition: background-color 0.3s;
 }
 .list .dataset.clickable:hover {
