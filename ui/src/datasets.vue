@@ -250,11 +250,7 @@ export default {
         
         dataset_visibility_changed: function(_id) {
             var vm = this;
-            return function(isVisible, entry) {
-            
-            Vue.set(vm.visible, _id, isVisible);
-            
-            };
+            return (isVisible, entry) => Vue.set(vm.visible, _id, isVisible);
         },
         
 		page_scrolled: function(e) {
