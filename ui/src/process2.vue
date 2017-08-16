@@ -19,13 +19,14 @@
                 </small>
             </mute>
         </div>
+        <div class="dataset clickable" @click="scrollto('newtaskdialog')"><b style="padding: 3px 0px; opacity: 0.5">New Task</b></div>
     </div>
     <div class="main-section" id="scrolled-area">
         <p v-if="instance.status == 'removed' || instance.config.removing">
             <el-alert type="error" title="">This process has been removed</el-alert>
         </p>
         <div v-if="tasks" v-for="task in tasks" :key="task._id">
-            <task :task="task">
+            <task :task="task" class="task">
                 <!--header-->
                 <div slot="header" class="task-header">
                     <div style="float: right">

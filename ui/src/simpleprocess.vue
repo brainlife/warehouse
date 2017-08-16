@@ -1,23 +1,18 @@
 <template>
-<div v-if="instance">
+<div v-if="instance && tasks">
     <div class="main-section" id="scrolled-area">
         <table class="info" style="box-sizing: border-box;">
         <tr v-if="app">
             <th>Application/Config</th>
             <td>
-                <el-row :gutter="10">
-                    <el-col :span="14">
-                        <app :app="app"></app>
-                    </el-col>
-                    <el-col :span="10">
-                        <pre v-highlightjs style="height: 100%;"><code class="json hljs">{{instance.config.prov.config}}</code></pre>
-                    </el-col>
-                </el-row>
+                <app :app="app"></app>
+                <pre v-highlightjs style="height: 100%;"><code class="json hljs">{{instance.config.prov.config}}</code></pre>
             </td>
         </tr>
         <tr v-if="datatypes">
             <th>Inputs</th>
             <td>
+                <!--
                 <el-table :data="instance.config.prov.deps" style="width: 100%">
                     <el-table-column type="expand">
                         <template scope="props">
@@ -44,11 +39,30 @@
                         </template>
                     </el-table-column>
                 </el-table>
+                -->
+                <el-card v-for="dep in instance.config.prov.deps" :key="dep._id">
+                    <div v-if="dep._dataset">
+                        <p class="text-muted" style="float: right;">{{dep._dataset.desc}}</p>
+                        <b v-if="dep._dataset && dep._dataset.meta">{{dep._dataset.meta.subject}}</b>
+                        <datatypetag v-if="dep._dataset" 
+                            :datatype="datatypes[dep._dataset.datatype]" 
+                            :tags="dep._dataset.datatype_tags"></datatypetag>
+                        <small v-for="(tag,idx) in dep._dataset.tags" :key="idx"> | {{tag}}</small>
+                    </div>
+                    <p v-else>no dataset</p>
+                    <el-alert v-if="input_task.status != 'finished'" 
+                        title="Input datasets not yet loaded" type="warning" show-icon :closable="false"/>
+                    <br>
+                    <filebrowser v-if="input_task.status == 'finished'"
+                        :task="input_task" 
+                        :path="input_task.instance_id+'/'+input_task._id+'/inputs/'+dep.input_id"/>
+                </el-card>
             </td>
         </tr>
         <tr v-if="app && tasks && instance.status == 'finished'">
             <th>Outputs</th>
             <td>
+                <!--
                 <el-table :data="app.outputs" style="width: 100%" default-expand-all>
                     <el-table-column type="expand">
                         <template scope="props">
@@ -72,6 +86,25 @@
                     </el-table-column>
                     <el-table-column prop="datatype.desc" label="Description"></el-table-column>
                 </el-table>
+                -->
+                <el-card v-for="output in app.outputs" :key="output.id">
+                    <!--
+                    <el-col :span="6">
+                        {{output.id}}
+                    </el-col>
+                    -->
+                    <viewerselect v-if="output_task.status == 'finished'" 
+                        @select="view(output_task._id, $event, output.id)" 
+                        :datatype="output.datatype.name"
+                        style="float: right"></viewerselect>
+                    <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"></datatypetag>
+                    <span class="text-muted">{{output.datatype.desc}}</span>
+                    <br>
+                    <br>
+                    <filebrowser v-if="output_task.status == 'finished'"
+                        :task="output_task" 
+                        :path="output_task.instance_id+'/'+output_task._id+'/'+output.id"/>
+                </el-card>
             </td>
         </tr>
         <tr>
