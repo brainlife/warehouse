@@ -1,5 +1,5 @@
 <template>
-<el-card class="box-card">
+<el-card class="box-card" v-if="datatype">
     <div slot="header">
         <el-row>
             <el-col :span="6">

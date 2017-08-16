@@ -9,6 +9,7 @@ export default {
     props: ['task', 'subdir'],
     computed: {
         url: function() {
+            console.log("computing volumeviewer url");
             var subdir_string = '';
             if (this.subdir) subdir_string = '&sdir='+encodeURIComponent(this.subdir);
             return '/ui/volumeviewer'+'?task='+this.task._id+subdir_string;

@@ -25,11 +25,10 @@
                 <el-col :span="21">
                     <el-row>
                         <el-col :span="1">&nbsp;</el-col>
-                        <el-col :span="3"><h4>Storage</h4></el-col>
                         <el-col :span="5"><h4>Datatype</h4></el-col>
-                        <el-col :span="6"><h4>Description</h4></el-col>
+                        <el-col :span="8"><h4>Description</h4></el-col>
                         <el-col :span="5"><h4>Create&nbsp;Date</h4></el-col>
-                        <el-col :span="4"><h4>Tags</h4></el-col>
+                        <el-col :span="5"><h4>Tags</h4></el-col>
                     </el-row> 
                 </el-col>
             </el-row>
@@ -54,22 +53,20 @@
                                         <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
                                     </div>
                                 </el-col>
-                                <el-col :span="3">
-                                    {{dataset.storage}}
-                                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true"/>
-                                    <icon v-if="dataset.status == 'failed'" name="exclamation"/>
-                                    <icon v-if="dataset.status == 'archived'" name="archive"/>
-                                </el-col>
                                 <el-col :span="5" :title="datatypes[dataset.datatype].desc">
                                     <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+                                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;"/>
+                                    <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;"/>
+                                    <icon v-if="dataset.status == 'archived'" name="archive"/>
+                                    <icon v-if="!dataset.status" name="question-circle" style="color: olive;"/>
                                 </el-col>
-                                <el-col :span="6">
+                                <el-col :span="8">
                                     {{dataset.desc||'&nbsp;'}}
                                 </el-col>
                                 <el-col :span="5">
                                     <time>{{dataset.create_date | date}}</time>
                                 </el-col>
-                                <el-col :span="4" style="border-right: 1px solid #red;">
+                                <el-col :span="5">
                                     <tags :tags="dataset.tags"></tags> &nbsp;
                                 </el-col>
                             </el-row>
@@ -148,6 +145,7 @@ export default {
             query: localStorage.getItem('datasets.query'),
 
             loading: false,
+            page: 1,
 
             //cache
             datatypes: null,
@@ -229,7 +227,7 @@ export default {
             this.datasets_count = null;
             this.load();
         },
-
+        
         check_project_id: function() {
             this.project_id = this.$route.params.projectid;
             if(!this.project_id) {
@@ -245,9 +243,12 @@ export default {
         },
 
 		check_scroll: function(e) {
-			var page_margin = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
-            if (page_margin < 500) this.load();
-		},
+            var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;/*,
+                page_margin_top = e.target.scrollHeight;*/
+            
+            if (page_margin_bottom < 500) this.load();
+            // else if (page_margin_top < 500) this.prevPage();
+        },
 
         change_query_debounce: function() {
             clearTimeout(debounce);
@@ -270,7 +271,6 @@ export default {
                 this.loading = false;
                 return;
             }
-            console.log("loading dataset");
             this.loading = true;
 
 			var find = {
@@ -283,19 +283,21 @@ export default {
             if(this.query) {
                 find.$text = {$search: this.query};
             }
-
+            
+            this.page = (this.datasets.length - this.datasets.length % 6) / 6 + 1;
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
                 skip: this.datasets.length,
-                limit: 50,
+                limit: 100,
                 select: '-prov',
                 sort: 'meta.subject -create_date'
             }})
             .then(res=>{
                 this.datasets_count = res.body.count;
-
+                
                 //set checked flag for each dataset
 				res.body.datasets.forEach(dataset=>{
+                    dataset.page = this.page - 1;
 					this.datasets.push(dataset);
                     if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
                 });
@@ -358,7 +360,8 @@ export default {
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
                     untar: "auto",
-                    dir: "download/"+dataset_id, 
+                    //dir: "download/"+dataset_id, 
+                    dir: dataset_id, 
                 });
             }
 
@@ -382,6 +385,7 @@ export default {
                 download_instance = instance;
                 return this.stage_selected(download_instance);
             }).then(task=>{
+                //if type contains /, I need to replace it with . (see processes/view.vue)
                 window.open("#/view/"+download_instance._id+"/"+task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
             });
         },
@@ -404,7 +408,7 @@ export default {
                     var subject = null;
                     if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
 
-                    var download_path = "../"+download_task._id+"/download/"+dataset_id;
+                    var download_path = "../"+download_task._id+"/"+dataset_id;
 
                     //TODO - figure out process name from dataset.prov
                     var process_name = "someprocess";
@@ -421,7 +425,6 @@ export default {
                             dest: "download/derivatives/"+process_name+"/"+subject+"/"+dataname+"/"+subject+"_"+(file.filename||file.dirname),
                         });
                     });
-
                 }
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: download_instance._id,
@@ -585,4 +588,3 @@ export default {
     opacity: 0.5;  
 }
 </style>
-

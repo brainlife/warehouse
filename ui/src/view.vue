@@ -8,6 +8,9 @@
         <evaluator v-else-if="type == 'neuro.conneval_output'" :task="task" :subdir="subdir"></evaluator>
         <images v-else-if="type == 'generic.images'" :task="task" :subdir="subdir"></images>
         <volumeviewer v-else-if="type == 'neuro.anat.t1w'" :task="task" :subdir="subdir"></volumeviewer>
+        <div v-else-if="type == 'raw'" style="padding: 15px; background-color: white;">
+            <filebrowser :task="task" :path="task.instance_id+'/'+task._id+'/'+(subdir||'')"></filebrowser>
+        </div>
         <div v-else style="margin: 20px;">
             <h2>Staging Data</h2>
             <task :task="task"/>
@@ -34,6 +37,7 @@ import life from '@/components/appuis/life'
 import evaluator from '@/components/appuis/evaluator'
 import images from '@/components/appuis/images'
 import volumeviewer from '@/components/appuis/volumeviewer'
+import filebrowser from '@/components/filebrowser'
 
 import task from '@/components/task'
 
@@ -42,7 +46,7 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 export default {
     props: [ 'instanceid', 'taskid', 'type', 'subdir' ],
     components: { 
-        dtiinit, freesurfer, afq, life, evaluator, images, volumeviewer,
+        dtiinit, freesurfer, afq, life, evaluator, images, volumeviewer, filebrowser,
         task
     },
 
@@ -59,7 +63,7 @@ export default {
     mounted: function() {
         this.wait(()=>{
             //need to submit novnc task for novnc views //TODO - need a better way to know which is which?
-            if(!~this.type.indexOf(".")) {
+            if(!~this.type.indexOf(".") && this.type != "raw") {
                 this.open_novnc();
             }
         });
@@ -98,9 +102,8 @@ export default {
 
         open_novnc() {
             this.get_instance_singleton("novnc").then((instance)=>{
-                console.log("using instance", instance);
+                //console.log("using instance", instance);
                 var task_name = "brainlife.novnc";
-                //var hourago = new Date(Date.now() - 3600*1000); //1hour ago
                 //look for novnc task running for specified instance/task
                 this.$http.get(Vue.config.wf_api+'/task', {params: {
                     find: JSON.stringify({

@@ -1,25 +1,24 @@
 <template>
-<div>
+<div v-if="dataset">
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
-    <div class="page-content" v-if="dataset">
-        <div style="padding: 20px 20px 10px 20px; background-color: #666; color: white;">
-            <div style="float: right">
-                <el-button-group>
-                    <el-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</el-button>
-
-                    <el-button type="primary" @click="download()" v-if="dataset.storage" icon="document">Download</el-button>
-                </el-button-group>
-                <viewerselect @select="view" :datatype="dataset.datatype.name"></viewerselect>
+    <div class="header" vi-if="dataset">
+        <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
+        <el-button-group style="float: right;">
+            <el-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</el-button>
+            <el-button type="primary" @click="download()" v-if="dataset.storage" icon="document">Download</el-button>
+        </el-button-group>
+        <h1>
+            <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3)">
+                <div v-if="dataset.meta" style="display: inline-block; padding: 5px 10px; background-color: #fff; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </div>
-
-            <h1>
-                <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3)">
-                    <div v-if="dataset.meta" style="display: inline-block; padding: 5px 10px; background-color: #fff; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
-                </div>
-            </h1>
+        </h1>
+    </div>
+    <div class="page-content" v-if="dataset" style="margin-top: 80px;">
+        <!--
+        <div style="padding: 20px 20px 10px 20px; background-color: #666; color: white;">
         </div>
-
+        -->
         <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
         <tr>
@@ -53,11 +52,14 @@
                 <span v-if="dataset.status == 'stored'">
                     This dataset is currently stored in <b>{{dataset.storage}}</b>
                 </span> 
-                <span v-if="dataset.status == 'failed'">
-                    <icon name="exclamation"/> Failed to store on warehouse
+                <span v-if="dataset.status == 'failed'" style="color: red;">
+                    <icon name="exclamation-triangle"/> Failed to store on warehouse
                 </span> 
                 <span v-if="dataset.status == 'archived'">
                     This dataset is currently stored in <b>{{dataset.storage}}</b> and archived in the permanent tape backup.
+                </span> 
+                <span v-if="!dataset.status">
+                    Status is unknown
                 </span> 
             </td>
         </tr>
@@ -185,9 +187,11 @@
             <td>
                 <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
-                <div v-for="app in apps" key="app._id" class="card">
-                    <app :app="app" :dataset="dataset" :compact="true"></app>
-                </div>
+                <el-row>
+                <el-col :span="8" v-for="app in apps" :key="app._id" style="margin-bottom: 3px">
+                    <app :app="app" :dataset="dataset" :compact="true" :descheight="65"></app>
+                </el-col>
+                </el-row>
             </td>
         </tr>
         <tr>
@@ -388,17 +392,17 @@ export default {
         },
         view: function(view) {
             function openview(task) {
-                view = view.replace('/', '.');
+                var _view = view.split('/').join('.'); //replace all / with .
                 console.log("instatnce", task.instance_id);
                 console.log("task", task._id);
-                console.log("view", view);
-                window.open("#/view/"+task.instance_id+"/"+task._id+"/"+view+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+                console.log("view", _view);
+                window.open("#/view/"+task.instance_id+"/"+task._id+"/"+_view+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
             }
 
             //first, query for the viewing task to see if it already exist
-            var name = "brainlife.view "+this.dataset._id+ " "+view;
+            var name = "brainlife.view "+this.dataset._id;
             this.$http.get(Vue.config.wf_api+'/task', {params: {
-                find: JSON.stringify({ name })
+                find: JSON.stringify({ name, status: { $ne: "removed" } })
             }})
             .then(res=>{
                 if(res.body.count == 1) {
@@ -451,6 +455,20 @@ border: 3px solid white;
     cursor: pointer;
     background-color: #ddd;
 }
+.header {
+background: #666;
+padding: 20px;
+padding-bottom: 20px;
+margin-top: 50px;
+height: 40px;
+position: fixed;
+top: 0px;
+right: 0px;
+left: 90px;
+color: #666;
+z-index: 1;
+border-bottom: 1px solid #666;
+}
 .card {
     width: 325px; 
     float: left;
@@ -459,7 +477,7 @@ border: 3px solid white;
 .el-alert {
 border-radius: inherit;
 }
-.task .task-desc {
+.task-desc {
 margin-top: 10px; 
 padding: 5px 10px; 
 font-size: 90%; 

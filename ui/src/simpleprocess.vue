@@ -1,17 +1,18 @@
 <template>
 <div v-if="instance">
     <div class="main-section" id="scrolled-area">
-        <table class="info" style="width: 100%; box-sizing: border-box;">
+        <table class="info" style="box-sizing: border-box;">
         <tr v-if="app">
-            <th>Application</th>
+            <th>Application/Config</th>
             <td>
-                <app :app="app"></app>
-            </td>
-        </tr>
-        <tr>
-            <th>Configuration</th>
-            <td>
-                <pre v-highlightjs><code class="json hljs">{{instance.config.prov.config}}</code></pre>
+                <el-row :gutter="10">
+                    <el-col :span="14">
+                        <app :app="app"></app>
+                    </el-col>
+                    <el-col :span="10">
+                        <pre v-highlightjs style="height: 100%;"><code class="json hljs">{{instance.config.prov.config}}</code></pre>
+                    </el-col>
+                </el-row>
             </td>
         </tr>
         <tr v-if="datatypes">
@@ -219,15 +220,6 @@ export default {
                 this.datatypes[datatype._id] = datatype;
             });
 
-            //load apps
-            return this.$http.get('app', {params: {
-                find: JSON.stringify({_id: this.instance.config.prov.app}),
-                populate: 'inputs.datatype outputs.datatype',
-            }})
-        })
-        .then(res=>{
-            this.app = res.body.apps[0];
-
             //lastly, load things under specified instance
             this.load();
         });
@@ -261,13 +253,14 @@ export default {
         'instance': function() {
             console.log("instance updated");
             document.getElementById("scrolled-area").scrollTop = 0;
+
+            this.app = null;
             this.load();
         },
     },
 
     methods: {
         load() {
-
             this.show_archive = false;
             if(this.ws) this.ws.close(); //reconnect
 
@@ -283,6 +276,16 @@ export default {
                 }})
                 .then(res=>{
                     this.tasks = res.body.tasks;
+
+                    //load apps
+                    console.log("loading app", this.instance.config.prov.app);
+                    return this.$http.get('app', {params: {
+                        find: JSON.stringify({_id: this.instance.config.prov.app}),
+                        populate: 'inputs.datatype outputs.datatype',
+                    }})
+                })
+                .then(res=>{
+                    this.app = res.body.apps[0];
 
                     //subscribe to the instance events
                     this.ws.send(JSON.stringify({

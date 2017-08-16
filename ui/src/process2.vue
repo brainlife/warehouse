@@ -1,28 +1,25 @@
 <template>
 <div v-if="instance">
     <div class="sidebar">
-        <div style="margin: 0px 10px;">
-            <el-button type="primary" size="small" style="float: right; position: relative; top: -8px;"
-                :class="{animated: true, headShake: _datasets.length == 0}" 
-                @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
-            <h3>Datasets</h3>
-            <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)">
-                <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
-                <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
-                <b v-else class="text-muted">(no subject)</b>
-                <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                <small v-for="(tag,idx) in dataset.tags" :key="idx">| {{tag}}</small>
-                <mute>(d.{{dataset.did}})</mute> 
-                <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
-                <mute>
-                    <small v-if="dataset.task.status != 'finished'">
-                        <statusicon :status="dataset.task.status"></statusicon> 
-                    </small>
-                </mute>
-            </div>
+        <el-button type="primary" size="small" style="float: right; margin: 5px;"
+            :class="{animated: true, headShake: _datasets.length == 0}" 
+            @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
+        <h3>Datasets</h3>
+        <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)">
+            <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
+            <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
+            <b v-else class="text-muted">(no subject)</b>
+            <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+            <small v-for="(tag,idx) in dataset.tags" :key="idx"> | {{tag}}</small>
+            <mute>(d.{{dataset.did}})</mute> 
+            <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
+            <mute>
+                <small v-if="dataset.task.status != 'finished'">
+                    <statusicon :status="dataset.task.status"></statusicon> 
+                </small>
+            </mute>
         </div>
     </div>
-
     <div class="main-section" id="scrolled-area">
         <p v-if="instance.status == 'removed' || instance.config.removing">
             <el-alert type="error" title="">This process has been removed</el-alert>
@@ -34,7 +31,7 @@
                     <div style="float: right">
                         <h4 :id="task._id" :title="task._id"><mute>t.{{task.config._tid}}</mute></h4>
                     </div>
-                    <div v-if="task.config._app" style="margin-right: 40px;">
+                    <div v-if="task.config._app" style="margin-right: 30px;">
                         <app :appid="task.config._app" :compact="true">
                             <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
                         </app>
@@ -57,7 +54,7 @@
                             <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                             <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
                             <mute>
-                                <small v-for="(tag,idx) in input.tags" :key="idx">| {{tag}} </small>
+                                <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                                 (d.{{input.did}})
                             </mute>
                             <mute v-if="findtask(input.task_id).status != 'finished'">
@@ -77,7 +74,7 @@
                 </el-collapse-item>
 
                 <!--output-->
-                <el-collapse-item title="Output" name="output" slot="output">
+                <el-collapse-item title="Output" name="output" slot="output" v-if="task.config._outputs.length > 0">
                     <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
                         <el-row>
                         <el-col :span="4" class="truncate">
@@ -87,7 +84,7 @@
                             <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                             <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
                             <mute>
-                                <small v-for="(tag,idx) in output.tags" :key="idx">| {{tag}}</small>
+                                <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                                 (d.{{output.did}})
                             </mute>
                             <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
@@ -111,6 +108,12 @@
                                         <b>{{projects[dataset.project].name}}</b>
                                         <mute>{{dataset.desc}}</mute>
                                         <tags :tags="dataset.tags"/>
+
+                                        <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
+                                            <icon name="cog" :spin="true"/> Storing ...
+                                        </span> 
+                                        <span v-else>{{dataset.status}}</span>
+
                                         <!--<small>{{dataset._id}}</small>-->
                                     </li>
                                 </ul>
@@ -135,9 +138,9 @@
             <div v-if="!newtask.app">
                 <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
                 <el-row>
-                <el-col :span="12" v-for="app in apps" :key="app._id" style="margin-bottom: 3px;">
+                <el-col :span="12" v-for="app in apps" :key="app._id">
                     <div @click="selectapp(app)">
-                        <app :app="app" :compact="true" :clickable="false" class="clickable"/>
+                        <app :app="app" :compact="true" :clickable="false" class="clickable" :descheight="65"/>
                     </div>
                 </el-col>
                 </el-row>
@@ -149,7 +152,7 @@
             <div v-if="newtask.app">
                 <el-form label-width="200px"> 
                     <el-form-item label="Application">
-                        <app :app="newtask.app" :compact="false" :clickable="false"></app>
+                        <app :app="newtask.app" :compact="false"></app>
                     </el-form-item>
 
                     <el-form-item label="Task Description">
@@ -337,7 +340,7 @@ export default {
             this.load();
         });
     },
-
+    
     destroyed() {
         console.log("disconnecting from ws");
         this.ws.close();
@@ -783,7 +786,6 @@ overflow: auto;
 }
 .sidebar {
 background-color: #ddd;
-padding-top: 20px;
 position: fixed;
 top: 110px;
 bottom: 0px;
@@ -794,9 +796,8 @@ font-size: 90%;
 }
 .sidebar h3 {
 color: #999;
-padding-bottom: 10px;
-margin-bottom: 15px;
-border-bottom: 1px solid #ccc;
+padding: 10px;
+margin: 0px;
 }
 .task-header {
 margin: 0px;
@@ -810,7 +811,7 @@ box-shadow: 0px 2px 4px #999;
 margin: 0px;
 margin-bottom: 20px;
 }
-.task .task-desc {
+.task-desc {
 margin-top: 10px; 
 padding: 5px 10px; 
 font-size: 90%; 
@@ -844,5 +845,14 @@ padding: 0px;
 }
 ul.archived li {
 padding: 5px;
+}
+</style>
+
+<style>
+.sidebar .statusicon-failed {
+color: #c00;
+}
+.sidebar .statusicon-running {
+color: #2693ff;
 }
 </style>

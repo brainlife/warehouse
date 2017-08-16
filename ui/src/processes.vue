@@ -7,7 +7,7 @@
         <div style="margin: 10px; float: right;">
             <el-button v-if="!selected.config.removing" @click="remove()" icon="delete" title="Remove this process"/>
         </div>
-        <statusicon :status="selected.status" :scale="2" style="width: 40px; text-align: center; float: left; margin: 10px;opacity: 0.6;"/>
+        <statusicon :status="selected.status" :scale="1.75" style="width: 40px; text-align: center; float: left; margin: 10px;opacity: 0.6;"/>
         <!--<b class="text-muted" style="float: left; margin-top: 8px;">Description</b>-->
         <div style="margin-left: 60px; margin-right: 100px;">
             <div v-if="editdesc">
@@ -27,7 +27,7 @@
                 <div style="float: left">
                     <span class="status status-finished" v-if="instance.status == 'finished'" style="font-size: 140%;"><icon name="check"/></span>
                     <span class="status status-running" v-if="instance.status == 'running'"><icon name="cog" :spin="true"/></span>
-                    <span class="status status-failed" v-if="instance.status == 'failed'"><icon name="exclamation"/></span>
+                    <span class="status status-failed" v-if="instance.status == 'failed'"><icon name="exclamation-circle"/></span>
                 </div>
                 <div style="margin-left: 25px;">
                     <time v-if="instance._old">{{instance.create_date|date('%x')}}</time>
@@ -159,7 +159,7 @@ export default {
                     this.$notify({ text: 'Updated description', type: 'success' });
                     this.editdesc = false;
                 });
-            }, 1500);        
+            }, 2000);        
         },
         newprocess: function() {
             this.$http.post(Vue.config.wf_api+'/instance', {
@@ -185,7 +185,7 @@ export default {
             }
         },
         view: function(opt) {
-            var view = opt.view.split('/').join('.'); //replace / with .
+            var view = opt.view.split('/').join('.'); //replace all / with .
             var path = "#/view/"+opt.instanceid+"/"+opt.taskid+'/'+view;
             if(opt.subdir) path += '/'+opt.subdir;
             window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
@@ -239,6 +239,7 @@ overflow-y: auto;
 overflow-x: hidden;
 width: 300px;
 z-index: 5;
+/*word-break: break-all;*/
 }
 .process-list ul {
 list-style: none;

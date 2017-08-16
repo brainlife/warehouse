@@ -6,7 +6,7 @@
         </transition>
         -->
         <router-view></router-view>
-        <notifications />
+        <notifications position="bottom right"/>
     </div>
 </template>
 
@@ -119,8 +119,8 @@ margin-bottom: 6px;
 
 table.info {
 width: 100%;
-font-size: 13px;
 border-spacing: 1px;
+font-size: 13px;
 }
 table.info tr {
 background-color: white;
@@ -154,7 +154,6 @@ margin-bottom: 15px;
 time {
 opacity: 0.8;
 }
-
 /*not sure, but something is setting font-size to 12px..*/
 .el-dropdown__icon {
 font-size: 14px;

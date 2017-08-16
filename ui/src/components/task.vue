@@ -1,5 +1,5 @@
 <template>
-<div class="task">
+<div v-if="task">
     <slot name="header">
         <h3><icon name="paper-plane"></icon> {{task.name||task.service}}</h3>
     </slot>

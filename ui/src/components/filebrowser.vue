@@ -18,15 +18,10 @@
             <div class="fileitem" @click="click(file)">
                     <span class="text-muted" :style="{marginLeft: offset}">
                         <icon name="file-o" v-if="!file.directory"></icon>
-                        <icon name="folder-open" v-if="file.directory && file.open"></icon>
-                        <icon name="folder" v-if="file.directory && !file.open"></icon>
+                        <icon name="folder-open" v-if="file.directory && file.open" style="color: #2693ff"></icon>
+                        <icon name="folder" v-if="file.directory && !file.open" style="color: #2693ff"></icon>
                     </span>
                     {{file.filename}}
-                    <!--
-                    <el-col :span="4"><pre>{{file.attrs.mode_string}}</pre></el-col>
-                    <el-col :span="4">{{file.attrs.uid}}</el-col>
-                    <el-col :span="4">{{file.attrs.gid}}</el-col>
-                    -->
                     <span style="float: right; width: 150px;">{{file.attrs.mtime*1000|date}}</span>
                     <mute style="float: right; margin-right: 20px;">{{file.attrs.size|filesize}}</mute>
             </div>
@@ -52,8 +47,14 @@ import Vue from 'vue'
 import mute from '@/components/mute'
 
 export default {
-    name: 'filebrowser',
+    name: "filebrowser", //needed to recurse itself
+    props: {
+        task: { type: Object },
+        path: { type: String },
+        depth: { type: Number, default: 0}
+    },
     components: { mute },
+
     data() {
         return {
             fullpath: null,
@@ -66,23 +67,6 @@ export default {
         offset: function() {
             return this.depth * 15 + 'px';
         },
-        /*
-        sorted_files: function() {
-            return this.files;
-            return this.files.sort((a, b)=>{
-                if(a.attrs.mtime == b.attrs.mtime) {
-                    return a.attrs.filename||a.attrs.dirname > b.attrs.filename||b.attrs.dirname;
-                }
-                return a.attrs.mtime - b.attrs.mtime;
-            });
-        },
-        */
-    },
-
-    props: {
-        task: { type: Object },
-        path: { type: String },
-        depth: { type: Number, default: 0}
     },
 
     watch: {

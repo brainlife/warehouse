@@ -34,7 +34,10 @@
                 </div>
 
                 <h3>Task Status</h3>
-                <task v-for="task in tasks" key="task._id" :task="task"></task>
+                <div v-for="task in tasks" key="task._id">
+                    <task :task="task"></task>
+                    <br>
+                </div>
 
             </el-card>
 

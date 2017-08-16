@@ -196,28 +196,33 @@ export default {
             if (!params.page) params.page = 1;
             var dropdown_items = [];
             
-            let limit = 50, skip = (params.page - 1) * limit,
-                
-                find_raw = {
-                    project: this.form.projects[input.id],
-                    datatype: input.datatype._id,
-                    storage: {$exists: true}, 
-                    removed: false
-                };
+            let limit = 100;
+            let skip = (params.page - 1) * limit;
+            let find_raw = {
+                project: this.form.projects[input.id],
+                datatype: input.datatype._id,
+                storage: {$exists: true}, 
+                removed: false
+            };
+
             if (params.term) find_raw.$text = { $search: params.term };
             
             this.$http.get('dataset', { params: {
                 find: JSON.stringify(find_raw),
                 sort: "project meta.subject -create_date",
                 populate: "datatype",
+                datatype_tags: input.datatype_tags,
                 limit,
                 skip
             }})
             .then(res => {
+                //let filtered_datasets = lib.filter_datasets(res.body.datasets, input);
+                //console.log("filtered", res.body.datasets, filtered_datasets);
+                //filtered_datasets.forEach(dataset => {
                 res.body.datasets.forEach(dataset => {
-                    var subject = "(non-existing)";
+                    var subject = "N/A";
                     if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
-                    
+
                     // add dropdown menu item
                     dropdown_items.push({
                         id: dataset._id,
@@ -227,7 +232,7 @@ export default {
                         tags: dataset.datatype_tags
                     });
                 });
-                
+
                 // let select2 know that we're done retrieving items
                 cb({
                     results: dropdown_items,

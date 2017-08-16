@@ -16,15 +16,13 @@
         <div class="margin20" v-if="projects">
             <h2 class="group-title">Private Projects</h2>
             <p class="text-muted">Only the members of project can access datasets inside private projects.</p>
-            <div v-for="project in projects" :key="project._id" class="card" v-if="project.access == 'private'">
-                <projectcard :project="project"/><br>
-            </div>
+            <projectcard v-for="project in projects" :key="project._id" class="card" v-if="project.access == 'private'" :project="project"/>
             <br clear="both">
+            <br>
             <h2 class="group-title">Public Projects</h2>
             <p class="text-muted">Datasets are accessible to any users but only project member can update them.</p>
-            <div v-for="project in projects" :key="project._id" class="card" v-if="project.access == 'public'">
-                <projectcard :project="project"/><br>
-            </div>
+            <projectcard v-for="project in projects" :key="project._id" class="card" v-if="project.access == 'public'" :project="project"/>
+            <br clear="both">
         </div>
     </div><!--page-content-->
 </div>
@@ -107,6 +105,7 @@ box-shadow: 0 0 3px #aaa;
 }
 .group-title {
 color: #999;
+text-transform: uppercase;
 padding-bottom: 10px;
 border-bottom: 1px solid #ddd;
 }
@@ -114,5 +113,6 @@ border-bottom: 1px solid #ddd;
     width: 350px; 
     float: left;
     margin-right: 10px;
+    margin-bottom: 10px;
 }
 </style>

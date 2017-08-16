@@ -14,6 +14,7 @@
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/anat/t1w'">VolumeViewer</el-dropdown-item>
 
         <!--native UI TODO - only show viewer that makes sense for datatype -->
+        <el-dropdown-item command="raw">Raw Data</el-dropdown-item>
         <el-dropdown-item command="fslview" divided>FSL View</el-dropdown-item>
         <el-dropdown-item command="freeview">Free View</el-dropdown-item>
         <el-dropdown-item command="mrview">MR View</el-dropdown-item>
@@ -36,6 +37,7 @@ export default {
     },
 	methods: {
         select: function(com) {
+            console.log("selected", com);
             this.$emit('select', com);  
         }
     }
