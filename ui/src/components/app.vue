@@ -117,7 +117,6 @@ display: none;
 }
 .compact h4.name {
 padding: 2px;
-font-size: 95%;
 }
 .compact .name {
 padding: 5px 0px;
