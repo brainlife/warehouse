@@ -39,6 +39,7 @@
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
+                <p class="text-muted" style="margin: 10px; text-align: right;">Total Datasets <b>{{total_datasets}}</b></p>
                 <div v-for="(page, page_idx) in pages">
                     <!--show empty div to speed rendering up if it's outside the view-->
                     <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
@@ -138,18 +139,15 @@ export default {
     data () {
         return {
             pages: [], //groups of datasets 
-            datasets_count: 0, //number of all datasets on server given current query
+            total_datasets: null, //number of datasets for this project
+            page_info: [], //{top/bottom/visible/}
+            loading: false,
 
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
 
             query: localStorage.getItem('datasets.query'),
 
-            loading: false,
-            done_loading: false,
-
-            page_info: [], //{top/bottom/visible/}
-            
             //cache
             datatypes: null,
             projects: null,
@@ -213,7 +211,8 @@ export default {
 
 	methods: {
         reload: function() {
-            this.datasets_count = 0;
+            this.pages = [];
+            this.page_info = [];
             this.load();
         },
         
@@ -233,7 +232,7 @@ export default {
         
 		page_scrolled: function(e) {
             var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
-            if (page_margin_bottom < 500) this.load();
+            if (page_margin_bottom < 800) this.load();
 
             this.page_info.forEach((page,idx)=>{
                 var top = e.target.scrollTop;
@@ -258,8 +257,6 @@ export default {
 
         load: function() {
             if(this.loading) return;
-            if(this.done_loading) return;
-            this.loading = true;
 
 			var find = {
                 removed: false,
@@ -271,41 +268,47 @@ export default {
             if(this.query) {
                 find.$text = {$search: this.query};
             }
+
+            //count number of datasets loaded
+            var loaded = 0;
+            this.pages.forEach(page=>{
+                for(var subject in page) {
+                    loaded += page[subject].length;
+                }
+            });
+            if(loaded == this.total_datasets) return;
             
+            this.loading = true;
             var limit = 100;
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
-                skip: this.datasets_count,
+                skip: loaded,
                 limit,
                 select: '-prov',
                 sort: 'meta.subject -create_date'
             }})
             .then(res=>{
-                this.datasets_count += res.body.datasets.length;
-                if(this.datasets_count == res.body.count) {
-                    this.done_loading = true;
-                } else {
-                    //set checked flag for each dataset
-                    var groups = {};
-                    res.body.datasets.forEach(dataset=>{
-                        //Vue.set(dataset, 'checked', this.selected[dataset._id]);
-                        dataset.checked = this.selected[dataset._id];
+                this.total_datasets = res.body.count;
 
-                        var subject = "nosub"; //not all datasets has subject tag
-                        if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
-                        if(!groups[subject]) groups[subject] = [];
-                        groups[subject].push(dataset);
-                    });
-                    this.pages.push(groups);
+                //set checked flag for each dataset
+                var groups = {};
+                res.body.datasets.forEach(dataset=>{
+                    //Vue.set(dataset, 'checked', this.selected[dataset._id]);
+                    dataset.checked = this.selected[dataset._id];
 
-                    this.$nextTick(()=>{
-                        var h = document.getElementById("scrolled-area").scrollHeight;
-                        var prev = 0;
-                        if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
-                        this.page_info.push({top: prev, bottom: h-1, height: h-1-prev, visible: true});
-                    });
-                }
+                    var subject = "nosub"; //not all datasets has subject tag
+                    if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
+                    if(!groups[subject]) groups[subject] = [];
+                    groups[subject].push(dataset);
+                });
+                this.pages.push(groups);
 
+                this.$nextTick(()=>{
+                    var h = document.getElementById("scrolled-area").scrollHeight;
+                    var prev = 0;
+                    if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
+                    this.page_info.push({top: prev, bottom: h-1, height: h-1-prev, visible: true});
+                });
                 this.loading = false;
             }, err=>{
                 console.error(err);
@@ -570,9 +573,9 @@ export default {
     border-bottom: 1px solid #eee;
 }
 .list .dataset {
-    /* padding: 3px 0px;
     margin-bottom: 1px;  */
     transition: background-color 0.3s;
+    padding: 2px 0px;
 }
 .list .dataset.clickable:hover {
     background-color: #ccc;
