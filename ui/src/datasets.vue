@@ -38,14 +38,18 @@
             <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <!--start of dataset list-->
-            <div class="list">
-                <div v-for="(datasets_grouped, grouped_page) in pages_grouped" v-if="Math.abs(grouped_page - page) <= 2 && (log(grouped_page, page) || true)">
-                    <el-row class="group" v-for="(datasets, subject) in datasets_grouped" :key="subject" v-observe-visibility="dataset_visibility_changed(datasets[0])">
+            <div class="list" id="scrolled-area">
+                <div v-for="(page, page_idx) in pages">
+                    <!--show empty div to speed rendering up if it's outside the view-->
+                    <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
+                        :style="{height: page_info[page_idx].height}">dummy <pre>{{page_info[page_idx]}}</pre></div>
+
+                    <el-row class="group" v-for="(datasets, subject) in page" :key="subject" v-else>
                         <el-col :span="3">
                             <strong>{{subject}}</strong>
                         </el-col> 
                         <el-col :span="21">
-                            <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}" v-bind:style="'display:inline-block; width:100%; min-height:'+dataset_item_size+'px; max-height: '+dataset_item_size+'px;'">
+                            <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}">
                                 <el-row>
                                     <el-col :span="1">
                                         <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
@@ -137,20 +141,18 @@ export default {
     },
     data () {
         return {
-            datasets: [], //datasets loaded so far
-            datasets_count: null, //number of all datasets on server given current query
+            pages: [], //groups of datasets 
+            datasets_count: 0, //number of all datasets on server given current query
 
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
 
-            //dataset_open: null, //currently "opened" dataset
-
             query: localStorage.getItem('datasets.query'),
 
             loading: false,
-            dataset_item_size: 32,
-            visible: {},    // contains which datasets are visible, by id
-            page: 0,
+            done_loading: false,
+
+            page_info: [], //{top/bottom/visible/}
             
             //cache
             datatypes: null,
@@ -161,26 +163,6 @@ export default {
     },
 
     computed: {
-        //group datasets by subject
-        pages_grouped: function() {
-            if(!this.datasets) return null;
-            var groups = {}, pages = {};
-            
-            this.datasets.forEach(dataset=>{
-                var subject = "nosub"; //not all datasets has subject tag
-                if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
-                if(!groups[subject]) groups[subject] = [];
-                groups[subject].push(dataset);
-            });
-            
-            for (var subject in groups) {
-                var page = groups[subject][0].page;
-                if (!pages[page]) pages[page] = [];
-                pages[page].push(groups[subject]);
-            }
-            return pages;
-        },
-        
         selected_count: function() {
             return Object.keys(this.selected).length;
         },
@@ -231,20 +213,13 @@ export default {
             this.check_project_id();
             this.reload();
         },
-        
-        visible: function(v) {
-            
-        }
     },
 
 	methods: {
         reload: function() {
-			this.datasets = [];
-            this.datasets_count = null;
+            this.datasets_count = 0;
             this.load();
         },
-        
-        log: console.log,
         
         check_project_id: function() {
             this.project_id = this.$route.params.projectid;
@@ -260,20 +235,14 @@ export default {
             }
         },
         
-        dataset_visibility_changed: function(dataset) {
-            let vm = this;
-            return function(isVisible, entry) {
-                // Vue.set(vm.visible, dataset._id, isVisible);
-                vm.page = dataset.page;
-            };
-        },
-        
 		page_scrolled: function(e) {
-            var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;/*,
-                page_margin_top = e.target.scrollHeight;*/
-            
+            var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
             if (page_margin_bottom < 500) this.load();
-            // else if (page_margin_top < 500) this.prevPage();
+
+            this.page_info.forEach((page,idx)=>{
+                var top = e.target.scrollTop;
+                page.visible = top < page.bottom && top + e.target.clientHeight > page.top;
+            });
         },
 
         change_query_debounce: function() {
@@ -293,10 +262,7 @@ export default {
 
         load: function() {
             if(this.loading) return;
-            if(this.datasets.length === this.datasets_count) {
-                this.loading = false;
-                return;
-            }
+            if(this.done_loading) return;
             this.loading = true;
 
 			var find = {
@@ -310,23 +276,38 @@ export default {
                 find.$text = {$search: this.query};
             }
             
-            var limit = 100, page = (this.datasets.length - this.datasets.length % limit) / limit;
+            var limit = 100;
             this.$http.get('dataset', {params: {
                 find: JSON.stringify(find),
-                skip: this.datasets.length,
+                skip: this.datasets_count,
                 limit,
                 select: '-prov',
                 sort: 'meta.subject -create_date'
             }})
             .then(res=>{
-                this.datasets_count = res.body.count;
-                
-                //set checked flag for each dataset
-				res.body.datasets.forEach(dataset=>{
-                    dataset.page = page;
-					this.datasets.push(dataset);
-                    if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
-                });
+                this.datasets_count += res.body.datasets.length;
+                if(this.datasets_count == res.body.count) {
+                    this.done_loading = true;
+                } else {
+                    //set checked flag for each dataset
+                    var groups = {};
+                    res.body.datasets.forEach(dataset=>{
+                        if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
+
+                        var subject = "nosub"; //not all datasets has subject tag
+                        if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
+                        if(!groups[subject]) groups[subject] = [];
+                        groups[subject].push(dataset);
+                    });
+                    this.pages.push(groups);
+
+                    this.$nextTick(()=>{
+                        var h = document.getElementById("scrolled-area").scrollHeight;
+                        var prev = 0;
+                        if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
+                        this.page_info.push({top: prev, bottom: h-1, height: h-1-prev, visible: true});
+                    });
+                }
 
                 this.loading = false;
             }, err=>{
@@ -334,6 +315,7 @@ export default {
                 this.loading = false;
             });
         },
+
         go: function(path) {
             this.$router.push(path);
         },
