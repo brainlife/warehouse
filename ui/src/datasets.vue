@@ -111,7 +111,6 @@
             <viewerselect @select="view" size="small"></viewerselect>
         </div>
     </div>
-
 </div>
 </template>
 
@@ -127,9 +126,6 @@ import viewerselect from '@/components/viewerselect'
 import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-
-import { ObserveVisibility } from 'vue-observe-visibility/dist/vue-observe-visibility'
-Vue.directive('observe-visibility', ObserveVisibility);
 
 var debounce = null;
 
@@ -292,7 +288,8 @@ export default {
                     //set checked flag for each dataset
                     var groups = {};
                     res.body.datasets.forEach(dataset=>{
-                        if(this.selected[dataset._id]) Vue.set(dataset, 'checked', true);
+                        //Vue.set(dataset, 'checked', this.selected[dataset._id]);
+                        dataset.checked = this.selected[dataset._id];
 
                         var subject = "nosub"; //not all datasets has subject tag
                         if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
@@ -321,10 +318,10 @@ export default {
         },
         check: function(dataset) {
             if(this.selected[dataset._id]) {    
-                Vue.set(dataset, 'checked', false);
+                dataset.checked = false;
                 Vue.delete(this.selected, dataset._id);
             } else {
-                Vue.set(dataset, 'checked', true);
+                dataset.checked = true;
                 Vue.set(this.selected, dataset._id, dataset);
             }
             this.persist_selected();
@@ -333,20 +330,27 @@ export default {
             localStorage.setItem('datasets.selected', JSON.stringify(this.selected));
         },
         clear_selected: function() {
-            for(var id in this.selected) {
-                //find dataset ref
-                this.datasets.forEach(dataset=>{
-                    if(dataset._id == id) dataset.checked = false;
-                });
-            }
+            //unselect all 
+            this.pages.forEach(page=>{
+                for(var subject in page) {
+                    page[subject].forEach(dataset=>{
+                        dataset.checked = false;
+                    });
+                }
+            });
             this.selected = {};
             this.persist_selected();
         },
         remove_selected: function(dataset) {
-            //find dataset ref
-            this.datasets.forEach(_d=>{
-                if(dataset._id == _d._id) _d.checked = false;
+            //NOTE - selected[] contains clone of the datasets selected - not the same object so I can't just do "dataset.checked = false"
+            //find the real dataset object
+            this.pages.forEach(page=>{
+                for(var subject in page) {
+                    var d = page[subject].find(d=>d._id == dataset._id);
+                    if(d) d.checked = false;
+                }
             });
+            dataset.checked = false;
             Vue.delete(this.selected, dataset._id);
             this.persist_selected();
         },
