@@ -479,6 +479,7 @@ methods: {
                     }
                     var msg = event.msg;
                     if(!msg || !msg._id) return; //odd..
+                    console.log(msg._id, msg.status, msg.status_msg);
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         var t = this.tasks.find(t=>t._id == msg._id);
