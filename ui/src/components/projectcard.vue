@@ -55,7 +55,7 @@ padding-top: 10px;
 .desc {
 height: 130px;
 font-size: 13px;
-color: #666;
+color: #333;
 line-height: 140%;
 text-overflow:ellipsis;
 overflow: hidden;
