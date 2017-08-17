@@ -90,7 +90,7 @@ font-size: 80%;
 .desc {
 max-height: 130px;
 font-size: 13px;
-color: #666;
+color: #333;
 line-height: 140%;
 overflow: hidden;
 margin: 10px 0px;
@@ -116,7 +116,7 @@ opacity: 0.7;
 display: none;
 }
 .compact h4.name {
-padding: 5px;
+padding: 2px;
 font-size: 95%;
 }
 .compact .name {
@@ -124,8 +124,8 @@ padding: 5px 0px;
 margin-bottom: 0px;
 }
 .compact .desc {
-margin: 5px;
-margin-top: 0px;
+margin: 0px;
+margin-top: 5px;
 font-size: 90%;
 }
 .devs {

@@ -176,6 +176,8 @@ export default {
         },
         remove: function() {
             if(confirm("Do you really want to remove this process and all tasks?")) {
+                //TODO - I wonder if I should set selected to null before making delete request to avoid
+                //receiving a flood of events.. but if delete fails for some reason, user won't know..
                 this.$http.delete(Vue.config.wf_api+'/instance/'+this.selected._id).then(res=>{
                     var idx = this.instances.indexOf(this.selected);
                     this.instances.splice(idx, 1);
