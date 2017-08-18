@@ -145,7 +145,6 @@ margin-top: 0px;
 }
 .el-card {
 border-radius: 0px !important;
-margin-bottom: 10px !important;
 }
 .navigation {
 color: #999;

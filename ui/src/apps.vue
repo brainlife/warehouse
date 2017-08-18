@@ -16,7 +16,9 @@
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div v-for="(apps, tag) in app_groups" key="tag" class="margin20">
             <h2 class="group-title">{{tag}}</h2> 
-            <app v-for="app in apps" key="app._id" :app="app" class="card" :descheight="130"></app>
+            <div v-for="app in apps" key="app._id" class="app">
+                <app :app="app" :descheight="130"></app>
+            </div>
             <br clear="both">
         </div>
     </div><!--page-content-->
@@ -78,16 +80,16 @@ export default {
     border: none;
     box-shadow: 0 0 3px #aaa;
 }
-.card {
-    width: 350px; 
-    float: left;
-    margin-right: 10px;
-    margin-bottom: 10px;
-}
 .group-title {
     color: #999;
     text-transform: uppercase;
     padding-bottom: 10px;
     border-bottom: 1px solid #ddd;
+}
+.app {
+margin-right: 10px;
+margin-bottom: 10px;
+width: 350px;
+float: left;
 }
 </style>

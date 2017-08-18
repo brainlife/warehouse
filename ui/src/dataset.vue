@@ -112,6 +112,7 @@
         <tr>
             <th>Provenance / Derivative</th>
             <td>
+                <pre>{{prov}}</pre>
                 <p class="text-muted">TODO</p>
                 <el-button-group style="float: right;">
                     <el-button size="small" @click="download_prov()" icon="document">Download Provenance</el-button>
@@ -256,6 +257,7 @@ export default {
             dataset: null,
             task: null, //task that produced this dataset (optional)
             apps: null,
+            prov: null, 
             derivatives: {},
 
             selfurl: document.location.href,
@@ -374,7 +376,16 @@ export default {
                 //should I do this via computed?
                 if(!res) return;
                 this.apps = lib.filter_apps(this.dataset, res.body.apps);
-            }).catch(err=>{
+
+                //load provenance
+                return this.$http.get('dataset/prov/'+this.dataset._id, {params: {
+                    //find: JSON.stringify({"project": this.dataset.project}),
+                    //distinct: 'tags',
+                }});
+            }).then(res=>{
+                this.prov = res.body;
+
+             }).catch(err=>{
                 console.error(err);
             });
         },
@@ -438,7 +449,6 @@ export default {
                     });
                 }
             });
-
         },
     },
 }

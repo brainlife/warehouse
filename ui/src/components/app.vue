@@ -117,7 +117,6 @@ display: none;
 }
 .compact h4.name {
 padding: 2px;
-font-size: 95%;
 }
 .compact .name {
 padding: 5px 0px;
@@ -129,10 +128,10 @@ margin-top: 5px;
 font-size: 90%;
 }
 .devs {
-    background-color: #eee;
-    padding: 10px;
-    height: 55px;
-    overflow-y: auto;
-    overflow-x: hidden;
+background-color: #eee;
+padding: 10px;
+height: 55px;
+overflow-y: auto;
+overflow-x: hidden;
 }
 </style>

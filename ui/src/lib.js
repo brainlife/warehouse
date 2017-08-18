@@ -53,6 +53,7 @@ function filter_datasets(datasets, input) {
     });
 }
 
+/*
 //take app's config template and create a real config using download_task_id
 function generate_config(app, download_task_id, formconfig) {
     var config = app.config;
@@ -92,5 +93,6 @@ function generate_config(app, download_task_id, formconfig) {
     console.log("generated config", config);
     return config;
 }
+*/
 
-export { filter_apps, filter_datasets, generate_config };
+export { filter_apps, filter_datasets };

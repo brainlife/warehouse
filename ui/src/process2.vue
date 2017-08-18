@@ -5,7 +5,7 @@
             :class="{animated: true, headShake: _datasets.length == 0}" 
             @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
         <h3>Datasets</h3>
-        <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)">
+        <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
             <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
             <b v-else class="text-muted">(no subject)</b>
@@ -90,6 +90,10 @@
                             (d.{{output.did}})
                         </mute>
                         <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
+                        <span @click="go('/dataset/'+output.dataset_id)" class="clickable">
+                            <el-tag v-if="output.dataset_id">From <b>{{projects[output.project].name}}</b></el-tag>
+                        </span>
+
                         <div style="float: right;">
                             <div v-if="task.status == 'finished'">
                                 <viewerselect @select="view(task._id, $event, output.subdir)" :datatype="datatypes[output.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
@@ -479,6 +483,7 @@ methods: {
                     }
                     var msg = event.msg;
                     if(!msg || !msg._id) return; //odd..
+                    console.log(msg._id, msg.status, msg.status_msg);
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         var t = this.tasks.find(t=>t._id == msg._id);
@@ -659,7 +664,6 @@ methods: {
         var _outputs = [];
         var did = this.next_did();
         for(var dataset_id in datasets) {
-
             //ignore already staged dataset
             var found = false;
             this._datasets.forEach(dataset=>{
@@ -669,20 +673,18 @@ methods: {
                 this.$notify('Dataset(s) specified is already staged. Skipping.');
                 return;
             }
-
             download.push({
                 url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
                 untar: "auto",
                 dir: dataset_id,
             });
-
-            var dataset = Object.assign({
+            _outputs.push(Object.assign(datasets[dataset_id], {
                 id: dataset_id, 
                 did: did++,
                 subdir: dataset_id, 
-                dataset_id
-            }, datasets[dataset_id]);
-            _outputs.push(dataset);
+                dataset_id,
+                prov: null,
+            }));
         }
         this.$http.post(Vue.config.wf_api+'/task', {
             instance_id: this.instance._id,
@@ -769,7 +771,6 @@ methods: {
         }).then(res=>{
             this.newtask.app = null;
             var task = res.body.task;
-            //this.tasks.push(task);
             this.update_apps();
         });
     },
