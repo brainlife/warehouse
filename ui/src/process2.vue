@@ -125,9 +125,7 @@
                             </ul>
                         </div>
 
-                        <archiveform v-if="archiving === output.did" 
-                            :task="task" 
-                            :output="output" 
+                        <archiveform v-if="archiving === output.did" :task="task" :output="output" 
                             @done="done_archive" style="margin-top: 30px;"></archiveform>
                     </el-col>
                     </el-row>

@@ -112,7 +112,7 @@
         <tr>
             <th>Provenance / Derivative</th>
             <td>
-                <pre>{{prov}}</pre>
+                <pre v-if="config.debug">{{prov}}</pre>
                 <p class="text-muted">TODO</p>
                 <el-button-group style="float: right;">
                     <el-button size="small" @click="download_prov()" icon="document">Download Provenance</el-button>
