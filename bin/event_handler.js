@@ -11,89 +11,77 @@ const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
+const prov = require('../api/prov');
 
 // TODO  Look for failed tasks and report to the user/dev?
 
 logger.info("starting event handler");
 
-//init and start 
-var acon = null;
-var rcon = null;
-async.series([
-        
-    //connect to mongo
-    db.init,
-   
-    //connect to amqp
-    next=>{
-        //logger.debug("connecting amqp");
-        acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-        acon.on('error', next);
-        acon.on('ready', ()=>{
-            logger.info("amqp connection ready");
-            next();
-        });
-    },
+setInterval(health_check, 1000*60*3); //It has to be long enough - when it needs to transfer data
 
-    //connect to redis
-    next=>{
-        //logger.debug("connecting redis");
-        rcon = redis.createClient(config.redis.port, config.redis.server);
-        rcon.on('error', next);
-        rcon.on('ready', ()=>{
-            logger.info("redis connection ready");
-            next();
-        });
-    },
-
-    //start health check
-    next=>{
-        setInterval(health_check, 1000*60*3); //It has to be long enough - when it needs to transfer data
-        next();
-    },
-    
-    //ensure queues/binds and subscribe to instance events
-    next=>{
-        logger.debug("subscribing to instance event");
-        acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
-            logger.debug("binding wf.instance > warehouse.instance");
-            instance_q.bind('wf.instance', '#');
-            instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
-                handle_instance(instance, err=>{
-                    if(err) {
-                        logger.error(err)
-                        //continue .. TODO - maybe I should report the failed event to failed queue?
-                    }
-                    instance_q.shift();
-                });
-            });
-            next();
-        });
-    },
- 
-    //ensure queues/binds and subscribe to task events
-    next=>{
-        logger.debug("subscribing to task event");
-        acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
-            logger.debug("binding wf.task > warehouse.task");
-            task_q.bind('wf.task', '#');
-            task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
-                handle_task(task, err=>{
-                    if(err) {
-                        logger.error(err)
-                        //TODO - maybe I should report the failed event to failed queue?
-                    }
-                    task_q.shift();
-                });
-            });
-            next();
-        });
-    },
-    
-], err=>{
-    if(err) throw err;
-    logger.info("application started");
+db.init(err=>{
+    logger.info("connected to mongo");
 });
+
+//init and start 
+var acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+acon.on('error', logger.error);
+acon.on('ready', ()=>{
+    logger.info("connected to amqp");
+    subscribe();
+});
+
+var rcon = redis.createClient(config.redis.port, config.redis.server);
+rcon.on('error', logger.error);
+rcon.on('ready', ()=>{
+    logger.info("connected to redis");
+});
+
+function subscribe() {
+    async.series([
+        //ensure queues/binds and subscribe to instance events
+        next=>{
+            logger.debug("subscribing to instance event");
+            acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
+                logger.debug("binding wf.instance > warehouse.instance");
+                instance_q.bind('wf.instance', '#');
+                instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
+                    handle_instance(instance, err=>{
+                        if(err) {
+                            logger.error(err)
+                            //continue .. TODO - maybe I should report the failed event to failed queue?
+                        }
+                        instance_q.shift();
+                    });
+                });
+                next();
+            });
+        },
+     
+        //ensure queues/binds and subscribe to task events
+        next=>{
+            logger.debug("subscribing to task event");
+            acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
+                logger.debug("binding wf.task > warehouse.task");
+                task_q.bind('wf.task', '#');
+                task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
+                    handle_task(task, err=>{
+                        if(err) {
+                            logger.error(err)
+                            //TODO - maybe I should report the failed event to failed queue?
+                        }
+                        task_q.shift();
+                    });
+                });
+                next();
+            });
+        },
+        
+    ], err=>{
+        if(err) throw err;
+        logger.info("done subscribing");
+    });
+}
 
 /*
 var _health = {
@@ -137,7 +125,10 @@ function health_check() {
 
 function handle_task(task, cb) {
     _counts.tasks++;
-    //_health.last_task_date = new Date();
+
+    prov.register_task(task, err=>{
+        if(err) return logger.error(err);
+    });
 
     if(task.status == "finished" && task.config && task.config._outputs) {
         logger.info("handling task", task._id, task.status, task.name);

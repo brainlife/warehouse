@@ -62,7 +62,7 @@ function run() {
         }, err=>{
             if(err) logger.error(err);
             logger.debug("done with all rules - sleeping for a while");
-            setTimeout(run, 1000*60);
+            setTimeout(run, 1000*30);
         });
 	});
 }
@@ -239,7 +239,7 @@ function handle_rule(rule, cb) {
 
             db.Datasets.find(query)
             .populate('datatype')
-            .sort('-create_date') //find the latest one
+            .sort('create_date') //find the latest one
             .lean()
             .exec((err, datasets)=>{
                 if(err) return next_input(err);
@@ -359,33 +359,6 @@ function handle_rule(rule, cb) {
                 });
             },
 
-            /*
-            //load current task statuses of all input datasets
-            next=>{
-                //get tasks IDs that I care about
-                var ids = []; 
-                for(var input_id in inputs) {
-                    var input = inputs[input_id];
-                    if(input.prov && input.prov.task_id) ids.push(input.prov.task_id);
-                }
-                //load them
-                request.get({
-                    url: config.wf.api+"/task", json: true,
-                    headers: { authorization: "Bearer "+jwt },
-                    qs: {
-                        find: JSON.stringify({_id: {$in: ids}}),
-                    },
-                }, (err, res, body)=>{
-                    if(err) return next(err);
-                    //create id>task mapping
-                    body.tasks.forEach(task=>{
-                        tasks[task._id] = task;
-                    });
-                    next();
-                });
-            },
-            */
-            
             //submit input staging task for datasets that aren't staged yet
             next=>{
                 var did = next_tid*10;
@@ -393,19 +366,20 @@ function handle_rule(rule, cb) {
                 var downloads = [];
                 for(var input_id in inputs) {
                     var input = inputs[input_id];
-                    input.input_id = input_id;
+                    input.id = input_id;
 
                     function canuse_source() {
                         var task = null;
                         if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
                         if(task && task.status != 'removed'/* && task.instance_id == instance._id*/) {
                             logger.debug("found the task generated the input dataset");
-                            //we still have the datasets staged (most likely from this process) use it..
                             deps.push(task._id); 
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
                                 did: did++,
                                 task_id: task._id,
+                                subdir: input.prov.subdir,
+                                output_id: input.prov.output_id,
                                 prov: null, //remove dataset prov
                             }));
                             return true;
@@ -421,8 +395,12 @@ function handle_rule(rule, cb) {
                         for(var task_id in tasks) {
                             task = tasks[task_id];
                             if(task.service == "soichih/sca-product-raw" && task.status != 'removed') {
-                                //logger.debug("checking for already staged output", task.config._outputs);
+                                logger.debug("checking for already staged output", input.id, input._id.toString());
                                 output = task.config._outputs.find(o=>o._id == input._id);
+                                if(output) {
+                                    logger.debug("found it", output);
+                                    break;
+                                }
                             }
                         }
                         if(output) {
@@ -433,6 +411,8 @@ function handle_rule(rule, cb) {
                                 did: did++,
                                 task_id: task._id,
                                 subdir: output.subdir, 
+                                dataset_id: output.dataset_id,
+                                output_id: output.id, 
                                 prov: null, //remove dataset prov
                             }));
                             return true;
@@ -449,14 +429,14 @@ function handle_rule(rule, cb) {
                             dir: input._id,
                         });
                         var output = Object.assign({}, input, {
-                            id: input._id,
                             datatype: input.datatype._id, //unpopulate datatype to keep it clean
                             did: did++,
                             subdir: input._id,
+                            dataset_id: input._id, 
                             prov: null, //remove dataset prov
                         });
                         _outputs.push(output);
-                        _app_inputs.push(output);
+                        _app_inputs.push(Object.assign({output_id: input.id}, output)); 
                     }
                 }
 
@@ -586,8 +566,8 @@ function process_input_config(config, inputs, datasets, task_stage) {
             switch(v.type) {
             case "input":
                 var input = inputs[v.input_id];
-                var dataset = datasets.find(d=>d.input_id == v.input_id);
-
+                var dataset = datasets.find(d=>d.id == v.input_id);
+                //console.log("looking", v.input_id, "dataset is ", dataset);
                 var base = "../"+dataset.task_id;
                 if(dataset.subdir) base+="/"+dataset.subdir;
 

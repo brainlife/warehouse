@@ -11,6 +11,7 @@ const async = require('async');
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
+const prov = require('./prov');
 
 exports.archive_task = function(task, dataset, files_override, auth, cb) {
     if(!files_override) files_override = {};
@@ -104,6 +105,9 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         } else {
                             dataset.storage = storage;
                             dataset.status = "stored";
+                            prov.register_dataset(dataset, err=>{
+                                //TODO..
+                            });
                         }
                         logger.debug("streaming finished with code:", code);
                         dataset.save(_err=>{

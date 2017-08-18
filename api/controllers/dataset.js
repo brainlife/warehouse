@@ -13,6 +13,7 @@ const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
+const prov = require('../prov');
 
 /*
 String.prototype.addSlashes = function() {
@@ -170,6 +171,8 @@ router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired:
 router.get('/bibtex/:id', (req, res, next)=>{
     db.Datasets.findById(req.params.id, function(err, dataset) {
         if(err) return next(err);
+        if(!dataset) return res.status(404).end();
+
         res.set('Content-Type', 'application/x-bibtex');
         res.write("@misc{https://brain-life.org/warehouse/#/dataset/"+dataset._id+",\n")
         //res.write(" doi = {11.1111/b.ds."+dataset._id+"},\n");
@@ -180,6 +183,23 @@ router.get('/bibtex/:id', (req, res, next)=>{
         res.write(" year = {"+(dataset.create_date.getYear()+1900)+"},\n");
         res.write("}");
         res.end();
+    });
+});
+
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/prov/:id     Get provenance
+ * @apiDescription                  Get provenance graph info
+ *
+ */
+router.get('/prov/:id', (req, res, next)=>{
+    db.Datasets.findById(req.params.id, function(err, dataset) {
+        if(err) return next(err);
+        if(!dataset) return res.status(404).end();
+        prov.query(dataset, (err, _prov)=>{
+            if(err) return next(err);
+            res.json(_prov);
+        });
     });
 });
 

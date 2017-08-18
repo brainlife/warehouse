@@ -7,6 +7,7 @@ const mkdirp = require('mkdirp'); //for dc2
 const pkgcloud = require('pkgcloud');
 
 exports.mongodb = "mongodb://localhost/warehouse";
+exports.neo4j = "http://neo4j:whatever@localhost:7474";
 
 //used to post/poll health status from various services
 exports.redis = {
