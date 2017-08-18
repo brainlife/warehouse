@@ -84,6 +84,7 @@ export default {
     color: white;
     left: 90px;
     overflow-y: auto;
+    display: block;
     z-index: 2;
 }
 h3 {

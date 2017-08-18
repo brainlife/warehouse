@@ -103,7 +103,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .el-card {
 box-shadow: none;
 box-shadow: 0 0 3px #aaa;
@@ -116,6 +116,7 @@ border-bottom: 1px solid #ddd;
 }
 .project {
 margin-right: 10px;
+margin-bottom: 10px;
 width: 350px;
 float: left;
 }

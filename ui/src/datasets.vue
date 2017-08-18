@@ -43,8 +43,7 @@
                 <div v-for="(page, page_idx) in pages">
                     <!--show empty div to speed rendering up if it's outside the view-->
                     <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
-                        :style="{height: page_info[page_idx].height}">dummy <pre>{{page_info[page_idx]}}</pre></div>
-
+                        :style="{height: page_info[page_idx].height}">&nbsp;</div>
                     <el-row class="group" v-for="(datasets, subject) in page" :key="subject" v-else>
                         <el-col :span="3">
                             <strong>{{subject}}</strong>
@@ -128,7 +127,8 @@ import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
-var debounce = null;
+var query_debounce = null;
+var scroll_debounce = null;
 
 export default {
     components: { 
@@ -231,9 +231,17 @@ export default {
         },
         
 		page_scrolled: function(e) {
+
+            /*
+            //prevent calling this too often
+            if(scroll_debounce && Date.now()- scroll_debounce < 100) {
+                return;
+            }
+            scroll_debounce = Date.now();
+            */
+            
             var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
             if (page_margin_bottom < 800) this.load();
-
             this.page_info.forEach((page,idx)=>{
                 var top = e.target.scrollTop;
                 page.visible = top < page.bottom && top + e.target.clientHeight > page.top;
@@ -241,8 +249,8 @@ export default {
         },
 
         change_query_debounce: function() {
-            clearTimeout(debounce);
-            debounce = setTimeout(this.change_query, 300);        
+            clearTimeout(query_debounce);
+            query_debounce = setTimeout(this.change_query, 300);        
         },
 
         change_query: function() {

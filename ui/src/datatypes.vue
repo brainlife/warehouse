@@ -102,7 +102,7 @@ box-shadow: none;
 }
 </style>
 
-<style scope>
+<style scoped>
 .group-title {
 color: #999;
 padding-bottom: 10px;

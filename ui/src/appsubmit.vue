@@ -3,71 +3,76 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
-    <div class="margin20" v-if="app">
         <!--
-        <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="app._id">Submit {{app._id}}</el-breadcrumb-item>
-        </el-breadcrumb>
-        <br>
+        <div class="margin20" v-if="app">
+            <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
+            <h1>{{app.name}}</h1>
+            <p>{{app.desc}}</p>
+
+            <br clear="both">
+        </div>
         -->
+        
+        <div class="header">
+            <h1>Submit Application</h1>
+        </div>
+        <div class="content" v-if="app && projects">
+            <el-form :model="form" ref="form" label-position="left" label-width="200px">
+                <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
+                <el-form-item label="Application">
+                    <app :appid="app._id"/>
+                </el-form-item>
+                <!--
+                <el-form-item label="Resource">
+                    <p v-if="resource">This application can run on {{resource}}</p>
+                    <p v-else>There are currently no resource to run this application</p>
+                </el-form-item>
+                -->
+                <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
+                    <el-row :gutter="1">
+                        <el-col :span="8" style="padding-right:7px;">
+                            <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'" @input="preselect_single_items(input)"></projectselecter>
+                        </el-col>
+                        <el-col :span="15">
+                            <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'" :options="form.options[input.id]"></select2>
+                        </el-col>
+                    </el-row>
+                </el-form-item>
+                
+                <!-- TODO doesn't support nested parameters-->
+                <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
+                    <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01" :placeholder="v.placeholder">
+                    <el-input type="number" v-if="v.type == 'integer'" v-model.number="form.config[k]" :placeholder="v.placeholder"></el-input>
+                    <el-input v-if="v.type == 'string'" v-model="form.config[k]" :placeholder="v.placeholder"></el-input>
+                    <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox>
+                    <el-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder">
+                        <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
+                            <b>{{option.label}}</b>
+                            <small> - {{option.desc}}</small>
+                        </el-option>
+                    </el-select>
+                </el-form-item>
 
-        <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
-        <h1>{{app.name}}</h1>
-        <p>{{app.desc}}</p>
+                <el-form-item label="Description">
+                    <el-input type="textarea" v-model="form.desc" placeholder="Optional Description for this processing"></el-input>
+                </el-form-item>
+                <br>
+                <el-form-item>
+                    <el-button type="primary" @click="submit()">Submit</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
 
-        <br clear="both">
-    </div>
-
-    <div class="content" v-if="app && projects">
-        <el-form :model="form" ref="form" label-position="left" label-width="200px">
-            <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
-            <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
-                <el-row :gutter="1">
-                    <el-col :span="8" style="padding-right:7px;">
-                        <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'" @input="preselect_single_items(input)"></projectselecter>
-                    </el-col>
-                    <el-col :span="15">
-                        <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'" :options="form.options[input.id]"></select2>
-                    </el-col>
-                </el-row>
-            </el-form-item>
-            
-            <!-- TODO doesn't support nested parameters-->
-            <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
-                <!--<p class="text-muted" v-if="v.desc">{{v.desc}}</p>-->
-                <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01" :placeholder="v.placeholder">
-                <el-input type="number" v-if="v.type == 'integer'" v-model.number="form.config[k]" :placeholder="v.placeholder"></el-input>
-                <el-input v-if="v.type == 'string'" v-model="form.config[k]" :placeholder="v.placeholder"></el-input>
-                <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox>
-                <el-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder">
-                    <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
-                        <b>{{option.label}}</b>
-                        <small> - {{option.desc}}</small>
-                    </el-option>
-                </el-select>
-            </el-form-item>
-
-            <el-form-item label="Description">
-                <el-input type="textarea" v-model="form.desc" placeholder="Optional Description for this processing"></el-input>
-            </el-form-item>
-            <br>
-            <el-form-item>
-                <el-button type="primary" @click="submit()">Submit</el-button>
-            </el-form-item>
-        </el-form>
-    </div>
-
-    <br>
-    <el-card v-if="config.debug">
-        <div slot="header">Debug</div>
-        <h3>Form</h3>
-        <pre v-highlightjs="JSON.stringify(form, null, 4)"><code class="json hljs"></code></pre>
-        <h3>App</h3>
-        <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-        <h3>Datasets</h3>
-        <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
-    </el-card>
+        <br>
+        <el-card v-if="config.debug">
+            <div slot="header">Debug</div>
+            <h3>Form</h3>
+            <pre v-highlightjs="JSON.stringify(form, null, 4)"><code class="json hljs"></code></pre>
+            <h3>App</h3>
+            <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
+            <h3>Datasets</h3>
+            <pre v-highlightjs="JSON.stringify(datasets, null, 4)"><code class="json hljs"></code></pre>
+        </el-card>
     </div><!--page-content-->
 </div><!--root-->
 </template>
@@ -84,6 +89,7 @@ import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import select2 from '@/components/select2'
 import projectselecter from '@/components/projectselecter'
+import app from '@/components/app'
 
 const lib = require('./lib');
 
@@ -91,13 +97,13 @@ export default {
     components: { 
         sidemenu, contact, project, 
         tags, metadata, pageheader, 
-        appavatar, select2, projectselecter
+        appavatar, select2, projectselecter, app
      },
 
     data () {
         return {
             app: null,
-            resource: null,
+            //resource: null,
 
             form: {
                 desc: "",
@@ -144,7 +150,7 @@ export default {
         })
         .then(res=>{
             this.app = res.body.apps[0];
-            if(this.app.github) this.findbest(this.app.github);
+            //if(this.app.github) this.findbest(this.app.github);
 
             //TODO - update to handle nested parameters
             for(var k in this.app.config) {
@@ -178,7 +184,8 @@ export default {
                 }
             });
         },
-        
+
+        /*        
         findbest: function(service) {
           //find resource where we can run this app
           this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
@@ -190,6 +197,7 @@ export default {
             console.error(res);
           })
         },
+        */
         
         grab_items: function(input, params, cb) {
             // essentially the same code from datasetselecter.vue
@@ -266,8 +274,47 @@ export default {
             }
         },
 
-        submit: function() {
+        generate_config: function(download_task_id) {
+            var config = this.app.config;
+            var app = this.app;
+            var form = this.form;
+            function handle_obj(obj) {
+                for(var k in obj) { 
+                    var node = obj[k];
+                    if(!node) return;
+                    if(node.isArray) {
+                        console.log("todo.. array!");
+                    } else if(typeof node === 'object') {
+                        if(node.type) {
+                            switch(node.type) {
+                            case "input":
+                                //find the input 
+                                app.inputs.forEach(input=>{
+                                    if(input.id == node.input_id) {
+                                        //find the file
+                                        input.datatype.files.forEach(file=>{
+                                            if(file.id == node.file_id) {
+                                                obj[k] = "../"+download_task_id+"/"+form.inputs[input.id]+"/"+(file.filename||file.dirname)
+                                            }
+                                        });
+                                    } 
+                                });
+                                break;
+                            default:
+                                obj[k] = form.config[k];
+                            }
+                        } else handle_obj(node); //recurse
+                    }
+                }
+            }
 
+            handle_obj(config);
+            console.log("generated config", config);
+            return config;
+        },
+
+        //v2 process submit
+        submit: function() {
             //make sure all inputs are selected
             var validated = true;
             for(var k in this.form.inputs) {
@@ -278,49 +325,65 @@ export default {
                 return;
             }
 
+            var did = 0;
+            var app_inputs = [];
+            var meta = {};
+
             //first create an instance to run everything
             var instance = null;
-            var inst_config = {
-                brainlife: true,
-                type: "simple",
-                output_task_id: null, //will be set once submitted
-
-                //TODO - may deprecate.. I need to support multiple tasks 
-                prov: {
-                    app: this.app._id,
-                    task_id: null,
-                    config: null,
-                    deps: [], 
-                }
-            }
-            for(var input_id in this.form.inputs) {
-                inst_config.prov.deps.push({input_id, dataset: this.form.inputs[input_id]});
-            }
             this.$http.post(Vue.config.wf_api+'/instance', {
-                name: "brainlife process for app:"+this.app._id,
-                desc: this.form.desc,
-                config: inst_config,
+                //name: "brainlife process for app:"+this.app._id,
+                desc: this.form.desc||this.app.name,
+                config: {
+                    brainlife: true,
+                    type: "v2",
+                },
             }).then(res=>{
                 instance = res.body;
                 console.log("instance created", instance);
 
-                //create config to download all input data from archive
+                //pull datasets info that we are submitting with
+                return this.$http.get('dataset', {params: {
+                    find: JSON.stringify({_id: {$in: Object.values(this.form.inputs)}}),
+                }})
+            }).then(res=>{
                 var download = [];
-                for(var input_id in this.form.inputs) {
-                    download.push({
-                        url: Vue.config.api+"/dataset/download/"+this.form.inputs[input_id]+"?at="+Vue.config.jwt,
-                        untar: "auto",
-                        dir: "inputs/"+input_id,
-                    });
-                }
+                var _outputs = [];
+                var datasets = {};
+                res.body.datasets.forEach(d=>{
+                    datasets[d._id] = d;
 
+                    //aggregate metas
+                    for(var k in d.meta) meta[k] = d.meta[k];
+                });
+                
+                //create config to download all input data from archive
+                for(var input_id in this.form.inputs) {
+                    var dataset_id = this.form.inputs[input_id];
+                    download.push({
+                        url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
+                        untar: "auto",
+                        dir: dataset_id,
+                    });
+                    var output = Object.assign(datasets[dataset_id], {
+                        did: did++,
+                        subdir: dataset_id, 
+                        dataset_id,
+                        prov: null, //not needed
+                        id: input_id,
+                    });
+                    _outputs.push(output);
+
+                    //turn output into input for the app
+                    app_inputs.push(Object.assign({output_id: output.id}, output));
+                }
                 //now submit task to download data from archive
-                console.log("submitting download task", download);
+                console.log("submitting download task", download, _outputs);
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
-                    name: "Stage Input",
+                    name: "Staging Input Dataset",
                     service: "soichih/sca-product-raw",
-                    config: { download },
+                    config: { download, _outputs, _tid: 0 },
                 })
             }).then(res=>{
                 var download_task = res.body.task;
@@ -328,62 +391,50 @@ export default {
 
                 //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
 
-                //submit the main task
+
+                //submit the app task
+                var config = Object.assign(this.generate_config(download_task._id), {
+                    _app: this.app._id,
+                    _tid: 1,
+                    _inputs: app_inputs,
+                    _outputs: [],
+                });
+                this.app.outputs.forEach(output=>{
+                    var output_req = {
+                        id: output.id,
+                        did: did++,
+                        datatype: output.datatype._id,
+                        datatype_tags: output.datatype_tags,
+                        desc: output.id+ " from "+this.app.name,
+                        meta,
+                        files: output.files,
+                    };
+                    /* TODO..
+                    if(this.newtask.archive.enable) output_req.archive = {
+                        project: this.newtask.archive.project,
+                        desc: this.newtask.archive.desc,
+                        //tags: this.newtask.archive.tags, //deprecated - store this under output_req
+                    }
+                    */
+                    config._outputs.push(output_req);
+                });
+
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
                     name: this.app.name,
+                    //desc: this.form.desc, 
                     service: this.app.github,
-                    config: lib.generate_config(this.app, download_task._id, this.form.config),
-                    retry: this.app.retry,
+                    config,
                     deps: [ download_task._id ],
+                    retry: this.app.retry,
                 })
             }).then(res=>{
-                var main_task = res.body.task;
-                //TODO - I wonder if these should be deprecated (instance could have multiple tasks now)
-                inst_config.prov.task_id = main_task._id;
-                inst_config.prov.config = main_task.config;
-
-                //submit the output handling task
-                var symlink = [];
-                this.app.outputs.forEach(output=>{
-                    console.log("processing", output);
-                    if(output.files) {
-                        for(var file_id in output.files) {
-                            //find datatype file id
-                            output.datatype.files.forEach(datatype_file=>{
-                                if(datatype_file.id == file_id) {
-                                    var name = datatype_file.filename||datatype_file.dirname;
-                                    symlink.push({ 
-                                        "src": "../"+main_task._id+"/"+output.files[file_id], 
-                                        "dest": output.id+"/"+name 
-                                    });
-                                }
-                            });
-                        }
-                    } else {
-                        //copy everything..
-                        symlink.push({"src": "../"+main_task._id, "dest": output.id});
-                    }
-                });
-                return this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: instance._id,
-                    name: "Organize Output", 
-                    service: "soichih/sca-product-raw",
-                    config: { symlink },
-                    deps: [ main_task._id ],
-                })
-            }).then(res=>{
-                //add output_task_id information on instance config (used by ui to render main task)
-                inst_config.output_task_id = res.body.task._id;
-
-                inst_config.prov.instance_id = instance._id;
-                return this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, {
-                    config: inst_config,
-                });
-            }).then(res=>{
+                console.log("submitted app task", res.body.task);
+/*
                 //then request for notifications
                 return this.request_notifications(instance, inst_config.output_task_id);
             }).then(res=>{
+*/
                 //all done
                 this.$router.push("/processes/"+instance._id);
             }).catch(err=>{
@@ -425,5 +476,13 @@ background-color: #ddd;
 .content {
 background-color: white;
 padding: 20px;
+}
+.header {
+background-color: #666;
+padding: 20px;
+color: white;
+}
+.header h1 {
+margin: 0px;
 }
 </style>

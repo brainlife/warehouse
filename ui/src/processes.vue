@@ -2,13 +2,11 @@
 <div>
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/processes"></sidemenu>
-
     <div class="page-top" v-if="selected">
         <div style="margin: 10px; float: right;">
             <el-button v-if="!selected.config.removing" @click="remove()" icon="delete" title="Remove this process"/>
         </div>
         <statusicon :status="selected.status" :scale="1.75" style="width: 40px; text-align: center; float: left; margin: 10px;opacity: 0.6;"/>
-        <!--<b class="text-muted" style="float: left; margin-top: 8px;">Description</b>-->
         <div style="margin-left: 60px; margin-right: 100px;">
             <div v-if="editdesc">
                 <el-input type="textarea" placeholder="Process Description" style="padding-top: 3px;"
@@ -25,9 +23,11 @@
         <ul>
             <li v-for="instance in instances" :id="instance._id" :key="instance._id" @click="click(instance)" :class="{selected: selected == instance}">
                 <div style="float: left">
-                    <span class="status status-finished" v-if="instance.status == 'finished'" style="font-size: 140%;"><icon name="check"/></span>
                     <span class="status status-running" v-if="instance.status == 'running'"><icon name="cog" :spin="true"/></span>
-                    <span class="status status-failed" v-if="instance.status == 'failed'"><icon name="exclamation-circle"/></span>
+                    <span class="status status-requested" v-else-if="instance.status == 'requested'"><icon name="hourglass-o"/></span>
+                    <span class="status status-failed" v-else-if="instance.status == 'failed'"><icon name="exclamation-circle"/></span>
+                    <span class="status status-finished" v-else-if="instance.status == 'finished'" style="font-size: 140%;"><icon name="check"/></span>
+                    <span class="status status-unknown" v-else><icon name="question"/></span>
                 </div>
                 <div style="margin-left: 25px;">
                     <time v-if="instance._old">{{instance.create_date|date('%x')}}</time>
@@ -43,7 +43,7 @@
                 </div>
             </li>
         </ul>
-        <el-button class="fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></el-button>
+        <el-button class="button-fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></el-button>
     </div>
 
     <div class="page-content">
@@ -299,8 +299,7 @@ color: #2693ff;
 .process-list li.selected .status {
 color: white;
 }
-
-.el-button.fixed {
+.button-fixed {
 position: fixed;
 bottom: 20px;
 left: 290px;
@@ -316,7 +315,7 @@ border: none;
 box-shadow: 0px 0px 10px #333;
 transition: background-color 0.3s;
 }
-.el-button.fixed:hover {
+.button-fixed:hover {
 background-color: #2693ff;
 }
 </style>

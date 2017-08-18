@@ -88,6 +88,7 @@ export default {
 }
 .app {
 margin-right: 10px;
+margin-bottom: 10px;
 width: 350px;
 float: left;
 }

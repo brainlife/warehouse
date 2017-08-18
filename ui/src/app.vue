@@ -39,12 +39,43 @@
             </td>
         </tr>
         <tr>
-            <th>Citation</th>
+            <th>Source</th>
             <td>
-                <p>
-                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i> 
-                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
-                </p> 
+                <div v-if="app.github">
+                    Github
+                    <a :href="'http://github.com/'+app.github">{{app.github}}</a>
+                </div>
+                <div v-if="app.dockerhub">
+                    Dockerhub
+                    <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
+                </div>
+                <el-card v-if="readme" style="margin-top: 10px;">
+                    <vue-markdown :source="readme"></vue-markdown>
+                </el-card>
+            </td>
+        </tr>
+        <tr>
+            <th>Input Datatypes</th>
+            <td>
+                <p class="text-muted">You need following input datasets to run this application</p>
+                <div class="item" v-for="input in app.inputs">
+                    <!--<b>{{input.id}}</b>-->
+                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags" style="margin-bottom: 10px;"></datatype>
+                </div>
+            </td>
+        </tr>
+        <tr v-if="app.outputs.length">
+            <th>Output Datatypes</th>
+            <td>
+                <p class="text-muted">This application produces following output datasets</p>
+                <div class="item" v-for="output in app.outputs">
+                    <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags">
+                        <div v-if="output.files">
+                            <small>Output mapping</small>
+                            <pre v-highlightjs><code class="json hljs">{{output.files}}</code></pre>
+                        </div>
+                    </datatype>
+                </div>
             </td>
         </tr>
         <tr>
@@ -55,19 +86,6 @@
             <th>Developers</th>
             <td>
                 <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
-            </td>
-        </tr>
-        <tr>
-            <th>Source Code</th>
-            <td>
-                <div v-if="app.github">
-                    Github
-                    <a :href="'http://github.com/'+app.github">{{app.github}}</a>
-                </div>
-                <div v-if="app.dockerhub">
-                    Dockerhub
-                    <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
-                </div>
             </td>
         </tr>
         <tr v-if="app.retry">
@@ -105,27 +123,12 @@
             </td>
         </tr>
         <tr>
-            <th>Input Datatypes</th>
+            <th>Citation</th>
             <td>
-                <p class="text-muted">You need following input datasets to run this application</p>
-                <div class="item" v-for="input in app.inputs">
-                    <!--<b>{{input.id}}</b>-->
-                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags" style="margin-bottom: 10px;"></datatype>
-                </div>
-            </td>
-        </tr>
-        <tr v-if="app.outputs.length">
-            <th>Output Datatypes</th>
-            <td>
-                <p class="text-muted">This application produces following output datasets</p>
-                <div class="item" v-for="output in app.outputs">
-                    <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags">
-                        <div v-if="output.files">
-                            <small>Output mapping</small>
-                            <pre v-highlightjs><code class="json hljs">{{output.files}}</code></pre>
-                        </div>
-                    </datatype>
-                </div>
+                <p>
+                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i> 
+                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
+                </p> 
             </td>
         </tr>
         </table>
@@ -152,9 +155,14 @@ import project from '@/components/project'
 import tags from '@/components/tags'
 import datatype from '@/components/datatype'
 import appavatar from '@/components/appavatar'
+import VueMarkdown from 'vue-markdown'
 
 export default {
-    components: { sidemenu, pageheader, contact, project, tags, datatype, appavatar },
+    components: { 
+        sidemenu, pageheader, contact, 
+        project, tags, datatype, appavatar,
+        VueMarkdown, 
+     },
 
     data () {
         return {
@@ -162,6 +170,7 @@ export default {
             preferred_resource: null,
             resources: null,
             service_stats: null, 
+            readme: null,
 
             selfurl: document.location.href,
 
@@ -182,27 +191,24 @@ export default {
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.app.github) this.find_resources(this.app.github);
-
             if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
 
             //then load task stats
-            //console.dir(this.app);
-            this.$http.get(Vue.config.wf_api+'/task/stats', {params: {
-
-                //TODO this is raising "Cannot read property 'replace' of null 
-                //fix this, and also apply this on @blur event
-                //service: this.trimGit(this.app.github),
-
+            return this.$http.get(Vue.config.wf_api+'/task/stats', {params: {
                 service: this.app.github, 
                 service_branch: this.app.github_branch,
-            }})
-            .then(res=>{
-                this.service_stats = res.body;
-            }).catch(err=>{
-                console.error(err);
-            });
+            }});
+        }).then(res=>{
+            this.service_stats = res.body;
 
-        }, err=>{
+            //then load github README
+            var branch = this.app.github_branch||"master";
+            return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
+        }).then(res=>{
+            return res.text()
+        }).then(readme=>{
+            this.readme = readme;
+        }).catch(err=>{
             console.error(err);
         });
     },
