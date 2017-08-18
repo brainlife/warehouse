@@ -182,7 +182,8 @@ function archive_dataset(task, output, cb) {
                 prov: {
                     instance_id: task.instance_id,
                     task_id: task._id,
-                    app: task.config._app,
+                    app: task.config._app, //deprecated
+                    app_id: task.config._app, //deprecated
                     output_id: output.id,
                     subdir: output.subdir,
                 },

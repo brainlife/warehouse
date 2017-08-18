@@ -38,7 +38,7 @@ exports.register_task = (task, cb)=>{
                     query += `MERGE (t)-[:INPUT {input_id: '${input.id}'}]->(:Dataset {dataset_id: '${input.dataset_id}'}) `;
                 } else {
                     //input from other task
-                    query += `MERGE (t)-[:INPUT {input_id: '${input.id}', output_id: '${input.output_id}'}]->(:Task {task_id: '${input.task_id}'}) `;
+                    query += `MERGE (t)-[:INPUT {input_id: '${input.id}', output_id: '${input.output_id}'}]->(:Task {task_id: '${input.task_id}', app_id: '${input.app_id}'}) `;
                 }
             });
         }
@@ -59,7 +59,7 @@ exports.register_task = (task, cb)=>{
 exports.register_dataset = (dataset, cb)=>{
     var query = `MERGE (d:Dataset {dataset_id: '${dataset._id.toString()}'})-[:FROM {output_id: '${dataset.prov.output_id}'`;
     if(dataset.prov.subdir) query += `,subdir: '${dataset.prov.subdir}'`;
-    query += `}]->(:Task { task_id: '${dataset.prov.task_id}'}) RETURN d\n`;
+    query += `}]->(:Task { task_id: '${dataset.prov.task_id}', app_id: '${dataset.prov.app}'}) RETURN d\n`;
     logger.debug(query);
     db.cypher({ query }, (err, results)=>{
         if(err) return cb(err);
@@ -70,7 +70,7 @@ exports.register_dataset = (dataset, cb)=>{
 
 exports.query = (dataset, cb)=>{
     //var query = `MATCH (d:Dataset{dataset_id: '${dataset._id}'})-[dr:FROM]-(parent:Task) MATCH (parent)-[r*]-(n) RETURN d,dr,parent, r, n`;
-    var query = `MATCH (d:Dataset{dataset_id: '${dataset._id}'})-[dr:FROM]-(parent:Task) RETURN d,dr,parent`;
+    var query = `MATCH (d:Dataset{dataset_id: '${dataset._id}'})-[r*]-(n) RETURN d,r,n`;
     //var query = `MATCH (parent)-[r*]-(d:Dataset{dataset_id: '${dataset._id}'}) RETURN d,r,parent`;
     logger.debug(query);
     db.cypher({ query }, cb);

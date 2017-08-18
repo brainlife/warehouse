@@ -378,6 +378,7 @@ function handle_rule(rule, cb) {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
                                 did: did++,
                                 task_id: task._id,
+                                app_id: input.prov.app, //dataset stored app_id under "app" because it's meant to be populated (task_id is from other service)
                                 subdir: input.prov.subdir,
                                 output_id: input.prov.output_id,
                                 prov: null, //remove dataset prov
