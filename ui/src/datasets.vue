@@ -39,7 +39,7 @@
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
-                <p class="text-muted" style="margin: 10px; text-align: right;">Total Datasets <b>{{total_datasets}}</b></p>
+                <p class="text-muted" style="margin: 10px;">Total Datasets <b>{{total_datasets}}</b></p>
                 <div v-for="(page, page_idx) in pages">
                     <!--show empty div to speed rendering up if it's outside the view-->
                     <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
@@ -213,6 +213,7 @@ export default {
         reload: function() {
             this.pages = [];
             this.page_info = [];
+            this.total_datasets = null;
             this.load();
         },
         
@@ -284,7 +285,7 @@ export default {
                     loaded += page[subject].length;
                 }
             });
-            if(loaded == this.total_datasets) return;
+            if(loaded === this.total_datasets) return;
             
             this.loading = true;
             var limit = 100;
