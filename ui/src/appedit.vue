@@ -59,6 +59,7 @@
                 <p class="text-muted">If a task fails, it will rerun up to this count (0 means no retry)</p>
             </el-form-item>
             <el-form-item label="Configuration">
+                <configedit />
                 <!--
                 https://github.com/dhenkes/vue2-ace/issues/5
                 <editor :content="app._config" :sync="true" :lang="'json'"></editor>
@@ -150,9 +151,10 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import select2 from '@/components/select2'
+import configedit from '@/components/configedit'
 
 export default {
-    components: { sidemenu, editor, contactlist, pageheader, select2 },
+    components: { sidemenu, editor, contactlist, pageheader, select2, configedit },
     data () {
         return {
             app: {
