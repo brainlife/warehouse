@@ -67,6 +67,8 @@ import simpleprocess from '@/simpleprocess'
 import process from '@/process'
 import process2 from '@/process2'
 
+import ReconnectingWebSocket from 'reconnectingwebsocket'
+
 var debounce = null;
 
 export default {
@@ -87,6 +89,7 @@ export default {
             apps: null, //keyed by _id
 
             editdesc: false,
+            ws: null, //websocket
 
             config: Vue.config,
         }
@@ -143,6 +146,28 @@ export default {
                     area.scrollTop = elem.offsetTop - area.clientHeight/2;
                 }
             });
+
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+                console.log("binding to instance updates");
+                this.ws.send(JSON.stringify({
+                    bind: {
+                        ex: "wf.instance",
+                        key: Vue.config.user.sub+".#",
+                    }
+                }));
+            }
+            this.ws.onmessage = (json)=>{
+                var event = JSON.parse(json.data);
+                console.log("instance update");
+                console.dir(event.msg);
+                var instance = this.instances.find(i=>i._id == event.msg._id);
+                if(instance) {
+                    for(var k in event.msg) instance[k] = event.msg[k];
+                }
+            }
+
         }).catch(err=>{
           console.error(err);
         });

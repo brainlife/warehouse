@@ -460,19 +460,20 @@ methods: {
                     this.show_input_dialog = true;
                 }
 
-                console.log("binding to websocket for all things", this.instance._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: Vue.config.user.sub+"."+this.instance._id+".#",
                     }
                 }));
+                /*
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
                         key: Vue.config.user.sub+"."+this.instance._id,
                     }
                 }));
+                */
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
                     if(event.error) {
@@ -482,31 +483,21 @@ methods: {
                     var msg = event.msg;
                     if(!msg || !msg._id) return; //odd..
                     console.log(msg._id, msg.status, msg.status_msg);
-                    switch(event.dinfo.exchange) {
-                    case "wf.task":
-                        var t = this.tasks.find(t=>t._id == msg._id);
-                        if(!t) {
-                            //new task?
-                            this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
-                            this.tasks.push(msg); 
-                            this.update_apps();
-                            Vue.nextTick(()=>{
-                                this.scrollto(msg._id);
-                            });
-                        } else {
-                            //update
-                            if(t.status != msg.status) this.$notify("t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg);
-                            for(var k in msg) {
-                                t[k] = msg[k];
-                            }
+                    var t = this.tasks.find(t=>t._id == msg._id);
+                    if(!t) {
+                        //new task?
+                        this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
+                        this.tasks.push(msg); 
+                        this.update_apps();
+                        Vue.nextTick(()=>{
+                            this.scrollto(msg._id);
+                        });
+                    } else {
+                        //update
+                        if(t.status != msg.status) this.$notify("t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg);
+                        for(var k in msg) {
+                            t[k] = msg[k];
                         }
-                        break;
-                    case "wf.instance":
-                        //TODO - shouldn't mutate prop
-                        this.instance.status = msg.status; 
-                        break;
-                    default:
-                        console.error("unknown exchange", event.dinfo.exchange);
                     }
                 }
             }).catch((err)=>{
