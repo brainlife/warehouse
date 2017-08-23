@@ -1,9 +1,9 @@
 <template>
 <div style="display: inline-block;">
-    <el-tag v-for="(tag, i) in deco_tags" :type="tag.neg?'danger':'gray'" :key="i">
-        <icon name="ban" v-if="tag.neg"></icon>
+    <span v-for="(tag, i) in deco_tags" :key="i" class="badge" :class="{'badge-default': !tag.neg, 'badge-danger': tag.neg}">
+        <icon name="ban" v-if="tag.neg" scale="0.5"></icon>
         {{tag.name}}
-    </el-tag>
+    </span>
 </div>
 </template>
 
@@ -26,9 +26,12 @@ export default {
     }
 }
 </script>
-
 <style scoped>
-.el-tag {
-    margin-right: 5px;
+.badge {
+padding: 5px;
+margin-right: 3px;
+}
+.badge-default {
+background-color: #999;
 }
 </style>

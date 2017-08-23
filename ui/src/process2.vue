@@ -1,9 +1,8 @@
 <template>
 <div v-if="instance">
     <div class="sidebar">
-        <el-button type="primary" size="small" style="float: right; margin: 5px;"
-            :class="{animated: true, headShake: _datasets.length == 0}" 
-            @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
+        <b-button variant="primary" size="sm" style="float: right;" :class="{animated: true, headShake: _datasets.length == 0}" 
+            @click="show_input_dialog = true" icon="plus"> Stage Datasets</b-button>
         <h3>Datasets</h3>
         <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>

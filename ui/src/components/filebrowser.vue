@@ -202,11 +202,14 @@ background-color: #ddd;
 background: #f0f0f0;
 }
 pre.file-content {
+overflow: auto;
+font-family: 'monospace';
 margin: 0px;
 margin-left: 4px;
+margin-bottom: 15px;
+padding: 0px;
 padding-left: 10px;
 max-height: 400px;
 background-color: #d7d7d7;
-margin-bottom: 15px;
 }
 </style>

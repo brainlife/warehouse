@@ -2,14 +2,14 @@
 <div>
     <pageheader :user="config.user">
         <!--pageheader slot-->
-        <el-row :gutter="20">
-            <el-col :span="14">
+        <div class="row">
+            <div class="col">
                 <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
-            </el-col>
-            <el-col :span="10">
+            </div>
+            <div class="col">
                 <el-button @click="go('/app/_/edit')" icon="plus">Register App</el-button>
-            </el-col>
-        </el-row>
+            </div>
+        </div>
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">

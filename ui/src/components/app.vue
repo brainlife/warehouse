@@ -1,5 +1,5 @@
 <template>
-<el-card :body-style="{padding: '0px'}" v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable}">
+<b-card v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
         <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
         <div style="margin-left: 90px;">
@@ -13,7 +13,7 @@
             <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
         </div>
     </div>
-</el-card>
+</b-card>
 </template>
 
 <script>
@@ -130,7 +130,7 @@ font-size: 90%;
 .devs {
 background-color: #eee;
 padding: 10px;
-height: 55px;
+height: 75px;
 overflow-y: auto;
 overflow-x: hidden;
 }

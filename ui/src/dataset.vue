@@ -4,10 +4,10 @@
     <sidemenu active="/datasets"></sidemenu>
     <div class="header" vi-if="dataset">
         <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
-        <el-button-group style="float: right;">
-            <el-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</el-button>
-            <el-button type="primary" @click="download()" v-if="dataset.storage" icon="document">Download</el-button>
-        </el-button-group>
+        <b-button-group style="float: right;">
+            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
+            <b-button variant="primary" @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
+        </b-button-group>
         <h1>
             <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3)">
                 <div v-if="dataset.meta" style="display: inline-block; padding: 5px 10px; background-color: #fff; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
@@ -470,7 +470,7 @@ background: #666;
 padding: 20px;
 padding-bottom: 20px;
 margin-top: 50px;
-height: 40px;
+height: 80px;
 position: fixed;
 top: 0px;
 right: 0px;

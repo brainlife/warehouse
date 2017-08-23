@@ -10,7 +10,7 @@
         @click="go('/datasets/'+project_id)"
         :class="{active: project_id == active}">
         <h5>{{project.name}}</h5>
-        <small class="text-muted">{{project.desc}}</small>
+        <small>{{project.desc}}</small>
     </div>
 
     <h4>
@@ -21,7 +21,7 @@
         @click="go('/datasets/'+project_id)"
         :class="{active: project_id == active}">
         <h5>{{project.name}}</h5>
-        <small class="text-muted">{{project.desc}}</small>
+        <small>{{project.desc}}</small>
     </div>
 </div>
 </template>
@@ -105,7 +105,7 @@ h5 {
 .project {
     margin: 0px;
     padding: 10px 20px;
-    transition: background-color 0.2s;
+    transition: background-color 0.4s;
 }
 .project:hover {
     cursor: pointer;
@@ -113,6 +113,13 @@ h5 {
 }
 .project.active {
     background-color: #2693ff;
+}
+.project small {
+    transition: opacity 0.4s;
+    opacity: 0.7;
+}
+.project:hover small {
+    opacity: 0.9;
 }
 </style>
 

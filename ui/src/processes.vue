@@ -4,7 +4,7 @@
     <sidemenu active="/processes"></sidemenu>
     <div class="page-top" v-if="selected">
         <div style="margin: 10px; float: right;">
-            <el-button v-if="!selected.config.removing" @click="remove()" icon="delete" title="Remove this process"/>
+            <b-button v-if="!selected.config.removing" @click="remove()"><icon name="trash"/> Remove</b-button>
         </div>
         <statusicon :status="selected.status" :scale="1.75" style="width: 40px; text-align: center; float: left; margin: 10px;opacity: 0.6;"/>
         <div style="margin-left: 60px; margin-right: 100px;">
