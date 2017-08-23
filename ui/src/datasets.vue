@@ -99,12 +99,12 @@
         </div>
         <div class="select-action">
             <p>
-                <b-button size="sm" variant="primary" @click="download()">Download</b-button>
+                <b-button size="sm" @click="download()">Download</b-button>
                 <br>
                 * Organize selected datasets into BIDS data structure and download.
             </p>
             <p>
-                <b-button size="sm" variant="primary" @click="process()">Process</b-button>
+                <b-button size="sm" @click="process()">Process</b-button>
                 <br>
                 * Run applications on selected datasets by creating a new process.
             </p>
@@ -489,23 +489,23 @@ export default {
 
 <style scoped>
 .page-header {
-    position: fixed;
-    padding: 10px;
-    top: 55px;
-    left: 315px;
-    right: 0px;
-    color: #888;
+position: fixed;
+padding: 10px;
+top: 10px;
+left: 315px;
+right: 0px;
+color: #888;
 }
 .page-content {
-    background-color: white;
-    position: fixed;
-    padding-left: 10px;
-    left: 315px;
-    transition: right 0.2s, bottom 0.2s;
-    top: 90px;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    font-size: 12px;
+background-color: white;
+position: fixed;
+padding-left: 10px;
+left: 315px;
+transition: right 0.2s, bottom 0.2s;
+top: 90px;
+overflow-y: scroll;
+overflow-x: hidden;
+font-size: 12px;
 }
 .rightopen .page-content,
 .rightopen .page-header {
