@@ -21,6 +21,8 @@
     "babel-preset-latest": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "babel-register": "^6.24.1",
+    "bootstrap-vue": "^1.0.0-beta.5",
+    "bootswatch": "^3.3.7",
     "chalk": "^2.1.0",
     "compression-webpack-plugin": "^1.0.0",
     "connect-history-api-fallback": "^1.3.0",

@@ -62,11 +62,14 @@ transition: opacity 1s
 .fade-enter, .fade-leave-to {
 opacity: 0
 }
-pre {
+/*
+pre.file-content {
 margin: 0px;
+padding: 0px;
 overflow: auto;
 font-family: 'monospace';
 }
+*/
 .clickable:hover,
 .clickable-record:hover {
 cursor: pointer;
@@ -75,17 +78,8 @@ background-color: #ddd;
 .clickable-row {
 cursor: pointer;
 }
-.text-muted {
-opacity: 0.6;
-}
 code.hljs {
 font-size: 80%;
-}
-.off-sidemenu {
-margin-left: 150px;
-}
-b{
-font-weight: 700;
 }
 h1,h2,h3,h4,h5,h6 {
 line-height: 100%;
@@ -140,22 +134,18 @@ line-height: 140%;
 .el-table__header-wrapper thead div {
 color: gray !important;
 }
-p {
-margin-top: 0px;
-}
-.el-card {
-border-radius: 0px !important;
-}
+
+/*
 .navigation {
 color: #999;
 margin-bottom: 15px;
 }
-time {
-opacity: 0.8;
-}
-/*not sure, but something is setting font-size to 12px..*/
 .el-dropdown__icon {
-font-size: 14px;
+font-size: 14px; //not sure, but something is setting font-size to 12px.
+}
+*/
+.card, .el-card {
+border-radius: 0px;
 }
 </style>
 

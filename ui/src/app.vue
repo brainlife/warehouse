@@ -3,11 +3,11 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="header" v-if="app">
-        <el-button-group style="float: right;">
-            <el-button @click="remove()" v-if="app._canedit" icon="delete">Remove</el-button>
-            <el-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</el-button>
-            <el-button type="primary" v-if="preferred_resource && !preferred_resource.nomatch" @click="go('/app/'+app._id+'/submit')"icon="caret-right">Submit</el-button>
-        </el-button-group>
+        <b-button-group style="float: right;">
+            <b-button @click="remove()" v-if="app._canedit" icon="delete">Remove</b-button>
+            <b-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</b-button>
+            <b-button variant="primary" v-if="preferred_resource && !preferred_resource.nomatch" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
+        </b-button-group>
         <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
         <h1>{{app.name}}</h1>
     </div>
@@ -275,7 +275,7 @@ margin: 0;
 background: #666;
 padding: 20px;
 margin-top: 50px;
-height: 40px;
+height: 80px;
 top: 0px;
 position: fixed;
 right: 0px;

@@ -127,6 +127,10 @@ background-color: #50bfff;
 color: white;
 background-color: gray;
 }
+time {
+color: white;
+opacity: 0.8;
+}
 </style>
 
 

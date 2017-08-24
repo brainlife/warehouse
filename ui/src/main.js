@@ -2,41 +2,42 @@
 //3rd parties
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
-import 'select2/dist/css/select2.css'
-import 'highlight.js/styles/default.css'
-
-import VueHighlightJS from 'vue-highlightjs'
-Vue.use(VueHighlightJS)
-
-var jwt_decode = require('jwt-decode');
 
 import Vue from 'vue'
+
 import VueResource from 'vue-resource'
-Vue.use(VueResource)
+import VueHighlightJS from 'vue-highlightjs'
 
-import warehouse from './warehouse'
-
-//element ui
 import '../theme/index.css'
 import ElementUI from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
-Vue.use(ElementUI, {locale})
-
-//overridden element-ui ugly $notify..
-import Notifications from 'vue-notification'
-Vue.use(Notifications);
-
-//fontasome
+import Notifications from 'vue-notification' //overridden element-ui ugly $notify..
 import 'vue-awesome/icons'
 import Icon from 'vue-awesome/components/Icon.vue'
-Vue.component('icon', Icon)
+import VueLazyload from 'vue-lazyload'
+import BootstrapVue from 'bootstrap-vue' //bootstrap will eventually replace ElementUI / locale
 
 import router from './router'
+import warehouse from './warehouse'
 
+//CSS
+import 'select2/dist/css/select2.css'
+import 'highlight.js/styles/default.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+import 'bootstrap/dist/css/bootstrap.css'
+//import 'bootswatch/yeti/bootstrap.css' //messes up the dropdown - breaks dropdown
+
+Vue.component('icon', Icon)
+
+Vue.use(VueHighlightJS)
+Vue.use(VueResource)
+Vue.use(ElementUI, {locale})
+Vue.use(Notifications);
 Vue.use(require('vue-filter'))
-
-import VueLazyload from 'vue-lazyload'
 Vue.use(VueLazyload)
+Vue.use(BootstrapVue);
+
+var jwt_decode = require('jwt-decode');
 
 Vue.filter('filesize', function (num) {
 	// jacked from: https://github.com/sindresorhus/pretty-bytes
@@ -63,6 +64,7 @@ Vue.filter('filesize', function (num) {
 
 	return (neg ? '-' : '') + num + ' ' + unit;
 });
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //

@@ -1,9 +1,8 @@
 <template>
 <div v-if="instance">
     <div class="sidebar">
-        <el-button type="primary" size="small" style="float: right; margin: 5px;"
-            :class="{animated: true, headShake: _datasets.length == 0}" 
-            @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
+        <b-button variant="primary" size="sm" style="float: right; margin: 5px;" :class="{animated: true, headShake: _datasets.length == 0}" 
+            @click="show_input_dialog = true" icon="plus"> Stage Datasets</b-button>
         <h3>Datasets</h3>
         <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
@@ -134,21 +133,20 @@
         </task>
     </div>
 
-    <el-card v-if="apps && apps.length > 0">
+    <el-card v-if="apps">
         <h3 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h3>
 
         <!--newprocess form-->
         <transition name="fade">
         <div v-if="!newtask.app">
-            <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
-            <el-row>
-            <el-col :span="12" v-for="app in apps" :key="app._id">
+            <p class="text-muted" v-if="apps.length > 0">You can submit following application(s) with currently available dataset.</p>
+            <p class="text-muted" v-else>You have no application that you can submit with the current set of staged dataset. Please stage more datasets.</p>
+            <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
                 <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px;">
                     <app :app="app" :compact="true" :clickable="false" class="clickable" :descheight="50"/>
                 </div>
-            </el-col>
-            </el-row>
-            <br>
+            </div>
+            <br clear="both">
         </div>
         </transition>
 
@@ -532,18 +530,28 @@ methods: {
             populate: 'inputs.datatype',
         }})
         .then(res=>{
-            //now, pick apps that we have *all* input data types for
+            //now, pick apps that we have *all* input datasets that matches the input datatype/tags
             this.apps = [];
             res.body.apps.forEach(app=>{
                 var match = true;
                 app.inputs.forEach(input=>{
-                    if(!~datatype_ids.indexOf(input.datatype._id)) match = false;
-                    input.datatype_tags.forEach(tag=>{
-                        if(tag[0] == "!" && ~input.datatype_tags.indexOf(tag.substring(1))) match = false;
-                        if(tag[0] != "!" && !~input.datatype_tags.indexOf(tag)) match = false;
-                    });
+                    //if(!~datatype_ids.indexOf(input.datatype._id)) match = false;
+                    var matching_dataset = this._datasets.find(dataset=>{
+                        if(dataset.datatype != input.datatype._id) return false;
+                        var match_tag = true;
+                        input.datatype_tags.forEach(tag=>{
+                            //make sure tag matches
+                            if(tag[0] == "!" && ~dataset.datatype_tags.indexOf(tag.substring(1))) match_tag = false;
+                            if(tag[0] != "!" && !~dataset.datatype_tags.indexOf(tag)) match_tag = false;
+                        });
+                        return match_tag;
+                    }); 
+                    if(!matching_dataset) match = false;
                 });
-                if(match) this.apps.push(app);
+                if(match) {
+                    console.log("can run", app.name);
+                    this.apps.push(app);
+                }
             });
         }).catch(err=>{
             console.error(err);
