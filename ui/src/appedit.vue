@@ -59,7 +59,6 @@
                 <p class="text-muted">If a task fails, it will rerun up to this count (0 means no retry)</p>
             </el-form-item>
             <el-form-item label="Configuration">
-                <configedit />
                 <!--
                 https://github.com/dhenkes/vue2-ace/issues/5
                 <editor :content="app._config" :sync="true" :lang="'json'"></editor>
