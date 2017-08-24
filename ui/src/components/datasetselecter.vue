@@ -1,5 +1,5 @@
 <template>
-    <el-dialog title="Select Datasets" :visible.sync="visible_">
+    <b-modal title="Select Datasets" ref="modal" @ok="submit" @hide="hide">
         <!--<p class="text-muted">need to stage your datasets to be processed.</p>-->
         <el-tabs v-model="mode">
               
@@ -41,11 +41,13 @@
             </el-tab-pane>
 
         </el-tabs>
+        <!--
         <span slot="footer" class="dialog-footer">
             <el-button @click="close">Cancel</el-button>
             <el-button type="primary" @click="submit" icon="check">Stage</el-button>
         </span>
-    </el-dialog>
+        -->
+    </b-modal>
 </template>
 
 <script>
@@ -63,7 +65,7 @@ export default {
     props: [ 'visible' ],
     data() {
         return {
-            visible_: false,
+            //visible_: false,
             mode: "selected",
 
             //datasets selected via datasets page
@@ -91,12 +93,17 @@ export default {
 
     methods: {
         close: function() {
-            this.$emit('update:visible', false);
+            //this.$emit('update:visible', false);
+            //this.$refs.modal.hide();
 
             console.log("resetting datasetselecter");
             this.selected_subjects = [];
             this.selected_datatypes = [];
             this.datasets = [];
+        },
+
+        hide: function() {
+            this.$emit('update:visible', false);
         },
 
         submit: function() {
@@ -237,12 +244,16 @@ export default {
 
     watch: {
         visible: function(v) {
-            this.visible_ = v;
-            
+            console.log("visibility changed", v);
+            //this.visible_ = v;
+            if(v) this.$refs.modal.show() 
+            else this.$refs.modal.hide() 
         },
+        /*
         visible_: function(v) {
             this.$emit('update:visible', v);
         },
+        */
 
         project: function(project) {
             this.$http.get('dataset/distinct', { params: {
@@ -257,7 +268,7 @@ export default {
     },
 
     created: function() {
-        this.visible_ = this.visible; //initial value (always false?)
+        //this.visible_ = this.visible; //initial value (always false?)
 
         //load datatypes
         this.$http.get('datatype', {params: {

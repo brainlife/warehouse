@@ -7,12 +7,9 @@
             <b-button v-if="!selected.config.removing" @click="remove()"><icon name="trash"/> Remove</b-button>
         </div>
         <statusicon :status="selected.status" :scale="1.75" style="width: 40px; text-align: center; float: left; margin: 10px;opacity: 0.6;"/>
-        <div style="margin-left: 60px; margin-right: 100px;">
-            <div v-if="editdesc">
-                <el-input type="textarea" placeholder="Process Description" style="padding-top: 3px;"
-                    @change="changedesc()" v-model="selected.desc" :rows="2"></el-input>
-            </div>
-            <p v-else @click="editdesc = true" style="height: 100%;padding: 10px;" class="clickable text-muted">{{selected.desc||'no description'}}</p>
+        <div style="margin-left: 60px; margin-right: 300px;">
+            <!--selected.desc change doesn't get reflected on textarea https://github.com/bootstrap-vue/bootstrap-vue/issues/922 -->
+            <b-form-textarea placeholder="Please enter process description" @input="changedesc()" v-model="selected.desc" :rows="2"></b-form-textarea>
         </div>
     </div>
 
@@ -88,7 +85,7 @@ export default {
             //projects: null, //keyed by _id
             apps: null, //keyed by _id
 
-            editdesc: false,
+            //editdesc: false,
             ws: null, //websocket
 
             config: Vue.config,
@@ -182,7 +179,7 @@ export default {
             debounce = setTimeout(()=>{
                 this.$http.put(Vue.config.wf_api+'/instance/'+this.selected._id, this.selected).then(res=>{
                     this.$notify({ text: 'Updated description', type: 'success' });
-                    this.editdesc = false;
+                    //this.editdesc = false;
                 });
             }, 2000);        
         },
@@ -342,6 +339,13 @@ transition: background-color 0.3s;
 }
 .button-fixed:hover {
 background-color: #2693ff;
+}
+.page-top textarea {
+background-color: inherit;
+border: none;
+}
+.page-top textarea:focus {
+background-color: white;
 }
 </style>
 

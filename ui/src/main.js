@@ -25,7 +25,7 @@ import 'select2/dist/css/select2.css'
 import 'highlight.js/styles/default.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import 'bootstrap/dist/css/bootstrap.css'
-import 'bootswatch/yeti/bootstrap.css' //messes up the dropdown
+//import 'bootswatch/yeti/bootstrap.css' //messes up the dropdown - breaks dropdown
 
 Vue.component('icon', Icon)
 

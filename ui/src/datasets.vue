@@ -13,7 +13,7 @@
                 </el-input>
             </div>
             <div class="col-md-6">
-                <el-button @click="go('/upload')" icon="upload">Upload Data</el-button>
+                <b-button variant="success" @click="go('/upload')">Upload Data</b-button>
             </div>
         </div>
     </div>
@@ -95,22 +95,18 @@
                 </div>
                 <br>
             </div>
-            <b-button size="sm" @click="clear_selected()">Unselect All</b-button>
+            <b-button size="sm" variant="link" @click="clear_selected()" style="padding: 0px;"><icon name="close"/> Unselect All</b-button>
         </div>
         <div class="select-action">
-            <p>
-                <b-button size="sm" @click="download()">Download</b-button>
-                <br>
-                * Organize selected datasets into BIDS data structure and download.
-            </p>
-            <p>
-                <b-button size="sm" @click="process()">Process</b-button>
-                <br>
-                * Run applications on selected datasets by creating a new process.
-            </p>
-            <p>
-                <viewerselect @select="view"></viewerselect>
-            </p>
+            <b-button-group>
+                <b-button size="sm" @click="download()" 
+                    title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
+                <b-button size="sm" @click="process()" 
+                    title="Run applications on selected datasets by creating a new process.">Process</b-button>
+            </b-button-group>
+            <br>
+            <br>
+            <viewerselect @select="view"></viewerselect>
         </div>
     </div>
 </div>
@@ -488,19 +484,21 @@ export default {
 </script>
 
 <style scoped>
-.page-header {
+.page-header,
+.page-content {
 position: fixed;
-padding: 10px;
-top: 10px;
-left: 315px;
-right: 0px;
+left: 320px;
+padding-left: 10px;
+right: 0;
+}
+
+.page-header {
+top: 63px;
 color: #888;
+margin-right: 15px; /*to align with scrollbar*/
 }
 .page-content {
 background-color: white;
-position: fixed;
-padding-left: 10px;
-left: 315px;
 transition: right 0.2s, bottom 0.2s;
 top: 90px;
 overflow-y: scroll;
@@ -509,7 +507,7 @@ font-size: 12px;
 }
 .rightopen .page-content,
 .rightopen .page-header {
-    right: 250px;
+right: 250px;
 }
 .selected {
     transition: color, background-color 0.2s;
@@ -539,7 +537,7 @@ font-size: 12px;
 }
 .selected-view .select-group,
 .selected-view .select-action {
-    padding: 10px 15px;
+    padding: 10px;
     box-sizing: border-box;
 }
 .selected-view .select-group {
@@ -564,24 +562,6 @@ font-size: 12px;
     padding: 10px 0px 3px 10px;
     text-transform: uppercase;
 }
-
-/*
-.list .group {
-    padding: 5px 0px 5px 10px;
-    background-color: white;
-    font-size: 12px;
-}
-*/
-
-/*
-.fixed-top .header {
-    background-color: #ddd;
-    color: #999;
-}
-.list .group:not(:last-child) {
-    border-top: 1px solid #eee;
-}
-*/
 .list .dataset {
     transition: background-color 0.3s;
     padding: 2px;
@@ -601,14 +581,6 @@ font-size: 12px;
     border-top: 1px solid #eee;
     padding: 5px 0px;
 }
-/*
-.fixed-top {
-    right: 0px;
-    z-index: 5;
-    transition: right 0.2s;
-    top: 50px;
-}
-*/
 .list .truncate {
     white-space: nowrap;
     overflow: hidden;
@@ -628,3 +600,4 @@ font-size: 12px;
     margin-right: 5px;
 }
 </style>
+

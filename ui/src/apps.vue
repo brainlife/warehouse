@@ -77,14 +77,14 @@ export default {
 
 <style scoped>
 .el-card {
-    border: none;
-    box-shadow: 0 0 3px #aaa;
+border: none;
+box-shadow: 0 0 3px #aaa;
 }
 .group-title {
-    color: #999;
-    text-transform: uppercase;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
+color: #999;
+text-transform: uppercase;
+padding-bottom: 10px;
+border-bottom: 1px solid #ddd;
 }
 .app {
 margin-right: 10px;

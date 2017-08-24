@@ -144,5 +144,8 @@ margin-bottom: 15px;
 font-size: 14px; //not sure, but something is setting font-size to 12px.
 }
 */
+.card, .el-card {
+border-radius: 0px;
+}
 </style>
 
