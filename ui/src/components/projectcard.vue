@@ -1,5 +1,5 @@
 <template>
-<el-card :body-style="{padding: '0px'}" class="projectcard clickable" :class="{'project-removed': project.removed}">
+<b-card no-body class="projectcard clickable" :class="{'project-removed': project.removed}">
     <div @click="click()">
         <projectavatar :project="project" style="float: left;margin-right: 15px;"></projectavatar>
         <h4 class="name">{{project.name}}</h4>
@@ -11,7 +11,7 @@
             <contact v-for="id in project.admins" :key="id" :id="id"></contact>
         </div>
     </div>
-</el-card>
+</b-card>
 </template>
 
 <script>
@@ -66,7 +66,7 @@ opacity: 0.5;
 .devs {
 background-color:#eee;
 padding:10px;
-height: 55px;
+height: 75px;
 overflow-y: auto;
 overflow-x: hidden;
 }

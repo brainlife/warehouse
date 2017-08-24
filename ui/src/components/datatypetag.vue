@@ -38,18 +38,17 @@ export default {
 <style scope>
 .dt {
     display: inline-block;
-    line-height: 100%;
     white-space: nowrap;
 }
 .dot {
     display: inline-block;
-    padding: 0.2em 0.3em;
+    padding: 2px 5px;
     margin: 0px;
     color: white;
 }
 .tags {
     display: inline-block;
-    padding: 0.2em 0.3em;
+    padding: 2px 5px;
     margin: 0px;
     background-color: #eee;
     color: #666;
