@@ -795,6 +795,8 @@ overflow: auto;
 font-size: 90%;
 }
 .sidebar h5 {
+font-size: 17px;
+font-weight: bold;
 color: #999;
 padding: 10px;
 margin: 0px;
@@ -812,10 +814,12 @@ margin: 0px;
 margin-bottom: 20px;
 }
 .task-desc {
+margin-left: 90px;
 margin-top: 10px; 
 padding: 5px 10px; 
 font-size: 90%; 
 background-color: #e0e0e0;
+font-style: italic;
 }
 .dataset {
 border-bottom: 1px solid #d5d5d5; 
