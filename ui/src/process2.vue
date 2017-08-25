@@ -18,8 +18,10 @@
                 </small>
             </mute>
         </div>
+        <!--
         <br>
-        <div class="dataset clickable" @click="scrollto('newtaskdialog')" v-if="apps && apps.length"><b style="padding: 3px 0px; opacity: 0.5">New Task</b></div>
+        <div class="dataset clickable" @click="scrollto('newtaskdialog')" v-if="apps && apps.length"><b style="padding: 3px 0px; opacity: 0.5">Run Apps</b></div>
+        -->
     </div>
     <div class="main-section" id="scrolled-area">
         <p v-if="instance.status == 'removed' || instance.config.removing">
@@ -137,7 +139,7 @@
         <p class="text-muted">You have no application that you can submit with currently staged datasets. Please try staging more datasets.</p>
     </div>
     <el-card v-if="apps && apps.length > 0">
-        <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h5>
+        <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">Run Application</h5>
 
         <!--newprocess form-->
         <transition name="fade">
@@ -159,9 +161,7 @@
                     <app :app="newtask.app" :compact="false"></app>
                 </el-form-item>
 
-                <el-form-item label="Task Description">
-                    <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
-                </el-form-item>
+                <br>
 
                 <!--input-->
                 <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
@@ -197,6 +197,12 @@
                     </el-select>
                 </el-form-item>
 
+                <hr>
+
+                <el-form-item label="Task Description" style="margin: 8px 0px">
+                    <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
+                </el-form-item>
+
                 <el-form-item label=" ">
                     <div v-if="!newtask.archive.enable">
                         <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive all output datasets when finished
@@ -221,6 +227,7 @@
                         </p>
                         -->
                     </el-card>
+                    <br>
                 </el-form-item>
 
                 <el-form-item label=" ">
@@ -455,10 +462,12 @@ methods: {
             .then(res=>{
                 this.archived = res.body.datasets;
 
+                /*
                 //open input dialog if there are no datasets (new process?)
                 if(this._datasets.length == 0) {
                     this.show_input_dialog = true;
                 }
+                */
 
                 this.ws.send(JSON.stringify({
                     bind: {
@@ -687,7 +696,7 @@ methods: {
         }
         this.$http.post(Vue.config.wf_api+'/task', {
             instance_id: this.instance._id,
-            name: "Staging Input Dataset",
+            name: "Staging Input Datasets",
             //desc: "Stage Input for "+task.name,
             service: "soichih/sca-product-raw",
             config: { download, _outputs, _tid: this.next_tid() },

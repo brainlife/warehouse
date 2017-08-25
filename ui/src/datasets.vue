@@ -114,6 +114,8 @@ import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
+const async = require('async');
+
 var query_debounce = null;
 var scroll_debounce = null;
 
@@ -364,7 +366,7 @@ export default {
             }).then(res=>res.body);
         },
 
-        stage_selected: function(instance/*, resource*/) {
+        temp_stage_selected: function(instance/*, resource*/) {
             //create config to download all selected data from archive
             var download = [];
             for(var dataset_id in this.selected) {
@@ -394,7 +396,7 @@ export default {
             var download_instance = null;
             this.get_instance().then(instance=>{
                 download_instance = instance;
-                return this.stage_selected(download_instance);
+                return this.temp_stage_selected(download_instance);
             }).then(task=>{
                 //if type contains /, I need to replace it with . (see processes/view.vue)
                 window.open("#/view/"+download_instance._id+"/"+task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
@@ -405,7 +407,7 @@ export default {
             var download_instance = null;
             this.get_instance().then(instance=>{
                 download_instance = instance;
-                return this.stage_selected(instance);
+                return this.temp_stage_selected(instance);
             }).then(task=>{
                 var download_task = task;
 
@@ -459,9 +461,38 @@ export default {
             }).then(res=>{
                 var instance = res.body;
 
-                //TODO - I think I should go head and create staging task - and simplify the data staging dialog
-
-                this.$router.push("/processes/"+instance._id);
+                //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject)
+                var tid = 0;
+                var did = 0;
+                async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
+                    var download = [];
+                    var _outputs = [];
+                    for(var dataset_id in datasets) {
+                        download.push({
+                            url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
+                            untar: "auto",
+                            dir: dataset_id,
+                        });
+                        _outputs.push(Object.assign(datasets[dataset_id], {
+                            id: dataset_id, 
+                            did: did++,
+                            subdir: dataset_id, 
+                            dataset_id,
+                            prov: null,
+                        }));
+                    }
+                    this.$http.post(Vue.config.wf_api+'/task', {
+                        instance_id: instance._id,
+                        name: "Staging Input Datasets - "+this.datatypes[datatype_id].name,
+                        service: "soichih/sca-product-raw",
+                        config: { download, _outputs, _tid: tid++ },
+                    }).then(res=>{
+                        console.log("submitted download task", res.body.task);
+                        next_group();
+                    });
+                }, err=>{
+                    this.$router.push("/processes/"+instance._id);
+                });
             });
         }
     },

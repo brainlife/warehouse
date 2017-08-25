@@ -97,6 +97,9 @@ line-height: 140%;
 .el-table__header-wrapper thead div {
 color: gray !important;
 }
+.el-form-item {
+    margin-bottom: 0px;
+}
 .card, .el-card {
 border-radius: 0px;
 }
