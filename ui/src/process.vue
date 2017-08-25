@@ -5,7 +5,7 @@
         <div style="margin: 0px 10px;">
             <el-button type="primary" size="small" style="float: right; position: relative; top: -8px;"
                 @click="show_input_dialog = true" v-bind:class="{animated: true, headShake: _datasets.length == 0}" icon="plus"> Stage Datasets</el-button>
-            <h3>Input Datasets</h3>
+            <h5>Input Datasets</h5>
             <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
                 @click="go('/dataset/'+dataset.did)" v-if="dataset.task.name == 'brainlife.stage_input'">
                 <mute>D{{idx}}</mute> 
@@ -20,7 +20,7 @@
             </div>
 
             <br>
-            <h3>Output Datasets</h3>
+            <h5>Output Datasets</h5>
             <div v-for="(dataset, idx) in _datasets" :key="idx" class="dataset clickable"
                 @click="scrollto(dataset.task._id)" v-if="dataset.task.name == 'brainlife.stage_output'">
                 <!-- 

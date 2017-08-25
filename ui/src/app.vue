@@ -9,7 +9,7 @@
             <b-button variant="primary" v-if="preferred_resource && !preferred_resource.nomatch" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
         </b-button-group>
         <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
-        <h1>{{app.name}}</h1>
+        <h2>{{app.name}}</h2>
     </div>
     <div class="page-content" v-if="app" style="margin-top: 80px;">
         <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
@@ -24,16 +24,16 @@
             <td>
                 <el-row>
                     <el-col :span="8">
-                        <h3>{{service_stats.tasks}}</h3>
-                        <h5 class="text-muted">Total Runs</h5>
+                        <h4>{{service_stats.tasks}}</h4>
+                        <b class="text-muted">Total Runs</b>
                     </el-col>
                     <el-col :span="8">
-                        <h3>{{service_stats.users}}</h3>
-                        <h5 class="text-muted">Users</h5>
+                        <h4>{{service_stats.users}}</h4>
+                        <b class="text-muted">Users</b>
                     </el-col>
                     <el-col :span="8">
-                        <h3>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)) | toFixed(1)}}% </h3>
-                        <h5 class="text-muted">Success Rate</h5>
+                        <h4>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)) | toFixed(1)}}% </h4>
+                        <b class="text-muted">Success Rate</b>
                     </el-col>
                 </el-row>
             </td>
@@ -284,7 +284,7 @@ color: #666;
 z-index: 1;
 border-bottom: 1px solid #666;
 }
-.header h1 {
+.header h2 {
 color: #eee;
 }
 .header-bottom {

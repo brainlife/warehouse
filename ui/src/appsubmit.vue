@@ -194,7 +194,8 @@ export default {
                 project: this.form.projects[input.id],
                 datatype: input.datatype._id,
                 storage: {$exists: true}, 
-                removed: false
+                removed: false,
+                status: {$in: ["stored", "archived"]},
             };
 
             if (params.term) find_raw.$text = { $search: params.term };
@@ -204,7 +205,6 @@ export default {
                 sort: "project meta.subject -create_date",
                 populate: "datatype",
                 datatype_tags: input.datatype_tags,
-                status: {$in: ["stored", "archived"]},
                 limit,
                 skip
             }})

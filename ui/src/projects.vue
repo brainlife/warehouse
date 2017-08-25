@@ -14,7 +14,7 @@
     <div class="page-content">
         <div v-if="!projects" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="projects">
-            <h2 class="group-title">Private Projects</h2>
+            <h4 class="group-title">Private Projects</h4>
             <p class="text-muted">Only the members of project can access datasets inside private projects.</p>
             <div v-for="project in projects" :key="project._id" class="project" v-if="project.access == 'private'">
                 <projectcard :project="project"/>
@@ -22,7 +22,7 @@
             <br clear="both">
             <br>
 
-            <h2 class="group-title">Public Projects</h2>
+            <h4 class="group-title">Public Projects</h4>
             <p class="text-muted">Datasets are accessible to any users but only project member can update them.</p>
             <div v-for="project in projects" :key="project._id" class="project" v-if="project.access == 'public'">
                 <projectcard :project="project"/>

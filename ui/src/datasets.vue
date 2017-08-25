@@ -5,15 +5,10 @@
     <div class="header-content">
         <div class="row">
              <div class="col-md-6">
-                <el-input
-                    placeholder="Filter Datasets" 
-                    icon="search"
-                    @change="change_query_debounce()"
-                    v-model="query">
-                </el-input>
+                <el-input placeholder="Filter Datasets" icon="search" @change="change_query_debounce()" v-model="query"/>
             </div>
             <div class="col-md-6">
-                <b-button variant="success" @click="go('/upload')">Upload Data</b-button>
+                <b-button variant="default" @click="go('/upload')"><icon name="upload"/> Upload Data</b-button>
             </div>
         </div>
     </div>
@@ -492,11 +487,22 @@ padding-left: 10px;
 right: 0;
 }
 
+h4 {
+font-size: 15px;
+font-weight: bold;
+margin-bottom: 7px;
+}
+
 .page-header {
 top: 63px;
-color: #888;
 margin-right: 15px; /*to align with scrollbar*/
 }
+.page-header h4 {
+font-size: 16px;
+font-weight: bold;
+color: #888;
+}
+
 .page-content {
 background-color: white;
 transition: right 0.2s, bottom 0.2s;
@@ -564,8 +570,8 @@ right: 250px;
 }
 .list .dataset {
     transition: background-color 0.3s;
-    padding: 2px;
-    height: 25px;
+    margin: 1px;
+    padding: 1px;
 }
 .list .dataset.clickable:hover {
     background-color: #ccc;
@@ -594,8 +600,8 @@ right: 250px;
     opacity: 0.5;  
 }
 .dataset-checker {
-    width: 17px;
-    height: 17px;
+    width: 20px;
+    height: 20px;
     float: left;
     margin-right: 5px;
 }

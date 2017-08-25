@@ -93,8 +93,7 @@ font-size: 13px;
 color: #333;
 line-height: 140%;
 overflow: hidden;
-margin: 10px 0px;
-margin-right: 10px;
+margin: 10px;
 text-overflow:ellipsis;
 }
 .rate {
@@ -103,12 +102,19 @@ overflow: auto;
 font-size: 13px;
 color: #666;
 line-height: 140%;
+margin-bottom: 20px;
 }
 .image {
 width: 100%;
 display: block;
 }
+h4 {
+font-size: 15px;
+font-weight: bold;
+}
 h5 {
+font-size: 13px;
+font-weight: bold;
 opacity: 0.7;
 }
 .compact h5 {

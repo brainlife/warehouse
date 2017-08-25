@@ -15,8 +15,8 @@
             <br>
             -->
 
-            <h1 v-if="$route.params.id == '_'">New Project</h1>
-            <h1 v-else><icon name="pencil" scale="2"/> Edit {{project.name}}</h1>
+            <h2 v-if="$route.params.id == '_'">New Project</h2>
+            <h2 v-else><icon name="pencil" scale="2"/> Edit {{project.name}}</h2>
 
             <el-card>
                 <el-form ref="form" label-width="120px">
