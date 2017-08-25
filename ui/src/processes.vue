@@ -326,31 +326,16 @@ color: #2693ff;
 .process-list li.selected .status {
 color: white;
 }
-.button-fixed {
-position: fixed;
-bottom: 20px;
-left: 290px;
-border-radius: 25px;
-width: 50px;
-height: 50px;
-padding: 10px;
-margin: 10px;
-font-weight: bold;
-color: white;
-background-color: gray;
-border: none;
-box-shadow: 0px 0px 10px #333;
-transition: background-color 0.3s;
-}
-.button-fixed:hover {
-background-color: #2693ff;
-}
 .page-top textarea {
 background-color: inherit;
 border: none;
 }
 .page-top textarea:focus {
 background-color: white;
+}
+.button-fixed {
+left: 290px;
+right: inherit;
 }
 </style>
 

@@ -19,7 +19,7 @@
             </mute>
         </div>
         <br>
-        <div class="dataset clickable" @click="scrollto('newtaskdialog')"><b style="padding: 3px 0px; opacity: 0.5">New Task</b></div>
+        <div class="dataset clickable" @click="scrollto('newtaskdialog')" v-if="apps && apps.length"><b style="padding: 3px 0px; opacity: 0.5">New Task</b></div>
     </div>
     <div class="main-section" id="scrolled-area">
         <p v-if="instance.status == 'removed' || instance.config.removing">
@@ -133,14 +133,16 @@
         </task>
     </div>
 
-    <el-card v-if="apps">
+    <div v-if="apps && apps.length == 0" style="margin: 20px;">
+        <p class="text-muted">You have no application that you can submit with currently staged datasets. Please try staging more datasets.</p>
+    </div>
+    <el-card v-if="apps && apps.length > 0">
         <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h5>
 
         <!--newprocess form-->
         <transition name="fade">
         <div v-if="!newtask.app">
-            <p class="text-muted" v-if="apps.length > 0">You can submit following application(s) with currently available dataset.</p>
-            <p class="text-muted" v-else>You have no application that you can submit with the current set of staged dataset. Please stage more datasets.</p>
+            <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
             <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
                 <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px;">
                     <app :app="app" :compact="true" :clickable="false" class="clickable" :descheight="50"/>

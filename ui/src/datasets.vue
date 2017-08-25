@@ -3,14 +3,7 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="header-content">
-        <div class="row">
-             <div class="col-md-6">
-                <el-input placeholder="Filter Datasets" icon="search" @change="change_query_debounce()" v-model="query"/>
-            </div>
-            <div class="col-md-6">
-                <b-button variant="default" @click="go('/upload')"><icon name="upload"/> Upload Data</b-button>
-            </div>
-        </div>
+        <el-input placeholder="Filter Datasets" @change="change_query_debounce()" v-model="query"/>
     </div>
     <div :class="{rightopen: selected_count}">
         <projectmenu :active="project_id"></projectmenu>
@@ -67,6 +60,7 @@
                     </div>
                  </div> 
             </div><!--scrolled-area-->
+            <b-button class="button-fixed" @click="go('/upload')" title="Upload Dataset" :class="{'selected-view-open':selected_count}"><icon name="plus" scale="2"/></b-button>
         </div><!--page-content-->
     </div>
 
@@ -500,7 +494,7 @@ margin-right: 15px; /*to align with scrollbar*/
 .page-header h4 {
 font-size: 16px;
 font-weight: bold;
-color: #888;
+color: #999;
 }
 
 .page-content {
@@ -557,10 +551,10 @@ right: 250px;
 
 .header-content {
     position: fixed;
-    left: 330px;
+    left: 320px;
     top: 0px;
     padding-top: 7px;
-    right: 200px;
+    right: 250px;
     z-index: 10;
 }
 
@@ -604,6 +598,12 @@ right: 250px;
     height: 20px;
     float: left;
     margin-right: 5px;
+}
+.button-fixed {
+transition: right 0.2s;
+}
+.button-fixed.selected-view-open {
+right: 300px;
 }
 </style>
 

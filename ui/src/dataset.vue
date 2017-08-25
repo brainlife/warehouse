@@ -330,6 +330,7 @@ export default {
             });
         },
         load: function(id) {
+            console.log("loading dataset");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 populate: "project datatype prov.app prov.deps.dataset",
@@ -340,6 +341,11 @@ export default {
                     return;
                 }
                 this.dataset = res.body.datasets[0];
+
+                if(this.dataset.status == "storing") {
+                    //reload in few seconds..
+                    setTimeout(()=>{ this.load(id); }, 5000);
+                }
 
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {
