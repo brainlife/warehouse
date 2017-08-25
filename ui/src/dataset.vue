@@ -8,11 +8,11 @@
             <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
             <b-button variant="primary" @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
         </b-button-group>
-        <h1>
+        <h2>
             <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
                 <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </div>
-        </h1>
+        </h2>
     </div>
     <div class="page-content" v-if="dataset" style="margin-top: 80px;">
         <!--

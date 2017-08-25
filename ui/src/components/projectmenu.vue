@@ -88,19 +88,22 @@ export default {
     z-index: 2;
 }
 h3 {
+    font-size: 18px;
     padding: 10px 20px;
     color: #777;
     text-transform: uppercase;
     margin-bottom: 0px;
 }
 h4 {
+    font-size: 16px;
     padding: 10px 20px;
     color: #777;
     text-transform: uppercase;
     margin-bottom: 0px;
 }
 h5 {
-    margin-bottom: 4px;
+    font-size: 13px;
+    margin-bottom: 3px;
 }
 .project {
     margin: 0px;

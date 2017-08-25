@@ -24,7 +24,8 @@ export default {
     data() {
         //map datatype.name to 0 - 360
         if(!this.datatype) return {color: "gray"};
-        var hash = hashCode(this.datatype.name);
+        var hash = Math.abs(hashCode(this.datatype.name)+120)%360;
+        //console.log(this.datatype.name, hash);
         return {
             color: "hsl("+(hash%360)+", 50%, 60%)"
         }
@@ -42,13 +43,13 @@ export default {
 }
 .dot {
     display: inline-block;
-    padding: 2px 5px;
+    padding: 0px 5px;
     margin: 0px;
     color: white;
 }
 .tags {
     display: inline-block;
-    padding: 2px 5px;
+    padding: 0px 5px;
     margin: 0px;
     background-color: #eee;
     color: #666;

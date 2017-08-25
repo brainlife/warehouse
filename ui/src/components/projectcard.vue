@@ -39,6 +39,10 @@ export default {
 .projectcard {
 transition: box-shadow 0.5s;
 }
+h4 {
+font-size: 15px;
+font-weight: bold;
+}
 .projectcard.clickable {
 background-color: white;
 }

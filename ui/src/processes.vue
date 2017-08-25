@@ -40,7 +40,7 @@
                 </div>
             </li>
         </ul>
-        <el-button class="button-fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></el-button>
+        <b-button class="button-fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></b-button>
     </div>
 
     <div class="page-content">
@@ -226,6 +226,11 @@ export default {
 </script>
 
 <style scoped>
+h3 {
+font-size: 18px;
+font-weight: bold;
+margin-bottom: 9px;
+}
 .page-top {
 height: 60px;
 box-shadow: 0px 1px 1px rgba(0,0,0,0.2);
