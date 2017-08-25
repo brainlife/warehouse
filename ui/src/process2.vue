@@ -3,7 +3,7 @@
     <div class="sidebar">
         <b-button variant="primary" size="sm" style="float: right; margin: 5px;" :class="{animated: true, headShake: _datasets.length == 0}" 
             @click="show_input_dialog = true" icon="plus"> Stage Datasets</b-button>
-        <h3>Datasets</h3>
+        <h5>Datasets</h5>
         <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
             <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
@@ -134,7 +134,7 @@
     </div>
 
     <el-card v-if="apps">
-        <h3 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h3>
+        <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h5>
 
         <!--newprocess form-->
         <transition name="fade">
@@ -233,7 +233,7 @@
     <br>
     <br>
     <div v-if="config.debug">
-        <h3>Debug</h3>
+        <h5>Debug</h5>
         <el-collapse v-if="config.debug">
             <el-collapse-item title="newtask" name="newtask" v-if="newtask">
                 <pre v-highlightjs="JSON.stringify(newtask, null, 4)"><code class="json hljs"></code></pre>
@@ -794,7 +794,7 @@ right: 0px;
 overflow: auto;
 font-size: 90%;
 }
-.sidebar h3 {
+.sidebar h5 {
 color: #999;
 padding: 10px;
 margin: 0px;
@@ -819,7 +819,8 @@ background-color: #e0e0e0;
 }
 .dataset {
 border-bottom: 1px solid #d5d5d5; 
-padding: 5px;
+padding: 3px;
+padding-left: 7px;
 }
 .dataset.clickable:hover {
 background-color: #eee;
@@ -854,5 +855,8 @@ color: #c00;
 }
 .sidebar .statusicon-running {
 color: #2693ff;
+}
+.el-collapse-item__content {
+line-height: inherit;
 }
 </style>

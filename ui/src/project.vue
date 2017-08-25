@@ -8,7 +8,7 @@
             <b-button @click="edit()">Edit</b-button>
         </b-button-group>
         <projectavatar :project="project" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></projectavatar>
-        <h1>{{project.name}}</h1>
+        <h2>{{project.name}}</h2>
     </div>
     <div class="page-content" v-if="project" style="margin-top: 80px; padding-top: 20px">
         <div style="margin-left: 130px; margin-bottom: 20px; min-height: 20px;">
@@ -21,12 +21,12 @@
             <td>
                 <el-row>
                     <el-col :span="8" v-if="datasets_attribs.num_subjects">
-                        <h3>{{datasets_attribs.num_subjects}}</h3>
-                        <h5 class="text-muted">Subjects</h5>
+                        <h4>{{datasets_attribs.num_subjects}}</h4>
+                        <b class="text-muted">Subjects</b>
                     </el-col>
                     <el-col :span="8" v-if="datasets_attribs.num_datasets">
-                        <h3>{{datasets_attribs.num_datasets}}</h3>
-                        <h5 class="text-muted">Datasets</h5>
+                        <h4>{{datasets_attribs.num_datasets}}</h4>
+                        <b class="text-muted">Datasets</b>
                     </el-col>
                 </el-row>
             </td>

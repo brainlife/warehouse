@@ -3,8 +3,8 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="fixed-top">
-        <h1 v-if="$route.params.id == '_'">New App</h1>
-        <h1 v-else><icon name="pencil" scale="2"/> {{app.name}}</h1>
+        <h2 v-if="$route.params.id == '_'">New App</h2>
+        <h2 v-else><icon name="pencil" scale="2"/> {{app.name}}</h2>
     </div>
 
     <div class="main-section" v-if="ready">

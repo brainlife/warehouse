@@ -22,7 +22,7 @@
                     <time v-if="task.status == 'removed'">at {{task.remove_date|date}}</time>
                 </small>
             </h4>
-            <i>{{task.status_msg.trim()||'...'}}</i><!--&nbsp; still collpases the area-->
+            <i>{{task.status_msg.trim()||'...'}}</i>
         </div>
     </el-card>
 
@@ -99,12 +99,6 @@ export default {
 }
 </script>
 
-<style>
-.el-card {
-margin-bottom: 0px !important;
-}
-</style>
-
 <style scoped>
 .el-card.finished {
 color: white;
@@ -130,6 +124,11 @@ background-color: gray;
 time {
 color: white;
 opacity: 0.8;
+}
+h4 {
+font-size: 15px;
+font-weight: bold;
+margin-bottom: 0px;
 }
 </style>
 
