@@ -140,10 +140,9 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import select2 from '@/components/select2'
-import configedit from '@/components/configedit'
 
 export default {
-    components: { sidemenu, editor, contactlist, pageheader, select2, configedit },
+    components: { sidemenu, editor, contactlist, pageheader, select2 },
     data () {
         return {
             app: {
