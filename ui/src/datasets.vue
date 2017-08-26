@@ -625,8 +625,8 @@ right: 250px;
     opacity: 0.5;  
 }
 .dataset-checker {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     float: left;
     margin-right: 5px;
 }

@@ -329,8 +329,23 @@ export default {
                 this.go('/datasets');        
             });
         },
+
+        load_status: function(id) {
+            console.log("loading dataset status");
+            this.$http.get('dataset', {params: {
+                find: JSON.stringify({_id: id}),
+                select: "status",
+            }})
+            .then(res=>{
+                var dataset = res.body.datasets[0];
+                this.dataset.status = dataset.status;
+                if(this.dataset.status == "storing") {
+                    setTimeout(()=>{ this.load_status(id); }, 5000);
+                }
+            });
+        },
+
         load: function(id) {
-            console.log("loading dataset");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 populate: "project datatype prov.app prov.deps.dataset",
@@ -341,11 +356,7 @@ export default {
                     return;
                 }
                 this.dataset = res.body.datasets[0];
-
-                if(this.dataset.status == "storing") {
-                    //reload in few seconds..
-                    setTimeout(()=>{ this.load(id); }, 5000);
-                }
+                this.load_status(id);
 
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {

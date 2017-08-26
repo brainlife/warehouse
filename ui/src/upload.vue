@@ -21,6 +21,7 @@
                     <el-form-item label="Description">
                         <el-input type="textarea" v-model="desc" :rows="4" placeholder="Any description (optional)"></el-input>
                     </el-form-item>
+                    <br>
 
                     <el-form-item label="Project">
                         <projectselecter v-model="project_id"/>

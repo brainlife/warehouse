@@ -32,7 +32,7 @@ border-radius: 0;
 font-size: inherit;
 margin-right: 3px;
 font-weight: normal;
-padding: 6px;
+padding: 5px;
 }
 .badge-default {
 color: #666;

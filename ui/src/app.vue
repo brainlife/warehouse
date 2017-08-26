@@ -6,7 +6,7 @@
         <b-button-group style="float: right;">
             <b-button @click="remove()" v-if="app._canedit" icon="delete">Remove</b-button>
             <b-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</b-button>
-            <b-button variant="primary" v-if="preferred_resource && !preferred_resource.nomatch" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
+            <b-button variant="primary" v-if="preferred_resource" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
         </b-button-group>
         <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
         <h2>{{app.name}}</h2>
@@ -22,6 +22,7 @@
         <tr v-if="service_stats">
             <th width="175px">Stats</th>
             <td>
+                <br>
                 <el-row>
                     <el-col :span="8">
                         <h4>{{service_stats.tasks}}</h4>
@@ -36,6 +37,7 @@
                         <b class="text-muted">Success Rate</b>
                     </el-col>
                 </el-row>
+                <br>
             </td>
         </tr>
         <tr>
@@ -49,9 +51,9 @@
                     Dockerhub
                     <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
                 </div>
-                <el-card v-if="readme" style="margin-top: 10px;">
+                <blockquote v-if="readme" class="readme">
                     <vue-markdown :source="readme"></vue-markdown>
-                </el-card>
+                </blockquote>
             </td>
         </tr>
         <tr>
@@ -99,16 +101,16 @@
         <tr>
             <th>Computing Resource</th>
             <td>
-                <el-alert :closable="false" title="" type="error" v-if="!resources">
-                    There is no computing resource to run this currently.
-                </el-alert>
-                <p v-else>
+                <p v-if="preferred_resource">
                     This service can currently run on 
                     <el-tag> {{preferred_resource.name}} (Best)</el-tag>
                      <el-tag v-for="resource in resources" :key="resource.id" v-if="resource.id != preferred_resource._id" style="margin-right:3px;">
                         {{resource.name}}
                     </el-tag> 
                 </p> 
+                <b-alert show variant="danger" v-else>
+                    There is currently no available computing resource to run this application.
+                </b-alert>
             </td>
         </tr>
         <tr>
@@ -233,9 +235,9 @@ export default {
                 service
             }})
             .then(res => {
+                if(res.body.nomatch)  return;
                 this.preferred_resource = res.body.resource;
-                this.resources = res.body.considered
-                .sort((a, b) => {
+                this.resources = res.body.considered.sort((a, b) => {
                     if (a.score < b.score) return 1;
                     if (a.score > b.score) return -1;
                     return 0;
