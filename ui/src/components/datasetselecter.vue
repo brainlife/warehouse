@@ -1,6 +1,6 @@
 <template>
     <b-modal title="Select Datasets" ref="modal" @ok="submit" @hide="hide">
-        <!--<p class="text-muted">need to stage your datasets to be processed.</p>-->
+        <!--
         <el-tabs v-model="mode">
               
             <el-tab-pane label="Selected Datasets" name="selected">
@@ -29,24 +29,34 @@
                         <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
                     </el-form-item>
                 </div>
-                <!--
-                <el-form-item label="Datatype Tags">
-                    <select2 style="width: 100%; max-width: 100%;" @input="update_selected_tags" :options="alltags"></select2>
-                </el-form-item>
-                -->
                 <el-form-item label="Datasets">
                     <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
                 </el-form-item>
                 </el-form>
             </el-tab-pane>
-
         </el-tabs>
-        <!--
-        <span slot="footer" class="dialog-footer">
-            <el-button @click="close">Cancel</el-button>
-            <el-button type="primary" @click="submit" icon="check">Stage</el-button>
-        </span>
         -->
+        <el-form label-width="120px">
+        <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
+            <el-form-item label="Project">
+                <projectselecter v-model="project"></projectselecter>
+            </el-form-item>
+        </div>
+        <div style="background-color: #eee; padding: 10px 10px 1px 10px; margin-bottom: 10px;">
+            <b>Filters</b>
+            <el-form-item label="Subject" v-if="subjects">
+                <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
+            </el-form-item>
+            <el-form-item label="Datatype" v-if="datatypes_s2">
+                <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
+            </el-form-item>
+        </div>
+        <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
+            <el-form-item label="Datasets">
+                <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
+            </el-form-item>
+        </div>
+        </el-form>
     </b-modal>
 </template>
 
@@ -65,9 +75,6 @@ export default {
     props: [ 'visible' ],
     data() {
         return {
-            //visible_: false,
-            mode: "selected",
-
             //datasets selected via datasets page
             selected: JSON.parse(localStorage.getItem('datasets.selected')) || {},
 
@@ -107,23 +114,16 @@ export default {
         },
 
         submit: function() {
-            if(this.mode == "selected") this.submit_selected();
-            if(this.mode == "warehouse") this.submit_dataset();
+            if(this.datasets.length) {
+                var os = {}; 
+                this.datasets.forEach(did=>{ 
+                    os[did] = this.alldatasets[did];
+                });
+                this.$emit('submit', os);
+            }
             this.close();
         },
 
-        submit_selected: function() {
-            this.$emit('submit', this.selected);
-        },
-
-        submit_dataset: function() {
-            var os = {}; 
-            this.datasets.forEach(did=>{ 
-                os[did] = this.alldatasets[did];
-            });
-            this.$emit('submit', os);
-        },
-        
         grab_datasets: function(params, cb) {
             // select2 page parameter -> determines what new 'page' of data to get for the dropdown menu
             // but it's not set on its initial call, so we have to set it to 1 when it's undefined
@@ -245,15 +245,9 @@ export default {
     watch: {
         visible: function(v) {
             console.log("visibility changed", v);
-            //this.visible_ = v;
             if(v) this.$refs.modal.show() 
             else this.$refs.modal.hide() 
         },
-        /*
-        visible_: function(v) {
-            this.$emit('update:visible', v);
-        },
-        */
 
         project: function(project) {
             this.$http.get('dataset/distinct', { params: {
@@ -268,8 +262,6 @@ export default {
     },
 
     created: function() {
-        //this.visible_ = this.visible; //initial value (always false?)
-
         //load datatypes
         this.$http.get('datatype', {params: {
             find: JSON.stringify({

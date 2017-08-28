@@ -18,8 +18,10 @@
                 </small>
             </mute>
         </div>
+        <!--
         <br>
-        <div class="dataset clickable" @click="scrollto('newtaskdialog')"><b style="padding: 3px 0px; opacity: 0.5">New Task</b></div>
+        <div class="dataset clickable" @click="scrollto('newtaskdialog')" v-if="apps && apps.length"><b style="padding: 3px 0px; opacity: 0.5">Run Apps</b></div>
+        -->
     </div>
     <div class="main-section" id="scrolled-area">
         <p v-if="instance.status == 'removed' || instance.config.removing">
@@ -133,14 +135,16 @@
         </task>
     </div>
 
-    <el-card v-if="apps">
-        <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h5>
+    <div v-if="apps && apps.length == 0" style="margin: 20px;">
+        <p class="text-muted">You have no application that you can submit with currently staged datasets. Please try staging more datasets.</p>
+    </div>
+    <el-card v-if="apps && apps.length > 0">
+        <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">Run Application</h5>
 
         <!--newprocess form-->
         <transition name="fade">
         <div v-if="!newtask.app">
-            <p class="text-muted" v-if="apps.length > 0">You can submit following application(s) with currently available dataset.</p>
-            <p class="text-muted" v-else>You have no application that you can submit with the current set of staged dataset. Please stage more datasets.</p>
+            <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
             <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
                 <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px;">
                     <app :app="app" :compact="true" :clickable="false" class="clickable" :descheight="50"/>
@@ -157,9 +161,7 @@
                     <app :app="newtask.app" :compact="false"></app>
                 </el-form-item>
 
-                <el-form-item label="Task Description">
-                    <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
-                </el-form-item>
+                <br>
 
                 <!--input-->
                 <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
@@ -195,6 +197,12 @@
                     </el-select>
                 </el-form-item>
 
+                <hr>
+
+                <el-form-item label="Task Description" style="margin: 8px 0px">
+                    <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
+                </el-form-item>
+
                 <el-form-item label=" ">
                     <div v-if="!newtask.archive.enable">
                         <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive all output datasets when finished
@@ -219,6 +227,7 @@
                         </p>
                         -->
                     </el-card>
+                    <br>
                 </el-form-item>
 
                 <el-form-item label=" ">
@@ -453,10 +462,12 @@ methods: {
             .then(res=>{
                 this.archived = res.body.datasets;
 
+                /*
                 //open input dialog if there are no datasets (new process?)
                 if(this._datasets.length == 0) {
                     this.show_input_dialog = true;
                 }
+                */
 
                 this.ws.send(JSON.stringify({
                     bind: {
@@ -685,7 +696,7 @@ methods: {
         }
         this.$http.post(Vue.config.wf_api+'/task', {
             instance_id: this.instance._id,
-            name: "Staging Input Dataset",
+            name: "Staging Input Datasets",
             //desc: "Stage Input for "+task.name,
             service: "soichih/sca-product-raw",
             config: { download, _outputs, _tid: this.next_tid() },
@@ -722,6 +733,7 @@ methods: {
 
             var copy_dataset = Object.assign({}, dataset);
             copy_dataset.task_id = dataset.task._id;
+            copy_dataset.app_id = dataset.task.config._app; //testing..
             copy_dataset.output_id = copy_dataset.id; //this becomes output_id
             copy_dataset.id = input_id;
             delete copy_dataset.task;

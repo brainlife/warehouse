@@ -140,32 +140,23 @@ box-sizing: border-box;
 </style>
 
 <style>
-/* Menu Item Styling  */
 .menu-item {
     display:inline-block;
 }
+/* these thins should probably go to component/datasetselecter.vue*/
 .menu-item time {
     margin-left:10px;
     color:#999;
     float: right;
 }
 .menu-item .tag {
-    margin-left:4px;
-    padding:4px;
-    background:#eee;
-    color:black !important;
-    border-radius:3px;
+    padding:2px 4px;
     color:#999;
 }
 
-.select2-results__option {
-    font-family:Roboto;
-    font-size:14px;
-    color:black !important;
-}
-
-.select2-results__option--highlighted {
-    background-color:#ddd !important;
+.select2-results__option--highlighted .tag,
+.select2-results__option--highlighted time {
+    color: #ddd;
 }
 
 /* Hide the 'Searching...' text */
@@ -176,8 +167,10 @@ box-sizing: border-box;
 .select2-container--default .select2-results__option .select2-results__option {
     padding-left: 6px;
 }
-
 .select2-dropdown {
     z-index: 9900;
+}
+.el-form-item__content {
+    line-height: inherit;
 }
 </style>

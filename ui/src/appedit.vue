@@ -388,10 +388,6 @@ export default {
 </script>
 
 <style scoped>
-.content {
-background-color: white;
-padding: 20px;
-}
 .main-section {
 position: fixed;
 padding: 20px;

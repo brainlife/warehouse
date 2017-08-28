@@ -176,7 +176,7 @@ color: #666;
 z-index: 1;
 border-bottom: 1px solid #666;
 }
-.header h1 {
+.header h2 {
 color: #eee;
 }
 .header-bottom {
