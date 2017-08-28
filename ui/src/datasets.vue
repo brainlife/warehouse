@@ -132,6 +132,8 @@ export default {
             page_info: [], //{top/bottom/visible/}
             loading: false,
 
+            last_groups: {},
+
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
 
@@ -202,6 +204,7 @@ export default {
         reload: function() {
             this.pages = [];
             this.page_info = [];
+            this.last_groups = {};
             this.total_datasets = null;
             this.load();
         },
@@ -221,15 +224,6 @@ export default {
         },
         
 		page_scrolled: function(e) {
-
-            /*
-            //prevent calling this too often
-            if(scroll_debounce && Date.now()- scroll_debounce < 100) {
-                return;
-            }
-            scroll_debounce = Date.now();
-            */
-            
             var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
             if (page_margin_bottom < 800) this.load();
             this.page_info.forEach((page,idx)=>{
@@ -274,8 +268,12 @@ export default {
                     loaded += page[subject].length;
                 }
             });
+            for(var subject in this.last_groups) {      
+                loaded += this.last_groups[subject].length;
+            }
             if(loaded === this.total_datasets) return;
-            
+
+            console.log("fetching new data");
             this.loading = true;
             var limit = 100;
             this.$http.get('dataset', {params: {
@@ -287,20 +285,26 @@ export default {
             }})
             .then(res=>{
                 this.total_datasets = res.body.count;
+                var groups = this.last_groups; //start with the last subject group from previous load
 
-                //set checked flag for each dataset
-                var groups = {};
+                var last_subject = null;
                 res.body.datasets.forEach(dataset=>{
-                    //Vue.set(dataset, 'checked', this.selected[dataset._id]);
                     dataset.checked = this.selected[dataset._id];
-
                     var subject = "nosub"; //not all datasets has subject tag
                     if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
+                    last_subject = subject;
                     if(!groups[subject]) groups[subject] = [];
                     groups[subject].push(dataset);
                 });
+
+                //don't add last subject group - in case we might have more datasets for that key in the next page
+                this.last_groups = {};
+                this.last_groups[last_subject] = groups[last_subject];
+                delete groups[last_subject];
+
                 this.pages.push(groups);
 
+                //remember the page height
                 this.$nextTick(()=>{
                     var h = document.getElementById("scrolled-area").scrollHeight;
                     var prev = 0;
