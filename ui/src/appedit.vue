@@ -48,12 +48,53 @@
                 <el-input type="text" v-model="app.retry" placeholder="0"/>
                 <p class="text-muted">If a task fails, it will rerun up to this count (0 means no retry)</p>
             </el-form-item>
+            
             <el-form-item label="Configuration">
+                <b-dropdown text="Add" variant="primary">
+                    <b-dropdown-item>Integer </b-dropdown-item>
+                    <b-dropdown-item>String</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item>Input</b-dropdown-item>
+                </b-dropdown>
+                
+                <div v-for="(object, name) in app.config" :key="name">
+                    {{log(object, name)}}
+                    <div v-if="object.type == 'input'" class="card">
+                        <div>
+                            <div class="config_item_header" style="display:inline-block;">Input</div>
+                            <el-button @click="rm_app_config(name)" size="small" icon="delete" style="float: right;"></el-button>
+                        </div>
+                        <el-row>
+                            <el-col :span="6">
+                                <div class="text-muted">Input ID</div>
+                            </el-col>
+                            <el-col :span="18">
+                                <el-select v-model="object.input_id" style="width: 100%; margin: 3px;">
+                                    <el-option v-for="input_id in input_ids" :key="input_id" :label="input_id" :value="input_id"></el-option>
+                                </el-select>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="6">
+                                <div class="text-muted">File ID</div>
+                            </el-col>
+                            <el-col :span="18">
+                                <el-select v-for="input in app.inputs" v-if="input.id == object.input_id" :key="input.id" v-model="object.file_id" style="width: 100%; margin: 3px;">
+                                    <el-option v-if="input.datatype" v-for="file in datatypes[input.datatype].files" :key="file.id" :label="file.id" :value="file.id"></el-option>
+                                </el-select>
+                            </el-col>
+                        </el-row>
+                    </div>
+                </div>
+            </el-form-item>
+            
+            <el-form-item label="Configuration (Raw)">
                 <!--
                 https://github.com/dhenkes/vue2-ace/issues/5
                 <editor :content="app._config" :sync="true" :lang="'json'"></editor>
                 -->
-                <el-input type="textarea" v-model="app._config" autosize/>
+                <!-- <el-input type="textarea" v-model="app._config" autosize/> -->
+                <pre v-highlightjs="app._config"><code class="json hljs"></code></pre>
             </el-form-item>
 
             <el-form-item label="Inputs">
@@ -69,7 +110,7 @@
                         <el-col :span="6">
                             Datatype
                             <el-select v-model="input.datatype" style="width: 100%;">
-                                <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                                <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
                             </el-select>
                         </el-col>
                         <el-col :span="14" v-if="input.datatype">
@@ -237,7 +278,7 @@ export default {
                             this.app = res.body.apps[0];
 
                             //need to do some last minute type conversion
-                            this.app._config = JSON.stringify(this.app.config, null, 4);
+                            // this.app._config = JSON.stringify(this.app.config, null, 4);
                             this.app.outputs.forEach(output=>{
                                 if(output.files) output._files = JSON.stringify(output.files, null, 4);
                             });
@@ -257,12 +298,19 @@ export default {
     },
 
     methods: {
+        log: console.log,
+        
         add: function(it) {
             it.push({
                 id: "",
                 datatype: null,
                 datatype_tags: [],
             });
+        },
+        
+        rm_app_config: function(id) {
+            if (this.app.config[id])
+                Vue.delete(this.app.config, id);
         },
 
         cancel: function() {
@@ -320,6 +368,22 @@ export default {
             });
         }
     },
+    
+    computed: {
+        input_ids: function() {
+            let options = [];
+            this.app.inputs.forEach(input => {
+                options.push(input.id);
+            });
+            return options;
+        }
+    },
+    
+    watch: {
+        "app.config": function(config) {
+            this.app._config = JSON.stringify(this.app.config, null, 4);
+        }
+    }
 }
 </script>
 
@@ -348,6 +412,20 @@ right: 0px;
 height: 80px;
 z-index: 1;
 border-bottom: 1px solid #666;
+}
+
+.card {
+display: inline-block;
+min-width: 300px;
+width: 300px;
+height: auto;
+padding: 15px;
+margin: 5px;
+box-sizing: border-box;
+}
+.config_item_header {
+color:#777;
+font-size:20px;
 }
 </style>
 

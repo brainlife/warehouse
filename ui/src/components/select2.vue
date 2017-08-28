@@ -118,7 +118,9 @@ export default {
             console.log("select2: parent options changed to", options);
 
             this.opts.data = options;
+            
             //TODO - why do we need to update val here? (will break without it)
+            $(this.$el).select2('data', options);
             $(this.$el).select2(this.opts).val(this.value).trigger('change');
         },
     },
