@@ -733,6 +733,7 @@ methods: {
 
             var copy_dataset = Object.assign({}, dataset);
             copy_dataset.task_id = dataset.task._id;
+            copy_dataset.app_id = dataset.task.config._app;
             copy_dataset.output_id = copy_dataset.id; //this becomes output_id
             copy_dataset.id = input_id;
             delete copy_dataset.task;

@@ -508,6 +508,7 @@ border-radius: inherit;
 .task-desc {
 margin-top: 10px; 
 padding: 5px 10px; 
+margin-left: 90px;
 font-size: 90%; 
 background-color: #e0e0e0;
 }
