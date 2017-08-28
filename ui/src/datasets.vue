@@ -3,83 +3,66 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="header-content">
-        <el-row :gutter="20">
-             <el-col :span="12">
-                <el-input
-                    placeholder="Filter Datasets" 
-                    icon="search"
-                    @change="change_query_debounce()"
-                    v-model="query">
-                </el-input>
-            </el-col>
-            <el-col :span="12">
-                <el-button @click="go('/upload')" icon="upload">Upload Data</el-button>
-            </el-col>
-        </el-row>
+        <el-input placeholder="Filter Datasets" @change="change_query_debounce()" v-model="query"/>
     </div>
-    <div class="ui pusher" :class="{rightopen: selected_count}">
+    <div :class="{rightopen: selected_count}">
         <projectmenu :active="project_id"></projectmenu>
-        <div class="fixed-top">
-            <el-row class="header" style="padding-right: 16px;">
-                <el-col :span="3"><h4>Subject</h4></el-col>
-                <el-col :span="21">
-                    <el-row>
-                        <el-col :span="1">&nbsp;</el-col>
-                        <el-col :span="5"><h4>Datatype</h4></el-col>
-                        <el-col :span="8"><h4>Description</h4></el-col>
-                        <el-col :span="5"><h4>Create&nbsp;Date</h4></el-col>
-                        <el-col :span="5"><h4>Tags</h4></el-col>
-                    </el-row> 
-                </el-col>
-            </el-row>
-        </div><!--fixed-top-->
+        <div class="page-header">
+            <div class="row">
+                <div class="col-md-2"><h4>Subject</h4></div>
+                <div class="col-md-10">
+                    <div class="row">
+                        <div class="col-md-3"><h4>Datatype</h4></div>
+                        <div class="col-md-3"><h4>Description</h4></div>
+                        <div class="col-md-3"><h4>Create&nbsp;Date</h4></div>
+                        <div class="col-md-3"><h4>Tags</h4></div>
+                    </div>
+                </div><!--col-->
+            </div><!--row-->
+        </div>
 
         <div class="page-content">
             <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
-                <p class="text-muted" style="margin: 10px; text-align: right;">Total Datasets <b>{{total_datasets}}</b></p>
+                <div class="text-muted list-header">Total Datasets <b>{{total_datasets}}</b></div>
                 <div v-for="(page, page_idx) in pages">
                     <!--show empty div to speed rendering up if it's outside the view-->
-                    <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
-                        :style="{height: page_info[page_idx].height}">&nbsp;</div>
-                    <el-row class="group" v-for="(datasets, subject) in page" :key="subject" v-else>
-                        <el-col :span="3">
+                    <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" :style="{height: page_info[page_idx].height}">&nbsp;</div>
+                    <div class="row subjects" v-for="(datasets, subject) in page" :key="subject" v-else>
+                        <div class="col-md-2">
                             <strong>{{subject}}</strong>
-                        </el-col> 
-                        <el-col :span="21">
-                            <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" :class="{dataset: true, clickable: true, selected: dataset.checked, truncate: true}">
-                                <el-row>
-                                    <el-col :span="1">
-                                        <div @click.stop="check(dataset)" style="padding: 0 3px 5px 5px;">
-                                            <el-checkbox v-model="dataset.checked" @change="check(dataset)"></el-checkbox>
-                                        </div>
-                                    </el-col>
-                                    <el-col :span="5" :title="datatypes[dataset.datatype].desc">
+                        </div>
+                        <div class="col-md-10">
+                            <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
+                                <div class="row">
+                                    <div class="col-md-3 truncate">
+                                        <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset)" class="dataset-checker">
                                         <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                                        <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;"/>
-                                        <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;"/>
-                                        <icon v-if="dataset.status == 'archived'" name="archive"/>
-                                        <icon v-if="!dataset.status" name="question-circle" style="color: olive;"/>
-                                    </el-col>
-                                    <el-col :span="8">
+                                        <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
+                                        <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
+                                        <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
+                                        <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
+                                    </div>
+                                    <div class="col-md-3 truncate">
                                         {{dataset.desc||'&nbsp;'}}
-                                    </el-col>
-                                    <el-col :span="5">
+                                    </div>
+                                    <div class="col-md-3 truncate">
                                         <time>{{dataset.create_date | date}}</time>
-                                    </el-col>
-                                    <el-col :span="5">
+                                    </div>
+                                    <div class="col-md-3 truncate">
                                         <tags :tags="dataset.tags"></tags> &nbsp;
-                                    </el-col>
-                                </el-row>
+                                    </div>
+                                </div>
                             </div>
-                        </el-col> 
-                    </el-row>
+                        </div>
+                    </div>
                  </div> 
-            </div><!--dataset list-->
+            </div><!--scrolled-area-->
+            <b-button class="button-fixed" @click="go('/upload')" title="Upload Dataset" :class="{'selected-view-open':selected_count}"><icon name="plus" scale="2"/></b-button>
         </div><!--page-content-->
-    </div><!--pusher-->
+    </div>
 
     <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
         <h4 class="header">
@@ -101,14 +84,18 @@
                 </div>
                 <br>
             </div>
-            <el-button size="small" icon="circle-cross" @click="clear_selected()">Unselect All</el-button>
+            <b-button size="sm" variant="link" @click="clear_selected()" style="padding: 0px;"><icon name="close"/> Unselect All</b-button>
         </div>
-        <div class="select-group" style="background-color: #999;">
-            <el-button-group>
-                <el-button size="small" type="primary" @click="download()">Download</el-button>
-                <el-button size="small" type="primary" @click="process()">Process</el-button>
-            </el-button-group>
-            <viewerselect @select="view" size="small"></viewerselect>
+        <div class="select-action">
+            <b-button-group>
+                <b-button size="sm" @click="download()" 
+                    title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
+                <b-button size="sm" @click="process()" 
+                    title="Run applications on selected datasets by creating a new process.">Process</b-button>
+            </b-button-group>
+            <br>
+            <br>
+            <viewerselect @select="view"></viewerselect>
         </div>
     </div>
 </div>
@@ -126,6 +113,8 @@ import viewerselect from '@/components/viewerselect'
 import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+
+const async = require('async');
 
 var query_debounce = null;
 var scroll_debounce = null;
@@ -213,6 +202,7 @@ export default {
         reload: function() {
             this.pages = [];
             this.page_info = [];
+            this.total_datasets = null;
             this.load();
         },
         
@@ -284,7 +274,7 @@ export default {
                     loaded += page[subject].length;
                 }
             });
-            if(loaded == this.total_datasets) return;
+            if(loaded === this.total_datasets) return;
             
             this.loading = true;
             var limit = 100;
@@ -376,7 +366,7 @@ export default {
             }).then(res=>res.body);
         },
 
-        stage_selected: function(instance/*, resource*/) {
+        temp_stage_selected: function(instance/*, resource*/) {
             //create config to download all selected data from archive
             var download = [];
             for(var dataset_id in this.selected) {
@@ -406,7 +396,7 @@ export default {
             var download_instance = null;
             this.get_instance().then(instance=>{
                 download_instance = instance;
-                return this.stage_selected(download_instance);
+                return this.temp_stage_selected(download_instance);
             }).then(task=>{
                 //if type contains /, I need to replace it with . (see processes/view.vue)
                 window.open("#/view/"+download_instance._id+"/"+task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
@@ -417,7 +407,7 @@ export default {
             var download_instance = null;
             this.get_instance().then(instance=>{
                 download_instance = instance;
-                return this.stage_selected(instance);
+                return this.temp_stage_selected(instance);
             }).then(task=>{
                 var download_task = task;
 
@@ -470,7 +460,39 @@ export default {
                 },
             }).then(res=>{
                 var instance = res.body;
-                this.$router.push("/processes/"+instance._id);
+
+                //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject)
+                var tid = 0;
+                var did = 0;
+                async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
+                    var download = [];
+                    var _outputs = [];
+                    for(var dataset_id in datasets) {
+                        download.push({
+                            url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
+                            untar: "auto",
+                            dir: dataset_id,
+                        });
+                        _outputs.push(Object.assign(datasets[dataset_id], {
+                            id: dataset_id, 
+                            did: did++,
+                            subdir: dataset_id, 
+                            dataset_id,
+                            prov: null,
+                        }));
+                    }
+                    this.$http.post(Vue.config.wf_api+'/task', {
+                        instance_id: instance._id,
+                        name: "Staging Input Datasets - "+this.datatypes[datatype_id].name,
+                        service: "soichih/sca-product-raw",
+                        config: { download, _outputs, _tid: tid++ },
+                    }).then(res=>{
+                        console.log("submitted download task", res.body.task);
+                        next_group();
+                    });
+                }, err=>{
+                    this.$router.push("/processes/"+instance._id);
+                });
             });
         }
     },
@@ -482,18 +504,41 @@ export default {
 </script>
 
 <style scoped>
+.page-header,
 .page-content {
-    margin-left: 225px;
-    transition: right 0.2s, bottom 0.2s;
-    top: 85px;
-    overflow-y: scroll;
+position: fixed;
+left: 320px;
+padding-left: 10px;
+right: 0;
 }
-.rightopen .page-content {
-    right: 250px;
+
+h4 {
+font-size: 15px;
+font-weight: bold;
+margin-bottom: 7px;
 }
-.rightopen .dataset-view,
-.rightopen .fixed-top {
-    right: 250px;
+
+.page-header {
+top: 63px;
+margin-right: 15px; /*to align with scrollbar*/
+}
+.page-header h4 {
+font-size: 16px;
+font-weight: bold;
+color: #999;
+}
+
+.page-content {
+background-color: white;
+transition: right 0.2s, bottom 0.2s;
+top: 90px;
+overflow-y: scroll;
+overflow-x: hidden;
+font-size: 12px;
+}
+.rightopen .page-content,
+.rightopen .page-header {
+right: 250px;
 }
 .selected {
     transition: color, background-color 0.2s;
@@ -514,49 +559,33 @@ export default {
 .selected-view-open {
     right: 0px;
 }
-.selected-view .header {
-    color: white;
+.selected-view {
+    color: #eee;
 }
 .selected-view .selected-item:hover {
     background-color: #eee;
     cursor: pointer;
 }
-.selected-view .select-group {
-    background-color: white;
-    padding: 10px 15px;
+.selected-view .select-group,
+.selected-view .select-action {
+    padding: 10px;
     box-sizing: border-box;
+}
+.selected-view .select-group {
     box-shadow: inset 3px 0px 3px #999;
+    background-color: white;
+    color: #333;
 }
-.header-content,
-.fixed-top,
-.dataset-view {
-    position: fixed;
-    left: 315px;
+.selected-view .select-action p {
+    margin-bottom: 10px;
 }
-.dataset-view {
-    height: 300px;
-    bottom: -300px; 
-    transition: bottom 0.2s;
-    right: 0px;
-}
-.dataset-view-open {
-    bottom: 0px;
-}
-.dataset-view-header {
-    background-color: #ddd;
-    height: 30px;
-    width: 100%;
-    z-index: 2;
-}
-.dataset-view-detail {
-    margin-top: 30px;
-    overflow: auto;
-    height: 270px;
-}
+
 .header-content {
+    position: fixed;
+    left: 320px;
     top: 0px;
     padding-top: 7px;
-    right: 200px;
+    right: 250px;
     z-index: 10;
 }
 
@@ -564,26 +593,10 @@ export default {
     padding: 10px 0px 3px 10px;
     text-transform: uppercase;
 }
-
-.list .group {
-    padding: 5px 0px 5px 10px;
-    background-color: white;
-}
-
-.fixed-top .header {
-    background-color: #ddd;
-    color: #999;
-}
-.list .group {
-    font-size: 12px;
-}
-.list .group:not(:last-child) {
-    border-bottom: 1px solid #eee;
-}
 .list .dataset {
-    margin-bottom: 1px;  */
     transition: background-color 0.3s;
-    padding: 2px 0px;
+    margin: 1px;
+    padding: 1px;
 }
 .list .dataset.clickable:hover {
     background-color: #ccc;
@@ -592,13 +605,14 @@ export default {
 .list .dataset.selected:hover {
     background-color: #2693ff;
 }
-.fixed-top {
-    right: 0px;
-    z-index: 5;
-    transition: right 0.2s;
-    top: 50px;
+.list .list-header {
+    padding: 10px 0px;
 }
-.truncate .el-col {
+.list .subjects {
+    border-top: 1px solid #eee;
+    padding: 5px 0px;
+}
+.list .truncate {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; 
@@ -610,4 +624,17 @@ export default {
     z-index: 10;
     opacity: 0.5;  
 }
+.dataset-checker {
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin-right: 5px;
+}
+.button-fixed {
+transition: right 0.2s;
+}
+.button-fixed.selected-view-open {
+right: 300px;
+}
 </style>
+

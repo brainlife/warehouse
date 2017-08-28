@@ -2,25 +2,19 @@
 <div>
     <pageheader :user="config.user">
         <!--pageheader slot-->
-        <el-row :gutter="20">
-            <el-col :span="14">
-                <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
-            </el-col>
-            <el-col :span="10">
-                <el-button @click="go('/app/_/edit')" icon="plus">Register App</el-button>
-            </el-col>
-        </el-row>
+        <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div v-for="(apps, tag) in app_groups" key="tag" class="margin20">
-            <h2 class="group-title">{{tag}}</h2> 
+            <h4 class="group-title">{{tag}}</h4> 
             <div v-for="app in apps" key="app._id" class="app">
                 <app :app="app" :descheight="130"></app>
             </div>
             <br clear="both">
         </div>
+        <b-button class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
     </div><!--page-content-->
 </div><!--root-->
 </template>
@@ -77,14 +71,14 @@ export default {
 
 <style scoped>
 .el-card {
-    border: none;
-    box-shadow: 0 0 3px #aaa;
+border: none;
+box-shadow: 0 0 3px #aaa;
 }
 .group-title {
-    color: #999;
-    text-transform: uppercase;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
+color: #999;
+text-transform: uppercase;
+padding-bottom: 10px;
+border-bottom: 1px solid #ddd;
 }
 .app {
 margin-right: 10px;

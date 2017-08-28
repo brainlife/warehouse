@@ -4,15 +4,12 @@
     <sidemenu active="/processes"></sidemenu>
     <div class="page-top" v-if="selected">
         <div style="margin: 10px; float: right;">
-            <el-button v-if="!selected.config.removing" @click="remove()" icon="delete" title="Remove this process"/>
+            <b-button v-if="!selected.config.removing" @click="remove()"><icon name="trash"/> Remove</b-button>
         </div>
         <statusicon :status="selected.status" :scale="1.75" style="width: 40px; text-align: center; float: left; margin: 10px;opacity: 0.6;"/>
-        <div style="margin-left: 60px; margin-right: 100px;">
-            <div v-if="editdesc">
-                <el-input type="textarea" placeholder="Process Description" style="padding-top: 3px;"
-                    @change="changedesc()" v-model="selected.desc" :rows="2"></el-input>
-            </div>
-            <p v-else @click="editdesc = true" style="height: 100%;padding: 10px;" class="clickable text-muted">{{selected.desc||'no description'}}</p>
+        <div style="margin-left: 60px; margin-right: 300px;">
+            <!--selected.desc change doesn't get reflected on textarea https://github.com/bootstrap-vue/bootstrap-vue/issues/922 -->
+            <b-form-textarea placeholder="Please enter process description" @input="changedesc()" v-model="selected.desc" :rows="2"></b-form-textarea>
         </div>
     </div>
 
@@ -43,7 +40,7 @@
                 </div>
             </li>
         </ul>
-        <el-button class="button-fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></el-button>
+        <b-button class="button-fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></b-button>
     </div>
 
     <div class="page-content">
@@ -67,6 +64,8 @@ import simpleprocess from '@/simpleprocess'
 import process from '@/process'
 import process2 from '@/process2'
 
+import ReconnectingWebSocket from 'reconnectingwebsocket'
+
 var debounce = null;
 
 export default {
@@ -86,7 +85,8 @@ export default {
             //projects: null, //keyed by _id
             apps: null, //keyed by _id
 
-            editdesc: false,
+            //editdesc: false,
+            ws: null, //websocket
 
             config: Vue.config,
         }
@@ -143,6 +143,28 @@ export default {
                     area.scrollTop = elem.offsetTop - area.clientHeight/2;
                 }
             });
+
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+                console.log("binding to instance updates");
+                this.ws.send(JSON.stringify({
+                    bind: {
+                        ex: "wf.instance",
+                        key: Vue.config.user.sub+".#",
+                    }
+                }));
+            }
+            this.ws.onmessage = (json)=>{
+                var event = JSON.parse(json.data);
+                console.log("instance update");
+                console.dir(event.msg);
+                var instance = this.instances.find(i=>i._id == event.msg._id);
+                if(instance) {
+                    for(var k in event.msg) instance[k] = event.msg[k];
+                }
+            }
+
         }).catch(err=>{
           console.error(err);
         });
@@ -157,7 +179,7 @@ export default {
             debounce = setTimeout(()=>{
                 this.$http.put(Vue.config.wf_api+'/instance/'+this.selected._id, this.selected).then(res=>{
                     this.$notify({ text: 'Updated description', type: 'success' });
-                    this.editdesc = false;
+                    //this.editdesc = false;
                 });
             }, 2000);        
         },
@@ -204,6 +226,11 @@ export default {
 </script>
 
 <style scoped>
+h3 {
+font-size: 18px;
+font-weight: bold;
+margin-bottom: 9px;
+}
 .page-top {
 height: 60px;
 box-shadow: 0px 1px 1px rgba(0,0,0,0.2);
@@ -299,24 +326,16 @@ color: #2693ff;
 .process-list li.selected .status {
 color: white;
 }
-.button-fixed {
-position: fixed;
-bottom: 20px;
-left: 290px;
-border-radius: 25px;
-width: 50px;
-height: 50px;
-padding: 10px;
-margin: 10px;
-font-weight: bold;
-color: white;
-background-color: gray;
+.page-top textarea {
+background-color: inherit;
 border: none;
-box-shadow: 0px 0px 10px #333;
-transition: background-color 0.3s;
 }
-.button-fixed:hover {
-background-color: #2693ff;
+.page-top textarea:focus {
+background-color: white;
+}
+.button-fixed {
+left: 290px;
+right: inherit;
 }
 </style>
 

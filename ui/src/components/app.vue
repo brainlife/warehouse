@@ -1,8 +1,8 @@
 <template>
-<el-card :body-style="{padding: '0px'}" v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable}">
+<b-card v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
         <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
-        <div style="margin-left: 90px;">
+        <div>
             <h4 class="name">{{app_.name}}</h4>
             <h5 class="github">{{app_.github}}</h5>
             <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
@@ -13,7 +13,7 @@
             <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
         </div>
     </div>
-</el-card>
+</b-card>
 </template>
 
 <script>
@@ -93,8 +93,7 @@ font-size: 13px;
 color: #333;
 line-height: 140%;
 overflow: hidden;
-margin: 10px 0px;
-margin-right: 10px;
+margin: 10px;
 text-overflow:ellipsis;
 }
 .rate {
@@ -103,13 +102,19 @@ overflow: auto;
 font-size: 13px;
 color: #666;
 line-height: 140%;
+margin-bottom: 20px;
 }
-
 .image {
 width: 100%;
 display: block;
 }
+h4 {
+font-size: 15px;
+font-weight: bold;
+}
 h5 {
+font-size: 13px;
+font-weight: bold;
 opacity: 0.7;
 }
 .compact h5 {
@@ -130,7 +135,7 @@ font-size: 90%;
 .devs {
 background-color: #eee;
 padding: 10px;
-height: 55px;
+height: 75px;
 overflow-y: auto;
 overflow-x: hidden;
 }

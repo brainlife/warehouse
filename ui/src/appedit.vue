@@ -3,18 +3,8 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="fixed-top">
-        <!--
-        <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/apps' }">Apps</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="app._id" :to="{ path: '/app/'+app._id }">{{app._id}}</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="app._id">Edit</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="!app._id">New App</el-breadcrumb-item>
-        </el-breadcrumb>
-        <br>
-        -->
-
-        <h1 v-if="$route.params.id == '_'">New App</h1>
-        <h1 v-else><span class="text-muted"><icon name="pencil" scale="2"/> Edit App </span> {{app.name}}</h1>
+        <h2 v-if="$route.params.id == '_'">New App</h2>
+        <h2 v-else><icon name="pencil" scale="2"/> {{app.name}}</h2>
     </div>
 
     <div class="main-section" v-if="ready">
@@ -334,10 +324,6 @@ export default {
 </script>
 
 <style scoped>
-.content {
-background-color: white;
-padding: 20px;
-}
 .main-section {
 position: fixed;
 padding: 20px;
@@ -355,7 +341,7 @@ position: fixed;
 top: 50px;
 left: 90px;
 right: 0px;
-height: 35px;
+height: 80px;
 z-index: 1;
 border-bottom: 1px solid #666;
 }

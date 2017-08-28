@@ -10,7 +10,7 @@
         @click="go('/datasets/'+project_id)"
         :class="{active: project_id == active}">
         <h5>{{project.name}}</h5>
-        <small class="text-muted">{{project.desc}}</small>
+        <small>{{project.desc}}</small>
     </div>
 
     <h4>
@@ -21,7 +21,7 @@
         @click="go('/datasets/'+project_id)"
         :class="{active: project_id == active}">
         <h5>{{project.name}}</h5>
-        <small class="text-muted">{{project.desc}}</small>
+        <small>{{project.desc}}</small>
     </div>
 </div>
 </template>
@@ -78,7 +78,7 @@ export default {
     position: fixed;
     top: 50px;
     bottom: 0px;
-    width: 225px;
+    width: 230px;
     /*background-color: #3b5f84;*/
     background-color: #444;
     color: white;
@@ -88,24 +88,27 @@ export default {
     z-index: 2;
 }
 h3 {
+    font-size: 18px;
     padding: 10px 20px;
     color: #777;
     text-transform: uppercase;
     margin-bottom: 0px;
 }
 h4 {
+    font-size: 16px;
     padding: 10px 20px;
     color: #777;
     text-transform: uppercase;
     margin-bottom: 0px;
 }
 h5 {
-    margin-bottom: 4px;
+    font-size: 13px;
+    margin-bottom: 3px;
 }
 .project {
     margin: 0px;
     padding: 10px 20px;
-    transition: background-color 0.2s;
+    transition: background-color 0.4s;
 }
 .project:hover {
     cursor: pointer;
@@ -113,6 +116,13 @@ h5 {
 }
 .project.active {
     background-color: #2693ff;
+}
+.project small {
+    transition: opacity 0.4s;
+    opacity: 0.7;
+}
+.project:hover small {
+    opacity: 0.9;
 }
 </style>
 

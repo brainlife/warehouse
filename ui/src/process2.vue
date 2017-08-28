@@ -1,10 +1,9 @@
 <template>
 <div v-if="instance">
     <div class="sidebar">
-        <el-button type="primary" size="small" style="float: right; margin: 5px;"
-            :class="{animated: true, headShake: _datasets.length == 0}" 
-            @click="show_input_dialog = true" icon="plus"> Stage Datasets</el-button>
-        <h3>Datasets</h3>
+        <b-button variant="primary" size="sm" style="float: right; margin: 5px;" :class="{animated: true, headShake: _datasets.length == 0}" 
+            @click="show_input_dialog = true" icon="plus"> Stage Datasets</b-button>
+        <h5>Datasets</h5>
         <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
             <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
@@ -19,8 +18,10 @@
                 </small>
             </mute>
         </div>
+        <!--
         <br>
-        <div class="dataset clickable" @click="scrollto('newtaskdialog')"><b style="padding: 3px 0px; opacity: 0.5">New Task</b></div>
+        <div class="dataset clickable" @click="scrollto('newtaskdialog')" v-if="apps && apps.length"><b style="padding: 3px 0px; opacity: 0.5">Run Apps</b></div>
+        -->
     </div>
     <div class="main-section" id="scrolled-area">
         <p v-if="instance.status == 'removed' || instance.config.removing">
@@ -125,9 +126,7 @@
                             </ul>
                         </div>
 
-                        <archiveform v-if="archiving === output.did" 
-                            :task="task" 
-                            :output="output" 
+                        <archiveform v-if="archiving === output.did" :task="task" :output="output" 
                             @done="done_archive" style="margin-top: 30px;"></archiveform>
                     </el-col>
                     </el-row>
@@ -136,21 +135,22 @@
         </task>
     </div>
 
+    <div v-if="apps && apps.length == 0" style="margin: 20px;">
+        <p class="text-muted">You have no application that you can submit with currently staged datasets. Please try staging more datasets.</p>
+    </div>
     <el-card v-if="apps && apps.length > 0">
-        <h3 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">New Task</h3>
+        <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">Run Application</h5>
 
         <!--newprocess form-->
         <transition name="fade">
         <div v-if="!newtask.app">
             <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
-            <el-row>
-            <el-col :span="12" v-for="app in apps" :key="app._id">
+            <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
                 <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px;">
                     <app :app="app" :compact="true" :clickable="false" class="clickable" :descheight="50"/>
                 </div>
-            </el-col>
-            </el-row>
-            <br>
+            </div>
+            <br clear="both">
         </div>
         </transition>
 
@@ -161,9 +161,7 @@
                     <app :app="newtask.app" :compact="false"></app>
                 </el-form-item>
 
-                <el-form-item label="Task Description">
-                    <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
-                </el-form-item>
+                <br>
 
                 <!--input-->
                 <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
@@ -199,6 +197,12 @@
                     </el-select>
                 </el-form-item>
 
+                <hr>
+
+                <el-form-item label="Task Description" style="margin: 8px 0px">
+                    <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
+                </el-form-item>
+
                 <el-form-item label=" ">
                     <div v-if="!newtask.archive.enable">
                         <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive all output datasets when finished
@@ -223,6 +227,7 @@
                         </p>
                         -->
                     </el-card>
+                    <br>
                 </el-form-item>
 
                 <el-form-item label=" ">
@@ -237,7 +242,7 @@
     <br>
     <br>
     <div v-if="config.debug">
-        <h3>Debug</h3>
+        <h5>Debug</h5>
         <el-collapse v-if="config.debug">
             <el-collapse-item title="newtask" name="newtask" v-if="newtask">
                 <pre v-highlightjs="JSON.stringify(newtask, null, 4)"><code class="json hljs"></code></pre>
@@ -457,24 +462,27 @@ methods: {
             .then(res=>{
                 this.archived = res.body.datasets;
 
+                /*
                 //open input dialog if there are no datasets (new process?)
                 if(this._datasets.length == 0) {
                     this.show_input_dialog = true;
                 }
+                */
 
-                console.log("binding to websocket for all things", this.instance._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: Vue.config.user.sub+"."+this.instance._id+".#",
                     }
                 }));
+                /*
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
                         key: Vue.config.user.sub+"."+this.instance._id,
                     }
                 }));
+                */
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
                     if(event.error) {
@@ -484,31 +492,21 @@ methods: {
                     var msg = event.msg;
                     if(!msg || !msg._id) return; //odd..
                     console.log(msg._id, msg.status, msg.status_msg);
-                    switch(event.dinfo.exchange) {
-                    case "wf.task":
-                        var t = this.tasks.find(t=>t._id == msg._id);
-                        if(!t) {
-                            //new task?
-                            this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
-                            this.tasks.push(msg); 
-                            this.update_apps();
-                            Vue.nextTick(()=>{
-                                this.scrollto(msg._id);
-                            });
-                        } else {
-                            //update
-                            if(t.status != msg.status) this.$notify("t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg);
-                            for(var k in msg) {
-                                t[k] = msg[k];
-                            }
+                    var t = this.tasks.find(t=>t._id == msg._id);
+                    if(!t) {
+                        //new task?
+                        this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
+                        this.tasks.push(msg); 
+                        this.update_apps();
+                        Vue.nextTick(()=>{
+                            this.scrollto(msg._id);
+                        });
+                    } else {
+                        //update
+                        if(t.status != msg.status) this.$notify("t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg);
+                        for(var k in msg) {
+                            t[k] = msg[k];
                         }
-                        break;
-                    case "wf.instance":
-                        //TODO - shouldn't mutate prop
-                        this.instance.status = msg.status; 
-                        break;
-                    default:
-                        console.error("unknown exchange", event.dinfo.exchange);
                     }
                 }
             }).catch((err)=>{
@@ -543,18 +541,28 @@ methods: {
             populate: 'inputs.datatype',
         }})
         .then(res=>{
-            //now, pick apps that we have *all* input data types for
+            //now, pick apps that we have *all* input datasets that matches the input datatype/tags
             this.apps = [];
             res.body.apps.forEach(app=>{
                 var match = true;
                 app.inputs.forEach(input=>{
-                    if(!~datatype_ids.indexOf(input.datatype._id)) match = false;
-                    input.datatype_tags.forEach(tag=>{
-                        if(tag[0] == "!" && ~input.datatype_tags.indexOf(tag.substring(1))) match = false;
-                        if(tag[0] != "!" && !~input.datatype_tags.indexOf(tag)) match = false;
-                    });
+                    //if(!~datatype_ids.indexOf(input.datatype._id)) match = false;
+                    var matching_dataset = this._datasets.find(dataset=>{
+                        if(dataset.datatype != input.datatype._id) return false;
+                        var match_tag = true;
+                        input.datatype_tags.forEach(tag=>{
+                            //make sure tag matches
+                            if(tag[0] == "!" && ~dataset.datatype_tags.indexOf(tag.substring(1))) match_tag = false;
+                            if(tag[0] != "!" && !~dataset.datatype_tags.indexOf(tag)) match_tag = false;
+                        });
+                        return match_tag;
+                    }); 
+                    if(!matching_dataset) match = false;
                 });
-                if(match) this.apps.push(app);
+                if(match) {
+                    console.log("can run", app.name);
+                    this.apps.push(app);
+                }
             });
         }).catch(err=>{
             console.error(err);
@@ -688,7 +696,7 @@ methods: {
         }
         this.$http.post(Vue.config.wf_api+'/task', {
             instance_id: this.instance._id,
-            name: "Staging Input Dataset",
+            name: "Staging Input Datasets",
             //desc: "Stage Input for "+task.name,
             service: "soichih/sca-product-raw",
             config: { download, _outputs, _tid: this.next_tid() },
@@ -725,6 +733,7 @@ methods: {
 
             var copy_dataset = Object.assign({}, dataset);
             copy_dataset.task_id = dataset.task._id;
+            copy_dataset.app_id = dataset.task.config._app; //testing..
             copy_dataset.output_id = copy_dataset.id; //this becomes output_id
             copy_dataset.id = input_id;
             delete copy_dataset.task;
@@ -797,7 +806,9 @@ right: 0px;
 overflow: auto;
 font-size: 90%;
 }
-.sidebar h3 {
+.sidebar h5 {
+font-size: 17px;
+font-weight: bold;
 color: #999;
 padding: 10px;
 margin: 0px;
@@ -815,14 +826,17 @@ margin: 0px;
 margin-bottom: 20px;
 }
 .task-desc {
+margin-left: 90px;
 margin-top: 10px; 
 padding: 5px 10px; 
 font-size: 90%; 
 background-color: #e0e0e0;
+font-style: italic;
 }
 .dataset {
 border-bottom: 1px solid #d5d5d5; 
-padding: 5px;
+padding: 3px;
+padding-left: 7px;
 }
 .dataset.clickable:hover {
 background-color: #eee;
@@ -857,5 +871,8 @@ color: #c00;
 }
 .sidebar .statusicon-running {
 color: #2693ff;
+}
+.el-collapse-item__content {
+line-height: inherit;
 }
 </style>

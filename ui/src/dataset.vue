@@ -4,15 +4,15 @@
     <sidemenu active="/datasets"></sidemenu>
     <div class="header" vi-if="dataset">
         <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
-        <el-button-group style="float: right;">
-            <el-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</el-button>
-            <el-button type="primary" @click="download()" v-if="dataset.storage" icon="document">Download</el-button>
-        </el-button-group>
-        <h1>
-            <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3)">
-                <div v-if="dataset.meta" style="display: inline-block; padding: 5px 10px; background-color: #fff; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+        <b-button-group style="float: right;">
+            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
+            <b-button variant="primary" @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
+        </b-button-group>
+        <h2>
+            <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
+                <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </div>
-        </h1>
+        </h2>
     </div>
     <div class="page-content" v-if="dataset" style="margin-top: 80px;">
         <!--
@@ -112,8 +112,6 @@
         <tr>
             <th>Provenance / Derivative</th>
             <td>
-                <pre>{{prov}}</pre>
-                <p class="text-muted">TODO</p>
                 <el-button-group style="float: right;">
                     <el-button size="small" @click="download_prov()" icon="document">Download Provenance</el-button>
                 </el-button-group>
@@ -163,6 +161,7 @@
                     <el-card style="background-color: #2693ff; color: white;">This dataset</el-card>
                 </center>
 
+                <!--
                 <div v-if="Object.keys(derivatives).length > 0">
                     <el-row :gutter="10">
                         <el-col :span="8" v-for="(datasets, task_id) in derivatives" :key="task_id">
@@ -181,6 +180,7 @@
                         </el-col>
                     </el-row>
                 </div>
+                -->
             </td>
         </tr>
         <tr v-if="apps">
@@ -188,11 +188,11 @@
             <td>
                 <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
-                <el-row>
-                <el-col :span="8" v-for="app in apps" :key="app._id" style="margin-bottom: 3px">
-                    <app :app="app" :dataset="dataset" :compact="true" :descheight="65"></app>
-                </el-col>
-                </el-row>
+                <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
+                    <div style="margin-right: 10px">
+                        <app :app="app" :dataset="dataset" :compact="true" :descheight="65"></app>
+                    </div>
+                </div>
             </td>
         </tr>
         <tr>
@@ -215,13 +215,22 @@
         </table>
 
         <br>
-        <el-card v-if="config.debug">
-            <div slot="header">Debug</div>
-            <h3>dataset</h3>
-            <pre v-highlightjs="JSON.stringify(dataset, null, 4)"><code class="json hljs"></code></pre>
-            <h3>derivatives</h3>
-            <pre v-highlightjs="JSON.stringify(derivatives, null, 4)"><code class="json hljs"></code></pre>
-        </el-card>
+        <div v-if="config.debug">
+            <h2>Debug</h2>
+            <b-btn block v-b-toggle.dataset>Datasets</b-btn>
+            <b-collapse id="dataset" accorion="my-accordion">
+                <b-card>
+                    <pre v-highlightjs="JSON.stringify(dataset, null, 4)"><code class="json hljs"></code></pre>
+                </b-card>
+            </b-collapse>
+
+            <b-btn block v-b-toggle.prov>prov</b-btn>
+            <b-collapse id="prov" accorion="my-accordion">
+                <b-card>
+                    <pre v-highlightjs="JSON.stringify(prov, null, 4)"><code class="json hljs"></code></pre>
+                </b-card>
+            </b-collapse>
+        </div>
     </div><!--page-content-->
 </div><!--root-->
 </template>
@@ -321,6 +330,7 @@ export default {
             });
         },
         load: function(id) {
+            console.log("loading dataset");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 populate: "project datatype prov.app prov.deps.dataset",
@@ -331,6 +341,11 @@ export default {
                     return;
                 }
                 this.dataset = res.body.datasets[0];
+
+                if(this.dataset.status == "storing") {
+                    //reload in few seconds..
+                    setTimeout(()=>{ this.load(id); }, 5000);
+                }
 
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {
@@ -455,9 +470,6 @@ export default {
 </script>
 
 <style scoped>
-h1 datatypetag {
-border: 3px solid white;
-}
 .ui.text.menu {
     margin: 0;
 }
@@ -470,7 +482,7 @@ background: #666;
 padding: 20px;
 padding-bottom: 20px;
 margin-top: 50px;
-height: 40px;
+height: 80px;
 position: fixed;
 top: 0px;
 right: 0px;
@@ -478,11 +490,6 @@ left: 90px;
 color: #666;
 z-index: 1;
 border-bottom: 1px solid #666;
-}
-.card {
-    width: 325px; 
-    float: left;
-    margin-right: 10px;
 }
 .el-alert {
 border-radius: inherit;

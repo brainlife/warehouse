@@ -3,16 +3,14 @@
     <pageheader :user="config.user"/>
     <sidemenu active="/projects"/>
     <div class="header" v-if="project">
-        <el-button-group style="float: right;" v-if="project._canedit">
-            <el-button @click="remove()" icon="delete" v-if="!project.removed">Remove Project</el-button>
-            <el-button @click="edit()" icon="edit">Edit</el-button>
-        </el-button-group>
-        <projectavatar :project="project" style="float: left; margin-right: 20px; margin-top: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></projectavatar>
-        <br>
-        <br>
-        <h1>{{project.name}}</h1>
+        <b-button-group style="float: right;" v-if="project._canedit">
+            <b-button @click="remove()" v-if="!project.removed">Remove</b-button>
+            <b-button @click="edit()">Edit</b-button>
+        </b-button-group>
+        <projectavatar :project="project" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></projectavatar>
+        <h2>{{project.name}}</h2>
     </div>
-    <div class="page-content" v-if="project" style="margin-top: 80px; padding-top: 30px">
+    <div class="page-content" v-if="project" style="margin-top: 80px; padding-top: 20px">
         <div style="margin-left: 130px; margin-bottom: 20px; min-height: 20px;">
             <p style="line-height: 150%;">{{project.desc}}</p>
         </div>
@@ -23,12 +21,12 @@
             <td>
                 <el-row>
                     <el-col :span="8" v-if="datasets_attribs.num_subjects">
-                        <h3>{{datasets_attribs.num_subjects}}</h3>
-                        <h5 class="text-muted">Subjects</h5>
+                        <h4>{{datasets_attribs.num_subjects}}</h4>
+                        <b class="text-muted">Subjects</b>
                     </el-col>
                     <el-col :span="8" v-if="datasets_attribs.num_datasets">
-                        <h3>{{datasets_attribs.num_datasets}}</h3>
-                        <h5 class="text-muted">Datasets</h5>
+                        <h4>{{datasets_attribs.num_datasets}}</h4>
+                        <b class="text-muted">Datasets</b>
                     </el-col>
                 </el-row>
             </td>
@@ -169,16 +167,16 @@ color:#88f;
 background: #666;
 padding: 20px;
 padding-bottom: 30px;
-margin-top: 42px;
-height: 40px;
+height: 80px;
 position: fixed;
+top: 50px;
 right: 0px;
 left: 90px;
 color: #666;
 z-index: 1;
 border-bottom: 1px solid #666;
 }
-.header h1 {
+.header h2 {
 color: #eee;
 }
 .header-bottom {

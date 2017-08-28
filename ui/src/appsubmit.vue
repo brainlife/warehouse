@@ -3,31 +3,16 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
-        <!--
-        <div class="margin20" v-if="app">
-            <appavatar :app="app" style="float: left; margin-right: 10px;"></appavatar>
-            <h1>{{app.name}}</h1>
-            <p>{{app.desc}}</p>
-
-            <br clear="both">
-        </div>
-        -->
-        
         <div class="header">
-            <h1>Submit Application</h1>
+            <h2>Submit Application</h2>
         </div>
         <div class="content" v-if="app && projects">
             <el-form :model="form" ref="form" label-position="left" label-width="200px">
                 <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
                 <el-form-item label="Application">
                     <app :appid="app._id"/>
+                    <br>
                 </el-form-item>
-                <!--
-                <el-form-item label="Resource">
-                    <p v-if="resource">This application can run on {{resource}}</p>
-                    <p v-else>There are currently no resource to run this application</p>
-                </el-form-item>
-                -->
                 <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
                     <el-row :gutter="1">
                         <el-col :span="8" style="padding-right:7px;">
@@ -210,7 +195,8 @@ export default {
                 project: this.form.projects[input.id],
                 datatype: input.datatype._id,
                 storage: {$exists: true}, 
-                removed: false
+                removed: false,
+                status: {$in: ["stored", "archived"]},
             };
 
             if (params.term) find_raw.$text = { $search: params.term };
@@ -391,7 +377,9 @@ export default {
 
                 //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
 
-
+                app_inputs.forEach(input=>{
+                    input.task_id = download_task._id
+                });
                 //submit the app task
                 var config = Object.assign(this.generate_config(download_task._id), {
                     _app: this.app._id,
