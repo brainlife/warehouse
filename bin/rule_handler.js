@@ -545,7 +545,6 @@ function handle_rule(rule, cb) {
                     task_app = _body.task;
                     logger.debug("submitted app task", task_app);
                     console.log(JSON.stringify(_body, null, 4));
-
                     next(err);
                 });
             },

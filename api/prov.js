@@ -23,22 +23,29 @@ db.cypher({
 
 //make sure the task and relationship to parent tasks exists
 exports.register_task = (task, cb)=>{
-    console.log(JSON.stringify(task, null, 4));
+    //console.log(JSON.stringify(task, null, 4));
 
     if(!task.config) return; //noop?
     if(task.config._app) {
+        if(!task.config._app) return cb(); //for old tasks
+        
         //make sure task exists
         var query = `MERGE (t:Task { task_id: '${task._id.toString()}', app_id: '${task.config._app}' }) `;
         
         //make sure relationships to input tasks exists
         if(task.config._inputs) {
-            task.config._inputs.forEach(input=>{
+            task.config._inputs.forEach((input,idx)=>{
                 if(input.dataset_id) {
                     //input from dataset
-                    query += `MERGE (t)-[:INPUT {input_id: '${input.id}'}]->(:Dataset {dataset_id: '${input.dataset_id}'}) `;
+                    query += `MERGE (d${idx}:Dataset {dataset_id: '${input.dataset_id}'}) `;
+                    query += `MERGE (t)-[:INPUT {input_id: '${input.id}'}]->(d${idx}) `;
                 } else {
+                    if(!input.app_id) return cb(); //for old tasks
+                    
                     //input from other task
-                    query += `MERGE (t)-[:INPUT {input_id: '${input.id}', output_id: '${input.output_id}'}]->(:Task {task_id: '${input.task_id}', app_id: '${input.app_id}'}) `;
+                    //TODO input.app_id doesn't seem to be set...
+                    query += `MERGE (t2${idx}:Task {task_id: '${input.task_id}', app_id: '${input.app_id}'}) `;
+                    query += `MERGE (t)-[:INPUT {input_id: '${input.id}', output_id: '${input.output_id}'}]->(t2${idx}) `;
                 }
             });
         }
@@ -57,21 +64,26 @@ exports.register_task = (task, cb)=>{
 }
 
 exports.register_dataset = (dataset, cb)=>{
-    var query = `MERGE (d:Dataset {dataset_id: '${dataset._id.toString()}'})-[:FROM {output_id: '${dataset.prov.output_id}'`;
+    //dataset
+    var query = `MERGE (d:Dataset {dataset_id: '${dataset._id.toString()}'`
     if(dataset.prov.subdir) query += `,subdir: '${dataset.prov.subdir}'`;
-    query += `}]->(:Task { task_id: '${dataset.prov.task_id}', app_id: '${dataset.prov.app}'}) RETURN d\n`;
+    query += "}) ";
+    
+    //task
+    query += `MERGE (t:Task { task_id: '${dataset.prov.task_id}', app_id: '${dataset.prov.app}'}) `;
+
+    //relationship
+    query += `MERGE (d)-[:FROM {output_id: '${dataset.prov.output_id}'}]->(t) RETURN d`;
     logger.debug(query);
     db.cypher({ query }, (err, results)=>{
         if(err) return cb(err);
-        console.log(JSON.stringify(results, null, 4));
+        //console.log(JSON.stringify(results, null, 4));
         cb();
     });
 }
 
 exports.query = (dataset, cb)=>{
-    //var query = `MATCH (d:Dataset{dataset_id: '${dataset._id}'})-[dr:FROM]-(parent:Task) MATCH (parent)-[r*]-(n) RETURN d,dr,parent, r, n`;
-    var query = `MATCH (d:Dataset{dataset_id: '${dataset._id}'})-[r*]-(n) RETURN d,r,n`;
-    //var query = `MATCH (parent)-[r*]-(d:Dataset{dataset_id: '${dataset._id}'}) RETURN d,r,parent`;
+    var query = `MATCH (d:Dataset{dataset_id: '${dataset._id}'}) MATCH (d)-[*]->(n) MATCH (s)-[r]->(n) RETURN s,r,n`;
     logger.debug(query);
     db.cypher({ query }, cb);
 }
