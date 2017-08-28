@@ -4,13 +4,14 @@
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
         <div class="header">
-            <h1>Submit Application</h1>
+            <h2>Submit Application</h2>
         </div>
         <div class="content" v-if="app && projects">
             <el-form :model="form" ref="form" label-position="left" label-width="200px">
                 <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
                 <el-form-item label="Application">
                     <app :appid="app._id"/>
+                    <br>
                 </el-form-item>
                 <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
                     <el-row :gutter="1">
