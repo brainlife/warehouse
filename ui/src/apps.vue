@@ -2,14 +2,7 @@
 <div>
     <pageheader :user="config.user">
         <!--pageheader slot-->
-        <div class="row">
-            <div class="col">
-                <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
-            </div>
-            <div class="col">
-                <b-button @click="go('/app/_/edit')" variant="default"><icon name="plus"/> Register App</b-button>
-            </div>
-        </div>
+        <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
@@ -21,6 +14,7 @@
             </div>
             <br clear="both">
         </div>
+        <b-button class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
     </div><!--page-content-->
 </div><!--root-->
 </template>

@@ -1,14 +1,7 @@
 <template>
 <div>
     <pageheader :user="config.user">
-        <el-row :gutter="20">
-            <el-col :span="14">
-                <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
-            </el-col>
-            <el-col :span="10">
-                <el-button v-if="user" @click="newproject()" icon="plus">Add Project</el-button>
-            </el-col>
-        </el-row>
+        <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
     </pageheader>
     <sidemenu active="/projects"></sidemenu>
     <div class="page-content">
@@ -29,6 +22,7 @@
             </div>
             <br clear="both">
         </div>
+        <b-button class="button-fixed" v-if="user" @click="newproject()" title="Create New Project"><icon name="plus" scale="2"/></b-button>
     </div><!--page-content-->
 </div>
 </template>

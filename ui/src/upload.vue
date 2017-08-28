@@ -4,7 +4,7 @@
     <sidemenu active="/datasets"></sidemenu>
     <div class="page-content">
         <div class="margin20">
-            <h1><icon name="upload" scale="2"></icon> Upload Dataset</h1>
+            <h2><icon name="upload" scale="2"></icon> Upload Dataset</h2>
         </div><!--margin20-->
 
         <el-card>
