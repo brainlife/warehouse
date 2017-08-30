@@ -334,7 +334,7 @@ export default {
             console.log("loading dataset status");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                select: "status",
+                select: "status storage",
             }})
             .then(res=>{
                 var dataset = res.body.datasets[0];

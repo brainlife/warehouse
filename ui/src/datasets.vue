@@ -137,7 +137,7 @@ export default {
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
             project_id: null, //project to limit search result
 
-            query: localStorage.getItem('datasets.query'),
+            query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
 
             //cache
             datatypes: null,
@@ -196,6 +196,7 @@ export default {
         //when user select different project, this gets called (mounted() won't be called anymore)
         $route: function() {
             this.check_project_id();
+            this.query = ""; //clear query to avoid confusion
             this.reload();
         },
     },
@@ -243,7 +244,7 @@ export default {
                 setTimeout(this.change_query, 300);
                 return;
             }
-            localStorage.setItem('datasets.query', this.query);
+            //localStorage.setItem('datasets.query', this.query);
             this.reload();
         },
 
@@ -297,10 +298,14 @@ export default {
                     groups[subject].push(dataset);
                 });
 
-                //don't add last subject group - in case we might have more datasets for that key in the next page
                 this.last_groups = {};
-                this.last_groups[last_subject] = groups[last_subject];
-                delete groups[last_subject];
+                loaded += res.body.datasets.length;
+                if(this.total_datasets != loaded) {
+                    //don't add last subject group - in case we might have more datasets for that key in the next page
+                    console.log("supressing last subject", this.total_datasets, loaded);
+                    this.last_groups[last_subject] = groups[last_subject];
+                    delete groups[last_subject];
+                }
 
                 this.pages.push(groups);
 
