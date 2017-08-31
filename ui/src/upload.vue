@@ -53,12 +53,10 @@
                 </div>
 
                 <div v-if="mode == 'upload' && tasks.upload && tasks.upload.resource_id">
-                    <el-form-item  v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id">
-                        <el-card v-if="datatype_id" style="margin-left: 10px;">
-                            <!--<div slot="header"><small class="text-muted">{{file.ext}}</small></div>-->
-
+                    <el-form-item v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id+(file.ext?'('+file.ext+')':'')">
+                        <el-card v-if="datatype_id">
                             <div v-if="!file.uploaded && !file.progress">
-                                <input type="file" @change="filechange(file, $event)">
+                                <input type="file" @change="filechange(file, $event)" :accept="file.ext">
                             </div>
 
                             <div v-if="!file.uploaded && file.progress">
@@ -73,6 +71,7 @@
                                 <el-button type="small" @click="clearfile(file)" style="float: right;" icon="delete">Remove</el-button>
                             </div>
                         </el-card>
+                        <br>
                     </el-form-item>
         
                     <el-form-item>
@@ -85,14 +84,15 @@
                     <el-form-item v-if="!tasks.validation.products">
                         <!--<pre v-if="config.debug" v-highlightjs="JSON.stringify(tasks.validation, null, 4)"><code class="json hljs"></code></pre>-->
                         <task :task="tasks.validation"/>
+                        <br>
                     </el-form-item>
 
                     <div v-if="tasks.validation && tasks.validation.status == 'finished' && tasks.validation.products">
                         <el-form-item>
                             <p v-if="tasks.validation.status != 'finished'">{{tasks.validation.status_msg}}</p>
-                            <el-alert :title="msg" type="error" show-icon v-for="(msg,idx) in tasks.validation.products[0].errors" :key="idx"></el-alert>
-                            <el-alert :title="msg" type="warning" show-icon  v-for="(msg,idx) in tasks.validation.products[0].warnings" :key="idx"></el-alert>
-                            <el-alert title="Your data looks good! Please check information below and click Archive button." show-icon type="success" v-if="tasks.validation.products[0].errors.length == 0"></el-alert>
+                            <b-alert variant="danger" v-for="(msg,idx) in tasks.validation.products[0].errors" :key="idx">{{msg}}</b-alert>
+                            <b-alert variant="warning" v-for="(msg,idx) in tasks.validation.products[0].warnings" :key="idx">{{msg}}</b-alert>
+                            <b-alert variant="success" v-if="tasks.validation.products[0].errors.length == 0">Your data looks good! Please check information below and click Archive button.</b-alert>
                         </el-form-item>
             
                         <!--show info-->
