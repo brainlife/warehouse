@@ -362,7 +362,6 @@ export default {
                 name: "validation",
                 service: this.get_validator(),
                 config: config,
-                //preferred_resource_id: this.validator_resource, 
                 deps: [ this.tasks.upload._id ], 
             }).then(res=>{
                 console.log("submitted validation task");
@@ -373,22 +372,21 @@ export default {
         },
 
         finalize() {
+            var validation_product = this.tasks.validation.products[0];
+
             this.mode = "finalize";
             this.$http.post('dataset', {
 
                 project: this.project_id,
-                task_id: this.tasks.upload._id, 
-
-                //app_id
-                //output_id
+                //task_id: this.tasks.upload._id, 
+                task_id: this.tasks.validation, 
 
                 datatype: this.datatype_id,
-                datatype_tags: [],
-                //file - I shouldn't have to map it - uploader should upload files to the correct file name
+                datatype_tags: validation_product.datatype_tags, 
 
                 meta: this.meta,
                 desc: this.desc,
-                tags: [], 
+                tags: validation_product.tags, 
 
             }).then(res=>{
                 console.log("submitted dataset request");

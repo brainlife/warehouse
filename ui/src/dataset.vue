@@ -339,6 +339,7 @@ export default {
             .then(res=>{
                 var dataset = res.body.datasets[0];
                 this.dataset.status = dataset.status;
+                this.dataset.storage = dataset.storage;
                 if(this.dataset.status == "storing") {
                     setTimeout(()=>{ this.load_status(id); }, 5000);
                 }

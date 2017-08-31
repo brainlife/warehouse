@@ -126,6 +126,7 @@ color: white;
 opacity: 0.8;
 }
 h3 {
+opacity: 0.8;
 font-size: 19px;
 font-weight: bold;
 }
