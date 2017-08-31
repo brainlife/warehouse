@@ -48,7 +48,7 @@
                 </div><!--meta-->
 
                 <div v-if="mode == 'upload' && tasks.upload && !tasks.upload.resource_id">
-                    <mute>Waiting for resource where we can upload files becomes available..  <icon name="cog" spin/></mute>
+                    <p cass="text-muted">Waiting for resource where we can upload files becomes available..  <icon name="cog" spin/></p>
                     <pre>{{tasks.upload}}</pre>
                 </div>
 
@@ -82,17 +82,16 @@
 
                 <div v-if="mode == 'validate' && tasks.validation">
                     <el-form-item v-if="!tasks.validation.products">
-                        <!--<pre v-if="config.debug" v-highlightjs="JSON.stringify(tasks.validation, null, 4)"><code class="json hljs"></code></pre>-->
                         <task :task="tasks.validation"/>
                         <br>
                     </el-form-item>
-
-                    <div v-if="tasks.validation && tasks.validation.status == 'finished' && tasks.validation.products">
+                    <div v-else>
                         <el-form-item>
-                            <p v-if="tasks.validation.status != 'finished'">{{tasks.validation.status_msg}}</p>
-                            <b-alert variant="danger" v-for="(msg,idx) in tasks.validation.products[0].errors" :key="idx">{{msg}}</b-alert>
-                            <b-alert variant="warning" v-for="(msg,idx) in tasks.validation.products[0].warnings" :key="idx">{{msg}}</b-alert>
-                            <b-alert variant="success" v-if="tasks.validation.products[0].errors.length == 0">Your data looks good! Please check information below and click Archive button.</b-alert>
+                            <b-alert show variant="danger" v-for="(msg,idx) in tasks.validation.products[0].errors" :key="idx">{{msg}}</b-alert>
+                            <b-alert show variant="warning" v-for="(msg,idx) in tasks.validation.products[0].warnings" :key="idx">{{msg}}</b-alert>
+                            <b-alert show variant="success" v-if="tasks.validation.products[0].errors.length == 0">
+                                Your data looks good! Please check information below and click Archive button.
+                            </b-alert>
                         </el-form-item>
             
                         <!--show info-->
