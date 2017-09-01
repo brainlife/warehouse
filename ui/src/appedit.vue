@@ -388,8 +388,6 @@ export default {
         },
 
         submit: function() {
-            console.log(this._config);
-            return;
             try {
                 this.app.config = JSON.parse(this._config);
             } catch(err) {
