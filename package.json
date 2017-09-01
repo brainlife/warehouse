@@ -34,7 +34,6 @@
     "istanbul": "^0.4.5",
     "mkdirp": "^0.5.1",
     "mongoose": "^4.11.1",
-    "neo4j": "^2.0.0-RC2",
     "pkgcloud": "^1.4.0",
     "redis": "^2.7.1",
     "request": "^2.79.0",

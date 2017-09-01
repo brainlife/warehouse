@@ -484,10 +484,6 @@ export default {
 </script>
 
 <style scoped>
-.content {
-background-color: white;
-padding: 20px;
-}
 .main-section {
 position: fixed;
 padding: 20px;
@@ -508,16 +504,6 @@ right: 0px;
 height: 80px;
 z-index: 1;
 border-bottom: 1px solid #666;
-}
-
-.card {
-padding: 15px;
-margin: 5px;
-box-sizing: border-box;
-}
-.config_item_header {
-color:#777;
-font-size:20px;
 }
 </style>
 
