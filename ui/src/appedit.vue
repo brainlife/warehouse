@@ -464,21 +464,6 @@ export default {
             
             return JSON.stringify(_config, null, 4);
         }
-    },
-    
-    watch: {
-        // "app.config": function(config) {
-        //     var _config = {};
-        //     for (var k in this.app.config) {
-        //         if (this.app.config[k].id) {
-        //             _config[this.app.config[k].id] = this.app.config[k];
-        //             delete _config[this.app.config[k].id].id;
-        //         }
-        //         else _config[k] = this.app.config[k];
-        //     }
-        //     Vue.set(this.app, '_config', JSON.stringify(_config, null, 4));
-        //     // this.app._config = JSON.stringify(_config, null, 4);
-        // }
     }
 }
 </script>
