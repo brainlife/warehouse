@@ -120,7 +120,6 @@ export default {
             this.opts.data = options;
             
             //TODO - why do we need to update val here? (will break without it)
-            $(this.$el).select2('data', options);
             $(this.$el).select2(this.opts).val(this.value).trigger('change');
         },
     },
