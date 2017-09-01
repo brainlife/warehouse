@@ -102,22 +102,11 @@
                 </div>
                 
                 <div style="margin: 3px;">
-                    <b-dropdown text="Add" variant="primary">
-                        <b-dropdown-item>Integer </b-dropdown-item>
-                        <b-dropdown-item>String</b-dropdown-item>
-                    </b-dropdown>
+                    <el-button @click="add_json_item('string')" icon="plus">Add String</el-button>
+                    <el-button @click="add_json_item('integer')" icon="plus">Add Integer</el-button>
                 </div>
             </el-form-item>
             
-            <el-form-item label="Configuration (Raw)">
-                <!--
-                https://github.com/dhenkes/vue2-ace/issues/5
-                <editor :content="app._config" :sync="true" :lang="'json'"></editor>
-                -->
-                <!-- <el-input type="textarea" v-model="app._config" autosize/> -->
-                <pre v-highlightjs="app._config"><code class="json hljs"></code></pre>
-            </el-form-item>
-
             <br>
             <el-form-item label="Inputs">
                 <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 20px;">
@@ -147,6 +136,9 @@
                                 <select2 :options="datatypes[input.datatype]._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
                             </el-col>
                         </el-row>
+                        <el-row>
+                            <el-button size="small" icon="plus" style="margin-top:10px;" @click="add_json_item('input', input)">Add File Mapping</el-button>
+                        </el-row>
                     </el-card>
                     
                     <!-- {{log(object, name)}} -->
@@ -162,25 +154,14 @@
                                 <el-button @click="rm_app_config(name)" size="small" icon="delete" style="float: right;"></el-button>
                             </el-col>
                         </el-row>
-                        <el-row :gutter="20">
-                        <el-col :span="4">
-                            ID
-                            <el-input v-model="input.id">
-                                <!--<template slot="prepend">ID</template>-->
-                            </el-input>
-                        </el-col>
-                        <el-col :span="6">
-                            Datatype
-                            <el-select v-model="input.datatype" style="width: 100%;">
-                                <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                            </el-select>
-                        </el-col>
-                        
-                        <el-col :span="14" v-if="input.datatype">
-                            <el-button @click="app.inputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
-                            Datatype Tags<br>
-                            <select2 :options="datatypes[input.datatype]._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
-                        </el-col>
+                        <el-row :gutter="20" style="margin-top:5px;">
+                            <el-col :span="11">
+                                <el-input v-model="object._id"></el-input>
+                            </el-col>
+                            
+                            <el-col :span="13" v-if="input.datatype">
+                                <b-form-select :options="datatypes[input.datatype].files.map(f => { return { text: f.filename, value: f.id }; })" v-model="object.file_id"></b-form-select>
+                            </el-col>
                         </el-row>
                     </el-card>
                 </div>
@@ -349,7 +330,7 @@ export default {
                             find: JSON.stringify({_id: this.$route.params.id})
                         }})
                         .then(res=>{
-                            this.app = res.body.apps[0];
+                            Vue.set(this, 'app', res.body.apps[0]);
                             
                             // have to make sure ids exist for vue reactivity when changing _config object keys later..
                             for (var k in this.app.config) {
@@ -377,6 +358,16 @@ export default {
     },
 
     methods: {
+        add_json_item: function(type, input) {
+            var randkey = Math.floor(Math.random() * 1000000).toString(16);
+            
+            if (type == 'input') {
+                Vue.set(this.app.config, randkey, { _id: '', file_id: '', input_id: input.id, type });
+            }
+            else if (type == 'string') Vue.set(this.app.config, randkey, { _id: '', default: '', type });
+            else if (type == 'integer') Vue.set(this.app.config, randkey, { _id: '', default: 0, type });
+        },
+        
         log: console.log,
         
         add: function(it) {
@@ -397,8 +388,10 @@ export default {
         },
 
         submit: function() {
+            console.log(this._config);
+            return;
             try {
-                this.app.config = JSON.parse(this._config);     
+                this.app.config = JSON.parse(this._config);
             } catch(err) {
                 this.$notify({ text: 'Failed to parse config template.', type: 'error' });
                 return;
@@ -459,13 +452,18 @@ export default {
         
         "_config": function() {
             var _config = {};
-            for (var k in this.app.config) {
-                if (this.app.config[k]._id) {
-                    _config[this.app.config[k]._id] = this.app.config[k];
-                    // delete _config[this.app.config[k].id].id;
+            var hard_copy_config = JSON.parse(JSON.stringify(this.app.config));
+            
+            for (var k in hard_copy_config) {
+                if (hard_copy_config[k].type == 'integer' && hard_copy_config[k].default) hard_copy_config[k].default = parseInt(hard_copy_config[k].default);
+                
+                if (hard_copy_config[k]._id) {
+                    _config[hard_copy_config[k]._id] = hard_copy_config[k];
+                    delete _config[hard_copy_config[k]._id]._id;
                 }
-                else _config[k] = this.app.config[k];
+                _config[k] = hard_copy_config[k];
             }
+            
             return JSON.stringify(_config, null, 4);
         }
     },
