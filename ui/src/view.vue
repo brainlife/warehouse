@@ -12,15 +12,15 @@
             <filebrowser :task="task" :path="task.instance_id+'/'+task._id+'/'+(subdir||'')"></filebrowser>
         </div>
         <div v-else style="margin: 20px;">
-            <h2>Staging Data</h2>
+            <h3>Staging Data</h3>
             <task :task="task"/>
             <br>
-            <h2>Starting Viewer</h2>
+            <h3>Starting Viewer</h3>
             <task :task="novnc_task"/>
         </div>
     </div>
     <div v-else style="margin: 20px;">
-        <h2>Staging Data</h2>
+        <h3>Staging Data</h3>
         <task :task="task"/>
     </div>
 </div>

@@ -144,6 +144,7 @@ export default {
                     case "application/json": type = "json"; break;
                     case "application/x-sh": type = "bash"; break;
                     case "text/plain": type = "text"; break;
+                    case "text/csv": type = "csv"; break;
                     case "application/octet-stream": 
                         //for all octet-stream, guess file type from extension
                         var tokens = file.filename.split(".");

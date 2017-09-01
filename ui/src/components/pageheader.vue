@@ -78,7 +78,7 @@ svg.cloud {
     position: fixed;
     font-size: 20pt;
     position: relative;
-    top: 5px;
+    top: 4px;
     left: 13px;
     margin: 0px;
     margin-left: 5px;
@@ -88,7 +88,7 @@ svg.cloud {
     position: fixed;
     color: white;
     right: 20px;
-    top: 17px;
+    top: 14px;
 }
 .slot {
     position: fixed;

@@ -24,7 +24,7 @@ export default {
     },
     watch: {
         selected: function() {
-            localStorage.setItem('projectselecter.previous', this.selected);
+            localStorage.setItem('last_projectid_used', this.selected);
             this.$emit('input', this.selected);
         }
     },
@@ -46,7 +46,7 @@ export default {
                 });
             });
 
-            this.selected = this.value || localStorage.getItem('projectselecter.previous') || this.options[0].id;
+            this.selected = this.value || localStorage.getItem('last_projectid_used') || this.options[0].id;
             //console.log("projectselecter init with", this.selected, this.options);
         });
     }

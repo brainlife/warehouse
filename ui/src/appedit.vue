@@ -15,6 +15,7 @@
             <el-form-item label="Description">
                 <el-input type="textarea" :autosize="{minRows: 4}" v-model="app.desc" placeholder="Enter description for this application."/>
             </el-form-item>
+            <br>
             <el-form-item label="Tags">
                 <select2 :options="alltags" v-model="app.tags" :multiple="true" :tags="true"></select2>
             </el-form-item>
@@ -44,6 +45,8 @@
                     </el-tab-pane>
                 </el-tabs>
             </el-form-item>
+
+            <br>
             <el-form-item label="Max Retry">
                 <el-input type="text" v-model="app.retry" placeholder="0"/>
                 <p class="text-muted">If a task fails, it will rerun up to this count (0 means no retry)</p>
@@ -56,6 +59,7 @@
                 <el-input type="textarea" v-model="app._config" autosize/>
             </el-form-item>
 
+            <br>
             <el-form-item label="Inputs">
                 <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
                     <el-card>
@@ -72,6 +76,7 @@
                                 <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
                             </el-select>
                         </el-col>
+                        
                         <el-col :span="14" v-if="input.datatype">
                             <el-button @click="app.inputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
                             Datatype Tags<br>
@@ -83,6 +88,7 @@
                 <el-button @click="add(app.inputs)" size="small" icon="plus">Add Input</el-button>
             </el-form-item>
 
+            <br>
             <el-form-item label="Outputs">
                 <div v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
                     <el-card>

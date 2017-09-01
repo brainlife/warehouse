@@ -9,7 +9,7 @@
         <statusicon :status="selected.status" :scale="1.75" style="width: 40px; text-align: center; float: left; margin: 10px;opacity: 0.6;"/>
         <div style="margin-left: 60px; margin-right: 300px;">
             <!--selected.desc change doesn't get reflected on textarea https://github.com/bootstrap-vue/bootstrap-vue/issues/922 -->
-            <b-form-textarea placeholder="Please enter process description" @input="changedesc()" v-model="selected.desc" :rows="2"></b-form-textarea>
+            <b-form-textarea placeholder="Please enter process description" @keyup.native="changedesc()" v-model="selected.desc" :rows="2"></b-form-textarea>
         </div>
     </div>
 
@@ -179,9 +179,8 @@ export default {
             debounce = setTimeout(()=>{
                 this.$http.put(Vue.config.wf_api+'/instance/'+this.selected._id, this.selected).then(res=>{
                     this.$notify({ text: 'Updated description', type: 'success' });
-                    //this.editdesc = false;
                 });
-            }, 2000);        
+            }, 1000);        
         },
         newprocess: function() {
             this.$http.post(Vue.config.wf_api+'/instance', {

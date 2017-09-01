@@ -402,7 +402,7 @@ export default {
 
     watch: {
         'instance': function() {
-            console.log("instance updated");
+            //console.log("instance updated");
             document.getElementById("scrolled-area").scrollTop = 0;
             this.load();
         },

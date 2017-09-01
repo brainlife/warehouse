@@ -5,7 +5,7 @@
     <div class="header" vi-if="dataset">
         <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
         <b-button-group style="float: right;">
-            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
+            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed && dataset.storage" icon="delete">Remove</b-button>
             <b-button variant="primary" @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
         </b-button-group>
         <h2>
@@ -329,8 +329,24 @@ export default {
                 this.go('/datasets');        
             });
         },
+
+        load_status: function(id) {
+            console.log("loading dataset status");
+            this.$http.get('dataset', {params: {
+                find: JSON.stringify({_id: id}),
+                select: "status storage",
+            }})
+            .then(res=>{
+                var dataset = res.body.datasets[0];
+                this.dataset.status = dataset.status;
+                this.dataset.storage = dataset.storage;
+                if(this.dataset.status == "storing") {
+                    setTimeout(()=>{ this.load_status(id); }, 5000);
+                }
+            });
+        },
+
         load: function(id) {
-            console.log("loading dataset");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 populate: "project datatype prov.app prov.deps.dataset",
@@ -341,11 +357,7 @@ export default {
                     return;
                 }
                 this.dataset = res.body.datasets[0];
-
-                if(this.dataset.status == "storing") {
-                    //reload in few seconds..
-                    setTimeout(()=>{ this.load(id); }, 5000);
-                }
+                this.load_status(id);
 
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {
@@ -497,6 +509,7 @@ border-radius: inherit;
 .task-desc {
 margin-top: 10px; 
 padding: 5px 10px; 
+margin-left: 90px;
 font-size: 90%; 
 background-color: #e0e0e0;
 }
