@@ -560,7 +560,7 @@ methods: {
                     if(!matching_dataset) match = false;
                 });
                 if(match) {
-                    console.log("can run", app.name);
+                    //console.log("can run", app.name);
                     this.apps.push(app);
                 }
             });

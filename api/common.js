@@ -21,7 +21,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
         if(err) return cb(err);
         if(!datatype) return cb("couoldn't find specified datatype:"+dataset.datatype);
-        logger.debug("datatype loaded", datatype.toString());
+        //logger.debug("datatype loaded", datatype.toString());
 
         //create temp directory to download things
         tmp.dir({unsafeCleanup: true}, (err, tmpdir, cleantmp)=>{
@@ -106,7 +106,8 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             dataset.storage = storage;
                             dataset.status = "stored";
                             prov.register_dataset(dataset, err=>{
-                                //TODO..
+                                if(err) logger.error(err);
+                                //TODO.. what should we do then?
                             });
                         }
                         logger.debug("streaming finished with code:", code);

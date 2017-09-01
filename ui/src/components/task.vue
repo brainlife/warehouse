@@ -125,11 +125,15 @@ time {
 color: white;
 opacity: 0.8;
 }
+h3 {
+opacity: 0.8;
+font-size: 19px;
+font-weight: bold;
+}
 h4 {
 font-size: 15px;
 font-weight: bold;
-margin-bottom: 0px;
+margin-bottom: 2px;
 }
 </style>
-
 

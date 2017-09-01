@@ -3,10 +3,14 @@
     <el-form-item label="Dataset Desc">
         <el-input type="textarea" v-model="desc" placeholder="Dataset Desc"></el-input>
     </el-form-item>
+    <br>
+
     <el-form-item label="Project">
         <projectselecter v-model="project"/>
         <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
     </el-form-item>
+    <br>
+
     <el-form-item label="User Tags (optional)">
         <el-select v-model="tags" 
             style="width: 100%"
@@ -15,6 +19,8 @@
         </el-select>
         <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
     </el-form-item>
+    <br>
+
     <!--
     <el-form-item label="DataType Tags">
         <el-select v-model="form.datatype_tags" 
@@ -25,6 +31,7 @@
         <p class="text-muted" style="margin-bottom: 0px;"><b>Read-only</b> Datatype tags specified by the application configuration.</p>
     </el-form-item>
     -->
+
     <el-form-item label="Metadata">
         <div v-for="(v,k) in output.meta">
             <el-input placeholder="Please Edit meta" v-model="output.meta[k]">
@@ -33,10 +40,14 @@
         </div>
         <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
     </el-form-item>
+    <br>
+
     <el-form-item label=" ">
         <el-button @click="cancel()">Cancel</el-button>
         <el-button type="primary" icon="check" @click="submit()">Archive</el-button>
     </el-form-item>
+    <br>
+
 </el-form>
 </template>
 
