@@ -8,7 +8,7 @@
         <el-progress :text-inside="true" :stroke-width="18" :percentage="(stats.non0_tracks/stats.input_tracks)*100" status="success"></el-progress>
     </div>
     <br>
-    <el-row :gutter="10">
+    <el-row>
         <el-col :span="12">
             <div ref="plot" style="width: 100%;"/>
         </el-col>
@@ -62,7 +62,7 @@ export default {
             }], {
                 xaxis: {title: 'beta weight' /*w.x.label*/}, //TODO - life.m is currently wrong
                 yaxis: {title: w.y.label},
-                //margin: {t: 0, b: 35, r: 0},
+                //margin: {t: 0, b: 0, r: 0, l: 0},
             });
 
             this.resize();

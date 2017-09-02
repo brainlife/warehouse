@@ -76,9 +76,7 @@
                     </el-row>
                     <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
                 </div>
-                <div v-else v-for="(m, id) in dataset.meta" :key="id">
-                    <metadata :metadata="dataset.meta"></metadata>
-                </div>
+                <metadata v-else :metadata="dataset.meta"></metadata>
             </td>
         </tr>
         <tr>
