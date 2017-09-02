@@ -99,11 +99,70 @@
                             </el-col>
                         </el-row>
                     </el-card>
+                    <el-card v-else-if="object.type == 'enum'">
+                        <div class="text-muted" style="font-style:italic;">Enum</div>
+                        <el-row :gutter="20">
+                            <el-col :span="7">
+                                <div class="text-muted">JSON Key</div>
+                            </el-col>
+                            <el-col :span="7">
+                                <div class="text-muted">Default</div>
+                            </el-col>
+                            <el-col :span="8">
+                                <div class="text-muted">Description</div>
+                            </el-col>
+                            <el-col :span="2" style="text-align:right;">
+                                <b-button @click="rm_app_config(name)" style="float: right;"><icon name="trash"/></b-button>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" style="margin-top: 3px;">
+                            <el-col :span="7">
+                                <b-form-input type="text" v-model="object._id"></b-form-input>
+                            </el-col>
+                            <el-col :span="7">
+                                <b-form-select :options="object.options.map(o => ({ text: (o.label || `(${o.value})`), value: o.value }))" v-model="object.default"></b-form-select>
+                            </el-col>
+                            <el-col :span="10">
+                                <b-form-input type="text" v-model="object.desc"></b-form-input>
+                            </el-col>
+                        </el-row>
+                        <el-card v-for="(option, idx) in object.options" :key="idx" style="margin: 5px 10px 5px 10px;">
+                            <el-row :gutter="20">
+                                <el-col :span="7">
+                                    <div class="text-muted">Description</div>
+                                </el-col>
+                                <el-col :span="7">
+                                    <div class="text-muted">Label</div>
+                                </el-col>
+                                <el-col :span="7">
+                                    <div class="text-muted">Value</div>
+                                </el-col>
+                                <el-col :span="3" style="text-align:right;">
+                                    <b-button @click="object.options.splice(idx, 1)" style="float: right;"><icon name="trash"/></b-button>
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="20" style="margin-top: 3px;">
+                                <el-col :span="7">
+                                    <b-form-input type="text" v-model="option.desc"></b-form-input>
+                                </el-col>
+                                <el-col :span="7">
+                                    <b-form-input type="text" v-model="option.label"></b-form-input>
+                                </el-col>
+                                <el-col :span="10">
+                                    <b-form-input type="text" v-model="option.value"></b-form-input>
+                                </el-col>
+                            </el-row>
+                        </el-card>
+                        <div style="margin: 5px;">
+                            <b-button @click="object.options.push({ desc: '', label: '', value: '' })"><icon name="plus"/> Add Option</b-button>
+                        </div>
+                    </el-card>
                 </div>
                 
                 <div style="margin: 3px;">
                     <b-button @click="add_json_item('string')"><icon name="plus"/> Add String</b-button>
                     <b-button @click="add_json_item('integer')"><icon name="plus"/> Add Integer</b-button>
+                    <b-button @click="add_json_item('enum')"><icon name="plus"/> Add Enum</b-button>
                 </div>
             </el-form-item>
             
@@ -160,7 +219,7 @@
                             </el-col>
                             
                             <el-col :span="13" v-if="input.datatype">
-                                <b-form-select :options="datatypes[input.datatype].files.map(f => { return { text: (f.filename || `(${f.id})`), value: f.id }; })" v-model="object.file_id"></b-form-select>
+                                <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: (f.filename || `(${f.id})`), value: f.id }))" v-model="object.file_id"></b-form-select>
                             </el-col>
                         </el-row>
                     </el-card>
@@ -376,6 +435,7 @@ export default {
             }
             else if (type == 'string') Vue.set(this.app.config, randkey, { _id: '', default: '', type });
             else if (type == 'integer') Vue.set(this.app.config, randkey, { _id: '', default: 0, type });
+            else if (type == 'enum') Vue.set(this.app.config, randkey, { _id: '', default: '', desc: '', options: [], type })
         },
         
         add: function(it) {
