@@ -426,7 +426,6 @@ export default {
                 }
             }
             
-            console.log(config);
             return config;
         },
 
@@ -447,7 +446,6 @@ export default {
             try {
                 this.app.outputs.forEach(output=>{
                     output.files = null;
-                    console.log(output._files);
                     if(output._files) output.files = JSON.parse(output._files);
                 });
             } catch(err) {
