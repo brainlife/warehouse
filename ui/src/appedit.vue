@@ -160,7 +160,7 @@
                             </el-col>
                             
                             <el-col :span="13" v-if="input.datatype">
-                                <b-form-select :options="datatypes[input.datatype].files.map(f => { return { text: f.filename, value: f.id }; })" v-model="object.file_id"></b-form-select>
+                                <b-form-select :options="datatypes[input.datatype].files.map(f => { return { text: (f.filename || `(${f.id})`), value: f.id }; })" v-model="object.file_id"></b-form-select>
                             </el-col>
                         </el-row>
                     </el-card>
