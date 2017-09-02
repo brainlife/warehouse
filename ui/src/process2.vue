@@ -805,6 +805,7 @@ width: 300px;
 right: 0px;
 overflow: auto;
 font-size: 90%;
+padding-bottom: 50px; /*so it won't be covered by notification*/
 }
 .sidebar h5 {
 font-size: 17px;
