@@ -195,36 +195,37 @@
                                 <select2 :options="(datatypes[input.datatype]||{_tags:[]})._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
                             </el-col>
                         </el-row>
+                        <el-card v-for="(object, name) in app.config" :key="name" v-if="object.type == 'input' && object.owner == input._id" style="margin: 5px 10px 5px 10px;">
+                            <el-row :gutter="20">
+                                <el-col :span="11">
+                                    <div class="text-muted">JSON Key</div>
+                                </el-col>
+                                <el-col :span="11">
+                                    <div class="text-muted">File ID</div>
+                                </el-col>
+                                <el-col :span="2" style="text-align:right;">
+                                    <b-button @click="rm_app_config(name)" style="float: right;"><icon name="trash"/></b-button>
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="20" style="margin-top:5px;">
+                                <el-col :span="11">
+                                    <el-input v-model="object._id"></el-input>
+                                </el-col>
+                                
+                                <el-col :span="13" v-if="input.datatype">
+                                    <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: (f.filename || `(${f.id})`), value: f.id }))" v-model="object.file_id"></b-form-select>
+                                </el-col>
+                            </el-row>
+                        </el-card>
                         <el-row>
                             <b-button style="margin-top:10px;" @click="add_json_item('input', input)" v-if="input.datatype"><icon name="plus"/> Add File Mapping</b-button>
                         </el-row>
                     </el-card>
-                    
-                    <!-- {{log(object, name)}} -->
-                    <el-card v-for="(object, name) in app.config" :key="name" v-if="object.type == 'input' && object.owner == input._id" style="margin: 5px 10px 5px 10px;">
-                        <el-row :gutter="20">
-                            <el-col :span="11">
-                                <div class="text-muted">JSON Key</div>
-                            </el-col>
-                            <el-col :span="11">
-                                <div class="text-muted">File ID</div>
-                            </el-col>
-                            <el-col :span="2" style="text-align:right;">
-                                <b-button @click="rm_app_config(name)" style="float: right;"><icon name="trash"/></b-button>
-                            </el-col>
-                        </el-row>
-                        <el-row :gutter="20" style="margin-top:5px;">
-                            <el-col :span="11">
-                                <el-input v-model="object._id"></el-input>
-                            </el-col>
-                            
-                            <el-col :span="13" v-if="input.datatype">
-                                <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: (f.filename || `(${f.id})`), value: f.id }))" v-model="object.file_id"></b-form-select>
-                            </el-col>
-                        </el-row>
-                    </el-card>
                 </div>
-                <b-button @click="add(app.inputs)" style="margin-bottom: 5px;"><icon name="plus"/> Add Input</b-button>
+                
+                <div style="margin: 3px;">
+                    <b-button @click="add(app.inputs)" style="margin-bottom: 5px;"><icon name="plus"/> Add Input</b-button>
+                </div>
             </el-form-item>
 
             <br>
