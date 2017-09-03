@@ -83,7 +83,7 @@ var datasetSchema = mongoose.Schema({
     meta: mongoose.Schema.Types.Mixed,
     
     //human readable name / desc
-    name: String,
+    //name: String, //deprecated
     desc: String, 
 
     tags: [String], //allows user to search by tags (not datatype_tags)

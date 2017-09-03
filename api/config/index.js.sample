@@ -165,7 +165,7 @@ exports.storage_systems.dc2 = {
 } 
 
 //
-// dcwan/hcp (read only)
+// dcwan/hcp (read only) 
 //
 const dcwan_hcp_path = "/mnt/dcwan/projects/brainlife/hcp/";
 exports.storage_systems["dcwan/hcp"] = {
@@ -191,6 +191,41 @@ exports.storage_systems["dcwan/hcp"] = {
     },
     download: (dataset, cb)=>{
         var dir = dcwan_hcp_path+dataset.storage_config.subdir;
+        var child = child_process.spawn("tar", ["hc", "."], {cwd: dir});
+        cb(null, child.stdout, dataset._id+".tar");
+        child.stderr.on('data', function(data) {
+            console.error(data.toString());
+        });
+        child.on('error', (err)=>{
+            console.error(err);
+        });
+    },
+}
+
+const nki_goofy_path = "/mnt/fcp-indi";
+const nki_link_path = "/link/nki";
+exports.storage_systems["nki"] = {
+    test: cb=>{
+        fs.stat(nki_goofy_path, timeout((err,stats)=>{
+            if(err) return cb(err);
+            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
+            cb();
+        }, 2000, 'failed to stat nki goofy mount points')); 
+    }, 
+    stat: (dataset, cb)=>{
+        //can't obtain stats for .tar.gz because we are creating it on the fly
+        //but I can still check for the directory to exist and respond error
+        var dir = nki_link_path+"/"+dataset.storage_config.subject+"/"+dataset.storage_config.session+"/"+dataset.storage_config.subdir;
+        fs.stat(dir, (err,stats)=>{
+            //.tar doesn't exist yet - so I can't stat
+            cb(err, null); 
+        });
+    },
+    upload: (dataset, cb)=>{
+        cb("no upload to dcwan/hcp");
+    },
+    download: (dataset, cb)=>{
+        var dir = nki_link_path+"/"+dataset.storage_config.subject+"/"+dataset.storage_config.session+"/"+dataset.storage_config.subdir;
         var child = child_process.spawn("tar", ["hc", "."], {cwd: dir});
         cb(null, child.stdout, dataset._id+".tar");
         child.stderr.on('data', function(data) {

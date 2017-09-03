@@ -81,6 +81,7 @@ function getprojects(user, cb) {
  * @apiSuccess {Object}         List of datasets (maybe limited / skipped) and total count
  */
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    logger.debug("getting");
     var ands = [];
     if(req.query.find) ands.push(JSON.parse(req.query.find));
     if(req.query.datatype_tags) {
@@ -93,6 +94,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         });
     }
 
+    //logger.debug("getting project");
     getprojects(req.user, function(err, projects) {
         if(err) return next(err);
         var project_ids = projects.map(function(p) { return p._id; });
@@ -103,7 +105,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         var skip = 0;
         if(req.query.skip) skip = parseInt(req.query.skip);
 
-        console.dir(ands);
+        //logger.debug("querying datasets");
+        //console.dir(ands);
    		
         //then look for dataset
         db.Datasets.find({ $and: ands })
@@ -115,14 +118,17 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
+            //logger.debug("counting");
             db.Datasets.count({$and: ands}).exec((err, count)=>{
                 if(err) return next(err);
+                //logger.debug("canedit processing");
                 
                 //adding some derivatives
                 datasets.forEach(function(rec) {
                     rec._canedit = canedit(req.user, rec);
                 });
                 
+                //logger.debug("sending");
                 res.json({datasets: datasets, count: count});
             });
         });

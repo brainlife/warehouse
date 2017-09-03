@@ -4,41 +4,42 @@
   "description": "Service that allows data warehousing and workfow orchestration",
   "main": "index.js",
   "scripts": {
-    "apidoc": "apidoc -i api/ -o ui/apidoc/",
+    "apidoc": "apidoc -i api/ -o docs/apidoc/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/soichih/warehouse.git"
+    "url": "git+https://github.com/brain-life/warehouse.git"
   },
   "author": "Soichi Hayashi <hayashis@iu.edu> (http://soichi.us)",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/soichih/warehouse/issues"
+    "url": "https://github.com/brain-life/warehouse/issues"
   },
-  "homepage": "https://github.com/soichih/warehouse#readme",
+  "homepage": "https://github.com/brain-life/warehouse#readme",
   "dependencies": {
     "@types/istanbul": "^0.4.29",
     "amqp": "^0.2.6",
     "async": "^2.4.1",
     "body-parser": "^1.17.2",
     "callback-timeout": "^3.0.0",
-    "compression": "^1.6.2",
-    "cors": "^2.8.1",
+    "chai": "^4.1.2",
+    "compression": "^1.7.0",
+    "cors": "^2.8.4",
     "coveralls": "^2.13.1",
-    "express": "^4.15.3",
+    "express": "^4.15.4",
     "express-jwt": "^5.3.0",
     "express-winston": "^2.4.0",
     "istanbul": "^0.4.5",
     "mkdirp": "^0.5.1",
-    "mongoose": "^4.11.1",
+    "mongoose": "^4.11.9",
     "neo4j": "^2.0.0-RC2",
     "pkgcloud": "^1.4.0",
-    "redis": "^2.7.1",
+    "redis": "^2.8.0",
     "request": "^2.79.0",
-    "tar": "^3.1.5",
-    "tmp": "0.0.31",
+    "tar": "^3.2.1",
+    "tmp": "0.0.33",
     "winston": "^2.3.1"
   },
   "devDependencies": {
