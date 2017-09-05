@@ -51,81 +51,232 @@
                 <el-input type="text" v-model="app.retry" placeholder="0"/>
                 <p class="text-muted">If a task fails, it will rerun up to this count (0 means no retry)</p>
             </el-form-item>
-            <el-form-item label="Configuration">
-                <!--
-                https://github.com/dhenkes/vue2-ace/issues/5
-                <editor :content="app._config" :sync="true" :lang="'json'"></editor>
-                -->
-                <el-input type="textarea" v-model="app._config" autosize/>
+            
+            <el-form-item label="JSON Configuration">
+                <div v-for="(object, name) in app.config" :key="name" style="margin:5px;">
+                    <!-- {{log(object, name)}} -->
+                    <el-card v-if="object.type == 'string'">
+                        <div class="text-muted" style="font-style:italic;">String</div>
+                        <el-row :gutter="20">
+                            <el-col :span="11">
+                                <div class="text-muted">JSON Key</div>
+                            </el-col>
+                            <el-col :span="11">
+                                <div class="text-muted">Default</div>
+                            </el-col>
+                            <el-col :span="2" style="text-align:right;">
+                                <b-button @click="rm_app_config(name)" style="float: right;"><icon name="trash"/></b-button>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20">
+                            <el-col :span="11">
+                                <b-form-input type="text" v-model="object._id" style="margin-top: 3px;"></b-form-input>
+                            </el-col>
+                            <el-col :span="13">
+                                <b-form-input type="text" v-model="object.default" style="margin-top: 3px;"></b-form-input>
+                            </el-col>
+                        </el-row>
+                    </el-card>
+                    <el-card v-else-if="object.type == 'integer'">
+                        <div class="text-muted" style="font-style:italic;">Integer</div>
+                        <el-row :gutter="20">
+                            <el-col :span="11">
+                                <div class="text-muted">JSON Key</div>
+                            </el-col>
+                            <el-col :span="11">
+                                <div class="text-muted">Default</div>
+                            </el-col>
+                            <el-col :span="2" style="text-align:right;">
+                                <b-button @click="rm_app_config(name)" style="float: right;"><icon name="trash"/></b-button>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20">
+                            <el-col :span="11">
+                                <b-form-input type="text" v-model="object._id" style="margin-top: 3px;"></b-form-input>
+                            </el-col>
+                            <el-col :span="13">
+                                <b-form-input type="number" v-model="object.default" style="margin-top: 3px;"></b-form-input>
+                            </el-col>
+                        </el-row>
+                    </el-card>
+                    <el-card v-else-if="object.type == 'enum'">
+                        <div class="text-muted" style="font-style:italic;">Enum</div>
+                        <el-row :gutter="20">
+                            <el-col :span="7">
+                                <div class="text-muted">JSON Key</div>
+                            </el-col>
+                            <el-col :span="7">
+                                <div class="text-muted">Default</div>
+                            </el-col>
+                            <el-col :span="8">
+                                <div class="text-muted">Description</div>
+                            </el-col>
+                            <el-col :span="2" style="text-align:right;">
+                                <b-button @click="rm_app_config(name)" style="float: right;"><icon name="trash"/></b-button>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20" style="margin-top: 3px;">
+                            <el-col :span="7">
+                                <b-form-input type="text" v-model="object._id"></b-form-input>
+                            </el-col>
+                            <el-col :span="7">
+                                <b-form-select :options="object.options.map(o => ({ text: (o.label || `(${o.value})`), value: o.value }))" v-model="object.default"></b-form-select>
+                            </el-col>
+                            <el-col :span="10">
+                                <b-form-input type="text" v-model="object.desc"></b-form-input>
+                            </el-col>
+                        </el-row>
+                        <el-card v-for="(option, idx) in object.options" :key="idx" style="margin: 5px 10px 5px 10px;">
+                            <el-row :gutter="20">
+                                <el-col :span="7">
+                                    <div class="text-muted">Description</div>
+                                </el-col>
+                                <el-col :span="7">
+                                    <div class="text-muted">Label</div>
+                                </el-col>
+                                <el-col :span="7">
+                                    <div class="text-muted">Value</div>
+                                </el-col>
+                                <el-col :span="3" style="text-align:right;">
+                                    <b-button @click="object.options.splice(idx, 1)" style="float: right;"><icon name="trash"/></b-button>
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="20" style="margin-top: 3px;">
+                                <el-col :span="7">
+                                    <b-form-input type="text" v-model="option.desc"></b-form-input>
+                                </el-col>
+                                <el-col :span="7">
+                                    <b-form-input type="text" v-model="option.label"></b-form-input>
+                                </el-col>
+                                <el-col :span="10">
+                                    <b-form-input type="text" v-model="option.value"></b-form-input>
+                                </el-col>
+                            </el-row>
+                        </el-card>
+                        <div style="margin: 5px;">
+                            <b-button @click="object.options.push({ desc: '', label: '', value: '' })"><icon name="plus"/> Add Option</b-button>
+                        </div>
+                    </el-card>
+                </div>
+                
+                <div style="margin: 3px;">
+                    <b-button @click="add_json_item('string')"><icon name="plus"/> Add String</b-button>
+                    <b-button @click="add_json_item('integer')"><icon name="plus"/> Add Integer</b-button>
+                    <b-button @click="add_json_item('enum')"><icon name="plus"/> Add Enum</b-button>
+                </div>
             </el-form-item>
-
+            
             <br>
             <el-form-item label="Inputs">
-                <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
+                <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 20px;">
                     <el-card>
+                        <el-row :gutter="20" style="margin-bottom: 10px;">
+                            <el-col :span="4">
+                                <div class="text-muted">ID</div>
+                            </el-col>
+                            <el-col :span="6">
+                                <div class="text-muted">Datatype</div>
+                            </el-col>
+                            <el-col :span="14" v-if="input.datatype">
+                                <b-button @click="rm_input(idx)" style="float: right;"><icon name="trash"/></b-button>
+                                <div class="text-muted">Datatype Tags</div>
+                            </el-col>
+                        </el-row>
                         <el-row :gutter="20">
-                        <el-col :span="4">
-                            ID
-                            <el-input v-model="input.id">
-                                <!--<template slot="prepend">ID</template>-->
-                            </el-input>
-                        </el-col>
-                        <el-col :span="6">
-                            Datatype
-                            <el-select v-model="input.datatype" style="width: 100%;">
-                                <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                            </el-select>
-                        </el-col>
-                        
-                        <el-col :span="14" v-if="input.datatype">
-                            <el-button @click="app.inputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
-                            Datatype Tags<br>
-                            <select2 :options="datatypes[input.datatype]._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
-                        </el-col>
+                            <el-col :span="4">
+                                <el-input v-model="input.id"></el-input>
+                            </el-col>
+                            <el-col :span="6">
+                                <el-select v-model="input.datatype" style="width: 100%;">
+                                    <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                                </el-select>
+                            </el-col>
+                            <el-col :span="14" v-if="input.datatype">
+                                <select2 :options="(datatypes[input.datatype]||{_tags:[]})._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
+                            </el-col>
+                        </el-row>
+                        <el-card v-for="(object, name) in app.config" :key="name" v-if="object.type == 'input' && object.owner == input._id" style="margin: 5px 10px 5px 10px;">
+                            <el-row :gutter="20">
+                                <el-col :span="11">
+                                    <div class="text-muted">JSON Key</div>
+                                </el-col>
+                                <el-col :span="11">
+                                    <div class="text-muted">File ID</div>
+                                </el-col>
+                                <el-col :span="2" style="text-align:right;">
+                                    <b-button @click="rm_app_config(name)" style="float: right;"><icon name="trash"/></b-button>
+                                </el-col>
+                            </el-row>
+                            <el-row :gutter="20" style="margin-top:5px;">
+                                <el-col :span="11">
+                                    <el-input v-model="object._id"></el-input>
+                                </el-col>
+                                
+                                <el-col :span="13" v-if="input.datatype">
+                                    <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: (f.filename || `(${f.id})`), value: f.id }))" v-model="object.file_id"></b-form-select>
+                                </el-col>
+                            </el-row>
+                        </el-card>
+                        <el-row>
+                            <b-button style="margin-top:10px;" @click="add_json_item('input', input)" v-if="input.datatype"><icon name="plus"/> Add File Mapping</b-button>
                         </el-row>
                     </el-card>
                 </div>
-                <el-button @click="add(app.inputs)" size="small" icon="plus">Add Input</el-button>
+                
+                <div style="margin: 3px;">
+                    <b-button @click="add(app.inputs)" style="margin-bottom: 5px;"><icon name="plus"/> Add Input</b-button>
+                </div>
             </el-form-item>
 
             <br>
             <el-form-item label="Outputs">
                 <div v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
                     <el-card>
+                        <el-row :gutter="20" style="margin-bottom: 3px;">
+                            <el-col :span="4">
+                                <div class="text-muted">ID</div>
+                            </el-col>
+                            <el-col :span="6">
+                                <div class="text-muted">Datatype</div>
+                            </el-col>
+                            <el-col :span="14" v-if="output.datatype">
+                                <b-button @click="app.outputs.splice(idx, 1)" icon="delete" style="float: right;"><icon name="trash"/></b-button>
+                                <div class="text-muted">Datatype Tags</div>
+                            </el-col>
+                        </el-row>
                         <el-row :gutter="20">
-                        <el-col :span="4">
-                            ID
-                            <el-input v-model="output.id"></el-input>
-                        </el-col>
-                        <el-col :span="6">
-                            Datatype
-                            <el-select v-model="output.datatype" style="width: 100%">
-                                <el-option v-for="datatype in datatypes" key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                            </el-select>
-                        </el-col>
-                        <el-col :span="14" v-if="output.datatype">
-                            <el-button @click="app.outputs.splice(idx, 1)" size="small" icon="delete" style="float: right;"></el-button>
-                            Datatype Tags<br>
-                            <select2 :options="datatypes[output.datatype]._tags" 
-                                v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
-                            Datatype Mapping (optional)
-                            <el-input type="textarea" v-model="output._files" autosize/>
-                        </el-col>
+                            <el-col :span="4">
+                                <el-input v-model="output.id"></el-input>
+                            </el-col>
+                            <el-col :span="6">
+                                <el-select v-model="output.datatype" style="width: 100%">
+                                    <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                                </el-select>
+                            </el-col>
+                            <el-col :span="14" v-if="output.datatype">
+                                <select2 :options="datatypes[output.datatype]._tags" 
+                                    v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
+                                
+                                <div class="text-muted" style="margin-top: 3px;">Datatype Mapping</div>
+                                <el-input type="textarea" v-model="output._files" autosize style="margin-top: 3px;" />
+                            </el-col>
                         </el-row>
                     </el-card>
                 </div>
-                <el-button @click="add(app.outputs)" size="small" icon="plus">Add Output</el-button>
+                <b-button @click="add(app.outputs)"><icon name="plus"/> Add Output</b-button>
             </el-form-item>
 
             <el-form-item style="float: right;">
-                <el-button @click="cancel()">Cancel</el-button>
-                <el-button type="primary" icon="check" @click="submit()">Submit</el-button>
+                <b-button @click="cancel()">Cancel</b-button>
+                <b-button variant="primary" @click="submit()">Submit</b-button>
             </el-form-item>
             <br clear="both">
         </el-form>
 
         <el-card v-if="config.debug">
             <div slot="header">Debug</div>
+            <h3>_config</h3>
+            <pre v-highlightjs="_config"><code class="json hljs"></code></pre>
             <h3>app</h3>
             <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
             <h3>form</h3>
@@ -163,8 +314,7 @@ export default {
                 github: null,
                 github_branch: null,
                 
-                config: null,
-                _config: "{\"something\": 123}",
+                config: {},
 
                 inputs: [],
                 outputs: [],
@@ -182,7 +332,7 @@ export default {
                 repotype: "github",
             },
 
-            config: Vue.config,
+            config: Vue.config
         }
     },
 
@@ -241,9 +391,20 @@ export default {
                         }})
                         .then(res=>{
                             this.app = res.body.apps[0];
+                            
+                            this.app.inputs.forEach(input => {
+                                if (!input._id) input._id = v.gen_token();
+                            });
+                            
+                            Vue.set(this.app, 'config', this.update_owners(this.app.config));
+                            
+                            // have to make sure ids exist for vue reactivity when changing _config object keys later..
+                            for (var k in this.app.config) {
+                                Vue.set(this.app.config[k], '_id', k);
+                            }
 
                             //need to do some last minute type conversion
-                            this.app._config = JSON.stringify(this.app.config, null, 4);
+                            // this.app._config = JSON.stringify(this.app.config, null, 4);
                             this.app.outputs.forEach(output=>{
                                 if(output.files) output._files = JSON.stringify(output.files, null, 4);
                             });
@@ -263,12 +424,70 @@ export default {
     },
 
     methods: {
+        gen_token: function() {
+            return Math.floor(Math.random() * 10000000).toString(16);
+        },
+        
+        add_json_item: function(type, input) {
+            var randkey = this.gen_token();
+            
+            if (type == 'input') {
+                Vue.set(this.app.config, randkey, { _id: '', owner: input._id, file_id: '', input_id: input.id, type });
+            }
+            else if (type == 'string') Vue.set(this.app.config, randkey, { _id: '', default: '', type });
+            else if (type == 'integer') Vue.set(this.app.config, randkey, { _id: '', default: 0, type });
+            else if (type == 'enum') Vue.set(this.app.config, randkey, { _id: '', default: '', desc: '', options: [], type })
+        },
+        
         add: function(it) {
             it.push({
+                _id: this.gen_token(),
                 id: "",
                 datatype: null,
                 datatype_tags: [],
             });
+        },
+        
+        rm_input: function(idx) {
+            var input = this.app.inputs[idx];
+            for (var k in this.app.config) {
+                var obj = this.app.config[k];
+                if (obj.owner && obj.owner == input._id || obj.input_id == input.id)
+                    Vue.delete(this.app.config, k);
+            }
+            
+            this.app.inputs.splice(idx, 1);
+        },
+        
+        rm_app_config: function(id) {
+            if (this.app.config[id])
+                Vue.delete(this.app.config, id);
+        },
+        
+        clear_pref_ids: function(arr) {
+            arr.forEach(item => {
+                if (item._id)
+                    delete item._id;
+            });
+            return arr;
+        },
+        
+        // update which inputs own what file maps
+        update_owners: function(config) {
+            for (var k in config) {
+                if (config[k].owner) {
+                    this.app.inputs.forEach(input => {
+                        if (input._id == config[k].owner) config[k].input_id = input.id;
+                    });
+                }
+                else if (config[k].input_id) {
+                    this.app.inputs.forEach(input => {
+                        if (input.id == config[k].input_id) config[k].owner = input._id;
+                    });
+                }
+            }
+            
+            return config;
         },
 
         cancel: function() {
@@ -277,7 +496,10 @@ export default {
 
         submit: function() {
             try {
-                this.app.config = JSON.parse(this.app._config);     
+                this.app.config = JSON.parse(this._config);
+                
+                this.app.inputs = this.clear_pref_ids(this.app.inputs);
+                this.app.outputs = this.clear_pref_ids(this.app.outputs);
             } catch(err) {
                 this.$notify({ text: 'Failed to parse config template.', type: 'error' });
                 return;
@@ -285,7 +507,6 @@ export default {
             try {
                 this.app.outputs.forEach(output=>{
                     output.files = null;
-                    console.log(output._files);
                     if(output._files) output.files = JSON.parse(output._files);
                 });
             } catch(err) {
@@ -326,6 +547,46 @@ export default {
             });
         }
     },
+    
+    watch: {
+        "app.inputs": {
+            handler(conf) {
+                Vue.set(this.app, 'config', this.update_owners(this.app.config));
+            },
+            deep: true
+        }
+    },
+    
+    computed: {
+        input_ids: function() {
+            let options = [];
+            this.app.inputs.forEach(input => {
+                options.push(input.id);
+            });
+            return options;
+        },
+        
+        "_config": function() {
+            var _config = {};
+            var hard_copy_config = JSON.parse(JSON.stringify(this.app.config));
+            
+            hard_copy_config = this.update_owners(hard_copy_config);
+            
+            for (var k in hard_copy_config) {
+                if (hard_copy_config[k].type == 'integer' && hard_copy_config[k].default) hard_copy_config[k].default = parseInt(hard_copy_config[k].default);
+                
+                if (hard_copy_config[k].owner) delete hard_copy_config[k].owner;
+                
+                if (hard_copy_config[k]._id) {
+                    _config[hard_copy_config[k]._id] = hard_copy_config[k];
+                    delete _config[hard_copy_config[k]._id]._id;
+                }
+                else _config[k] = hard_copy_config[k];
+            }
+            
+            return JSON.stringify(_config, null, 4);
+        }
+    }
 }
 </script>
 

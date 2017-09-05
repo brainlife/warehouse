@@ -20,6 +20,7 @@
   "homepage": "https://github.com/brain-life/warehouse#readme",
   "dependencies": {
     "@types/istanbul": "^0.4.29",
+    "@types/neo4j": "^2.0.0",
     "amqp": "^0.2.6",
     "async": "^2.4.1",
     "body-parser": "^1.17.2",
@@ -33,7 +34,7 @@
     "express-winston": "^2.4.0",
     "istanbul": "^0.4.5",
     "mkdirp": "^0.5.1",
-    "mongoose": "^4.11.9",
+    "mongoose": "^4.11.1",
     "neo4j": "^2.0.0-RC2",
     "pkgcloud": "^1.4.0",
     "redis": "^2.8.0",
