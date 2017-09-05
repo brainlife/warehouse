@@ -29,7 +29,7 @@
                     <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01" :placeholder="v.placeholder">
                     <el-input type="number" v-if="v.type == 'integer'" v-model.number="form.config[k]" :placeholder="v.placeholder"></el-input>
                     <el-input v-if="v.type == 'string'" v-model="form.config[k]" :placeholder="v.placeholder"></el-input>
-                    <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox>
+                    <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox> {{v.desc}}
                     <el-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder">
                         <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
                             <b>{{option.label}}</b>

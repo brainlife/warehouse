@@ -22,7 +22,7 @@
                         <icon name="folder" v-if="file.directory && !file.open" style="color: #2693ff"></icon>
                     </span>
                     {{file.filename}}
-                    <span style="float: right; width: 150px;">{{file.attrs.mtime*1000|date}}</span>
+                    <span style="float: right; width: 150px;">{{new Date(file.attrs.mtime*1000).toLocaleString()}}</span>
                     <mute style="float: right; margin-right: 20px;">{{file.attrs.size|filesize}}</mute>
             </div>
             <div class="content" v-if="file.open">

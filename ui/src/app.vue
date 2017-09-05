@@ -6,7 +6,7 @@
         <b-button-group style="float: right;">
             <b-button @click="remove()" v-if="app._canedit" icon="delete">Remove</b-button>
             <b-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</b-button>
-            <b-button variant="primary" v-if="preferred_resource" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
+            <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
         </b-button-group>
         <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
         <h2>{{app.name}}</h2>
@@ -33,7 +33,7 @@
                         <b class="text-muted">Users</b>
                     </el-col>
                     <el-col :span="8">
-                        <h4>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)) | toFixed(1)}}% </h4>
+                        <h4>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}% </h4>
                         <b class="text-muted">Success Rate</b>
                     </el-col>
                 </el-row>

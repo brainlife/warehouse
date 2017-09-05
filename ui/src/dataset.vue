@@ -41,7 +41,7 @@
         </tr>
         <tr>
             <th width="180px">Create Date</th>
-            <td>{{dataset.create_date|date}}</td>
+            <td>{{new Date(dataset.create_date).toLocaleString()}}</td>
         </tr>
         <tr>
             <th>Storage</th>
@@ -158,27 +158,6 @@
                 <center>
                     <el-card style="background-color: #2693ff; color: white;">This dataset</el-card>
                 </center>
-
-                <!--
-                <div v-if="Object.keys(derivatives).length > 0">
-                    <el-row :gutter="10">
-                        <el-col :span="8" v-for="(datasets, task_id) in derivatives" :key="task_id">
-                            <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
-                            <app :appid="datasets[0].prov.app" :compact="true" style="max-height: 150px;"/>
-                            <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
-                            <el-card class="clickable-record" v-for="dataset in datasets" :key="dataset._id" style="margin-bottom: 10px;">
-                                <div @click="go(dataset._id)">
-                                    <icon name="cube"></icon>
-                                    <b>{{dataset.name}}</b>
-                                    <tags :tags="dataset.datatype_tags"/>
-                                    <br>
-                                    <time class="text-muted">{{dataset.create_date|date}}</time>
-                                </div>
-                            </el-card>
-                        </el-col>
-                    </el-row>
-                </div>
-                -->
             </td>
         </tr>
         <tr v-if="apps">

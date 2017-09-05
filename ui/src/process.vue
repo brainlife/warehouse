@@ -11,7 +11,7 @@
                 <mute>D{{idx}}</mute> 
                 <b>{{dataset.meta.subject}}</b>
                 <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                <time>{{dataset.create_date|date('%x')}}</time>
+                <time>{{dataset.create_date}}</time>
                 <mute>
                     <small v-if="dataset.task.status != 'finished'">
                         <statusicon :status="dataset.task.status"></statusicon> Staging
@@ -33,7 +33,7 @@
                 <mute><b>T{{tasks.indexOf(dataset.task)-1}}</b> <icon name="arrow-right" scale="0.8"></icon></mute> D{{idx}}
                 <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
                 <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
+                <time v-if="dataset.create_date">{{dataset.create_date}}</time>
                 <mute>
                     <small v-if="dataset.task.status != 'finished'">
                         <statustag :status="dataset.task.status"/>

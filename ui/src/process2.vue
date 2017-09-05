@@ -11,7 +11,7 @@
             <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
             <small v-for="(tag,idx) in dataset.tags" :key="idx"> | {{tag}}</small>
             <mute>(d.{{dataset.did}})</mute> 
-            <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
+            <time v-if="dataset.create_date">{{new Date(dataset.create_date).toLocaleString()}}</time>
             <mute>
                 <small v-if="dataset.task.status != 'finished'">
                     <statusicon :status="dataset.task.status"></statusicon> 
@@ -182,19 +182,18 @@
                     <!--<el-alert v-if="input.error" :title="input.error" type="error"></el-alert>-->
                 </el-form-item>
 
-                <!--TODO - handle nested config? -->
                 <el-form-item v-for="(v,k) in newtask.app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
-                    <!--<p class="text-muted" v-if="v.desc">{{v.desc}}</p>-->
                     <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01" :placeholder="v.placeholder">
                     <el-input type="number" v-if="v.type == 'integer'" v-model.number="newtask.config[k]" :placeholder="v.placeholder"/>
                     <el-input v-if="v.type == 'string'" v-model="newtask.config[k]" :placeholder="v.placeholder"/>
-                    <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
+                    <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/> {{v.desc}}
                     <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder">
                         <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
                             <b>{{option.label}}</b>
                             <small> - {{option.desc}}</small>
                         </el-option>
                     </el-select>
+                    <p v-if="v.desc">{{v.desc}}</p>
                 </el-form-item>
 
                 <hr>

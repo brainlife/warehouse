@@ -49,7 +49,7 @@
                                         {{dataset.desc||'&nbsp;'}}
                                     </div>
                                     <div class="col-md-3 truncate">
-                                        <time>{{dataset.create_date | date}}</time>
+                                        <time>{{new Date(dataset.create_date).toLocaleString()}}</time>
                                     </div>
                                     <div class="col-md-3 truncate">
                                         <tags :tags="dataset.tags"></tags> &nbsp;

@@ -17,7 +17,7 @@
             <h1><icon name="download" scale="2"></icon> Download</h1>
             <el-card>
                 <div slot="header" style="padding: 15px;">
-                    <p style="float: right;"><span class="text-muted">Requested at</span> <b><time>{{instance.create_date|date}}</time></b></p>
+                    <p style="float: right;"><span class="text-muted">Requested at</span> <b><time>{{new Date(instance.create_date).toLocaleString()}}</time></b></p>
                     <el-steps :space="200" :active="active">
                         <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
                         <el-step title="Organize" description="Organizing data in BIDS format"></el-step>

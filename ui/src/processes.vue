@@ -27,8 +27,8 @@
                     <span class="status status-unknown" v-else><icon name="question"/></span>
                 </div>
                 <div style="margin-left: 25px;">
-                    <time v-if="instance._old">{{instance.create_date|date('%x')}}</time>
-                    <time v-else>{{instance.create_date|date('%I:%M %p')}}</time>
+                    <time v-if="instance._old">{{instance.create_date.toLocaleDateString()}}</time>
+                    <time v-else>{{instance.create_date.toLocaleTimeString()}}</time>
 
                     <div class="type" v-if="instance.config.type != 'v2'" style="display: inline-block;">
                         <span v-if="instance.config.type == 'simple'">
