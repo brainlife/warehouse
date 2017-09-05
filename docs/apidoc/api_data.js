@@ -1,4 +1,4 @@
-[
+define({ "api": [
   {
     "group": "App",
     "type": "delete",
@@ -458,6 +458,13 @@
           },
           {
             "group": "Parameter",
+            "type": "String[]",
+            "optional": true,
+            "field": "datatype_tags",
+            "description": "<p>List of datatype tags to filter (you can use exlusion tags also)</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "Number",
             "optional": true,
             "field": "limit",
@@ -615,6 +622,17 @@
     "filename": "api/controllers/dataset.js",
     "groupTitle": "Dataset",
     "name": "GetDatasetDownloadId"
+  },
+  {
+    "group": "Dataset",
+    "type": "get",
+    "url": "/dataset/prov/:id",
+    "title": "Get provenance",
+    "description": "<p>Get provenance graph info</p>",
+    "version": "0.0.0",
+    "filename": "api/controllers/dataset.js",
+    "groupTitle": "Dataset",
+    "name": "GetDatasetProvId"
   },
   {
     "group": "Dataset",
@@ -1157,4 +1175,4 @@
     "groupTitle": "Project",
     "name": "PutProjectId"
   }
-]
+] });

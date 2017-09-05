@@ -32,7 +32,7 @@ exports.health_check = function() {
         system.test(timeout(err=>{
             if(err) {
 				report.status = "failed";
-				messages.push(system_id+" "+err);
+				report.messages.push(system_id+" "+err);
 				report.storages[system_id] = "failed";
 			} else {
 				report.storages[system_id] = "ok";
