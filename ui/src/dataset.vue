@@ -80,15 +80,6 @@
             </td>
         </tr>
         <tr>
-            <th>Project</th>
-            <td>
-                <p class="text-muted">This dataset belongs to following project.</p>
-                <el-card>
-                    <project :project="dataset.project"></project>
-                </el-card>
-            </td>
-        </tr>
-        <tr>
             <th>User Tags</th>
             <td>
                 <div v-if="dataset._canedit && alltags">
@@ -105,6 +96,15 @@
             <th>Data Type</th>
             <td>
                 <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+            </td>
+        </tr>
+        <tr>
+            <th>Project</th>
+            <td>
+                <p class="text-muted">This dataset belongs to following project.</p>
+                <el-card>
+                    <project :project="dataset.project"></project>
+                </el-card>
             </td>
         </tr>
         <tr>

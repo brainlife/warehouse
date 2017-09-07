@@ -90,6 +90,15 @@
                 <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
             </td>
         </tr>
+        <tr v-if="app.project">
+            <th>Project</th>
+            <td>
+                <p class="text-muted">This application belongs to following project.</p>
+                <el-card>
+                    <project :project="app.project"></project>
+                </el-card>
+            </td>
+        </tr>
         <tr v-if="app.retry">
             <th>Retry</th>
             <td>
@@ -188,7 +197,7 @@ export default {
         //load app
         this.$http.get('app', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'inputs.datatype outputs.datatype',
+            populate: 'inputs.datatype outputs.datatype project',
         }})
         .then(res=>{
             this.app = res.body.apps[0];

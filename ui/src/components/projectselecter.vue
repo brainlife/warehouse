@@ -20,10 +20,8 @@ export default {
     },
     watch: {
         selected: function() {
-            if(this.selected) {
-                localStorage.setItem('last_projectid_used', this.selected);
-                this.$emit('input', this.selected);
-            }
+            if(this.selected) localStorage.setItem('last_projectid_used', this.selected);
+            this.$emit('input', this.selected);
         }
     },
     mounted: function() {
@@ -49,8 +47,10 @@ export default {
                 this.options.push({text: group_header, children: option_groups[access]});
             }
 
-            if(!this.allownull) {
-                this.selected = this.value || localStorage.getItem('last_projectid_used') || this.options[0].id;
+            this.selected = this.value;
+            if(!this.allownull && !this.selected) {
+                //need to preselect some value
+                this.selected = localStorage.getItem('last_projectid_used') || this.options[0].id;
             }
         });
     }
