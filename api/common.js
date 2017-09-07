@@ -13,6 +13,25 @@ const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
 const prov = require('./prov');
 
+exports.getprojects = function(user, cb) {
+    //firt, find all public projects
+    var project_query = {access: "public"};
+    //if user is logged in, look for private ones also
+    if(user) {
+        project_query = {
+            $or: [
+                project_query,
+                {"members": user.sub},
+            ],
+        };
+    }
+    db.Projects.find(project_query).select('_id').exec((err, projects)=>{
+        if(err) return cb(err);
+        var project_ids = projects.map(p=>p._id);
+        cb(null, project_ids);
+    });
+}
+
 exports.archive_task = function(task, dataset, files_override, auth, cb) {
     if(!files_override) files_override = {};
     //logger.debug(JSON.stringify(dataset, null, 4));

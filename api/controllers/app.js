@@ -8,6 +8,7 @@ const winston = require('winston');
 const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
+const common = require('../common');
 
 function canedit(user, rec) {
     if(user) {
@@ -16,6 +17,57 @@ function canedit(user, rec) {
     }
     return false;
 }
+
+/**
+ * @apiGroup App
+ * @api {get} /app              Query apps
+ * @apiDescription              Query registered apps
+ *
+ * @apiParam {Object} [find]    Optional Mongo find query - defaults to {}
+ * @apiParam {Object} [sort]    Optional Mongo sort object - defaults to {}
+ * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
+ * @apiParam {String} [populate] Relational fields to populate
+ * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 0(no limit)
+ * @apiParam {Number} [skip]    Optional Record offset for pagination
+ *
+ * @apiHeader {String} [authorization]
+ *                              A valid JWT token "Bearer: xxxxx"
+ * @apiSuccess {Object}         List of apps (maybe limited / skipped) and total count
+ */
+router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    var ands = [];
+    if(req.query.find) ands.push(JSON.parse(req.query.find));
+    
+    common.getprojects(req.user, (err, project_ids)=>{
+        if(err) return next(err);
+        ands.push({$or: [ 
+            {project: {$in: project_ids}},
+
+            {project: null}, //if project is not set, it's available to everyone
+            {project: {$exists: false}}, //for backward compatibility (update DB!)
+        ]});
+
+        db.Apps.find({$and: ands})
+        .select(req.query.select)
+        .limit(req.query.limit || 0)
+        .skip(req.query.skip || 0)
+        .sort(req.query.sort || '_id')
+        .populate(req.query.populate || '')
+        .lean()
+        .exec((err, recs)=>{
+            if(err) return next(err);
+            db.Apps.count({$and: ands}).exec((err, count)=>{
+                if(err) return next(err);
+                //adding some derivatives
+                if(req.user) recs.forEach(function(rec) {
+                    rec._canedit = canedit(req.user, rec);
+                });
+                res.json({apps: recs, count: count});
+            });
+        });
+    });
+
+});
 
 /**
  * @apiGroup App
@@ -62,48 +114,7 @@ router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res
             });
         });
     });
-});    
-/**
- * @apiGroup App
- * @api {get} /app              Query apps
- * @apiDescription              Query registered apps
- *
- * @apiParam {Object} [find]    Optional Mongo find query - defaults to {}
- * @apiParam {Object} [sort]    Optional Mongo sort object - defaults to {}
- * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
- * @apiParam {String} [populate] Relational fields to populate
- * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 0(no limit)
- * @apiParam {Number} [skip]    Optional Record offset for pagination
- *
- * @apiHeader {String} [authorization]
- *                              A valid JWT token "Bearer: xxxxx"
- * @apiSuccess {Object}         List of apps (maybe limited / skipped) and total count
- */
-router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
-    var find = {};
-    if(req.query.find) find = JSON.parse(req.query.find);
-
-    db.Apps.find(find)
-    .select(req.query.select)
-    .limit(req.query.limit || 0)
-    .skip(req.query.skip || 0)
-    .sort(req.query.sort || '_id')
-    //.populate('inputs.datatype outputs.datatype')
-    .populate(req.query.populate || '')
-    .lean()
-    .exec((err, recs)=>{
-        if(err) return next(err);
-        db.Apps.count(find).exec((err, count)=>{
-            if(err) return next(err);
-            //adding some derivatives
-            if(req.user) recs.forEach(function(rec) {
-                rec._canedit = canedit(req.user, rec);
-            });
-            res.json({apps: recs, count: count});
-        });
-    });
-});
-
+});   
 /**
  * @apiGroup App
  * @api {post} /app             Post App

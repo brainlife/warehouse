@@ -42,26 +42,6 @@ function canedit(user, rec) {
     return false;
 }
 
-//return all projects that user has access
-function getprojects(user, cb) {
-    //firt, find all public projects
-    var project_query = {access: "public"};
-    //if user is logged in, look for private ones also
-    if(user) {
-        project_query = {
-            $or: [
-                project_query,
-                {"members": user.sub},
-            ],
-            //I need to let user query for datasets from removed project also..
-            //removed: false,
-        };
-    }
-    db.Projects
-    .find(project_query)
-    .exec(cb);
-}
-
 /**
  * @apiGroup Dataset
  * @api {get} /dataset          Query Datasets
@@ -95,9 +75,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     }
 
     //logger.debug("getting project");
-    getprojects(req.user, function(err, projects) {
+    common.getprojects(req.user, function(err, project_ids) {
         if(err) return next(err);
-        var project_ids = projects.map(function(p) { return p._id; });
         ands.push({project: {$in: project_ids}});
 
         var limit = 100;
@@ -150,9 +129,9 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
-    getprojects(req.user, function(err, projects) {
+    common.getprojects(req.user, function(err, project_ids) {
         if(err) return next(err);
-        var project_ids = projects.map(function(p) { return p._id; });
+        //var project_ids = projects.map(function(p) { return p._id; });
         db.Datasets
         .find({
             $and: [
@@ -388,14 +367,16 @@ router.get('/download/:id', jwt({
 }), function(req, res, next) {
     var id = req.params.id;
     logger.debug("requested for downloading dataset "+id);
-    getprojects(req.user, function(err, projects) {
+    common.getprojects(req.user, function(err, project_ids) {
         if(err) return next(err);
-        var project_ids = projects.map(function(p) { return p._id.toString(); });
+        //var project_ids = projects.map(function(p) { return p._id.toString(); });
         db.Datasets.findById(id, function(err, dataset) {
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
             if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
             //logger.debug("user is accessing project:", dataset.project.toString());
+
+            project_ids = project_ids.map(id=>id.toString());
             logger.debug("user has access to", project_ids);
             if(!~project_ids.indexOf(dataset.project.toString())) {
                 return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});

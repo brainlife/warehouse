@@ -113,6 +113,7 @@ function handle_rule(rule, cb) {
                 },
             }, (err, res, body)=>{
                 if(err) return next(err);
+                if(res.statusCode != "200") return next(res.statusCode);
                 rule_tasks = {};
                 running = 0;
                 body.tasks.forEach(task=>{
