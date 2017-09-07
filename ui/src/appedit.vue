@@ -16,8 +16,9 @@
                 <el-input type="textarea" :autosize="{minRows: 4}" v-model="app.desc" placeholder="Enter description for this application."/>
             </el-form-item>
             <br>
-            <el-form-item label="Tags">
+            <el-form-item label="Classification">
                 <select2 :options="alltags" v-model="app.tags" :multiple="true" :tags="true"></select2>
+                <p class="text-muted">Used to group similar application</p>
             </el-form-item>
             <el-form-item label="Developers">
                 <contactlist v-model="app.admins"></contactlist>
@@ -25,6 +26,11 @@
             <el-form-item label="Avatar">
                 <el-input type="text" v-model="app.avatar" placeholder="URL of application avatar"/>
             </el-form-item>
+            <el-form-item label="Project">
+                <projectselecter v-model="app.project" :allownull="true" placeholder="(Does not belong to any project)"/>
+                <p class="text-muted">If a private project is selected, only the member of the project can access this app.</p>
+            </el-form-item>
+
             <el-form-item label="Source Code">
                 <!--
                 <el-tabs v-model="form.repotype" type="border-card">
@@ -74,7 +80,7 @@
                                 <b-form-input type="text" v-model="config._id"></b-form-input>
                             </b-col>
                             <b-col>
-                                <div class="text-muted">Default</div>
+                                <div class="text-muted">Default Value</div>
                                 <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default"></b-form-input>
                                 <b-form-input v-if="config.type == 'string'" type="text" v-model="config.default"></b-form-input>
                             </b-col>
@@ -92,7 +98,7 @@
                                 <b-form-input type="text" v-model="config._id"></b-form-input>
                             </b-col>
                             <b-col>
-                                <div class="text-muted">Default</div>
+                                <div class="text-muted">Default Value</div>
                                 <input type="checkbox" v-model="config.default"/>
                             </b-col>
                             <b-col>
@@ -109,7 +115,7 @@
                                 <b-form-input type="text" v-model="config._id"></b-form-input>
                             </b-col>
                             <b-col>
-                                <div class="text-muted">Default</div>
+                                <div class="text-muted">Default Value</div>
                                 <b-form-select v-if="config.options.length" :options="config.options.map(o => o.value)" v-model="config.default"></b-form-select>
                             </b-col>
                             <b-col>
@@ -256,12 +262,14 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import select2 from '@/components/select2'
+import projectselecter from '@/components/projectselecter'
 
 export default {
-    components: { sidemenu, editor, contactlist, pageheader, select2 },
+    components: { sidemenu, editor, contactlist, pageheader, select2, projectselecter },
     data () {
         return {
             app: {
+                project: null,
                 admins: null,
 
                 name: null,
