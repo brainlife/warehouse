@@ -35,7 +35,7 @@
                             <strong>{{subject}}</strong>
                         </div>
                         <div class="col-md-10">
-                            <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
+                            <div v-for="dataset in datasets" :key="dataset._id" @click="open_dataset(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
                                 <div class="row">
                                     <div class="col-md-3 truncate">
                                         <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset)" class="dataset-checker">
@@ -71,7 +71,7 @@
         <div class="select-group">
             <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
                 <datatypetag :datatype="datatypes[did]"/>
-                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
+                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open_dataset(id)">
                     <div>
                         <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
                             <icon name="close"></icon>
@@ -326,6 +326,13 @@ export default {
         go: function(path) {
             this.$router.push(path);
         },
+
+        open_dataset: function(dataset_id) {
+            //TODO - we should probably use semi-fullscreen modal to display dataset
+            //window.open('#/dataset/'+dataset_id);
+            this.$router.push('/dataset/'+dataset_id);
+        },
+
         check: function(dataset) {
             if(this.selected[dataset._id]) {    
                 dataset.checked = false;

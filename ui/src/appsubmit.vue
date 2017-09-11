@@ -7,45 +7,70 @@
             <h2>Submit Application</h2>
         </div>
         <div class="content" v-if="app && projects">
-            <el-form :model="form" ref="form" label-position="left" label-width="200px">
-                <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
-                <el-form-item label="Application">
-                    <app :appid="app._id"/>
-                    <br>
-                </el-form-item>
-                <el-form-item v-for="input in app.inputs" :label="input.id+' '+input.datatype_tags" :key="input.id" ref="form">
-                    <el-row :gutter="1">
-                        <el-col :span="8" style="padding-right:7px;">
-                            <projectselecter v-model="form.projects[input.id]" :placeholder="'Project'" @input="preselect_single_items(input)"></projectselecter>
-                        </el-col>
-                        <el-col :span="15">
-                            <select2 style="width: 100%; max-width: 100%;" v-model="form.inputs[input.id]" :dataAdapter="debounce_grab_items(input)" :multiple="false" :placeholder="'Input Dataset'" :options="form.options[input.id]"></select2>
-                        </el-col>
-                    </el-row>
-                </el-form-item>
-                
-                <!-- TODO doesn't support nested parameters-->
-                <el-form-item v-for="(v,k) in app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
+            <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
+            <b-row style="margin-bottom: 10px;">
+                <b-col>App</b-col>
+                <b-col cols="10"><app :appid="app._id"/></b-col>
+            </b-row>
+            
+            <!--<h4 v-if="app.inputs.length > 0">Inputs</h4>-->
+            <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
+                <b-col>
+                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                    <!--{{input.datatype.name+' '+input.datatype_tags}}-->
+                </b-col>
+                <b-col cols="4">
+                    <projectselecter 
+                        v-model="form.projects[input.id]" 
+                        :placeholder="'Project'" 
+                        @input="preselect_single_items(input)"/>
+                </b-col>
+                <b-col cols="6">
+                    <select2 style="width: 100%; max-width: 100%;" 
+                        v-model="form.inputs[input.id]" 
+                        :dataAdapter="debounce_grab_items(input)" 
+                        :multiple="false" 
+                        :placeholder="'Input Dataset'" 
+                        :options="form.options[input.id]"/>
+                </b-col>
+            </b-row>
+            
+            <!--<h4>Configuration Parameters</h4>-->
+            <b-row v-for="(v,k) in app.config" :key="k" v-if="v.type && v.type != 'input'">
+                <b-col>{{k}}</b-col>
+                <b-col cols="10">
                     <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01" :placeholder="v.placeholder">
                     <el-input type="number" v-if="v.type == 'integer'" v-model.number="form.config[k]" :placeholder="v.placeholder"></el-input>
                     <el-input v-if="v.type == 'string'" v-model="form.config[k]" :placeholder="v.placeholder"></el-input>
-                    <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox> {{v.desc}}
-                    <el-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder">
+                    <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox> 
+                    <el-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder" style="width: 100%;">
                         <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
                             <b>{{option.label}}</b>
                             <small> - {{option.desc}}</small>
                         </el-option>
                     </el-select>
-                </el-form-item>
 
-                <el-form-item label="Description">
-                    <el-input type="textarea" v-model="form.desc" placeholder="Optional Description for this processing"></el-input>
-                </el-form-item>
-                <br>
-                <el-form-item>
+                    <b-form-text>{{v.desc}}</b-form-text>
+                </b-col>
+            </b-row>
+
+            <b-row>
+                <b-col>Description</b-col>
+                <b-col cols="10">
+                    <b-form-textarea v-model="form.desc"
+                         placeholder="Optional description for this processing"
+                         :rows="3"
+                         :max-rows="6"/>
+                </b-col>
+            </b-row>
+            <br>
+
+            <b-row>
+                <b-col></b-col>
+                <b-col cols="10">
                     <el-button type="primary" @click="submit()">Submit</el-button>
-                </el-form-item>
-            </el-form>
+                </b-col>
+            </b-row>
         </div>
 
         <br>
@@ -74,6 +99,7 @@ import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import select2 from '@/components/select2'
 import projectselecter from '@/components/projectselecter'
+import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 
 const lib = require('./lib');
@@ -82,7 +108,8 @@ export default {
     components: { 
         sidemenu, contact, project, 
         tags, metadata, pageheader, 
-        appavatar, select2, projectselecter, app
+        appavatar, select2, projectselecter, 
+        app, datatypetag, 
      },
 
     data () {

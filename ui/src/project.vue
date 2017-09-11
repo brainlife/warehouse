@@ -17,7 +17,7 @@
         <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
             <tr>
-            <th>Stats</th>
+            <th width="200px">Stats</th>
             <td>
                 <el-row>
                     <el-col :span="8" v-if="datasets_attribs.num_subjects">

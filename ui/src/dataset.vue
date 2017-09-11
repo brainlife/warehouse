@@ -5,7 +5,7 @@
     <div class="header" vi-if="dataset">
         <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
         <b-button-group style="float: right;">
-            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed && dataset.storage" icon="delete">Remove</b-button>
+            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
             <b-button variant="primary" @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
         </b-button-group>
         <h2>

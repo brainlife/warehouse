@@ -144,15 +144,20 @@
 
         <transition name="fade">
         <div v-if="newtask.app">
-            <el-form label-width="200px"> 
-                <el-form-item label="Application">
-                    <app :app="newtask.app" :compact="false"></app>
-                </el-form-item>
+            <b-row>
+                <b-col cols="3">Application</b-col>
+                <b-col>
+                    <app :app="newtask.app" :compact="false"/>
+                </b-col>
+            </b-row>
+            <br>
 
-                <br>
-
-                <!--input-->
-                <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
+            <!--input-->
+            <b-row v-for="(input, input_id) in newtask.inputs" :key="input_id">
+                <b-col cols="3">
+                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                </b-col>
+                <b-col>
                     <el-select @change="validate()" v-model="input.dataset_idx" 
                         no-data-text="No dataset available for this datatype / tags"
                         placeholder="Please select input dataset" 
@@ -167,30 +172,42 @@
                             (d.{{dataset.did}})
                         </el-option>
                     </el-select>
-                    <!--<el-alert v-if="input.error" :title="input.error" type="error"></el-alert>-->
-                </el-form-item>
+                </b-col>
+            </b-row>
+            <br>
 
-                <el-form-item v-for="(v,k) in newtask.app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
+            <!--config-->
+            <b-row v-for="(v,k) in newtask.app.config" :key="k" v-if="v.type && v.type != 'input'">
+                <b-col cols="3">{{k}}</b-col>
+                <b-col>
                     <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01" :placeholder="v.placeholder">
                     <el-input type="number" v-if="v.type == 'integer'" v-model.number="newtask.config[k]" :placeholder="v.placeholder"/>
                     <el-input v-if="v.type == 'string'" v-model="newtask.config[k]" :placeholder="v.placeholder"/>
-                    <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/> {{v.desc}}
-                    <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder">
+                    <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
+                    <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder" style="width: 100%;">
                         <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
                             <b>{{option.label}}</b>
                             <small> - {{option.desc}}</small>
                         </el-option>
                     </el-select>
-                    <p v-if="v.desc">{{v.desc}}</p>
-                </el-form-item>
 
-                <hr>
+                    <b-form-text>{{v.desc}}</b-form-text>
+                </b-col>
+            </b-row>
 
-                <el-form-item label="Task Description" style="margin: 8px 0px">
+            <hr>
+
+            <b-row>
+                <b-col cols="3">Task Description</b-col>
+                <b-col>
                     <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
-                </el-form-item>
+                </b-col>
+            </b-row>
+            <br>
 
-                <el-form-item label=" ">
+            <b-row>
+                <b-col cols="3"><!--archive--></b-col>
+                <b-col>
                     <div v-if="!newtask.archive.enable">
                         <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive all output datasets when finished
                     </div>
@@ -214,15 +231,18 @@
                         </p>
                         -->
                     </el-card>
-                    <br>
-                </el-form-item>
+                </b-col>
+            </b-row>
+            <br>
 
-                <el-form-item label=" ">
+            <b-row>
+                <b-col cols="3"><!--submit--></b-col>
+                <b-col>
                     <el-button @click="reset_newprocess()">Cancel</el-button>
                     <el-button type="primary" @click="submit_newprocess()" :disabled="!newtask.valid">Submit</el-button>
-                </el-form-item>
-                 
-            </el-form>
+                </b-col>
+            </b-row>
+            <br>
         </div>
         </transition>
     </el-card>
