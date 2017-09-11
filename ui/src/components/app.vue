@@ -51,7 +51,10 @@ export default {
     },
     methods: {
         click: function() {
-            if(this.clickable) this.$router.push('/app/'+this.app_._id);
+            if(this.clickable) {
+                // this.$router.push('/app/'+this.app_._id);
+                window.open('#/app/'+this.app._id);
+            }
         },
     },
 }
