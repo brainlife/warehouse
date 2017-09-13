@@ -9,8 +9,8 @@
         <div class="content" v-if="app && projects">
             <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
             <b-row style="margin-bottom: 10px;">
-                <b-col>App</b-col>
-                <b-col cols="10"><app :appid="app._id"/></b-col>
+                <b-col>Application to Submit</b-col>
+                <b-col cols="9"><app :appid="app._id"/></b-col>
             </b-row>
             
             <!--<h4 v-if="app.inputs.length > 0">Inputs</h4>-->
@@ -25,7 +25,7 @@
                         :placeholder="'Project'" 
                         @input="preselect_single_items(input)"/>
                 </b-col>
-                <b-col cols="6">
+                <b-col cols="5">
                     <select2 style="width: 100%; max-width: 100%;" 
                         v-model="form.inputs[input.id]" 
                         :dataAdapter="debounce_grab_items(input)" 
@@ -38,11 +38,13 @@
             <!--<h4>Configuration Parameters</h4>-->
             <b-row v-for="(v,k) in app.config" :key="k" v-if="v.type && v.type != 'input'">
                 <b-col>{{k}}</b-col>
-                <b-col cols="10">
+                <b-col cols="9">
                     <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01" :placeholder="v.placeholder">
                     <el-input type="number" v-if="v.type == 'integer'" v-model.number="form.config[k]" :placeholder="v.placeholder"></el-input>
                     <el-input v-if="v.type == 'string'" v-model="form.config[k]" :placeholder="v.placeholder"></el-input>
-                    <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox> 
+                    <div v-if="v.type == 'boolean'">
+                        <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox> <span>{{v.desc}}</span>
+                    </div>
                     <el-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder" style="width: 100%;">
                         <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
                             <b>{{option.label}}</b>
@@ -50,13 +52,13 @@
                         </el-option>
                     </el-select>
 
-                    <b-form-text>{{v.desc}}</b-form-text>
+                    <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
                 </b-col>
             </b-row>
 
             <b-row>
                 <b-col>Description</b-col>
-                <b-col cols="10">
+                <b-col cols="9">
                     <b-form-textarea v-model="form.desc"
                          placeholder="Optional description for this processing"
                          :rows="3"
@@ -67,7 +69,7 @@
 
             <b-row>
                 <b-col></b-col>
-                <b-col cols="10">
+                <b-col cols="9">
                     <el-button type="primary" @click="submit()">Submit</el-button>
                 </b-col>
             </b-row>

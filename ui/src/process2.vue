@@ -183,7 +183,9 @@
                     <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01" :placeholder="v.placeholder">
                     <el-input type="number" v-if="v.type == 'integer'" v-model.number="newtask.config[k]" :placeholder="v.placeholder"/>
                     <el-input v-if="v.type == 'string'" v-model="newtask.config[k]" :placeholder="v.placeholder"/>
-                    <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
+                    <div v-if="v.type == 'boolean'">
+                        <el-checkbox v-model="newtask.config[k]" style="margin-top: 9px;"/> {{v.desc}}
+                    </div>
                     <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder" style="width: 100%;">
                         <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
                             <b>{{option.label}}</b>
@@ -191,7 +193,7 @@
                         </el-option>
                     </el-select>
 
-                    <b-form-text>{{v.desc}}</b-form-text>
+                    <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
                 </b-col>
             </b-row>
 
