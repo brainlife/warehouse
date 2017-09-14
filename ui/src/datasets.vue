@@ -266,18 +266,35 @@ export default {
         load: function() {
             if(this.loading) return;
 
-			var find = {
-                removed: false,
-                project: this.project_id,
-            }
-            /*
+			var finds = [
+                {removed: false},
+                {project: this.project_id},
+            ] 
+
+            /* not sure why this is here..
             this.project_id = this.$route.params.projectid; //could be set to null
             if(this.$route.params.projectid) {
                 find.project = this.$route.params.projectid;
             }
             */
+
             if(this.query) {
-                find.$text = {$search: this.query};
+                //lookup datatype ids that matches the query
+                var datatype_ids = [];
+                for(var id in this.datatypes) {
+                    if(this.datatypes[id].name.includes(this.query)) datatype_ids.push(id);
+                }
+
+                finds.push({$or: [
+                    //text search is pretty much only useful for description / tags (and it can't be mixed in $or). not very useful!
+                    //{$text: {$search: this.query}}, 
+
+                    {"meta.subject": {$regex: this.query}},
+                    {"desc": {$regex: this.query}},
+                    {"tags": {$regex: this.query}},
+                    {"datatype_tags": {$regex: this.query}},
+                    {"datatype": {$in: datatype_ids}},
+                ]});
             }
 
             //count number of datasets already loaded
@@ -296,7 +313,7 @@ export default {
             this.loading = true;
             var limit = 100;
             this.$http.get('dataset', {params: {
-                find: JSON.stringify(find),
+                find: JSON.stringify({$and: finds}),
                 skip: loaded,
                 limit,
                 select: '-prov',
