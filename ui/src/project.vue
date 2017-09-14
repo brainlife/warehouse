@@ -118,7 +118,7 @@ export default {
         })
         .then(res => {
             this.datasets_attribs.num_datasets = res.body.count;
-            console.log(this.datasets_attribs);
+            //console.log(this.datasets_attribs);
             
             return this.$http.get('dataset/distinct', {params: {
                 find: JSON.stringify({

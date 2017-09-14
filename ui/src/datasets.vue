@@ -26,7 +26,7 @@
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
-                <div class="text-muted list-header">Total Datasets <b>{{total_datasets}}</b></div>
+                <div class="text-muted list-header"><b>{{total_subjects}}</b> Subjects / <b>{{total_datasets}}</b> Datasets</div>
                 <div v-for="(page, page_idx) in pages">
                     <!--show empty div to speed rendering up if it's outside the view-->
                     <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" :style="{height: page_info[page_idx].height}">&nbsp;</div>
@@ -128,7 +128,10 @@ export default {
     data () {
         return {
             pages: [], //groups of datasets 
+
             total_datasets: null, //number of datasets for this project
+            total_subjects: null, //number of subjects for this project
+
             page_info: [], //{top/bottom/visible/}
             loading: false,
 
@@ -181,7 +184,7 @@ export default {
             res.body.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
             });
-            this.load();
+            this.reload();
         }).catch(err=>{
             console.error(err);
         });
@@ -207,7 +210,19 @@ export default {
             this.page_info = [];
             this.last_groups = {};
             this.total_datasets = null;
+            this.total_subjects = null;
             this.load();
+
+            //get number of subjects stored 
+            this.$http.get('dataset/distinct', {params: {
+                find: JSON.stringify({
+                    project: this.project_id,
+                    removed: false
+                }),
+                distinct: 'meta.subject'
+            }}).then(res=>{
+                this.total_subjects = res.body.length;
+            });
         },
         
         check_project_id: function() {
@@ -253,16 +268,19 @@ export default {
 
 			var find = {
                 removed: false,
+                project: this.project_id,
             }
+            /*
             this.project_id = this.$route.params.projectid; //could be set to null
             if(this.$route.params.projectid) {
                 find.project = this.$route.params.projectid;
             }
+            */
             if(this.query) {
                 find.$text = {$search: this.query};
             }
 
-            //count number of datasets loaded
+            //count number of datasets already loaded
             var loaded = 0;
             this.pages.forEach(page=>{
                 for(var subject in page) {
