@@ -13,22 +13,30 @@ const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
 const prov = require('./prov');
 
+//TODO - should be called something like "get_my_projects"?
 exports.getprojects = function(user, cb) {
     //firt, find all public projects
-    var project_query = {access: "public"};
+    let project_query = {access: "public"};
     //if user is logged in, look for private ones also
     if(user) {
         project_query = {
             $or: [
                 project_query,
                 {"members": user.sub},
+                {"admins": user.sub}, //I think it makes sense to give admin read/write access
             ],
         };
     }
-    db.Projects.find(project_query).select('_id').exec((err, projects)=>{
+    db.Projects.find(project_query).select('_id admins members').lean().exec((err, projects)=>{
         if(err) return cb(err);
-        var project_ids = projects.map(p=>p._id);
-        cb(null, project_ids);
+        let canread_ids = projects.map(p=>p._id);
+        let canwrite_projects = projects.filter(p=>{
+            if(p.members.includes(user.sub.toString())) return true;
+            if(p.admins.includes(user.sub.toString())) return true;
+            return false;
+        });
+        let canwrite_ids = canwrite_projects.map(p=>p._id);
+        cb(null, canread_ids, canwrite_ids);
     });
 }
 

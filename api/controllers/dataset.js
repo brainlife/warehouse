@@ -15,30 +15,16 @@ const db = require('../models');
 const common = require('../common');
 const prov = require('../prov');
 
-/*
-String.prototype.addSlashes = function() {
-  //  discuss at: http://locutus.io/php/addslashes/
-  // original by: Kevin van Zonneveld (http://kvz.io)
-  // improved by: Ates Goral (http://magnetiq.com)
-  // improved by: marrtins
-  // improved by: Nate
-  // improved by: Onno Marsman (https://twitter.com/onnomarsman)
-  // improved by: Brett Zamir (http://brett-zamir.me)
-  // improved by: Oskar Larsson Högfeldt (http://oskar-lh.name/)
-  //    input by: Denny Wardhana
-  //   example 1: addslashes("kevin's birthday")
-  //   returns 1: "kevin\\'s birthday"
-  return this.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0')
-}
-*/
-
-function canedit(user, rec) {
-    if(!rec.user_id) return false;
+function canedit(user, rec, canwrite_project_ids) {
+    if(!rec.user_id) return false; //get doesn't require jwt
     if(user) {
         if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
-        //if(~rec.admins.indexOf(user.sub.toString())) return true;
         if(rec.user_id == user.sub.toString()) return true;
+        let canwrite_project_ids_str = canwrite_project_ids.map(id=>id.toString());
+        let project_id = rec.project._id || rec.project; //could be populated
+        if(~canwrite_project_ids_str.indexOf(project_id.toString())) return true;
     }
+    console.log("can't edit");
     return false;
 }
 
@@ -61,7 +47,6 @@ function canedit(user, rec) {
  * @apiSuccess {Object}         List of datasets (maybe limited / skipped) and total count
  */
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
-    logger.debug("getting");
     var ands = [];
     if(req.query.find) ands.push(JSON.parse(req.query.find));
     if(req.query.datatype_tags) {
@@ -74,19 +59,15 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         });
     }
 
-    //logger.debug("getting project");
-    common.getprojects(req.user, function(err, project_ids) {
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        ands.push({project: {$in: project_ids}});
+        ands.push({project: {$in: canread_project_ids}});
 
         var limit = 100;
         if(req.query.limit) limit = parseInt(req.query.limit);
         var skip = 0;
         if(req.query.skip) skip = parseInt(req.query.skip);
 
-        //logger.debug("querying datasets");
-        //console.dir(ands);
-   		
         //then look for dataset
         db.Datasets.find({ $and: ands })
         .populate(req.query.populate || '') //all by default
@@ -97,17 +78,11 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
-            //logger.debug("counting");
             db.Datasets.count({$and: ands}).exec((err, count)=>{
                 if(err) return next(err);
-                //logger.debug("canedit processing");
-                
-                //adding some derivatives
                 datasets.forEach(function(rec) {
-                    rec._canedit = canedit(req.user, rec);
+                    rec._canedit = canedit(req.user, rec, canwrite_project_ids);
                 });
-                
-                //logger.debug("sending");
                 res.json({datasets: datasets, count: count});
             });
         });
@@ -129,13 +104,12 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
-    common.getprojects(req.user, function(err, project_ids) {
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        //var project_ids = projects.map(function(p) { return p._id; });
         db.Datasets
         .find({
             $and: [
-                {project: {$in: project_ids}},
+                {project: {$in: canread_project_ids}},
                 find
             ]
         })
@@ -307,9 +281,8 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
  *
  * @apiParam {String} [desc]    Description for this dataset 
  * @apiParam {String[]} [tags]  List of tags to classify this dataset
- * * @apiParam {String[]} [meta]  Metadata for this dataset
- *
- * @apiParam {String[]} [admins]  List of admins (auth sub)
+ * @apiParam {Object} [meta]    Metadata
+ * @apiParam {String[]} [admins]  List of new admins (auth sub)
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -318,22 +291,24 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
  */
 router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var id = req.params.id;
-    db.Datasets.findById(id, (err, dataset)=>{
-        if(err) return next(err);
-        if(!dataset) return res.status(404).end();
-
-        if(canedit(req.user, dataset)) {
-            //types are checked by mongoose
-            if (req.body.desc) dataset.desc = req.body.desc;
-            if (req.body.tags) dataset.tags = req.body.tags;
-            if (req.body.meta) dataset.meta = req.body.meta;
-            dataset.save((err)=>{
-                if(err) return next(err);
-                dataset = JSON.parse(JSON.stringify(dataset));
-                dataset._canedit = canedit(req.user, dataset);
-                res.json(dataset);
-            });
-        } else return res.status(401).end("you are not administartor of this dataset");
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        db.Datasets.findById(id, (err, dataset)=>{
+            if(err) return next(err);
+            if(!dataset) return res.status(404).end();
+            if(canedit(req.user, dataset, canwrite_project_ids)) {
+                //types are checked by mongoose
+                if (req.body.desc) dataset.desc = req.body.desc;
+                if (req.body.tags) dataset.tags = req.body.tags;
+                if (req.body.meta) dataset.meta = req.body.meta;
+                if (req.body.admins) dataset.admins = req.body.admins;
+                dataset.save((err)=>{
+                    if(err) return next(err);
+                    dataset = JSON.parse(JSON.stringify(dataset));
+                    dataset._canedit = canedit(req.user, dataset, canwrite_project_ids); //need to recompute with new admin/members list
+                    res.json(dataset);
+                });
+            } else return res.status(401).end("you are not administartor of this dataset");
+        });
     });
 });
 
@@ -367,18 +342,16 @@ router.get('/download/:id', jwt({
 }), function(req, res, next) {
     var id = req.params.id;
     logger.debug("requested for downloading dataset "+id);
-    common.getprojects(req.user, function(err, project_ids) {
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        //var project_ids = projects.map(function(p) { return p._id.toString(); });
         db.Datasets.findById(id, function(err, dataset) {
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
             if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
-            //logger.debug("user is accessing project:", dataset.project.toString());
 
-            project_ids = project_ids.map(id=>id.toString());
-            logger.debug("user has access to", project_ids);
-            if(!~project_ids.indexOf(dataset.project.toString())) {
+            canread_project_ids = canread_project_ids.map(id=>id.toString());
+            //logger.debug("user has access to", canread_project_ids);
+            if(!~canread_project_ids.indexOf(dataset.project.toString())) {
                 return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
             } 
             
@@ -411,7 +384,6 @@ router.get('/download/:id', jwt({
                     readstream.pipe(res);   
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);
-                        //next(err); //this doen't really abort download and emit error message to the user..
                     });
                 });
             });
@@ -430,16 +402,18 @@ router.get('/download/:id', jwt({
  */
 router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
     var id = req.params.id;
-    db.Datasets.findById(req.params.id, function(err, dataset) {
-        if(err) return next(err);
-        if(!dataset) return next(new Error("can't find the dataset with id:"+req.params.id));
-        if(canedit(req.user, dataset)) {
-            dataset.removed = true;
-            dataset.save(function(err) {
-                if(err) return next(err);
-                res.json({status: "ok"});
-            }); 
-        } else return res.status(401).end();
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        db.Datasets.findById(req.params.id, function(err, dataset) {
+            if(err) return next(err);
+            if(!dataset) return next(new Error("can't find the dataset with id:"+req.params.id));
+            if(canedit(req.user, dataset, canwrite_project_ids)) {
+                dataset.removed = true;
+                dataset.save(function(err) {
+                    if(err) return next(err);
+                    res.json({status: "ok"});
+                }); 
+            } else return res.status(401).end();
+        });
     });
 });
 

@@ -138,17 +138,6 @@ var datatypeSchema = mongoose.Schema({
         ext: String,
         required: Boolean
     })],
-    /*
-    [ 
-        {
-            "id" : "DT_STREAM",
-            "filename" : "output.DT_STREAM.tck",
-            "desc" : "Tensor / Deterministic Tracks",
-            "ext" : ".tck",
-            "required" : true
-        }, 
-    ]
-    */
 
     //name of ABCD service that is used to validate this data
     //if not set, it will default to "soichih/sca-service-conneval-validate"
@@ -159,17 +148,6 @@ var datatypeSchema = mongoose.Schema({
         type: String,
         required: Boolean,
     })],
-    /*
-    "meta": [
-        {
-            "id": "subject",
-            "type": "string",
-            "required": true
-        }
-    ]
-    */
-
-    //create_date: { type: Date, default: Date.now },
 });
 exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 
@@ -179,7 +157,6 @@ var appSchema = mongoose.Schema({
     //owner of this application
     user_id: {type: String, index: true}, 
     
-    //project that this app belongs to
     project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
     admins: [ String ], //list of users who can administer this app
