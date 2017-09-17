@@ -51,7 +51,12 @@ export default {
     },
     methods: {
         click: function() {
-            if(this.clickable) this.$router.push('/app/'+this.app_._id);
+            if(this.clickable) {
+                this.$router.push('/app/'+this.app_._id);
+
+                //I think opening as tag is only needed on the datasets (for now).
+                //window.open('#/app/'+this.app._id);
+            }
         },
     },
 }

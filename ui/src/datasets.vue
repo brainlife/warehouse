@@ -26,7 +26,7 @@
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
-                <div class="text-muted list-header">Total Datasets <b>{{total_datasets}}</b></div>
+                <div class="text-muted list-header"><b>{{total_subjects}}</b> Subjects / <b>{{total_datasets}}</b> Datasets</div>
                 <div v-for="(page, page_idx) in pages">
                     <!--show empty div to speed rendering up if it's outside the view-->
                     <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" :style="{height: page_info[page_idx].height}">&nbsp;</div>
@@ -35,7 +35,7 @@
                             <strong>{{subject}}</strong>
                         </div>
                         <div class="col-md-10">
-                            <div v-for="dataset in datasets" :key="dataset._id" @click="go('/dataset/'+dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
+                            <div v-for="dataset in datasets" :key="dataset._id" @click="open_dataset(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
                                 <div class="row">
                                     <div class="col-md-3 truncate">
                                         <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset)" class="dataset-checker">
@@ -71,7 +71,7 @@
         <div class="select-group">
             <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
                 <datatypetag :datatype="datatypes[did]"/>
-                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="go('/dataset/'+id)">
+                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open_dataset(id)">
                     <div>
                         <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
                             <icon name="close"></icon>
@@ -128,7 +128,10 @@ export default {
     data () {
         return {
             pages: [], //groups of datasets 
+
             total_datasets: null, //number of datasets for this project
+            total_subjects: null, //number of subjects for this project
+
             page_info: [], //{top/bottom/visible/}
             loading: false,
 
@@ -181,7 +184,7 @@ export default {
             res.body.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
             });
-            this.load();
+            this.reload();
         }).catch(err=>{
             console.error(err);
         });
@@ -207,7 +210,19 @@ export default {
             this.page_info = [];
             this.last_groups = {};
             this.total_datasets = null;
+            this.total_subjects = null;
             this.load();
+
+            //get number of subjects stored 
+            this.$http.get('dataset/distinct', {params: {
+                find: JSON.stringify({
+                    project: this.project_id,
+                    removed: false
+                }),
+                distinct: 'meta.subject'
+            }}).then(res=>{
+                this.total_subjects = res.body.length;
+            });
         },
         
         check_project_id: function() {
@@ -251,18 +266,38 @@ export default {
         load: function() {
             if(this.loading) return;
 
-			var find = {
-                removed: false,
-            }
+			var finds = [
+                {removed: false},
+                {project: this.project_id},
+            ] 
+
+            /* not sure why this is here..
             this.project_id = this.$route.params.projectid; //could be set to null
             if(this.$route.params.projectid) {
                 find.project = this.$route.params.projectid;
             }
+            */
+
             if(this.query) {
-                find.$text = {$search: this.query};
+                //lookup datatype ids that matches the query
+                var datatype_ids = [];
+                for(var id in this.datatypes) {
+                    if(this.datatypes[id].name.includes(this.query)) datatype_ids.push(id);
+                }
+
+                finds.push({$or: [
+                    //text search is pretty much only useful for description / tags (and it can't be mixed in $or). not very useful!
+                    //{$text: {$search: this.query}}, 
+
+                    {"meta.subject": {$regex: this.query}},
+                    {"desc": {$regex: this.query}},
+                    {"tags": {$regex: this.query}},
+                    {"datatype_tags": {$regex: this.query}},
+                    {"datatype": {$in: datatype_ids}},
+                ]});
             }
 
-            //count number of datasets loaded
+            //count number of datasets already loaded
             var loaded = 0;
             this.pages.forEach(page=>{
                 for(var subject in page) {
@@ -278,7 +313,7 @@ export default {
             this.loading = true;
             var limit = 100;
             this.$http.get('dataset', {params: {
-                find: JSON.stringify(find),
+                find: JSON.stringify({$and: finds}),
                 skip: loaded,
                 limit,
                 select: '-prov',
@@ -326,6 +361,13 @@ export default {
         go: function(path) {
             this.$router.push(path);
         },
+
+        open_dataset: function(dataset_id) {
+            //TODO - we should probably use semi-fullscreen modal to display dataset
+            //window.open('#/dataset/'+dataset_id);
+            this.$router.push('/dataset/'+dataset_id);
+        },
+
         check: function(dataset) {
             if(this.selected[dataset._id]) {    
                 dataset.checked = false;

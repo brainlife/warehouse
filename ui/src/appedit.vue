@@ -99,7 +99,7 @@
                             </b-col>
                             <b-col>
                                 <div class="text-muted">Default Value</div>
-                                <input type="checkbox" v-model="config.default"/>
+                                <trueorfalse v-model="config.default"/>
                             </b-col>
                             <b-col>
                                 <div class="text-muted">Description</div>
@@ -263,9 +263,14 @@ import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import select2 from '@/components/select2'
 import projectselecter from '@/components/projectselecter'
+import trueorfalse from '@/components/trueorfalse'
 
 export default {
-    components: { sidemenu, editor, contactlist, pageheader, select2, projectselecter },
+    components: { 
+        sidemenu, editor, contactlist, 
+        pageheader, select2, projectselecter,
+        trueorfalse
+    },
     data () {
         return {
             app: {

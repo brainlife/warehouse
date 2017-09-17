@@ -45,7 +45,7 @@
             <td>
                 <div v-if="app.github">
                     Github
-                    <a :href="'http://github.com/'+app.github">{{app.github}}</a>
+                    <a :href="'http://github.com/'+app.github">{{app.github}}</a> <el-tag>{{app.github_branch || 'master'}}</el-tag>
                 </div>
                 <div v-if="app.dockerhub">
                     Dockerhub

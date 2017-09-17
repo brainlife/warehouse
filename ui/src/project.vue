@@ -17,7 +17,7 @@
         <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
             <tr>
-            <th>Stats</th>
+            <th width="200px">Stats</th>
             <td>
                 <el-row>
                     <el-col :span="8" v-if="datasets_attribs.num_subjects">
@@ -118,7 +118,7 @@ export default {
         })
         .then(res => {
             this.datasets_attribs.num_datasets = res.body.count;
-            console.log(this.datasets_attribs);
+            //console.log(this.datasets_attribs);
             
             return this.$http.get('dataset/distinct', {params: {
                 find: JSON.stringify({
