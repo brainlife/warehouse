@@ -19,7 +19,7 @@
                     <time v-if="task.status == 'running'">since {{new Date(task.start_date).toLocaleString()}}</time>
                     <time v-if="task.status == 'requested'">at {{new Date(task.create_date).toLocaleString()}}</time>
                     <time v-if="task.status == 'failed'">at {{new Date(task.fail_date).toLocaleString()}}</time>
-                    <time v-if="task.status == 'removed'">at {{task.remove_date.toLocaleString()}}</time>
+                    <time v-if="task.status == 'removed'">at {{new Date(task.remove_date).toLocaleString()}}</time>
                 </small>
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>

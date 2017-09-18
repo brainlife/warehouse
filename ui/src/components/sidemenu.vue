@@ -86,7 +86,7 @@ margin: 0px 10px 0px 10px;
     background-color: #222;
     color: #888;
     font-size: 9pt;
-    z-index: 2;
+    z-index: 5;
 }
 ul.items {
     list-style: none;

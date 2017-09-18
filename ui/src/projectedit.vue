@@ -31,7 +31,7 @@
             </el-form-item>
             <el-form-item label="Members">
                 <contactlist v-model="project.members"></contactlist>
-                <p class="text-muted">Users who can update the project members</p>
+                <p class="text-muted">For public project: Uers who can update datasets in this project. For private project: Users who read/update datasets in this project and use application registered on this project.</p>
             </el-form-item>
             <el-form-item label="Avatar">
                 <el-input type="text" v-model="project.avatar" placeholder="URL of project avatar (optional)"/>
