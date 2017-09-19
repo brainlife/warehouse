@@ -37,7 +37,7 @@ export default {
 
 <style scoped>
 .projectcard {
-transition: box-shadow 0.5s;
+transition: box-shadow 0.5s, background-color 0.5s;
 }
 h4 {
 font-size: 15px;
