@@ -11,7 +11,7 @@ export default {
         url: function() {
             var subdir_string = '';
             if (this.subdir) subdir_string = '&sdir='+encodeURIComponent(this.subdir);
-            return '/ui/tractview'+'?afq='+this.task._id+subdir_string;
+            return '/ui/tractview?taskid='+this.task._id+subdir_string;
         }
     }
 }

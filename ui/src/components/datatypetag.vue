@@ -25,7 +25,6 @@ export default {
         //map datatype.name to 0 - 360
         if(!this.datatype) return {color: "gray"};
         var hash = Math.abs(hashCode(this.datatype.name)+120)%360;
-        //console.log(this.datatype.name, hash);
         return {
             color: "hsl("+(hash%360)+", 50%, 60%)"
         }
@@ -36,7 +35,7 @@ export default {
 }
 </script>
 
-<style scope>
+<style scoped>
 .dt {
     display: inline-block;
     white-space: nowrap;

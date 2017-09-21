@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <div class="main-section" id="scrolled-area">
+    <div id="scrolled-area">
         <p v-if="instance.status == 'removed' || instance.config.removing">
             <el-alert type="error" title="">This process has been removed</el-alert>
         </p>
@@ -248,7 +248,7 @@
                 </el-collapse-item> 
             </el-collapse>
         </div>
-    </div><!--main-section-->
+    </div><!--scrolled--area-->
     <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
 </div>
 </template>
@@ -858,14 +858,6 @@ export default {
 </script>
 
 <style scoped>
-.main-section {
-position: fixed;
-left: 390px;
-right: 300px;
-top: 110px;
-bottom: 0px;
-overflow: auto;
-}
 .sidebar {
 box-shadow: inset 3px 0px 3px #ccc;
 background-color: #ddd;

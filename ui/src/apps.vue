@@ -43,7 +43,8 @@ export default {
                     { removed: false },
                     { removed: {$exists: false }},
                 ]
-            })
+            }),
+            populate: 'inputs.datatype outputs.datatype',
         }})
         .then(res=>{
             //organize apps into various tags

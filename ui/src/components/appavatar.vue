@@ -14,7 +14,7 @@ export default {
 }
 </script>
 
-<style scope>
+<style scoped>
 .appavatar {
 background-color: #ddd;
 box-shadow: inset 0px 0px 10px #aaa;

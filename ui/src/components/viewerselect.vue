@@ -7,7 +7,7 @@
 
         <el-dropdown-item :command="datatype" v-if="datatype == 'neuro/dtiinit_output'">DTIInit Output</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/freesurfer'">Surface View</el-dropdown-item>
-        <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/afq_output'">TractView</el-dropdown-item>
+        <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/wmc'">TractView</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/life_output'">Life Output</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/conneval_output'">Evaluator Result</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'generic/images'">Images</el-dropdown-item>

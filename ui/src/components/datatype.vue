@@ -47,7 +47,7 @@ export default {
 }
 </script>
 
-<style scope>
+<style scoped>
 .file {
 margin-bottom: 10px;
 }
