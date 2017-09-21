@@ -102,8 +102,6 @@ var datasetSchema = mongoose.Schema({
         subdir: String, //subdir that contained the actual output. often output_id == subdir
     },
 
-    create_date: { type: Date, default: Date.now },
-
     status: { type: String, default: "storing" },
     //storing (default)
     //stored (dataset is stored on storage system, but not yet archive), 
@@ -111,9 +109,14 @@ var datasetSchema = mongoose.Schema({
     //archived (dataset is stored on storage system and on sda)
     status_msg: String,
 
-    archive_date: { type: Date }, //date when the content of this dataset was archived to tape
     archive_path: String, //htar path
     archive_file: String, //file name that this dataset is stored as
+
+    download_count: { type: Number, default: 0}, //number of time this dataset was downloaded
+
+    create_date: { type: Date, default: Date.now },
+    download_date: Date, //last time this dataset was downloaded
+    archive_date: Date, //date when the content of this dataset was archived to tape
 
     removed: { type: Boolean, default: false} ,
 })

@@ -374,9 +374,6 @@ router.get('/download/:id', jwt({
                     //var mimetype = mime.lookup(fullpath);
                     //logger.debug("mimetype:"+mimetype);
 
-                    //why is this necessary?
-                    //if(!filename) filename = dataset._id+'.tar';
-
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+filename);
                     if(stats) res.setHeader('Content-Length', stats.size);
@@ -384,6 +381,13 @@ router.get('/download/:id', jwt({
                     readstream.pipe(res);   
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);
+                    });
+                    readstream.on('close', err=>{
+                        //close won't fire if user cancel download mid-way
+                        if(!dataset.download_count) dataset.download_count = 1;
+                        else dataset.download_count++;
+                        dataset.save();
+                        //logger.debug("incremented download_count", dataset.download_count);
                     });
                 });
             });

@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-
-const winston = require('winston');
 const async = require('async');
 const request = require('request');
 const fs = require('fs');
@@ -25,7 +23,8 @@ db.init(function(err) {
     db.Datasets.find({
         removed: false,
         archive_date: {$exists: false},
-        storage: {$exists: true}, //skip datasets that are still being loaded
+        //storage: {$exists: true}, //skip datasets that are still being loaded
+        status: "archived",
     })
     .sort('create_date')
     .limit(300)

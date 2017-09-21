@@ -54,8 +54,21 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
         tmp.dir({unsafeCleanup: true}, (err, tmpdir, cleantmp)=>{
             if(err) return cb(err);
             var input_ok = true;
-            //now download all files to temp directory
+
+            //find files that doesn't need to be copied - as it's contained inside another dirname
+            var dirs = datatype.files.filter(file=>file.dirname);
+            var files = datatype.files.filter(file=>file.filename);
+            files.forEach(file=>{
+                dirs.forEach(dir=>{
+                    if(dir.dirname == ".") file.skip = true; //TODO a bit brittle
+                    if(file.filename.startsWith(dir.dirname)) file.skip = true;
+                });
+            });
+
+            //now download files to temp directory
             async.eachSeries(datatype.files, (file, next_file)=>{
+                if(file.skip) return next_file();
+
                 logger.debug("processing file", file.toString());
                 var writestream = null;
                 var srcpath = task.instance_id+"/"+task._id+"/";
@@ -90,7 +103,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 }
 
                 //now start feeding the writestream
-                request.get({
+                request({
                     url: config.wf.api+"/resource/download",
                     qs: {
                         r: task.resource_id, p: srcpath,
