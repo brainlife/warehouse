@@ -179,7 +179,7 @@ function handle_rule(rule, cb) {
         async.eachSeries(rule.app.outputs, (output, next_output)=>{
             var query = {
                 project: rule.output_project._id,
-                datatype: output.datatype._id,
+                datatype: output.datatype,
                 "meta.subject": subject,
                 storage: { $exists: true },
                 removed: false,
