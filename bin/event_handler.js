@@ -169,15 +169,21 @@ function archive_dataset(task, output, cb) {
 
         next=>{
             logger.debug("registering dataset now");
+
+            var tags = output.tags||[];
+            if(task.product && task.product.tags) tags = task.product.tags; //product.tags takes precedence
+            var datatype_tags = output.datatype_tags||[];
+            if(task.product && task.product.datatype_tags) tags = task.product.datatype_tags; //product.datatype_tags takes precedence
+
             new db.Datasets({
                 user_id: task.user_id,
 
                 project: output.archive.project,
                 datatype: output.datatype,
-                datatype_tags: output.datatype_tags,
+                datatype_tags,
 
                 desc: output.archive.desc,
-                tags: output.tags||output.archive.tags||[], //output.archive.tags is deprecated (remove it eventually)
+                tags,
 
                 prov: {
                     instance_id: task.instance_id,

@@ -204,7 +204,7 @@ var appSchema = mongoose.Schema({
     removed: { type: Boolean, default: false} ,
 
     create_date: { type: Date, default: Date.now },
-});
+}, {minimize: false}); //to keep empty config{} from disappearing
 exports.Apps = mongoose.model('Apps', appSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

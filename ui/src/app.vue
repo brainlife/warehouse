@@ -216,6 +216,7 @@ export default {
             var branch = this.app.github_branch||"master";
             return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
         }).then(res=>{
+            console.dir(res);
             return res.text()
         }).then(readme=>{
             this.readme = readme;

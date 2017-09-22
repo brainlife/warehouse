@@ -250,7 +250,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 prov: {
                     instance_id: task.instance_id,
                     task_id: task._id,
-                    app: req.body.app_id,
+                    app: req.body.app_id, //deprecated
                     output_id: req.body.output_id,
                     subdir: req.body.subdir,
                 },

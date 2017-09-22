@@ -42,13 +42,11 @@ exports.getprojects = function(user, cb) {
 
 exports.archive_task = function(task, dataset, files_override, auth, cb) {
     if(!files_override) files_override = {};
-    //logger.debug(JSON.stringify(dataset, null, 4));
    
     //start by pulling datatype detail
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
         if(err) return cb(err);
         if(!datatype) return cb("couoldn't find specified datatype:"+dataset.datatype);
-        //logger.debug("datatype loaded", datatype.toString());
 
         //create temp directory to download things
         tmp.dir({unsafeCleanup: true}, (err, tmpdir, cleantmp)=>{
@@ -133,10 +131,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 logger.debug("obtaining upload stream for ", storage);
                 system.upload(dataset, (err, writestream)=>{
                     if(err) return next(err);
-                    //tar tmpdir, zip, and send to writestream
-                    //var tar = child_process.spawn("tar", ["hcz", "."], {cwd: tmpdir});
                     var tar = child_process.spawn("tar", ["hc", "."], {cwd: tmpdir});
-                    //var zip = child_process.spawn("pigz", ["-p", "5"]);
                     tar.on('close', code=>{
                         cleantmp();
                         if(code) {
@@ -156,8 +151,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         });
                     });
                     logger.debug("streaming to storage");
-                    //tar.stdout.pipe(zip.stdin);
-                    //zip.stdout.pipe(writestream);
                     tar.stdout.pipe(writestream);
                 });
             });

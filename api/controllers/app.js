@@ -144,7 +144,7 @@ router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res
  * @apiSuccess {Object}         App registered
  */
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
-    req.body.user_id = req.user.sub;//override
+    req.body.user_id = req.user.sub;
     var app = new db.Apps(req.body);
     app.save(function(err, _app) {
         if (err) return next(err); 
