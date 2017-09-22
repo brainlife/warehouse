@@ -8,11 +8,11 @@
             <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
             <div class="desc" :style="{height: descheight}">
                 <div class="datatypes" v-if="!compact">
-                    <div class="datatype" v-for="input in app.inputs" key="input.id">
+                    <div class="datatype" v-for="input in app_.inputs" key="input.id">
                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                     </div>
                     <icon scale="0.7" name="arrow-right"/>
-                    <div class="datatype" v-for="output in app.outputs" key="outputs.id">
+                    <div class="datatype" v-for="output in app_.outputs" key="outputs.id">
                         <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                     </div>
                 </div>

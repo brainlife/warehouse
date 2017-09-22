@@ -681,9 +681,6 @@ right: 250px;
     float: left;
     margin-right: 5px;
 }
-.button-fixed {
-transition: right 0.2s;
-}
 .button-fixed.selected-view-open {
 right: 300px;
 }

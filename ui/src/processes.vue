@@ -275,7 +275,6 @@ margin-right: 300px;
 .button-fixed {
 left: 290px;
 right: inherit;
-transition: left 0.5s;
 }
 .process-list-toggler {
     display: none;

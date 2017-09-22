@@ -61,7 +61,6 @@ export default {
     props: {
         task: {required: true},
         output: {required: true},
-        //datatype: {required: true},
     },
 
     components: { projectaccess, projectselecter },
@@ -69,7 +68,7 @@ export default {
         return {
             desc: this.output.desc,
             project: null,
-            tags: [],
+            tags: this.task.product.tags,
         }
     },
     

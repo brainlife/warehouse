@@ -5,28 +5,30 @@
 </template>
 
 <script>
-var hashCode = function(s){
-  return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
-}
-
 export default {
-    components: { },
     props: [ 'datatype', 'tags' ],
     computed: {
         name: function() {
             //trim fist token
             if(!this.datatype) return "unknown";
+            if(!this.datatype.name) {
+                console.error("name ot set");
+                console.error(this.datatype);
+            }
             var tokens = this.datatype.name.split("/");
             if(tokens.length > 1) tokens = tokens.splice(1);
             return tokens.join("/");
-        }
-    },
-    data() {
-        //map datatype.name to 0 - 360
-        if(!this.datatype) return {color: "gray"};
-        var hash = Math.abs(hashCode(this.datatype.name)+120)%360;
-        return {
-            color: "hsl("+(hash%360)+", 50%, 60%)"
+        },
+        color: function() {
+            //map datatype.name to 0 - 360
+            if(!this.datatype) return {color: "#666"};
+            if(!this.datatype.name) {
+                console.error("name ot set");
+                console.error(this.datatype);
+            }
+            var hash = this.datatype.name.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+            var numhash = Math.abs(hash+120)%360;
+            return "hsl("+(numhash%360)+", 50%, 60%)"
         }
     },
     mounted() {

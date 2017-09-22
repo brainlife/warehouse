@@ -45,11 +45,7 @@
             <td>
                 <div v-if="app.github">
                     Github
-                    <a :href="'http://github.com/'+app.github">{{app.github}}</a> <el-tag>{{app.github_branch || 'master'}}</el-tag>
-                </div>
-                <div v-if="app.dockerhub">
-                    Dockerhub
-                    <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
+                    <a :href="'http://github.com/'+app.github">{{app.github}}</a> <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
                 </div>
                 <blockquote v-if="readme" class="readme">
                     <vue-markdown :source="readme"></vue-markdown>
@@ -216,7 +212,7 @@ export default {
             var branch = this.app.github_branch||"master";
             return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
         }).then(res=>{
-            return res.text()
+            if(res.status == "200") return res.text()
         }).then(readme=>{
             this.readme = readme;
         }).catch(err=>{

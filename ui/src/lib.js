@@ -53,46 +53,4 @@ function filter_datasets(datasets, input) {
     });
 }
 
-/*
-//take app's config template and create a real config using download_task_id
-function generate_config(app, download_task_id, formconfig) {
-    var config = app.config;
-
-    function handle_obj(obj) {
-        for(var k in obj) { 
-            var node = obj[k];
-            if(!node) return;
-            if(node.isArray) {
-                console.log("todo.. array!");
-            } else if(typeof node === 'object') {
-                if(node.type) {
-                    switch(node.type) {
-                    case "input":
-                        //find the input 
-                        app.inputs.forEach(input=>{
-                            if(input.id == node.input_id) {
-                                //find the file
-                                input.datatype.files.forEach(file=>{
-                                    if(file.id == node.file_id) {
-                                        obj[k] = "../"+download_task_id+"/inputs/"+input.id+"/"+(file.filename||file.dirname)
-                                    }
-                                });
-                            } 
-                        });
-                        break;
-                    default:
-                        obj[k] = formconfig[k];
-                    }
-                } else handle_obj(node); //recurse
-            }
-        }
-    }
-
-    handle_obj(config);
-
-    console.log("generated config", config);
-    return config;
-}
-*/
-
 export { filter_apps, filter_datasets };
