@@ -81,21 +81,21 @@
                 </div>
 
                 <div v-if="mode == 'validate' && tasks.validation">
-                    <el-form-item v-if="!tasks.validation.products">
+                    <el-form-item v-if="!tasks.validation.product">
                         <task :task="tasks.validation"/>
                         <br>
                     </el-form-item>
                     <div v-else>
                         <el-form-item>
-                            <b-alert show variant="danger" v-for="(msg,idx) in tasks.validation.products[0].errors" :key="idx">{{msg}}</b-alert>
-                            <b-alert show variant="warning" v-for="(msg,idx) in tasks.validation.products[0].warnings" :key="idx">{{msg}}</b-alert>
-                            <b-alert show variant="success" v-if="tasks.validation.products[0].errors.length == 0">
+                            <b-alert show variant="danger" v-for="(msg,idx) in tasks.validation.product.errors" :key="idx">{{msg}}</b-alert>
+                            <b-alert show variant="warning" v-for="(msg,idx) in tasks.validation.product.warnings" :key="idx">{{msg}}</b-alert>
+                            <b-alert show variant="success" v-if="tasks.validation.product.errors.length == 0">
                                 Your data looks good! Please check information below and click Archive button.
                             </b-alert>
                         </el-form-item>
             
                         <!--show info-->
-                        <el-form-item v-for="(v, k) in tasks.validation.products[0]" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
+                        <el-form-item v-for="(v, k) in tasks.validation.product" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
                             <pre v-highlightjs="v" v-if="typeof v == 'string'"><code class="text hljs"></code></pre>
                             <div v-else>
                                 <pre>{{v}}</pre>
@@ -105,7 +105,7 @@
 
                     <el-form-item>
                         <el-button @click="mode = 'upload'">Back</el-button>
-                        <el-button type="primary" @click="finalize()">Archive !</el-button>
+                        <el-button type="primary" @click="finalize()" :disabled="!tasks.validation.product">Archive !</el-button>
                     </el-form-item>
                 </div>
             </el-form>
@@ -371,7 +371,7 @@ export default {
         },
 
         finalize() {
-            var validation_product = this.tasks.validation.products[0];
+            var validation_product = this.tasks.validation.product;
 
             this.mode = "finalize";
             this.$http.post('dataset', {

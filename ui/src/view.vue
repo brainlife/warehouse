@@ -1,5 +1,5 @@
 <template>
-<div>
+<div id="view">
     <div v-if="task && task.status == 'finished'">
         <dtiinit v-if="type == 'neuro.dtiinit'" :task="task" :subdir="subdir"></dtiinit>
         <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="task" :subdir="subdir"></freesurfer>
@@ -241,9 +241,9 @@ export default {
 }
 </script>
 
-<style>
-body {
-margin: 0px;
-padding: 0px;
+<style scoped>
+#view {
+height: 100%;
+overflow: auto;
 }
 </style>
