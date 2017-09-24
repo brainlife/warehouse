@@ -5,6 +5,8 @@ const child_process = require('child_process');
 
 const mkdirp = require('mkdirp'); //for dc2
 const pkgcloud = require('pkgcloud');
+const path = require('path');
+const archiver = require('archiver');
 
 exports.mongodb = "mongodb://localhost/warehouse";
 exports.neo4j = "http://neo4j:whatever@localhost:7474";
@@ -202,38 +204,61 @@ exports.storage_systems["dcwan/hcp"] = {
     },
 }
 
-const nki_goofy_path = "/mnt/fcp-indi";
-const nki_link_path = "/link/nki";
+const nki_config = require(__dirname+'/nki');
+const nki_storage = pkgcloud.storage.createClient(nki_config);
+function get_nki_filepaths(dataset) {
+    filepaths = []
+
+    var s3_base = "data/Projects/RocklandSample/RawDataBIDS/sub-"+dataset.storage_config.subject+"/ses-"+dataset.storage_config.session;
+
+    switch(dataset.datatype.name) {
+    case "neuro/anat/t1w":
+        filepaths.push({
+            s3: s3_base+"/anat/sub-"+dataset.storage_config.subject+"_ses-"+dataset.storage_config.session+"_T1w.nii.gz",
+            local: "t1.nii.gz",
+        });
+        break;
+    case "neuro/dwi":
+        filepaths.push({
+            s3: s3_base+"/dwi/sub-"+dataset.storage_config.subject+"_ses-"+dataset.storage_config.session+"_dwi.nii.gz",
+            local: "dwi.nii.gz",
+        });
+        filepaths.push({
+            s3: s3_base+"/dwi/sub-"+dataset.storage_config.subject+"_ses-"+dataset.storage_config.session+"_dwi.bval",
+            local: "dwi.bvals",
+        });
+        filepaths.push({
+            s3: s3_base+"/dwi/sub-"+dataset.storage_config.subject+"_ses-"+dataset.storage_config.session+"_dwi.bvec",
+            local: "dwi.bvecs",
+        });
+        break;
+    }
+    console.dir(filepaths);
+    return filepaths;
+}
 exports.storage_systems["nki"] = {
     test: cb=>{
-        fs.stat(nki_goofy_path, timeout((err,stats)=>{
+        nki_storage.getContainer(nki_config.bucket, (err,container)=>{
             if(err) return cb(err);
-            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
+            console.log("nki debug/test", container.files.length); //length should be 1000 (max)
             cb();
-        }, 2000, 'failed to stat nki goofy mount points')); 
+        }); 
     }, 
     stat: (dataset, cb)=>{
         //can't obtain stats for .tar.gz because we are creating it on the fly
-        //but I can still check for the directory to exist and respond error
-        var dir = nki_link_path+"/"+dataset.storage_config.subject+"/"+dataset.storage_config.session+"/"+dataset.storage_config.subdir;
-        fs.stat(dir, (err,stats)=>{
-            //.tar doesn't exist yet - so I can't stat
-            cb(err, null); 
-        });
+        cb(null);
     },
     upload: (dataset, cb)=>{
-        cb("no upload to dcwan/hcp");
+        cb("read only");
     },
     download: (dataset, cb)=>{
-        var dir = nki_link_path+"/"+dataset.storage_config.subject+"/"+dataset.storage_config.session+"/"+dataset.storage_config.subdir;
-        var child = child_process.spawn("tar", ["hc", "."], {cwd: dir});
-        cb(null, child.stdout, dataset._id+".tar");
-        child.stderr.on('data', function(data) {
-            console.error(data.toString());
+        var archive = archiver('tar');
+        get_nki_filepaths(dataset).forEach(file=>{
+            var stream = nki_storage.download({container: nki_config.bucket, remote: file.s3});
+            archive.append(stream, {name: file.local});
         });
-        child.on('error', (err)=>{
-            console.error(err);
-        });
+        archive.finalize();
+        cb(null, archive, dataset._id+".tar");
     },
 }
 

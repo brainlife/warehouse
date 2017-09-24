@@ -20,6 +20,7 @@
   "homepage": "https://github.com/brain-life/warehouse#readme",
   "dependencies": {
     "amqp": "^0.2.6",
+    "archiver": "^2.0.3",
     "async": "^2.4.1",
     "body-parser": "^1.18.1",
     "callback-timeout": "^3.0.0",

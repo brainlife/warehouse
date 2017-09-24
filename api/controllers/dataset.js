@@ -344,12 +344,13 @@ router.get('/download/:id', jwt({
     logger.debug("requested for downloading dataset "+id);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        db.Datasets.findById(id, function(err, dataset) {
+        db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
             if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
 
             canread_project_ids = canread_project_ids.map(id=>id.toString());
+            
             //logger.debug("user has access to", canread_project_ids);
             if(!~canread_project_ids.indexOf(dataset.project.toString())) {
                 return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
