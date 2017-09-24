@@ -22,15 +22,9 @@ export default {
         if(this.subdir) basepath +='/'+this.subdir;
         this.url = Vue.config.wf_api+'/resource/download'+
             '?r='+this.task.resource_id+
-            '&p='+encodeURIComponent(basepath+'/dti_trilin/t1pdd.png')+
+            '&p='+encodeURIComponent(basepath+'/dti/t1pdd.png')+
             '&at='+Vue.config.jwt;
     }
 }
 </script>
 
-<style scoped>
-.dtiinit {
-overflow: auto;
-height: 100%;
-}
-</style>

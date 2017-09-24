@@ -62,10 +62,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-.images {
-overflow: auto;
-height: 100%;
-}
-</style>

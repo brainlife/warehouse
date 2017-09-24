@@ -1,7 +1,7 @@
 <template>
-<div>
+<div id="view">
     <div v-if="task && task.status == 'finished'">
-        <dtiinit v-if="type == 'neuro.dtiinit_output'" :task="task" :subdir="subdir"></dtiinit>
+        <dtiinit v-if="type == 'neuro.dtiinit'" :task="task" :subdir="subdir"></dtiinit>
         <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="task" :subdir="subdir"></freesurfer>
         <wmc v-else-if="type == 'neuro.wmc'" :task="task" :subdir="subdir"></wmc>
         <life v-else-if="type == 'neuro.life_output'" :task="task" :subdir="subdir"></life>
@@ -241,9 +241,9 @@ export default {
 }
 </script>
 
-<style>
-body {
-margin: 0px;
-padding: 0px;
+<style scoped>
+#view {
+height: 100%;
+overflow: auto;
 }
 </style>

@@ -541,7 +541,7 @@ methods: {
                 "inputs.datatype": {$in: datatype_ids},
                 removed: false,
             }),
-            populate: 'inputs.datatype',
+            populate: 'inputs.datatype outputs.datatype',
         }})
         .then(res=>{
             //now, pick apps that we have *all* input datasets that matches the input datatype/tags
@@ -755,7 +755,7 @@ methods: {
             var output_req = {
                 id: output.id,
                 did: did++,
-                datatype: output.datatype,
+                datatype: output.datatype._id,
                 datatype_tags: output.datatype_tags,
                 desc: output.id+ " from "+this.newtask.app.name,
                 meta,

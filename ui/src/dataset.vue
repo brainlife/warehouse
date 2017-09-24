@@ -22,7 +22,7 @@
         <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
         <tr>
-            <th>Description</th>
+            <th width="200px">Description</th>
             <td>
                 <div v-if="dataset._canedit">
                     <el-row>
