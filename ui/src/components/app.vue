@@ -6,7 +6,18 @@
             <h4 class="name">{{app_.name}}</h4>
             <h5 class="github">{{app_.github}}</h5>
             <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
-            <div class="desc" :style="{height: descheight}">{{app_.desc||'no desc..'}}</div>
+            <div class="desc" :style="{height: descheight}">
+                <div class="datatypes" v-if="!compact">
+                    <div class="datatype" v-for="input in app_.inputs" key="input.id">
+                        <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                    </div>
+                    <icon scale="0.7" name="arrow-right"/>
+                    <div class="datatype" v-for="output in app_.outputs" key="outputs.id">
+                        <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
+                    </div>
+                </div>
+                {{app_.desc||'no desc..'}}
+            </div>
             <slot/>
         </div>
         <div class="devs" v-if="!compact">
@@ -22,9 +33,10 @@ import Vue from 'vue'
 import contact from '@/components/contact'
 import appavatar from '@/components/appavatar'
 import tags from '@/components/tags'
+import datatypetag from '@/components/datatypetag'
 
 export default {
-    components: { contact, appavatar, tags },
+    components: { contact, appavatar, tags, datatypetag },
     props: {
         app: Object,
         dataset: Object,
@@ -42,7 +54,7 @@ export default {
         if(this.appid) {
             this.$http.get('app', {params: {
                 find: JSON.stringify({_id: this.appid}),
-                //populate: "project datatype prov.app",
+                populate: 'inputs.datatype outputs.datatype',
             }}).then(res=>{
                 this.app_ = res.body.apps[0];
             });
@@ -51,7 +63,12 @@ export default {
     },
     methods: {
         click: function() {
-            if(this.clickable) this.$router.push('/app/'+this.app_._id);
+            if(this.clickable) {
+                this.$router.push('/app/'+this.app_._id);
+
+                //I think opening as tag is only needed on the datasets (for now).
+                //window.open('#/app/'+this.app._id);
+            }
         },
     },
 }
@@ -59,7 +76,7 @@ export default {
 
 <style scoped>
 .appcard {
-transition: box-shadow 0.5s;
+transition: box-shadow 0.5s, background-color 0.5s;
 }
 .appcard.clickable {
 background-color: white;
@@ -68,7 +85,6 @@ background-color: white;
 background-color: #f3f3f3;
 }
 .appcard.clickable:hover .github {
-opacity: 0.7;
 }
 .appcard:hover {
 box-shadow: 2px 2px 4px #999;
@@ -83,7 +99,7 @@ padding: 0px;
 padding-top: 10px;
 }
 .github {
-opacity: 0.4;
+opacity: 0.6;
 font-family: monospace;
 font-size: 80%;
 }
@@ -138,5 +154,17 @@ padding: 10px;
 height: 75px;
 overflow-y: auto;
 overflow-x: hidden;
+}
+.datatypes {
+font-size: 80%;
+margin: 3px 0px;
+}
+.datatype {
+display: inline-block;
+margin-right: 2px;
+margin-top: 2px;
+}
+.el-rate {
+margin-bottom: 0px;
 }
 </style>

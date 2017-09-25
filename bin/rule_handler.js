@@ -78,8 +78,7 @@ function handle_rule(rule, cb) {
     if(!rule.input_tags) rule.input_tags = {};
     if(!rule.output_tags) rule.output_tags = {};
 
-    //logger.info("handling rule", JSON.stringify(rule, null, 4));
-    logger.info("handling rule ----------------------- ", rule._id.toString());
+    logger.info("handling rule ----------------------- ", rule._id.toString(), rule.name);
 
     //prepare for stage / app / archive
     async.series([
@@ -114,6 +113,7 @@ function handle_rule(rule, cb) {
                 },
             }, (err, res, body)=>{
                 if(err) return next(err);
+                if(res.statusCode != "200") return next(res.statusCode);
                 rule_tasks = {};
                 running = 0;
                 body.tasks.forEach(task=>{
@@ -179,7 +179,7 @@ function handle_rule(rule, cb) {
         async.eachSeries(rule.app.outputs, (output, next_output)=>{
             var query = {
                 project: rule.output_project._id,
-                datatype: output.datatype._id,
+                datatype: output.datatype,
                 "meta.subject": subject,
                 storage: { $exists: true },
                 removed: false,
@@ -191,7 +191,7 @@ function handle_rule(rule, cb) {
             .exec((err, dataset)=>{
                 if(err) return next_output(err);
                 if(!dataset) {
-                    //logger.debug("dataset missing ", JSON.stringify(query, null, 4));
+                    logger.debug("output dataset not yet created", output.id);
                     missing = true;
                 }
                 next_output();
@@ -221,7 +221,6 @@ function handle_rule(rule, cb) {
         var missing = false;
         var inputs = {};
         async.eachSeries(rule.app.inputs, (input, next_input)=>{
-            //logger.debug("looking for input ", JSON.stringify(input, null, 4));
             var query = {
                 project: rule.input_project._id,
                 datatype: input.datatype,
@@ -263,7 +262,6 @@ function handle_rule(rule, cb) {
                 if(!matching_dataset) {
                     missing = true;
                     logger.debug("no matching input", input.id);
-                    //logger.debug(JSON.stringify(query, null, 4));
                 } 
 
                 inputs[input.id] = matching_dataset;

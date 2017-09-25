@@ -1,9 +1,9 @@
 <template>
-<div>
+<div id="view">
     <div v-if="task && task.status == 'finished'">
-        <dtiinit v-if="type == 'neuro.dtiinit_output'" :task="task" :subdir="subdir"></dtiinit>
+        <dtiinit v-if="type == 'neuro.dtiinit'" :task="task" :subdir="subdir"></dtiinit>
         <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="task" :subdir="subdir"></freesurfer>
-        <afq v-else-if="type == 'neuro.afq_output'" :task="task" :subdir="subdir"></afq>
+        <wmc v-else-if="type == 'neuro.wmc'" :task="task" :subdir="subdir"></wmc>
         <life v-else-if="type == 'neuro.life_output'" :task="task" :subdir="subdir"></life>
         <evaluator v-else-if="type == 'neuro.conneval_output'" :task="task" :subdir="subdir"></evaluator>
         <images v-else-if="type == 'generic.images'" :task="task" :subdir="subdir"></images>
@@ -32,7 +32,7 @@ import Vue from 'vue'
 //for html5 viewers
 import dtiinit from '@/components/appuis/dtiinit'
 import freesurfer from '@/components/appuis/freesurfer'
-import afq from '@/components/appuis/afq'
+import wmc from '@/components/appuis/wmc'
 import life from '@/components/appuis/life'
 import evaluator from '@/components/appuis/evaluator'
 import images from '@/components/appuis/images'
@@ -46,7 +46,7 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 export default {
     props: [ 'instanceid', 'taskid', 'type', 'subdir' ],
     components: { 
-        dtiinit, freesurfer, afq, life, evaluator, images, volumeviewer, filebrowser,
+        dtiinit, freesurfer, wmc, life, evaluator, images, volumeviewer, filebrowser,
         task
     },
 
@@ -241,10 +241,9 @@ export default {
 }
 </script>
 
-<style>
-body {
-margin: 0px;
-padding: 0px;
-overflow: inherit;
+<style scoped>
+#view {
+height: 100%;
+overflow: auto;
 }
 </style>

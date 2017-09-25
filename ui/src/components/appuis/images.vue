@@ -1,10 +1,10 @@
 <template>
-<el-row>
+<el-row class="images">
     <el-col :span="6" v-for="image in images" :key="image.url">
         <el-card :body-style="{padding: '0px'}" class="clickable">
         <div @click="click(image)">
             <img v-lazy="image.src" class="image" width="100%">
-            <div style="padding: 14px; height: 50px;">
+            <div style="padding: 10px; height: 90px;">
                 {{image.name}}
                 <div class="bottom clearfix">
                     <p class="text-muted">{{image.desc}}</p>
@@ -62,6 +62,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-</style>

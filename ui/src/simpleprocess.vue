@@ -1,6 +1,6 @@
 <template>
 <div v-if="instance && tasks">
-    <div class="main-section" id="scrolled-area">
+    <div id="scrolled-area">
         <table class="info" style="box-sizing: border-box;">
         <tr v-if="app">
             <th>Application/Config</th>
@@ -164,7 +164,7 @@
                 <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
             </div>
         </el-card>
-    </div><!--main section-->
+    </div><!--scrolled-area-->
 </div>
 </template>
 
@@ -375,15 +375,4 @@ export default {
     },
 }
 </script>
-
-<style scoped>
-.main-section {
-position: fixed;
-left: 390px;
-right: 0px;
-top: 110px;
-bottom: 0px;
-overflow: auto;
-}
-</style>
 

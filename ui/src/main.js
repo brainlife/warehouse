@@ -7,6 +7,7 @@ import Vue from 'vue'
 
 import VueResource from 'vue-resource'
 import VueHighlightJS from 'vue-highlightjs'
+import Vue2Filters from 'vue2-filters'
 
 import '../theme/index.css'
 import ElementUI from 'element-ui'
@@ -35,9 +36,9 @@ Vue.use(VueHighlightJS)
 Vue.use(VueResource)
 Vue.use(ElementUI, {locale})
 Vue.use(Notifications);
-Vue.use(require('vue-filter'))
 Vue.use(VueLazyload)
 Vue.use(BootstrapVue);
+Vue.use(Vue2Filters)
 
 var jwt_decode = require('jwt-decode');
 

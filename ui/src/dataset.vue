@@ -5,7 +5,7 @@
     <div class="header" vi-if="dataset">
         <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
         <b-button-group style="float: right;">
-            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed && dataset.storage" icon="delete">Remove</b-button>
+            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
             <b-button variant="primary" @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
         </b-button-group>
         <h2>
@@ -22,7 +22,7 @@
         <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         <table class="info">
         <tr>
-            <th>Description</th>
+            <th width="200px">Description</th>
             <td>
                 <div v-if="dataset._canedit">
                     <el-row>
@@ -41,7 +41,7 @@
         </tr>
         <tr>
             <th width="180px">Create Date</th>
-            <td>{{dataset.create_date|date}}</td>
+            <td>{{new Date(dataset.create_date).toLocaleString()}}</td>
         </tr>
         <tr>
             <th>Storage</th>
@@ -76,18 +76,7 @@
                     </el-row>
                     <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
                 </div>
-                <div v-else v-for="(m, id) in dataset.meta" :key="id">
-                    <metadata :metadata="dataset.meta"></metadata>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <th>Project</th>
-            <td>
-                <p class="text-muted">This dataset belongs to following project.</p>
-                <el-card>
-                    <project :project="dataset.project"></project>
-                </el-card>
+                <metadata v-else :metadata="dataset.meta"></metadata>
             </td>
         </tr>
         <tr>
@@ -107,6 +96,15 @@
             <th>Data Type</th>
             <td>
                 <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+            </td>
+        </tr>
+        <tr>
+            <th>Project</th>
+            <td>
+                <p class="text-muted">This dataset belongs to following project.</p>
+                <el-card>
+                    <project :project="dataset.project"></project>
+                </el-card>
             </td>
         </tr>
         <tr>
@@ -160,27 +158,6 @@
                 <center>
                     <el-card style="background-color: #2693ff; color: white;">This dataset</el-card>
                 </center>
-
-                <!--
-                <div v-if="Object.keys(derivatives).length > 0">
-                    <el-row :gutter="10">
-                        <el-col :span="8" v-for="(datasets, task_id) in derivatives" :key="task_id">
-                            <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
-                            <app :appid="datasets[0].prov.app" :compact="true" style="max-height: 150px;"/>
-                            <center><icon class="text-muted" scale="2" name="arrow-down"></icon></center>
-                            <el-card class="clickable-record" v-for="dataset in datasets" :key="dataset._id" style="margin-bottom: 10px;">
-                                <div @click="go(dataset._id)">
-                                    <icon name="cube"></icon>
-                                    <b>{{dataset.name}}</b>
-                                    <tags :tags="dataset.datatype_tags"/>
-                                    <br>
-                                    <time class="text-muted">{{dataset.create_date|date}}</time>
-                                </div>
-                            </el-card>
-                        </el-col>
-                    </el-row>
-                </div>
-                -->
             </td>
         </tr>
         <tr v-if="apps">
@@ -334,11 +311,12 @@ export default {
             console.log("loading dataset status");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                select: "status",
+                select: "status storage",
             }})
             .then(res=>{
                 var dataset = res.body.datasets[0];
                 this.dataset.status = dataset.status;
+                this.dataset.storage = dataset.storage;
                 if(this.dataset.status == "storing") {
                     setTimeout(()=>{ this.load_status(id); }, 5000);
                 }

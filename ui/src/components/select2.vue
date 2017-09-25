@@ -21,6 +21,8 @@ export default {
 
         'templateResult',
         'templateSelection',
+        
+        'allownull',
     ],
 
     data() {
@@ -37,7 +39,7 @@ export default {
             result.classList.add('menu-item');
 
             if (data.header) result.classList.add('header');
-            if (data.text) result.innerHTML += "<b>"+ascii_escape(data.text)+"</b> ";
+            if (data.text) result.innerHTML += ascii_escape(data.text);
             if (data.datatype && data.tags) {
                 result.innerHTML += data.datatype.name;
                 data.tags.forEach(tag => {
@@ -58,8 +60,9 @@ export default {
             multiple: this.multiple,
             templateResult: this.templateResult || default_format,
             templateSelection: this.templateSelection || default_format,
-            placeholder: this.placeholder
+            placeholder: this.placeholder,
             //theme: 'classic',
+            allowClear: this.allownull,
         };
         
         // escape a string to ascii codes
@@ -77,7 +80,7 @@ export default {
                 .on('change',function() {
                     //vm.$emit('input', this.value); //doesn't work
                     vm.$emit('input', $(this).val()); //val() returns array for multiselect
-                    console.log("select2 changed");
+                    //console.log("select2 changed");
                 })
         }
         
@@ -104,20 +107,21 @@ export default {
     //watch for parent value/options change and apply
     watch: {
         value: function(value) {
-            console.log("select2: parent value changed to", value);
+            //console.log("select2: parent value changed to", value);
 
             //check to make sure we aren't updateing controller with the same value
             //this happens if user change value on UI, which triggers change, and parent
             //send change event back.
             if(JSON.stringify(value) != JSON.stringify($(this.$el).val())) {
-                console.log("changing select2 to", value, this.options);
+                //console.log("changing select2 to", value, this.options);
                 $(this.$el).val(value).trigger('change');
             }
         },
         options: function (options) {
-            console.log("select2: parent options changed to", options);
+            //console.log("select2: parent options changed to", options);
 
             this.opts.data = options;
+            
             //TODO - why do we need to update val here? (will break without it)
             $(this.$el).select2(this.opts).val(this.value).trigger('change');
         },

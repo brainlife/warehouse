@@ -15,11 +15,11 @@
             </div>
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
-                    <time v-if="task.status == 'finished'">at {{task.finish_date|date}}</time>
-                    <time v-if="task.status == 'running'">since {{task.start_date|date}}</time>
-                    <time v-if="task.status == 'requested'">at {{task.create_date|date}}</time>
-                    <time v-if="task.status == 'failed'">at {{task.fail_date|date}}</time>
-                    <time v-if="task.status == 'removed'">at {{task.remove_date|date}}</time>
+                    <time v-if="task.status == 'finished'">at {{new Date(task.finish_date).toLocaleString()}}</time>
+                    <time v-if="task.status == 'running'">since {{new Date(task.start_date).toLocaleString()}}</time>
+                    <time v-if="task.status == 'requested'">at {{new Date(task.create_date).toLocaleString()}}</time>
+                    <time v-if="task.status == 'failed'">at {{new Date(task.fail_date).toLocaleString()}}</time>
+                    <time v-if="task.status == 'removed'">at {{new Date(task.remove_date).toLocaleString()}}</time>
                 </small>
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
@@ -59,11 +59,6 @@ export default {
         return {
             activeSections: ['output', 'input'],
         }
-    },
-    computed: {
-    },
-
-    mounted: function() {
     },
 
     methods: {
@@ -125,11 +120,15 @@ time {
 color: white;
 opacity: 0.8;
 }
+h3 {
+opacity: 0.8;
+font-size: 19px;
+font-weight: bold;
+}
 h4 {
 font-size: 15px;
 font-weight: bold;
 margin-bottom: 2px;
 }
 </style>
-
 

@@ -83,7 +83,7 @@ var datasetSchema = mongoose.Schema({
     meta: mongoose.Schema.Types.Mixed,
     
     //human readable name / desc
-    name: String,
+    //name: String, //deprecated
     desc: String, 
 
     tags: [String], //allows user to search by tags (not datatype_tags)
@@ -102,8 +102,6 @@ var datasetSchema = mongoose.Schema({
         subdir: String, //subdir that contained the actual output. often output_id == subdir
     },
 
-    create_date: { type: Date, default: Date.now },
-
     status: { type: String, default: "storing" },
     //storing (default)
     //stored (dataset is stored on storage system, but not yet archive), 
@@ -111,9 +109,14 @@ var datasetSchema = mongoose.Schema({
     //archived (dataset is stored on storage system and on sda)
     status_msg: String,
 
-    archive_date: { type: Date }, //date when the content of this dataset was archived to tape
     archive_path: String, //htar path
     archive_file: String, //file name that this dataset is stored as
+
+    download_count: { type: Number, default: 0}, //number of time this dataset was downloaded
+
+    create_date: { type: Date, default: Date.now },
+    download_date: Date, //last time this dataset was downloaded
+    archive_date: Date, //date when the content of this dataset was archived to tape
 
     removed: { type: Boolean, default: false} ,
 })
@@ -138,17 +141,6 @@ var datatypeSchema = mongoose.Schema({
         ext: String,
         required: Boolean
     })],
-    /*
-    [ 
-        {
-            "id" : "DT_STREAM",
-            "filename" : "output.DT_STREAM.tck",
-            "desc" : "Tensor / Deterministic Tracks",
-            "ext" : ".tck",
-            "required" : true
-        }, 
-    ]
-    */
 
     //name of ABCD service that is used to validate this data
     //if not set, it will default to "soichih/sca-service-conneval-validate"
@@ -159,17 +151,6 @@ var datatypeSchema = mongoose.Schema({
         type: String,
         required: Boolean,
     })],
-    /*
-    "meta": [
-        {
-            "id": "subject",
-            "type": "string",
-            "required": true
-        }
-    ]
-    */
-
-    //create_date: { type: Date, default: Date.now },
 });
 exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 
@@ -178,6 +159,8 @@ exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 var appSchema = mongoose.Schema({
     //owner of this application
     user_id: {type: String, index: true}, 
+    
+    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
     admins: [ String ], //list of users who can administer this app
     
@@ -221,7 +204,7 @@ var appSchema = mongoose.Schema({
     removed: { type: Boolean, default: false} ,
 
     create_date: { type: Date, default: Date.now },
-});
+}, {minimize: false}); //to keep empty config{} from disappearing
 exports.Apps = mongoose.model('Apps', appSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

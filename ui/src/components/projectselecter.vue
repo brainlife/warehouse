@@ -1,10 +1,6 @@
 <template>
-<div v-if="options">
-    <select2 style="width: 100%"
-        v-model="selected" 
-        :options="options">
-    </select2>
-</div>
+<select2 v-if="options" style="width: 100%" v-model="selected" :options="options" :allownull="allownull" :placeholder="placeholder">
+</select2>
 </template>
 
 <script>
@@ -15,7 +11,7 @@ import select2 from '@/components/select2'
 
 export default {
     components: { projectaccess, select2 },
-    props: [ 'value' ],
+    props: [ 'value', 'allownull', 'placeholder' ],
     data() {
         return {
             selected: null, 
@@ -24,7 +20,7 @@ export default {
     },
     watch: {
         selected: function() {
-            localStorage.setItem('projectselecter.previous', this.selected);
+            if(this.selected) localStorage.setItem('last_projectid_used', this.selected);
             this.$emit('input', this.selected);
         }
     },
@@ -36,18 +32,26 @@ export default {
                     { access: "public" },
                 ],
                 removed: false,
-            })
+            }),
+            sort: 'name',
         }}).then(res=>{
-            this.options = [];
+            var option_groups = {} 
             res.body.projects.forEach(project=>{
-                this.options.push({
-                    id: project._id,
-                    text: project.name,
-                });
+                if(!option_groups[project.access]) option_groups[project.access] = [];
+                option_groups[project.access].push({ id: project._id, text: project.name, });
             });
+            this.options = [];
+            for(var access in option_groups) {
+                if(option_groups.length == 0) continue;
+                var group_header = access.charAt(0).toUpperCase() + access.slice(1) + " Project";
+                this.options.push({text: group_header, children: option_groups[access]});
+            }
 
-            this.selected = this.value || localStorage.getItem('projectselecter.previous') || this.options[0].id;
-            //console.log("projectselecter init with", this.selected, this.options);
+            this.selected = this.value;
+            if(!this.allownull && !this.selected) {
+                //need to preselect some value
+                this.selected = localStorage.getItem('last_projectid_used') || this.options[0].id;
+            }
         });
     }
 }

@@ -13,22 +13,60 @@ const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
 const prov = require('./prov');
 
+//TODO - should be called something like "get_my_projects"?
+exports.getprojects = function(user, cb) {
+    //firt, find all public projects
+    let project_query = {access: "public"};
+    //if user is logged in, look for private ones also
+    if(user) {
+        project_query = {
+            $or: [
+                project_query,
+                {"members": user.sub},
+                {"admins": user.sub}, //I think it makes sense to give admin read/write access
+            ],
+        };
+    }
+    db.Projects.find(project_query).select('_id admins members').lean().exec((err, projects)=>{
+        if(err) return cb(err);
+        let canread_ids = projects.map(p=>p._id);
+        let canwrite_projects = projects.filter(p=>{
+            if(p.members.includes(user.sub.toString())) return true;
+            if(p.admins.includes(user.sub.toString())) return true;
+            return false;
+        });
+        let canwrite_ids = canwrite_projects.map(p=>p._id);
+        cb(null, canread_ids, canwrite_ids);
+    });
+}
+
 exports.archive_task = function(task, dataset, files_override, auth, cb) {
     if(!files_override) files_override = {};
-    //logger.debug(JSON.stringify(dataset, null, 4));
    
     //start by pulling datatype detail
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
         if(err) return cb(err);
         if(!datatype) return cb("couoldn't find specified datatype:"+dataset.datatype);
-        //logger.debug("datatype loaded", datatype.toString());
 
         //create temp directory to download things
         tmp.dir({unsafeCleanup: true}, (err, tmpdir, cleantmp)=>{
             if(err) return cb(err);
             var input_ok = true;
-            //now download all files to temp directory
+
+            //find files that doesn't need to be copied - as it's contained inside another dirname
+            var dirs = datatype.files.filter(file=>file.dirname);
+            var files = datatype.files.filter(file=>file.filename);
+            files.forEach(file=>{
+                dirs.forEach(dir=>{
+                    if(dir.dirname == ".") file.skip = true; //TODO a bit brittle
+                    if(file.filename.startsWith(dir.dirname)) file.skip = true;
+                });
+            });
+
+            //now download files to temp directory
             async.eachSeries(datatype.files, (file, next_file)=>{
+                if(file.skip) return next_file();
+
                 logger.debug("processing file", file.toString());
                 var writestream = null;
                 var srcpath = task.instance_id+"/"+task._id+"/";
@@ -63,7 +101,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 }
 
                 //now start feeding the writestream
-                request.get({
+                request({
                     url: config.wf.api+"/resource/download",
                     qs: {
                         r: task.resource_id, p: srcpath,
@@ -93,10 +131,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 logger.debug("obtaining upload stream for ", storage);
                 system.upload(dataset, (err, writestream)=>{
                     if(err) return next(err);
-                    //tar tmpdir, zip, and send to writestream
-                    //var tar = child_process.spawn("tar", ["hcz", "."], {cwd: tmpdir});
                     var tar = child_process.spawn("tar", ["hc", "."], {cwd: tmpdir});
-                    //var zip = child_process.spawn("pigz", ["-p", "5"]);
                     tar.on('close', code=>{
                         cleantmp();
                         if(code) {
@@ -116,8 +151,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         });
                     });
                     logger.debug("streaming to storage");
-                    //tar.stdout.pipe(zip.stdin);
-                    //zip.stdout.pipe(writestream);
                     tar.stdout.pipe(writestream);
                 });
             });

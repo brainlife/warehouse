@@ -1,8 +1,6 @@
 <template>
 <div v-if="instance">
     <div class="sidebar">
-        <b-button variant="primary" size="sm" style="float: right; margin: 5px;" :class="{animated: true, headShake: _datasets.length == 0}" 
-            @click="show_input_dialog = true" icon="plus"> Stage Datasets</b-button>
         <h5>Datasets</h5>
         <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
@@ -11,129 +9,113 @@
             <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
             <small v-for="(tag,idx) in dataset.tags" :key="idx"> | {{tag}}</small>
             <mute>(d.{{dataset.did}})</mute> 
-            <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
+            <time v-if="dataset.create_date">{{new Date(dataset.create_date).toLocaleString()}}</time>
             <mute>
                 <small v-if="dataset.task.status != 'finished'">
                     <statusicon :status="dataset.task.status"></statusicon> 
                 </small>
             </mute>
         </div>
-        <!--
-        <br>
-        <div class="dataset clickable" @click="scrollto('newtaskdialog')" v-if="apps && apps.length"><b style="padding: 3px 0px; opacity: 0.5">Run Apps</b></div>
-        -->
+        <b-button variant="primary" size="sm" style="margin: 10px;" :class="{animated: true, headShake: _datasets.length == 0}" 
+            @click="show_input_dialog = true"> Stage Datasets</b-button>
     </div>
-    <div class="main-section" id="scrolled-area">
-        <p v-if="instance.status == 'removed' || instance.config.removing">
-            <el-alert type="error" title="">This process has been removed</el-alert>
-        </p>
-        <div v-if="tasks" v-for="task in tasks" :key="task._id">
-            <task :task="task" class="task">
-                <!--header-->
-                <div slot="header" class="task-header">
-                    <div style="float: right">
-                        <h4 :id="task._id" :title="task._id"><mute>t.{{task.config._tid}}</mute></h4>
-                    </div>
-                <div v-if="task.config._app" style="margin-right: 30px;">
-                    <app :appid="task.config._app" :compact="true">
-                        <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
-                    </app>
+    <div>
+    <p v-if="instance.status == 'removed' || instance.config.removing">
+        <el-alert type="error" title="">This process has been removed</el-alert>
+    </p>
+    <task v-if="tasks" v-for="task in tasks" :key="task._id" :task="task" class="task">
+        <!--header-->
+        <div slot="header" class="task-header">
+            <div style="float: right">
+                <h4 :id="task._id" :title="task._id"><mute>t.{{task.config._tid}}</mute></h4>
+            </div>
+            <div v-if="task.config._app" style="margin-right: 30px;">
+                <app :appid="task.config._app" :compact="true">
+                    <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
+                </app>
+            </div>
+            <div v-else>
+                <h4 style="margin: 0px;" class="text-muted"><icon name="paper-plane"/>&nbsp;&nbsp;&nbsp;{{task.name}}</h4>
+            </div>
+        </div>
+
+        <!--input-->
+        <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._inputs">
+            <div v-for="input in task.config._inputs" :key="input.did" style="padding: 3px 5px;">
+                <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
+                    <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
+                    <b v-if="input.meta.subject">{{input.meta.subject}}</b>
+                    <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
+                    <mute>
+                        <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
+                        (d.{{input.did}})
+                    </mute>
+                    <mute v-if="findtask(input.task_id).status != 'finished'">
+                        <statusicon :status="findtask(input.task_id).status"></statusicon> 
+                    </mute>
                 </div>
                 <div v-else>
-                    <h4 style="margin: 0px;" class="text-muted"><icon name="paper-plane"/>&nbsp;&nbsp;&nbsp;{{task.name}}</h4>
+                    <b v-if="input.meta.subject">{{input.meta.subject}}</b>
+                    <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
+                    <mute>
+                        <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
+                        (d.{{input.did}})
+                    </mute>
+                    <b-badge variant="danger">Removed</b-badge>
                 </div>
             </div>
+        </el-collapse-item>
 
-            <!--input-->
-            <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._inputs">
-                <div v-for="input in task.config._inputs" :key="input.did" 
-                    style="padding: 3px 5px;" class="clickable" @click="scrollto(input.task_id)">
-                    <el-row>
-                    <el-col :span="4" class="truncate">
-                        {{input.id}}
-                    </el-col>
-                    <el-col :span="20" v-if="findtask(input.task_id)">
-                        <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
-                        <b v-if="input.meta.subject">{{input.meta.subject}}</b>
-                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
-                        <mute>
-                            <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                            (d.{{input.did}})
-                        </mute>
-                        <mute v-if="findtask(input.task_id).status != 'finished'">
-                            <statusicon :status="findtask(input.task_id).status"></statusicon> 
-                        </mute>
-                        <!--
-                        <div style="float: right">
-                            <div style="display: inline-block;">
-                                <viewerselect @select="view(input.task_id, $event, input.subdir)" :datatype="datatypes[input.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
-                                <el-button v-if="findtask(input.task_id).status == 'finished'" size="small" @click.stop="download(findtask(input.task_id), input)">Download</el-button>
-                            </div>
-                        </div>
-                        -->
-                    </el-col>
-                    </el-row>
+        <!--output-->
+        <el-collapse-item title="Output" name="output" slot="output" v-if="task.config._outputs.length > 0">
+            <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
+                <b v-if="output.meta.subject">{{output.meta.subject}}</b>
+                <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
+                <mute>
+                    <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
+                    (d.{{output.did}})
+                </mute>
+                <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
+                <span @click="go('/dataset/'+output.dataset_id)" class="clickable">
+                    <el-tag v-if="output.dataset_id">From <b>{{projects[output.project].name}}</b></el-tag>
+                </span>
+
+                <div style="float: right;">
+                    <div v-if="task.status == 'finished'">
+                        <viewerselect @select="view(task._id, $event, output.subdir)" :datatype="datatypes[output.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
+                        <el-button size="small" @click="download(task, output)">Download</el-button>
+                        <el-button size="small" type="primary"
+                            :disable="archiving === output.did" @click="archiving = output.did">Archive</el-button>
+
+                    </div>
+                    <!--<statustag v-else :status="task.status"/>-->
                 </div>
-            </el-collapse-item>
 
-            <!--output-->
-            <el-collapse-item title="Output" name="output" slot="output" v-if="task.config._outputs.length > 0">
-                <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
-                    <el-row>
-                    <el-col :span="4" class="truncate">
-                        {{output.id||'(no id)'}}
-                    </el-col>
-                    <el-col :span="20">
-                        <b v-if="output.meta.subject">{{output.meta.subject}}</b>
-                        <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
-                        <mute>
-                            <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
-                            (d.{{output.did}})
-                        </mute>
-                        <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
-                        <span @click="go('/dataset/'+output.dataset_id)" class="clickable">
-                            <el-tag v-if="output.dataset_id">From <b>{{projects[output.project].name}}</b></el-tag>
-                        </span>
+                <!--list of archived datasets-->
+                <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
+                    <div class="archived-datasets-title">Archived Datasets</div>
+                    <ul class="archived">
+                        <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/dataset/'+dataset._id)" class="clickable">
+                            <icon name="cubes"></icon>
+                            <b>{{projects[dataset.project].name}}</b>
+                            <mute>{{dataset.desc}}</mute>
+                            <tags :tags="dataset.tags"/>
 
-                        <div style="float: right;">
-                            <div v-if="task.status == 'finished'">
-                                <viewerselect @select="view(task._id, $event, output.subdir)" :datatype="datatypes[output.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
-                                <el-button size="small" @click="download(task, output)">Download</el-button>
-                                <el-button size="small" type="primary"
-                                    :disable="archiving === output.did" @click="archiving = output.did">Archive</el-button>
+                            <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
+                                <icon name="cog" :spin="true"/> Storing ...
+                            </span> 
+                            <span v-else>{{dataset.status}}</span>
 
-                            </div>
-                            <!--<statustag v-else :status="task.status"/>-->
-                        </div>
-
-                        <!--list of archived datasets-->
-                        <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
-                            <div class="archived-datasets-title">Archived Datasets</div>
-                            <ul class="archived">
-                                <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/dataset/'+dataset._id)" class="clickable">
-                                    <icon name="cubes"></icon>
-                                    <b>{{projects[dataset.project].name}}</b>
-                                    <mute>{{dataset.desc}}</mute>
-                                    <tags :tags="dataset.tags"/>
-
-                                    <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                                        <icon name="cog" :spin="true"/> Storing ...
-                                    </span> 
-                                    <span v-else>{{dataset.status}}</span>
-
-                                    <!--<small>{{dataset._id}}</small>-->
-                                </li>
-                            </ul>
-                        </div>
-
-                        <archiveform v-if="archiving === output.did" :task="task" :output="output" 
-                            @done="done_archive" style="margin-top: 30px;"></archiveform>
-                    </el-col>
-                    </el-row>
+                            <!--<small>{{dataset._id}}</small>-->
+                        </li>
+                    </ul>
                 </div>
-            </el-collapse-item>
-        </task>
-    </div>
+
+                <archiveform v-if="archiving === output.did" :task="task" :output="output" 
+                    @done="done_archive" style="margin-top: 30px;"></archiveform>
+            </div>
+        </el-collapse-item>
+    </task>
 
     <div v-if="apps && apps.length == 0" style="margin: 20px;">
         <p class="text-muted">You have no application that you can submit with currently staged datasets. Please try staging more datasets.</p>
@@ -156,15 +138,20 @@
 
         <transition name="fade">
         <div v-if="newtask.app">
-            <el-form label-width="200px"> 
-                <el-form-item label="Application">
-                    <app :app="newtask.app" :compact="false"></app>
-                </el-form-item>
+            <b-row>
+                <b-col cols="3">Application</b-col>
+                <b-col>
+                    <app :app="newtask.app" :compact="false"/>
+                </b-col>
+            </b-row>
+            <br>
 
-                <br>
-
-                <!--input-->
-                <el-form-item v-for="(input, input_id) in newtask.inputs" :label="input_id+' '+input.datatype_tags" :key="input_id">
+            <!--input-->
+            <b-row v-for="(input, input_id) in newtask.inputs" :key="input_id">
+                <b-col cols="3">
+                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                </b-col>
+                <b-col>
                     <el-select @change="validate()" v-model="input.dataset_idx" 
                         no-data-text="No dataset available for this datatype / tags"
                         placeholder="Please select input dataset" 
@@ -179,31 +166,44 @@
                             (d.{{dataset.did}})
                         </el-option>
                     </el-select>
-                    <!--<el-alert v-if="input.error" :title="input.error" type="error"></el-alert>-->
-                </el-form-item>
+                </b-col>
+            </b-row>
+            <br>
 
-                <!--TODO - handle nested config? -->
-                <el-form-item v-for="(v,k) in newtask.app.config" :label="k" :key="k" v-if="v.type && v.type != 'input'">
-                    <!--<p class="text-muted" v-if="v.desc">{{v.desc}}</p>-->
+            <!--config-->
+            <b-row v-for="(v,k) in newtask.app.config" :key="k" v-if="v.type && v.type != 'input'">
+                <b-col cols="3">{{k}}</b-col>
+                <b-col>
                     <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01" :placeholder="v.placeholder">
                     <el-input type="number" v-if="v.type == 'integer'" v-model.number="newtask.config[k]" :placeholder="v.placeholder"/>
                     <el-input v-if="v.type == 'string'" v-model="newtask.config[k]" :placeholder="v.placeholder"/>
-                    <el-checkbox v-if="v.type == 'boolean'" v-model="newtask.config[k]" style="margin-top: 9px;"/>
-                    <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder">
+                    <div v-if="v.type == 'boolean'">
+                        <el-checkbox v-model="newtask.config[k]" style="margin-top: 9px;"/> {{v.desc}}
+                    </div>
+                    <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder" style="width: 100%;">
                         <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
                             <b>{{option.label}}</b>
                             <small> - {{option.desc}}</small>
                         </el-option>
                     </el-select>
-                </el-form-item>
 
-                <hr>
+                    <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
+                </b-col>
+            </b-row>
 
-                <el-form-item label="Task Description" style="margin: 8px 0px">
+            <hr>
+
+            <b-row>
+                <b-col cols="3">Task Description</b-col>
+                <b-col>
                     <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
-                </el-form-item>
+                </b-col>
+            </b-row>
+            <br>
 
-                <el-form-item label=" ">
+            <b-row>
+                <b-col cols="3"><!--archive--></b-col>
+                <b-col>
                     <div v-if="!newtask.archive.enable">
                         <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive all output datasets when finished
                     </div>
@@ -227,15 +227,18 @@
                         </p>
                         -->
                     </el-card>
-                    <br>
-                </el-form-item>
+                </b-col>
+            </b-row>
+            <br>
 
-                <el-form-item label=" ">
+            <b-row>
+                <b-col cols="3"><!--submit--></b-col>
+                <b-col>
                     <el-button @click="reset_newprocess()">Cancel</el-button>
                     <el-button type="primary" @click="submit_newprocess()" :disabled="!newtask.valid">Submit</el-button>
-                </el-form-item>
-                 
-            </el-form>
+                </b-col>
+            </b-row>
+            <br>
         </div>
         </transition>
     </el-card>
@@ -258,7 +261,7 @@
             </el-collapse-item> 
         </el-collapse>
     </div>
-</div><!--main-section-->
+</div><!--scrolled-are-->
 <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
 </div>
 </template>
@@ -418,7 +421,7 @@ methods: {
     scrollto: function(id) {
         var elem = document.getElementById(id);
         var top = elem.offsetTop-30;
-        console.log("scrolling to ", id);
+        console.log("scrolling to ", id, top);
         document.getElementById("scrolled-area").scrollTop = top;
     },
 
@@ -538,7 +541,7 @@ methods: {
                 "inputs.datatype": {$in: datatype_ids},
                 removed: false,
             }),
-            populate: 'inputs.datatype',
+            populate: 'inputs.datatype outputs.datatype',
         }})
         .then(res=>{
             //now, pick apps that we have *all* input datasets that matches the input datatype/tags
@@ -703,7 +706,6 @@ methods: {
         }).then(res=>{
             console.log("submitted download", res.body.task);
             var task = res.body.task;
-            //this.tasks.push(task); 
         });
     },
 
@@ -753,7 +755,7 @@ methods: {
             var output_req = {
                 id: output.id,
                 did: did++,
-                datatype: output.datatype,
+                datatype: output.datatype._id,
                 datatype_tags: output.datatype_tags,
                 desc: output.id+ " from "+this.newtask.app.name,
                 meta,
@@ -789,14 +791,6 @@ methods: {
 </script>
 
 <style scoped>
-.main-section {
-position: fixed;
-left: 390px;
-right: 300px;
-top: 110px;
-bottom: 0px;
-overflow: auto;
-}
 .sidebar {
 background-color: #ddd;
 position: fixed;
@@ -806,6 +800,7 @@ width: 300px;
 right: 0px;
 overflow: auto;
 font-size: 90%;
+padding-bottom: 50px; /*so it won't be covered by notification*/
 }
 .sidebar h5 {
 font-size: 17px;
@@ -875,5 +870,8 @@ color: #2693ff;
 }
 .el-collapse-item__content {
 line-height: inherit;
+}
+.el-card {
+border: none;
 }
 </style>

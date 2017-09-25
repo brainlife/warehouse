@@ -1,4 +1,4 @@
-{
+define({
   "name": "warehouse",
   "version": "1.0.0",
   "description": "Service that allows data warehousing and workfow orchestration",
@@ -7,8 +7,8 @@
   "apidoc": "0.3.0",
   "generator": {
     "name": "apidoc",
-    "time": "2017-08-10T14:48:16.278Z",
+    "time": "2017-09-03T23:03:11.247Z",
     "url": "http://apidocjs.com",
     "version": "0.17.6"
   }
-}
+});

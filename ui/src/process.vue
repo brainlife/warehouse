@@ -11,7 +11,7 @@
                 <mute>D{{idx}}</mute> 
                 <b>{{dataset.meta.subject}}</b>
                 <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                <time>{{dataset.create_date|date('%x')}}</time>
+                <time>{{dataset.create_date}}</time>
                 <mute>
                     <small v-if="dataset.task.status != 'finished'">
                         <statusicon :status="dataset.task.status"></statusicon> Staging
@@ -33,7 +33,7 @@
                 <mute><b>T{{tasks.indexOf(dataset.task)-1}}</b> <icon name="arrow-right" scale="0.8"></icon></mute> D{{idx}}
                 <b v-if="dataset.meta">{{dataset.meta.subject}}</b>
                 <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
-                <time v-if="dataset.create_date">{{dataset.create_date|date('%x')}}</time>
+                <time v-if="dataset.create_date">{{dataset.create_date}}</time>
                 <mute>
                     <small v-if="dataset.task.status != 'finished'">
                         <statustag :status="dataset.task.status"/>
@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <div class="main-section" id="scrolled-area">
+    <div id="scrolled-area">
         <p v-if="instance.status == 'removed' || instance.config.removing">
             <el-alert type="error" title="">This process has been removed</el-alert>
         </p>
@@ -248,7 +248,7 @@
                 </el-collapse-item> 
             </el-collapse>
         </div>
-    </div><!--main-section-->
+    </div><!--scrolled--area-->
     <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
 </div>
 </template>
@@ -402,7 +402,7 @@ export default {
 
     watch: {
         'instance': function() {
-            console.log("instance updated");
+            //console.log("instance updated");
             document.getElementById("scrolled-area").scrollTop = 0;
             this.load();
         },
@@ -859,14 +859,6 @@ export default {
 </script>
 
 <style scoped>
-.main-section {
-position: fixed;
-left: 390px;
-right: 300px;
-top: 110px;
-bottom: 0px;
-overflow: auto;
-}
 .sidebar {
 box-shadow: inset 3px 0px 3px #ccc;
 background-color: #ddd;

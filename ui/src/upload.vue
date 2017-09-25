@@ -48,17 +48,15 @@
                 </div><!--meta-->
 
                 <div v-if="mode == 'upload' && tasks.upload && !tasks.upload.resource_id">
-                    <mute>Waiting for resource where we can upload files becomes available..  <icon name="cog" spin/></mute>
+                    <p cass="text-muted">Waiting for resource where we can upload files becomes available..  <icon name="cog" spin/></p>
                     <pre>{{tasks.upload}}</pre>
                 </div>
 
                 <div v-if="mode == 'upload' && tasks.upload && tasks.upload.resource_id">
-                    <el-form-item  v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id">
-                        <el-card v-if="datatype_id" style="margin-left: 10px;">
-                            <!--<div slot="header"><small class="text-muted">{{file.ext}}</small></div>-->
-
+                    <el-form-item v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id+(file.ext?'('+file.ext+')':'')">
+                        <el-card v-if="datatype_id">
                             <div v-if="!file.uploaded && !file.progress">
-                                <input type="file" @change="filechange(file, $event)">
+                                <input type="file" @change="filechange(file, $event)" :accept="file.ext">
                             </div>
 
                             <div v-if="!file.uploaded && file.progress">
@@ -73,6 +71,7 @@
                                 <el-button type="small" @click="clearfile(file)" style="float: right;" icon="delete">Remove</el-button>
                             </div>
                         </el-card>
+                        <br>
                     </el-form-item>
         
                     <el-form-item>
@@ -82,21 +81,21 @@
                 </div>
 
                 <div v-if="mode == 'validate' && tasks.validation">
-                    <el-form-item v-if="!tasks.validation.products">
-                        <!--<pre v-if="config.debug" v-highlightjs="JSON.stringify(tasks.validation, null, 4)"><code class="json hljs"></code></pre>-->
+                    <el-form-item v-if="!tasks.validation.product">
                         <task :task="tasks.validation"/>
+                        <br>
                     </el-form-item>
-
-                    <div v-if="tasks.validation && tasks.validation.status == 'finished' && tasks.validation.products">
+                    <div v-else>
                         <el-form-item>
-                            <p v-if="tasks.validation.status != 'finished'">{{tasks.validation.status_msg}}</p>
-                            <el-alert :title="msg" type="error" show-icon v-for="(msg,idx) in tasks.validation.products[0].errors" :key="idx"></el-alert>
-                            <el-alert :title="msg" type="warning" show-icon  v-for="(msg,idx) in tasks.validation.products[0].warnings" :key="idx"></el-alert>
-                            <el-alert title="Your data looks good! Please check information below and click Archive button." show-icon type="success" v-if="tasks.validation.products[0].errors.length == 0"></el-alert>
+                            <b-alert show variant="danger" v-for="(msg,idx) in tasks.validation.product.errors" :key="idx">{{msg}}</b-alert>
+                            <b-alert show variant="warning" v-for="(msg,idx) in tasks.validation.product.warnings" :key="idx">{{msg}}</b-alert>
+                            <b-alert show variant="success" v-if="tasks.validation.product.errors.length == 0">
+                                Your data looks good! Please check information below and click Archive button.
+                            </b-alert>
                         </el-form-item>
             
                         <!--show info-->
-                        <el-form-item v-for="(v, k) in tasks.validation.products[0]" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
+                        <el-form-item v-for="(v, k) in tasks.validation.product" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
                             <pre v-highlightjs="v" v-if="typeof v == 'string'"><code class="text hljs"></code></pre>
                             <div v-else>
                                 <pre>{{v}}</pre>
@@ -106,7 +105,7 @@
 
                     <el-form-item>
                         <el-button @click="mode = 'upload'">Back</el-button>
-                        <el-button type="primary" @click="finalize()">Archive !</el-button>
+                        <el-button type="primary" @click="finalize()" :disabled="!tasks.validation.product">Archive !</el-button>
                     </el-form-item>
                 </div>
             </el-form>
@@ -362,7 +361,6 @@ export default {
                 name: "validation",
                 service: this.get_validator(),
                 config: config,
-                //preferred_resource_id: this.validator_resource, 
                 deps: [ this.tasks.upload._id ], 
             }).then(res=>{
                 console.log("submitted validation task");
@@ -373,22 +371,21 @@ export default {
         },
 
         finalize() {
+            var validation_product = this.tasks.validation.product;
+
             this.mode = "finalize";
             this.$http.post('dataset', {
 
                 project: this.project_id,
-                task_id: this.tasks.upload._id, 
-
-                //app_id
-                //output_id
+                //task_id: this.tasks.upload._id, 
+                task_id: this.tasks.validation, 
 
                 datatype: this.datatype_id,
-                datatype_tags: [],
-                //file - I shouldn't have to map it - uploader should upload files to the correct file name
+                datatype_tags: validation_product.datatype_tags, 
 
                 meta: this.meta,
                 desc: this.desc,
-                tags: [], 
+                tags: validation_product.tags, 
 
             }).then(res=>{
                 console.log("submitted dataset request");

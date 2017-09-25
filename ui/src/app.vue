@@ -6,7 +6,7 @@
         <b-button-group style="float: right;">
             <b-button @click="remove()" v-if="app._canedit" icon="delete">Remove</b-button>
             <b-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</b-button>
-            <b-button variant="primary" v-if="preferred_resource" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
+            <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
         </b-button-group>
         <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
         <h2>{{app.name}}</h2>
@@ -33,7 +33,7 @@
                         <b class="text-muted">Users</b>
                     </el-col>
                     <el-col :span="8">
-                        <h4>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)) | toFixed(1)}}% </h4>
+                        <h4>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}% </h4>
                         <b class="text-muted">Success Rate</b>
                     </el-col>
                 </el-row>
@@ -45,11 +45,7 @@
             <td>
                 <div v-if="app.github">
                     Github
-                    <a :href="'http://github.com/'+app.github">{{app.github}}</a>
-                </div>
-                <div v-if="app.dockerhub">
-                    Dockerhub
-                    <a :href="'http://hub.docker.com/'+app.dockerhub">{{app.dockerhub}}</a>
+                    <a :href="'http://github.com/'+app.github">{{app.github}}</a> <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
                 </div>
                 <blockquote v-if="readme" class="readme">
                     <vue-markdown :source="readme"></vue-markdown>
@@ -88,6 +84,15 @@
             <th>Developers</th>
             <td>
                 <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
+            </td>
+        </tr>
+        <tr v-if="app.project">
+            <th>Project</th>
+            <td>
+                <p class="text-muted">This application belongs to following project.</p>
+                <el-card>
+                    <project :project="app.project"></project>
+                </el-card>
             </td>
         </tr>
         <tr v-if="app.retry">
@@ -188,7 +193,7 @@ export default {
         //load app
         this.$http.get('app', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'inputs.datatype outputs.datatype',
+            populate: 'inputs.datatype outputs.datatype project',
         }})
         .then(res=>{
             this.app = res.body.apps[0];
@@ -207,7 +212,7 @@ export default {
             var branch = this.app.github_branch||"master";
             return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
         }).then(res=>{
-            return res.text()
+            if(res.status == "200") return res.text()
         }).then(readme=>{
             this.readme = readme;
         }).catch(err=>{
