@@ -170,20 +170,6 @@ export default {
             });
         },
 
-        /*        
-        findbest: function(service) {
-          //find resource where we can run this app
-          this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-              service: service,
-          }})
-          .then(res=>{
-            this.resource = res.body;
-          }, res=>{
-            console.error(res);
-          })
-        },
-        */
-        
         grab_items: function(input, params, cb) {
             // essentially the same code from datasetselecter.vue
             if (!params.page) params.page = 1;
@@ -410,8 +396,8 @@ export default {
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
                     name: this.app.name,
-                    //desc: this.form.desc, 
                     service: this.app.github,
+                    service_branch: this.app.github_branch,
                     config,
                     deps: [ download_task._id ],
                     retry: this.app.retry,

@@ -773,7 +773,8 @@ methods: {
             instance_id: this.instance._id,
             name: this.newtask.app.name,
             desc: this.newtask.desc,
-            service: this.newtask.app.github, //TODO what if it's docker?
+            service: this.newtask.app.github, 
+            service_branch: this.newtask.app.github_branch, 
             config: this.newtask.config,
             deps: this.newtask.deps,
             retry: this.newtask.app.retry,
