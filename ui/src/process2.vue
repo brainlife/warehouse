@@ -19,7 +19,6 @@
         <b-button variant="primary" size="sm" style="margin: 10px;" :class="{animated: true, headShake: _datasets.length == 0}" 
             @click="show_input_dialog = true"> Stage Datasets</b-button>
     </div>
-    <div>
     <p v-if="instance.status == 'removed' || instance.config.removing">
         <el-alert type="error" title="">This process has been removed</el-alert>
     </p>
@@ -261,8 +260,7 @@
             </el-collapse-item> 
         </el-collapse>
     </div>
-</div><!--scrolled-are-->
-<datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
+    <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
 </div>
 </template>
 
@@ -465,27 +463,12 @@ methods: {
             .then(res=>{
                 this.archived = res.body.datasets;
 
-                /*
-                //open input dialog if there are no datasets (new process?)
-                if(this._datasets.length == 0) {
-                    this.show_input_dialog = true;
-                }
-                */
-
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: Vue.config.user.sub+"."+this.instance._id+".#",
                     }
                 }));
-                /*
-                this.ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.instance",
-                        key: Vue.config.user.sub+"."+this.instance._id,
-                    }
-                }));
-                */
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
                     if(event.error) {
