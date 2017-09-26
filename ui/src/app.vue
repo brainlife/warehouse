@@ -22,34 +22,34 @@
         <tr v-if="service_stats">
             <th width="175px">Stats</th>
             <td>
-                <br>
-                <el-row>
-                    <el-col :span="8">
-                        <h4>{{service_stats.tasks}}</h4>
-                        <b class="text-muted">Total Runs</b>
-                    </el-col>
-                    <el-col :span="8">
-                        <h4>{{service_stats.users}}</h4>
-                        <b class="text-muted">Users</b>
-                    </el-col>
-                    <el-col :span="8">
-                        <h4>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}% </h4>
-                        <b class="text-muted">Success Rate</b>
-                    </el-col>
-                </el-row>
-                <br>
+                <b-card>
+                    <b-row>
+                        <b-col>
+                            <h4>{{service_stats.tasks}}</h4>
+                            <b class="text-muted">Total Runs</b>
+                        </b-col>
+                        <b-col>
+                            <h4>{{service_stats.users}}</h4>
+                            <b class="text-muted">Users</b>
+                        </b-col>
+                        <b-col>
+                            <h4>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}% </h4>
+                            <b class="text-muted">Success Rate</b>
+                        </b-col>
+                    </b-row>
+                </b-card>
             </td>
         </tr>
         <tr>
             <th>Source</th>
             <td>
-                <div v-if="app.github">
-                    Github
-                    <a :href="'http://github.com/'+app.github">{{app.github}}</a> <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
-                </div>
+                <h5><a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a></h5>
+                <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                <!-- TODO - we need to ask our developes to put something better before I can start displaying it here
                 <blockquote v-if="readme" class="readme">
                     <vue-markdown :source="readme"></vue-markdown>
                 </blockquote>
+                -->
             </td>
         </tr>
         <tr>
@@ -83,7 +83,11 @@
         <tr>
             <th>Developers</th>
             <td>
-                <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
+                <ul>
+                    <li v-for="c in app.admins" key="c._id">
+                        <contact :id="c"></contact>
+                    </li>
+                </ul>
             </td>
         </tr>
         <tr v-if="app.project">
@@ -105,7 +109,8 @@
         </tr>
         <tr>
             <th>Computing Resource</th>
-            <td>
+            <td v-if="resources">
+                <!--
                 <p v-if="preferred_resource">
                     This service can currently run on 
                     <el-tag> {{preferred_resource.name}} (Best)</el-tag>
@@ -116,6 +121,25 @@
                 <b-alert show variant="danger" v-else>
                     There is currently no available computing resource to run this application.
                 </b-alert>
+                -->
+                <b-alert show variant="danger" v-if="resources.length == 0">
+                    This application is not configured to run on any resource that you have access to.
+                </b-alert>
+                <p v-else>This application could run on following resources.</p>
+                <b-card v-for="resource in resources" :key="resource.id">
+                    <b-row>
+                        <b-col>
+                            <b>{{resource.name}}</b>
+                            <b-badge variant="success" v-if="resource.id == preferred_resource._id">Preferred</b-badge>
+                        </b-col>
+                        <b-col>
+                            <statustag :status="resource.status"/>
+                        </b-col>
+                        <b-col>
+                            <p class="help-block">{{resource.detail}}</p>
+                        </b-col>
+                    </b-row>
+                </b-card>
             </td>
         </tr>
         <tr>
@@ -163,12 +187,13 @@ import tags from '@/components/tags'
 import datatype from '@/components/datatype'
 import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
+import statustag from '@/components/statustag'
 
 export default {
     components: { 
         sidemenu, pageheader, contact, 
         project, tags, datatype, appavatar,
-        VueMarkdown, 
+        VueMarkdown, statustag,
      },
 
     data () {
@@ -240,7 +265,7 @@ export default {
                 service
             }})
             .then(res => {
-                if(res.body.nomatch)  return;
+                if(res.body.nomatch) return;
                 this.preferred_resource = res.body.resource;
                 this.resources = res.body.considered.sort((a, b) => {
                     if (a.score < b.score) return 1;

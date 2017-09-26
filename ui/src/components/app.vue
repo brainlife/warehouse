@@ -4,7 +4,7 @@
         <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
         <div>
             <h4 class="name">{{app_.name}}</h4>
-            <h5 class="github">{{app_.github}}</h5>
+            <h5 class="github" v-if="!compact">{{app_.github}}</h5>
             <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
             <div class="desc" :style="{height: descheight}">
                 <div class="datatypes" v-if="!compact">
@@ -132,9 +132,6 @@ h5 {
 font-size: 13px;
 font-weight: bold;
 opacity: 0.7;
-}
-.compact h5 {
-display: none;
 }
 .compact h4.name {
 padding: 2px;
