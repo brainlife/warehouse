@@ -44,6 +44,10 @@
             <td>{{new Date(dataset.create_date).toLocaleString()}}</td>
         </tr>
         <tr>
+            <th width="180px">Download Count</th>
+            <td>{{dataset.download_count}}</td>
+        </tr>
+        <tr>
             <th>Storage</th>
             <td>
                 <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
