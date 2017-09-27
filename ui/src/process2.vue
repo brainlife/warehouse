@@ -67,10 +67,6 @@
 
         <!--output-->
         <el-collapse-item title="Output" name="output" slot="output" v-if="task.config._outputs.length > 0">
-            <div v-if="task.product">
-                <!--<b class="text-muted">product.json</b>-->
-                <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
-            </div>
             <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
                 <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                 <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
@@ -113,8 +109,11 @@
                     </ul>
                 </div>
 
-                <archiveform v-if="archiving === output.did" :task="task" :output="output" 
-                    @done="done_archive" style="margin-top: 30px;"></archiveform>
+                <archiveform v-if="archiving === output.did" :task="task" :output="output" @done="done_archive"></archiveform>
+            </div>
+            <div v-if="task.product">
+                <!--<b class="text-muted">product.json</b>-->
+                <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
             </div>
         </el-collapse-item>
     </task>

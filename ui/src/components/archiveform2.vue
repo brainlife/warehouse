@@ -1,54 +1,57 @@
 <template>
-<el-form label-width="150px">
-    <el-form-item label="Dataset Desc">
-        <el-input type="textarea" v-model="desc" placeholder="Dataset Desc"></el-input>
-    </el-form-item>
-    <br>
+<!-- this is going to take a while..
+<b-form @submit="submit">
+    <b-container>
+        <b-row>
+            <b-col><label>Dataset Description</label></b-col>
+            <b-col>
+                <b-form-textarea v-model="desc" placeholder="Enter Description"/>
+            </b-col>
+        </b-row>
+    </b-container>
+</b-form>
+-->
 
-    <el-form-item label="Project">
-        <projectselecter v-model="project"/>
-        <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
-    </el-form-item>
-    <br>
+<div class="archiveform">
+    <el-form label-width="150px">
+        <el-form-item label="Dataset Desc">
+            <el-input type="textarea" v-model="desc" placeholder="Dataset Desc"></el-input>
+        </el-form-item>
+        <br>
 
-    <el-form-item label="User Tags (optional)">
-        <el-select v-model="tags" 
-            style="width: 100%"
-            multiple filterable allow-create placeholder="Enter tags">
-            <el-option v-for="tag in tags" key="tag" :label="tag" :value="tag"></el-option>
-        </el-select>
-        <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
-    </el-form-item>
-    <br>
+        <el-form-item label="Project">
+            <projectselecter v-model="project"/>
+            <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
+        </el-form-item>
+        <br>
 
-    <!--
-    <el-form-item label="DataType Tags">
-        <el-select v-model="form.datatype_tags" 
-            style="width: 100%"
-            multiple filterable allow-create disabled placeholder="No datatype tags">
-            <el-option v-for="tag in form.datatype_tags" key="tag" :label="tag" :value="tag"></el-option>
-        </el-select>
-        <p class="text-muted" style="margin-bottom: 0px;"><b>Read-only</b> Datatype tags specified by the application configuration.</p>
-    </el-form-item>
-    -->
+        <el-form-item label="User Tags (optional)">
+            <el-select v-model="tags" 
+                style="width: 100%"
+                multiple filterable allow-create placeholder="Enter tags">
+                <el-option v-for="tag in tags" key="tag" :label="tag" :value="tag"></el-option>
+            </el-select>
+            <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
+        </el-form-item>
+        <br>
 
-    <el-form-item label="Metadata">
-        <div v-for="(v,k) in output.meta">
-            <el-input placeholder="Please Edit meta" v-model="output.meta[k]">
-                <template slot="prepend">{{k|uppercase}}</template>
-            </el-input>
-        </div>
-        <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
-    </el-form-item>
-    <br>
+        <el-form-item label="Metadata">
+            <div v-for="(v,k) in output.meta">
+                <el-input placeholder="Please Edit meta" v-model="output.meta[k]">
+                    <template slot="prepend">{{k|uppercase}}</template>
+                </el-input>
+            </div>
+            <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
+        </el-form-item>
+        <br>
 
-    <el-form-item label=" ">
-        <el-button @click="cancel()">Cancel</el-button>
-        <el-button type="primary" icon="check" @click="submit()">Archive</el-button>
-    </el-form-item>
-    <br>
-
-</el-form>
+        <el-form-item label=" ">
+            <el-button @click="cancel()">Cancel</el-button>
+            <el-button type="primary" icon="check" @click="submit()">Archive</el-button>
+        </el-form-item>
+        <br>
+    </el-form>
+</div>
 </template>
 
 <script>
@@ -99,3 +102,11 @@ export default {
     },
 }
 </script>
+<style scoped>
+.archiveform {
+margin-top: 10px;
+margin-bottom: 5px;
+padding: 7px;
+background-color: #f8f8f8;
+}
+</style>
