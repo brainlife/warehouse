@@ -780,7 +780,8 @@ export default {
                         instance_id: this.instance._id,
                         name: "brainlife.process",
                         desc: this.newtask_desc,
-                        service: this.newtask_app.github, //TODO what if it's docker?
+                        service: this.newtask_app.github, 
+                        service_branch: this.newtask_app.github_branch,
                         config: newtask.config,
                         deps: newtask.deps,
                         retry: this.newtask_app.retry,

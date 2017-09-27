@@ -1,5 +1,6 @@
 <template>
 <span>
+    <!--task status-->
     <icon v-if="status == 'finished'" :scale="scale" name="check" class="statusicon-finished"></icon>
     <icon v-if="status == 'running'" :scale="scale" name="cog" spin class="statusicon-running"></icon>
     <icon v-if="status == 'running_sync'" :scale="scale" name="cog" spin class="statusicon-running"></icon>
@@ -9,6 +10,10 @@
     <icon v-if="status == 'stop_requested'" :scale="scale" name="hand-paper-o" class="statusicon-stop_requested"></icon>
     <icon v-if="status == 'stopped'" :scale="scale" name="hand-paper-o" class="statusicon-stopped"></icon>
     <icon v-if="status == null" :scale="scale" name="question" class="statusicon-unknown"></icon>
+
+    <!--resource status-->
+    <icon v-if="status == 'ok'" :scale="scale" name="check" class="statusicon-finished"></icon>
+
 </span>
 </template>
 

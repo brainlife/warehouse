@@ -19,7 +19,6 @@
         <b-button variant="primary" size="sm" style="margin: 10px;" :class="{animated: true, headShake: _datasets.length == 0}" 
             @click="show_input_dialog = true"> Stage Datasets</b-button>
     </div>
-    <div>
     <p v-if="instance.status == 'removed' || instance.config.removing">
         <el-alert type="error" title="">This process has been removed</el-alert>
     </p>
@@ -68,6 +67,10 @@
 
         <!--output-->
         <el-collapse-item title="Output" name="output" slot="output" v-if="task.config._outputs.length > 0">
+            <div v-if="task.product">
+                <!--<b class="text-muted">product.json</b>-->
+                <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
+            </div>
             <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
                 <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                 <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
@@ -88,7 +91,6 @@
                             :disable="archiving === output.did" @click="archiving = output.did">Archive</el-button>
 
                     </div>
-                    <!--<statustag v-else :status="task.status"/>-->
                 </div>
 
                 <!--list of archived datasets-->
@@ -261,8 +263,7 @@
             </el-collapse-item> 
         </el-collapse>
     </div>
-</div><!--scrolled-are-->
-<datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
+    <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
 </div>
 </template>
 
@@ -465,27 +466,12 @@ methods: {
             .then(res=>{
                 this.archived = res.body.datasets;
 
-                /*
-                //open input dialog if there are no datasets (new process?)
-                if(this._datasets.length == 0) {
-                    this.show_input_dialog = true;
-                }
-                */
-
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: Vue.config.user.sub+"."+this.instance._id+".#",
                     }
                 }));
-                /*
-                this.ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.instance",
-                        key: Vue.config.user.sub+"."+this.instance._id,
-                    }
-                }));
-                */
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
                     if(event.error) {
@@ -775,7 +761,8 @@ methods: {
             instance_id: this.instance._id,
             name: this.newtask.app.name,
             desc: this.newtask.desc,
-            service: this.newtask.app.github, //TODO what if it's docker?
+            service: this.newtask.app.github, 
+            service_branch: this.newtask.app.github_branch, 
             config: this.newtask.config,
             deps: this.newtask.deps,
             retry: this.newtask.app.retry,

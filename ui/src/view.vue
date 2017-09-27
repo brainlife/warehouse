@@ -29,25 +29,25 @@
 <script>
 import Vue from 'vue'
 
-//for html5 viewers
-import dtiinit from '@/components/appuis/dtiinit'
-import freesurfer from '@/components/appuis/freesurfer'
-import wmc from '@/components/appuis/wmc'
-import life from '@/components/appuis/life'
-import evaluator from '@/components/appuis/evaluator'
-import images from '@/components/appuis/images'
-import volumeviewer from '@/components/appuis/volumeviewer'
+//datatype UIs
+import dtiinit from '@/components/datauis/dtiinit'
+import freesurfer from '@/components/datauis/freesurfer'
+import wmc from '@/components/datauis/wmc'
+import life from '@/components/datauis/life'
+import evaluator from '@/components/datauis/evaluator'
+import images from '@/components/datauis/images'
+import volumeviewer from '@/components/datauis/volumeviewer'
+
 import filebrowser from '@/components/filebrowser'
-
 import task from '@/components/task'
-
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
     props: [ 'instanceid', 'taskid', 'type', 'subdir' ],
     components: { 
-        dtiinit, freesurfer, wmc, life, evaluator, images, volumeviewer, filebrowser,
-        task
+        dtiinit, freesurfer, wmc, 
+        life, evaluator, images, 
+        volumeviewer, filebrowser, task
     },
 
     data () {
@@ -173,12 +173,6 @@ export default {
                     });
                 }
             }
-            /*
-            case "finished":
-                console.error("TODO novnc finished! -- need to restart?");
-                break;
-            }
-            */
         },
 
         get_instance_singleton() {
