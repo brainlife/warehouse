@@ -684,8 +684,7 @@ methods: {
         }
         this.$http.post(Vue.config.wf_api+'/task', {
             instance_id: this.instance._id,
-            name: "Staging Input Datasets",
-            //desc: "Stage Input for "+task.name,
+            name: "Staged Datasets",
             service: "soichih/sca-product-raw",
             config: { download, _outputs, _tid: this.next_tid() },
         }).then(res=>{
