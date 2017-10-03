@@ -204,10 +204,12 @@ exports.storage_systems["dcwan/hcp"] = {
     },
 }
 
+//TODO - I think I am going to store files to datasets so that I can make this a bit more generic
 const nki_config = require(__dirname+'/nki');
 const nki_storage = pkgcloud.storage.createClient(nki_config);
+/*
 function get_nki_filepaths(dataset) {
-    filepaths = []
+    var filepaths = []
 
     var s3_base = "data/Projects/RocklandSample/RawDataBIDS/sub-"+dataset.storage_config.subject+"/ses-"+dataset.storage_config.session;
 
@@ -232,10 +234,20 @@ function get_nki_filepaths(dataset) {
             local: "dwi.bvecs",
         });
         break;
+    case "neuro/func/task":
+        filepaths.push({
+            s3: s3_base+"/func/sub-"+
+                    dataset.storage_config.subject+"_ses-"+
+                    dataset.storage_config.session+"_task-"+
+                    dataset.storage_config.task+"_acq-"+
+                    dataset.storage_config.acq+"_bold.nii.gz",
+            local: "bold.nii.gz",
+        });
     }
     console.dir(filepaths);
     return filepaths;
 }
+*/
 exports.storage_systems["nki"] = {
     test: cb=>{
         nki_storage.getContainer(nki_config.bucket, (err,container)=>{
@@ -253,7 +265,8 @@ exports.storage_systems["nki"] = {
     },
     download: (dataset, cb)=>{
         var archive = archiver('tar');
-        get_nki_filepaths(dataset).forEach(file=>{
+        //get_nki_filepaths(dataset).forEach(file=>{
+        dataset.storage_config.files.forEach(file=>{
             var stream = nki_storage.download({container: nki_config.bucket, remote: file.s3});
             archive.append(stream, {name: file.local});
         });

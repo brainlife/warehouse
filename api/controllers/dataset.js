@@ -364,7 +364,7 @@ router.get('/download/:id', jwt({
             }, 1000*15);
             system.stat(dataset, (err, stats)=>{
                 clearTimeout(stat_timer);
-                logger.debug(JSON.stringify(stats, null, 4));
+                //logger.debug(JSON.stringify(stats, null, 4));
                 if(err) return next(err);
 
                 system.download(dataset, (err, readstream, filename)=>{
@@ -375,6 +375,10 @@ router.get('/download/:id', jwt({
                     //var mimetype = mime.lookup(fullpath);
                     //logger.debug("mimetype:"+mimetype);
 
+                    if(!dataset.download_count) dataset.download_count = 1;
+                    else dataset.download_count++;
+                    dataset.save();
+
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+filename);
                     if(stats) res.setHeader('Content-Length', stats.size);
@@ -383,13 +387,16 @@ router.get('/download/:id', jwt({
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);
                     });
+                    /* close event seems to be stream dependent.. can't rely on..
                     readstream.on('close', err=>{
                         //close won't fire if user cancel download mid-way
+                        logger.debug("incrementing download_count");
                         if(!dataset.download_count) dataset.download_count = 1;
                         else dataset.download_count++;
                         dataset.save();
                         //logger.debug("incremented download_count", dataset.download_count);
                     });
+                    */
                 });
             });
         });

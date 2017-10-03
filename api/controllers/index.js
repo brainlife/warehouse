@@ -44,6 +44,7 @@ router.use('/project', require('./project'));
 router.use('/dataset', require('./dataset'));
 router.use('/app', require('./app'));
 router.use('/datatype', require('./datatype'));
+router.use('/event', require('./event'));
 
 module.exports = router;
 

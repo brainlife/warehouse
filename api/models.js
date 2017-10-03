@@ -7,6 +7,7 @@ const winston = require('winston');
 //mine
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
+const events = require('./events');
 
 //use native promise for mongoose
 //without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated
@@ -120,6 +121,11 @@ var datasetSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false} ,
 })
+datasetSchema.post('save', events.dataset);
+datasetSchema.post('findOneAndUpdate', events.dataset);
+datasetSchema.post('findOneAndRemove', events.dataset);
+datasetSchema.post('remove', events.dataset);
+
 datasetSchema.index({'$**': 'text'}) //make all text fields searchable
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
