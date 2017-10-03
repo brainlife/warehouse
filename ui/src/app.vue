@@ -83,7 +83,7 @@
         <tr>
             <th>Developers</th>
             <td>
-                <ul>
+                <ul style="list-style: none; padding: 0px;">
                     <li v-for="c in app.admins" key="c._id">
                         <contact :id="c"></contact>
                     </li>
@@ -110,11 +110,11 @@
         <tr>
             <th>Computing Resource</th>
             <td v-if="resources">
-                <b-alert show variant="danger" v-if="resources.length == 0">
-                    This application is not configured to run on any resource that you have access to.
+                <b-alert show variant="danger" v-if="!preferred_resource">
+                    This application currently can not run on any resource that you have access to.
                 </b-alert>
                 <p v-else>This application could run on following resources.</p>
-                <b-table hover :items="resource_table" :fields="['resource','status','score', 'detail']">
+                <b-table :items="resource_table" :fields="['resource','status','score', 'detail']">
                     <template slot="resource" scope="data">
                         <b>{{data.value}}</b>
                     </template>
@@ -125,6 +125,11 @@
                         <p class="help-block">{{data.value}}</p>
                     </template>
                 </b-table>
+            </td>
+            <td v-else>
+                <b-alert show variant="danger">
+                    This application is not configured to run on any resource that you have access to.
+                </b-alert>
             </td>
         </tr>
         <tr>
@@ -207,7 +212,7 @@ export default {
                 };
 
                 //b-table shows _rowVariant as column..
-                if(resource.id == this.preferred_resource._id) {
+                if(this.preferred_resource && resource.id == this.preferred_resource._id) {
                     item._rowVariant = 'success';
                 }
                 items.push(item);
@@ -228,7 +233,7 @@ export default {
         }})
         .then(res=>{
             this.app = res.body.apps[0];
-            if(this.app.github) this.find_resources(this.app.github);
+            this.find_resources(this.app.github);
             if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
 
             //then load task stats
@@ -271,13 +276,13 @@ export default {
                 service
             }})
             .then(res => {
-                if(res.body.nomatch) return;
-                this.preferred_resource = res.body.resource;
+                if(res.body.resource) this.preferred_resource = res.body.resource;
                 this.resources = res.body.considered.sort((a, b) => {
                     if (a.score < b.score) return 1;
                     if (a.score > b.score) return -1;
                     return 0;
                 });
+                console.dir(this.resources);
             })
             .catch(err => {
                 console.error(err);
