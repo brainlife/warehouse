@@ -71,11 +71,14 @@ export default {
         return {
             desc: this.output.desc,
             project: null,
-            tags: this.task.product.tags,
+            tags: [],
         }
     },
     
     mounted: function() {
+        if(this.task.product && this.task.product.tags) {
+            this.tags = this.task.product.tags;
+        }
     },
 
     methods: {

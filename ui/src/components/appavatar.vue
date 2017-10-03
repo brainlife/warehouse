@@ -16,6 +16,7 @@ export default {
 
 <style scoped>
 .appavatar {
+display: inline-block;
 background-color: #ddd;
 box-shadow: inset 0px 0px 10px #aaa;
 }

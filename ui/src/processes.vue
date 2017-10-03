@@ -137,6 +137,23 @@ export default {
                 }
             });
 
+/*
+            return this.$http.get('project', {params: {
+                find: JSON.stringify({
+                    $or: [
+                        {admins: Vue.config.user.sub}, 
+                        {members: Vue.config.user.sub}, 
+                        {access: "public"},
+                    ],
+                    removed: false,
+                })
+            }});
+        })
+        .then(res=>{
+            console.log("got projects", res);
+            let projects = res.body.projects;
+*/
+
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
@@ -147,15 +164,39 @@ export default {
                         key: Vue.config.user.sub+".#",
                     }
                 }));
+
+/*
+                //TODO - this is super inefficient..
+                //I should only subscribe to projects that I truly care about
+                console.log("subscribe to dataset events for all projects");
+                projects.forEach(project=>{
+                    console.log(project._id);
+                    this.ws.send(JSON.stringify({
+                        bind: {
+                            ex: "warehouse.dataset",
+                            key: project._id+".#",
+                        }
+                    }));    
+                });
+*/
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
-                console.log("instance update");
-                console.dir(event.msg);
-                var instance = this.instances.find(i=>i._id == event.msg._id);
-                if(instance) {
-                    for(var k in event.msg) instance[k] = event.msg[k];
-                }
+                switch(event.dinfo.exchange) {
+/*
+                case "warehouse.dataset":
+                    console.log("TODO--------------dataset update");
+                    console.dir(event);
+                    break;
+*/
+                case "wf.instance":
+                    console.log("instance update");
+                    console.dir(event);
+                    var instance = this.instances.find(i=>i._id == event.msg._id);
+                    if(instance) {
+                        for(var k in event.msg) instance[k] = event.msg[k];
+                    }
+                } 
             }
 
         }).catch(console.error);
