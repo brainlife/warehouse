@@ -534,7 +534,7 @@ export default {
                     }
                     this.$http.post(Vue.config.wf_api+'/task', {
                         instance_id: instance._id,
-                        name: "Staging Input Datasets - "+this.datatypes[datatype_id].name,
+                        name: "Staged Datasets - "+this.datatypes[datatype_id].name,
                         service: "soichih/sca-product-raw",
                         config: { download, _outputs, _tid: tid++ },
                     }).then(res=>{

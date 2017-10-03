@@ -110,36 +110,21 @@
         <tr>
             <th>Computing Resource</th>
             <td v-if="resources">
-                <!--
-                <p v-if="preferred_resource">
-                    This service can currently run on 
-                    <el-tag> {{preferred_resource.name}} (Best)</el-tag>
-                     <el-tag v-for="resource in resources" :key="resource.id" v-if="resource.id != preferred_resource._id" style="margin-right:3px;">
-                        {{resource.name}}
-                    </el-tag> 
-                </p> 
-                <b-alert show variant="danger" v-else>
-                    There is currently no available computing resource to run this application.
-                </b-alert>
-                -->
                 <b-alert show variant="danger" v-if="resources.length == 0">
                     This application is not configured to run on any resource that you have access to.
                 </b-alert>
                 <p v-else>This application could run on following resources.</p>
-                <b-card v-for="resource in resources" :key="resource.id">
-                    <b-row>
-                        <b-col>
-                            <b>{{resource.name}}</b>
-                            <b-badge variant="success" v-if="resource.id == preferred_resource._id">Preferred</b-badge>
-                        </b-col>
-                        <b-col>
-                            <statustag :status="resource.status"/>
-                        </b-col>
-                        <b-col>
-                            <p class="help-block">{{resource.detail}}</p>
-                        </b-col>
-                    </b-row>
-                </b-card>
+                <b-table hover :items="resource_table" :fields="['resource','status','score', 'detail']">
+                    <template slot="resource" scope="data">
+                        <b>{{data.value}}</b>
+                    </template>
+                    <template slot="status" scope="data">
+                        <statustag :status="data.value"/>
+                    </template>
+                    <template slot="detail" scope="data">
+                        <p class="help-block">{{data.value}}</p>
+                    </template>
+                </b-table>
             </td>
         </tr>
         <tr>
@@ -208,6 +193,27 @@ export default {
 
             config: Vue.config,
         }
+    },
+
+    computed: {
+        resource_table: function() {
+            let items = [];
+            this.resources.forEach(resource=>{
+                var item = {
+                    resource: resource.name,
+                    status: resource.status,
+                    score: resource.score,
+                    detail: resource.detail,
+                };
+
+                //b-table shows _rowVariant as column..
+                if(resource.id == this.preferred_resource._id) {
+                    item._rowVariant = 'success';
+                }
+                items.push(item);
+            });
+            return items;
+        },
     },
 
     mounted: function() {

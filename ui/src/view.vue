@@ -4,6 +4,7 @@
         <dtiinit v-if="type == 'neuro.dtiinit'" :task="task" :subdir="subdir"></dtiinit>
         <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="task" :subdir="subdir"></freesurfer>
         <wmc v-else-if="type == 'neuro.wmc'" :task="task" :subdir="subdir"></wmc>
+        <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir"></lifeview>
         <life v-else-if="type == 'neuro.life_output'" :task="task" :subdir="subdir"></life>
         <evaluator v-else-if="type == 'neuro.conneval_output'" :task="task" :subdir="subdir"></evaluator>
         <images v-else-if="type == 'generic.images'" :task="task" :subdir="subdir"></images>
@@ -33,6 +34,7 @@ import Vue from 'vue'
 import dtiinit from '@/components/datauis/dtiinit'
 import freesurfer from '@/components/datauis/freesurfer'
 import wmc from '@/components/datauis/wmc'
+import lifeview from '@/components/datauis/lifeview'
 import life from '@/components/datauis/life'
 import evaluator from '@/components/datauis/evaluator'
 import images from '@/components/datauis/images'
@@ -47,7 +49,8 @@ export default {
     components: { 
         dtiinit, freesurfer, wmc, 
         life, evaluator, images, 
-        volumeviewer, filebrowser, task
+        volumeviewer, filebrowser, task,
+        lifeview,
     },
 
     data () {

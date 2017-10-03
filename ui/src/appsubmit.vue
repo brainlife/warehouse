@@ -382,7 +382,7 @@ export default {
                 console.log("submitting download task", download, _outputs);
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
-                    name: "Staging Input Dataset",
+                    name: "Staged Dataset",
                     service: "soichih/sca-product-raw",
                     config: { download, _outputs, _tid: 0 },
                 })
