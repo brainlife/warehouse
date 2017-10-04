@@ -59,7 +59,13 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
             files.forEach(file=>{
                 dirs.forEach(dir=>{
                     if(dir.dirname == ".") file.skip = true; //TODO a bit brittle
-                    if(file.filename.startsWith(dir.dirname)) file.skip = true;
+
+                    //skip files that are contained inside another directory
+                    //for example..
+                    //(dirname)  dtiinit
+                    //(filename) dtiinit/something.mat
+                    //since something.mat is under dtiinit/, I can skip it
+                    if(file.filename.startsWith(dir.dirname+"/")) file.skip = true;
                 });
             });
 
