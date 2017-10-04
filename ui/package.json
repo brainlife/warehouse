@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node build/dev-server.js",
     "build": "node build/build.js",
-    "deploy": "rsync --delete -avz -e ssh dist/ root@brain-life.org:/usr/local/ui/warehouse",
+    "deploy": "ssh root@brain-life.org \"cp -r /usr/local/ui/warehouse /usr/local/ui/warehouse.`date +%F.%T` \" && rsync --delete -avz -e ssh dist/ root@brain-life.org:/usr/local/ui/warehouse",
     "theme": "./node_modules/.bin/et"
   },
   "dependencies": {
