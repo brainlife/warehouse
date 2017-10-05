@@ -8,7 +8,7 @@
         <el-dropdown-item command="lifeview" v-if="datatype == 'neuro/life_output'">Life Tract View</el-dropdown-item>
 
         <el-dropdown-item :command="datatype" v-if="datatype == 'neuro/dtiinit'">dtiInit Output</el-dropdown-item>
-        <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/wmc'">WWC Tract View</el-dropdown-item>
+        <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/wmc'">WMC Tract View</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/life_output'">Life Stats</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'neuro/conneval_output'">Evaluator Result</el-dropdown-item>
         <el-dropdown-item :command="datatype" v-else-if="datatype == 'generic/images'">Images</el-dropdown-item>

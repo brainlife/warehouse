@@ -225,8 +225,8 @@
                                     v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
                             </b-col>
                             <b-col>
-                                <div class="text-muted" style="margin-top: 3px;">Datatype Mapping</div>
-                                <el-input type="textarea" v-model="output._files" autosize style="margin-top: 3px;" />
+                                <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
+                                <el-input type="textarea" v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
                             </b-col>
                         </b-row>
                     </b-card>
