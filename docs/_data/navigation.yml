@@ -1,26 +1,24 @@
 main:
-  - title: "Documentation"
-    url: /
   - title: "API Doc"
     url: /apidoc/
   - title: "Github"
     url: https://github.com/brain-life/warehouse
 
 docs:
-  - title: Brain-Life
+  - title: Introduction
     children:
-      - title: "Introduction"
+      - title: "About"
         url: /
 
   - title: User Guide
     children:
       - title: "User Guide"
-        url: /installation
+        url: /user
 
   - title: Developer Guide
     children:
       - title: "Developing App"
-        url: /developapp
+        url: /app
 
   - title: Resource Adminstration
     children:

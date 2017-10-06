@@ -1,6 +1,6 @@
 # Site Settings
 locale                   : "en"
-title                    : "Brain-Life Warehouse"
+title                    : "Warehouse"
 title_separator          : "-"
 name                     : "Brain-Life Warehouse"
 description              : "Brain-Life's user interface for data archiving and processing"
