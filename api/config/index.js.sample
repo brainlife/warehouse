@@ -7,6 +7,7 @@ const mkdirp = require('mkdirp'); //for dc2
 const pkgcloud = require('pkgcloud');
 const path = require('path');
 const archiver = require('archiver');
+const ssh2 = require('ssh2');
 
 exports.mongodb = "mongodb://localhost/warehouse";
 exports.neo4j = "http://neo4j:whatever@localhost:7474";
@@ -129,11 +130,24 @@ exports.storage_systems.jetstream = {
     },
 }
 
-//
-// dc2
-//
-const dc2_path = "/mnt/dc2/projects/brainlife/dev1-warehouse/datasets/";
+function connect_dc(cb) {
+    var conn = new ssh2.Client();
+    conn.on('ready', ()=>{
+        cb(null, conn); 
+    });
+    try {
+        conn.connect({
+            username: "hayashis",
+            host: "dataxfer2.bigred2.uits.iu.edu",
+            privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
+        });
+    } catch(err) {
+        cb(err);
+    }
+}
+
 exports.storage_systems.dc2 = {
+    /*
     //return archive_stream to pipe data to
     test: cb=>{
         fs.stat(dc2_path, timeout((err,stats)=>{
@@ -164,13 +178,46 @@ exports.storage_systems.dc2 = {
         var stream = fs.createReadStream(dir+"/"+filename);
         cb(null, stream, filename);
     },
+    */
+    test: cb=>{
+        //TODO - I should do more checking?
+        connect_dc((err, conn)=>{
+            conn.end();
+            if(err) return cb(err);
+            cb();
+        });
+    }, 
+    stat: (dataset, cb)=>{
+        //TODO..
+        cb();
+    },
+    upload: (dataset, cb)=>{
+        cb("no upload to dcwan/hcp");
+    },
+    download: (dataset, cb)=>{
+
+        connect_dc((err, conn)=>{
+            if(err) return cb(err);
+             conn.sftp((err, sftp)=>{
+                if (err) {
+                    conn.end();
+                    return cb(err);
+                }
+                var path = "/N/dc2/projects/brainlife/dev1-warehouse/datasets/"+dataset.project+"/"+dataset._id+".tar.gz";
+                var stream = sftp.createReadStream(path);
+                stream.on('close', code=>{
+                    conn.end();
+                });
+                cb(null, stream, dataset._id+".tar.gz");
+            });
+        });
+    },
+
 } 
 
-//
-// dcwan/hcp (read only) 
-//
-const dcwan_hcp_path = "/mnt/dcwan/projects/brainlife/hcp/";
 exports.storage_systems["dcwan/hcp"] = {
+    /*
+    const dcwan_hcp_path = "/mnt/dcwan/projects/brainlife/hcp/";
     test: cb=>{
         fs.stat(dcwan_hcp_path, timeout((err,stats)=>{
             if(err) return cb(err);
@@ -202,52 +249,66 @@ exports.storage_systems["dcwan/hcp"] = {
             console.error(err);
         });
     },
+    */
+    test: cb=>{
+        connect_dc((err, conn)=>{
+            conn.end();
+            if(err) return cb(err);
+            cb();
+        });
+    }, 
+    stat: (dataset, cb)=>{
+        //TODO..
+        cb();
+    },
+    upload: (dataset, cb)=>{
+        cb("no upload to dcwan/hcp");
+    },
+    download: (dataset, cb)=>{
+        connect_dc((err, conn)=>{
+            if(err) return cb(err);
+
+            if(dataset.storage_config.files) {
+                 conn.sftp((err, sftp)=>{
+                    if (err) {
+                        conn.end();
+                        return cb(err);
+                    }
+
+                    var archive = archiver('tar');
+                    dataset.storage_config.files.forEach(file=>{
+                        console.log("downloading", file.filepath, file.local);
+                        var stream = sftp.createReadStream(file.filepath);
+                        archive.append(stream, {name: file.local});
+                    });
+                    archive.on('finish', ()=>{
+                        //console.log("closing archive");
+                        conn.end();
+                    });
+                    cb(null, archive, dataset._id+".tar");
+                    archive.finalize();
+                });
+            }
+
+            if(dataset.storage_config.dirpath) {
+                var local = dataset.storage_config.local;
+                conn.exec("cd "+dataset.storage_config.dirpath+"/surf && tar hc * --transform 's|^|/"+local+"/|'", (err, stream)=>{
+                    if(err) return next(err);
+                    stream.on('close', code=>{
+                        //console.log("done with tar stream - closing connection:",code)
+                        conn.end();
+                    });
+                    cb(null, stream, dataset._id+".tar");
+                });
+            }
+        });
+    },
 }
 
-//TODO - I think I am going to store files to datasets so that I can make this a bit more generic
 const nki_config = require(__dirname+'/nki');
 const nki_storage = pkgcloud.storage.createClient(nki_config);
-/*
-function get_nki_filepaths(dataset) {
-    var filepaths = []
-
-    var s3_base = "data/Projects/RocklandSample/RawDataBIDS/sub-"+dataset.storage_config.subject+"/ses-"+dataset.storage_config.session;
-
-    switch(dataset.datatype.name) {
-    case "neuro/anat/t1w":
-        filepaths.push({
-            s3: s3_base+"/anat/sub-"+dataset.storage_config.subject+"_ses-"+dataset.storage_config.session+"_T1w.nii.gz",
-            local: "t1.nii.gz",
-        });
-        break;
-    case "neuro/dwi":
-        filepaths.push({
-            s3: s3_base+"/dwi/sub-"+dataset.storage_config.subject+"_ses-"+dataset.storage_config.session+"_dwi.nii.gz",
-            local: "dwi.nii.gz",
-        });
-        filepaths.push({
-            s3: s3_base+"/dwi/sub-"+dataset.storage_config.subject+"_ses-"+dataset.storage_config.session+"_dwi.bval",
-            local: "dwi.bvals",
-        });
-        filepaths.push({
-            s3: s3_base+"/dwi/sub-"+dataset.storage_config.subject+"_ses-"+dataset.storage_config.session+"_dwi.bvec",
-            local: "dwi.bvecs",
-        });
-        break;
-    case "neuro/func/task":
-        filepaths.push({
-            s3: s3_base+"/func/sub-"+
-                    dataset.storage_config.subject+"_ses-"+
-                    dataset.storage_config.session+"_task-"+
-                    dataset.storage_config.task+"_acq-"+
-                    dataset.storage_config.acq+"_bold.nii.gz",
-            local: "bold.nii.gz",
-        });
-    }
-    console.dir(filepaths);
-    return filepaths;
-}
-*/
+//some BREATHHOLD files are inaccessible
+//https://www.nitrc.org/forum/forum.php?thread_id=8563&forum_id=1244
 exports.storage_systems["nki"] = {
     test: cb=>{
         nki_storage.getContainer(nki_config.bucket, (err,container)=>{
@@ -265,8 +326,8 @@ exports.storage_systems["nki"] = {
     },
     download: (dataset, cb)=>{
         var archive = archiver('tar');
-        //get_nki_filepaths(dataset).forEach(file=>{
         dataset.storage_config.files.forEach(file=>{
+            console.log("downloading", file.s3, "from", nki_config.bucket, file.local);
             var stream = nki_storage.download({container: nki_config.bucket, remote: file.s3});
             archive.append(stream, {name: file.local});
         });
