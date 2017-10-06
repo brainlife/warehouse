@@ -15,3 +15,4 @@ ui/package-lock.json
 api/config/jetstream.js
 api/config/index.js
 api/config/*.jwt
+docs/_site
