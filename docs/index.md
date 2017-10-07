@@ -6,6 +6,6 @@ sidebar:
   nav: "docs"
 ---
 
-Brain-Life Warehouse is the main component of Brain-Life where you can archive data, register application and process data.
+Brain-Life Warehouse allows you to organize / archive datasets, register application and process data.
 
-TODO.
+

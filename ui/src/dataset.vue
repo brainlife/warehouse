@@ -40,11 +40,11 @@
             </td>
         </tr>
         <tr>
-            <th width="180px">Create Date</th>
+            <th>Create Date</th>
             <td>{{new Date(dataset.create_date).toLocaleString()}}</td>
         </tr>
         <tr>
-            <th width="180px">Download Count</th>
+            <th>Download Count</th>
             <td>{{dataset.download_count}}</td>
         </tr>
         <tr>

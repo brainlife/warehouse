@@ -4,7 +4,7 @@
         <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
         <div>
             <h4 class="name">{{app_.name}}</h4>
-            <h5 class="github" v-if="!compact">{{app_.github}}</h5>
+            <h5 class="github">{{app_.github}} <!--<b v-if="app_.github_branch">{{app_.github_branch}}</b>--></h5>
             <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
             <div class="desc" :style="{height: descheight}">
                 <div class="datatypes" v-if="!compact">
@@ -84,8 +84,6 @@ background-color: white;
 .appcard.clickable:hover {
 background-color: #f3f3f3;
 }
-.appcard.clickable:hover .github {
-}
 .appcard:hover {
 box-shadow: 2px 2px 4px #999;
 }
@@ -97,11 +95,12 @@ box-shadow: none;
 color: #666;
 padding: 0px;
 padding-top: 10px;
+margin-bottom: 4px;
 }
 .github {
 opacity: 0.6;
-font-family: monospace;
-font-size: 80%;
+font-family: arial;
+font-size: 85%;
 }
 .desc {
 max-height: 130px;
@@ -133,17 +132,17 @@ font-size: 13px;
 font-weight: bold;
 opacity: 0.7;
 }
-.compact h4.name {
-padding: 2px;
-}
 .compact .name {
 padding: 5px 0px;
 margin-bottom: 0px;
+display: inline-block;
 }
 .compact .desc {
 margin: 0px;
-margin-top: 5px;
 font-size: 90%;
+}
+.compact .github {
+display: inline-block;
 }
 .devs {
 background-color: #eee;

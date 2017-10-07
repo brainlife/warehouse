@@ -17,8 +17,16 @@ docs:
 
   - title: Developer Guide
     children:
-      - title: "Developing App"
-        url: /app
+      - title: "What is app?"
+        url: /whatisapp
+      - title: "HelloWorld"
+        url: /helloworld
+      - title: "Testing Apps"
+        url: /testapp
+      - title: "Registering App"
+        url: /registerapp
+      - title: "Customizing Lifecycle Hooks"
+        url: /customhooks
 
   - title: Resource Adminstration
     children:

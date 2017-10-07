@@ -19,16 +19,18 @@
             <tr>
             <th width="200px">Stats</th>
             <td>
-                <el-row>
-                    <el-col :span="8" v-if="datasets_attribs.num_subjects">
-                        <h4>{{datasets_attribs.num_subjects}}</h4>
-                        <b class="text-muted">Subjects</b>
-                    </el-col>
-                    <el-col :span="8" v-if="datasets_attribs.num_datasets">
-                        <h4>{{datasets_attribs.num_datasets}}</h4>
-                        <b class="text-muted">Datasets</b>
-                    </el-col>
-                </el-row>
+                <b-card>
+                    <b-row>
+                        <b-col v-if="datasets_attribs.num_subjects">
+                            <h4>{{datasets_attribs.num_subjects}}</h4>
+                            <b class="text-muted">Subjects</b>
+                        </b-col>
+                        <b-col v-if="datasets_attribs.num_datasets">
+                            <h4>{{datasets_attribs.num_datasets}}</h4>
+                            <b class="text-muted">Datasets</b>
+                        </b-col>
+                    </b-row>
+                </b-card>
             </td>
         </tr>
         <tr>
