@@ -1,21 +1,26 @@
 <template>
 <div class="life">
     <div v-if="stats">
-        <p>
-            Fibers with non-0 evidence <b>{{stats.non0_tracks.toLocaleString()}}</b> 
-            out of <b>{{stats.input_tracks.toLocaleString()}}</b> total tracks
-        </p>
-        <el-progress :text-inside="true" :stroke-width="18" :percentage="(stats.non0_tracks/stats.input_tracks)*100" status="success"></el-progress>
+        <b-row>
+            <b-col md="4">
+                Fibers with non-0 evidence <b>{{stats.non0_tracks.toLocaleString()}}</b> 
+                out of <b>{{stats.input_tracks.toLocaleString()}}</b> total tracks
+            </b-col>
+            <b-col>
+                <b-progress :value="Math.round(stats.non0_tracks/stats.input_tracks*10000)/100" show-progress></b-progress>
+                <p class="help-block">* Should be around 20-30% range.</p>
+            </b-col>
+        </b-row>
     </div>
     <br>
-    <el-row>
-        <el-col :span="12">
+    <b-row>
+        <b-col>
             <div ref="plot" style="width: 100%;"/>
-        </el-col>
-        <el-col :span="12">
+        </b-col>
+        <b-col>
             <div ref="w" style="width: 100%;"/>
-        </el-col>
-    </el-row>
+        </b-col>
+    </b-row>
 </div>
 </template>
 

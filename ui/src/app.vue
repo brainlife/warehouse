@@ -19,8 +19,20 @@
         </div>
 
         <table class="info">
+        <tr>
+            <th>Source</th>
+            <td>
+                <h5><a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a></h5>
+                <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                <!-- TODO - we need to ask our developes to put something better before I can start displaying it here
+                <blockquote v-if="readme" class="readme">
+                    <vue-markdown :source="readme"></vue-markdown>
+                </blockquote>
+                -->
+            </td>
+        </tr>
         <tr v-if="service_stats">
-            <th width="175px">Stats</th>
+            <th>Stats</th>
             <td>
                 <b-card>
                     <b-row>
@@ -38,18 +50,6 @@
                         </b-col>
                     </b-row>
                 </b-card>
-            </td>
-        </tr>
-        <tr>
-            <th>Source</th>
-            <td>
-                <h5><a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a></h5>
-                <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
-                <!-- TODO - we need to ask our developes to put something better before I can start displaying it here
-                <blockquote v-if="readme" class="readme">
-                    <vue-markdown :source="readme"></vue-markdown>
-                </blockquote>
-                -->
             </td>
         </tr>
         <tr>
