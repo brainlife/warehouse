@@ -76,16 +76,17 @@ export default {
 
 <style scoped>
 .appcard {
-transition: box-shadow 0.5s, background-color 0.5s;
+transition: box-shadow 0.5;
 }
 .appcard.clickable {
 background-color: white;
 }
-.appcard.clickable:hover {
-background-color: #f3f3f3;
+.appcard.clickable:hover .name,
+.appcard.clickable:hover .github {
+color: #2693ff;
 }
 .appcard:hover {
-box-shadow: 2px 2px 4px #999;
+box-shadow: 2px 2px 4px #ccc;
 }
 .appcard.compact {
 border: none;
@@ -96,11 +97,13 @@ color: #666;
 padding: 0px;
 padding-top: 10px;
 margin-bottom: 4px;
+transition: color 0.5s;
 }
 .github {
 opacity: 0.6;
 font-family: arial;
 font-size: 85%;
+transition: color 0.5s;
 }
 .desc {
 max-height: 130px;

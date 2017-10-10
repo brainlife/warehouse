@@ -46,7 +46,10 @@
         align-items: center;
   font-weight: bold;
   z-index: 20;
-  color: #F49A58 !important;
+
+background: -webkit-linear-gradient(120deg, #159957, #2693ff);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
 }
 
 .masthead__menu {

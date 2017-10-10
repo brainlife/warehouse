@@ -12,13 +12,13 @@ TODO> https://github.com/new
 
 Please be sure to make the repository public so that Brain-Life can download your app.
 
-Git clone the repository where you will be developing and running the application to test.
+Git clone the repository where you will be developing and running your app to test.
 
 ```
 git clone git@github.com:soichih/app-test.git
 ```
 
-Now, create a file named `main` which is used to run your application by Brain-Life. You can also run this to test your application.
+Now, create a file named `main` which is used to run your app by Brain-Life. You can also run this to test your application.
 
 ```
 #!/bin/bash
@@ -38,14 +38,16 @@ Please be sure to set the executable bit.
 chmod +x main
 ```
 
-Following part in `main` instruct PBS and/or slurm job manager to request certain number of nodes / process-per-node. 
+Following part in `main` instructs PBS (or slurm job manager) to request certain number of nodes / process-per-node. It's not necessary if you are not planning to run your app via PBS scheduler.
 
 ```
 #PBS -l nodes=1:ppn=1
 #PBS -l walltime=00:05:00
 ```
 
-You can receive input parameters from Brain-Life through a JSON file called `config.json` which is created by Brain-Life at runtime. Following lines parses the `config.json` using a command line tool called `jq` and pass it to the main part of the application `main.py`.
+You can receive input parameters from Brain-Life through a JSON file called `config.json` which is created by Brain-Life when the app is executed through Brain-Life. 
+
+Following lines parses the `config.json` using a command line tool called `jq` and pass it to the main part of the application `main.py`.
 
 ```
 #parse config.json for input parameters
@@ -80,7 +82,35 @@ f.write("hello world")
 f.close()
 ```
 
-> Instead of using `jq` command to parse `config.json` inside `main`, you can use python's json parsing library (`json.loads()`) inside `main.py`.
+Any output files from your app should be written to the current directory. Please be sure to add it to .gitignore so that it won't be part of your git repo.
+
+> Instead of using `jq` command to parse `config.json` in `main`, you can use python's json parsing library inside `main.py` if you prefer.
+
+Now, you can test run your app simply by executing `main`
+
+```
+./main
+...
+```
+
+Congratulations! You just created your first Brain-Life app! You can now commit all files and push to your github repo.
+
+```
+git add .
+git commit -m"initial import"
+git push
+```
+
+To summarize, Brain-Life app has following characteristics.
+
+* Published in Github.
+* It has `main` which starts the app.
+* It reads input parameters from `config.json`.
+* It writes output files on the current directory.
+
+
+
+
 
 
 
