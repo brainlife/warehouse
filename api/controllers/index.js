@@ -30,9 +30,9 @@ router.get('/health', (req, res)=>{
             //check report date
             var age = Date.now() - new Date(report.date).getTime();
             messages.push(service+" age "+age+" msec");
-            if(age > (report.maxage||1000*60)) {
+            if(age > (report.maxage||1000*120)) {
                 status = "failed";
-                messages.push(service+" is stale max:"+report.maxage);
+                messages.push(service+" is stale max:"+report.maxage||(1000*120));
             }
         }
         if(status != "ok") logger.error(JSON.stringify({messages, reports}, null, 4));
