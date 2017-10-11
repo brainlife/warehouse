@@ -1,27 +1,27 @@
 <template>
-    <b-modal title="Select Datasets" ref="modal" @ok="submit" @hide="hide">
-        <el-form label-width="120px">
-        <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
-            <el-form-item label="Project">
-                <projectselecter v-model="project"></projectselecter>
-            </el-form-item>
-        </div>
-        <div style="background-color: #eee; padding: 10px 10px 1px 10px; margin-bottom: 10px;">
-            <b>Filters</b>
-            <el-form-item label="Subject" v-if="subjects">
-                <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
-            </el-form-item>
-            <el-form-item label="Datatype" v-if="datatypes_s2">
-                <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
-            </el-form-item>
-        </div>
-        <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
-            <el-form-item label="Datasets">
-                <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
-            </el-form-item>
-        </div>
-        </el-form>
-    </b-modal>
+<b-modal title="Select Datasets" ref="modal" id="datasetSelecter" @ok="submit">
+    <el-form label-width="120px">
+    <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
+        <el-form-item label="Project">
+            <projectselecter v-model="project"></projectselecter>
+        </el-form-item>
+    </div>
+    <div style="background-color: #eee; padding: 10px 10px 1px 10px; margin-bottom: 10px;">
+        <b>Filters</b>
+        <el-form-item label="Subject" v-if="subjects">
+            <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
+        </el-form-item>
+        <el-form-item label="Datatype" v-if="datatypes_s2">
+            <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
+        </el-form-item>
+    </div>
+    <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
+        <el-form-item label="Datasets">
+            <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
+        </el-form-item>
+    </div>
+    </el-form>
+</b-modal>
 </template>
 
 <script>
@@ -225,6 +225,10 @@ export default {
     mounted() {
         //I should display this at root
         document.body.appendChild(this.$refs.modal.$el);
+    },
+    destoyed() {
+        //TODO - not sure if this prevents the memory leak? Should I move it back to this component?
+        //document.body.remove(this.$refs.modal.$el);
     },
 
     created: function() {

@@ -3,10 +3,13 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="header" vi-if="dataset">
+        <!--
         <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
+        -->
         <b-button-group style="float: right;">
+            <b-button v-b-modal.viewSelecter @click="openviewsel(dataset.datatype.name)">View</b-button>
             <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
-            <b-button variant="primary" @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
+            <b-button @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
         </b-button-group>
         <h2>
             <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
@@ -213,6 +216,7 @@
             </b-collapse>
         </div>
     </div><!--page-content-->
+    <viewselecter @select="view" :datatype_name="vsel.datatype_name"></viewselecter>
 </div><!--root-->
 </template>
 
@@ -228,7 +232,8 @@ import datatype from '@/components/datatype'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
-import viewerselect from '@/components/viewerselect'
+//import viewerselect from '@/components/viewerselect'
+import viewselecter from '@/components/viewselecter'
 import datatypetag from '@/components/datatypetag'
 import select2 from '@/components/select2'
 import task from '@/components/task'
@@ -240,7 +245,7 @@ export default {
         sidemenu, contact, project, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
-        viewerselect, datatypetag, select2, task,
+        viewselecter, datatypetag, select2, task,
      },
     data () {
         return {
@@ -249,6 +254,10 @@ export default {
             apps: null,
             prov: null, 
             derivatives: {},
+
+            vsel: {
+                datatype_name: null,
+            },
 
             selfurl: document.location.href,
             
@@ -409,13 +418,18 @@ export default {
                 }
             }).then(res=>res.body);
         },
+
+        openviewsel: function(datatype_name) {
+            //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
+            this.vsel.datatype_name = datatype_name;
+        },
         view: function(view) {
             function openview(task) {
-                var _view = view.split('/').join('.'); //replace all / with .
-                console.log("instatnce", task.instance_id);
-                console.log("task", task._id);
-                console.log("view", _view);
-                window.open("#/view/"+task.instance_id+"/"+task._id+"/"+_view+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+                //var _view = view.split('/').join('.'); //replace all / with .
+                //console.log("instatnce", task.instance_id);
+                //console.log("task", task._id);
+                //console.log("view", _view);
+                window.open("#/view/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
             }
 
             //first, query for the viewing task to see if it already exist

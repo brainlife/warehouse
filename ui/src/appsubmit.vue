@@ -2,22 +2,19 @@
 <div>
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
-    <div class="page-content">
-        <div class="header">
-            <h2>Submit Application</h2>
+    <div class="header" v-if="app">
+        <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
+        <h2>Submit - {{app.name}}</h2>
+    </div>
+    <div class="page-content" v-if="app" style="margin-top: 80px;">
+        <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
+            <br>
+            <p style="line-height: 150%;">{{app.desc}}</p>
         </div>
         <div class="content" v-if="app && projects">
-            <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
-            <b-row style="margin-bottom: 10px;">
-                <b-col>Application to Submit</b-col>
-                <b-col cols="9"><app :appid="app._id"/></b-col>
-            </b-row>
-            
-            <!--<h4 v-if="app.inputs.length > 0">Inputs</h4>-->
             <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
                 <b-col>
                     <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
-                    <!--{{input.datatype.name+' '+input.datatype_tags}}-->
                 </b-col>
                 <b-col cols="4">
                     <projectselecter 
@@ -481,11 +478,28 @@ background-color: white;
 padding: 20px;
 }
 .header {
-background-color: #666;
+background: #666;
 padding: 20px;
-color: white;
+margin-top: 50px;
+height: 80px;
+top: 0px;
+position: fixed;
+right: 0px;
+left: 90px;
+color: #666;
+z-index: 1;
+border-bottom: 1px solid #666;
 }
-.header h1 {
-margin: 0px;
+.header h2 {
+color: #eee;
+}
+.header-bottom {
+height: 50px;
+background-color: white;
+position: fixed;
+top: 140px;
+right: 0px;
+left: 90px;
+border-bottom: 1px solid #ddd;
 }
 </style>

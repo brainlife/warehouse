@@ -1,12 +1,19 @@
 <template>
 <b-card v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
-        <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
-        <div>
-            <h4 class="name">{{app_.name}}</h4>
-            <h5 class="github">{{app_.github}} <!--<b v-if="app_.github_branch">{{app_.github_branch}}</b>--></h5>
-            <el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>
-            <div class="desc" :style="{height: descheight}">
+        <div v-if="compact">
+            <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
+            <div style="max-height: 72px; overflow: hidden;">
+                <h4 class="name">{{app_.name}} <small>{{app_.github}}</small></h4>
+                <div class="desc">{{app_.desc||'no desc..'}}</div>
+            </div>
+            <slot/>
+        </div>
+        <div v-else>
+            <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
+            <div class="header">
+                <h4 class="name">{{app_.name}}</h4>
+                <h5 class="github">{{app_.github}} <!--<b v-if="app_.github_branch">{{app_.github_branch}}</b>--></h5>
                 <div class="datatypes" v-if="!compact">
                     <div class="datatype" v-for="input in app_.inputs" key="input.id">
                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
@@ -16,12 +23,13 @@
                         <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                     </div>
                 </div>
-                {{app_.desc||'no desc..'}}
             </div>
+            <!--<el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>-->
+            <div class="desc" style="clear: both;">{{app_.desc||'no desc..'}}</div>
             <slot/>
-        </div>
-        <div class="devs" v-if="!compact">
-            <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
+            <div class="devs">
+                <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
+            </div>
         </div>
     </div>
 </b-card>
@@ -43,7 +51,7 @@ export default {
         compact: Boolean,
         appid: String,
         clickable: {type: Boolean, default: true},
-        descheight: Number,
+        //descheight: Number,
     },
     data() {
         return {
@@ -92,6 +100,10 @@ box-shadow: 2px 2px 4px #ccc;
 border: none;
 box-shadow: none;
 }
+.header {
+height: 90px;
+overflow: hidden;
+}
 .name {
 color: #666;
 padding: 0px;
@@ -104,15 +116,17 @@ opacity: 0.6;
 font-family: arial;
 font-size: 85%;
 transition: color 0.5s;
+margin-bottom: 0px;
 }
 .desc {
-max-height: 130px;
 font-size: 13px;
 color: #333;
 line-height: 140%;
 overflow: hidden;
 margin: 10px;
-text-overflow:ellipsis;
+margin-top: 0px;
+/*height: 150px;*/
+transition: color 0.5s;
 }
 .rate {
 height: 20px;
@@ -129,6 +143,7 @@ display: block;
 h4 {
 font-size: 15px;
 font-weight: bold;
+padding-bottom: 0px;
 }
 h5 {
 font-size: 13px;
@@ -136,16 +151,18 @@ font-weight: bold;
 opacity: 0.7;
 }
 .compact .name {
-padding: 5px 0px;
-margin-bottom: 0px;
-display: inline-block;
+padding: 0px;
+margin-bottom: 4px;
+font-size: 14px;
 }
 .compact .desc {
 margin: 0px;
 font-size: 90%;
+height: inherit;
 }
 .compact .github {
 display: inline-block;
+margin-bottom: 0px;
 }
 .devs {
 background-color: #eee;
@@ -162,8 +179,5 @@ margin: 3px 0px;
 display: inline-block;
 margin-right: 2px;
 margin-top: 2px;
-}
-.el-rate {
-margin-bottom: 0px;
 }
 </style>

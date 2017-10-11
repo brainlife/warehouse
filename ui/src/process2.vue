@@ -16,8 +16,8 @@
                 </small>
             </mute>
         </div>
-        <b-button variant="primary" size="sm" style="margin: 10px;" :class="{animated: true, headShake: _datasets.length == 0}" 
-            @click="show_input_dialog = true"> Stage Datasets</b-button>
+
+        <b-button variant="primary" v-b-modal.datasetSelecter size="sm" style="margin: 10px;" :class="{animated: true, headShake: _datasets.length == 0}">Stage Datasets</b-button>
     </div>
     <p v-if="instance.status == 'removed' || instance.config.removing">
         <el-alert type="error" title="">This process has been removed</el-alert>
@@ -26,7 +26,7 @@
     <div v-if="tasks" v-for="task in tasks" :key="task._id">
 
         <!--task-id and toggler-->
-        <div style="float: right" :id="task._id" :title="task._id" @click="toggle_task(task)" class="task-id">
+        <div style="float: right" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
             <icon name="caret-down" v-if="task.show"/><icon name="caret-right" v-else/> 
             t.{{task.config._tid}}
         </div>
@@ -35,14 +35,6 @@
         <task :task="task" class="task" v-if="task.show">
             <!--header-->
             <div slot="header" class="task-header">
-                <!--
-                <div style="float: right">
-                    <h4 :id="task._id" :title="task._id" @click="toggle_task(task)" class="task-name">
-                        <icon name="caret-up" v-if="task.show"/><icon name="caret-down" v-else/> 
-                        t.{{task.config._tid}}
-                    </h4>
-                </div>
-                -->
                 <div v-if="task.config._app && task.show" style="margin-right: 30px;">
                     <app :appid="task.config._app" :compact="true">
                         <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
@@ -84,7 +76,15 @@
 
             <!--output-->
             <el-collapse-item title="Output" name="output" slot="output" v-if="task.config._outputs.length > 0">
-                <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 30px;">
+                <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 35px;">
+                    <div class="float-right" style="position: relative; top: -4px;">
+                        <b-button-group size="sm" v-if="task.status == 'finished'">
+                            <b-button v-b-modal.viewSelecter @click="openviewsel(task, datatypes[output.datatype].name, output.subdir)">View</b-button>
+                            <b-button @click="download(task, output)">Download</b-button>
+                            <b-button :pressed="archiving === output.did" variant="primary" @click="archiving = output.did">Archive</b-button>
+                        </b-button-group>
+                    </div>
+
                     <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                     <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
                     <mute>
@@ -95,16 +95,6 @@
                     <span @click="go('/dataset/'+output.dataset_id)" class="clickable">
                         <el-tag v-if="output.dataset_id">From <b>{{projects[output.project].name}}</b></el-tag>
                     </span>
-
-                    <div style="float: right;">
-                        <div v-if="task.status == 'finished'">
-                            <viewerselect @select="view(task._id, $event, output.subdir)" :datatype="datatypes[output.datatype].name" size="small" style="margin-right: 5px;"></viewerselect>
-                            <el-button size="small" @click="download(task, output)">Download</el-button>
-                            <el-button size="small" type="primary"
-                                :disable="archiving === output.did" @click="archiving = output.did">Archive</el-button>
-
-                        </div>
-                    </div>
 
                     <!--list of archived datasets-->
                     <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
@@ -123,12 +113,26 @@
                             </li>
                         </ul>
                     </div>
-
                     <archiveform v-if="archiving === output.did" :task="task" :output="output" @done="done_archive"></archiveform>
                 </div>
                 <div v-if="task.product">
                     <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
                 </div>
+
+  <b-modal id="modalPopover" title="Modal with Popover" ok-only>
+    <p>
+      This
+      <b-btn v-b-popover="'Popover inside a modal!'" title="Popover">
+        Button
+      </b-btn>
+      triggers a popover on click.
+    </p>
+    <p>
+      This <a href="#" v-b-tooltip title="Tooltip in a modal!">Link</a>
+      will show a tooltip on hover.
+    </p>
+  </b-modal>
+
             </el-collapse-item>
         </task>
 
@@ -285,7 +289,8 @@
             </el-collapse-item> 
         </el-collapse>
     </div>
-    <datasetselecter @submit="submit_stage" :visible.sync="show_input_dialog"></datasetselecter>
+    <datasetselecter @submit="submit_stage"></datasetselecter>
+    <viewselecter @select="view" :datatype_name="vsel.datatype_name"></viewselecter>
 </div>
 </template>
 
@@ -309,7 +314,7 @@ import datasetselecter from '@/components/datasetselecter'
 import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
 import mute from '@/components/mute'
-import viewerselect from '@/components/viewerselect'
+import viewselecter from '@/components/viewselecter'
 import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -325,7 +330,7 @@ export default {
         filebrowser, pageheader, statustag,
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
-        viewerselect, datasetselecter,
+        viewselecter, datasetselecter,
         datatypetag, appname,
     },
 
@@ -343,7 +348,12 @@ export default {
                 valid: false, //form is ready to submit or not
             },
 
-            show_input_dialog: false,
+
+            vsel: {
+                datatype_name: null,
+                task: null,
+                subdir: null,
+            },
 
             //cache
             tasks: null,
@@ -453,9 +463,6 @@ export default {
             this.$router.push(path);
         },
 
-        view: function(taskid, view, subdir) {
-            this.$emit('view', {instanceid: this.instance._id, taskid,view,subdir});
-        },
 
         load() {
             //(re)connect to websocket
@@ -816,6 +823,22 @@ export default {
             task.show = !task.show;
             localStorage.setItem("task.show."+task._id, task.show);
         },
+
+        openviewsel: function(task, datatype_name, subdir) {
+            //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
+            this.vsel.datatype_name = datatype_name;
+            this.vsel.task = task;
+            this.vsel.subdir = subdir;
+        },
+
+        view: function(v) {
+            this.$emit('view', {
+                instanceid: this.vsel.task.instance_id, 
+                taskid: this.vsel.task._id,
+                view: v.ui,
+                subdir: this.vsel.subdir,
+            });
+        },
     },
 }
 </script>
@@ -856,10 +879,10 @@ height: 0;
 }
 
 .task-desc {
-margin-left: 90px;
-margin-top: 10px; 
-padding: 5px 10px; 
-background-color: #e0e0e0;
+margin-top: 5px;
+margin-left: 95px;
+border-left: 5px solid #ccc;
+padding-left: 10px;
 font-style: italic;
 }
 .dataset {

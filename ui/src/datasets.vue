@@ -26,7 +26,7 @@
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
-                <div class="text-muted list-header"><b>{{total_subjects}}</b> Subjects / <b>{{total_datasets}}</b> Datasets</div>
+                <div class="text-muted list-header"><b>{{total_subjects}}</b> Subjects | <b>{{total_datasets}}</b> Datasets</div>
                 <div v-for="(page, page_idx) in pages">
                     <!--show empty div to speed rendering up if it's outside the view-->
                     <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" :style="{height: page_info[page_idx].height}">&nbsp;</div>
@@ -88,16 +88,13 @@
         </div>
         <div class="select-action">
             <b-button-group>
-                <b-button size="sm" @click="download()" 
-                    title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
-                <b-button size="sm" @click="process()" 
-                    title="Run applications on selected datasets by creating a new process.">Process</b-button>
+                <b-button size="sm" v-b-modal.viewSelecter>View</b-button>
+                <b-button size="sm" @click="download()" title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
+                <b-button size="sm" @click="process()" title="Run applications on selected datasets by creating a new process.">Process</b-button>
             </b-button-group>
-            <br>
-            <br>
-            <viewerselect @select="view"></viewerselect>
         </div>
     </div>
+    <viewselecter @select="view"></viewselecter>
 </div>
 </template>
 
@@ -109,8 +106,8 @@ import pageheader from '@/components/pageheader'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import projectmenu from '@/components/projectmenu'
-import viewerselect from '@/components/viewerselect'
 import datatypetag from '@/components/datatypetag'
+import viewselecter from '@/components/viewselecter'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -122,8 +119,8 @@ var scroll_debounce = null;
 export default {
     components: { 
         sidemenu, tags, metadata, 
-        pageheader, projectmenu, viewerselect,
-        datatypetag, 
+        pageheader, projectmenu, 
+        datatypetag, viewselecter,
     },
     data () {
         return {
@@ -443,14 +440,13 @@ export default {
             }).then(res=>res.body.task);
         },
 
-        view: function(type) {
+        view: function(v) {
             var download_instance = null;
             this.get_instance().then(instance=>{
                 download_instance = instance;
                 return this.temp_stage_selected(download_instance);
             }).then(task=>{
-                //if type contains /, I need to replace it with . (see processes/view.vue)
-                window.open("#/view/"+download_instance._id+"/"+task._id+"/"+type, "", "width=1200,height=800,resizable=no,menubar=no"); 
+                window.open("#/view/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
             });
         },
 

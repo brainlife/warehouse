@@ -88,3 +88,9 @@ width: 350px;
 float: left;
 }
 </style>
+
+<style>
+.desc {
+height: 150px;
+}
+</style>

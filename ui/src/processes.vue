@@ -338,7 +338,7 @@ right: inherit;
     color: white;
 }
 
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1300px) {
     #process-list {
         left: -215px;
         box-shadow: 5px 0px 5px rgba(0,0,0,0.5);

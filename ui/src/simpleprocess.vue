@@ -62,41 +62,13 @@
         <tr v-if="app && tasks && instance.status == 'finished'">
             <th>Outputs</th>
             <td>
-                <!--
-                <el-table :data="app.outputs" style="width: 100%" default-expand-all>
-                    <el-table-column type="expand">
-                        <template scope="props">
-                            <el-row :gutter="20">
-                                <el-col :span="20">
-                                    <file v-for="file in props.row.datatype.files" key="file.filename" :file="file" :task="output_task" :subdir="props.row.id"></file>
-                                </el-col>
-                                <el-col :span="4">
-                                    <viewerselect v-if="output_task.status == 'finished'" @select="view(output_task._id, $event, props.row.id)" :datatype="props.row.datatype.name"></viewerselect>
-                                </el-col>
-                            </el-row>
-                            <br>
-                            <filebrowser v-if="output_task.status == 'finished'" :task="output_task" :path="output_task.instance_id+'/'+output_task._id+'/'+props.row.id"/>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="id" label="ID" width="180"></el-table-column>
-                    <el-table-column label="Datatype" width="180">
-                        <template scope="props">
-                            <datatypetag :datatype="props.row.datatype" :tags="props.row.datatype_tags"></datatypetag>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="datatype.desc" label="Description"></el-table-column>
-                </el-table>
-                -->
                 <el-card v-for="output in app.outputs" :key="output.id">
                     <!--
-                    <el-col :span="6">
-                        {{output.id}}
-                    </el-col>
-                    -->
                     <viewerselect v-if="output_task.status == 'finished'" 
                         @select="view(output_task._id, $event, output.id)" 
                         :datatype="output.datatype.name"
                         style="float: right"></viewerselect>
+                    -->
                     <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"></datatypetag>
                     <span class="text-muted">{{output.datatype.desc}}</span>
                     <br>
@@ -182,7 +154,6 @@ import pageheader from '@/components/pageheader'
 import metadata from '@/components/metadata'
 import appavatar from '@/components/appavatar'
 import mute from '@/components/mute'
-import viewerselect from '@/components/viewerselect'
 import statustag from '@/components/statustag'
 import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
@@ -198,7 +169,7 @@ export default {
         sidemenu, contact, task, 
         message, file, tags, 
         metadata, filebrowser, pageheader, 
-        appavatar, mute, viewerselect, 
+        appavatar, mute, 
         statustag, app, datatypetag, 
         simpleprocessarchive,
      },

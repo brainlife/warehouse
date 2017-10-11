@@ -118,8 +118,10 @@
 
                             <div style="float: right;">
                                 <div v-if="_output_tasks[task._id].status == 'finished'">
+                                    <!--
                                     <viewerselect @select="view(_output_tasks[task._id]._id, $event, output_id)" :datatype="datatypes[dataset.datatype].name" 
                                         size="small" style="margin-right: 5px;"></viewerselect>
+                                    -->
                                     <el-button size="small" type="primary"
                                         v-if="archiving != _output_tasks[task._id]._id+'/'+output_id  && !dataset.dataset_id" @click="archiving = _output_tasks[task._id]._id+'/'+output_id">Archive</el-button>
                                     <el-button size="small" 
@@ -272,7 +274,6 @@ import datasetselecter from '@/components/datasetselecter'
 import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
 import mute from '@/components/mute'
-import viewerselect from '@/components/viewerselect'
 import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -288,8 +289,7 @@ export default {
         filebrowser, pageheader, statustag,
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
-        viewerselect, datasetselecter,
-        datatypetag,
+        datasetselecter, datatypetag,
     },
 
     data() {

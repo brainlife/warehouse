@@ -339,8 +339,4 @@ right: 0px;
 left: 90px;
 border-bottom: 1px solid #ddd;
 }
-.appdesc {
-margin: 20px 30px 30px 138px;
-color: gray;
-}
 </style>
