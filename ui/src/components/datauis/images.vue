@@ -1,19 +1,20 @@
 <template>
-<el-row class="images">
-    <el-col :span="6" v-for="image in images" :key="image.url">
-        <el-card :body-style="{padding: '0px'}" class="clickable">
-        <div @click="click(image)">
-            <img v-lazy="image.src" class="image" width="100%">
-            <div style="padding: 10px; height: 90px;">
-                {{image.name}}
-                <div class="bottom clearfix">
-                    <p class="text-muted">{{image.desc}}</p>
-                </div>
-            </div>
-        </div>
-        </el-card>
-    </el-col>
-</el-row>
+<div>
+    <b-card-group style-dis="padding-bottom: 10px" v-for="(row, rid) in images.chunk_inefficient(4)" :key="rid">
+        <b-card 
+            :id="rid+'-'+idx"
+            v-for="(image, idx) in row" :key="idx"
+            @click="click(image)"
+            :img-alt="image.desc"
+            img-bottom :img-src="image.src">
+            <center>{{image.name}}</center>
+            <b-tooltip :target="rid+'-'+idx" :title="image.desc" delay="300"></b-tooltip>
+            <!--
+            <p class="card-text" v-if="image.name != image.desc">{{image.desc}}</p>
+            -->
+        </b-card>
+    </b-card-group>
+</div>
 </template>
 
 <script>
