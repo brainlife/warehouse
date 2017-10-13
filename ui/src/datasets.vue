@@ -6,7 +6,7 @@
         <el-input placeholder="Filter Datasets" @change="change_query_debounce()" v-model="query"/>
     </div>
     <div :class="{rightopen: selected_count}">
-        <projectmenu :active="project_id"></projectmenu>
+        <projectmenu :active="project_id" :projects="projects"></projectmenu>
         <div class="page-header">
             <div class="row">
                 <div class="col-md-2"><h4>Subject</h4></div>
@@ -94,7 +94,7 @@
             </b-button-group>
         </div>
     </div>
-    <viewselecter @select="view"></viewselecter>
+    <viewselecter @select="view" :datatype_names="selected_datatype_names"></viewselecter>
 </div>
 </template>
 
@@ -151,6 +151,18 @@ export default {
         selected_count: function() {
             return Object.keys(this.selected).length;
         },
+        selected_datatype_names: function() {
+            if(!this.datatypes) return null;
+
+            var names = [];
+            for(var id in this.selected) {
+                var selected = this.selected[id];
+                var did = selected.datatype;
+                var datatype_name = this.datatypes[did].name;
+                names.push(datatype_name);
+            }
+            return names;
+        },
 
         group_selected: function() {
             var groups = {};
@@ -189,7 +201,8 @@ export default {
 
     mounted() {
         this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
-		window.addEventListener("scroll", this.page_scrolled, true);
+        var area = document.getElementById("scrolled-area").parentNode;
+		area.addEventListener("scroll", this.page_scrolled);
     },
 
     watch: {
@@ -256,7 +269,6 @@ export default {
                 setTimeout(this.change_query, 300);
                 return;
             }
-            //localStorage.setItem('datasets.query', this.query);
             this.reload();
         },
 
@@ -267,13 +279,6 @@ export default {
                 {removed: false},
                 {project: this.project_id},
             ] 
-
-            /* not sure why this is here..
-            this.project_id = this.$route.params.projectid; //could be set to null
-            if(this.$route.params.projectid) {
-                find.project = this.$route.params.projectid;
-            }
-            */
 
             if(this.query) {
                 //lookup datatype ids that matches the query
@@ -306,7 +311,7 @@ export default {
             }
             if(loaded === this.total_datasets) return;
 
-            console.log("fetching new data");
+            console.log("fetching datasets", loaded);
             this.loading = true;
             var limit = 100;
             this.$http.get('dataset', {params: {
@@ -333,8 +338,7 @@ export default {
                 this.last_groups = {};
                 loaded += res.body.datasets.length;
                 if(this.total_datasets != loaded) {
-                    //don't add last subject group - in case we might have more datasets for that key in the next page
-                    console.log("supressing last subject", this.total_datasets, loaded);
+                    //don't add last subject group - in case we might have more datasets for that key in the next page - so that we can join them together
                     this.last_groups[last_subject] = groups[last_subject];
                     delete groups[last_subject];
                 }
@@ -417,13 +421,17 @@ export default {
         temp_stage_selected: function(instance/*, resource*/) {
             //create config to download all selected data from archive
             var download = [];
+            var datatypes = {};
             for(var dataset_id in this.selected) {
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
                     untar: "auto",
-                    //dir: "download/"+dataset_id, 
                     dir: dataset_id, 
                 });
+
+                var dataset = this.selected[dataset_id];
+                var datatype = this.datatypes[dataset.datatype];
+                datatypes[dataset_id] = datatype;
             }
 
             //remove in 48 hours (abcd-novnc should terminate in 24 hours)
@@ -435,7 +443,7 @@ export default {
                 name: "brainlife.download.stage",
                 service: "soichih/sca-product-raw",
                 //preferred_resource_id: resource,
-                config: { download },
+                config: { download, _datatypes : datatypes },
                 remove_date: remove_date,
             }).then(res=>res.body.task);
         },
@@ -544,9 +552,11 @@ export default {
         }
     },
 
+    /*
 	destroyed() {
 		window.removeEventListener("scroll", this.page_scrolled, true);
 	}
+    */
 }
 </script>
 
@@ -662,7 +672,7 @@ right: 250px;
 .list .truncate {
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; 
+    text-overflow: fade clip; 
 }
 .loading {
     position: fixed;

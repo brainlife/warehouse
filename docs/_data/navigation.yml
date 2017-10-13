@@ -7,7 +7,7 @@ main:
 docs:
   - title: Introduction
     children:
-      - title: "About"
+      - title: "About Warehouse"
         url: /
 
   - title: User Guide
@@ -20,7 +20,7 @@ docs:
       - title: "What is app?"
         url: /whatisapp
       - title: "HelloWorld"
-        url: /helloworld
+        url: /helloworld`
       - title: "Registering App"
         url: /registerapp
       - title: "Customizing Lifecycle Hooks"
@@ -30,4 +30,9 @@ docs:
     children:
       - title: "Registering Resource"
         url: /resource
+
+  - title: Misc.
+    children:
+      - title: "Contact"
+        url: /contact
 

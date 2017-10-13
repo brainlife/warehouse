@@ -1,6 +1,6 @@
 ---
 layout: single
-title: About Brain-Life Warehouse
+title: About Warehouse
 Description: Data warehousing, processing and application registration service for Brain-Life
 sidebar:
   nav: "docs"

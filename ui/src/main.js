@@ -24,8 +24,8 @@ import warehouse from './warehouse'
 //CSS
 import 'select2/dist/css/select2.css'
 import 'highlight.js/styles/default.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
 import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 //import 'bootswatch/yeti/bootstrap.css' //messes up the dropdown - breaks dropdown
 
 import './warehouse.css'
@@ -149,4 +149,16 @@ new Vue({
     }
 })
 
+//from stackoverflow somewhere
+console.log("loading chunk_inefficient");
+Object.defineProperty(Array.prototype, 'chunk_inefficient', {
+    value: function(chunkSize) {
+        var array=this;
+        return [].concat.apply([],
+            array.map(function(elem,i) {
+                return i%chunkSize ? [] : [array.slice(i,i+chunkSize)];
+            })
+        );
+    }
+});
 

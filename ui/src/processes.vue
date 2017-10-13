@@ -127,35 +127,17 @@ export default {
             }
             this.selected = this.instances.find(i=>i._id == selected_id);
 
-            //scroll to it
+            //scroll to elem if it's outside the scrolling window
             Vue.nextTick(()=>{
                 var elem = document.getElementById(selected_id);
                 var area = document.getElementById("process-list");
-                //scroll to elem if it's outside the scrolling window
                 if(area.clientHeight < elem.offsetTop) {
                     area.scrollTop = elem.offsetTop - area.clientHeight/2;
                 }
             });
 
-/*
-            return this.$http.get('project', {params: {
-                find: JSON.stringify({
-                    $or: [
-                        {admins: Vue.config.user.sub}, 
-                        {members: Vue.config.user.sub}, 
-                        {access: "public"},
-                    ],
-                    removed: false,
-                })
-            }});
-        })
-        .then(res=>{
-            console.log("got projects", res);
-            let projects = res.body.projects;
-*/
-
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-            this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
+            this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
                 console.log("binding to instance updates");
                 this.ws.send(JSON.stringify({
@@ -165,30 +147,10 @@ export default {
                     }
                 }));
 
-/*
-                //TODO - this is super inefficient..
-                //I should only subscribe to projects that I truly care about
-                console.log("subscribe to dataset events for all projects");
-                projects.forEach(project=>{
-                    console.log(project._id);
-                    this.ws.send(JSON.stringify({
-                        bind: {
-                            ex: "warehouse.dataset",
-                            key: project._id+".#",
-                        }
-                    }));    
-                });
-*/
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
                 switch(event.dinfo.exchange) {
-/*
-                case "warehouse.dataset":
-                    console.log("TODO--------------dataset update");
-                    console.dir(event);
-                    break;
-*/
                 case "wf.instance":
                     console.log("instance update");
                     console.dir(event);
@@ -251,6 +213,7 @@ export default {
     },
     watch: {
         '$route': function() {
+            console.log("route changed");
             var selected_id = this.$route.params.id;
             this.selected = this.instances.find(i=>i._id == selected_id);
         },

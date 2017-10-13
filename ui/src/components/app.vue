@@ -3,7 +3,7 @@
     <div @click="click()">
         <div v-if="compact">
             <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
-            <div style="max-height: 72px; overflow: hidden;">
+            <div style="max-height: 73px; overflow: hidden;">
                 <h4 class="name">{{app_.name}} <small>{{app_.github}}</small></h4>
                 <div class="desc">{{app_.desc||'no desc..'}}</div>
             </div>

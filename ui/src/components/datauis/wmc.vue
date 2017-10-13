@@ -1,17 +1,105 @@
 <template>
-<iframe :src="url">tractview</iframe>
+<iframe v-if="url" :src="url"></iframe>
 </template>
 
 <script>
+
 import Vue from 'vue'
+const async = require('async');
 
 export default {
     props: ['task', 'subdir'],
-    computed: {
-        url: function() {
-            var subdir_string = '';
-            if (this.subdir) subdir_string = '&sdir='+encodeURIComponent(this.subdir);
-            return '/ui/tractview?taskid='+this.task._id+subdir_string;
+    data()  {
+        return {
+            url: null,
+        }
+    },
+    mounted() {
+        if(this.task.name == "brainlife.download.stage") {
+            //assume we have multiple dataset requests
+            //console.dir(this.task.config); 
+
+            //find datatype from config
+            var config = {};
+            var wmcdir = null;
+            async.forEach(this.task.config.download, (entry, next_entry)=>{
+                var did = entry.dir; //directory name is did
+                var datatype = this.task.config._datatypes[did];
+                if(datatype.name == "neuro/wmc") {
+                    wmcdir = did;
+                    this.load_tracts(did, tracts=>{
+                        config.tracts = tracts;
+                        next_entry();
+                    });
+                } else if(datatype.name == "neuro/dtiinit") {
+
+                    //items to expect out of dtiinit
+                    config.layers = [
+                        { name: "wmMask", filename: "wmMask.nii.gz"},
+                        { name: "wmProb", filename: "wmProb.nii.gz"},
+                        { name: "mdStd", filename: "mdStd.nii.gz"},
+                        { name: "faStd", filename: "faStd.nii.gz"},
+                        { name: "vectorRGB", filename: "vectorRGB.nii.gz"},
+                        { name: "pddDispersion", filename: "pddDispersion.nii.gz"},
+                        { name: "tensors", filename: "tensors.nii.gz"},
+                        { name: "b0", filename: "b0.nii.gz"},
+                        { name: "brainMask", filename: "brainask.nii.gz"},
+                    ];
+
+                    //create url for each layer
+                    var path = this.task.instance_id+"/"+this.task._id+"/"+did;
+                    config.layers.forEach(layer=>{
+                        layer.url = Vue.config.wf_api+"/resource/download?"+
+                            "r="+this.task.resource_id+
+                            "&p="+encodeURIComponent(path+"/dti/bin/"+layer.filename);
+                            //"&at="+Vue.config.jwt;
+                    });
+                    next_entry();
+                } else {
+                    console.log("I don't care about", datatype.name);
+                    next_entry();
+                }
+            }, ()=>{
+                window.config = config;
+                this.seturl(config);
+            }); 
+        } else {
+            //let's assume it's from single normal wmc output - just load tracts
+            this.load_tracts(this.subdir, tracts=>{
+                window.config = {tracts};
+                this.seturl({tracts});
+            });
+        }
+    },
+
+    methods: {
+        seturl: function(config) {
+            var url = "/ui/tractview";
+
+            //let's create parameters used by old version - until we update tractview
+            url += "?taskid="+this.task._id;
+            if (this.subdir) url += '&sdir='+this.subdir;
+
+            this.url = url;
+        },
+
+        load_tracts: function(subdir, cb) {
+            var path = this.task.instance_id+"/"+this.task._id;
+            if(subdir) path += "/"+subdir;
+            path += "/tracts";
+            this.$http.get(Vue.config.wf_api+"/resource/download", {params: {
+                r: this.task.resource_id, p: path+"/tracts.json",
+            }})
+            .then(res=>{
+                var tracts = res.body;
+                tracts.forEach(tract=>{
+                    tract.url = Vue.config.wf_api+"/resource/download?"+
+                        "r="+this.task.resource_id+
+                        "&p="+encodeURIComponent(path+"/"+tract.filename)
+                        //"&at="+Vue.config.jwt;
+                });
+                cb(tracts);
+            });
         }
     }
 }

@@ -115,13 +115,13 @@
                 </b-alert>
                 <p v-else>This application could run on following resources.</p>
                 <b-table :items="resource_table" :fields="['resource','status','score', 'detail']">
-                    <template slot="resource" scope="data">
+                    <template slot="resource" slot-scope="data">
                         <b>{{data.value}}</b>
                     </template>
-                    <template slot="status" scope="data">
+                    <template slot="status" slot-scope="data">
                         <statustag :status="data.value"/>
                     </template>
-                    <template slot="detail" scope="data">
+                    <template slot="detail" slot-scope="data">
                         <p class="help-block">{{data.value}}</p>
                     </template>
                 </b-table>

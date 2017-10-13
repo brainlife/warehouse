@@ -24,7 +24,6 @@
     </p>
 
     <div v-if="tasks" v-for="task in tasks" :key="task._id">
-
         <!--task-id and toggler-->
         <div style="float: right" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
             <icon name="caret-down" v-if="task.show"/><icon name="caret-right" v-else/> 
@@ -118,21 +117,6 @@
                 <div v-if="task.product">
                     <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
                 </div>
-
-  <b-modal id="modalPopover" title="Modal with Popover" ok-only>
-    <p>
-      This
-      <b-btn v-b-popover="'Popover inside a modal!'" title="Popover">
-        Button
-      </b-btn>
-      triggers a popover on click.
-    </p>
-    <p>
-      This <a href="#" v-b-tooltip title="Tooltip in a modal!">Link</a>
-      will show a tooltip on hover.
-    </p>
-  </b-modal>
-
             </el-collapse-item>
         </task>
 
@@ -175,7 +159,7 @@
             <br>
 
             <!--input-->
-            <b-row v-for="(input, input_id) in newtask.inputs" :key="input_id">
+            <b-row v-for="(input, input_id) in newtask.inputs" :key="input_id" style="margin-bottom: 5px;">
                 <b-col cols="3">
                     <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                 </b-col>
@@ -196,7 +180,6 @@
                     </el-select>
                 </b-col>
             </b-row>
-            <br>
 
             <!--config-->
             <b-row v-for="(v,k) in newtask.app.config" :key="k" v-if="v.type && v.type != 'input'">
@@ -224,7 +207,7 @@
             <b-row>
                 <b-col cols="3">Task Description</b-col>
                 <b-col>
-                    <el-input type="textarea" placeholder="Optional" v-model="newtask.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
+                    <b-form-textarea placeholder="Optional description for this task submission" v-model="newtask.desc" :rows="2" :max-rows="6"></b-form-textarea>
                 </b-col>
             </b-row>
             <br>
@@ -369,7 +352,6 @@ export default {
     },
 
     mounted() {
-        console.log("mounting process2");
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach(datatype=>{

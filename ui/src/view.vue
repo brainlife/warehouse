@@ -1,14 +1,17 @@
 <template>
 <div id="view">
     <div v-if="task && task.status == 'finished'">
-        <dtiinit v-if="type == 'neuro.dtiinit'" :task="task" :subdir="subdir"></dtiinit>
-        <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="task" :subdir="subdir"></freesurfer>
-        <wmc v-else-if="type == 'neuro.wmc'" :task="task" :subdir="subdir"></wmc>
+
+        <!--I might conver this into freesurfer post processing output view
+        <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="task" :subdir="subdir"></freesurfer>-->
+
+        <dtiinit v-if="type == 't1pdd'" :task="task" :subdir="subdir"></dtiinit>
+        <wmc v-else-if="type == 'tractview'" :task="task" :subdir="subdir"></wmc>
         <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir"></lifeview>
-        <life v-else-if="type == 'neuro.life_output'" :task="task" :subdir="subdir"></life>
-        <evaluator v-else-if="type == 'neuro.conneval_output'" :task="task" :subdir="subdir"></evaluator>
-        <images v-else-if="type == 'generic.images'" :task="task" :subdir="subdir"></images>
-        <volumeviewer v-else-if="type == 'neuro.anat.t1w'" :task="task" :subdir="subdir"></volumeviewer>
+        <life v-else-if="type == 'lifestats'" :task="task" :subdir="subdir"></life>
+        <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir"></evaluator>
+        <images v-else-if="type == 'images'" :task="task" :subdir="subdir"></images>
+        <volumeviewer v-else-if="type == 'volumeviewer'" :task="task" :subdir="subdir"></volumeviewer>
         <div v-else-if="type == 'raw'" style="padding: 15px; background-color: white;">
             <filebrowser :task="task" :path="task.instance_id+'/'+task._id+'/'+(subdir||'')"></filebrowser>
         </div>
