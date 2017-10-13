@@ -152,6 +152,7 @@ export default {
                         switch(ext) {
                         case "bvals": 
                         case "bvecs": 
+                        case "err": 
                             type = "text"; break;
                         }
                     }

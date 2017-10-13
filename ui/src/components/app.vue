@@ -25,7 +25,7 @@
                 </div>
             </div>
             <!--<el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>-->
-            <div class="desc" style="clear: both;">{{app_.desc||'no desc..'}}</div>
+            <div class="desc" :style="{clear: 'both', height: descheight}">{{app_.desc||'no desc..'}}</div>
             <slot/>
             <div class="devs">
                 <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
@@ -51,7 +51,7 @@ export default {
         compact: Boolean,
         appid: String,
         clickable: {type: Boolean, default: true},
-        //descheight: Number,
+        descheight: Number,
     },
     data() {
         return {
@@ -125,7 +125,6 @@ line-height: 140%;
 overflow: hidden;
 margin: 10px;
 margin-top: 0px;
-/*height: 150px;*/
 transition: color 0.5s;
 }
 .rate {
