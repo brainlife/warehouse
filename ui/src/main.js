@@ -117,6 +117,19 @@ console.log("user", Vue.config.user);
 
 Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
+//from stackoverflow somewhere
+console.log("loading chunk_inefficient");
+Object.defineProperty(Array.prototype, 'chunk_inefficient', {
+    value: function(chunkSize) {
+        var array=this;
+        return [].concat.apply([],
+            array.map(function(elem,i) {
+                return i%chunkSize ? [] : [array.slice(i,i+chunkSize)];
+            })
+        );
+    }
+});
+
 //scroll to top on route update
 router.beforeEach(function (to, from, next) {
     window.scrollTo(0, 0);
@@ -148,17 +161,4 @@ new Vue({
         }
     }
 })
-
-//from stackoverflow somewhere
-console.log("loading chunk_inefficient");
-Object.defineProperty(Array.prototype, 'chunk_inefficient', {
-    value: function(chunkSize) {
-        var array=this;
-        return [].concat.apply([],
-            array.map(function(elem,i) {
-                return i%chunkSize ? [] : [array.slice(i,i+chunkSize)];
-            })
-        );
-    }
-});
 

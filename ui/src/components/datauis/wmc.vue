@@ -61,24 +61,24 @@ export default {
                 }
             }, ()=>{
                 window.config = config;
-                this.seturl(config);
+                this.seturl(wmcdir);
             }); 
         } else {
             //let's assume it's from single normal wmc output - just load tracts
             this.load_tracts(this.subdir, tracts=>{
                 window.config = {tracts};
-                this.seturl({tracts});
+                this.seturl(this.subdir);
             });
         }
     },
 
     methods: {
-        seturl: function(config) {
+        seturl: function(subdir) {
             var url = "/ui/tractview";
 
             //let's create parameters used by old version - until we update tractview
             url += "?taskid="+this.task._id;
-            if (this.subdir) url += '&sdir='+this.subdir;
+            if (subdir) url += '&sdir='+subdir;
 
             this.url = url;
         },
