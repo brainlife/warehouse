@@ -40,10 +40,10 @@ Configuration parameters allows users to enter any number, boolean(true/false) o
 * *Description* Some parameter types let you specify a description which will be displayed next to the input parameter to show some detailed explanation about the input parameter.
 
 For example, with following configuration parameter definition ..
-![plus]({{ "/assets/s/input_param_def.png" | absolute_url }})
+![input parameters definition]({{ "/assets/s/input_param_def.png" | absolute_url }})
  
 When users submit your app, they will be presented with following UI.
-![plus]({{ "/assets/s/input_param.png" | absolute_url }})
+![input parameter]({{ "/assets/s/input_param.png" | absolute_url }})
 
 Your app will receive something like following in `config.json` generated on the local directory of your app. You have to parse this in your app.
 
