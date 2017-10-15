@@ -453,6 +453,7 @@ export default {
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
                 console.log("connected to websocket ..loading tasks");
+
                 this.$http.get(Vue.config.wf_api+'/task', {params: {
                     find: JSON.stringify({
                         instance_id: this.instance._id,
@@ -472,8 +473,8 @@ export default {
                     });
 
                     this.tasks = res.body.tasks;
-
                     this.update_apps();
+
                     //loading archived datasets for all tasks
                     var task_ids = this.tasks.map(task=>task._id); 
                     return this.$http.get('dataset', {params: {
@@ -599,7 +600,6 @@ export default {
                 archive: {
                     enable: false,
                     project: null,
-                    //tags: "",
                     desc: "",
                 },
 

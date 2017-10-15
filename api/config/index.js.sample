@@ -147,38 +147,6 @@ function connect_dc(cb) {
 }
 
 exports.storage_systems.dc2 = {
-    /*
-    //return archive_stream to pipe data to
-    test: cb=>{
-        fs.stat(dc2_path, timeout((err,stats)=>{
-            if(err) return cb(err);
-            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
-            cb();
-        }, 2000, 'failed to stat '+dc2_path)); 
-    }, 
-    stat: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project.toString();
-        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
-        if(dataset.storage_config && dataset.storage_config.filename) filename = dataset.storage_config.filename;
-        fs.stat(dir+"/"+filename, cb);
-    },
-    upload: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project.toString();
-        var filename = dataset._id+".tar"; 
-        dataset.storage_config = { dir, filename }
-        mkdirp(dir, (err)=>{
-            if(err) return cb(err);
-            cb(null, fs.createWriteStream(dir+'/'+filename));
-        });
-    },
-    download: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project.toString();
-        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
-        if(dataset.storage_config && dataset.storage_config.filename) filename = dataset.storage_config.filename;
-        var stream = fs.createReadStream(dir+"/"+filename);
-        cb(null, stream, filename);
-    },
-    */
     test: cb=>{
         //TODO - I should do more checking?
         connect_dc((err, conn)=>{
@@ -205,6 +173,9 @@ exports.storage_systems.dc2 = {
                 }
                 var path = "/N/dc2/projects/brainlife/dev1-warehouse/datasets/"+dataset.project+"/"+dataset._id+".tar.gz";
                 var stream = sftp.createReadStream(path);
+                stream.on('error', err=>{
+                    console.error("stream failed but train has already left the station", err);
+                });
                 stream.on('close', code=>{
                     conn.end();
                 });
@@ -216,40 +187,6 @@ exports.storage_systems.dc2 = {
 } 
 
 exports.storage_systems["dcwan/hcp"] = {
-    /*
-    const dcwan_hcp_path = "/mnt/dcwan/projects/brainlife/hcp/";
-    test: cb=>{
-        fs.stat(dcwan_hcp_path, timeout((err,stats)=>{
-            if(err) return cb(err);
-            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
-            cb();
-        }, 2000, 'failed to stat '+dcwan_hcp_path)); 
-    }, 
-    stat: (dataset, cb)=>{
-        //can't obtain stats for .tar.gz because we are creating it on the fly
-        //but I can still check for the directory to exist and respond error
-        var dir = dcwan_hcp_path+dataset.storage_config.subdir;
-        fs.stat(dir, (err,stats)=>{
-            //stats is for the directory.. so I can't return it
-            cb(err, null); 
-        });
-    },
-    upload: (dataset, cb)=>{
-        //dataset.storage_config = { dir, filename }
-        cb("no upload to dcwan/hcp");
-    },
-    download: (dataset, cb)=>{
-        var dir = dcwan_hcp_path+dataset.storage_config.subdir;
-        var child = child_process.spawn("tar", ["hc", "."], {cwd: dir});
-        cb(null, child.stdout, dataset._id+".tar");
-        child.stderr.on('data', function(data) {
-            console.error(data.toString());
-        });
-        child.on('error', (err)=>{
-            console.error(err);
-        });
-    },
-    */
     test: cb=>{
         connect_dc((err, conn)=>{
             conn.end();
@@ -274,15 +211,19 @@ exports.storage_systems["dcwan/hcp"] = {
                         conn.end();
                         return cb(err);
                     }
-
                     var archive = archiver('tar');
                     dataset.storage_config.files.forEach(file=>{
                         console.log("downloading", file.filepath, file.local);
                         var stream = sftp.createReadStream(file.filepath);
+                        stream.on('error', err=>{
+                            console.error("stream failed but train has already left the station", err);
+                        });
+                        stream.on('close', code=>{
+                            conn.end();
+                        });
                         archive.append(stream, {name: file.local});
                     });
                     archive.on('finish', ()=>{
-                        //console.log("closing archive");
                         conn.end();
                     });
                     cb(null, archive, dataset._id+".tar");
