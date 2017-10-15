@@ -6,7 +6,7 @@
 
     <!--status indicator-->
     <el-card :class="task.status" style="clear: both;" body-style="padding: 8px;">
-        <statusicon :status="task.status" scale="1.5" style="float: left; padding: 2px 8px;"/>
+        <statusicon :status="task.status" scale="1.5" style="float: left; padding: 2px 8px;" @click.native="poke"/>
         <div style="padding-left: 45px;">
             <div style="float: right;">
                 <el-button size="small" type="" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" @click="rerun()">Rerun</el-button>
@@ -90,6 +90,17 @@ export default {
                 console.error(err); 
             });
         },
+
+        poke() {
+            console.log("poking", this.task._id);
+            this.$http.put(Vue.config.wf_api+'/task/poke/'+this.task._id)
+            .then(res=>{
+                this.$notify({text: "poked", type: 'success'});
+            })
+            .catch(err=>{
+                console.error(err); 
+            });
+        }
     },
 }
 </script>

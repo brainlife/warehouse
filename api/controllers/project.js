@@ -44,6 +44,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     }
 
     //TODO I should only allow querying for projects that user has access?
+    //right now, user can query for all project..
+
     db.Projects.find(find)
     .select(select)
     .limit(req.query.limit || 0)

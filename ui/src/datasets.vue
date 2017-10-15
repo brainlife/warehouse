@@ -177,7 +177,16 @@ export default {
     },
 
     created() {
-        this.$http.get('project')
+        this.$http.get('project', {params: {
+            find: JSON.stringify(
+            {
+                removed: false,
+                $or: [
+                { members: Vue.config.user.sub}, 
+                { admins: Vue.config.user.sub}, 
+                { access: "public" },
+            ]})
+        }})
         .then(res=>{
             this.projects = {};
             res.body.projects.forEach((p)=>{
