@@ -247,12 +247,15 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 
                 //should be deprecate with neo4j, but still used by UI
                 //also used by event_handler to see if the task output is archived already or not
+                //actually, I might keep this as source of truth and neo4j as tool to query similar information
                 prov: {
                     instance_id: task.instance_id,
                     task_id: task._id,
                     app: req.body.app_id, //deprecated
                     output_id: req.body.output_id,
                     subdir: req.body.subdir,
+
+                    //config: task.config, //tentative.. for now..
                 },
                 meta: req.body.meta||{},
             }).save((err, _dataset)=>{

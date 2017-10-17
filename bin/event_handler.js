@@ -83,11 +83,6 @@ function subscribe() {
     });
 }
 
-/*
-var _health = {
-    last_task_date: new Date(), //when the last task task was handled
-}
-*/
 var _counts = {
     tasks: 0,
     instances: 0,
@@ -108,13 +103,6 @@ function health_check() {
         report.status = "failed";
         report.messages.push("task event counts is low");
     }
-
-    /*
-    if(Date.now() - _health.last_task_date > 1000*60*15) {
-        report.status = "failed";
-        report.messages.push("it's been a while since last task was handled");
-    }
-    */
 
     rcon.set("health.warehouse.event."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
 
@@ -189,7 +177,7 @@ function archive_dataset(task, output, cb) {
                     instance_id: task.instance_id,
                     task_id: task._id,
                     app: task.config._app, //deprecated
-                    app_id: task.config._app, //deprecated
+                    //app_id: task.config._app, //deprecated
                     output_id: output.id,
                     subdir: output.subdir,
                 },
