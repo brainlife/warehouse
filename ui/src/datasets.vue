@@ -320,7 +320,7 @@ export default {
             }
             if(loaded === this.total_datasets) return;
 
-            console.log("fetching datasets", loaded);
+            console.log("fetching datasets", finds);
             this.loading = true;
             var limit = 100;
             this.$http.get('dataset', {params: {

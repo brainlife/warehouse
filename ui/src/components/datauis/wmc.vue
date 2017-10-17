@@ -99,6 +99,19 @@ export default {
                         //"&at="+Vue.config.jwt;
                 });
                 cb(tracts);
+            }).catch(err=>{
+                console.error("failed to load tracts.json - probably output from old afq. using afq.tract.json template");
+                fetch("https://brain-life.org/ui/tractview/afq.tracts.json")
+                    .then(res=>res.json())
+                    .then(tracts=>{
+                    tracts.forEach(tract=>{
+                        tract.url = Vue.config.wf_api+"/resource/download?"+
+                            "r="+this.task.resource_id+
+                            "&p="+encodeURIComponent(path+"/"+tract.filename)
+                    });
+                    cb(tracts);
+                });
+
             });
         }
     }

@@ -75,18 +75,19 @@
                     <b-card v-if="config.type == 'integer' || config.type == 'string'" :title="config.type | capitalize">
                         <b-button @click="remove_config(name)" style="float: right" size="sm" variant="danger"><icon name="trash"/></b-button>
                         <b-row>
-                            <b-col>
+                            <b-col sm="5">
                                 <div class="text-muted">Key</div>
                                 <b-form-input type="text" v-model="config._id"></b-form-input>
-                            </b-col>
-                            <b-col>
-                                <div class="text-muted">Default Value</div>
+
+                                <div class="text-muted">Default Value (optional)</div>
                                 <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default"></b-form-input>
                                 <b-form-input v-if="config.type == 'string'" type="text" v-model="config.default"></b-form-input>
                             </b-col>
                             <b-col>
-                                <div class="text-muted">Placeholder</div>
+                                <div class="text-muted">Placeholder (optional text to show inside the form element if no value is specified)</div>
                                 <b-form-input type="text" v-model="config.placeholder"></b-form-input>
+                                <div class="text-muted">Description (optional)</div>
+                                <b-form-textarea v-model="config.desc" placeholder="Enter description to add for this field" :rows="3" :max-rows="6"></b-form-textarea>
                             </b-col>
                         </b-row>
                     </b-card>
