@@ -20,7 +20,7 @@ docs:
       - title: "What is app?"
         url: /whatisapp
       - title: "HelloWorld"
-        url: /helloworld`
+        url: /helloworld
       - title: "Registering App"
         url: /registerapp
       - title: "Customizing Lifecycle Hooks"
