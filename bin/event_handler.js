@@ -143,7 +143,16 @@ function archive_dataset(task, output, cb) {
             db.Datasets.findOne({
                 "prov.task_id": task._id,
                 "prov.output_id": output.id,
-                removed: false, //archive again if user removes the dataset
+                
+                //ignore failed and removed ones
+                //TODO - very strange query indeed.. but it should work
+                $or: [
+                    { removed: true, status: {$ne: "failed"} }, //if removed and not failed, keep it
+                    { removed: false, status: "failed" }, //if not removed and failed, keep it
+                ]
+                
+                //let's not rearchive if user removes data. Failed datasets
+                //removed: false, //archive again if user removes the dataset
             }).exec((err,_dataset)=>{
                 if(err) return cb(err);
                 if(_dataset) {

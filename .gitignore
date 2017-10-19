@@ -12,7 +12,5 @@ ui/config/index.js
 ui/config/dev.env.js
 ui/config/npm-debug.log
 ui/package-lock.json
-api/config/jetstream.js
-api/config/index.js
-api/config/*.jwt
+api/config
 docs/_site
