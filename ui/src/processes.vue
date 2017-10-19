@@ -2,14 +2,16 @@
 <div>
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/processes"></sidemenu>
-    <div class="page-top" v-if="selected">
-        <div style="margin: 10px; float: right;">
-            <b-button v-if="!selected.config.removing" @click="remove()"><icon name="trash"/> Remove</b-button>
-        </div>
+    <div class="page-top">
         <div class="process-list-toggler" @click="show_process_list = !show_process_list"> <icon scale="1.5" name="bars"/> </div>
-        <statusicon :status="selected.status" :scale="1.75" style="float: left; margin: 15px;opacity: 0.8;"/>
-        <div class="description">
-            <b-form-textarea placeholder="Please enter process description" @keyup.native="changedesc()" v-model="selected.desc" :rows="2"/>
+        <div v-if="selected">
+            <statusicon :status="selected.status" :scale="1.75" style="float: left; margin: 15px;opacity: 0.8;"/>
+            <div style="margin: 10px; float: right;">
+                <b-button v-if="!selected.config.removing" @click="remove()"><icon name="trash"/> Remove</b-button>
+            </div>
+            <div class="description">
+                <b-form-textarea placeholder="Please enter process description" @keyup.native="changedesc()" v-model="selected.desc" :rows="2"/>
+            </div>
         </div>
     </div>
 
@@ -44,7 +46,9 @@
     </div>
 
     <div class="page-content" id="scrolled-area">
-        <h3 class="text-muted" v-if="instances && !selected" style="padding-left: 30px;">Please select or create a new process</h3>
+        <div v-if="instances && !selected">
+            <h3 class="text-muted" style="padding-top: 30px; padding-left: 30px;">Please select or create a new process</h3>
+        </div>
         <div v-else>
             <simpleprocess @view="view" v-if="selected && selected.config.type == 'simple'" :instance="selected"></simpleprocess>
             <process @view="view" v-if="selected && selected.config.type == 'v1'" :instance="selected"></process>
@@ -285,7 +289,6 @@ right: inherit;
     padding: 18px 15px;
     opacity: 0.7;
     cursor: pointer;
-    background-color: #e7e7e7;
 }
 .process-list-toggler:hover {
     opacity: 1;

@@ -27,7 +27,7 @@ You should leave the `Max Retry` field empty.
 
 If you don't specify the github repo's branch name, it uses `master` branch by default. As with any other project, you will most likely making changes to your `master` branch after you register your app, which means user won't be able to reproduce the output with exactly the same version of the code. Once you finish developing your app, you should consider creating a release branch (like `release_1.0`) and freeze the code which will be executed by the Brain-Life by specifying the branch name.
 
-> Once you create a new branch, any bug fixes you are making on `master` branch should be back-ported to other branches. 
+> Once you create a new branch, any bug fixes you are making on `master` branch should be back-ported to other branches. You should, however, not make any changes to branches unless absolutely necessary as it would break the data reproducibility. 
 
 > If you make a backward incompatible changes and/or any changes that requires different set of configuration parameters / inputs, you should register entirely new app on Brain-Life with that new version.
 
