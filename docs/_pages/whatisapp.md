@@ -6,7 +6,7 @@ sidebar:
   nav: "docs"
 ---
 
-Brain-Life *Apps* are any code published on github that confirms to [ABCD specification](https://github.com/brain-life/abcd-spec) and registered on Brain-Life.org. *App* receives sets of input datasets where the format and structure of datatype confirms to registered datatypes on Brain-Life.org. 
+Brain-Life *Apps* are any code published on github that conforms to [ABCD specification](https://github.com/brain-life/abcd-spec) and registered on Brain-Life.org. *App* receives sets of input datasets where the format and structure of datatype conforms to registered datatypes on Brain-Life.org. 
 
 At minimum, it should meet following requirements..
 
