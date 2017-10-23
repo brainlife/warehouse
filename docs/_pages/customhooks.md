@@ -32,7 +32,7 @@ Then, you will need to provide those hook scripts as part of your app.
 
 ### `start.sh`
 
-Following example script instructs qsub to use preempt queue on HPC cluster Karst, but submit normally on all other clusters. 
+Following is an example for `start` script. It submits a file named *main* (should be provided by each app) through qsub. It stores `jobid` so that we can monitor the job status.
 
 ```
 #!/bin/bash
@@ -40,19 +40,12 @@ Following example script instructs qsub to use preempt queue on HPC cluster Kars
 #return code 0 = job started successfully.
 #return code non-0 = job failed to start
 
-#make sure finished doesn't exist so that user can rerun the job
-rm -f finished
-
-if [ $HPC == "KARST" ]; then
-  qsub -q preempt main > jobid
-else
-  qsub main > jobid
-fi
+qsub -d $PWD -V -o \$PBS_JOBID.log -e \$PBS_JOBID.err main > jobid
 ```
 
 ### `stop.sh`
 
-Following example script takes the jobid stored in a file named `jobid` and call qdel to stop it.
+Following is an example for `stop` script. This scripts reads the jobid created by `start` script and call qdel to stop it.
 
 ```
 #!/bin/bash
@@ -73,53 +66,56 @@ If `finished` file does not exist, then it assumes that it's still running, so i
 #return code 0 = running
 #return code 1 = finished successfully
 #return code 2 = failed
-#return code 3 = unknown
+#return code 3 = unknown (retry later)
 
-if [ -f finished ]; then
-    code=`cat finished`
-    if [ $code -eq 0 ]; then
-        echo "finished successfully"
-        exit 1
-    else
-        echo "finished with code:$code"
-        exit 2
-    fi
+if [ ! -f jobid ];then
+    echo "no jobid - not yet submitted?"
+    exit 1
 fi
 
-if [ -f jobid ]; then
-    jobid=`cat jobid`
-    if [ -z $jobid ]; then
-        echo "jobid is empty.. failed to submit?"
-        exit 3 
-    fi
-    jobstate=`qstat -f $jobid | grep job_state | cut -b17`
-    if [ -z $jobstate ]; then
-        echo "Job removed before completing - maybe timed out?" 
-        exit 2
-    fi
-    if [ $jobstate == "Q" ]; then
-        echo "Waiting in the queue"
-        showstart $jobid | grep start
-        exit 0
-    fi
-    if [ $jobstate == "R" ]; then
-        subid=$(cat jobid | cut -d '.' -f 1)
-        logname="stdout.$subid.*.log"
-        tail -1 $logname
-        exit 0
-    fi
-    if [ $jobstate == "H" ]; then
-        echo "Job held.. waiting"
-        exit 0 ication to 
+jobid=`cat jobid`
+if [ -z $jobid ]; then
+    echo "jobid is empty.. failed to submit?"
+    exit 3
+fi
 
-    fi
-
-    #assume failed for all other state
-    echo "Jobs failed - PBS job state: $jobstate"
+jobstate=`qstat -f $jobid | grep job_state | cut -b17`
+if [ -z $jobstate ]; then
+    echo "Job removed before completing - maybe timed out?"
     exit 2
 fi
 
-echo "can't determine the status - maybe not yet started?"
-exit 3
+case "$jobstate" in
+Q)
+    showstart $jobid | grep start
+    exit 0
+    ;;
+R)
+    #get last line of last log touched
+    logfile=$(ls -rt *.log | tail -1)
+    tail -1 $logfile
+    exit 0
+    ;;
+H)
+    echo "Job held.. waiting"
+    exit 0
+    ;;
+C)
+    exit_status=`qstat -f $jobid | grep exit_status | cut -d'=' -f2 | xargs`
+    if [ $exit_status -eq 0 ]; then
+        echo "finished with code 0"
+        exit 1
+    else
+        echo "finished with code $exit_status"
+        exit 2
+    fi
+    ;;
+*)
+    echo "unknown job status $jobstate"
+    exit 2
+    ;;
+
+esac
+
 ```
 
