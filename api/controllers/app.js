@@ -18,6 +18,23 @@ function canedit(user, rec) {
     return false;
 }
 
+//make sure user has access to all projects in (write access) projects_id
+function validate_projects(user, projects_ids, cb) {
+    common.getprojects(user, (err, canread_project_ids, canwrite_project_ids)=>{
+        if(err) return cb(err);
+
+        //need to convert all ids to string..
+        canwrite_project_ids = canwrite_project_ids.map(id=>id.toString());
+
+        //iterate each ids to see if user has access
+        var err = null;
+        projects_ids.forEach(id=>{
+            if(!~canwrite_project_ids.indexOf(id)) err = "you don't have write access to project:"+id;
+        });
+        cb(err);
+    });
+}
+
 /**
  * @apiGroup App
  * @api {get} /app              Query apps
@@ -41,10 +58,14 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     common.getprojects(req.user, (err, project_ids)=>{
         if(err) return next(err);
         ands.push({$or: [ 
-            {project: {$in: project_ids}},
+            //if projects is set, user need to have access to it
+            {projects: {$in: project_ids}},
 
-            {project: null}, //if project is not set, it's available to everyone
-            {project: {$exists: false}}, //for backward compatibility (update DB!)
+            {projects: []}, //if projects is empty array, it's available to everyone
+
+            //for backward compatibility
+            {projects: null}, //if projects is set to null, it's avalable to everyoone
+            {projects: {$exists: false}}, //if projects not set, it's availableo to everyone
         ]});
 
         db.Apps.find({$and: ands})
@@ -115,6 +136,7 @@ router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res
         });
     });
 });   
+
 /**
  * @apiGroup App
  * @api {post} /app             Post App
@@ -128,6 +150,7 @@ router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res
  * @apiParam {Number} [retry]   Number of time this app should be retried (0 by default)
  * @apiParam {Object[]} [inputs]    Input datatypes. Array of {id, datatype, datatype_tags[]}
  * @apiParam {Object[]} [outputs]   Output datatypes. same as input datatype
+ * @apiParam {String[]} [projects]  List of project IDs that this app should be exposed in 
  *
  * @apiParam {String} [github]   Github org/name
  * @apiParam {String} [github_branch]   Github default branch/tag name
@@ -145,12 +168,17 @@ router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res
  */
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
     req.body.user_id = req.user.sub;
-    var app = new db.Apps(req.body);
-    app.save(function(err, _app) {
-        if (err) return next(err); 
-        app = JSON.parse(JSON.stringify(_app));
-        app._canedit = canedit(req.user, app);
-        res.json(app);
+    
+    validate_projects(req.user, req.body.projects, err=>{
+        if(err) return next(err);
+
+        var app = new db.Apps(req.body);
+        app.save(function(err, _app) {
+            if (err) return next(err); 
+            app = JSON.parse(JSON.stringify(_app));
+            app._canedit = canedit(req.user, app);
+            res.json(app);
+        });
     });
 });
 
@@ -167,6 +195,8 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  * @apiParam {String} [github]  github id/name for this app
  * @apiParam {Object[]} [inputs]    Input datatypes and tags
  * @apiParam {Object[]} [outputs]   Output datatypes and tags
+ * @apiParam {String[]} [projects]  List of project IDs that this app should be exposed in 
+ *
  * @apiParam {String} [dockerhub]  
  *
  * @apiParam {String[]} [admins]  List of admins (auth sub)
@@ -178,22 +208,27 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  */
 router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var id = req.params.id;
-    db.Apps.findById(id, (err, app)=>{
+    
+    validate_projects(req.user, req.body.projects, err=>{
         if(err) return next(err);
-        if(!app) return res.status(404).end();
 
-        if(canedit(req.user, app)) {
-            //user can't update some fields
-            delete req.body.user_id;
-            delete req.body.create_date;
-            for(var k in req.body) app[k] = req.body[k];
-            app.save((err)=>{
-                if(err) return next(err);
-                app = JSON.parse(JSON.stringify(app));
-                app._canedit = canedit(req.user, app);
-                res.json(app);
-            });
-        } else return res.status(401).end("you are not administartor of this app");
+        db.Apps.findById(id, (err, app)=>{
+            if(err) return next(err);
+            if(!app) return res.status(404).end();
+
+            if(canedit(req.user, app)) {
+                //user can't update some fields
+                delete req.body.user_id;
+                delete req.body.create_date;
+                for(var k in req.body) app[k] = req.body[k];
+                app.save((err)=>{
+                    if(err) return next(err);
+                    app = JSON.parse(JSON.stringify(app));
+                    app._canedit = canedit(req.user, app);
+                    res.json(app);
+                });
+            } else return res.status(401).end("you are not administartor of this app");
+        });
     });
 });
 

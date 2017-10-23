@@ -147,12 +147,10 @@ function archive_dataset(task, output, cb) {
                 //ignore failed and removed ones
                 //TODO - very strange query indeed.. but it should work
                 $or: [
-                    { removed: true, status: {$ne: "failed"} }, //if removed and not failed, keep it
-                    { removed: false, status: "failed" }, //if not removed and failed, keep it
+                    { removed: true, status: {$ne: "failed"} }, //if removed and not failed, user must have a good reason to remove it.. keep it (not reachive)
+                    { removed: false }, //if not removed, then good!
                 ]
                 
-                //let's not rearchive if user removes data. Failed datasets
-                //removed: false, //archive again if user removes the dataset
             }).exec((err,_dataset)=>{
                 if(err) return cb(err);
                 if(_dataset) {

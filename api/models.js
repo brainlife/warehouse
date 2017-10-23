@@ -168,7 +168,7 @@ var appSchema = mongoose.Schema({
     //owner of this application
     user_id: {type: String, index: true}, 
     
-    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    projects: [{type: mongoose.Schema.Types.ObjectId, ref: 'Projects'}],
 
     admins: [ String ], //list of users who can administer this app
     

@@ -133,6 +133,7 @@ exports.storage_systems.jetstream = {
 function connect_dc(cb) {
     var conn = new ssh2.Client();
     conn.on('ready', ()=>{
+        console.log("dc ssh ready");
         cb(null, conn); 
     });
     try {
@@ -163,7 +164,6 @@ exports.storage_systems.dc2 = {
         cb("no upload to dcwan/hcp");
     },
     download: (dataset, cb)=>{
-
         connect_dc((err, conn)=>{
             if(err) return cb(err);
              conn.sftp((err, sftp)=>{
@@ -183,7 +183,6 @@ exports.storage_systems.dc2 = {
             });
         });
     },
-
 } 
 
 exports.storage_systems["dcwan/hcp"] = {
@@ -213,21 +212,19 @@ exports.storage_systems["dcwan/hcp"] = {
                     }
                     var archive = archiver('tar');
                     dataset.storage_config.files.forEach(file=>{
-                        console.log("downloading", file.filepath, file.local);
                         var stream = sftp.createReadStream(file.filepath);
                         stream.on('error', err=>{
                             console.error("stream failed but train has already left the station", err);
                         });
-                        stream.on('close', code=>{
-                            conn.end();
-                        });
+                        console.log("downloading", file.filepath, file.local);
                         archive.append(stream, {name: file.local});
                     });
                     archive.on('finish', ()=>{
+                        console.log("archive finished");
                         conn.end();
                     });
-                    cb(null, archive, dataset._id+".tar");
                     archive.finalize();
+                    cb(null, archive, dataset._id+".tar");
                 });
             }
 

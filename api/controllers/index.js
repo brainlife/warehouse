@@ -32,7 +32,7 @@ router.get('/health', (req, res)=>{
             messages.push(service+" age "+age+" msec");
             if(age > (report.maxage||1000*120)) {
                 status = "failed";
-                messages.push(service+" is stale max:"+report.maxage||(1000*120));
+                messages.push(service+" is stale max:"+(report.maxage||(1000*120)));
             }
         }
         if(status != "ok") logger.error(JSON.stringify({messages, reports}, null, 4));
