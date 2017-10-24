@@ -46,7 +46,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
     //start by pulling datatype detail
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
         if(err) return cb(err);
-        if(!datatype) return cb("couoldn't find specified datatype:"+dataset.datatype);
+        if(!datatype) return cb("couldn't find specified datatype:"+dataset.datatype);
 
         //create temp directory to download things
         tmp.dir({unsafeCleanup: true}, (err, tmpdir, cleantmp)=>{
@@ -85,9 +85,15 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     logger.debug("downloading from", srcpath, "and write to", fullpath);
                     writestream = fs.createWriteStream(fullpath);
                     writestream.on('finish', ()=>{
-                        if(!input_ok) return next_file("input failed for download");
-                        logger.debug("download complete");
-                        next_file()
+                        if(input_ok) {
+                            logger.debug("download complete");
+                            next_file()
+                        } else {
+                            if(file.required) return next_file("required input file failed for download");
+                            
+                            //failed but not required.. remove the file and move on
+                            fs.unlink(fullpath, next_file);            
+                        }
                     });
                 }
                 if(file.dirname) {
@@ -100,9 +106,15 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     writestream = untar.stdin;
                     untar.on('close', code=>{
                         if(code) return next_file("untar files with code:"+code);
-                        if(!input_ok) return next_file("input failed for download/untar");
-                        logger.debug("download/tar complete");
-                        next_file();
+                        if(input_ok) {
+                            logger.debug("download/tar complete");
+                            next_file();
+                        } else {
+                            if(file.required) return next_file("required input directory failed to download/untar");
+                            
+                            //failed but not required.. remove the directory
+                            fs.rmdir(fullpath, next_file);
+                        }
                     });
                 }
 
