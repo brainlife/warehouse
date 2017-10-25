@@ -354,7 +354,6 @@ router.get('/download/:id', jwt({
 
             canread_project_ids = canread_project_ids.map(id=>id.toString());
             
-            //logger.debug("user has access to", canread_project_ids);
             if(!~canread_project_ids.indexOf(dataset.project.toString())) {
                 return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
             } 
@@ -367,16 +366,9 @@ router.get('/download/:id', jwt({
             }, 1000*15);
             system.stat(dataset, (err, stats)=>{
                 clearTimeout(stat_timer);
-                //logger.debug(JSON.stringify(stats, null, 4));
                 if(err) return next(err);
-
                 system.download(dataset, (err, readstream, filename)=>{
                     if(err) return next(err);
-
-                    //file .. just stream using sftp stream
-                    //npm-mime uses filename to guess mime type, so I can use this locally
-                    //var mimetype = mime.lookup(fullpath);
-                    //logger.debug("mimetype:"+mimetype);
 
                     if(!dataset.download_count) dataset.download_count = 1;
                     else dataset.download_count++;
