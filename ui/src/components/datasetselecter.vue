@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Select Datasets" ref="modal" id="datasetSelecter" @ok="submit">
+<b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit">
     <el-form label-width="120px">
     <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
         <el-form-item label="Project">

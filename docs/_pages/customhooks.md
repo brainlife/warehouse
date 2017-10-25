@@ -54,11 +54,9 @@ qdel `cat jobid`
 
 ### `status.sh`
 
-status hook is a bit more complicated. It needs to return various exit codes based on the status of the app. Anything you output to stdout will be used to set task's status message. For example, you can output the last line from the log file to relay the last log entry to the users on Brain-Life.
+status hook is a bit more complicated. It needs to return various exit codes based on the status of the app. It uses the `jobid` stored by start script to query the job status with `qstat` PBS command. 
 
-Following example script relies on your app to write out a file named `finished` with exit code when it finishes executing. First it checks for this file, and if it exists, it assumes that app has either finished successfully or failed. 
-
-If `finished` file does not exist, then it assumes that it's still running, so it uses cluster's job querying command to check for its status. If it is indeed running, then tail the last line from the stdout log which is then sent to Brain-Life as status message for the task.
+Anything you output to stdout will be used to set task's status message. For example, you can output the last line from the log file to relay the last log entry to the users on Brain-Life.
 
 ```
 #!/bin/bash

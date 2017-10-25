@@ -78,7 +78,10 @@
         </tr>
         <tr>
             <th>Tags</th>
-            <td><tags :tags="app.tags"></tags></td>
+            <td>
+                <p v-if="app.tags.length == 0" class="text-muted">No tags</p>
+                <tags :tags="app.tags"></tags>
+            </td>
         </tr>
         <tr>
             <th>Developers</th>
@@ -90,12 +93,12 @@
                 </ul>
             </td>
         </tr>
-        <tr v-if="app.project">
-            <th>Project</th>
+        <tr v-if="app.projects">
+            <th>Projects</th>
             <td>
                 <p class="text-muted">This application belongs to following project.</p>
                 <el-card>
-                    <project :project="app.project"></project>
+                    <project v-for="project in app.projects" :project="project" :key="project._id"></project>
                 </el-card>
             </td>
         </tr>
