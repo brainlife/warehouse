@@ -25,8 +25,7 @@ exports.wf = {
 exports.auth = {
     api: "https://dev1.soichi.us/api/auth",
     
-    //jwt used to request auth service to issue new user jwt to be used to submit tasks for the user
-    //~/git/auth/bin/auth.js issue --scopes '{ "sca": ["admin"] }' --sub 'warehouse'
+    //jwt used to request auth service to issue new user jwt to be used to submit tasks onbehalf of the user
     jwt: fs.readFileSync(__dirname+'/auth.jwt', 'ascii').trim(),
 }
 

@@ -38,9 +38,11 @@ var projectSchema = mongoose.Schema({
     //user who created this project 
     user_id: {type: String, index: true}, 
 
-    //gid: {type: Number, index: true},
+    //TODO - should I deprecate now that they are also stored on auth service?
     admins: [ String ], //list of users who can administer this project (co-PIs?)
     members: [ String ], //list of users who can access things under this project
+
+    group_id: String, //group id from auth service to host admins/members
 
     tags: [String], //used to classify projects
 
