@@ -9,9 +9,10 @@
         <statusicon :status="task.status" scale="1.5" style="float: left; padding: 2px 8px;" @click.native="poke"/>
         <div style="padding-left: 45px;">
             <div style="float: right;">
-                <el-button size="small" type="" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" @click="rerun()">Rerun</el-button>
-                <el-button size="small" type="" v-if="task.status == 'requested' || task.status == 'running'" @click="stop()">Stop</el-button>
-                <el-button size="small" type="" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" icon="delete2"></el-button>
+                <b-button size="sm" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun()">
+                    <icon name="repeat"/></b-button>
+                <b-button size="sm" v-if="task.status == 'requested' || task.status == 'running'" @click="stop()" title="Stop Task"><icon name="stop"/></b-button>
+                <b-button size="sm" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" title="Remove Task"><icon name="trash"/></b-button>
             </div>
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
@@ -141,5 +142,17 @@ font-size: 15px;
 font-weight: bold;
 margin-bottom: 2px;
 }
+
 </style>
 
+
+<style>
+.el-card .btn-secondary {
+    opacity: 0.8;
+    background-color: transparent;
+    border: none;
+}
+.el-card .btn-secondary:hover {
+    opacity: 1;
+}
+</style>

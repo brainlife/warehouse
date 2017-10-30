@@ -50,14 +50,14 @@ export default {
             name: "Life Tract View",
             desc: "Show non-0 weight tracts with varying colors based on weight.",
             avatar: "http://www.brain-life.org/images/ui-logos/ui-lifeview.png",
-            datatypes: [ "neuro/life_output" ],
+            datatypes: [ "neuro/life" ],
         },
         {
             ui: "lifestats",
             name: "Life Stats",
             desc: "Display basic statistics from the LiFE output.",
             avatar: "http://www.brain-life.org/images/ui-logos/lifestat.png",
-            datatypes: [ "neuro/life_output" ],
+            datatypes: [ "neuro/life" ],
         },
         {
             ui: "t1pdd",
@@ -125,7 +125,7 @@ export default {
             name: "Connectome Evaluator",
             desc: "Display results from connectome evaluator showing the quality of your connectome data determined by LiFE",
             avatar: "http://www.brain-life.org/images/ui-logos/conneval.png",
-            datatypes: [ "neuro/conneval_output" ],
+            datatypes: [ "neuro/conneval" ],
         },
 
         ];

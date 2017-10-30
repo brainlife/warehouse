@@ -1,10 +1,9 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader :user="config.user">
+        <b-form-input type="search" placeholder="Filter Datasets" @keyup.native="change_query_debounce()" v-model="query"/>
+    </pageheader>
     <sidemenu active="/datasets"></sidemenu>
-    <div class="header-content">
-        <el-input placeholder="Filter Datasets" @change="change_query_debounce()" v-model="query"/>
-    </div>
     <div :class="{rightopen: selected_count}">
         <projectmenu :active="project_id" :projects="projects"></projectmenu>
         <div class="page-header">
@@ -560,12 +559,6 @@ export default {
             });
         }
     },
-
-    /*
-	destroyed() {
-		window.removeEventListener("scroll", this.page_scrolled, true);
-	}
-    */
 }
 </script>
 
@@ -646,14 +639,16 @@ right: 250px;
     margin-bottom: 10px;
 }
 
+/*
 .header-content {
     position: fixed;
     left: 320px;
     top: 0px;
     padding-top: 7px;
-    right: 250px;
+    width: 400px;
     z-index: 10;
 }
+*/
 
 .header {
     padding: 10px 0px 3px 10px;

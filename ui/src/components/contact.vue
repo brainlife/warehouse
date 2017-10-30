@@ -41,12 +41,10 @@ export default {
       if(!this.id) return; //not yet set?
       if(profiles === null) {
         //load all "active:false"-ones too - so that we can display the status
-        profiles = this.$http.get(Vue.config.auth_api+'/profiles');
+        profiles = this.$http.get(Vue.config.auth_api+'/profile');
       }
-      //console.log("using profiles");
       profiles.then(res=>{
-        //console.log("got profiles", res.body.length);
-        res.body.forEach((profile)=>{
+        res.body.profiles.forEach((profile)=>{
             if(profile.id == this.id) this.profile = profile;
         });
         //if(!this.profile) console.error("failed to find profile id",this.id);

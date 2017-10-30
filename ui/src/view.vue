@@ -163,8 +163,8 @@ export default {
  
         check_status() {
             if(this.novnc_task.status == "running") {
-                var msgpart = this.novnc_task.status_msg.trim();
-                if(msgpart == "running") {
+                //var msgpart = this.novnc_task.status_msg.trim();
+                //if(msgpart == "running") {
                     //load url.txt
                     var path = this.novnc_task.instance_id+'/'+this.novnc_task._id+'/url.txt'
                     var url = Vue.config.wf_api+'/resource/download'+
@@ -175,9 +175,10 @@ export default {
                         //load novnc!
                         document.location = res.body;
                     }, function(err) {
+                        //still waiting for url.txt
                         console.error(err);
                     });
-                }
+                //}
             }
         },
 

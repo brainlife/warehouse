@@ -9,7 +9,7 @@
 
     <div class="main-section">
         <el-form ref="form" label-width="120px">
-            <b-form-checkbox v-model="project.removed">Removed</b-form-checkbox>
+            <b-form-checkbox v-if="$route.params.id != '_'" v-model="project.removed">Removed</b-form-checkbox>
             <el-form-item label="Name">
                 <el-input type="text" v-model="project.name" placeholder="Project Name"></el-input>
             </el-form-item>
