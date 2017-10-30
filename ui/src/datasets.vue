@@ -289,22 +289,29 @@ export default {
             ] 
 
             if(this.query) {
-                //lookup datatype ids that matches the query
-                var datatype_ids = [];
-                for(var id in this.datatypes) {
-                    if(this.datatypes[id].name.includes(this.query)) datatype_ids.push(id);
-                }
 
-                finds.push({$or: [
-                    //text search is pretty much only useful for description / tags (and it can't be mixed in $or). not very useful!
-                    //{$text: {$search: this.query}}, 
+                let ands = [];
 
-                    {"meta.subject": {$regex: this.query}},
-                    {"desc": {$regex: this.query}},
-                    {"tags": {$regex: this.query}},
-                    {"datatype_tags": {$regex: this.query}},
-                    {"datatype": {$in: datatype_ids}},
-                ]});
+                //split query into each token and allow for regex search on each token
+                //so that we can query against multiple fields simultanously
+                this.query.split(" ").forEach(q=>{
+                    if(q === "") return;
+
+                    //lookup datatype ids that matches the query
+                    let datatype_ids = [];
+                    for(var id in this.datatypes) {
+                        if(this.datatypes[id].name.includes(q)) datatype_ids.push(id);
+                    }
+                    ands.push({$or: [
+                        {"meta.subject": {$regex: q}},
+                        {"desc": {$regex: q}},
+                        {"tags": {$regex: q}},
+                        {"datatype_tags": {$regex: q}},
+                        {"datatype": {$in: datatype_ids}},
+                    ]});
+                });
+
+                finds.push({$and: ands});
             }
 
             //count number of datasets already loaded
