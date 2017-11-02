@@ -21,7 +21,6 @@
     "babel-register": "^6.24.1",
     "boostrap": "^2.0.0",
     "bootstrap-vue": "^1.0.0-beta.9",
-    "bootswatch": "^3.3.7",
     "chalk": "^2.3.0",
     "compression-webpack-plugin": "^1.0.1",
     "connect-history-api-fallback": "^1.4.0",

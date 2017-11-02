@@ -1,9 +1,10 @@
 ---
 layout: single
-title: What's *App*?
+title: What is *App*?
 permalink: /whatisapp
 sidebar:
   nav: "docs"
+comments: true
 ---
 
 Brain-Life *Apps* are any code published on github that conforms to [ABCD specification](https://github.com/brain-life/abcd-spec) and registered on Brain-Life.org. *App* receives sets of input datasets where the format and structure of datatype conforms to registered datatypes on Brain-Life.org. 
