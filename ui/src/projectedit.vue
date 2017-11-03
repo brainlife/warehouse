@@ -19,6 +19,7 @@
             <el-form-item label="README (markdown)">
                 <el-input type="textarea" autosize v-model="project.readme" placeholder="Enter extended README content in markdown format."></el-input>
             </el-form-item>
+
             <el-form-item label="Access">
                 <el-select v-model="project.access">
                     <el-option label="Private" value="private"></el-option>
@@ -26,6 +27,14 @@
                 </el-select>
                 <p class="text-muted">Decide if non project member can access datasets inside this project</p>
             </el-form-item>
+
+            <el-form-item label="License">
+               <b-form-radio-group v-model="project.license">
+                    <b-form-radio value="ccby.40"> <license id="ccby.40"/> </b-form-radio>
+                    <b-form-radio value="cc0"> <license id="cc0"/> </b-form-radio>
+                </b-form-radio-group>
+            </el-form-item>
+
             <el-form-item label="Administrators">
                 <contactlist v-model="project.admins"></contactlist>
                 <p class="text-muted">Users who can update the project members</p>
@@ -58,9 +67,10 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
+import license from '@/components/license'
 
 export default {
-    components: { sidemenu, contactlist, pageheader },
+    components: { sidemenu, contactlist, pageheader, license },
     data () {
         return {
             project: {
@@ -70,6 +80,7 @@ export default {
                 access: "private",
                 admins: [Vue.config.user.sub.toString()],
                 members: [Vue.config.user.sub.toString()],
+                license: "ccby.40",
             },
 
             config: Vue.config,
