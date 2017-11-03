@@ -4,6 +4,7 @@ title: About Warehouse
 Description: Data warehousing, processing and application registration service for Brain-Life
 sidebar:
   nav: "docs"
+comments: true
 ---
 
 Brain-Life Warehouse allows you to organize / archive datasets, register application and process data.

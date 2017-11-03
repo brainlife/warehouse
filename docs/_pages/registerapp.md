@@ -4,6 +4,7 @@ title: Registering Apps
 permalink: /registerapp
 sidebar:
   nav: "docs"
+comments: true
 ---
 
 Once you have developed your app, you can register it on Brain-Life so that other users can discover and execute your app. 

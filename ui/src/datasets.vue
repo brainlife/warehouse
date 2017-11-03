@@ -1,10 +1,9 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader :user="config.user">
+        <b-form-input type="search" placeholder="Filter Datasets" @keyup.native="change_query_debounce()" v-model="query"/>
+    </pageheader>
     <sidemenu active="/datasets"></sidemenu>
-    <div class="header-content">
-        <el-input placeholder="Filter Datasets" @change="change_query_debounce()" v-model="query"/>
-    </div>
     <div :class="{rightopen: selected_count}">
         <projectmenu :active="project_id" :projects="projects"></projectmenu>
         <div class="page-header">
@@ -290,22 +289,29 @@ export default {
             ] 
 
             if(this.query) {
-                //lookup datatype ids that matches the query
-                var datatype_ids = [];
-                for(var id in this.datatypes) {
-                    if(this.datatypes[id].name.includes(this.query)) datatype_ids.push(id);
-                }
 
-                finds.push({$or: [
-                    //text search is pretty much only useful for description / tags (and it can't be mixed in $or). not very useful!
-                    //{$text: {$search: this.query}}, 
+                let ands = [];
 
-                    {"meta.subject": {$regex: this.query}},
-                    {"desc": {$regex: this.query}},
-                    {"tags": {$regex: this.query}},
-                    {"datatype_tags": {$regex: this.query}},
-                    {"datatype": {$in: datatype_ids}},
-                ]});
+                //split query into each token and allow for regex search on each token
+                //so that we can query against multiple fields simultanously
+                this.query.split(" ").forEach(q=>{
+                    if(q === "") return;
+
+                    //lookup datatype ids that matches the query
+                    let datatype_ids = [];
+                    for(var id in this.datatypes) {
+                        if(this.datatypes[id].name.includes(q)) datatype_ids.push(id);
+                    }
+                    ands.push({$or: [
+                        {"meta.subject": {$regex: q}},
+                        {"desc": {$regex: q}},
+                        {"tags": {$regex: q}},
+                        {"datatype_tags": {$regex: q}},
+                        {"datatype": {$in: datatype_ids}},
+                    ]});
+                });
+
+                finds.push({$and: ands});
             }
 
             //count number of datasets already loaded
@@ -560,12 +566,6 @@ export default {
             });
         }
     },
-
-    /*
-	destroyed() {
-		window.removeEventListener("scroll", this.page_scrolled, true);
-	}
-    */
 }
 </script>
 
@@ -646,14 +646,16 @@ right: 250px;
     margin-bottom: 10px;
 }
 
+/*
 .header-content {
     position: fixed;
     left: 320px;
     top: 0px;
     padding-top: 7px;
-    right: 250px;
+    width: 400px;
     z-index: 10;
 }
+*/
 
 .header {
     padding: 10px 0px 3px 10px;

@@ -4,6 +4,7 @@ title: Writing HelloWorld App
 permalink: /helloworld
 sidebar:
   nav: "docs"
+comments: true
 ---
 
 Let's begin by creating a brand [new github repository](https://help.github.com/articles/creating-a-new-repository/). Please be sure to make the repository public so that Brain-Life can download your app.
