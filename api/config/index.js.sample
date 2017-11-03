@@ -132,7 +132,6 @@ exports.storage_systems.jetstream = {
 function connect_dc(cb) {
     var conn = new ssh2.Client();
     conn.on('ready', ()=>{
-        console.log("dc ssh ready");
         cb(null, conn); 
     });
     try {
@@ -219,7 +218,6 @@ exports.storage_systems["dcwan/hcp"] = {
                         archive.append(stream, {name: file.local});
                     });
                     archive.on('finish', ()=>{
-                        console.log("archive finished");
                         conn.end();
                     });
                     archive.finalize();
@@ -230,7 +228,7 @@ exports.storage_systems["dcwan/hcp"] = {
             if(dataset.storage_config.dirpath) {
                 var local = dataset.storage_config.local;
                 conn.exec("cd "+dataset.storage_config.dirpath+"/surf && tar hc * --transform 's|^|/"+local+"/|'", (err, stream)=>{
-                    if(err) return next(err);
+                    if(err) return cb(err);
                     stream.on('close', code=>{
                         //console.log("done with tar stream - closing connection:",code)
                         conn.end();
@@ -272,6 +270,92 @@ exports.storage_systems["nki"] = {
         cb(null, archive, dataset._id+".tar");
     },
 }
+
+//config used to backup data from warehouse 
+exports.sda = {
+    ssh: {
+        username: "hayashis",
+        host: "sftp.sdarchive.iu.edu",
+        privateKey: fs.readFileSync('/home/hayashis/.ssh/id_rsa').toString(),
+        //debug: console.log,
+    },
+    basedir: "brainlife-dev1",
+}
+
+/*
+function connect_sda(cb) {
+    var conn = new ssh2.Client();
+    conn.on('ready', ()=>{
+        console.log("sda ssh ready");
+        cb(null, conn);
+    });
+
+    try {
+        conn.connect({
+            username: "hayashis",
+            host: "sftp.sdarchive.iu.edu",
+            privateKey: fs.readFileSync('/home/hayashis/.ssh/id_rsa'),
+        });
+    } catch(err) {
+        cb(err);
+    }
+}
+const sda_basepath = "brainlife-dev1";
+exports.storage_systems["sda"] = {
+    test: cb=>{
+        connect_sda((err, conn)=>{
+            conn.end();
+            if(err) return cb(err);
+            cb();
+        });
+    }, 
+    stat: (dataset, cb)=>{
+        //TODO..
+        cb();
+    },
+    upload: (dataset, cb)=>{
+        connect_sda((err, conn)=>{
+            if(err) return cb(err);
+            let dir = sda_basepath+"/"+dataset.project;
+            //make sure project directory exists
+            sftp.mkdir(dir, err=>{
+                if(err) {
+                    logger.error(err);
+                    //TODO - distinguish error due to directory already existing
+                }
+                let path = dir+"/"+dataset._id;
+                let stream = sftp.createWriteStream(path);
+                dataset.storage_config = { path }; //not used by anything at the moment.. but
+                stream.on('end', ()=>{
+                    logger.debug("finished uploading to sftp stream");
+                    conn.end();
+                });
+                cb(null, stream);
+            });
+        });
+    },
+    download: (dataset, cb)=>{
+        connect_sda((err, conn)=>{
+            if(err) return cb(err);
+             conn.sftp((err, sftp)=>{
+                if (err) {
+                    conn.end();
+                    return cb(err);
+                }
+                let path = sda_basepath+"/"+dataset.project+"/"+dataset._id;
+                let stream = sftp.createReadStream(path);
+                stream.on('error', err=>{
+                    console.error("stream failed but train has already left the station", err);
+                });
+                stream.on('close', code=>{
+                    conn.end();
+                });
+                cb(null, stream, dataset._id);
+            });
+        });
+    },
+}
+*/
 
 exports.logger = {
     winston: {

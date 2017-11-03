@@ -1,35 +1,70 @@
 'use strict';
 
 //contrib
+const amqp = require('amqp');
 const mongoose = require('mongoose');
 const winston = require('winston');
 
 //mine
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
-const events = require('./events');
 
 //use native promise for mongoose
 //without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated
 mongoose.Promise = global.Promise; 
 
+
 if(config.debug) {
     mongoose.set('debug', true);
 }
 
-exports.init = (cb)=>{
-    logger.debug("init db");
-    mongoose.connect(config.mongodb, {
-        //TODO - isn't auto_reconnect set by default?
-        server: { auto_reconnect: true, reconnectTries: Number.MAX_VALUE }
-    }, err=>{
-        if(err) return cb(err);
-        logger.info("connected to mongo");
-        cb();
+let dataset_ex = null;
+let amqp_conn = null;
+function init_amqp(cb) {
+    logger.info("connecting to amqp..");
+    amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    amqp_conn.once('ready', function() {
+        logger.info("amqp connection ready.. creating exchanges");
+        amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
+            dataset_ex = ex;
+            cb();
+        });
+    });
+    amqp_conn.on('error', function(err) {
+        logger.error("amqp connection error");
+        logger.error(err);
     });
 }
+
+exports.init = (cb)=>{
+    logger.debug("connecting to amqp");
+    init_amqp(err=>{
+        if(err) return cb(err);
+
+        logger.debug("connecting to mongo");
+        mongoose.connect(config.mongodb, {
+            //TODO - isn't auto_reconnect set by default?
+            server: { auto_reconnect: true, reconnectTries: Number.MAX_VALUE }
+        }, err=>{
+            if(err) return cb(err);
+            logger.info("connected to mongo");
+            cb();
+        });
+    });
+}
+
+function dataset_event(dataset) {
+    if(!dataset_ex) {
+        logger.error("amqp not connected - but event handler called");
+        return;
+    }
+    let key = dataset.project+"."+dataset._id;
+    dataset_ex.publish(key, dataset, {});
+}
+
 exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
+    amqp_conn.disconnect();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,28 +142,27 @@ var datasetSchema = mongoose.Schema({
         //config: mongoose.Schema.Types.Mixed, 
     },
 
-    status: { type: String, default: "storing" },
     //storing (default)
-    //stored (dataset is stored on storage system, but not yet archive), 
-    //failed (failed to store to storage system)
-    //archived (dataset is stored on storage system and on sda)
+    //stored dataset is stored on storage system
+    //failed failed to store to storage system
+    status: { type: String, default: "storing" },
     status_msg: String,
 
-    archive_path: String, //htar path
-    archive_file: String, //file name that this dataset is stored as
+    //archive_path: String, //htar path
+    //archive_file: String, //file name that this dataset is stored as
 
     download_count: { type: Number, default: 0}, //number of time this dataset was downloaded
 
-    create_date: { type: Date, default: Date.now },
+    create_date: { type: Date, default: Date.now }, //date when this dataset was registered
+    backup_date: Date, //date when this dataset was copied to the SDA (not set if it's not yet backed up)
     download_date: Date, //last time this dataset was downloaded
-    archive_date: Date, //date when the content of this dataset was archived to tape
 
     removed: { type: Boolean, default: false} ,
 })
-datasetSchema.post('save', events.dataset);
-datasetSchema.post('findOneAndUpdate', events.dataset);
-datasetSchema.post('findOneAndRemove', events.dataset);
-datasetSchema.post('remove', events.dataset);
+datasetSchema.post('save', dataset_event);
+datasetSchema.post('findOneAndUpdate', dataset_event);
+datasetSchema.post('findOneAndRemove', dataset_event);
+datasetSchema.post('remove', dataset_event);
 
 datasetSchema.index({'$**': 'text'}) //make all text fields searchable
 exports.Datasets = mongoose.model('Datasets', datasetSchema);

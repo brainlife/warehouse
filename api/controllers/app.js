@@ -20,6 +20,8 @@ function canedit(user, rec) {
 
 //make sure user has access to all projects in (write access) projects_id
 function validate_projects(user, projects_ids, cb) {
+    if(!projects_ids) return cb(); //no project, no checking necessary
+ 
     common.getprojects(user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return cb(err);
 
