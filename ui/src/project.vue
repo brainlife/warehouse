@@ -51,12 +51,20 @@
                 <contact v-for="c in project.members" key="c._id" :id="c"></contact>
             </td>
         </tr>
+        <tr>
+            <th>License</th>
+            <td>
+                <!--<p>Datasets stored under this project adhere to following licensing.</p>-->
+                <license :id="project.license"/>
+            </td>
+        </tr>
         <tr v-if="project.readme">
             <th>README</th>
             <td>
                 <vue-markdown :source="project.readme"></vue-markdown>
             </td>
         </tr>
+        <!--
         <tr>
             <th>TODO</th>
             <td>
@@ -64,6 +72,7 @@
                 <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
             </td>
         </tr>
+        -->
         </table>
 
     </div><!--page-content-->
@@ -83,12 +92,13 @@ import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
 import projectavatar from '@/components/projectavatar'
+import license from '@/components/license'
 
 export default {
     components: { 
         sidemenu, contactlist, project, 
         projectaccess, pageheader, contact, 
-        VueMarkdown, projectavatar 
+        VueMarkdown, projectavatar, license,
     },
 
     data () {
