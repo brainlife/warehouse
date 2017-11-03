@@ -95,6 +95,8 @@ var projectSchema = mongoose.Schema({
     //* private - only the project member can access
     //* public - accessible by anyone
     access: {type: String, default: "private" },
+
+    license: String, //cc0, ccby.40, etc.
     
     create_date: { type: Date, default: Date.now },
 
