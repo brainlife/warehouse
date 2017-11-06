@@ -23,14 +23,14 @@ let amqp_conn = null;
 function init_amqp(cb) {
     logger.info("connecting to amqp..");
     amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-    amqp_conn.once('ready', function() {
+    amqp_conn.once('ready', ()=>{
         logger.info("amqp connection ready.. creating exchanges");
         amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
             dataset_ex = ex;
             cb();
         });
     });
-    amqp_conn.on('error', function(err) {
+    amqp_conn.on('error', (err)=>{
         logger.error("amqp connection error");
         logger.error(err);
     });
@@ -64,7 +64,10 @@ function dataset_event(dataset) {
 
 exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
-    amqp_conn.disconnect();
+    if(amqp_conn) {
+        logger.debug("disconnecting from amqp");
+        amqp_conn.disconnect();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,6 +179,9 @@ exports.Datasets = mongoose.model('Datasets', datasetSchema);
 var datatypeSchema = mongoose.Schema({
     name: String,
     desc: String, 
+    
+    //user who submitted this datatype (also the maintainer?)
+    user_id: {type: String, index: true}, 
 
     //file inventory for this datatype
     //files: [ mongoose.Schema.Types.Mixed ],
@@ -189,7 +195,7 @@ var datatypeSchema = mongoose.Schema({
     })],
 
     //name of ABCD service that is used to validate this data
-    //if not set, it will default to "soichih/sca-service-conneval-validate"
+    //if not set, it will default to "soichih/sca-service-conneval-validate" (still true?)
     validator: String, 
 
     meta: [ new mongoose.Schema({
@@ -223,7 +229,9 @@ var appSchema = mongoose.Schema({
 
     retry: Number, //not set, or 0 means no retry
 
-    dockerhub: String, //if the app is stored in dockerhub
+    //dockerhub: String, //if the app is stored in dockerhub
+
+    doi: String, //doi associated with this app (TODO..)
     
     //configuration template
     config: mongoose.Schema.Types.Mixed, 

@@ -10,13 +10,6 @@ const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../api/models');
 
-//find datasets that are not yet archived (archive_date not set)
-//download such datasets up to 30GB in size
-//make sure all requires files exists
-//run validators  (?)
-//htar to SDA
-//update datasets with information about archive and set archive_date
-
 console.log("connecting to db");
 db.init(function(err) {
     if(err) throw err;
@@ -27,6 +20,13 @@ db.init(function(err) {
             conn.end();
             db.disconnect();
             console.log("all done");
+
+            //amqp disconnect() is broken
+            //https://github.com/postwait/node-amqp/issues/462
+            setTimeout(()=>{
+                console.log("killing myself - until node-amqp bug is fixed");
+                process.exit(0);
+            }, 1000);
         });
     });
 });
@@ -46,34 +46,46 @@ function connect_sda(cb) {
 }
 
 function run(sftp, cb) {
+
+    //list storage system that we need to backup
+    let storages = [];
+    for(var id in config.storage_systems) {
+        if(config.storage_systems[id].need_backup) storages.push(id);
+    }
+    logger.debug("need to backup:", storages);
+
     logger.debug("finding datasets that needs to be copied to SDA");
-
-    let settle_data = new Date();
-
     db.Datasets.find({
         removed: false,
         status: "stored",
         backup_date: {$exists: false},
+        storage: {$in: storages}, 
     })
-    .sort('create_date')
-    .limit(2) 
+    .sort('create_date') //oldest first
+    .limit(100)  //limit to 100 datasets at a time
     .populate('datatype')
     .exec((err,datasets)=>{
         if(err) throw err;
         logger.debug("datasets needs backup:",datasets.length);
+        let count = 0;
         async.eachSeries(datasets, (dataset, next_dataset)=>{
+            count++;
+
+            logger.debug(JSON.stringify(dataset.toString(), null, 4));
+
             var system = config.storage_systems[dataset.storage];
             system.download(dataset, (err, readstream, filename)=>{
                 if(err) return next(err);
                 let dir = "test/"+dataset.project.toString();
                 sftp.mkdir(dir, err=>{
                     if(err) {
-                        if(err.code == 4) logger.debug(dir,"already exists");
-                        else return next_dataset(err);
+                        //code 4 means directory exists
+                        if(err.code != 4) return next_dataset(err);
                     }
 
-                    let path = dir+"/"+dataset._id;
-                    logger.debug("copying",dataset._id,"to",path);
+                    //let path = dir+"/"+dataset._id;
+                    let path = dir+"/"+filename;
+                    logger.debug(count, "copying",dataset._id,"to",path);
                     let writestream = sftp.createWriteStream(path);
                     readstream.pipe(writestream);
                     readstream.on('error', err=>{

@@ -75,6 +75,7 @@ exports.storage_default = function() {
 const js_config = require(__dirname+'/jetstream');
 const js_storage = pkgcloud.storage.createClient(js_config);
 exports.storage_systems.jetstream = {
+    need_backup: true,
     test: cb=>{
         js_storage.getContainers((err,containers)=>{
             if(err) return cb(err);
@@ -146,6 +147,7 @@ function connect_dc(cb) {
 }
 
 exports.storage_systems.dc2 = {
+    need_backup: true,
     test: cb=>{
         //TODO - I should do more checking?
         connect_dc((err, conn)=>{
