@@ -113,15 +113,12 @@ transition: color 0.5s;
 }
 .github {
 opacity: 0.6;
-font-family: arial;
 font-size: 85%;
 transition: color 0.5s;
 margin-bottom: 0px;
 }
 .desc {
-font-size: 13px;
-color: #333;
-line-height: 140%;
+color: #555;
 overflow: hidden;
 margin: 10px;
 margin-top: 0px;
@@ -156,7 +153,6 @@ font-size: 14px;
 }
 .compact .desc {
 margin: 0px;
-font-size: 90%;
 height: inherit;
 }
 .compact .github {

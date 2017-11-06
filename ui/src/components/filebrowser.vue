@@ -139,14 +139,15 @@ export default {
                 this.$http.get(url).then(res=>{
                     //set file type (TODO - can't highlight.js do this?)
                     var mime = res.headers.get("Content-Type");
+                    if(!mime) mime = "unknown";
                     let type = null;
                     switch(mime) {
                     case "application/json": type = "json"; break;
                     case "application/x-sh": type = "bash"; break;
                     case "text/plain": type = "text"; break;
                     case "text/csv": type = "csv"; break;
-                    case "application/octet-stream": 
-                        //for all octet-stream, guess file type from extension
+                    case "unknown":
+                        //for unknown content type, guess file type from extension
                         var tokens = file.filename.split(".");
                         var ext = tokens[tokens.length-1];
                         switch(ext) {

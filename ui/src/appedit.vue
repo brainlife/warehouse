@@ -13,7 +13,7 @@
                 <el-input type="text" v-model="app.name" placeholder="Name of application"/>
             </el-form-item>
             <el-form-item label="Description">
-                <el-input type="textarea" :autosize="{minRows: 4}" v-model="app.desc" placeholder="Enter description for this application."/>
+                <b-form-textarea v-model="app.desc" placeholder="Enter description for this application"/>
             </el-form-item>
             <br>
             <el-form-item label="Classification">
@@ -32,34 +32,14 @@
                     :allownull="true" 
                     access="private"
                     placeholder="(Does not belong to any project - available to all users)"/>
-                <p class="text-muted">If a private project is selected, only the member of the project can access this app.</p>
+                <p class="text-muted">If a private project is selected, only the member of the project can access this app</p>
             </el-form-item>
 
             <el-form-item label="Source Code">
-                <!--
-                <el-tabs v-model="form.repotype" type="border-card">
-                    <el-tab-pane label="Github" name="github">
-                        <el-form-item>
-                            Reponame
-                            <el-input type="text" v-model="app.github" placeholder="org/repo"/>
-                        </el-form-item>
-                        <el-form-item>
-                            Branch
-                            <el-input type="text" v-model="app.github_branch" placeholder="master"/>
-                        </el-form-item>
-                    </el-tab-pane>
-                    <el-tab-pane label="Dockerhub" name="dockerhub">
-                        <el-form-item>
-                            Container Name
-                            <el-input type="text" v-model="app.dockerhub" placeholder="org/container"/>
-                        </el-form-item> 
-                    </el-tab-pane>
-                </el-tabs>
-                -->
                 <b-card>
                     <el-form-item>
                         Reponame
-                        <el-input type="text" v-model="app.github" placeholder="org/repo"/>
+                        <el-input type="text" v-model="app.github" placeholder="brain-life/app-name"/>
                     </el-form-item>
                     <el-form-item>
                         Branch
@@ -67,6 +47,18 @@
                     </el-form-item>
                 </b-card>
             </el-form-item>
+
+            <!--
+            <el-form-item label="Citation (bibtex)">
+                <b-form-textarea v-model="app.citation" :rows="4" placeholder='@misc{app-name,
+       author = {Doe, J, and Smith, M."},
+       title = "Application Name",
+       year = "2017"
+       doi = {10.1.1/123.456}
+}'/>
+                <p class="text-muted">Please see <a href="http://www.bibtex.org/Format/">http://www.bibtex.org/Format/</a> for bibtex format</p>
+            </el-form-item>
+            -->
 
             <br>
             <el-form-item label="Max Retry">
@@ -183,7 +175,7 @@
                             </b-col>
                         </b-row>
                         <br><b>File Mapping</b><br>
-                        <p class="text-muted">Please specify configuration key to map each input files/directory to.</p>
+                        <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
                         <b-card v-for="(config, name) in app.config" :key="name" v-if="config.type == 'input' && config.input_id == input.id">
                             <b-button @click="remove_config(name)" style="float: right" size="sm" variant="danger"><icon name="trash"/></b-button>
                             <b-row>

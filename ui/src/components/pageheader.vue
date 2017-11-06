@@ -1,7 +1,10 @@
 <template>
 <div class="pageheader">
     <b-nav class="nav">
-        <b-nav-item @click="doc">Documentation</b-nav-item>
+        <b-nav-item-dropdown text="Support">
+            <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
+            <b-dropdown-item @click="reportbug">Report Issues</b-dropdown-item>
+        </b-nav-item-dropdown>
         <b-nav-item-dropdown text="New">
             <b-dropdown-item @click="go('/app/_/edit')">Register App</b-dropdown-item>
             <b-dropdown-item @click="go('/upload')">Upload Dataset</b-dropdown-item>
@@ -21,7 +24,7 @@
         </b-nav-item-dropdown>
     </b-nav>
 
-    <span class="title">Brain Life</span>
+    <span class="title" @click="gohome">Brain Life</span>
     <div class="slot"><slot/></div>
 </div>
 </template>
@@ -56,8 +59,14 @@ export default {
         doc() {
             window.open("http://www.brain-life.org/warehouse", "brain-life doc");
         },
+        reportbug() {
+            window.open("https://github.com/brain-life/warehouse/issues", "github");
+        },
         go(path) {
             this.$router.push(path);
+        },
+        gohome() {
+            document.location = "/";
         },
         /*
         newprocess() {
@@ -139,10 +148,8 @@ svg.cloud {
 </style>
 
 <style>
-.nav .nav-link {
+.pageheader .nav .nav-link {
     color: white;
 }
-.form-control {
-    border: none;
-}
+
 </style>

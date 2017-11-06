@@ -1,172 +1,215 @@
 <template>
-<div>
+<div v-if="app">
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/apps"></sidemenu>
-    <div class="header" v-if="app">
-        <b-button-group style="float: right;">
-            <b-button @click="remove()" v-if="app._canedit" icon="delete">Remove</b-button>
-            <b-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</b-button>
-            <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
-        </b-button-group>
-        <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
-        <h2>{{app.name}}</h2>
-    </div>
-    <div class="page-content" v-if="app" style="margin-top: 80px;">
-        <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
-            <br>
-            <p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>
-            <p style="line-height: 150%;">{{app.desc}}</p>
+    <div class="page-content">
+        <div class="header">
+            <b-container>
+                <b-button-group style="float: right;">
+                    <b-button @click="remove()" v-if="app._canedit" icon="delete">Remove</b-button>
+                    <b-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</b-button>
+                    <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
+                </b-button-group>
+                <div style="float: left; margin-right: 40px; margin-bottom: 15px;">
+                    <appavatar :app="app"/>
+                </div>
+                <div>
+                    <h3 style="color: #666; margin-bottom: 10px;">{{app.name}}</h3>
+                    <h6><a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a></h6>
+                    <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                    <p class="text-muted">{{app.desc}}</p>
+                </div>
+                <br clear="both">
+                <tags :tags="app.tags"></tags>
+            </b-container>
         </div>
 
-        <table class="info">
-        <tr>
-            <th>Source</th>
-            <td>
-                <h5><a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a></h5>
-                <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
-                <!-- TODO - we need to ask our developes to put something better before I can start displaying it here
-                <blockquote v-if="readme" class="readme">
-                    <vue-markdown :source="readme"></vue-markdown>
-                </blockquote>
-                -->
-            </td>
-        </tr>
-        <tr v-if="service_stats">
-            <th>Stats</th>
-            <td>
-                <b-card>
-                    <b-row>
-                        <b-col>
-                            <h4>{{service_stats.tasks}}</h4>
-                            <b class="text-muted">Total Runs</b>
-                        </b-col>
-                        <b-col>
-                            <h4>{{service_stats.users}}</h4>
-                            <b class="text-muted">Users</b>
-                        </b-col>
-                        <b-col>
-                            <h4>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}% </h4>
-                            <b class="text-muted">Success Rate</b>
-                        </b-col>
-                    </b-row>
-                </b-card>
-            </td>
-        </tr>
-        <tr>
-            <th>Input Datatypes</th>
-            <td>
-                <p class="text-muted">You need following input datasets to run this application</p>
-                <div class="item" v-for="input in app.inputs">
-                    <!--<b>{{input.id}}</b>-->
-                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags" style="margin-bottom: 10px;"></datatype>
-                </div>
-            </td>
-        </tr>
-        <tr v-if="app.outputs.length">
-            <th>Output Datatypes</th>
-            <td>
-                <p class="text-muted">This application produces following output datasets</p>
-                <div class="item" v-for="output in app.outputs">
-                    <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags">
-                        <div v-if="output.files">
-                            <small>Output mapping</small>
-                            <pre v-highlightjs><code class="json hljs">{{output.files}}</code></pre>
-                        </div>
-                    </datatype>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <th>Tags</th>
-            <td>
-                <p v-if="app.tags.length == 0" class="text-muted">No tags</p>
-                <tags :tags="app.tags"></tags>
-            </td>
-        </tr>
-        <tr>
-            <th>Developers</th>
-            <td>
-                <ul style="list-style: none; padding: 0px;">
-                    <li v-for="c in app.admins" key="c._id">
-                        <contact :id="c"></contact>
-                    </li>
-                </ul>
-            </td>
-        </tr>
-        <tr v-if="app.projects">
-            <th>Projects</th>
-            <td>
-                <p class="text-muted">This application belongs to following project.</p>
-                <el-card>
-                    <project v-for="project in app.projects" :project="project" :key="project._id"></project>
-                </el-card>
-            </td>
-        </tr>
-        <tr v-if="app.retry">
-            <th>Retry</th>
-            <td>
-                <p>
-                    If this application fails, it will automatically retry up to <b>{{app.retry}}</b> times
-                </p> 
-            </td>
-        </tr>
-        <tr>
-            <th>Computing Resource</th>
-            <td v-if="resources">
-                <b-alert show variant="danger" v-if="!preferred_resource">
-                    This application currently can not run on any resource that you have access to.
-                </b-alert>
-                <p v-else>This application could run on following resources.</p>
-                <b-table :items="resource_table" :fields="['resource','status','score', 'detail']">
-                    <template slot="resource" slot-scope="data">
-                        <b>{{data.value}}</b>
-                    </template>
-                    <template slot="status" slot-scope="data">
-                        <statustag :status="data.value"/>
-                    </template>
-                    <template slot="detail" slot-scope="data">
-                        <p class="help-block">{{data.value}}</p>
-                    </template>
-                </b-table>
-            </td>
-            <td v-else>
-                <b-alert show variant="danger">
-                    This application is not configured to run on any resource that you have access to.
-                </b-alert>
-            </td>
-        </tr>
-        <tr>
-            <!--TODO-->
-            <th>Test Status</th>
-            <td><el-tag>Unknown</el-tag></td>
-        </tr>
-        <tr>
-            <th>Configuration Template</th>
-            <td>
-                <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
-            </td>
-        </tr>
-        <tr>
-            <th>Citation</th>
-            <td>
-                <p>
-                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i> 
-                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
-                </p> 
-            </td>
-        </tr>
-        </table>
+        <b-container>
+            <b-row>
+                <b-col>
+                    <!--main area-->
+                    <b-tabs pills>
+                        <b-tab title="Detail" active>
+                            <br>
+                            <b-row>
+                                <b-col cols="3">
+                                    <b>Developers</b>
+                                </b-col>
+                                <b-col>
+                                    <ul style="list-style: none; padding: 0px;">
+                                        <li v-for="c in app.admins" key="c._id">
+                                            <contact :id="c"></contact>
+                                        </li>
+                                    </ul>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="3">
+                                    <b>Input Datatypes</b>
+                                </b-col>
+                                <b-col>
+                                    <div class="item" v-for="input in app.inputs">
+                                        <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
+                                    </div>
+                                    <br>
+                                    <p class="text-muted">This application uses above input datasets</p>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="3">
+                                    <b>Output Datatypes</b>
+                                </b-col>
+                                <b-col>
+                                    <div class="item" v-for="output in app.outputs">
+                                        <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags">
+                                            <div v-if="output.files">
+                                                <small>Output mapping</small>
+                                                <pre v-highlightjs><code class="json hljs">{{output.files}}</code></pre>
+                                            </div>
+                                        </datatype>
+                                    </div>
+                                    <br>
+                                    <p class="text-muted">This application produces above output datasets</p>
+                                </b-col>
+                            </b-row>
+                            <b-row v-if="app.projects && app.projects.length > 0">
+                                <b-col cols="3">
+                                    <b>Projects</b>
+                                </b-col>
+                                <b-col>
+                                    <b-card>
+                                        <project v-for="project in app.projects" :project="project" :key="project._id"></project>
+                                    </b-card>
+                                    <br>
+                                    <p class="text-muted">This application belongs to above project(s).</p>
+                                </b-col>
+                            </b-row>
+                            <!--
+                            <b-row v-if="app.retry">
+                                <b-col cols="3">
+                                    <b>Retry</b>
+                                </b-col>
+                                <b-col>
+                                    <p>If this application fails, it will automatically retry up to <b>{{app.retry}}</b> times</p>
+                                </b-col>
+                            </b-row>
+                            -->
+                            <b-row>
+                                <b-col cols="3">
+                                    <b>Computing Resources</b>
+                                </b-col>
+                                <b-col>
+                                    <b-table style="font-size: 90%;" :items="resource_table" :fields="['resource','status','score', 'detail']">
+                                        <template slot="resource" slot-scope="data">
+                                            <b>{{data.value}}</b>
+                                        </template>
+                                        <template slot="status" slot-scope="data">
+                                            <statustag :status="data.value"/>
+                                        </template>
+                                        <template slot="detail" slot-scope="data">
+                                            <p class="text-muted">{{data.value}}</p>
+                                        </template>
+                                    </b-table>
+                                    <b-alert show variant="danger" v-if="!preferred_resource">
+                                        This application currently can not run on any resource that you have access to.
+                                    </b-alert>
+                                    <p class="text-muted" v-else>This application could run on above resource(s)</p>
+                                </b-col>
+                            </b-row>
+
+                            <b-row>
+                                <b-col cols="3">
+                                    <b>Configuration</b>
+                                </b-col>
+                                <b-col>
+                                    <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
+                                </b-col>
+                            </b-row>
+
+                            <!--
+                            <b-row>
+                                <b-col cols="3">
+                                    <b>Citation</b>
+                                </b-col>
+                                <b-col>
+                                    <i>Hayashi, S. (2017). Brain-Life {{selfurl}}</i>
+                                    
+                                    <pre>
+        @Misc{ bl.app.{{app._id}},
+        author =   {Hayashi, S.},
+        title =    { {{app.name}} },
+        howpublished = {\url{http://github.com/{{app.github}} } },
+        year = {2017}
+        }
+                                    </pre> 
+                                </b-col>
+                            </b-row>
+                            -->
+
+                            <!--
+                            <tr>
+                                <th>Test Status</th>
+                                <td><el-tag>Unknown</el-tag></td>
+                            </tr>
+                            -->
+                        </b-tab>
+                        <b-tab title="Read Me">
+                            <br>
+                            <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
+                        </b-tab>
+                        <b-tab title="Publications">
+                            <br>
+                            <p class="text-muted" style="margin: 20px;">No publication registered</p>
+                        </b-tab>
+                        <b-tab title="Test Status">
+                            <br>
+                            <p class="text-muted" style="margin: 20px;">No test status available yet</p>
+                        </b-tab>
+                    </b-tabs>
+                </b-col>
+
+                <b-col cols="3">
+
+                    <b-card v-if="service_stats">
+                        <center>
+                            <p class="text-muted">Total Runs</p>
+                            <h5>{{service_stats.tasks}}</h5>
+                            <br>
+
+                            <p class="text-muted">Users Used By</p>
+                            <h5>{{service_stats.users}}</h5>
+                            <br>
+
+                            <p class="text-muted">Success Rate</p>
+                            <h5>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}%</h5>
+                        </center>
+                    </b-card>
+                    <br>
+
+                    <b-card>
+                        <center>
+                            <span class="text-muted">Average User Rating</span>
+                            <br>
+                            <br>
+                            <el-rate v-model="app._rate" @change="ratechange()"></el-rate>
+                        </center>
+                    </b-card>
+                    <br>
+                </b-col>
+
+            </b-row>
+        </b-container>
 
         <br>
-        <el-card v-if="config.debug">
+        <b-card v-if="config.debug">
             <div slot="header">Debug</div>
             <h3>App</h3>
             <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
             <h3>Preferred Resource</h3>
             <pre v-highlightjs="JSON.stringify(preferred_resource, null, 4)"><code class="json hljs"></code></pre>
-        </el-card>
+        </b-card>
     </div><!--page-content-->
-</div><!--root-->
+</div>
 </template>
 
 <script>
@@ -206,20 +249,22 @@ export default {
     computed: {
         resource_table: function() {
             let items = [];
-            this.resources.forEach(resource=>{
-                var item = {
-                    resource: resource.name,
-                    status: resource.status,
-                    score: resource.score,
-                    detail: resource.detail,
-                };
+            if(this.resources) {
+                this.resources.forEach(resource=>{
+                    var item = {
+                        resource: resource.name,
+                        status: resource.status,
+                        score: resource.score,
+                        detail: resource.detail,
+                    };
 
-                //b-table shows _rowVariant as column..
-                if(this.preferred_resource && resource.id == this.preferred_resource._id) {
-                    item._rowVariant = 'success';
-                }
-                items.push(item);
-            });
+                    //b-table shows _rowVariant as column..
+                    if(this.preferred_resource && resource.id == this.preferred_resource._id) {
+                        item._rowVariant = 'success';
+                    }
+                    items.push(item);
+                });
+            }
             return items;
         },
     },
@@ -285,7 +330,7 @@ export default {
                     if (a.score > b.score) return -1;
                     return 0;
                 });
-                console.dir(this.resources);
+                //console.dir(this.resources);
             })
             .catch(err => {
                 console.error(err);
@@ -314,32 +359,12 @@ export default {
 </script>
 
 <style scoped>
-.ui.text.menu {
-margin: 0;
-}
 .header {
-background: #666;
-padding: 20px;
-margin-top: 50px;
-height: 80px;
-top: 0px;
-position: fixed;
-right: 0px;
-left: 90px;
-color: #666;
-z-index: 1;
-border-bottom: 1px solid #666;
-}
-.header h2 {
-color: #eee;
-}
-.header-bottom {
-height: 50px;
 background-color: white;
-position: fixed;
-top: 140px;
-right: 0px;
-left: 90px;
-border-bottom: 1px solid #ddd;
+margin-bottom: 30px;
+padding: 30px 0px;
+padding-bottom: 30px;
+border-bottom: 1px solid #ccc;
 }
+
 </style>

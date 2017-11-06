@@ -46,6 +46,15 @@
             <th>Create Date</th>
             <td>{{new Date(dataset.create_date).toLocaleString()}}</td>
         </tr>
+        <!--
+        <tr>
+            <th>Backup Date</th>
+            <td>
+                <span v-if="dataset.backup_date">{{new Date(dataset.backup_date).toLocaleString()}}</span>
+                <span v-else>This dataset has not yet backed up to a permanent storage</span>
+            </td>
+        </tr>
+        -->
         <tr>
             <th>Download Count</th>
             <td>{{dataset.download_count}}</td>
@@ -62,12 +71,13 @@
                 <span v-if="dataset.status == 'failed'" style="color: red;">
                     <icon name="exclamation-triangle"/> Failed to store on warehouse
                 </span> 
-                <span v-if="dataset.status == 'archived'">
-                    This dataset is currently stored in <b>{{dataset.storage}}</b> and archived in the permanent tape backup.
-                </span> 
                 <span v-if="!dataset.status">
                     Status is unknown
                 </span> 
+
+                <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
+                    <icon name="bookmark"/>
+                </span>
             </td>
         </tr>
         <tr>

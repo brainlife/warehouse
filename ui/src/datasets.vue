@@ -573,7 +573,7 @@ export default {
 .page-header,
 .page-content {
 position: fixed;
-left: 320px;
+left: 350px;
 padding-left: 10px;
 right: 0;
 }

@@ -16,23 +16,31 @@ import md5 from 'md5'
 var profiles = null;
 
 export default {
-  props: ['id'],
-  data () {
-    return {
-      profile: {},
-    }
-  },
-  computed: {
-    gurl: function() {
-      if(!this.profile.email) return null;
-      return "//www.gravatar.com/avatar/"+md5(this.profile.email)+"?s=22";
-    }
-  },
-  watch: {
-    id: function() {
-      this.loadprofile();
-    }
-  },
+    props: ['id'],
+    data () {
+        return {
+            profile: {},
+        }
+    },
+
+    computed: {
+        gurl: function() {
+            var email = this.profile.email;
+            if(!this.profile.email) {
+                //generate avatar for user who doesn't have email set..
+                return "http://eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=22";
+            } else {
+                return "//www.gravatar.com/avatar/"+md5(this.profile.email)+"?s=22";  
+            }
+        } 
+    },
+
+    watch: {
+        id: function() {
+            this.loadprofile();
+        }
+    },
+
   mounted: function() {
     this.loadprofile();
   },
@@ -71,8 +79,8 @@ line-height: 22px;
 .contact img {
 float: left;
 height: 22px;
-border-top-left-radius: 5px;
-border-bottom-left-radius: 5px;
+border-top-left-radius: 3px;
+border-bottom-left-radius: 3px;
 }
 .name, .email {
 display: inline-block;
@@ -85,7 +93,7 @@ left: -3px;
 background-color: #ddd;
 color: #888;
 font-family: monospace;
-border-top-right-radius: 5px;
-border-bottom-right-radius: 5px;
+border-top-right-radius: 3px;
+border-bottom-right-radius: 3px;
 }
 </style>

@@ -8,7 +8,7 @@
     <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id"
         v-if="project.access == 'private'" @click="go('/datasets/'+project_id)" :class="{active: project_id == active}">
         <h5>{{project.name}}</h5>
-        <small>{{project.desc}}</small>
+        <div class="desc">{{project.desc}}</div>
     </div>
 
     <h4>
@@ -17,7 +17,7 @@
     <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id" 
         v-if="project.access == 'public'" @click="go('/datasets/'+project_id)" :class="{active: project_id == active}">
         <h5>{{project.name}}</h5>
-        <small>{{project.desc}}</small>
+        <div class="desc">{{project.desc}}</div>
     </div>
 </div>
 </template>
@@ -64,7 +64,7 @@ export default {
     position: fixed;
     top: 50px;
     bottom: 0px;
-    width: 230px;
+    width: 260px;
     background-color: #444;
     color: white;
     left: 90px;
@@ -72,14 +72,14 @@ export default {
 }
 h3 {
     font-size: 18px;
-    padding: 10px 20px;
+    padding: 10px 15px;
     color: #777;
     text-transform: uppercase;
     margin-bottom: 0px;
 }
 h4 {
     font-size: 16px;
-    padding: 10px 20px;
+    padding: 10px 15px;
     color: #777;
     text-transform: uppercase;
     margin-bottom: 0px;
@@ -90,8 +90,10 @@ h5 {
 }
 .project {
     margin: 0px;
-    padding: 10px 20px;
+    padding: 10px 15px;
     transition: background-color 0.4s;
+
+
 }
 .project:hover {
     cursor: pointer;
@@ -100,15 +102,19 @@ h5 {
 .project.active {
     background-color: #2693ff;
 }
-.project small {
-    transition: opacity 0.4s;
+.project .desc {
     opacity: 0.7;
+    font-size: 80%;
+    line-height: 140%;
+
+    /*
+    max-height: 50px;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+    */
 }
-/* this causes really odd rendering on header
-.project:hover small {
-    opacity: 0.9;
-}
-*/
 </style>
 
 

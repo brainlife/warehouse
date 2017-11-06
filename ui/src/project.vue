@@ -51,7 +51,7 @@
                 <contact v-for="c in project.members" key="c._id" :id="c"></contact>
             </td>
         </tr>
-        <tr>
+        <tr v-if="project.license">
             <th>License</th>
             <td>
                 <!--<p>Datasets stored under this project adhere to following licensing.</p>-->

@@ -150,12 +150,7 @@
 
         <transition name="fade">
         <div v-if="newtask.app">
-            <b-row>
-                <b-col cols="3">Application</b-col>
-                <b-col>
-                    <app :app="newtask.app" :compact="false"/>
-                </b-col>
-            </b-row>
+            <app :app="newtask.app" :compact="false"/>
             <br>
 
             <!--input-->
@@ -834,7 +829,6 @@ bottom: 0px;
 width: 300px;
 right: 0px;
 overflow: auto;
-font-size: 90%;
 padding-bottom: 50px; /*so it won't be covered by notification*/
 }
 .sidebar h6 {
@@ -867,10 +861,11 @@ border-left: 5px solid #ccc;
 padding-left: 10px;
 font-style: italic;
 }
-.dataset {
+.sidebar .dataset {
 border-bottom: 1px solid #d5d5d5; 
 padding: 3px;
 padding-left: 7px;
+font-size: 85%;
 }
 .dataset.clickable:hover {
 background-color: #eee;

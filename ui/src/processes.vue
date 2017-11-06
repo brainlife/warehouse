@@ -21,7 +21,7 @@
         </div>
         <ul>
             <li v-for="instance in instances" :id="instance._id" :key="instance._id" @click="click(instance)" :class="{selected: selected == instance}">
-                <div style="float: left">
+                <div style="float: left; margin-top: 3px;">
                     <span class="status status-running" v-if="instance.status == 'running'"><icon name="cog" :spin="true"/></span>
                     <span class="status status-requested" v-else-if="instance.status == 'requested'"><icon name="hourglass-o"/></span>
                     <span class="status status-failed" v-else-if="instance.status == 'failed'"><icon name="exclamation-circle"/></span>
@@ -225,7 +225,7 @@ export default {
 
 <style scoped>
 h3 {
-font-size: 18px;
+font-size: 17px;
 font-weight: bold;
 margin-bottom: 9px;
 }
@@ -255,7 +255,7 @@ padding: 5px 10px;
 color: #999;
 text-transform: uppercase;
 margin-bottom: 0px;
-font-size: 18px;
+font-size: 17px;
 font-weight: bold;
 }
 
@@ -265,7 +265,7 @@ overflow-y: auto;
 overflow-x: hidden;
 width: 300px;
 z-index: 4;
-
+font-size: 90%;
 position: fixed;
 top: 50px;
 bottom: 0px;
@@ -341,8 +341,7 @@ margin: 0;
 padding: 0;
 }
 #process-list li {
-padding: 5px 10px;
-font-size: 90%;
+padding: 3px 8px 5px 8px;
 line-height: 150%;
 color: #bbb;
 transition: color, background-color 0.3s;
@@ -354,7 +353,6 @@ opacity: 0.4;
 #process-list li .type {
 background-color: #333;
 color: #999;
-font-size: 80%;
 padding: 0px 3px;
 }
 #process-list li:hover {
