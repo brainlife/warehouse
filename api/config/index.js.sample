@@ -135,7 +135,11 @@ function connect_dc(cb) {
     conn.on('ready', ()=>{
         cb(null, conn); 
     });
+    conn.on('error', err=>{
+        cb(err);
+    });
     try {
+        console.log("connectint to dataxfer2");
         conn.connect({
             username: "hayashis",
             host: "dataxfer2.bigred2.uits.iu.edu",
@@ -151,8 +155,8 @@ exports.storage_systems.dc2 = {
     test: cb=>{
         //TODO - I should do more checking?
         connect_dc((err, conn)=>{
-            conn.end();
             if(err) return cb(err);
+            conn.end();
             cb();
         });
     }, 
@@ -188,8 +192,8 @@ exports.storage_systems.dc2 = {
 exports.storage_systems["dcwan/hcp"] = {
     test: cb=>{
         connect_dc((err, conn)=>{
-            conn.end();
             if(err) return cb(err);
+            conn.end();
             cb();
         });
     }, 
@@ -283,81 +287,6 @@ exports.sda = {
     },
     basedir: "brainlife-dev1",
 }
-
-/*
-function connect_sda(cb) {
-    var conn = new ssh2.Client();
-    conn.on('ready', ()=>{
-        console.log("sda ssh ready");
-        cb(null, conn);
-    });
-
-    try {
-        conn.connect({
-            username: "hayashis",
-            host: "sftp.sdarchive.iu.edu",
-            privateKey: fs.readFileSync('/home/hayashis/.ssh/id_rsa'),
-        });
-    } catch(err) {
-        cb(err);
-    }
-}
-const sda_basepath = "brainlife-dev1";
-exports.storage_systems["sda"] = {
-    test: cb=>{
-        connect_sda((err, conn)=>{
-            conn.end();
-            if(err) return cb(err);
-            cb();
-        });
-    }, 
-    stat: (dataset, cb)=>{
-        //TODO..
-        cb();
-    },
-    upload: (dataset, cb)=>{
-        connect_sda((err, conn)=>{
-            if(err) return cb(err);
-            let dir = sda_basepath+"/"+dataset.project;
-            //make sure project directory exists
-            sftp.mkdir(dir, err=>{
-                if(err) {
-                    logger.error(err);
-                    //TODO - distinguish error due to directory already existing
-                }
-                let path = dir+"/"+dataset._id;
-                let stream = sftp.createWriteStream(path);
-                dataset.storage_config = { path }; //not used by anything at the moment.. but
-                stream.on('end', ()=>{
-                    logger.debug("finished uploading to sftp stream");
-                    conn.end();
-                });
-                cb(null, stream);
-            });
-        });
-    },
-    download: (dataset, cb)=>{
-        connect_sda((err, conn)=>{
-            if(err) return cb(err);
-             conn.sftp((err, sftp)=>{
-                if (err) {
-                    conn.end();
-                    return cb(err);
-                }
-                let path = sda_basepath+"/"+dataset.project+"/"+dataset._id;
-                let stream = sftp.createReadStream(path);
-                stream.on('error', err=>{
-                    console.error("stream failed but train has already left the station", err);
-                });
-                stream.on('close', code=>{
-                    conn.end();
-                });
-                cb(null, stream, dataset._id);
-            });
-        });
-    },
-}
-*/
 
 exports.logger = {
     winston: {
