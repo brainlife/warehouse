@@ -17,9 +17,10 @@ db.init(function(err) {
         if(err) throw err;
         run(sftp, err=>{
             if(err) throw err;
+            logger.info("all done.. disconnecting");
+
             conn.end();
             db.disconnect();
-            console.log("all done");
 
             //amqp disconnect() is broken
             //https://github.com/postwait/node-amqp/issues/462
@@ -71,29 +72,33 @@ function run(sftp, cb) {
         async.eachSeries(datasets, (dataset, next_dataset)=>{
             count++;
 
-            logger.debug(JSON.stringify(dataset.toString(), null, 4));
+            logger.debug("handling dataset", dataset.toString());
 
             var system = config.storage_systems[dataset.storage];
             system.download(dataset, (err, readstream, filename)=>{
-                if(err) return next(err);
-                let dir = "test/"+dataset.project.toString();
+                if(err) return next_dataset(err);
+
+                //logger.debug("processing dataset:", dataset._id.toString());
+                let dir = config.sda.basedir+"/"+dataset.project.toString();
                 sftp.mkdir(dir, err=>{
                     if(err) {
                         //code 4 means directory exists
-                        if(err.code != 4) return next_dataset(err);
+                        if(err.code == 4) {
+                            logger.debug("project directory already exist.. ok")
+                        } else return next_dataset(err);
                     }
 
                     //let path = dir+"/"+dataset._id;
                     let path = dir+"/"+filename;
                     logger.debug(count, "copying",dataset._id,"to",path);
-                    let writestream = sftp.createWriteStream(path);
+                    let writestream = sftp.createWriteStream(path, {autoClose: false});
                     readstream.pipe(writestream);
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);
                         next_dataset(err);
                     });
                     writestream.on('finish', ()=>{
-                        logger.debug("done!");
+                        logger.debug("done!", dataset._id.toString());
                         dataset.backup_date = new Date();
                         dataset.save(next_dataset);
                     });

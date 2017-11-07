@@ -126,6 +126,7 @@ exports.storage_systems.jetstream = {
             filename = dataset.storage_config.filename;
         }
         var stream = js_storage.download({container: contname, remote: filename});
+        //console.log("created jetstream stream", stream);
         cb(null, stream, filename);
     },
 }
@@ -151,7 +152,7 @@ function connect_dc(cb) {
 }
 
 exports.storage_systems.dc2 = {
-    need_backup: true,
+    need_backup: false,
     test: cb=>{
         //TODO - I should do more checking?
         connect_dc((err, conn)=>{
@@ -285,7 +286,7 @@ exports.sda = {
         privateKey: fs.readFileSync('/home/hayashis/.ssh/id_rsa').toString(),
         //debug: console.log,
     },
-    basedir: "brainlife-dev1",
+    basedir: "test",
 }
 
 exports.logger = {
