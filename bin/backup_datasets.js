@@ -54,56 +54,68 @@ function run(sftp, cb) {
         if(config.storage_systems[id].need_backup) storages.push(id);
     }
     logger.debug("need to backup:", storages);
+    
+    logger.debug("finding project that needs to be backed up");
+    db.Projects.find({removed: false})
+    .sort('create_date')
+    .exec((err, projects)=>{
+        if(err) return cb(err);
 
-    logger.debug("finding datasets that needs to be copied to SDA");
-    db.Datasets.find({
-        removed: false,
-        status: "stored",
-        backup_date: {$exists: false},
-        storage: {$in: storages}, 
-    })
-    .sort('create_date') //oldest first
-    .limit(100)  //limit to 100 datasets at a time
-    .populate('datatype')
-    .exec((err,datasets)=>{
-        if(err) throw err;
-        logger.debug("datasets needs backup:",datasets.length);
-        let count = 0;
-        async.eachSeries(datasets, (dataset, next_dataset)=>{
-            count++;
+        async.eachSeries(projects, (project, next_project)=>{
+            logger.debug("------------------------------ handling project", project.toString());
+            db.Datasets.find({
+                project,
+                removed: false,
+                status: "stored",
+                backup_date: {$exists: false},
+                storage: {$in: storages}, 
+            })
+            .sort('create_date') //oldest first
+            .limit(100)  //limit to 100 datasets at a time
+            .populate('datatype')
+            .exec((err,datasets)=>{
+                if(err) return cb(err);
+                logger.debug("datasets needs backup:",datasets.length);
+                let count = 0;
+                async.eachSeries(datasets, (dataset, next_dataset)=>{
+                    count++;
 
-            logger.debug("handling dataset", dataset.toString());
+                    logger.debug("handling dataset", dataset.toString());
 
-            var system = config.storage_systems[dataset.storage];
-            system.download(dataset, (err, readstream, filename)=>{
-                if(err) return next_dataset(err);
+                    var system = config.storage_systems[dataset.storage];
+                    system.download(dataset, (err, readstream, filename)=>{
+                        if(err) return next_dataset(err);
 
-                //logger.debug("processing dataset:", dataset._id.toString());
-                let dir = config.sda.basedir+"/"+dataset.project.toString();
-                sftp.mkdir(dir, err=>{
-                    if(err) {
-                        //code 4 means directory exists
-                        if(err.code == 4) {
-                            logger.debug("project directory already exist.. ok")
-                        } else return next_dataset(err);
-                    }
+                        //logger.debug("processing dataset:", dataset._id.toString());
+                        let dir = config.sda.basedir+"/"+project._id.toString();
+                        sftp.mkdir(dir, err=>{
+                            if(err) {
+                                //code 4 means directory exists
+                                if(err.code == 4) {
+                                    logger.debug("project directory already exist.. ok")
+                                } else return next_dataset(err);
+                            }
 
-                    //let path = dir+"/"+dataset._id;
-                    let path = dir+"/"+filename;
-                    logger.debug(count, "copying",dataset._id,"to",path);
-                    let writestream = sftp.createWriteStream(path, {autoClose: false});
-                    readstream.pipe(writestream);
-                    readstream.on('error', err=>{
-                        logger.error("failed to pipe", err);
-                        next_dataset(err);
+                            //let path = dir+"/"+dataset._id;
+                            let path = dir+"/"+filename;
+                            logger.debug(count, "copying",dataset._id,"to",path);
+                            let writestream = sftp.createWriteStream(path, {autoClose: false});
+                            readstream.pipe(writestream);
+                            readstream.on('error', err=>{
+                                logger.error("failed to pipe", err);
+                                next_dataset(err);
+                            });
+                            writestream.on('finish', ()=>{
+                                logger.debug("done!", dataset._id.toString());
+                                dataset.backup_date = new Date();
+                                dataset.save(next_dataset);
+                            });
+                        });
                     });
-                    writestream.on('finish', ()=>{
-                        logger.debug("done!", dataset._id.toString());
-                        dataset.backup_date = new Date();
-                        dataset.save(next_dataset);
-                    });
-                });
+                }, cb);
             });
-        }, cb);
+        });
+
     });
+
 }
