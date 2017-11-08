@@ -104,7 +104,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
         //now update the warehouse project
 		var project = new db.Projects(req.body);
 		project.group_id = group.group.id;
-		project.save(function(err) {
+		project.save(err=>{
 			if (err) return next(err); 
 			project = JSON.parse(JSON.stringify(project));
 			project._canedit = canedit(req.user, project);

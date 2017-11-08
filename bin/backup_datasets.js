@@ -112,10 +112,8 @@ function run(sftp, cb) {
                             });
                         });
                     });
-                }, cb);
+                }, next_project);
             });
-        });
-
+        }, cb);
     });
-
 }
