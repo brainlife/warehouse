@@ -74,7 +74,7 @@ function run(sftp, cb) {
             .limit(100)  //limit to 100 datasets at a time
             .populate('datatype')
             .exec((err,datasets)=>{
-                if(err) return cb(err);
+                if(err) return next_project(err);
                 logger.debug("datasets needs backup:",datasets.length);
                 let count = 0;
                 async.eachSeries(datasets, (dataset, next_dataset)=>{

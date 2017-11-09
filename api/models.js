@@ -12,11 +12,7 @@ const logger = new winston.Logger(config.logger.winston);
 //use native promise for mongoose
 //without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated
 mongoose.Promise = global.Promise; 
-
-
-if(config.debug) {
-    mongoose.set('debug', true);
-}
+if(config.debug) mongoose.set('debug', true);
 
 let dataset_ex = null;
 let amqp_conn = null;
@@ -87,6 +83,7 @@ var projectSchema = mongoose.Schema({
     name: String,
     desc: String, 
 
+    //deprecated by publication
     readme: String,  //markdown
 
     avatar: String, //url for avatar
@@ -99,6 +96,7 @@ var projectSchema = mongoose.Schema({
     //* public - accessible by anyone
     access: {type: String, default: "private" },
 
+    //deprecated
     license: String, //cc0, ccby.40, etc.
     
     create_date: { type: Date, default: Date.now },
@@ -106,6 +104,41 @@ var projectSchema = mongoose.Schema({
     removed: { type: Boolean, default: false },
 });
 exports.Projects = mongoose.model('Projects', projectSchema);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+var publicationSchema = mongoose.Schema({
+    
+    //user who created this publication 
+    user_id: {type: String, index: true}, 
+
+    citation: String, //preferred citation
+    license: String, //cc0, ccby.40, etc.
+
+    doi: String, 
+    funding: String, //may be some NFS grant ID? (see NFS API)
+    
+    //project that this data belongs to
+    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+
+    authors: [ String ], //list of users who are the author/creator of this publicaions
+    //authors_ext: [ ],
+
+    contributor: [ String ], //list of users who contributed (PI, etc..)
+    //contributor_ext: [ String ], //list of users who contributed (PI, etc..)
+
+    contacts: [ String ], //list of users who can be used as contact
+
+    name: String, //title of the publication
+    desc: String, 
+    tags: [String], //software, eeg, mri, etc..
+    readme: String, //markdown (abstract in https://purl.stanford.edu/rt034xr8593)
+
+    create_date: { type: Date, default: Date.now },
+
+    removed: { type: Boolean, default: false },
+});
+exports.Publications = mongoose.model('Publications', publicationSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //data that's entered to the warehouse
@@ -135,6 +168,8 @@ var datasetSchema = mongoose.Schema({
     storage: String, //azure, dc2, sda?, jetstream-swift, etc.. (as configured in /config)
     //any extra storage config (maybe like subdir needed to access the dataset)
     storage_config: mongoose.Schema.Types.Mixed, 
+    //size of datasets (when downloaded). at the momenet, size is only set when it's copied to SDA
+    size: Number,
 
     //not set if user uploaded it. 
     prov: {
@@ -153,16 +188,16 @@ var datasetSchema = mongoose.Schema({
     status: { type: String, default: "storing" },
     status_msg: String,
 
-    //archive_path: String, //htar path
-    //archive_file: String, //file name that this dataset is stored as
-
     download_count: { type: Number, default: 0}, //number of time this dataset was downloaded
 
     create_date: { type: Date, default: Date.now }, //date when this dataset was registered
     backup_date: Date, //date when this dataset was copied to the SDA (not set if it's not yet backed up)
     download_date: Date, //last time this dataset was downloaded
 
-    removed: { type: Boolean, default: false} ,
+    removed: { type: Boolean, default: false},
+
+    //list of publications that this datasets is published under
+    publications: [{type: mongoose.Schema.Types.ObjectId, ref: 'Publications'}],
 })
 datasetSchema.post('save', dataset_event);
 datasetSchema.post('findOneAndUpdate', dataset_event);

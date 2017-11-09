@@ -86,6 +86,9 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiSuccess {Object}         Project record registered
  */
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
+
+    delete req.body._id; //shouldn't be set
+
     req.body.user_id = req.user.sub;//override
 
     //TODO - should I validate admins/members? how?
