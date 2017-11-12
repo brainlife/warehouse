@@ -148,7 +148,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 var system = config.storage_systems[storage];
                 logger.debug("obtaining upload stream for ", storage);
                 system.upload(dataset, (err, writestream)=>{
-                    if(err) return next(err);
+                    if(err) return cb(err);
                     var tar = child_process.spawn("tar", ["hc", "."], {cwd: tmpdir});
                     tar.on('close', code=>{
                         cleantmp();

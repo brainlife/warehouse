@@ -75,6 +75,7 @@ exports.storage_default = function() {
 const js_config = require(__dirname+'/jetstream');
 const js_storage = pkgcloud.storage.createClient(js_config);
 exports.storage_systems.jetstream = {
+    need_backup: true,
     test: cb=>{
         js_storage.getContainers((err,containers)=>{
             if(err) return cb(err);
@@ -125,6 +126,7 @@ exports.storage_systems.jetstream = {
             filename = dataset.storage_config.filename;
         }
         var stream = js_storage.download({container: contname, remote: filename});
+        //console.log("created jetstream stream", stream);
         cb(null, stream, filename);
     },
 }
@@ -132,10 +134,13 @@ exports.storage_systems.jetstream = {
 function connect_dc(cb) {
     var conn = new ssh2.Client();
     conn.on('ready', ()=>{
-        console.log("dc ssh ready");
         cb(null, conn); 
     });
+    conn.on('error', err=>{
+        cb(err);
+    });
     try {
+        console.log("connectint to dataxfer2");
         conn.connect({
             username: "hayashis",
             host: "dataxfer2.bigred2.uits.iu.edu",
@@ -147,11 +152,12 @@ function connect_dc(cb) {
 }
 
 exports.storage_systems.dc2 = {
+    need_backup: false,
     test: cb=>{
         //TODO - I should do more checking?
         connect_dc((err, conn)=>{
-            conn.end();
             if(err) return cb(err);
+            conn.end();
             cb();
         });
     }, 
@@ -187,8 +193,8 @@ exports.storage_systems.dc2 = {
 exports.storage_systems["dcwan/hcp"] = {
     test: cb=>{
         connect_dc((err, conn)=>{
-            conn.end();
             if(err) return cb(err);
+            conn.end();
             cb();
         });
     }, 
@@ -219,7 +225,6 @@ exports.storage_systems["dcwan/hcp"] = {
                         archive.append(stream, {name: file.local});
                     });
                     archive.on('finish', ()=>{
-                        console.log("archive finished");
                         conn.end();
                     });
                     archive.finalize();
@@ -230,7 +235,7 @@ exports.storage_systems["dcwan/hcp"] = {
             if(dataset.storage_config.dirpath) {
                 var local = dataset.storage_config.local;
                 conn.exec("cd "+dataset.storage_config.dirpath+"/surf && tar hc * --transform 's|^|/"+local+"/|'", (err, stream)=>{
-                    if(err) return next(err);
+                    if(err) return cb(err);
                     stream.on('close', code=>{
                         //console.log("done with tar stream - closing connection:",code)
                         conn.end();
@@ -271,6 +276,17 @@ exports.storage_systems["nki"] = {
         archive.finalize();
         cb(null, archive, dataset._id+".tar");
     },
+}
+
+//config used to backup data from warehouse 
+exports.sda = {
+    ssh: {
+        username: "hayashis",
+        host: "sftp.sdarchive.iu.edu",
+        privateKey: fs.readFileSync('/home/hayashis/.ssh/id_rsa').toString(),
+        //debug: console.log,
+    },
+    basedir: "test",
 }
 
 exports.logger = {
