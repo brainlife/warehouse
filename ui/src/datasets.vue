@@ -129,7 +129,7 @@ export default {
             total_subjects: null, //number of subjects for this project
 
             page_info: [], //{top/bottom/visible/}
-            loading: false,
+            loading: null,
 
             last_groups: {},
 
@@ -191,7 +191,7 @@ export default {
             res.body.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
-            this.check_project_id();
+            this.check_project_id(res.body.projects[0]);
 
             //load all datatypes
             return this.$http.get('datatype')
@@ -218,6 +218,7 @@ export default {
         $route: function() {
             this.check_project_id();
             this.query = ""; //clear query to avoid confusion
+            if(this.loading) this.loading.abort();
             this.reload();
         },
     },
@@ -243,13 +244,13 @@ export default {
             });
         },
         
-        check_project_id: function() {
+        check_project_id: function(def) {
             this.project_id = this.$route.params.projectid;
             if(!this.project_id) {
                 var pid = localStorage.getItem("last_projectid_used");
-                if(!pid) {
-                    console.log("last_projectid not set.. opening first one");
-                    pid = res.body.projects[0]._id; //just pick one that user has access
+                if(!pid && def) {
+                    console.log("last_projectid not set.. using default one");
+                    pid = def._id; //just pick one that user has access
                 }
                 this.$router.replace("/datasets/"+pid);
             } else {
@@ -327,15 +328,19 @@ export default {
             if(loaded === this.total_datasets) return;
 
             console.log("fetching datasets", finds);
-            this.loading = true;
             var limit = 100;
-            this.$http.get('dataset', {params: {
-                find: JSON.stringify({$and: finds}),
-                skip: loaded,
-                limit,
-                select: '-prov',
-                sort: 'meta.subject -create_date'
-            }})
+            this.$http.get('dataset', {
+                before(request) {
+                    this.loading = request;
+                },
+                params: {
+                    find: JSON.stringify({$and: finds}),
+                    skip: loaded,
+                    limit,
+                    select: '-prov',
+                    sort: 'meta.subject -create_date'
+                }
+            })
             .then(res=>{
                 this.total_datasets = res.body.count;
                 var groups = this.last_groups; //start with the last subject group from previous load
@@ -367,10 +372,10 @@ export default {
                     if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
                     this.page_info.push({top: prev, bottom: h-1, height: h-1-prev, visible: true});
                 });
-                this.loading = false;
+                this.loading = null;
             }, err=>{
                 console.error(err);
-                this.loading = false;
+                this.loading = null;
             });
         },
 
@@ -380,7 +385,6 @@ export default {
 
         open_dataset: function(dataset_id) {
             //TODO - we should probably use semi-fullscreen modal to display dataset
-            //window.open('#/dataset/'+dataset_id);
             this.$router.push('/dataset/'+dataset_id);
         },
 
@@ -469,7 +473,12 @@ export default {
                 download_instance = instance;
                 return this.temp_stage_selected(download_instance);
             }).then(task=>{
-                window.open("#/view/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
+                this.clear_selected();
+                if(v.docker) {
+                    window.open("/warehouse/novnc/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
+                } else {
+                    window.open("/warehouse/view/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
+                }
             });
         },
 
@@ -518,6 +527,7 @@ export default {
                 })
             }).then(res=>{
                 this.bids_task = res.body.task;
+                this.clear_selected();
                 this.$router.push("/download/"+download_instance._id);
             });
         },
@@ -561,6 +571,7 @@ export default {
                         next_group();
                     });
                 }, err=>{
+                    this.clear_selected();
                     this.$router.push("/processes/"+instance._id);
                 });
             });
@@ -688,7 +699,7 @@ right: 250px;
 .loading {
     position: fixed;
     bottom: 25px;
-    left: 350px; 
+    left: 380px; 
     z-index: 10;
     opacity: 0.5;  
 }

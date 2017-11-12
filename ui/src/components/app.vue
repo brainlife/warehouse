@@ -24,8 +24,7 @@
                     </div>
                 </div>
             </div>
-            <!--<el-rate v-if="!compact" class="rate" v-model="app_._rate"></el-rate>-->
-            <div class="desc" :style="{clear: 'both', height: descheight}">{{app_.desc||'no desc..'}}</div>
+            <div class="desc" :style="{height: descheight}">{{app_.desc||'no desc..'}}</div>
             <slot/>
             <div class="devs">
                 <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
@@ -51,7 +50,7 @@ export default {
         compact: Boolean,
         appid: String,
         clickable: {type: Boolean, default: true},
-        descheight: Number,
+        descheight: String,
     },
     data() {
         return {
@@ -73,9 +72,6 @@ export default {
         click: function() {
             if(this.clickable) {
                 this.$router.push('/app/'+this.app_._id);
-
-                //I think opening as tag is only needed on the datasets (for now).
-                //window.open('#/app/'+this.app._id);
             }
         },
     },
@@ -123,6 +119,7 @@ overflow: hidden;
 margin: 10px;
 margin-top: 0px;
 transition: color 0.5s;
+font-size: 90%;
 }
 .rate {
 height: 20px;

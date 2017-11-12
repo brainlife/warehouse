@@ -130,7 +130,7 @@
     </div>
 
     <div v-if="apps && apps.length == 0" style="margin: 20px;">
-        <p class="text-muted">You have no application that you can submit with currently staged datasets. Please try staging more datasets.</p>
+        <p class="text-muted">You have no application that you can submit with currently staged datasets.<br><br>Please try staging more datasets.</p>
     </div>
     <el-card v-if="apps && apps.length > 0">
         <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">Run Application</h5>
@@ -141,7 +141,7 @@
             <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
             <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
                 <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px;">
-                    <app :app="app" :compact="true" :clickable="false" class="clickable" :descheight="50"/>
+                    <app :app="app" :compact="true" :clickable="false" class="clickable" descheight="50px"/>
                 </div>
             </div>
             <br clear="both">

@@ -3,60 +3,66 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/projects"></sidemenu>
     <div class="fixed-top">
-        <h2 v-if="$route.params.id == '_'">New Project</h2>
-        <h2 v-else><icon name="pencil" scale="2"/> {{project.name}}</h2>
+        <b-container>
+            <h2>{{project.name||'No name'}}</h2>
+        </b-container>
     </div>
 
     <div class="main-section">
-        <el-form ref="form" label-width="120px">
-            <b-form-checkbox v-if="$route.params.id != '_'" v-model="project.removed">Removed</b-form-checkbox>
-            <el-form-item label="Name">
-                <el-input type="text" v-model="project.name" placeholder="Project Name"></el-input>
-            </el-form-item>
-            <el-form-item label="Description">
-                <el-input type="textarea" autosize v-model="project.desc" placeholder="Enter description for this project."></el-input>
-            </el-form-item>
-            <el-form-item label="README (markdown)">
-                <el-input type="textarea" autosize v-model="project.readme" placeholder="Enter extended README content in markdown format."></el-input>
-            </el-form-item>
+        <b-container>
+            <b-form @submit="submit">
+                <b-form-group horizontal>
+                    <b-form-checkbox v-if="project._id" v-model="project.removed">Removed</b-form-checkbox>
+                </b-form-group>
+                <b-form-group label="Name" horizontal>
+                    <el-input type="text" v-model="project.name" placeholder="Project Name"></el-input>
+                </b-form-group>
+                <b-form-group label="Description" horizontal>
+                    <el-input type="textarea" autosize v-model="project.desc" placeholder="Enter description for this project."></el-input>
+                </b-form-group>
+                <b-form-group label="README.md" horizontal>
+                    <b-form-textarea :rows="4" v-model="project.readme" placeholder="Enter extended README content in markdown format."/>
+                </b-form-group>
 
-            <el-form-item label="Access">
-                <el-select v-model="project.access">
-                    <el-option label="Private" value="private"></el-option>
-                    <el-option label="Public" value="public"></el-option>
-                </el-select>
-                <p class="text-muted">Decide if non project member can access datasets inside this project</p>
-            </el-form-item>
+                <b-form-group label="Access" horizontal>
+                    <el-select v-model="project.access">
+                        <el-option label="Private" value="private"></el-option>
+                        <el-option label="Public" value="public"></el-option>
+                    </el-select>
+                    <p class="text-muted">Decide if non project member can access datasets inside this project</p>
+                </b-form-group>
 
-            <el-form-item label="License">
-               <b-form-radio-group v-model="project.license">
-                    <b-form-radio value="ccby.40"> <license id="ccby.40"/> </b-form-radio>
-                    <b-form-radio value="cc0"> <license id="cc0"/> </b-form-radio>
-                </b-form-radio-group>
-            </el-form-item>
+                <b-form-group label="License" horizontal>
+                   <b-form-radio-group v-model="project.license">
+                        <b-form-radio value="ccby.40"> <license id="ccby.40"/> </b-form-radio>
+                        <b-form-radio value="cc0"> <license id="cc0"/> </b-form-radio>
+                    </b-form-radio-group>
+                </b-form-group>
 
-            <el-form-item label="Administrators">
-                <contactlist v-model="project.admins"></contactlist>
-                <p class="text-muted">Users who can update the project members</p>
-            </el-form-item>
-            <el-form-item label="Members">
-                <contactlist v-model="project.members"></contactlist>
-                <p class="text-muted">For public project: Uers who can update datasets in this project. For private project: Users who read/update datasets in this project and use application registered on this project.</p>
-            </el-form-item>
-            <el-form-item label="Avatar">
-                <el-input type="text" v-model="project.avatar" placeholder="URL of project avatar (optional)"/>
-            </el-form-item>
-            <el-form-item>
-                <el-button type="primary" icon="check" @click="submit()">Submit</el-button>
-            </el-form-item>
-        </el-form>
-            
-        <br>
-        <el-card v-if="config.debug">
-            <div slot="header">Debug</div>
-            <h3>project</h3>
-            <pre v-highlightjs="JSON.stringify(project, null, 4)"><code class="json hljs"></code></pre>
-        </el-card>
+                <b-form-group label="Administrators" horizontal>
+                    <contactlist v-model="project.admins"></contactlist>
+                    <p class="text-muted">Users who can update the project members</p>
+                </b-form-group>
+                <b-form-group label="Members" horizontal>
+                    <contactlist v-model="project.members"></contactlist>
+                    <p class="text-muted">For public project: Uers who can update datasets in this project. For private project: Users who read/update datasets in this project and use application registered on this project.</p>
+                </b-form-group>
+                <b-form-group label="Avatar" horizontal>
+                    <el-input type="text" v-model="project.avatar" placeholder="URL of project avatar (optional)"/>
+                </b-form-group>
+                <b-form-group horizontal>
+                    <b-button type="button" variant="secondary" @click="cancel">Cancel</b-button>
+                    <b-button type="submit" variant="primary">Submit</b-button>
+                </b-form-group>
+            </b-form>
+                
+            <br>
+            <el-card v-if="config.debug">
+                <div slot="header">Debug</div>
+                <h3>project</h3>
+                <pre v-highlightjs="JSON.stringify(project, null, 4)"><code class="json hljs"></code></pre>
+            </el-card>
+        </b-container>
     </div><!--main-section-->
 </div>
 </template>
@@ -74,8 +80,8 @@ export default {
     data () {
         return {
             project: {
-                _id: null,
-                name: "",
+                _id: null, 
+                name: "New Project",
                 desc: "",
                 access: "private",
                 admins: [Vue.config.user.sub.toString()],
@@ -87,23 +93,15 @@ export default {
         }
     },
     mounted: function() {
-        /*
-		$(this.$el).find('.repotype .item').tab({
-            onVisible: (v)=> {
-                this.repotype = v;
-            }
-        });
-        */
         if(this.$route.params.id !== '_') {
             //load project to edit
             this.$http.get('project', {params: {
                 find: JSON.stringify({_id: this.$route.params.id})
-            }})
-            .then(res=>{
+            }}).then(res=>{
                 this.project = res.body.projects[0];
             });
         } else {
-            //??
+            //new project
         } 
     },
     computed: {
@@ -121,20 +119,30 @@ export default {
             });
         },
 
-        submit: function() {
+        cancel: function() {
+            if(this.project._id) this.$router.push('/project/'+this.project._id);
+            else this.$router.push('/projects');
+        },
+
+        submit: function(evt) {
+            evt.preventDefault();
             if(this.project._id) {
                 //update
+                console.log("updating new project");
                 this.$http.put('project/'+this.project._id, this.project).then(res=>{
-                    this.$router.push('/projects');
-                }, res=>{
-                    console.error(res);
+                    //console.log('put /project/'+this.project._id);
+                    this.$router.push('/project/'+this.project._id);
+                }).catch(err=>{
+                    console.error(err);
                 });
             } else {
                 //create
+                console.log("creating new project");
                 this.$http.post('project', this.project).then(res=>{
-                    this.$router.push('/projects');
-                }, res=>{
-                    console.error(res);
+                    //console.log('post /project/'+res.body._id);
+                    this.$router.push('/project/'+res.body._id);
+                }).catch(err=>{
+                    console.error(err);
                 });
             }
         }
@@ -165,5 +173,4 @@ z-index: 1;
 border-bottom: 1px solid #666;
 }
 </style>
-
 

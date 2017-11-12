@@ -13,12 +13,13 @@
                 <el-input type="text" v-model="app.name" placeholder="Name of application"/>
             </el-form-item>
             <el-form-item label="Description">
-                <b-form-textarea v-model="app.desc" placeholder="Enter description for this application"/>
+                <b-form-textarea :rows="5" v-model="app.desc" placeholder="Enter description for this application"/>
+                <br>
             </el-form-item>
-            <br>
             <el-form-item label="Classification">
                 <select2 :options="alltags" v-model="app.tags" :multiple="true" :tags="true"></select2>
                 <p class="text-muted">Used to group similar application</p>
+                <b-alert show variant="danger">Description/name/classifications will be loaded from source github repository soon. Please update your repo description / name / topics as well as these fields.</b-alert>
             </el-form-item>
             <el-form-item label="Developers">
                 <contactlist v-model="app.admins"></contactlist>
@@ -36,16 +37,12 @@
             </el-form-item>
 
             <el-form-item label="Source Code">
-                <b-card>
-                    <el-form-item>
-                        Reponame
-                        <el-input type="text" v-model="app.github" placeholder="brain-life/app-name"/>
-                    </el-form-item>
-                    <el-form-item>
-                        Branch
-                        <el-input type="text" v-model="app.github_branch" placeholder="master"/>
-                    </el-form-item>
-                </b-card>
+                <b-input-group>
+                    <b-input-group-addon>Github Repository Name</b-input-group-addon>
+                    <b-form-input type="text" v-model="app.github" placeholder="brain-life/app-name"/>
+                    <b-input-group-addon>Branch</b-input-group-addon>
+                    <b-form-input type="text" v-model="app.github_branch" placeholder="master"/>
+                </b-input-group>
             </el-form-item>
 
             <!--

@@ -206,8 +206,13 @@ export default {
             }
         },
         view: function(opt) {
-            var view = opt.view.split('/').join('.'); //replace all / with .
-            var path = "#/view/"+opt.instanceid+"/"+opt.taskid+'/'+view;
+            let view = opt.view.split('/').join('.'); //replace all / with .
+            let path;
+            if(opt.docker) {
+                path = "/warehouse/novnc/"+opt.instanceid+"/"+opt.taskid+'/'+view;
+            } else {
+                path = "/warehouse/view/"+opt.instanceid+"/"+opt.taskid+'/'+view;
+            }
             if(opt.subdir) path += '/'+opt.subdir;
             window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
         }

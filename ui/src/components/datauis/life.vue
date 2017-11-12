@@ -1,8 +1,8 @@
 <template>
-<div class="life">
+<div style="padding: 10px;">
     <div v-if="stats">
         <b-row>
-            <b-col md="4">
+            <b-col cols="6">
                 Fibers with non-0 evidence <b>{{stats.non0_tracks.toLocaleString()}}</b> 
                 out of <b>{{stats.input_tracks.toLocaleString()}}</b> total tracks
             </b-col>
@@ -15,10 +15,10 @@
     <br>
     <b-row>
         <b-col>
-            <div ref="plot" style="width: 100%;"/>
+            <div ref="plot"/>
         </b-col>
         <b-col>
-            <div ref="w" style="width: 100%;"/>
+            <div ref="w"/>
         </b-col>
     </b-row>
 </div>
@@ -83,9 +83,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-.life {
-    margin: 10px;
-}
-</style>

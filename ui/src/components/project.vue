@@ -36,13 +36,13 @@
 </template>
 
 <script>
-import Vue from 'vue'
+// import Vue from 'vue'
 import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
 
 export default {
-  components: { contact, projectaccess },
-  name: "project",
-  props: [ "project" ],
+    components: { contact, projectaccess },
+    name: "project",
+    props: [ "project" ],
 }
 </script>

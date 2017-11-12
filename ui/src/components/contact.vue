@@ -85,7 +85,7 @@ border-bottom-left-radius: 3px;
 .name, .email {
 display: inline-block;
 padding: 0px 10px;
-background-color: #fcfcfc;
+background-color: #fdfdfd;
 }
 .email {
 position: relative;

@@ -44,7 +44,6 @@ export default {
 
     data () {
         return {
-            msg: 'Welcome to Your Vue.js App',
             projects: null,
             count: 0, //total counts of projects (not paged)
 

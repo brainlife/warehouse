@@ -1,12 +1,7 @@
 
-body {
-background-color: #f5f5f5;
-color: #444;
+/*needed to keep iframe 100% with for view*/
+html,body {
 height:100%;
-/*overflow: hidden;*/
-
-/*bootstrap default font size is too big for our app*/
-font-size: 14px;
 }
 
 .margin20 {
@@ -89,5 +84,32 @@ transform: rotate(180deg);
 box-shadow: none;
 cursor: pointer;
 }
+
+
+/*------------------------------------------------------------*/
+
+.brainlife-tab .nav-tabs {
+padding-top: 20px;
+border: none;
+}
+
+.brainlife-tab .nav-item a {
+color: inherit;
+opacity: 0.5;
+border: none;
+transition: color 0.5s, opacity 0.5s;
+}
+.brainlife-tab .nav-item a:hover {
+color: #007bff;
+opacity: 1;
+}
+.brainlife-tab .nav-item a[aria-selected="true"] {
+color: #2693ff;
+opacity: 1;
+/*border-bottom: 3px solid #007bff;*/
+border-bottom: 3px solid #2693ff;
+}
+
+/*------------------------------------------------------------*/
 
 

@@ -5,7 +5,7 @@
             <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
             <b-dropdown-item @click="reportbug">Report Issues</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown text="New">
+        <b-nav-item-dropdown v-if="user" text="New">
             <b-dropdown-item @click="go('/app/_/edit')">Register App</b-dropdown-item>
             <b-dropdown-item @click="go('/upload')">Upload Dataset</b-dropdown-item>
             <!-- doesn't work if user is already on the processes page
@@ -13,7 +13,7 @@
             -->
             <b-dropdown-item @click="go('/project/_/edit')">New Project</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown>
+        <b-nav-item-dropdown v-if="user">
             <span slot="button-content">
                 <img :src="gurl">
                 &nbsp;{{user.profile.fullname||user.profile.username}}
@@ -41,8 +41,6 @@ export default {
         }
     },
 	props: ['user'],
-	mounted: function() {
-	},
     computed: {
         gurl: function() {
             if(!this.user.profile.email) return null;

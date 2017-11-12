@@ -430,12 +430,6 @@ export default {
                 })
             }).then(res=>{
                 console.log("submitted app task", res.body.task);
-/*
-                //then request for notifications
-                return this.request_notifications(instance, inst_config.output_task_id);
-            }).then(res=>{
-*/
-                //all done
                 this.$router.push("/processes/"+instance._id);
             }).catch(err=>{
                 console.error(err);
@@ -443,7 +437,7 @@ export default {
         },
 
         request_notifications: function(instance, task_id) {
-            var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;
+            var url = document.location.origin+document.location.pathname+"/process/"+instance._id;
 
             //for success
             return this.$http.post(Vue.config.event_api+"/notification", {

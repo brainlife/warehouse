@@ -31,9 +31,7 @@ import datatypetag from '@/components/datatypetag'
 
 export default {
     components: { tags, datatypetag },
-    props: [ 'datatype', 'datatype_tags', 'id'],
-    computed: {
-    },
+    props: ['datatype', 'datatype_tags', 'id'],
     data() {
         return {
             activeSections: ['files']

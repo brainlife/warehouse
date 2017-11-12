@@ -3,9 +3,6 @@
     <pageheader :user="config.user"></pageheader>
     <sidemenu active="/datasets"></sidemenu>
     <div class="header" vi-if="dataset">
-        <!--
-        <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
-        -->
         <b-button-group style="float: right;">
             <b-button v-b-modal.viewSelecter @click="openviewsel(dataset.datatype.name)">View</b-button>
             <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
@@ -184,7 +181,7 @@
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
                 <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
                     <div style="margin-right: 10px">
-                        <app :app="app" :dataset="dataset" :compact="true" :descheight="65"></app>
+                        <app :app="app" :dataset="dataset" :compact="true" descheight="65px"></app>
                     </div>
                 </div>
             </td>
@@ -242,7 +239,6 @@ import datatype from '@/components/datatype'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
-//import viewerselect from '@/components/viewerselect'
 import viewselecter from '@/components/viewselecter'
 import datatypetag from '@/components/datatypetag'
 import select2 from '@/components/select2'
@@ -287,17 +283,6 @@ export default {
         '$route' (to, from) {
             this.load(this.$route.params.id);
         },
-        /*
-        comma_separated_tags: function(tags) {
-            // strip trailing whitespace after start/commas
-            tags = tags.split(",").map(s => s.trim());
-            
-            if (this.dataset) {
-                if (tags.length == 1 && tags[0] == "") this.dataset.tags = [];
-                else this.dataset.tags = tags;
-            }
-        }
-        */
     },
 
     mounted: function() {
@@ -435,11 +420,11 @@ export default {
         },
         view: function(view) {
             function openview(task) {
-                //var _view = view.split('/').join('.'); //replace all / with .
-                //console.log("instatnce", task.instance_id);
-                //console.log("task", task._id);
-                //console.log("view", _view);
-                window.open("#/view/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+                if(view.docker) {
+                    window.open("/warehouse/novnc/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+                } else {
+                    window.open("/warehouse/view/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+                }
             }
 
             //first, query for the viewing task to see if it already exist
