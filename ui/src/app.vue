@@ -15,8 +15,10 @@
                 </div>
                 <div>
                     <h3 style="color: #666; margin-bottom: 10px;">{{app.name}}</h3>
-                    <h6><a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a></h6>
-                    <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                    <h6>
+                        <a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a>
+                        <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                    </h6>
                     <p class="text-muted">{{app.desc}}</p>
                 </div>
                 <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
@@ -166,10 +168,10 @@
                         <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
                     </div>
                     <div v-if="tab_index == 2">
-                        <p class="text-muted" style="margin: 20px;">No publication registered</p>
+                        <p class="text-muted">No publication registered</p>
                     </div>
                     <div v-if="tab_index == 3">
-                        <p class="text-muted" style="margin: 20px;">No test status available yet</p>
+                        <p class="text-muted">No test status available yet</p>
                     </div>
                 </b-col>
 
