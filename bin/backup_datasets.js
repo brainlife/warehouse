@@ -68,9 +68,10 @@ function run(sftp, cb) {
                 removed: false,
                 status: "stored",
                 backup_date: {$exists: false},
+                publications: {$exists: true, $ne: []},
                 storage: {$in: storages}, 
             })
-            .sort('create_date') //oldest first
+            .sort('create_date') //oldest first (give published datasets precedencde)
             .limit(100)  //limit to 100 datasets at a time
             .populate('datatype')
             .exec((err,datasets)=>{
@@ -88,7 +89,7 @@ function run(sftp, cb) {
 
                         //logger.debug("processing dataset:", dataset._id.toString());
                         let dir = config.sda.basedir+"/"+project._id.toString();
-                        sftp.mkdir(dir, err=>{
+                        let r = sftp.mkdir(dir, err=>{
                             if(err) {
                                 //code 4 means directory exists
                                 if(err.code == 4) {
@@ -111,6 +112,7 @@ function run(sftp, cb) {
                                 dataset.save(next_dataset);
                             });
                         });
+                        logger.debug("mkdir returned", r);
                     });
                 }, next_project);
             });

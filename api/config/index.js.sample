@@ -18,6 +18,11 @@ exports.redis = {
     //port: 6379,
 }
 
+exports.github = {
+    client_id: "6a581b698021c7f38c52",
+    client_secret: fs.readFileSync(__dirname+"/github.client.secret"),
+}
+
 exports.wf = {
     api: "https://dev1.soichi.us/api/wf",
 }

@@ -116,16 +116,16 @@ var publicationSchema = mongoose.Schema({
     license: String, //cc0, ccby.40, etc.
 
     doi: String, 
-    funding: String, //may be some NFS grant ID? (see NFS API)
+    fundings: [ new mongoose.Schema({funder: 'string', id: 'string'}) ], 
     
     //project that this data belongs to
     project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
     authors: [ String ], //list of users who are the author/creator of this publicaions
-    //authors_ext: [ ],
+    //authors_ext: [new mongoose.Schema({name: 'string', email: 'string'})],
 
     contributor: [ String ], //list of users who contributed (PI, etc..)
-    //contributor_ext: [ String ], //list of users who contributed (PI, etc..)
+    //contributor_ext: [new mongoose.Schema({name: 'string', email: 'string'})],
 
     contacts: [ String ], //list of users who can be used as contact
 
@@ -244,28 +244,31 @@ exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 var appSchema = mongoose.Schema({
-    //owner of this application
-    user_id: {type: String, index: true}, 
-    
-    projects: [{type: mongoose.Schema.Types.ObjectId, ref: 'Projects'}],
-
+    user_id: {type: String, index: true}, //registrar of this application
+    projects: [{type: mongoose.Schema.Types.ObjectId, ref: 'Projects'}], //projects that this app is members of
     admins: [ String ], //list of users who can administer this app
-    
+    avatar: String, //url for app avatar
+
     name: String,
-    desc: String, 
 
-    tags: [String], //used to classify apps
-
-    avatar: String, //url for avatar
-
-    //application storage
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
     github: String, //if the app is stored in github
     github_branch: String, //default to "master"
 
+    //(TODO) these fields should be cached from github (how often?)
+    // like .. 
+    // https://api.github.com/repos/brain-life/app-life
+    //      https://api.github.com/repos/brain-life/app-life/contributors
+    desc: String,  //pulled from github
+    tags: [String], //pulled fro github/repo topics
+    contributors: [ new mongoose.Schema({name: 'string', email: 'string'}) ], //TODO - pull from github
+    //
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     retry: Number, //not set, or 0 means no retry
-
-    //dockerhub: String, //if the app is stored in dockerhub
-
     doi: String, //doi associated with this app (TODO..)
     
     //configuration template

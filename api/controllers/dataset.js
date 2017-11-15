@@ -59,28 +59,26 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         });
     }
 
-    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+    common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         ands.push({project: {$in: canread_project_ids}});
 
-        var limit = 100;
-        if(req.query.limit) limit = parseInt(req.query.limit);
-        var skip = 0;
-        if(req.query.skip) skip = parseInt(req.query.skip);
+        var skip = req.query.skip||0;
+        let limit = req.query.limit||100;
 
         //then look for dataset
         db.Datasets.find({ $and: ands })
         .populate(req.query.populate || '') //all by default
         .select(req.query.select)
-        .limit(limit)
-        .skip(skip)
+        .limit(+limit)
+        .skip(+skip)
         .sort(req.query.sort || '_id')
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
             db.Datasets.count({$and: ands}).exec((err, count)=>{
                 if(err) return next(err);
-                datasets.forEach(function(rec) {
+                datasets.forEach(rec=>{
                     rec._canedit = canedit(req.user, rec, canwrite_project_ids);
                 });
                 res.json({datasets: datasets, count: count});
@@ -333,6 +331,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  */
 router.get('/download/:id', jwt({
     secret: config.express.pubkey,
+    credentialsRequired: false,
     getToken: function(req) { 
         //load token from req.headers as well as query.at
         if(req.query.at) return req.query.at; 
@@ -351,12 +350,16 @@ router.get('/download/:id', jwt({
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
             if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
-
-            canread_project_ids = canread_project_ids.map(id=>id.toString());
             
-            if(!~canread_project_ids.indexOf(dataset.project.toString())) {
-                return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
-            } 
+            if(dataset.publications && dataset.publications.length > 0) {
+                //this dataset is published .. no need for access control
+            } else {
+                //unpublished -- need to do access control
+                canread_project_ids = canread_project_ids.map(id=>id.toString());
+                if(!~canread_project_ids.indexOf(dataset.project.toString())) {
+                    return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
+                } 
+            }
             
             //open stream
             var system = config.storage_systems[dataset.storage];
@@ -377,6 +380,7 @@ router.get('/download/:id', jwt({
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+filename);
                     if(stats) res.setHeader('Content-Length', stats.size);
+                    else if(dataset.size) res.setHeader('Content-Length', dataset.size);
                     logger.debug("sent headers.. commencing download");
                     readstream.pipe(res);   
                     readstream.on('error', err=>{
