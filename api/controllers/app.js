@@ -37,6 +37,21 @@ function validate_projects(user, projects_ids, cb) {
     });
 }
 
+function populate_github_fields(repo, app, cb) {
+    //load github info
+    common.load_github_detail(repo, (err, repo, con_details)=>{
+        if(err) return cb(err);
+
+        app.desc = repo.description;
+        app.tags = repo.topics;
+        app.contributors = con_details.map(con=>{
+            //see https://api.github.com/users/francopestilli for other fields
+            return {name: con.name, email: con.email};
+        });
+        cb();
+    });
+}
+
 /**
  * @apiGroup App
  * @api {get} /app              Query apps
@@ -174,12 +189,17 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
     validate_projects(req.user, req.body.projects, err=>{
         if(err) return next(err);
 
-        var app = new db.Apps(req.body);
-        app.save(function(err, _app) {
-            if (err) return next(err); 
-            app = JSON.parse(JSON.stringify(_app));
-            app._canedit = canedit(req.user, app);
-            res.json(app);
+        let app = new db.Apps(req.body);
+
+        //load github info
+        populate_github_fields(req.body.github, app, err=>{
+            if(err) return next(err);
+            app.save(function(err, _app) {
+                if (err) return next(err); 
+                app = JSON.parse(JSON.stringify(_app));
+                app._canedit = canedit(req.user, app);
+                res.json(app);
+            });
         });
     });
 });
@@ -223,11 +243,14 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 delete req.body.user_id;
                 delete req.body.create_date;
                 for(var k in req.body) app[k] = req.body[k];
-                app.save((err)=>{
+                populate_github_fields(req.body.github, app, err=>{
                     if(err) return next(err);
-                    app = JSON.parse(JSON.stringify(app));
-                    app._canedit = canedit(req.user, app);
-                    res.json(app);
+                    app.save((err)=>{
+                        if(err) return next(err);
+                        app = JSON.parse(JSON.stringify(app));
+                        app._canedit = canedit(req.user, app);
+                        res.json(app);
+                    });
                 });
             } else return res.status(401).end("you are not administartor of this app");
         });
@@ -268,7 +291,6 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
  * @apiGroup Dataset
  * @api {get} /app/bibtex/:id   Download BibTex JSON for BrainLife Application
  * @apiDescription              Output BibTex JSON content for specified application ID
- *
  */
 router.get('/bibtex/:id', (req, res, next)=>{
     db.Apps.findById(req.params.id, function(err, app) {

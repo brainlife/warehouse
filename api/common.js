@@ -1,4 +1,3 @@
-
 const request = require('request');
 const winston = require('winston');
 const tmp = require('tmp');
@@ -15,6 +14,7 @@ const prov = require('./prov');
 
 //TODO - should be called something like "get_my_projects"?
 exports.getprojects = function(user, cb) {
+    if(!user) return cb(null, [], []);
     //firt, find all public projects
     let project_query = {access: "public"};
     //if user is logged in, look for private ones also
@@ -175,4 +175,81 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
         });
     });
 }
+
+exports.load_github_detail = function(service_name, cb) {
+    if(!config.github) return cb("no github config");
+
+    let auth = "?client_id="+config.github.client_id + "&client_secret="+config.github.client_secret;
+
+    //first load main repo info
+    logger.debug("loading repo detail");
+    logger.debug("https://api.github.com/repos/"+service_name+auth);
+    request("https://api.github.com/repos/"+service_name+auth, { json: true, headers: {
+        'User-Agent': 'brain-life/warehouse',
+        
+        //needed to get topic (which is currently in preview mode..)
+        //https://developer.github.com/v3/repos/#list-all-topics-for-a-repository
+        'Accept': "application/vnd.github.mercy-preview+json", 
+    }}, function(err, _res, git) {
+        if(err) return cb(err);
+        if(_res.statusCode != 200) {
+            logger.error(_res.body);
+            return cb("failed to query requested repo. code:"+_res.statusCode);
+        }
+
+        logger.debug("loading contributors");
+        request("https://api.github.com/repos/"+service_name+"/contributors"+auth, { json: true, headers: {
+            'User-Agent': 'brain-life/warehouse',
+        }}, function(err, _res, cons) {
+            if(err) return cb(err);
+            if(_res.statusCode != 200) {
+                logger.error(_res.body);
+                return cb("failed to query requested repo. code:"+_res.statusCode);
+            }
+
+            logger.debug("loading contributor details")
+            let con_details = [];
+            async.eachSeries(cons, (con, next_con)=>{
+                request(con.url+auth, { json: true, headers: {'User-Agent': 'brain-life/warehouse'} }, function(err, _res, detail) {
+                    if(err) return next_con(err);
+                    if(_res.statusCode != 200) {
+                        logger.error(_res.body);
+                        return next_con("failed to load user detail:"+_res.statusCode);
+                    }
+                    //console.dir(detail);
+                    con_details.push(detail);
+                    next_con();
+                });
+            }, err=>{
+                //console.dir(con_details);
+                cb(null, git, con_details);
+            });
+            //load collaborators (developers)
+            //cb(null, git, cons);
+        });
+                    
+    });
+}
+
+let cached_contacts = {};
+function cache_contact() {
+    logger.info("caching auth profiles");
+    request({
+        url: config.auth.api+"/profile", json: true,
+        headers: { authorization: "Bearer "+config.auth.jwt },
+    }, (err, res, body)=>{
+        if(err) return next(err);
+        if(res.statusCode != 200) return cb("couldn't obtain user jwt code:"+res.statusCode);
+        body.profiles.forEach(profile=>{
+            cached_contacts[profile.id.toString()] = profile;
+        });
+    });
+}
+cache_contact();
+setInterval(cache_contact, 1000*60*30); //cache every 30 minutes
+
+exports.deref_contact = function(id) {
+    return cached_contacts[id];
+}
+
 

@@ -43,6 +43,7 @@ router.get('/health', (req, res)=>{
 router.use('/project', require('./project'));
 router.use('/dataset', require('./dataset'));
 router.use('/app', require('./app'));
+router.use('/pub', require('./pub'));
 router.use('/datatype', require('./datatype'));
 router.use('/event', require('./event'));
 
