@@ -1,8 +1,8 @@
 <template>
-<div>
+<div style="height: 100%; overflow: auto;">
     <b-card-group style-dis="padding-bottom: 10px" v-for="(row, rid) in images.chunk_inefficient(4)" :key="rid">
         <b-card no-body :id="rid+'-'+idx" v-for="(image, idx) in row" :key="idx" @click="click(image)">
-            <b-img-lazy :src="image.src" :alt="image.desc" center fluid-grow/>
+            <b-img :src="image.src" :alt="image.desc" center fluid-grow></b-img>
             <div style="font-size: 85%; margin: 8px; margin-bottom: 15px; text-align: center;">{{image.name}}</div>
             <b-tooltip :target="rid+'-'+idx" :title="image.desc" delay="300"></b-tooltip>
         </b-card>

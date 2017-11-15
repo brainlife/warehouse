@@ -92,7 +92,7 @@
                     </mute>
                     <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
                     <span @click="go('/dataset/'+output.dataset_id)" class="clickable">
-                        <el-tag v-if="output.dataset_id">From <b>{{projects[output.project].name}}</b></el-tag>
+                        <el-tag v-if="output.dataset_id" :title="projects[output.project].desc">From <b>{{projects[output.project].name}}</b></el-tag>
                     </span>
 
                     <!--list of archived datasets-->
@@ -353,7 +353,7 @@ export default {
                 this.datatypes[datatype._id] = datatype;
             });
             return this.$http.get('project', {params: {
-                select: 'name',
+                select: 'name desc',
             }});
         }).then(res=>{
             this.projects = {};
@@ -767,6 +767,7 @@ export default {
                     datatype_tags: output.datatype_tags,
                     desc: output.id+ " from "+this.newtask.app.name,
                     meta,
+                    //tags: ["sometags"], //TODO?
                     files: output.files,
                 };
                 if(this.newtask.archive.enable) output_req.archive = {

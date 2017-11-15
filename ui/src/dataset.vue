@@ -1,13 +1,13 @@
 <template>
 <div v-if="dataset">
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/datasets"></sidemenu>
     <div class="header" vi-if="dataset">
         <b-button-group style="float: right;">
-            <b-button v-b-modal.viewSelecter @click="openviewsel(dataset.datatype.name)">View</b-button>
-            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
-            <b-button @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
+            <b-button variant="default" v-b-modal.viewSelecter @click="openviewsel(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
+            <b-button @click="download" v-if="dataset.storage" icon="document"><icon name="download"/> Download</b-button>
         </b-button-group>
+        <b-button style="float: right; margin-right: 15px;" variant="danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
         <h2>
             <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
                 <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
@@ -52,6 +52,10 @@
             </td>
         </tr>
         -->
+        <tr v-if="dataset.size">
+            <th>Download Size</th>
+            <td>{{dataset.size | filesize}} </td>
+        </tr>        
         <tr>
             <th>Download Count</th>
             <td>{{dataset.download_count}}</td>
@@ -194,6 +198,7 @@
                 </p> 
             </td>
         </tr>
+        <!--
         <tr>
             <th>Citation</th>
             <td>
@@ -201,6 +206,14 @@
                     <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i>
                     <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
                 </p> 
+            </td>
+        </tr>
+        -->
+        <tr v-if="dataset.publications && dataset.publications.length">
+            <th>Publications</th>
+            <td>
+                <p class="text-muted">This dataset is published through following publications</p>
+                <pubcard v-for="pub in dataset.publications" :key="pub._id" :pub="pub" compact="true" />
             </td>
         </tr>
         </table>
@@ -243,6 +256,7 @@ import viewselecter from '@/components/viewselecter'
 import datatypetag from '@/components/datatypetag'
 import select2 from '@/components/select2'
 import task from '@/components/task'
+import pubcard from '@/components/pubcard'
 
 const lib = require('./lib');
 
@@ -251,7 +265,7 @@ export default {
         sidemenu, contact, project, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
-        viewselecter, datatypetag, select2, task,
+        viewselecter, datatypetag, select2, task, pubcard
      },
     data () {
         return {
@@ -309,10 +323,12 @@ export default {
             console.log(url);
         },
         remove: function() {
-            this.$http.delete('dataset/'+this.dataset._id)
-            .then(res=>{
-                this.go('/datasets');        
-            });
+            if(confirm("Do you really want to remove this dataset ?")) {
+                this.$http.delete('dataset/'+this.dataset._id)
+                .then(res=>{
+                    this.go('/datasets');        
+                });
+            }
         },
 
         load_status: function(id) {
@@ -334,7 +350,7 @@ export default {
         load: function(id) {
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                populate: "project datatype prov.app prov.deps.dataset",
+                populate: "project datatype prov.app prov.deps.dataset publications",
             }})
             .then(res=>{
                 if(res.body.count == 0) {

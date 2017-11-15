@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user">
+    <pageheader>
         <!--pageheader slot-->
         <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
     </pageheader>
@@ -14,7 +14,7 @@
             </div>
             <br clear="both">
         </div>
-        <b-button class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
+        <b-button v-if="config.user" class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
     </div><!--page-content-->
 </div><!--root-->
 </template>
@@ -31,7 +31,6 @@ export default {
         return {
             app_groups: null,
             query: "",
-
             config: Vue.config,
         }
     },
@@ -44,7 +43,7 @@ export default {
                     { removed: {$exists: false }},
                 ]
             }),
-            populate: 'inputs.datatype outputs.datatype',
+            populate: 'inputs.datatype outputs.datatype contributors',
         }})
         .then(res=>{
             //organize apps into various tags

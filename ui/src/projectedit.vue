@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/projects"></sidemenu>
     <div class="fixed-top">
         <b-container>

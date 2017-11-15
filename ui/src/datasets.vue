@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user">
+    <pageheader/>
         <b-form-input type="search" placeholder="Filter Datasets" @keyup.native="change_query_debounce()" v-model="query"/>
     </pageheader>
     <sidemenu active="/datasets"></sidemenu>
@@ -27,13 +27,16 @@
             <div class="list" id="scrolled-area">
                 <div class="text-muted list-header"><b>{{total_subjects}}</b> Subjects | <b>{{total_datasets}}</b> Datasets</div>
                 <div v-for="(page, page_idx) in pages">
-                    <!--show empty div to speed rendering up if it's outside the view-->
-                    <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" :style="{height: page_info[page_idx].height}">&nbsp;</div>
-                    <div class="row subjects" v-for="(datasets, subject) in page" :key="subject" v-else>
-                        <div class="col-md-2">
+                    <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
+                        :style="{height: page_info[page_idx].height}">
+                        <!--show empty div to speed up rendering if it's outside the view-->
+                        <pre>{{page_info[page_idx].height}}</pre>
+                    </div>
+                    <b-row class="subjects" v-for="(datasets, subject) in page" :key="subject" v-else>
+                        <b-col cols="2">
                             <strong>{{subject}}</strong>
-                        </div>
-                        <div class="col-md-10">
+                        </b-col>
+                        <b-col>
                             <div v-for="dataset in datasets" :key="dataset._id" @click="open_dataset(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
                                 <div class="row">
                                     <div class="col-md-3 truncate">
@@ -55,8 +58,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </b-col>
+                    </b-row>
                  </div> 
             </div><!--scrolled-area-->
             <b-button class="button-fixed" @click="go('/upload')" title="Upload Dataset" :class="{'selected-view-open':selected_count}"><icon name="plus" scale="2"/></b-button>
@@ -258,13 +261,20 @@ export default {
             }
         },
         
-		page_scrolled: function(e) {
-            var page_margin_bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight;
-            if (page_margin_bottom < 800) this.load();
+		page_scrolled: function() {
+            var e = document.getElementById("scrolled-area").parentNode;
+            var scroll_top = e.scrollTop;
+            var client_height = e.clientHeight;
+            var page_margin_bottom = e.scrollHeight - scroll_top - client_height;
+            if (page_margin_bottom < 300) {
+                this.load();
+            }
+
+            /* hiding invisible page trick is broken.. invisible area flickers with height?
             this.page_info.forEach((page,idx)=>{
-                var top = e.target.scrollTop;
-                page.visible = top < page.bottom && top + e.target.clientHeight > page.top;
+                page.visible = scroll_top-1000 < page.bottom && (scroll_top + client_height) > page.top;
             });
+            */
         },
 
         change_query_debounce: function() {
@@ -327,16 +337,16 @@ export default {
             }
             if(loaded === this.total_datasets) return;
 
-            console.log("fetching datasets", finds);
-            var limit = 100;
+            console.log("fetching datasets");
             this.$http.get('dataset', {
                 before(request) {
+                    console.log("loading ..........");
                     this.loading = request;
                 },
                 params: {
                     find: JSON.stringify({$and: finds}),
                     skip: loaded,
-                    limit,
+                    limit: 100,
                     select: '-prov',
                     sort: 'meta.subject -create_date'
                 }
@@ -367,12 +377,14 @@ export default {
 
                 //remember the page height
                 this.$nextTick(()=>{
-                    var h = document.getElementById("scrolled-area").scrollHeight;
+                    var h = document.getElementById("scrolled-area").parentNode.scrollHeight;
                     var prev = 0;
                     if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
-                    this.page_info.push({top: prev, bottom: h-1, height: h-1-prev, visible: true});
+                    this.page_info.push({top: prev, bottom: h, height: h-prev, visible: true});
+
+                    console.log("done loading..");
+                    this.loading = null;
                 });
-                this.loading = null;
             }, err=>{
                 console.error(err);
                 this.loading = null;
@@ -704,8 +716,8 @@ right: 250px;
     opacity: 0.5;  
 }
 .dataset-checker {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     float: left;
     margin-right: 5px;
 }

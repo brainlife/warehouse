@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/datasets"></sidemenu>
     <div class="page-content">
         <div class="margin20">

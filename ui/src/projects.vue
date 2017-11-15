@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user">
+    <pageheader>
         <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
     </pageheader>
     <sidemenu active="/projects"></sidemenu>
@@ -97,10 +97,6 @@ export default {
 </script>
 
 <style scoped>
-.el-card {
-box-shadow: none;
-box-shadow: 0 0 3px #aaa;
-}
 .group-title {
 color: #999;
 text-transform: uppercase;

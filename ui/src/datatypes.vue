@@ -1,10 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user">
-        <!--
-        <b-form-input type="search" v-model="query" placeholder="Search ..."/>
-        -->
-    </pageheader>
+    <pageheader/>
     <sidemenu active="/datatypes"></sidemenu>
     <div class="page-content">
         <div v-if="!datatypes" style="margin: 40px;"><h3>Loading ..</h3></div>

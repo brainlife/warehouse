@@ -1,35 +1,43 @@
 <template>
 <div class="sidemenu">
     <ul class="items">
+        <!-- currently being developped -->
         <li v-if="config.debug" 
             @click="go('/dashboard')"
             :class="{active: active == '/dashboard'}">
             <icon name="tachometer" scale="2"></icon><br>Dashboard
         </li>
         <li v-if="config.debug" class="divider"></li>
+
+        <!-- for everyone -->
         <li @click="go('/apps')"
             :class="{active: active == '/apps'}" >
             <icon name="th-large" scale="2" ></icon><br>Apps
         </li>
-        <li @click="go('/datasets')"
+        <li v-if="config.debug"
+            @click="go('/pubs')"
+            :class="{active: active == '/pubs'}">
+            <icon name="book" scale="2"></icon><br>Publications
+
+        <!-- only for authenticated users -->
+        <li v-if="config.user" @click="go('/datasets')"
             :class="{active: active == '/datasets'}">
             <icon name="cubes" scale="2"></icon><br>Datasets
         </li>
-        <li @click="go('/processes')"
+        <li v-if="config.user" @click="go('/processes')"
             :class="{active: active == '/processes'}">
             <icon name="paper-plane" scale="2"></icon><br>Process
         </li>
-        <!--<li class="divider"></li>-->
-        <li @click="go('/projects')"
+        <li v-if="config.user" @click="go('/projects')"
             :class="{active: active == '/projects'}">
             <icon name="shield" scale="2"></icon><br>Projects
         </li>
-        <li v-if="config.debug" @click="go('/datatypes')"
+        <li v-if="config.user && config.debug" @click="go('/datatypes')"
             :class="{active: active == '/datatypes'}">
             <icon name="cube" scale="2"></icon><br>Datatypes
         </li>
-        <li @click="go('/settings')"
-            :class="{active: active == '/settings'}">
+        
+        <li v-if="config.user" @click="setting">
             <icon name="cog" scale="2"></icon><br>Settings
         </li>
     </ul>
@@ -38,14 +46,12 @@
 
 <script>
 import Vue from 'vue'
-
 import projectmenu from '@/components/projectmenu'
 
 export default {
     components: { projectmenu },
     data () {
         return {
-            
             config: Vue.config,
         }
     },
@@ -53,22 +59,12 @@ export default {
 	mounted: function() {
 	},
     methods: {
-        /*
-        get_active: function() {
-            return "1";
+        setting: function() {
+            window.open("/auth/#!/settings/account", "_blank");
         },
-        */
         go: function(page) {
-            //settings is currently served via SCA default
-            if(page == "/settings") return window.open("/auth/#!/settings/account", "_blank");
-
             this.$router.push(page);
         },
-        /*
-        open_settings: function() {
-            window.open("/auth/#!/settings/account", "_blank");
-        }
-        */
     }
 }
 </script>

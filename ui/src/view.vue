@@ -11,7 +11,7 @@
         <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir"></evaluator>
         <images v-else-if="type == 'images'" :task="task" :subdir="subdir"></images>
         <volumeviewer v-else-if="type == 'volumeviewer'" :task="task" :subdir="subdir"></volumeviewer>
-        <div v-else-if="type == 'raw'" style="padding: 15px; background-color: white;">
+        <div v-else-if="type == 'raw'" style="padding: 15px; background-color: white; height: 100%; overflow auto;">
             <filebrowser :task="task" :path="task.instance_id+'/'+task._id+'/'+(subdir||'')"></filebrowser>
         </div>
     </div>

@@ -48,8 +48,8 @@ export default new Router({
         {path: '/download/:id', component: download},
         {path: '/processes/:id?', component: processes},
 
-        {path: '/apps', component: apps},
-        {path: '/app/:id', component: app},
+        {path: '/apps', component: apps, meta: {public: true}},
+        {path: '/app/:id', component: app, meta: {public: true}},
         {path: '/app/:id/submit', component: appsubmit},
         {path: '/app/:id/edit', component: appedit},
 
@@ -64,7 +64,7 @@ export default new Router({
         {path: '/datatype/:id', component: datatype},
         {path: '/datatype/:id/edit', component: datatypeedit},
 
-        {path: '/settings', component: settings},
+        //{path: '/settings', component: settings},
 
         {path: '/pubs', component: pubs, meta: {public: true}},
         {path: '/pub/:id', component: pub, meta: {public: true}},

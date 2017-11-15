@@ -5,23 +5,22 @@
             <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
             <b-dropdown-item @click="reportbug">Report Issues</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown v-if="user" text="New">
+        <b-nav-item-dropdown v-if="config.user" text="New">
             <b-dropdown-item @click="go('/app/_/edit')">Register App</b-dropdown-item>
             <b-dropdown-item @click="go('/upload')">Upload Dataset</b-dropdown-item>
-            <!-- doesn't work if user is already on the processes page
-            <b-dropdown-item @click="newprocess">New Process</b-dropdown-item>
-            -->
             <b-dropdown-item @click="go('/project/_/edit')">New Project</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown v-if="user">
+        <b-nav-item-dropdown v-if="config.user">
             <span slot="button-content">
                 <img :src="gurl">
-                &nbsp;{{user.profile.fullname||user.profile.username}}
+                &nbsp;{{config.user.profile.fullname||config.user.profile.username}}
             </span>
             <b-dropdown-item @click="goaccount">Settings</b-dropdown-item>
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item @click="signout">Signout</b-dropdown-item>
         </b-nav-item-dropdown>
+        <b-nav-item v-if="!config.user" @click="login">Login</b-nav-item>
+        <b-nav-item v-if="!config.user" @click="signup">Sign Up</b-nav-item>
     </b-nav>
 
     <span class="title" @click="gohome">Brain Life</span>
@@ -40,11 +39,11 @@ export default {
             config: Vue.config,
         }
     },
-	props: ['user'],
+	//props: ['user'],
     computed: {
         gurl: function() {
-            if(!this.user.profile.email) return null;
-            return "//www.gravatar.com/avatar/"+md5(this.user.profile.email)+"?s=22";
+            if(!this.config.user.profile.email) return null;
+            return "//www.gravatar.com/avatar/"+md5(this.config.user.profile.email)+"?s=22";
         }
     },
     methods: {
@@ -65,6 +64,12 @@ export default {
         },
         gohome() {
             document.location = "/";
+        },
+        login() {
+            document.location = "/auth";
+        },
+        signup() {
+            document.location = "/auth/#!/signup";
         },
         /*
         newprocess() {

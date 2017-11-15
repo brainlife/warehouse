@@ -1,6 +1,7 @@
 <template>
 <b-card v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
+        <icon v-if="app_.projects && app_.projects.length > 0" name="lock" style="float: right; margin: 5px;" title="not working.." scale="1.5" class="text-danger"/>
         <div v-if="compact">
             <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
             <div style="max-height: 73px; overflow: hidden;">
@@ -27,7 +28,7 @@
             <div class="desc" :style="{height: descheight}">{{app_.desc||'no desc..'}}</div>
             <slot/>
             <div class="devs">
-                <contact v-for="c in app_.admins" key="c._id" :id="c"></contact>
+                <contact v-for="c in app_.contributors" key="c._id" :fullname="c.name" :email="c.email"></contact>
             </div>
         </div>
     </div>

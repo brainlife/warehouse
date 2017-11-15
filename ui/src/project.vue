@@ -1,32 +1,37 @@
 <template>
 <div v-if="project">
-    <pageheader :user="config.user"/>
+    <pageheader/>
     <sidemenu active="/projects"/>
     <div class="page-content">
         <div class="header">
             <b-container>
-                <b-button-group style="float: right;" v-if="project._canedit">
-                    <b-button @click="remove()" v-if="!project.removed">Remove</b-button>
-                    <b-button @click="edit()">Edit</b-button>
-                </b-button-group>
-                <div style="float: left; margin-right: 40px; margin-bottom: 15px;">
-                    <projectavatar :project="project" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></projectavatar>
-                </div>
-                <div>
-                    <h3 style="color: #666; margin-bottom: 10px;">
-                        {{project.name}}
-                    </h3>
-                    <p style="text-muted">{{project.desc}}</p>
-                </div>
-                <projectaccess :access="project.access"/>
-                <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
+                <b-row>
+                    <b-col>
+                        <div style="float: left; margin-right: 40px; margin-bottom: 15px; height: 100%;">
+                            <projectavatar :project="project"/>
+                        </div>
+                        <div>
+                            <h3 style="color: #666; margin-bottom: 10px;">
+                                <projectaccess :access="project.access"/>
+                                {{project.name}}
+                            </h3>
+                            <p class="text-muted">{{project.desc}}</p>
+                        </div>
+                    </b-col>
+                    <b-col cols="3">
+                        <b-button-group style="float: right;" v-if="project._canedit">
+                            <b-button variant="danger" @click="remove()" v-if="!project.removed"><icon name="trash"/></b-button>
+                            <b-button variant="default" @click="edit()"><icon name="pencil"/> Edit</b-button>
+                        </b-button-group>
+                    </b-col>
+                </b-row>
             </b-container>
         </div><!--header-->
 
         <b-container>
             <b-row>
                 <b-col>
-
+                    <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
                     <b-card no-body>
                         <b-list-group flush>
                             <b-list-group-item>
@@ -182,7 +187,7 @@ color:#88f;
 .header {
 background-color: white;
 margin-bottom: 30px;
-padding: 20px 0px;
+padding: 30px 0px 20px 0px;
 border-bottom: 1px solid #ccc;
 }
 

@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/apps"></sidemenu>
     <div class="header" v-if="app">
         <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>

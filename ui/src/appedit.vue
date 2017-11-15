@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/apps"></sidemenu>
     <div class="fixed-top">
         <h2 v-if="$route.params.id == '_'">New App</h2>
@@ -12,6 +12,7 @@
             <el-form-item label="Name">
                 <el-input type="text" v-model="app.name" placeholder="Name of application"/>
             </el-form-item>
+            <!--
             <el-form-item label="Description">
                 <b-form-textarea :rows="5" v-model="app.desc" placeholder="Enter description for this application"/>
                 <br>
@@ -21,8 +22,10 @@
                 <p class="text-muted">Used to group similar application</p>
                 <b-alert show variant="danger">Description/name/classifications will be loaded from source github repository soon. Please update your repo description / name / topics as well as these fields.</b-alert>
             </el-form-item>
-            <el-form-item label="Developers">
+            -->
+            <el-form-item label="Admins">
                 <contactlist v-model="app.admins"></contactlist>
+                <p class="text-muted">Users who can update this application registration</p>
             </el-form-item>
             <el-form-item label="Avatar">
                 <el-input type="text" v-model="app.avatar" placeholder="URL of application avatar"/>

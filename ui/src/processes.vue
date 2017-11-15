@@ -1,58 +1,60 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/processes"></sidemenu>
-    <div class="page-top">
-        <div class="process-list-toggler" @click="show_process_list = !show_process_list"> <icon scale="1.5" name="bars"/> </div>
-        <div v-if="selected">
-            <statusicon :status="selected.status" :scale="1.75" style="float: left; margin: 15px;opacity: 0.8;"/>
-            <div style="margin: 10px; float: right;">
-                <button v-if="!selected.config.removing" type="button" class="btn btn-outline-secondary" @click="remove()" title="Remove Process"><icon name="trash"/></button>
-            </div>
-            <div class="description">
-                <b-form-textarea placeholder="Please enter process description" @keyup.native="changedesc()" v-model="selected.desc" :rows="2"/>
-            </div>
-        </div>
-    </div>
-
-    <div v-if="instances" id="process-list" :class="{'process-list-show': show_process_list}">
-        <div class="process-list-header">
-            <div class="process-list-hider" @click="show_process_list = false;"><icon name="bars"/></div> Processes
-        </div>
-        <ul>
-            <li v-for="instance in instances" :id="instance._id" :key="instance._id" @click="click(instance)" :class="{selected: selected == instance}">
-                <div style="float: left; margin-top: 3px;">
-                    <span class="status status-running" v-if="instance.status == 'running'"><icon name="cog" :spin="true"/></span>
-                    <span class="status status-requested" v-else-if="instance.status == 'requested'"><icon name="hourglass-o"/></span>
-                    <span class="status status-failed" v-else-if="instance.status == 'failed'"><icon name="exclamation-circle"/></span>
-                    <span class="status status-finished" v-else-if="instance.status == 'finished'" style="font-size: 140%;"><icon name="check"/></span>
-                    <span class="status status-unknown" v-else><icon name="question"/></span>
+    <div v-if="instances">
+        <div class="page-top">
+            <div class="process-list-toggler" @click="show_process_list = !show_process_list"> <icon scale="1.5" name="bars"/> </div>
+            <div v-if="selected">
+                <statusicon :status="selected.status" :scale="1.75" style="float: left; margin: 15px;opacity: 0.8;"/>
+                <div style="margin: 10px; float: right;">
+                    <button v-if="!selected.config.removing" type="button" class="btn btn-outline-secondary" @click="remove()" title="Remove Process"><icon name="trash"/></button>
                 </div>
-                <div style="margin-left: 25px;">
-                    <time v-if="instance._old">{{new Date(instance.create_date).toLocaleDateString()}}</time>
-                    <time v-else>{{new Date(instance.create_date).toLocaleTimeString()}}</time>
+                <div class="description">
+                    <b-form-textarea placeholder="Please enter process description" @keyup.native="changedesc()" v-model="selected.desc" :rows="2"/>
+                </div>
+            </div>
+        </div>
 
-                    <div class="type" v-if="instance.config.type != 'v2'" style="display: inline-block;">
-                        <span v-if="instance.config.type == 'simple'">
-                            {{apps[instance.config.prov.app].name}}
-                        </span> 
-                        <span v-else>{{instance.config.type}}</span>
+        <div id="process-list" :class="{'process-list-show': show_process_list}">
+            <div class="process-list-header">
+                <div class="process-list-hider" @click="show_process_list = false;"><icon name="bars"/></div> Processes
+            </div>
+            <ul>
+                <li v-for="instance in instances" :id="instance._id" :key="instance._id" @click="click(instance)" :class="{selected: selected == instance}">
+                    <div style="float: left; margin-top: 3px;">
+                        <span class="status status-running" v-if="instance.status == 'running'"><icon name="cog" :spin="true"/></span>
+                        <span class="status status-requested" v-else-if="instance.status == 'requested'"><icon name="hourglass-o"/></span>
+                        <span class="status status-failed" v-else-if="instance.status == 'failed'"><icon name="exclamation-circle"/></span>
+                        <span class="status status-finished" v-else-if="instance.status == 'finished'" style="font-size: 140%;"><icon name="check"/></span>
+                        <span class="status status-unknown" v-else><icon name="question"/></span>
                     </div>
-                    {{instance.desc||'no description'}}
-                </div>
-            </li>
-        </ul>
-        <b-button class="button-fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></b-button>
-    </div>
+                    <div style="margin-left: 25px;">
+                        <time v-if="instance._old">{{new Date(instance.create_date).toLocaleDateString()}}</time>
+                        <time v-else>{{new Date(instance.create_date).toLocaleTimeString()}}</time>
 
-    <div class="page-content" id="scrolled-area">
-        <div v-if="instances && !selected">
-            <h3 class="text-muted" style="padding-top: 30px; padding-left: 30px;">Please select or create a new process</h3>
+                        <div class="type" v-if="instance.config.type != 'v2'" style="display: inline-block;">
+                            <span v-if="instance.config.type == 'simple'">
+                                {{apps[instance.config.prov.app].name}}
+                            </span> 
+                            <span v-else>{{instance.config.type}}</span>
+                        </div>
+                        {{instance.desc||'no description'}}
+                    </div>
+                </li>
+            </ul>
+            <b-button class="button-fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></b-button>
         </div>
-        <div v-else>
-            <simpleprocess @view="view" v-if="selected && selected.config.type == 'simple'" :instance="selected"></simpleprocess>
-            <process @view="view" v-if="selected && selected.config.type == 'v1'" :instance="selected"></process>
-            <process2 @view="view" v-if="selected && selected.config.type == 'v2'" :instance="selected"></process2>
+
+        <div class="page-content" id="scrolled-area">
+            <div v-if="!selected">
+                <h3 class="text-muted" style="padding-top: 30px; padding-left: 30px;">Please select or create a new process</h3>
+            </div>
+            <div v-else>
+                <simpleprocess @view="view" v-if="selected && selected.config.type == 'simple'" :instance="selected"></simpleprocess>
+                <process @view="view" v-if="selected && selected.config.type == 'v1'" :instance="selected"></process>
+                <process2 @view="view" v-if="selected && selected.config.type == 'v2'" :instance="selected"></process2>
+            </div>
         </div>
     </div>
 </div>
@@ -90,7 +92,8 @@ export default {
         }
     },
     mounted: function() {
-        //load application details
+        //load (all!) application details (TODO figure out a better way)
+        console.log("loading apps");
         this.$http.get('app', {params: {
             find: JSON.stringify({ removed: false }),
         }})
@@ -101,6 +104,7 @@ export default {
             });
 
             //then load instances (processes)
+            console.log("loading instatnces");
             return this.$http.get(Vue.config.wf_api+'/instance', {params: {
                 find: JSON.stringify({
                     "config.brainlife": true,
@@ -119,6 +123,7 @@ export default {
                 if(instance.create_date < old) instance._old = true;
             });
             this.instances = res.body.instances;
+            console.log("done loading instatnces");
 
             //preselect
             var selected_id = this.$route.params.id;

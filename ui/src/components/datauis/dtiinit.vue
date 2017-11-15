@@ -1,6 +1,6 @@
 <template>
-<div class="dtiinit">
-    <h3 style="margin: 10px;">T1PDD (Fiber Directions)</h3>
+<div style="height: 100%; overflow: auto;">
+    <h3 style="padding: 10px;">T1PDD (Fiber Directions)</h3>
     <a :href="url" target="_black">
         <img v-if="url" :src="url" width="100%"/>
     </a>
