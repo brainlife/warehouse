@@ -177,7 +177,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
 }
 
 exports.load_github_detail = function(service_name, cb) {
-    if(!config.github) return cb("no github config");
+    //if(!config.github) return cb("no github config");
 
     let auth = "?client_id="+config.github.client_id + "&client_secret="+config.github.client_secret;
 
