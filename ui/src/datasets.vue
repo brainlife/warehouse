@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader/>
+    <pageheader>
         <b-form-input type="search" placeholder="Filter Datasets" @keyup.native="change_query_debounce()" v-model="query"/>
     </pageheader>
     <sidemenu active="/datasets"></sidemenu>
