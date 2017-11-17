@@ -418,6 +418,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
             if(err) return next(err);
             if(!dataset) return next(new Error("can't find the dataset with id:"+req.params.id));
             if(canedit(req.user, dataset, canwrite_project_ids)) {
+                dataset.remove_date = new Date();
                 dataset.removed = true;
                 dataset.save(function(err) {
                     if(err) return next(err);

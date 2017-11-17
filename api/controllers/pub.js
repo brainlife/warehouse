@@ -54,13 +54,15 @@ router.get('/', (req, res, next)=>{
 
 /**
  * @apiGroup Publications
- * @api {get} /pub/stats/:pubid
- *                              Query various publication specific stats
+ * @api {get} /pub/datasets-inventory/:pubid
+ *                              Get counts of unique subject/datatype/datatype_tags. 
+ *                              You can then use /pub/datasets/:pubid to get the actual list of
+ *                              datasets for each subject / datatypes / etc..
  *
- * @apiSuccess {Object}         Object containing statistics
+ * @apiSuccess {Object}         Object containing counts
  * 
  */
-router.get('/stats/:pubid', (req, res, next)=>{
+router.get('/datasets-inventory/:pubid', (req, res, next)=>{
     db.Datasets.aggregate()
     .match({ publications: mongoose.Types.ObjectId(req.params.pubid) })
     .group({_id: {"subject": "$meta.subject", "datatype": "$datatype", "datatype_tags": "$datatype_tags"}, count: {$sum: 1}, size: {$sum: "$size"} })
