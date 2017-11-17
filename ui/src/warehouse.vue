@@ -11,3 +11,11 @@ export default {
 }
 </script>
 
+<style scoped>
+#warehouse {
+height: 100%;
+background-color: #f9f9f9;
+color: #444;
+font-size: 14px;
+}
+</style>

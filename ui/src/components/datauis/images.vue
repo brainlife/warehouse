@@ -1,17 +1,10 @@
 <template>
-<div>
+<div style="height: 100%; overflow: auto;">
     <b-card-group style-dis="padding-bottom: 10px" v-for="(row, rid) in images.chunk_inefficient(4)" :key="rid">
-        <b-card 
-            :id="rid+'-'+idx"
-            v-for="(image, idx) in row" :key="idx"
-            @click="click(image)"
-            :img-alt="image.desc"
-            img-bottom :img-src="image.src">
-            <center>{{image.name}}</center>
+        <b-card no-body :id="rid+'-'+idx" v-for="(image, idx) in row" :key="idx" @click="click(image)">
+            <b-img :src="image.src" :alt="image.desc" center fluid-grow></b-img>
+            <div style="font-size: 85%; margin: 8px; margin-bottom: 15px; text-align: center;">{{image.name}}</div>
             <b-tooltip :target="rid+'-'+idx" :title="image.desc" delay="300"></b-tooltip>
-            <!--
-            <p class="card-text" v-if="image.name != image.desc">{{image.desc}}</p>
-            -->
         </b-card>
     </b-card-group>
 </div>
@@ -19,6 +12,20 @@
 
 <script>
 import Vue from 'vue'
+
+// From stackoverflow somewhere
+if (![].chunk_inefficient) {
+    Object.defineProperty(Array.prototype, 'chunk_inefficient', {
+        value: function(chunkSize) {
+            var array=this;
+            return [].concat.apply([],
+                array.map(function(elem,i) {
+                    return i%chunkSize ? [] : [array.slice(i,i+chunkSize)];
+                })
+            );
+        }
+    });
+}
 
 export default {
     props: ['task', 'subdir'],
@@ -28,7 +35,7 @@ export default {
         }
     },
     mounted() {
-        //load image.json
+        // Load image.json
         var basepath = this.task.instance_id+'/'+this.task._id;
         if(this.subdir) basepath +='/'+this.subdir;
         var url = Vue.config.wf_api+'/resource/download'+

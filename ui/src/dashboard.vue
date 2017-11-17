@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/dashboard"></sidemenu>
     <div class="ui pusher">
         <div class="page-content">

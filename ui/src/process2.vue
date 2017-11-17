@@ -92,7 +92,7 @@
                     </mute>
                     <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
                     <span @click="go('/dataset/'+output.dataset_id)" class="clickable">
-                        <el-tag v-if="output.dataset_id">From <b>{{projects[output.project].name}}</b></el-tag>
+                        <el-tag v-if="output.dataset_id" :title="projects[output.project].desc">From <b>{{projects[output.project].name}}</b></el-tag>
                     </span>
 
                     <!--list of archived datasets-->
@@ -130,7 +130,7 @@
     </div>
 
     <div v-if="apps && apps.length == 0" style="margin: 20px;">
-        <p class="text-muted">You have no application that you can submit with currently staged datasets. Please try staging more datasets.</p>
+        <p class="text-muted">You have no application that you can submit with currently staged datasets.<br><br>Please try staging more datasets.</p>
     </div>
     <el-card v-if="apps && apps.length > 0">
         <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">Run Application</h5>
@@ -141,7 +141,7 @@
             <p class="text-muted">You can submit following application(s) with currently available dataset.</p>
             <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
                 <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px;">
-                    <app :app="app" :compact="true" :clickable="false" class="clickable" :descheight="50"/>
+                    <app :app="app" :compact="true" :clickable="false" class="clickable" descheight="50px"/>
                 </div>
             </div>
             <br clear="both">
@@ -150,12 +150,7 @@
 
         <transition name="fade">
         <div v-if="newtask.app">
-            <b-row>
-                <b-col cols="3">Application</b-col>
-                <b-col>
-                    <app :app="newtask.app" :compact="false"/>
-                </b-col>
-            </b-row>
+            <app :app="newtask.app" :compact="false"/>
             <br>
 
             <!--input-->
@@ -358,7 +353,7 @@ export default {
                 this.datatypes[datatype._id] = datatype;
             });
             return this.$http.get('project', {params: {
-                select: 'name',
+                select: 'name desc',
             }});
         }).then(res=>{
             this.projects = {};
@@ -772,6 +767,7 @@ export default {
                     datatype_tags: output.datatype_tags,
                     desc: output.id+ " from "+this.newtask.app.name,
                     meta,
+                    //tags: ["sometags"], //TODO?
                     files: output.files,
                 };
                 if(this.newtask.archive.enable) output_req.archive = {
@@ -834,7 +830,6 @@ bottom: 0px;
 width: 300px;
 right: 0px;
 overflow: auto;
-font-size: 90%;
 padding-bottom: 50px; /*so it won't be covered by notification*/
 }
 .sidebar h6 {
@@ -867,10 +862,11 @@ border-left: 5px solid #ccc;
 padding-left: 10px;
 font-style: italic;
 }
-.dataset {
+.sidebar .dataset {
 border-bottom: 1px solid #d5d5d5; 
 padding: 3px;
 padding-left: 7px;
+font-size: 85%;
 }
 .dataset.clickable:hover {
 background-color: #eee;

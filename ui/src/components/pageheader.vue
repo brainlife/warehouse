@@ -1,27 +1,29 @@
 <template>
 <div class="pageheader">
     <b-nav class="nav">
-        <b-nav-item @click="doc">Documentation</b-nav-item>
-        <b-nav-item-dropdown text="New">
+        <b-nav-item-dropdown text="Support">
+            <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
+            <b-dropdown-item @click="reportbug">Report Issues</b-dropdown-item>
+        </b-nav-item-dropdown>
+        <b-nav-item-dropdown v-if="config.user" text="New">
             <b-dropdown-item @click="go('/app/_/edit')">Register App</b-dropdown-item>
             <b-dropdown-item @click="go('/upload')">Upload Dataset</b-dropdown-item>
-            <!-- doesn't work if user is already on the processes page
-            <b-dropdown-item @click="newprocess">New Process</b-dropdown-item>
-            -->
             <b-dropdown-item @click="go('/project/_/edit')">New Project</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown>
+        <b-nav-item-dropdown v-if="config.user">
             <span slot="button-content">
                 <img :src="gurl">
-                &nbsp;{{user.profile.fullname||user.profile.username}}
+                &nbsp;{{config.user.profile.fullname||config.user.profile.username}}
             </span>
             <b-dropdown-item @click="goaccount">Settings</b-dropdown-item>
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item @click="signout">Signout</b-dropdown-item>
         </b-nav-item-dropdown>
+        <b-nav-item v-if="!config.user" @click="login">Login</b-nav-item>
+        <b-nav-item v-if="!config.user" @click="signup">Sign Up</b-nav-item>
     </b-nav>
 
-    <span class="title">Brain Life</span>
+    <span class="title" @click="gohome">Brain Life</span>
     <div class="slot"><slot/></div>
 </div>
 </template>
@@ -37,13 +39,11 @@ export default {
             config: Vue.config,
         }
     },
-	props: ['user'],
-	mounted: function() {
-	},
+	//props: ['user'],
     computed: {
         gurl: function() {
-            if(!this.user.profile.email) return null;
-            return "//www.gravatar.com/avatar/"+md5(this.user.profile.email)+"?s=22";
+            if(!this.config.user.profile.email) return null;
+            return "//www.gravatar.com/avatar/"+md5(this.config.user.profile.email)+"?s=22";
         }
     },
     methods: {
@@ -56,8 +56,20 @@ export default {
         doc() {
             window.open("http://www.brain-life.org/warehouse", "brain-life doc");
         },
+        reportbug() {
+            window.open("https://github.com/brain-life/warehouse/issues", "github");
+        },
         go(path) {
             this.$router.push(path);
+        },
+        gohome() {
+            document.location = "/";
+        },
+        login() {
+            document.location = "/auth";
+        },
+        signup() {
+            document.location = "/auth/#!/signup";
         },
         /*
         newprocess() {
@@ -139,10 +151,8 @@ svg.cloud {
 </style>
 
 <style>
-.nav .nav-link {
+.pageheader .nav .nav-link {
     color: white;
 }
-.form-control {
-    border: none;
-}
+
 </style>
