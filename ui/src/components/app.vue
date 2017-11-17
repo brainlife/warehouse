@@ -1,5 +1,5 @@
 <template>
-<b-card v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
+<div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
         <icon v-if="app_.projects && app_.projects.length > 0" name="lock" style="float: right; margin: 5px;" title="not working.." scale="1.5" class="text-danger"/>
         <div v-if="compact">
@@ -32,7 +32,7 @@
             </div>
         </div>
     </div>
-</b-card>
+</div>
 </template>
 
 <script>
@@ -82,9 +82,9 @@ export default {
 <style scoped>
 .appcard {
 transition: box-shadow 0.5;
-}
-.appcard.clickable {
 background-color: white;
+box-shadow: 1px 1px 1px #ddd;
+min-height: 80px;
 }
 .appcard.clickable:hover .name,
 .appcard.clickable:hover .github {
@@ -94,8 +94,8 @@ color: #2693ff;
 box-shadow: 2px 2px 4px #ccc;
 }
 .appcard.compact {
-border: none;
 box-shadow: none;
+background-color: inherit;
 }
 .header {
 height: 90px;

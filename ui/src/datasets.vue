@@ -91,8 +91,8 @@
         <div class="select-action">
             <b-button-group>
                 <b-button size="sm" v-b-modal.viewSelecter>View</b-button>
-                <b-button size="sm" @click="download()" title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
-                <b-button size="sm" @click="process()" title="Run applications on selected datasets by creating a new process.">Process</b-button>
+                <b-button size="sm" @click="download" title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
+                <b-button size="sm" @click="process" title="Run applications on selected datasets by creating a new process.">Process</b-button>
             </b-button-group>
         </div>
     </div>

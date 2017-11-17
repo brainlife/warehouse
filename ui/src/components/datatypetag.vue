@@ -16,8 +16,7 @@ export default {
             //trim fist token
             if(!this.datatype) return "unknown";
             if(!this.datatype.name) {
-                console.error("name ot set");
-                console.error(this.datatype);
+                console.error("name not set", this.datatype);
             }
             var tokens = this.datatype.name.split("/");
             if(tokens.length > 1) tokens = tokens.splice(1);
@@ -27,7 +26,7 @@ export default {
             //map datatype.name to 0 - 360
             if(!this.datatype) return {color: "#666"};
             if(!this.datatype.name) {
-                console.error("name ot set");
+                console.error("name not set");
                 console.error(this.datatype);
             }
             var hash = this.datatype.name.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              

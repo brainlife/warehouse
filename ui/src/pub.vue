@@ -22,9 +22,9 @@
                             </h4>
                             <p class="text-muted">{{pub.desc}}</p>
                         </div>
-                        <div style="line-height: 180%;">
+                        <p style="line-height: 180%;">
                             <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
-                        </div>
+                        </p>
                     </b-col>
                     <!--
                     <b-col cols="3">
@@ -207,11 +207,13 @@
                                                 <transition name="fadeHeight">
                                                     <b-list-group class="datasets" v-if="block.show && block.datasets">
                                                         <b-list-group-item v-for="(dataset, idx) in block.datasets" :key="idx" class="dataset" @click="download(dataset._id)">
-                                                            <icon name="file-o"/>&nbsp;&nbsp;{{dataset._id}}.tar.gz
-                                                            <span v-if="dataset.size" class="text-muted">({{dataset.size|filesize}})</span>
-                                                            <tags :tags="dataset.tags"/>
+                                                            <icon name="file-zip-o"/>
                                                             {{dataset.desc}}
-                                                            <span style="float: right;">{{new Date(dataset.create_date).toLocaleDateString()}}</span>
+                                                            <span v-if="!dataset.desc" class="text-muted">{{dataset._id}}.tar.gz</span>
+                                                            <tags :tags="dataset.tags"/>
+                                                            <div style="float: right; width: 90px; text-align: right">{{new Date(dataset.create_date).toLocaleDateString()}}</div>
+                                                            <div style="float: right; width: 90px;"><span v-if="dataset.size" class="text-muted">{{dataset.size|filesize}}</span>&nbsp;</div>
+                                                            <div style="float: right; width: 90px;"><span v-if="dataset.download_count" class="text-muted"><icon name="download"/> {{dataset.download_count}} times</span>&nbsp;</div>
                                                             <!--<td>{{dataset.storage}}</td>-->
                                                         </b-list-group-item>
                                                     </b-list-group>
@@ -223,6 +225,15 @@
                             </b-list-group-item>
                         </b-list-group>
                             
+                    </div>
+                    <div v-if="tab_index == 2">
+                        <!--apps-->
+                        <p class="text-muted">Following applications are used to generate published datasets.</p>
+                        <b-row>
+                            <b-col cols="6" v-for="app in apps" key="app._id" style="margin-bottom: 10px;">
+                                <app :app="app" descheight="130px" compact="true"></app>
+                            </b-col>
+                        </b-row>
                     </div>
                 </b-col>
             </b-row>
@@ -244,15 +255,16 @@ import VueMarkdown from 'vue-markdown'
 import license from '@/components/license'
 import datatypetag from '@/components/datatypetag'
 import tags from '@/components/tags'
+import app from '@/components/app'
 
 export default {
-    components: { pageheader, sidemenu, projectavatar, contact, VueMarkdown, license, projectcard, datatypetag, tags },
+    components: { pageheader, sidemenu, projectavatar, contact, VueMarkdown, license, projectcard, datatypetag, tags, app },
     data () {
         return {
 
             pub: null, //publication detail
-            
             dataset_groups: null, //datasets inventory grouped 
+            apps: null, //list of apps
 
             /*
             datasets_page: 1,
@@ -326,20 +338,14 @@ export default {
                 groups[subject].count += rec.count;
             });
             this.dataset_groups = groups;
-/*
 
-            //load some extra counts
-            return this.$http.get('pub/stats/'+this.$route.params.id, {params: {
-                //nothing..
-            }})
+            //load apps
+            return this.$http.get('pub/apps/'+this.$route.params.id, {params: {
+                //populate: 'inputs.datatype outputs.datatype contributors',
+            }});
         })
         .then(res=>{
-            //aggregate stats
-            this.subjects = 0;
-             
-            this.stats = res.body;
-*/
-
+            this.apps = res.body;
         }).catch(console.error);
     },
     

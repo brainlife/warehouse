@@ -186,7 +186,6 @@ export default {
         },
         newprocess: function() {
             this.show_process_list = false;
-
             this.$http.post(Vue.config.wf_api+'/instance', {
                 config: {
                     brainlife: true,
