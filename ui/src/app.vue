@@ -18,7 +18,9 @@
                             </h6>
                             <p class="text-muted">{{app.desc}}</p>
                         </div>
-                        <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                        <p>
+                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                        </p>
                     </b-col>
                     <b-col cols="3">
                         <b-button-group style="float: right;">
