@@ -207,11 +207,12 @@
                                                 <transition name="fadeHeight">
                                                     <b-list-group class="datasets" v-if="block.show && block.datasets">
                                                         <b-list-group-item v-for="(dataset, idx) in block.datasets" :key="idx" class="dataset" @click="download(dataset._id)">
-                                                            <icon name="file-o"/>&nbsp;&nbsp;{{dataset._id}}.tar.gz
-                                                            <span v-if="dataset.size" class="text-muted">({{dataset.size|filesize}})</span>
+                                                            <icon name="file-zip-o"/><!--{{dataset._id}}.tar.gz-->
                                                             <tags :tags="dataset.tags"/>
                                                             {{dataset.desc}}
-                                                            <span style="float: right;">{{new Date(dataset.create_date).toLocaleDateString()}}</span>
+                                                            <div style="float: right; width: 90px; text-align: right">{{new Date(dataset.create_date).toLocaleDateString()}}</div>
+                                                            <div style="float: right; width: 90px;"><span v-if="dataset.size" class="text-muted">{{dataset.size|filesize}}</span>&nbsp;</div>
+                                                            <div style="float: right; width: 90px;"><span v-if="dataset.download_count" class="text-muted"><icon name="download"/> {{dataset.download_count}} times</span>&nbsp;</div>
                                                             <!--<td>{{dataset.storage}}</td>-->
                                                         </b-list-group-item>
                                                     </b-list-group>

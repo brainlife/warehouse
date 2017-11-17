@@ -4,8 +4,9 @@
     <sidemenu active="/datasets"></sidemenu>
     <div class="header" vi-if="dataset">
         <b-button-group style="float: right;">
-            <b-button variant="default" v-b-modal.viewSelecter @click="openviewsel(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
-            <b-button @click="download" v-if="dataset.storage" icon="document"><icon name="download"/> Download</b-button>
+            <b-button variant="" v-b-modal.viewSelecter @click="openviewsel(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
+            <b-button variant="" @click="download" v-if="dataset.storage" icon="document">Download</b-button>
+            <b-button variant="" @click="process" v-if="dataset.storage" icon="document">Process</b-button>
         </b-button-group>
         <b-button style="float: right; margin-right: 15px;" variant="danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
         <h2>
@@ -317,11 +318,57 @@ export default {
         download_prov: function() {
             alert("TODO..");
         },
+
         download: function() {
             var url = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
             document.location = url;
             console.log(url);
         },
+
+        process: function() {
+            console.log("creating new instance");
+            this.$http.post(Vue.config.wf_api+'/instance', {
+                config: {
+                    brainlife: true,
+                    type: "v2",
+                },
+            }).then(res=>{
+                var instance = res.body;
+                console.log("submitting staging task");
+                this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: instance._id,
+                    name: "Staged Datasets - "+this.dataset.datatype.name,
+                    service: "soichih/sca-product-raw",
+                    config: { 
+                        _tid: 0 ,
+                        download: [
+                            {
+                                url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
+                                untar: "auto",
+                                dir: this.dataset._id,
+                            }
+                        ], 
+                        _outputs: [
+                            Object.assign({}, this.dataset, {
+                                id: this.dataset._id, 
+                                did: 0,
+                                subdir: this.dataset._id, 
+                                dataset_id: this.dataset._id,
+                                prov: null,
+
+                                //unpopulate
+                                project: this.dataset.project._id,
+                                datatype: this.dataset.datatype._id,
+                            })
+                        ], 
+                    },
+                }).then(res=>{
+                    //then jump!
+                    this.$router.replace("/processes/"+instance._id);
+                });
+            });
+        },
+
         remove: function() {
             if(confirm("Do you really want to remove this dataset ?")) {
                 this.$http.delete('dataset/'+this.dataset._id)
@@ -406,10 +453,7 @@ export default {
                 this.apps = lib.filter_apps(this.dataset, res.body.apps);
 
                 //load provenance
-                return this.$http.get('dataset/prov/'+this.dataset._id, {params: {
-                    //find: JSON.stringify({"project": this.dataset.project}),
-                    //distinct: 'tags',
-                }});
+                return this.$http.get('dataset/prov/'+this.dataset._id);
             }).then(res=>{
                 this.prov = res.body;
 
