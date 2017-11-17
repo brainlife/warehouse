@@ -185,6 +185,7 @@ var datasetSchema = mongoose.Schema({
     //storing (default)
     //stored dataset is stored on storage system
     //failed failed to store to storage system
+    //removed dataset is removed from storage system
     status: { type: String, default: "storing" },
     status_msg: String,
 
@@ -193,6 +194,7 @@ var datasetSchema = mongoose.Schema({
     create_date: { type: Date, default: Date.now }, //date when this dataset was registered
     backup_date: Date, //date when this dataset was copied to the SDA (not set if it's not yet backed up)
     download_date: Date, //last time this dataset was downloaded
+    remove_date: Date, //date when this dataset was removed
 
     removed: { type: Boolean, default: false},
 
