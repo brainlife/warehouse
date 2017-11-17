@@ -346,7 +346,7 @@ export default {
                 params: {
                     find: JSON.stringify({$and: finds}),
                     skip: loaded,
-                    limit: 100,
+                    limit: 200,
                     select: '-prov',
                     sort: 'meta.subject -create_date'
                 }

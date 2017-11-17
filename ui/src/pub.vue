@@ -115,8 +115,14 @@
                             </b-col>
                             <b-col>
                                 <!--<projectcard :project="pub.project"/>-->
-                                <b-card :header="pub.project.name">
-                                    {{pub.project.desc}}
+                                <b-card>
+                                    <h6>{{pub.project.name}}</h6>
+                                    <p>
+                                        {{pub.project.desc}}
+                                        <!--
+                                        <router-link :to="'/project/'+pub.project._id">More..</router-link>
+                                        -->
+                                    </p>
                                 </b-card>
                                 <br>
                             </b-col>
@@ -138,9 +144,7 @@
                     </div>
                     <div v-if="tab_index == 1">
                         <!-- datasets -->
-                        <div style="float: right">
-                            <b>{{datasets_count}}</b> <span class="text-muted">Datasets</span>
-                        </div>
+                        <!--
                         <b-pagination :total-rows="datasets_count" v-model="datasets_page" :per-page="datasets_perpage"/>
                         <table class="table table-hover table-sm">
                             <thead class="thead-light">
@@ -168,6 +172,57 @@
                             </tbody>
                         </table>
                         <b-pagination :total-rows="datasets_count" v-model="datasets_page" :per-page="datasets_perpage"/>
+                        -->
+                        <h6>
+                            <b>{{ds.subjects}}</b> <span class="text-muted">Subjects</span> |
+                            <b>{{ds.count}}</b> <span class="text-muted">Datasets</span>
+                            (<b>{{ds.size | filesize}}</b>)
+                        </h6>
+                        <br>
+
+                        <b-list-group>
+                            <b-list-group-item v-for="(group, subject) in dataset_groups" :key="subject">
+                                <b-row>
+                                    <b-col cols="3">
+                                        <b><icon name="caret-right"/> {{subject}}</b>
+                                        <small class="text-muted">
+                                            <br v-if="group.count > 1">
+                                            <span><b>{{group.count}}</b> datasets</span>
+                                            <span><b>{{group.size | filesize}}</b></span>
+                                        </small>
+                                    </b-col>
+                                    <b-col>
+                                        <div v-for="(datatype, datatype_id) in group.datatypes" :key="datatype_id">
+                                            <b-row v-for="(block, datatype_tags_s) in datatype.datatype_tags" :key="datatype_tags_s" style="margin-bottom: 3px;">
+                                                <div @click="toggle(block, subject, datatype_id, JSON.parse(datatype_tags_s))" class="toggler">
+                                                    <div style="width: 20px; display: inline-block;" class="text-muted">
+                                                        <icon name="caret-right" v-if="!block.show"/> 
+                                                        <icon name="caret-down" v-if="block.show"/> 
+                                                    </div>
+                                                    <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)"/>
+                                                    &nbsp;
+                                                    <span class="text-muted">{{datatypes[datatype_id].desc}}</span>
+                                                    <small class="text-muted" style="float: right;">{{block.count}} datasets {{block.size|filesize}}</small>
+                                                </div>
+                                                <transition name="fadeHeight">
+                                                    <b-list-group class="datasets" v-if="block.show && block.datasets">
+                                                        <b-list-group-item v-for="(dataset, idx) in block.datasets" :key="idx" class="dataset" @click="download(dataset._id)">
+                                                            <icon name="file-o"/>&nbsp;&nbsp;{{dataset._id}}.tar.gz
+                                                            <span v-if="dataset.size" class="text-muted">({{dataset.size|filesize}})</span>
+                                                            <tags :tags="dataset.tags"/>
+                                                            {{dataset.desc}}
+                                                            <span style="float: right;">{{new Date(dataset.create_date).toLocaleDateString()}}</span>
+                                                            <!--<td>{{dataset.storage}}</td>-->
+                                                        </b-list-group-item>
+                                                    </b-list-group>
+                                                </transition>
+                                            </b-row>
+                                        </div>
+                                    </b-col>
+                                </b-row>
+                            </b-list-group-item>
+                        </b-list-group>
+                            
                     </div>
                 </b-col>
             </b-row>
@@ -196,6 +251,8 @@ export default {
         return {
 
             pub: null, //publication detail
+            
+            dataset_groups: null, //datasets inventory grouped 
 
             /*
             datasets_page: 1,
@@ -211,13 +268,21 @@ export default {
         }
     },
 
-    watch: {
-        datasets_page: function() {
-            this.load_page();
+    computed: {
+        ds: function() {
+            let stats = {subjects: 0, count: 0, size: 0};
+            for(var subject in this.dataset_groups) {
+                stats.subjects++; 
+                stats.size += this.dataset_groups[subject].size;
+                stats.count += this.dataset_groups[subject].count;
+            }
+            return stats;
         }
     },
 
     mounted: function() {
+    
+        //load publication detail
         this.$http.get('pub', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'project',
@@ -226,7 +291,7 @@ export default {
             this.pub = res.body.pubs[0];
 
             //load all datatypes
-            return this.$http.get('datatype')
+            return this.$http.get('datatype');
         })
         .then(res=>{
             this.datatypes = {};
@@ -234,8 +299,33 @@ export default {
                 this.datatypes[d._id] = d;
             });
 
-            this.load_page();
-
+            //load inventory..
+            return this.$http.get('pub/datasets-inventory/'+this.$route.params.id);
+        })
+        .then(res=>{
+            let groups = {};
+            res.body.forEach(rec=>{
+                let subject = rec._id.subject;
+                let datatype = rec._id.datatype;
+                let datatype_tags = rec._id.datatype_tags;
+                let datatype_tags_s = JSON.stringify(rec._id.datatype_tags);
+                if(!groups[subject]) {
+                    groups[subject] = { size: 0, count: 0, datatypes: {} };
+                }
+                if(!groups[subject].datatypes[datatype]) {
+                    groups[subject].datatypes[datatype] = { size: 0, count:0, datatype_tags: {}};
+                }
+                if(!groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s]) {
+                    groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s] = {size: 0, count: 0, show: false, datasets: null};
+                }
+                groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s].size += rec.size;
+                groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s].count += rec.count;
+                groups[subject].datatypes[datatype].size += rec.size;
+                groups[subject].datatypes[datatype].count += rec.count;
+                groups[subject].size += rec.size;
+                groups[subject].count += rec.count;
+            });
+            this.dataset_groups = groups;
 /*
 
             //load some extra counts
@@ -258,6 +348,7 @@ export default {
             document.location = Vue.config.api+'/dataset/download/'+id;
         },
 
+        /*
         load_page: function() {
             this.$http.get('pub/datasets/'+this.$route.params.id, {params: {
                 //find: JSON.stringify({_id: this.$route.params.id}),
@@ -270,6 +361,27 @@ export default {
                 this.datasets = res.body.datasets;
                 this.datasets_count = res.body.count;
             }).catch(console.error);
+        },
+        */
+
+        toggle: function(block, subject, datatype, datatype_tags) {
+            block.show = !block.show;
+            if(!block.datasets) {
+                //load datasets
+                this.$http.get('pub/datasets/'+this.$route.params.id, {params: {
+                    find: JSON.stringify({
+                        'meta.subject': subject,
+                        datatype: datatype,
+                        datatype_tags: datatype_tags,
+                    }),
+                    //populate: 'project',
+                    //sort: 'meta.subject datatype tags',
+                    //skip: this.datasets_perpage*(this.datasets_page-1),
+                    //limit: this.datasets_perpage,
+                }}).then(res=>{
+                    block.datasets = res.body.datasets;
+                }).catch(console.error);
+            }
         }
     }
 }
@@ -303,8 +415,34 @@ color: white;
 display: inline-block;
 padding: 3px 5px;
 }
-.dataset {
+.datasets {
+margin: 5px;
+width: 100%;
+box-shadow: 2px 2px 2px #ddd;
+}
+.dataset:hover {
 cursor: pointer;
+background-color: #f7f7f7;
+}
+.toggler {
+padding: 3px 5px;
+width: 100%;
+}
+.toggler:hover {
+cursor: pointer;
+background-color: #eee;
+}
+.fadeHeight-enter-active,
+.fadeHeight-leave-active {
+  transition: all 0.2s;
+  max-height: 230px;
+}
+.fadeHeight-enter,
+.fadeHeight-leave-to
+{
+  opacity: 0;
+  max-height: 0px;
 }
 </style>
+
 

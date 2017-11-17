@@ -32,12 +32,14 @@
                     <p class="text-muted">Decide if non project member can access datasets inside this project</p>
                 </b-form-group>
 
+                <!--
                 <b-form-group label="License" horizontal>
                    <b-form-radio-group v-model="project.license">
                         <b-form-radio value="ccby.40"> <license id="ccby.40"/> </b-form-radio>
                         <b-form-radio value="cc0"> <license id="cc0"/> </b-form-radio>
                     </b-form-radio-group>
                 </b-form-group>
+                -->
 
                 <b-form-group label="Administrators" horizontal>
                     <contactlist v-model="project.admins"></contactlist>
