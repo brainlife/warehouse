@@ -65,10 +65,38 @@ router.get('/', (req, res, next)=>{
 router.get('/datasets-inventory/:pubid', (req, res, next)=>{
     db.Datasets.aggregate()
     .match({ publications: mongoose.Types.ObjectId(req.params.pubid) })
-    .group({_id: {"subject": "$meta.subject", "datatype": "$datatype", "datatype_tags": "$datatype_tags"}, count: {$sum: 1}, size: {$sum: "$size"} })
+    .group({_id: {"subject": "$meta.subject", "datatype": "$datatype", "datatype_tags": "$datatype_tags"}, 
+        count: {$sum: 1}, size: {$sum: "$size"} })
     .exec((err, stats)=>{
-        if(err) return cb(err);
+        if(err) return next(err);
         res.json(stats);
+    });
+});
+
+/**
+ * @apiGroup Publications
+ * @api {get} /pub/apps/:pubid
+ *                              Enumerate applications used to generate datasets
+ *
+ * @apiSuccess {Object[]}       Application objects
+ * 
+ */
+router.get('/apps/:pubid', (req, res, next)=>{
+    db.Datasets.find({
+        publications: mongoose.Types.ObjectId(req.params.pubid) 
+    })
+    .distinct("prov.app")
+    .exec((err, app_ids)=>{
+        if(err) return next(err);
+        db.Apps.find({
+            _id: {$in: app_ids},
+            projects: [], //only show *public* apps
+        })
+        .populate(req.query.populate || '')
+        .exec((err, apps)=>{
+            if(err) return next(err);
+            res.json(apps);
+        });
     });
 });
 
