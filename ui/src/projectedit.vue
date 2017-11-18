@@ -21,7 +21,7 @@
                     <el-input type="textarea" autosize v-model="project.desc" placeholder="Enter description for this project."></el-input>
                 </b-form-group>
                 <b-form-group label="README.md" horizontal>
-                    <b-form-textarea :rows="4" v-model="project.readme" placeholder="Enter extended README content in markdown format."/>
+                    <b-form-textarea :rows="4" :max-rows="20" v-model="project.readme" placeholder="Enter extended README content in markdown format."/>
                 </b-form-group>
 
                 <b-form-group label="Access" horizontal>

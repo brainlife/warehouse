@@ -72,7 +72,7 @@
                         </b-row>
                         <b-row>
                             <b-col cols="3">
-                                <b class="text-muted">Input Datatypes</b>
+                                <b class="text-muted">Input</b>
                             </b-col>
                             <b-col>
                                 <div class="item" v-for="input in app.inputs">
@@ -84,7 +84,7 @@
                         </b-row>
                         <b-row>
                             <b-col cols="3">
-                                <b class="text-muted">Output Datatypes</b>
+                                <b class="text-muted">Output</b>
                             </b-col>
                             <b-col>
                                 <div class="item" v-for="output in app.outputs">

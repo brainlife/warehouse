@@ -152,7 +152,7 @@ svg.cloud {
 
 <style>
 .pageheader .nav .nav-link {
+    font-weight: bold;
     color: white;
 }
-
 </style>
