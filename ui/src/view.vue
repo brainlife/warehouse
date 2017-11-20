@@ -15,7 +15,7 @@
             <filebrowser :task="task" :path="task.instance_id+'/'+task._id+'/'+(subdir||'')"></filebrowser>
         </div>
     </div>
-    <div v-else style="padding: 20px;">
+    <div v-else style="padding: 20px; height: 100%; overflow: auto;">
         <h3>Staging Data</h3>
         <task :task="task"/>
     </div>

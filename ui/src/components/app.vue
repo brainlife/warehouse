@@ -1,7 +1,8 @@
 <template>
 <div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
-        <icon v-if="app_.projects && app_.projects.length > 0" name="lock" style="float: right; margin: 5px;" title="not working.." scale="1.5" class="text-danger"/>
+        <icon v-if="app_.projects && app_.projects.length > 0" :scale="compact?0.9:1.2"
+            name="lock" style="float: right; margin: 5px;" title="not working.." class="text-danger"/>
         <div v-if="compact">
             <appavatar :app="app_" style="float: left;margin-right: 15px;"/>
             <div style="max-height: 73px; overflow: hidden;">

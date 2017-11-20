@@ -3,6 +3,7 @@
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
 
+//vue things
 import Vue from 'vue'
 
 import VueResource from 'vue-resource'
