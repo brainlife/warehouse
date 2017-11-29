@@ -477,6 +477,7 @@ export default {
                         find: JSON.stringify({
                             "prov.instance_id": this.instance._id,
                             removed: false,
+                            limit: 300,
                         })
                     }})
                 })

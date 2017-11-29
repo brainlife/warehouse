@@ -3,7 +3,7 @@
     <b-nav class="nav">
         <b-nav-item-dropdown text="Support">
             <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
-            <b-dropdown-item @click="reportbug">Report Issues</b-dropdown-item>
+            <b-dropdown-item @click="reportbug">Report Issues / Feature Requests</b-dropdown-item>
         </b-nav-item-dropdown>
         <b-nav-item-dropdown v-if="config.user" text="New">
             <b-dropdown-item @click="go('/app/_/edit')">Register App</b-dropdown-item>
@@ -152,7 +152,7 @@ svg.cloud {
 
 <style>
 .pageheader .nav .nav-link {
+    font-weight: bold;
     color: white;
 }
-
 </style>

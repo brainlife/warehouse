@@ -17,7 +17,7 @@
                         </div>
                         <div>
                             <h4 style="color: #666; margin-bottom: 10px;">
-                                <b-badge style="float: right; opacity: 0.7;">DOI {{pub.doi}}</b-badge>
+                                <b-badge style="float: right; opacity: 0.7;"><a style="color: inherit;" :href="'https://doi.org/'+pub.doi">DOI {{pub.doi}}</a></b-badge>
                                 {{pub.name}} 
                             </h4>
                             <p class="text-muted">{{pub.desc}}</p>
@@ -431,7 +431,7 @@ cursor: pointer;
 background-color: #f7f7f7;
 }
 .toggler {
-padding: 3px 5px;
+padding: 1px 5px;
 width: 100%;
 }
 .toggler:hover {

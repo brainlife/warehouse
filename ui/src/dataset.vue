@@ -161,6 +161,7 @@
                             </div>
                         </div>
                     </task>
+
                     <app v-if="!task && dataset.prov.app" :app="dataset.prov.app" :compact="true"></app>
                     <center style="padding: 10px">
                         <icon class="text-muted" scale="2" name="arrow-down"></icon>
@@ -177,6 +178,9 @@
                 <center>
                     <el-card style="background-color: #2693ff; color: white;">This dataset</el-card>
                 </center>
+
+                <br>
+                <div ref="vis" style="background-color: gray; height: 400px;"/>
             </td>
         </tr>
         <tr v-if="apps">
@@ -258,6 +262,11 @@ import datatypetag from '@/components/datatypetag'
 import select2 from '@/components/select2'
 import task from '@/components/task'
 import pubcard from '@/components/pubcard'
+
+//import vis from 'vis/dist/vis.min.js'
+import vis from 'vis/dist/vis-network.min.js'
+//import 'vis/dist/vis.min.css'
+import 'vis/dist/vis-network.min.css'
 
 const lib = require('./lib');
 
@@ -456,6 +465,24 @@ export default {
                 return this.$http.get('dataset/prov/'+this.dataset._id);
             }).then(res=>{
                 this.prov = res.body;
+
+                //initialize vis
+                //console.dir(this.$refs.vis);
+                //console.dir(res.body);
+                var gph = new vis.Network(this.$refs.vis, res.body, {
+                  //manipulation: false,
+                  //width: '90%',
+                  //height: '90%',
+                    /*
+                  layout: {
+                    hierarchical: {
+                        direction:"LR",
+                        levelSeparation: 100,
+                        sortMethod: "hubsize",
+                    }
+                  },
+                    */
+                });
 
              }).catch(err=>{
                 console.error(err);

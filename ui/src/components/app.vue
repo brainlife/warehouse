@@ -1,9 +1,10 @@
 <template>
 <div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
-        <icon v-if="app_.projects && app_.projects.length > 0" name="lock" style="float: right; margin: 5px;" title="not working.." scale="1.5" class="text-danger"/>
+        <icon v-if="app_.projects && app_.projects.length > 0" :scale="compact?0.9:1.2"
+            name="lock" style="float: right; margin: 5px;" title="not working.." class="text-danger"/>
         <div v-if="compact">
-            <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
+            <appavatar :app="app_" style="float: left;margin-right: 15px;"/>
             <div style="max-height: 73px; overflow: hidden;">
                 <h4 class="name">{{app_.name}} <small>{{app_.github}}</small></h4>
                 <div class="desc">{{app_.desc||'no desc..'}}</div>
@@ -81,17 +82,19 @@ export default {
 
 <style scoped>
 .appcard {
-transition: box-shadow 0.5;
 background-color: white;
-box-shadow: 1px 1px 1px #ddd;
 min-height: 80px;
-}
-.appcard.clickable:hover .name,
-.appcard.clickable:hover .github {
-color: #2693ff;
+box-shadow: 1px 1px 2px rgba(0,0,0,0.10);
+transition: box-shadow 0.3s;
 }
 .appcard:hover {
-box-shadow: 2px 2px 4px #ccc;
+/*transform: scale(1.03, 1.03);*/
+box-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+}
+
+.appcard.clickable:hover .name,
+.appcard.clickable:hover .github {
+color: #007bff;
 }
 .appcard.compact {
 box-shadow: none;

@@ -42,7 +42,7 @@ export default {
 
     methods: {
         click: function() {
-            this.$router.push('/pub/'+this.pub._id);
+            document.location = '/pub/'+this.pub._id;
         },
         /*
         edit: function() {

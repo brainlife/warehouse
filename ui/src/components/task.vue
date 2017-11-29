@@ -30,7 +30,11 @@
     <el-collapse v-model="activeSections">
         <el-collapse-item title="Configuration" name="config" style="margin: 0px;">
             <!--<el-alert title="todo">display this in more user friendly way</el-alert>-->
-            <pre v-highlightjs><code class="json hljs">{{task.config}}</code></pre>
+            <pre v-highlightjs><code class="json hljs" v-if="show_masked_config">{{task.config}}</code></pre>
+            <pre v-highlightjs><code class="json hljs" v-if="!show_masked_config">{{task.config|mask}}</code></pre>
+            <b-button variant="outline-secondary" style="float: right; margin-bottom: 5px;" @click="show_masked_config = true" size="sm" v-if="!show_masked_config">
+                <icon name="info"/>
+            </b-button>
         </el-collapse-item>
         <slot name="input"></slot>
         <slot name="output"></slot>
@@ -59,6 +63,21 @@ export default {
     data () {
         return {
             activeSections: ['output', 'input'],
+            show_masked_config: false,
+        }
+    },
+
+    filters: {
+        mask: function(config) {
+            //mask config._something    
+            let masked = {};
+            for(let id in config) {
+                if(id[0] != "_") masked[id] = config[id];
+            }
+            //console.log("masked content");
+            //console.log(JSON.stringify(masked, null, 4));
+            console.log("masked");
+            return masked;
         }
     },
 
@@ -91,7 +110,6 @@ export default {
                 console.error(err); 
             });
         },
-
         poke() {
             console.log("poking", this.task._id);
             this.$http.put(Vue.config.wf_api+'/task/poke/'+this.task._id)
@@ -144,7 +162,6 @@ margin-bottom: 2px;
 }
 
 </style>
-
 
 <style>
 .el-card .btn-secondary {
