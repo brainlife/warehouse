@@ -67,6 +67,7 @@ router.get('/datasets-inventory/:pubid', (req, res, next)=>{
     .match({ publications: mongoose.Types.ObjectId(req.params.pubid) })
     .group({_id: {"subject": "$meta.subject", "datatype": "$datatype", "datatype_tags": "$datatype_tags"}, 
         count: {$sum: 1}, size: {$sum: "$size"} })
+    .sort({"_id.subject":1})
     .exec((err, stats)=>{
         if(err) return next(err);
         res.json(stats);

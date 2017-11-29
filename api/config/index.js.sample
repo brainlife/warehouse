@@ -25,6 +25,9 @@ exports.github = {
 
 exports.wf = {
     api: "https://dev1.soichi.us/api/wf",
+
+    //jwt used to query things from workflow service as admin
+    jwt: fs.readFileSync(__dirname+'/amaretti.jwt', 'ascii').trim(),
 }
 
 exports.auth = {
@@ -245,7 +248,7 @@ exports.storage_systems["dcwan/hcp"] = {
 
             if(dataset.storage_config.dirpath) {
                 var local = dataset.storage_config.local;
-                conn.exec("cd "+dataset.storage_config.dirpath+"/surf && tar hc * --transform 's|^|/"+local+"/|'", (err, stream)=>{
+                conn.exec("cd "+dataset.storage_config.dirpath+" && tar hc * --transform 's|^|/"+local+"/|'", (err, stream)=>{
                     if(err) return cb(err);
                     stream.on('close', code=>{
                         //console.log("done with tar stream - closing connection:",code)
