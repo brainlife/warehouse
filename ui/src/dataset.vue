@@ -129,60 +129,7 @@
         <tr>
             <th>Provenance / Derivative</th>
             <td>
-                <!--
-                <el-button-group style="float: right;">
-                    <el-button size="small" @click="download_prov()" icon="document">Download Provenance</el-button>
-                </el-button-group>
-                <br clear="both">
-
-                <div v-if="dataset.prov && dataset.prov.app">
-                    <el-row :gutter="10">
-                        <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
-                            <div @click="go('/dataset/'+dep.dataset._id)">
-                                <el-card class="clickable">
-                                    <b><icon name="cubes"></icon> {{dep.input_id}}</b>
-                                    <tags :tags="dep.dataset.datatype_tags"/>
-                                    <br>
-                                    <!--{{dep.dataset}}-->
-                                </el-card>
-                            </div>
-                            <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
-                        </el-col>
-                    </el-row>
-
-                    <task v-if="task" :task="task">
-                        <div slot="header">
-                            <div v-if="task.config._app" style="padding-bottom: 10px;">
-                                <app :appid="task.config._app" :compact="true">
-                                    <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
-                                </app>
-                            </div>
-                            <div v-else>
-                                <h3>{{task.name}}</h3>
-                            </div>
-                        </div>
-                    </task>
-
-                    <app v-if="!task && dataset.prov.app" :app="dataset.prov.app" :compact="true"></app>
-                    <center style="padding: 10px">
-                        <icon class="text-muted" scale="2" name="arrow-down"></icon>
-                    </center>
-
-                </div>
-                <div v-else>
-                    <center style="padding: 10px">
-                        <el-card><icon name="upload"/> User Upload</el-card>
-                        <icon class="text-muted" scale="2" name="arrow-down"></icon>
-                    </center>
-                </div>
-
-                <center>
-                    <el-card style="background-color: #2693ff; color: white;">This dataset</el-card>
-                </center>
-
-                <br>
-                -->
-                <div ref="vis" style="background-color: #eee; box-shadow: inset 2 2 10px #999; height: 500px;"/>
+                <div ref="vis" style="background-color: #555; box-shadow: inset 2 2 8px #000; height: 500px;"/>
             </td>
         </tr>
         <tr v-if="apps">
@@ -265,9 +212,7 @@ import select2 from '@/components/select2'
 import task from '@/components/task'
 import pubcard from '@/components/pubcard'
 
-//import vis from 'vis/dist/vis.min.js'
 import vis from 'vis/dist/vis-network.min.js'
-//import 'vis/dist/vis.min.css'
 import 'vis/dist/vis-network.min.css'
 
 const lib = require('./lib');
@@ -469,12 +414,7 @@ export default {
                 this.prov = res.body;
 
                 //initialize vis
-                //console.dir(this.$refs.vis);
-                //console.dir(res.body);
                 var gph = new vis.Network(this.$refs.vis, res.body, {
-                  //manipulation: false,
-                  //width: '90%',
-                  //height: '90%',
                     /*
                   layout: {
                     hierarchical: {
