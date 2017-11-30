@@ -477,11 +477,13 @@ export default {
                         find: JSON.stringify({
                             "prov.instance_id": this.instance._id,
                             removed: false,
-                            limit: 300,
-                        })
+                        }),
+                        limit: 300,
                     }})
                 })
                 .then(res=>{
+                    console.log("loaded");
+                    console.log(res.body);
                     this.archived = res.body.datasets;
 
                     this.ws.send(JSON.stringify({

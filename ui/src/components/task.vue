@@ -74,9 +74,6 @@ export default {
             for(let id in config) {
                 if(id[0] != "_") masked[id] = config[id];
             }
-            //console.log("masked content");
-            //console.log(JSON.stringify(masked, null, 4));
-            console.log("masked");
             return masked;
         }
     },

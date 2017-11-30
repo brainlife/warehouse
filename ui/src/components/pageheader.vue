@@ -54,7 +54,7 @@ export default {
             document.location = "/auth#!/signout";
         },
         doc() {
-            window.open("http://www.brain-life.org/warehouse", "brain-life doc");
+            window.open("http://www.brainlife.io/warehouse", "brainlife doc");
         },
         reportbug() {
             window.open("https://github.com/brain-life/warehouse/issues", "github");

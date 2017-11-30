@@ -129,6 +129,7 @@
         <tr>
             <th>Provenance / Derivative</th>
             <td>
+                <!--
                 <el-button-group style="float: right;">
                     <el-button size="small" @click="download_prov()" icon="document">Download Provenance</el-button>
                 </el-button-group>
@@ -180,7 +181,8 @@
                 </center>
 
                 <br>
-                <div ref="vis" style="background-color: gray; height: 400px;"/>
+                -->
+                <div ref="vis" style="background-color: #eee; box-shadow: inset 2 2 10px #999; height: 500px;"/>
             </td>
         </tr>
         <tr v-if="apps">
@@ -482,6 +484,7 @@ export default {
                     }
                   },
                     */
+                    physics:{barnesHut:{gravitationalConstant:-3000,/* springConstant: 0.01,*/ avoidOverlap: 0.1}}
                 });
 
              }).catch(err=>{
