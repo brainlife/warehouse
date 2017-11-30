@@ -22,11 +22,12 @@ exports.getprojects = function(user, cb) {
         project_query = {
             $or: [
                 project_query,
-                {"members": user.sub},
-                {"admins": user.sub}, //I think it makes sense to give admin read/write access
+                {"members": user.sub.toString()},
+                {"admins": user.sub.toString()}, //I think it makes sense to give admin read/write access
             ],
         };
     }
+
     db.Projects.find(project_query).select('_id admins members').lean().exec((err, projects)=>{
         if(err) return cb(err);
         let canread_ids = projects.map(p=>p._id);
@@ -238,8 +239,8 @@ function cache_contact() {
         url: config.auth.api+"/profile", json: true,
         headers: { authorization: "Bearer "+config.auth.jwt },
     }, (err, res, body)=>{
-        if(err) return next(err);
-        if(res.statusCode != 200) return cb("couldn't obtain user jwt code:"+res.statusCode);
+        if(err) return logger.error(err);
+        if(res.statusCode != 200) logger.error("couldn't obtain user jwt code:"+res.statusCode);
         body.profiles.forEach(profile=>{
             cached_contacts[profile.id.toString()] = profile;
         });
