@@ -28,13 +28,15 @@
     </el-card>
 
     <el-collapse v-model="activeSections">
-        <el-collapse-item title="Configuration" name="config" style="margin: 0px;">
+        <el-collapse-item title="Configuration" name="config" class="config-area">
             <!--<el-alert title="todo">display this in more user friendly way</el-alert>-->
+            <pre v-highlightjs style="margin-bottom: 0px"><code class="json hljs" v-if="!show_masked_config">{{task.config|mask}}</code></pre>
+            <!--
             <pre v-highlightjs><code class="json hljs" v-if="show_masked_config">{{task.config}}</code></pre>
-            <pre v-highlightjs><code class="json hljs" v-if="!show_masked_config">{{task.config|mask}}</code></pre>
             <b-button variant="outline-secondary" style="float: right; margin-bottom: 5px;" @click="show_masked_config = true" size="sm" v-if="!show_masked_config">
                 <icon name="info"/>
             </b-button>
+            -->
         </el-collapse-item>
         <slot name="input"></slot>
         <slot name="output"></slot>
@@ -74,9 +76,6 @@ export default {
             for(let id in config) {
                 if(id[0] != "_") masked[id] = config[id];
             }
-            //console.log("masked content");
-            //console.log(JSON.stringify(masked, null, 4));
-            console.log("masked");
             return masked;
         }
     },
@@ -171,5 +170,8 @@ margin-bottom: 2px;
 }
 .el-card .btn-secondary:hover {
     opacity: 1;
+}
+.config-area .el-collapse-item__content {
+    padding: 0px;
 }
 </style>

@@ -477,11 +477,13 @@ export default {
                         find: JSON.stringify({
                             "prov.instance_id": this.instance._id,
                             removed: false,
-                            limit: 300,
-                        })
+                        }),
+                        limit: 300,
                     }})
                 })
                 .then(res=>{
+                    console.log("loaded");
+                    console.log(res.body);
                     this.archived = res.body.datasets;
 
                     this.ws.send(JSON.stringify({
@@ -512,7 +514,17 @@ export default {
                             });
                         } else {
                             //update
-                            if(t.status != msg.status) this.$notify("t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg);
+                            if(t.status != msg.status) {
+                                var text = "t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg;
+                                var type = null;
+                                switch(msg.status) {
+                                case "failed": type = "error"; break;
+                                case "finished": type = "success"; break;
+                                case "stopped": type = "warn"; break;
+                                }
+                                console.log("notification type", type, msg.status);
+                                this.$notify({type, text});
+                            }
                             for(var k in msg) {
                                 t[k] = msg[k];
                             }

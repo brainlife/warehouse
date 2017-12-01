@@ -5,12 +5,14 @@
     </pageheader>
     <sidemenu active="/pubs"></sidemenu>
     <div class="page-content">
-        <div v-if="!pubs" style="margin: 40px;"><h3>Loading ..</h3></div>
-        <div v-else class="margin20">
-            <div v-for="pub in pubs" :key="pub._id" class="pub">
-                <pubcard :pub="pub"/>
+        <b-container>
+            <div v-if="!pubs" style="margin: 40px;"><h3>Loading ..</h3></div>
+            <div v-else class="margin20">
+                <div v-for="pub in pubs" :key="pub._id" class="pub">
+                    <pubcard :pub="pub"/>
+                </div>
             </div>
-        </div>
+        </b-container>
     </div>
 </div>
 </template>

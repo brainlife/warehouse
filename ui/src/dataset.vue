@@ -5,7 +5,9 @@
     <div class="header" vi-if="dataset">
         <b-button-group style="float: right;">
             <b-button variant="" v-b-modal.viewSelecter @click="openviewsel(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
-            <b-button variant="" @click="download" v-if="dataset.storage" icon="document">Download</b-button>
+            <b-button variant="" @click="download" v-if="dataset.storage" icon="document">Download 
+                <small style="opacity: 0.5" v-if="dataset.size">({{dataset.size|filesize}})</small>
+            </b-button>
             <b-button variant="" @click="process" v-if="dataset.storage" icon="document">Process</b-button>
         </b-button-group>
         <b-button style="float: right; margin-right: 15px;" variant="danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
@@ -53,11 +55,7 @@
             </td>
         </tr>
         -->
-        <tr v-if="dataset.size">
-            <th>Download Size</th>
-            <td>{{dataset.size | filesize}} </td>
-        </tr>        
-        <tr>
+        <tr v-if="dataset.download_count > 0">
             <th>Download Count</th>
             <td>{{dataset.download_count}}</td>
         </tr>
@@ -68,7 +66,8 @@
                     <icon name="cog" :spin="true"/> Storing ...
                 </span> 
                 <span v-if="dataset.status == 'stored'">
-                    This dataset is currently stored in <b>{{dataset.storage}}</b>
+                    This dataset is currently stored in <b>{{dataset.storage}}</b> 
+                    <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                 </span> 
                 <span v-if="dataset.status == 'failed'" style="color: red;">
                     <icon name="exclamation-triangle"/> Failed to store on warehouse
@@ -127,60 +126,9 @@
             </td>
         </tr>
         <tr>
-            <th>Provenance / Derivative</th>
+            <th>Provenance</th>
             <td>
-                <el-button-group style="float: right;">
-                    <el-button size="small" @click="download_prov()" icon="document">Download Provenance</el-button>
-                </el-button-group>
-                <br clear="both">
-
-                <div v-if="dataset.prov && dataset.prov.app">
-                    <el-row :gutter="10">
-                        <el-col :span="8" v-for="dep in dataset.prov.deps" key="dep.dataset">
-                            <div @click="go('/dataset/'+dep.dataset._id)">
-                                <el-card class="clickable">
-                                    <b><icon name="cubes"></icon> {{dep.input_id}}</b>
-                                    <tags :tags="dep.dataset.datatype_tags"/>
-                                    <br>
-                                    <!--{{dep.dataset}}-->
-                                </el-card>
-                            </div>
-                            <center class="text-muted"><icon scale="2" name="arrow-down"></icon></center>
-                        </el-col>
-                    </el-row>
-
-                    <task v-if="task" :task="task">
-                        <div slot="header">
-                            <div v-if="task.config._app" style="padding-bottom: 10px;">
-                                <app :appid="task.config._app" :compact="true">
-                                    <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
-                                </app>
-                            </div>
-                            <div v-else>
-                                <h3>{{task.name}}</h3>
-                            </div>
-                        </div>
-                    </task>
-
-                    <app v-if="!task && dataset.prov.app" :app="dataset.prov.app" :compact="true"></app>
-                    <center style="padding: 10px">
-                        <icon class="text-muted" scale="2" name="arrow-down"></icon>
-                    </center>
-
-                </div>
-                <div v-else>
-                    <center style="padding: 10px">
-                        <el-card><icon name="upload"/> User Upload</el-card>
-                        <icon class="text-muted" scale="2" name="arrow-down"></icon>
-                    </center>
-                </div>
-
-                <center>
-                    <el-card style="background-color: #2693ff; color: white;">This dataset</el-card>
-                </center>
-
-                <br>
-                <div ref="vis" style="background-color: gray; height: 400px;"/>
+                <div ref="vis" style="background-color: #555; box-shadow: inset 2 2 8px #000; height: 700px;"/>
             </td>
         </tr>
         <tr v-if="apps">
@@ -263,9 +211,7 @@ import select2 from '@/components/select2'
 import task from '@/components/task'
 import pubcard from '@/components/pubcard'
 
-//import vis from 'vis/dist/vis.min.js'
 import vis from 'vis/dist/vis-network.min.js'
-//import 'vis/dist/vis.min.css'
 import 'vis/dist/vis-network.min.css'
 
 const lib = require('./lib');
@@ -391,14 +337,18 @@ export default {
             console.log("loading dataset status");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                select: "status storage",
+                //select: "status storage size desc",
             }})
             .then(res=>{
                 var dataset = res.body.datasets[0];
+                this.dataset.size = dataset.size;
                 this.dataset.status = dataset.status;
                 this.dataset.storage = dataset.storage;
+                this.dataset.desc = dataset.desc;
                 if(this.dataset.status == "storing") {
                     setTimeout(()=>{ this.load_status(id); }, 5000);
+                } else {
+                    this.$notify({type: "success", text: "Dataset successfully stored on "+dataset.storage});
                 }
             });
         },
@@ -414,7 +364,7 @@ export default {
                     return;
                 }
                 this.dataset = res.body.datasets[0];
-                this.load_status(id);
+                if(this.dataset.status == "storing") this.load_status(id);
 
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {
@@ -467,12 +417,7 @@ export default {
                 this.prov = res.body;
 
                 //initialize vis
-                //console.dir(this.$refs.vis);
-                //console.dir(res.body);
                 var gph = new vis.Network(this.$refs.vis, res.body, {
-                  //manipulation: false,
-                  //width: '90%',
-                  //height: '90%',
                     /*
                   layout: {
                     hierarchical: {
@@ -482,6 +427,8 @@ export default {
                     }
                   },
                     */
+                    physics:{barnesHut:{gravitationalConstant:-3000}}
+                    //physics:{barnesHut:{gravitationalConstant:-3000,/* springConstant: 0.01,*/ avoidOverlap: 0.01}}
                 });
 
              }).catch(err=>{
