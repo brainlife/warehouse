@@ -514,7 +514,17 @@ export default {
                             });
                         } else {
                             //update
-                            if(t.status != msg.status) this.$notify("t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg);
+                            if(t.status != msg.status) {
+                                var text = "t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg;
+                                var type = null;
+                                switch(msg.status) {
+                                case "failed": type = "error"; break;
+                                case "finished": type = "success"; break;
+                                case "stopped": type = "warn"; break;
+                                }
+                                console.log("notification type", type, msg.status);
+                                this.$notify({type, text});
+                            }
                             for(var k in msg) {
                                 t[k] = msg[k];
                             }

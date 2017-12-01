@@ -43,7 +43,7 @@ export default {
                         { name: "pddDispersion", filename: "pddDispersion.nii.gz"},
                         { name: "tensors", filename: "tensors.nii.gz"},
                         { name: "b0", filename: "b0.nii.gz"},
-                        { name: "brainMask", filename: "brainask.nii.gz"},
+                        { name: "brainMask", filename: "brainMask.nii.gz"},
                     ];
 
                     //create url for each layer
@@ -60,6 +60,7 @@ export default {
                     next_entry();
                 }
             }, ()=>{
+                console.log("window.confing", config);
                 window.config = config;
                 this.seturl(wmcdir);
             }); 
