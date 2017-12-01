@@ -99,8 +99,11 @@ exports.storage_systems.jetstream = {
             filename = dataset.storage_config.filename;
         }
 
+        console.log(contname);
+        console.log(filename);
         js_storage.getFile(contname, filename, (err,_stats)=>{
             if(err) return cb(err);
+            console.dir(_stats);
             cb(null, {
                 size: _stats.size,
                 mtime: _stats.lastModified,

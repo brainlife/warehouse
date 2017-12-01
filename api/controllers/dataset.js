@@ -160,6 +160,10 @@ router.get('/prov/:id', (req, res, next)=>{
     //test view ... 
     //http://localhost:8080/warehouse/dataset/59dfc38205925425a3a08928
     //http://localhost:8080/warehouse/dataset/5a125376378e992ee16390f7
+
+    //broken - need to fix
+    //http://localhost:8080/warehouse/dataset/59970202b36ae423d9fecf03
+
     let datatypes = {};
     let nodes = [];
     let edges = [];
@@ -186,7 +190,7 @@ router.get('/prov/:id', (req, res, next)=>{
             if(id[0] == "_") continue;
             let v = task.config[id];
             let vs = v.toString();
-            //TODO - grab UI config
+            //TODO - better way to grab only the non-dataset inputs?
             if(vs.indexOf("..") != 0) label += id+":"+vs+"\n";
         }
         return label;
@@ -194,42 +198,54 @@ router.get('/prov/:id', (req, res, next)=>{
 
     let datasets_analyzed = [];
     function load_dataset_prov(dataset, defer, cb) {
-        //if(~datasets_analyzed.indexOf(dataset._id)) return cb();
-        //datasets_analyzed.push(dataset._id);
         let to = "dataset."+dataset._id;
         if(!dataset.prov.task_id) {
+            logger.debug("no dataset.prov.task_id");
             if(defer) {
                 add_node(defer.node);
                 edges.push(defer.edge);
             }
             return cb();
         } else if(defer) {
+            logger.debug("has defer");
             to = defer.to;
         }
+        logger.debug("loading task", dataset.prov.task_id);
         //logger.debug("load_dataset_prov.................................", dataset._id.toString());
         //logger.debug(dataset.prov.toString());
         load_task(dataset.prov.task_id, (err, task)=>{
             if(err) return cb(err);
             add_node({
                 id: "task."+task._id, 
-                color: "#ffc060",
+                color: "#fff",
                 shape: "box",
-                font: {size: 12},
+                font: {size: 11},
                 label: compose_label(task),
             });
-            let output = dataset.prov.app.outputs.find(output=>{ return output.id == dataset.prov.output_id});
-            let label = dataset.prov.output_id+"?";
-            if(output) {
-                label = datatypes[output.datatype].name;
-                if(output.datatype_tags && output.datatype_tags.length>0) label += "/"+output.datatype_tags.toString();
+            if(!dataset.prov || !dataset.prov.app) {
+                logger.error("no prov.app on dataset:"+dataset._id.toString());
+                edges.push({
+                    from: "task."+task._id,
+                    to,
+                    arrows: "to",
+                    //label: "(no app) ",
+                });
+            } else {
+                let output = dataset.prov.app.outputs.find(output=>{ return output.id == dataset.prov.output_id });
+                let label = dataset.prov.output_id+"?";
+                if(output) {
+                    label = datatypes[output.datatype].name;
+                    if(output.datatype_tags && output.datatype_tags.length>0) label += " : "+output.datatype_tags.toString();
+                }
+                edges.push({
+                    from: "task."+task._id,
+                    to,
+                    arrows: "to",
+                    dashes: true,
+                    font: {size: 11, strokeColor: "rgba(0,0,0,0)", color: "rgb(200, 200, 200)"},
+                    label,
+                });
             }
-            edges.push({
-                from: "task."+task._id,
-                to,
-                arrows: "to",
-                label,
-            });
-
             load_task_prov(task, cb);
         });
     }
@@ -240,13 +256,15 @@ router.get('/prov/:id', (req, res, next)=>{
         tasks_analyzed.push(task._id);
 
         if(!task.deps) return cb(); //just in case?
+        if(!task.config) return cb(); 
         async.eachSeries(task.config._inputs, (input, next_dep)=>{
             load_task(input.task_id, (err, dep_task)=>{
                 if(err) return next_dep(err);
                 
                 if(dep_task.service == "soichih/sca-product-raw") { //TODO might change in the future
                     //staging task should be shown as dataset input.. 
-                    let dataset_ids = dep_task.config._outputs.map(output=>{return output.dataset_id});
+                    let dataset_ids = dep_task.config._outputs.map(output=>{return output.dataset_id||output._id});
+                    logger.debug("sca-product-raw", dep_task._id, dataset_ids);
                     //load all datasets
                     db.Datasets
                     .find({ _id: {$in: dataset_ids} })
@@ -261,7 +279,7 @@ router.get('/prov/:id', (req, res, next)=>{
                             let defer = {
                                 node: {
                                     id: "dataset."+dataset._id, 
-                                    color: "#c0c0c0",
+                                    color: "#ccc",
                                     shape: "box",
                                     font: {size: 12},
                                     label: dataset.meta.subject+" / "+datatypes[dataset.datatype].name+"\n"+dataset.desc,
@@ -270,10 +288,12 @@ router.get('/prov/:id', (req, res, next)=>{
                                     from: "dataset."+dataset._id,
                                     to: "task."+task._id,
                                     arrows: "to",
+                                    //dashes: true,
                                     //label: "??2",
                                 },
                                 to: "task."+task._id,
                             };
+                            logger.debug("defer", defer);
                             load_dataset_prov(dataset, defer, next_dataset);
                         }, next_dep);
                     });
@@ -281,7 +301,7 @@ router.get('/prov/:id', (req, res, next)=>{
                     //task2task
                     add_node({
                         id: "task."+input.task_id,
-                        color: "#ffc060",
+                        color: "#fff",
                         shape: "box",
                         font: {size: 12},
                         label: compose_label(dep_task),
@@ -318,13 +338,15 @@ router.get('/prov/:id', (req, res, next)=>{
         .exec((err, dataset)=>{
             if(err) return cb(err);
             if(!dataset) return res.status(404).end();
-            //res.json({nodes: [{id: "300"}, {id: "400"}], edges: [{to: "300", from: "400", arrow: "from", label: "hi"}]});
-            //console.dir(dataset);
             nodes.push({
                 id: "dataset."+dataset._id, 
-                color: "#ffffff",
+                color: "#2693ff",
                 shape: "box",
-                font: {size: 20},
+                margin: 10,
+                font: {size: 20, color: "#fff"},
+                //fixed: {x: true, y: true},
+                x: 1000,
+                y: 1500,
                 label: "This Dataset"
             });
             load_dataset_prov(dataset, null, err=>{

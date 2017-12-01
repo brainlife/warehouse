@@ -147,28 +147,46 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
                 var storage = config.storage_default();
                 var system = config.storage_systems[storage];
-                logger.debug("obtaining upload stream for ", storage);
+                logger.debug("obtaining upload stream for", storage);
                 system.upload(dataset, (err, writestream)=>{
                     if(err) return cb(err);
                     var tar = child_process.spawn("tar", ["hc", "."], {cwd: tmpdir});
                     tar.on('close', code=>{
+                        logger.debug("tar finished", code);
                         cleantmp();
                         if(code) {
+                            //failed to upload..
                             dataset.desc = "Failed to archive with code:"+code;
                             dataset.status = "failed";
-                        } else {
-                            dataset.storage = storage;
-                            dataset.status = "stored";
-                            prov.register_dataset(dataset, err=>{
-                                if(err) logger.error(err);
-                                //TODO.. what should we do then?
-                            });
                         }
-                        logger.debug("streaming finished with code:", code);
+                    });
+                    writestream.on('error', err=>{
+                        logger.error("streaming failed", err);
+
+                        dataset.desc = "Failed to archive "+err.toString();
+                        dataset.status = "failed";
                         dataset.save(_err=>{
-                            cb(code);
+                            if(_err) logger.error(_err); //ignore..?
+                            cb(err); //return error from streaming which is more interesting
                         });
                     });
+
+                    //TODO - I am not sure if all writestream returnes file object (pkgcloud does.. but this makes it a bit less generic)
+                    //maybe I should run system.stat()?
+                    writestream.on('success', file=>{
+                        logger.debug("streaming success", JSON.stringify(file));
+                        
+                        dataset.storage = storage;
+                        dataset.status = "stored";
+                        dataset.size = file.size;
+                        dataset.save(cb);
+                            
+                        //also register to neo4j.. I might deprecate
+                        prov.register_dataset(dataset, err=>{
+                            if(err) logger.error(err); //fall through
+                        });
+                    });
+
                     logger.debug("streaming to storage");
                     tar.stdout.pipe(writestream);
                 });
