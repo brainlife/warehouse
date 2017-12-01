@@ -55,9 +55,7 @@ router.get('/', (req, res, next)=>{
 /**
  * @apiGroup Publications
  * @api {get} /pub/datasets-inventory/:pubid
- *                              Get counts of unique subject/datatype/datatype_tags. 
- *                              You can then use /pub/datasets/:pubid to get the actual list of
- *                              datasets for each subject / datatypes / etc..
+ *                              Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:pubid to get the actual list of datasets for each subject / datatypes / etc..
  *
  * @apiSuccess {Object}         Object containing counts
  * 

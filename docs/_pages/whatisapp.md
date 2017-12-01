@@ -32,5 +32,5 @@ etc..
 
 Your app should read from one or more of these common datatypes, and write to another set of common datatypes. This may mean you have to do an extra importing / exporting of your data, but it allows other apps to interoperate with your app and increases the chance of code-reuse. 
 
-Before writing your apps, please browse [already registered apps](https://brain-life.org/warehouse/#/apps) and datatypes under Brain-Life.org to make sure that you are not reinventing parts of your application. If you find an app that is similar but does not exactly do what you need, please conctact the developer of the app and discuss if the feature you need can be added to the already existing app. 
+Before writing your apps, please browse [already registered apps](https://brainlife.io/warehouse/#/apps) and datatypes under Brain-Life.org to make sure that you are not reinventing parts of your application. If you find an app that is similar but does not exactly do what you need, please conctact the developer of the app and discuss if the feature you need can be added to the already existing app. 
 
