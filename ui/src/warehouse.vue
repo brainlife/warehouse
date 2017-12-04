@@ -16,6 +16,6 @@ export default {
 height: 100%;
 background-color: #f9f9f9;
 color: #444;
-font-size: 14px;
+font-size: 14px; /*default is 16px for bootstrap*/
 }
 </style>

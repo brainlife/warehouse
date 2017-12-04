@@ -4,6 +4,12 @@ html,body {
 height:100%;
 }
 
+/*deprecate below eventually*/
+
+.clickable {
+cursor: pointer;
+}
+
 .margin20 {
 margin: 20px;
 }
@@ -14,21 +20,6 @@ right: 0px;
 top: 50px;
 bottom: 0px;
 overflow: auto;
-}
-
-.fade-enter-active {
-transition: opacity 1s
-}
-.fade-enter, .fade-leave-to {
-opacity: 0
-}
-.clickable:hover,
-.clickable-record:hover {
-cursor: pointer;
-background-color: #ddd;
-}
-.clickable-row {
-cursor: pointer;
 }
 code.hljs {
 font-size: 80%;
@@ -85,7 +76,6 @@ box-shadow: none;
 cursor: pointer;
 }
 
-
 /*------------------------------------------------------------*/
 /* update bootstrap default tab */
 
@@ -111,6 +101,5 @@ opacity: 1;
 border-bottom: 3px solid #2693ff;
 }
 
-/*------------------------------------------------------------*/
 
 

@@ -25,6 +25,9 @@ exports.github = {
 
 exports.wf = {
     api: "https://dev1.soichi.us/api/wf",
+
+    //jwt used to query things from workflow service as admin
+    jwt: fs.readFileSync(__dirname+'/amaretti.jwt', 'ascii').trim(),
 }
 
 exports.auth = {
@@ -88,16 +91,19 @@ exports.storage_systems.jetstream = {
         }); 
     },
     stat: (dataset, cb)=>{
-        var contname = dataset.project.toString();
-        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
+        let contname = dataset.project.toString();
+        let filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
 
         if(dataset.storage_config && dataset.storage_config.filename) {
             contname = dataset.storage_config.contname;
             filename = dataset.storage_config.filename;
         }
 
+        console.log(contname);
+        console.log(filename);
         js_storage.getFile(contname, filename, (err,_stats)=>{
             if(err) return cb(err);
+            console.dir(_stats);
             cb(null, {
                 size: _stats.size,
                 mtime: _stats.lastModified,
@@ -105,8 +111,8 @@ exports.storage_systems.jetstream = {
         });
     },
     upload: (dataset, cb)=>{
-        var contname = dataset.project.toString();
-        var filename = dataset._id+'.tar';
+        let contname = dataset.project.toString();
+        let filename = dataset._id+'.tar';
         console.log("uploading dataset", contname, filename);
     
         //make sure container exists (if it exists, it's noop)
@@ -118,22 +124,28 @@ exports.storage_systems.jetstream = {
         }, (err, container)=> {
             if(err) return cb(err);
             dataset.storage_config = { contname, filename };
-            var stream = js_storage.upload({container, remote: filename});
-            cb(null, stream);
+            cb(null, js_storage.upload({container, remote: filename}));
         });
     },
     download: (dataset, cb)=>{
-        var contname = dataset.project.toString();
-        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
-
+        let contname = dataset.project.toString();
+        let filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
         if(dataset.storage_config && dataset.storage_config.filename) {
             contname = dataset.storage_config.contname;
             filename = dataset.storage_config.filename;
         }
-        var stream = js_storage.download({container: contname, remote: filename});
-        //console.log("created jetstream stream", stream);
+        let stream = js_storage.download({container: contname, remote: filename});
         cb(null, stream, filename);
     },
+    remove: (dataset, cb)=>{
+        let contname = dataset.project.toString();
+        let filename = dataset._id+'.tar.gz'; //old one were using .tar.gz
+        if(dataset.storage_config && dataset.storage_config.filename) {
+            contname = dataset.storage_config.contname;
+            filename = dataset.storage_config.filename;
+        }
+        js_storage.removeFile(contname, filename, cb);
+    }
 }
 
 function connect_dc(cb) {
@@ -239,7 +251,7 @@ exports.storage_systems["dcwan/hcp"] = {
 
             if(dataset.storage_config.dirpath) {
                 var local = dataset.storage_config.local;
-                conn.exec("cd "+dataset.storage_config.dirpath+"/surf && tar hc * --transform 's|^|/"+local+"/|'", (err, stream)=>{
+                conn.exec("cd "+dataset.storage_config.dirpath+" && tar hc * --transform 's|^|/"+local+"/|'", (err, stream)=>{
                     if(err) return cb(err);
                     stream.on('close', code=>{
                         //console.log("done with tar stream - closing connection:",code)
@@ -276,6 +288,36 @@ exports.storage_systems["nki"] = {
         dataset.storage_config.files.forEach(file=>{
             console.log("downloading", file.s3, "from", nki_config.bucket, file.local);
             var stream = nki_storage.download({container: nki_config.bucket, remote: file.s3});
+            archive.append(stream, {name: file.local});
+        });
+        archive.finalize();
+        cb(null, archive, dataset._id+".tar");
+    },
+}
+
+const openneuro_config = require(__dirname+'/openneuro');
+const openneuro_storage = pkgcloud.storage.createClient(openneuro_config);
+//I don't know how to stream directory structures like freesurfer..
+exports.storage_systems["openneuro"] = {
+    test: cb=>{
+        openneuro_storage.getContainer(openneuro_config.bucket, (err,container)=>{
+            if(err) return cb(err);
+            console.log("openneuro debug/test", container.files.length); //length should be 1000 (max)
+            cb();
+        }); 
+    }, 
+    stat: (dataset, cb)=>{
+        //can't obtain stats for .tar.gz because we are creating it on the fly
+        cb(null);
+    },
+    upload: (dataset, cb)=>{
+        cb("read only");
+    },
+    download: (dataset, cb)=>{
+        var archive = archiver('tar');
+        dataset.storage_config.files.forEach(file=>{
+            console.log("downloading", file.s3, "from", openneuro_config.bucket, file.local);
+            var stream = openneuro_storage.download({container: openneuro_config.bucket, remote: file.s3});
             archive.append(stream, {name: file.local});
         });
         archive.finalize();

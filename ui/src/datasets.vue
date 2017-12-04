@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader/>
+    <pageheader>
         <b-form-input type="search" placeholder="Filter Datasets" @keyup.native="change_query_debounce()" v-model="query"/>
     </pageheader>
     <sidemenu active="/datasets"></sidemenu>
@@ -91,8 +91,8 @@
         <div class="select-action">
             <b-button-group>
                 <b-button size="sm" v-b-modal.viewSelecter>View</b-button>
-                <b-button size="sm" @click="download()" title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
-                <b-button size="sm" @click="process()" title="Run applications on selected datasets by creating a new process.">Process</b-button>
+                <b-button size="sm" @click="download" title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
+                <b-button size="sm" @click="process" title="Run applications on selected datasets by creating a new process.">Process</b-button>
             </b-button-group>
         </div>
     </div>
@@ -346,7 +346,7 @@ export default {
                 params: {
                     find: JSON.stringify({$and: finds}),
                     skip: loaded,
-                    limit: 100,
+                    limit: 200,
                     select: '-prov',
                     sort: 'meta.subject -create_date'
                 }

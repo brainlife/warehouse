@@ -60,11 +60,17 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     }
 
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
+        //logger.debug("..............................................................");
+        //canread_project_ids.forEach(id=>{logger.debug(id.toString());});
+        //logger.debug("..............................................................");
+
         if(err) return next(err);
         ands.push({project: {$in: canread_project_ids}});
 
         var skip = req.query.skip||0;
         let limit = req.query.limit||100;
+
+        //logger.debug(JSON.stringify(ands, null, 4));
 
         //then look for dataset
         db.Datasets.find({ $and: ands })
@@ -131,7 +137,7 @@ router.get('/bibtex/:id', (req, res, next)=>{
         if(!dataset) return res.status(404).end();
 
         res.set('Content-Type', 'application/x-bibtex');
-        res.write("@misc{https://brain-life.org/warehouse/#/dataset/"+dataset._id+",\n")
+        res.write("@misc{https://brainlife.io/warehouse/#/dataset/"+dataset._id+",\n")
         //res.write(" doi = {11.1111/b.ds."+dataset._id+"},\n");
         res.write(" author = {Hayashi, Soichi},\n");
         res.write(" keywords = {},\n");
@@ -150,12 +156,292 @@ router.get('/bibtex/:id', (req, res, next)=>{
  *
  */
 router.get('/prov/:id', (req, res, next)=>{
+
+    //test view ... 
+    //http://localhost:8080/warehouse/dataset/59dfc38205925425a3a08928
+    //http://localhost:8080/warehouse/dataset/5a125376378e992ee16390f7
+
+    //broken - need to fix
+    //http://localhost:8080/warehouse/dataset/59970202b36ae423d9fecf03
+
+    let datatypes = {};
+    let nodes = [];
+    let edges = [];
+    function load_task(id, cb) {
+        request.get({
+            url: config.wf.api+"/task",
+            qs: { find: JSON.stringify({"_id": id, user_id: null}) },
+            json: true,
+            headers: {
+                //authorization: req.headers.authorization, 
+                authorization: "Bearer "+config.wf.jwt, //pass admin jwt to query all tasks
+            }
+        }, (err, _res, ret)=>{
+            if(err) return cb(err);
+            if(ret.tasks.length != 1) return cb("couldn't find task:"+id);
+            let task = ret.tasks[0];
+            cb(null, task);
+        });
+    }
+
+    function compose_label(task) {
+        let label = task.service+"\n";
+        for(let id in task.config) {
+            if(id[0] == "_") continue;
+            let v = task.config[id];
+            let vs = v.toString();
+            //TODO - better way to grab only the non-dataset inputs?
+            if(vs.indexOf("..") != 0) label += id+":"+vs+"\n";
+        }
+        return label;
+    }
+
+    let datasets_analyzed = [];
+    function load_dataset_prov(dataset, defer, cb) {
+        let to = "dataset."+dataset._id;
+        if(!dataset.prov.task_id) {
+            logger.debug("no dataset.prov.task_id");
+            if(defer) {
+                add_node(defer.node);
+                edges.push(defer.edge);
+            }
+            return cb();
+        } else if(defer) {
+            logger.debug("has defer");
+            to = defer.to;
+        }
+        logger.debug("loading task", dataset.prov.task_id);
+        //logger.debug("load_dataset_prov.................................", dataset._id.toString());
+        //logger.debug(dataset.prov.toString());
+        load_task(dataset.prov.task_id, (err, task)=>{
+            if(err) return cb(err);
+            add_node({
+                id: "task."+task._id, 
+                color: "#fff",
+                shape: "box",
+                font: {size: 11},
+                label: compose_label(task),
+            });
+            if(!dataset.prov || !dataset.prov.app) {
+                logger.error("no prov.app on dataset:"+dataset._id.toString());
+                edges.push({
+                    from: "task."+task._id,
+                    to,
+                    arrows: "to",
+                    //label: "(no app) ",
+                });
+            } else {
+                let output = dataset.prov.app.outputs.find(output=>{ return output.id == dataset.prov.output_id });
+                let label = dataset.prov.output_id+"?";
+                if(output) {
+                    label = datatypes[output.datatype].name;
+                    if(output.datatype_tags && output.datatype_tags.length>0) label += " : "+output.datatype_tags.toString();
+                }
+                edges.push({
+                    from: "task."+task._id,
+                    to,
+                    arrows: "to",
+                    dashes: true,
+                    font: {size: 11, strokeColor: "rgba(0,0,0,0)", color: "rgb(200, 200, 200)"},
+                    label,
+                });
+            }
+            load_task_prov(task, cb);
+        });
+    }
+
+    let tasks_analyzed = [];
+    function load_task_prov(task, cb) {
+        if(~tasks_analyzed.indexOf(task._id)) return cb();
+        tasks_analyzed.push(task._id);
+
+        if(!task.deps) return cb(); //just in case?
+        if(!task.config) return cb(); 
+        async.eachSeries(task.config._inputs, (input, next_dep)=>{
+            load_task(input.task_id, (err, dep_task)=>{
+                if(err) return next_dep(err);
+                
+                if(dep_task.service == "soichih/sca-product-raw") { //TODO might change in the future
+                    //staging task should be shown as dataset input.. 
+                    let dataset_ids = dep_task.config._outputs.map(output=>{return output.dataset_id||output._id});
+                    logger.debug("sca-product-raw", dep_task._id, dataset_ids);
+                    //load all datasets
+                    db.Datasets
+                    .find({ _id: {$in: dataset_ids} })
+                    .populate('prov.app')
+                    .exec((err, datasets)=>{
+                        if(err) return next_dep(err);
+                        async.eachSeries(datasets, (dataset, next_dataset)=>{
+                            if(~datasets_analyzed.indexOf(dataset._id.toString())) return next_dataset();
+                            datasets_analyzed.push(dataset._id.toString());
+                            
+                            //logger.debug(dataset);
+                            let defer = {
+                                node: {
+                                    id: "dataset."+dataset._id, 
+                                    color: "#ccc",
+                                    shape: "box",
+                                    font: {size: 12},
+                                    label: dataset.meta.subject+" / "+datatypes[dataset.datatype].name+"\n"+dataset.desc,
+                                },
+                                edge: {
+                                    from: "dataset."+dataset._id,
+                                    to: "task."+task._id,
+                                    arrows: "to",
+                                    //dashes: true,
+                                    //label: "??2",
+                                },
+                                to: "task."+task._id,
+                            };
+                            logger.debug("defer", defer);
+                            load_dataset_prov(dataset, defer, next_dataset);
+                        }, next_dep);
+                    });
+                } else {
+                    //task2task
+                    add_node({
+                        id: "task."+input.task_id,
+                        color: "#fff",
+                        shape: "box",
+                        font: {size: 12},
+                        label: compose_label(dep_task),
+                    });
+                    edges.push({
+                        from: "task."+input.task_id,
+                        to: "task."+task._id,
+                        arrows: "to",
+                        label: input.id,
+                    });
+                    load_task_prov(dep_task, next_dep); //recurse to its deps
+                }
+            });
+        }, cb);
+    }
+
+    function add_node(newnode) {
+        let ex = nodes.find(node=>{return (node.id == newnode.id);});
+        if(!ex) nodes.push(newnode);
+    }
+
+    //TODO cache datatype?
+    db.Datatypes.find({})
+    .exec((err, _datatypes)=>{
+        if(err) return cb(err);
+        _datatypes.forEach(_datatype=>{
+            datatypes[_datatype._id] = _datatype;
+        });
+        
+        //start by loading dest datasource
+        db.Datasets
+        .findOne({ _id: req.params.id })
+        .populate('prov.app')
+        .exec((err, dataset)=>{
+            if(err) return cb(err);
+            if(!dataset) return res.status(404).end();
+            nodes.push({
+                id: "dataset."+dataset._id, 
+                color: "#2693ff",
+                shape: "box",
+                margin: 10,
+                font: {size: 20, color: "#fff"},
+                //fixed: {x: true, y: true},
+                x: 1000,
+                y: 1500,
+                label: "This Dataset"
+            });
+            load_dataset_prov(dataset, null, err=>{
+                if(err) return next(err);
+                res.json({nodes, edges});
+            });
+        })
+    });
+});
+
+router.get('/prov-old/:id', (req, res, next)=>{
     db.Datasets.findById(req.params.id, function(err, dataset) {
         if(err) return next(err);
         if(!dataset) return res.status(404).end();
         prov.query(dataset, (err, _prov)=>{
             if(err) return next(err);
-            res.json(_prov);
+            //organize into node/edge list that visjs can digest
+            //console.log(JSON.stringify(_prov, null, 4));
+
+            let nodes = {};
+            let edges = [];
+            function ensure_node(n) {
+                if(!nodes[n._id]) {
+                    let label = "";
+                    let color = "";
+                    switch(n.labels[0]) {
+                    case "Task":
+                        //label = "Task\n"+n.properties.task_id;
+                        label = "Task\n"+n._id;
+                        color = "#ffcfcf";
+                        break;
+                    case "Dataset":
+                        //label = "Dataset\n"+n.properties.dataset_id;
+                        if(req.params.id == n.properties.dataset_id) {
+                            label = "This";
+                            color = "#ffffff";
+                        } else {
+                            label = "Dataset\n"+n._id;
+                            color = "#cfcfff";
+                        }
+                        break;
+                    }
+                    nodes[n] = {
+                        id: n._id,
+                        //size: 1000,
+                        label,
+                        color,
+                        shape: "box",
+                        //font: {'face': 'monospace', 'align': 'left'},
+                    };
+                }
+            }
+
+            //nodes
+            _prov.forEach(rec=>{
+                ensure_node(rec.s);
+                ensure_node(rec.n);
+            });
+            //dedupe r
+            let rs = {};
+            _prov.forEach(rec=>{
+                rs[rec.r._id] = rec.r;
+            });
+
+            //create edges
+            for(var rid in rs) {
+                let r = rs[rid];
+                if(r.type == "FROM") {
+                    edges.push({
+                        from: r._fromId,
+                        to: r._toId,
+                        arrows: "from",
+                        //physics: true,
+                        //smooth: {type: 'cubicBezier'},
+                        //something: rec.r.
+                    })
+                }
+                if(r.type == "INPUT") {
+                    edges.push({
+                        from: r._fromId,
+                        to: r._toId,
+                        arrows: "from",
+                        label: r.properties.input_id,
+                        //physics: true,
+                        //smooth: {type: 'cubicBezier'},
+                        //something: rec.r.
+                    })
+                }
+            }
+
+            //Object.values(nodes)
+            nodes = Object.keys(nodes).map(key=>{
+                return nodes[key];
+            });
+            res.json({nodes, edges});
         });
     });
 });
@@ -224,7 +510,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                     //TODO should I only allow members but not admin?
                     if(!~project.admins.indexOf(req.user.sub) && !~project.members.indexOf(req.user.sub)) 
                         return next("you are not member of this project");
-                    logger.debug("task loaded", _task);
+                    //logger.debug("task loaded", _task);
                     task = _task;
                     next();
                 });
@@ -418,6 +704,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
             if(err) return next(err);
             if(!dataset) return next(new Error("can't find the dataset with id:"+req.params.id));
             if(canedit(req.user, dataset, canwrite_project_ids)) {
+                dataset.remove_date = new Date();
                 dataset.removed = true;
                 dataset.save(function(err) {
                     if(err) return next(err);

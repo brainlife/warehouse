@@ -14,8 +14,7 @@
             :class="{active: active == '/apps'}" >
             <icon name="th-large" scale="2" ></icon><br>Apps
         </li>
-        <li v-if="config.debug"
-            @click="go('/pubs')"
+        <li @click="goraw('/pubs');"
             :class="{active: active == '/pubs'}">
             <icon name="book" scale="2"></icon><br>Publications
 
@@ -64,6 +63,9 @@ export default {
         },
         go: function(page) {
             this.$router.push(page);
+        },
+        goraw: function(url) {
+            document.location = url;
         },
     }
 }

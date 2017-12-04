@@ -9,7 +9,7 @@ comments: true
 
 Once you have developed your app, you can register it on Brain-Life so that other users can discover and execute your app. 
 
-First, head to [Brain-Life's Apps page](https://brain-life.org/warehouse/#/apps). Click on the `Plus Button` on the bottom right corner of the page. 
+First, head to [Brain-Life's Apps page](https://brainlife.io/warehouse/#/apps). Click on the `Plus Button` on the bottom right corner of the page. 
 ![plus]({{ "/assets/s/plus.png" | absolute_url }}) 
 
 ## Basic Info

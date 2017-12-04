@@ -54,7 +54,8 @@
 
                 <div v-if="mode == 'upload' && tasks.upload && tasks.upload.resource_id">
                     <el-form-item v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id+(file.ext?'('+file.ext+')':'')">
-                        <el-card v-if="datatype_id">
+                        <b-card v-if="datatype_id" :bg-variant="file.required?'default':'light'">
+                            <p class="text-muted" v-if="!file.required">Optional</p>
                             <div v-if="!file.uploaded && !file.progress">
                                 <input type="file" @change="filechange(file, $event)" :accept="file.ext">
                             </div>
@@ -70,7 +71,7 @@
                                 <small>({{file.size|filesize}})</small>
                                 <el-button type="small" @click="clearfile(file)" style="float: right;" icon="delete">Remove</el-button>
                             </div>
-                        </el-card>
+                        </b-card>
                         <br>
                     </el-form-item>
         
@@ -299,7 +300,7 @@ export default {
             case "upload":
                 this.files.forEach(file=>{
                     //console.log(file);
-                    if(!file.uploaded) valid = false;
+                    if(file.required && !file.uploaded) valid = false;
                 });
                 break;
             default:

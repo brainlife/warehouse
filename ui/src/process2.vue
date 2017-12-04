@@ -6,7 +6,7 @@
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
             <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
             <b v-else class="text-muted">(no subject)</b>
-            <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+            <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"/>
             <small v-for="(tag,idx) in dataset.tags" :key="idx"> | {{tag}}</small>
             <mute>(d.{{dataset.did}})</mute> 
             <time v-if="dataset.create_date">{{new Date(dataset.create_date).toLocaleString()}}</time>
@@ -52,7 +52,7 @@
                     <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
                         <b v-if="input.meta.subject">{{input.meta.subject}}</b>
-                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
+                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <mute>
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                             (d.{{input.did}})
@@ -63,7 +63,7 @@
                     </div>
                     <div v-else>
                         <b v-if="input.meta.subject">{{input.meta.subject}}</b>
-                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"></datatypetag>
+                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <mute>
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                             (d.{{input.did}})
@@ -85,7 +85,7 @@
                     </div>
 
                     <b v-if="output.meta.subject">{{output.meta.subject}}</b>
-                    <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"></datatypetag>
+                    <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
                     <mute>
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                         (d.{{output.did}})
@@ -352,6 +352,7 @@ export default {
             res.body.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
             });
+
             return this.$http.get('project', {params: {
                 select: 'name desc',
             }});
@@ -403,7 +404,7 @@ export default {
     },
 
     watch: {
-        'instance': function() {
+        instance: function() {
             console.log("instance updated");
             document.getElementById("scrolled-area").scrollTop = 0;
             this.load();
@@ -476,10 +477,13 @@ export default {
                         find: JSON.stringify({
                             "prov.instance_id": this.instance._id,
                             removed: false,
-                        })
+                        }),
+                        limit: 300,
                     }})
                 })
                 .then(res=>{
+                    console.log("loaded");
+                    console.log(res.body);
                     this.archived = res.body.datasets;
 
                     this.ws.send(JSON.stringify({
@@ -510,7 +514,17 @@ export default {
                             });
                         } else {
                             //update
-                            if(t.status != msg.status) this.$notify("t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg);
+                            if(t.status != msg.status) {
+                                var text = "t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg;
+                                var type = null;
+                                switch(msg.status) {
+                                case "failed": type = "error"; break;
+                                case "finished": type = "success"; break;
+                                case "stopped": type = "warn"; break;
+                                }
+                                console.log("notification type", type, msg.status);
+                                this.$notify({type, text});
+                            }
                             for(var k in msg) {
                                 t[k] = msg[k];
                             }
@@ -815,6 +829,7 @@ export default {
                 taskid: this.vsel.task._id,
                 view: v.ui,
                 subdir: this.vsel.subdir,
+                docker: v.docker,
             });
         },
     },

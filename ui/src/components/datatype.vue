@@ -6,20 +6,19 @@
         <small class="text-muted">{{datatype.desc}}</small>
     </div>
 
-    <el-row :gutter="20">
-    <el-col :span="6" v-for="file in datatype.files" :key="file.id">
+    <b-row>
+    <b-col cols="4" v-for="file in datatype.files" :key="file.id" :class="{'text-muted': !file.required}">
         <span v-if="file.filename">
             <icon name="file-o"></icon> 
-            {{file.id}}
-            <small class="text-muted"><code>{{file.filename}}</code></small>
+            {{file.filename}}
         </span>
         <span v-if="file.dirname">
             <icon name="folder"></icon> 
-            {{file.id}}
-            <small class="text-muted"><code>{{file.dirname}}</code></small>
+            {{file.dirname}}
         </span>
-    </el-col>
-    </el-row>
+        <span v-if="!file.required">(optional)</span>
+    </b-col>
+    </b-row>
 
     <slot></slot>
 </el-card>

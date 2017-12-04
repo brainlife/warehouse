@@ -21,7 +21,7 @@
                     <el-input type="textarea" autosize v-model="project.desc" placeholder="Enter description for this project."></el-input>
                 </b-form-group>
                 <b-form-group label="README.md" horizontal>
-                    <b-form-textarea :rows="4" v-model="project.readme" placeholder="Enter extended README content in markdown format."/>
+                    <b-form-textarea :rows="4" :max-rows="20" v-model="project.readme" placeholder="Enter extended README content in markdown format."/>
                 </b-form-group>
 
                 <b-form-group label="Access" horizontal>
@@ -32,12 +32,14 @@
                     <p class="text-muted">Decide if non project member can access datasets inside this project</p>
                 </b-form-group>
 
+                <!--
                 <b-form-group label="License" horizontal>
                    <b-form-radio-group v-model="project.license">
                         <b-form-radio value="ccby.40"> <license id="ccby.40"/> </b-form-radio>
                         <b-form-radio value="cc0"> <license id="cc0"/> </b-form-radio>
                     </b-form-radio-group>
                 </b-form-group>
+                -->
 
                 <b-form-group label="Administrators" horizontal>
                     <contactlist v-model="project.admins"></contactlist>

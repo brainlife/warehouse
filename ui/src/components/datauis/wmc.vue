@@ -43,7 +43,7 @@ export default {
                         { name: "pddDispersion", filename: "pddDispersion.nii.gz"},
                         { name: "tensors", filename: "tensors.nii.gz"},
                         { name: "b0", filename: "b0.nii.gz"},
-                        { name: "brainMask", filename: "brainask.nii.gz"},
+                        { name: "brainMask", filename: "brainMask.nii.gz"},
                     ];
 
                     //create url for each layer
@@ -60,6 +60,7 @@ export default {
                     next_entry();
                 }
             }, ()=>{
+                console.log("window.confing", config);
                 window.config = config;
                 this.seturl(wmcdir);
             }); 
@@ -101,7 +102,7 @@ export default {
                 cb(tracts);
             }).catch(err=>{
                 console.error("failed to load tracts.json - probably output from old afq. using afq.tract.json template");
-                fetch("https://brain-life.org/ui/tractview/afq.tracts.json")
+                fetch("https://brainlife.io/ui/tractview/afq.tracts.json")
                     .then(res=>res.json())
                     .then(tracts=>{
                     tracts.forEach(tract=>{

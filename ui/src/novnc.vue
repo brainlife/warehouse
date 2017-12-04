@@ -1,5 +1,5 @@
 <template>
-<div>
+<div style="height: 100%; overflow: auto;">
     <div v-if="task && task.status == 'finished'" style="padding: 20px;">
         <h3>Staging Data</h3>
         <task :task="task"/>

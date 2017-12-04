@@ -445,7 +445,7 @@ export default {
                 handler: "email",
                 config: {
                     task_id: task_id,
-                    subject: "[brain-life.org] Process Completed",
+                    subject: "[brainlife.io] Process Completed",
                     message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease visit "+url+" to view your result.\n\nBrain-life.org Administrator"
                 },
             }).then(res=>{

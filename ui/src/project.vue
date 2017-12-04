@@ -48,13 +48,11 @@
                                     </b-col>
                                 </b-row>
                             </b-list-group-item>
+                            <!--
                             <b-list-group-item v-if="project.license">
-                                <!--
-                                <h6>License</h6>
-                                <p class="text-muted">Datasets / Applications published under this project are bounded to following licensing</p>
-                                -->
                                 <license :id="project.license"/>
                             </b-list-group-item>
+                            -->
                         </b-list-group>
                     </b-card>
                     <br>
