@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user"/>
+    <pageheader/>
     <sidemenu active="/datatypes"/>
     <div class="header" v-if="datatype">
         <el-button-group style="float: right;" v-if="datatype._canedit">

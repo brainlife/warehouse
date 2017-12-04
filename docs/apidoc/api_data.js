@@ -779,17 +779,17 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "String[]",
+            "type": "Object",
             "optional": true,
             "field": "meta",
-            "description": "<p>Metadata for this dataset</p>"
+            "description": "<p>Metadata</p>"
           },
           {
             "group": "Parameter",
             "type": "String[]",
             "optional": true,
             "field": "admins",
-            "description": "<p>List of admins (auth sub)</p>"
+            "description": "<p>List of new admins (auth sub)</p>"
           }
         ]
       }

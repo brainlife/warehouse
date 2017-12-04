@@ -1,155 +1,244 @@
 <template>
-<div>
-    <pageheader :user="config.user"></pageheader>
+<div v-if="app">
+    <pageheader/>
     <sidemenu active="/apps"></sidemenu>
-    <div class="header" v-if="app">
-        <b-button-group style="float: right;">
-            <b-button @click="remove()" v-if="app._canedit" icon="delete">Remove</b-button>
-            <b-button @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</b-button>
-            <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
-        </b-button-group>
-        <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
-        <h2>{{app.name}}</h2>
-    </div>
-    <div class="page-content" v-if="app" style="margin-top: 80px;">
-        <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
-            <br>
-            <p><el-rate v-model="app._rate" @change="ratechange()"></el-rate></p>
-            <p style="line-height: 150%;">{{app.desc}}</p>
-        </div>
-
-        <table class="info">
-        <tr v-if="service_stats">
-            <th width="175px">Stats</th>
-            <td>
-                <br>
-                <el-row>
-                    <el-col :span="8">
-                        <h4>{{service_stats.tasks}}</h4>
-                        <b class="text-muted">Total Runs</b>
-                    </el-col>
-                    <el-col :span="8">
-                        <h4>{{service_stats.users}}</h4>
-                        <b class="text-muted">Users</b>
-                    </el-col>
-                    <el-col :span="8">
-                        <h4>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}% </h4>
-                        <b class="text-muted">Success Rate</b>
-                    </el-col>
-                </el-row>
-                <br>
-            </td>
-        </tr>
-        <tr>
-            <th>Source</th>
-            <td>
-                <div v-if="app.github">
-                    Github
-                    <a :href="'http://github.com/'+app.github">{{app.github}}</a> <b-badge v-if="app.github_branch">{{app.github_branch}}</b-badge>
-                </div>
-                <blockquote v-if="readme" class="readme">
-                    <vue-markdown :source="readme"></vue-markdown>
-                </blockquote>
-            </td>
-        </tr>
-        <tr>
-            <th>Input Datatypes</th>
-            <td>
-                <p class="text-muted">You need following input datasets to run this application</p>
-                <div class="item" v-for="input in app.inputs">
-                    <!--<b>{{input.id}}</b>-->
-                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags" style="margin-bottom: 10px;"></datatype>
-                </div>
-            </td>
-        </tr>
-        <tr v-if="app.outputs.length">
-            <th>Output Datatypes</th>
-            <td>
-                <p class="text-muted">This application produces following output datasets</p>
-                <div class="item" v-for="output in app.outputs">
-                    <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags">
-                        <div v-if="output.files">
-                            <small>Output mapping</small>
-                            <pre v-highlightjs><code class="json hljs">{{output.files}}</code></pre>
+    <div class="page-content">
+        <div class="header">
+            <b-container>
+                <b-row>
+                    <b-col>
+                        <div style="float: left; margin-right: 40px; margin-bottom: 15px; height: 100%;">
+                            <appavatar :app="app"/>
                         </div>
-                    </datatype>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <th>Tags</th>
-            <td><tags :tags="app.tags"></tags></td>
-        </tr>
-        <tr>
-            <th>Developers</th>
-            <td>
-                <contact v-for="c in app.admins" key="c._id" :id="c"></contact>
-            </td>
-        </tr>
-        <tr v-if="app.project">
-            <th>Project</th>
-            <td>
-                <p class="text-muted">This application belongs to following project.</p>
-                <el-card>
-                    <project :project="app.project"></project>
-                </el-card>
-            </td>
-        </tr>
-        <tr v-if="app.retry">
-            <th>Retry</th>
-            <td>
-                <p>
-                    If this application fails, it will automatically retry up to <b>{{app.retry}}</b> times
-                </p> 
-            </td>
-        </tr>
-        <tr>
-            <th>Computing Resource</th>
-            <td>
-                <p v-if="preferred_resource">
-                    This service can currently run on 
-                    <el-tag> {{preferred_resource.name}} (Best)</el-tag>
-                     <el-tag v-for="resource in resources" :key="resource.id" v-if="resource.id != preferred_resource._id" style="margin-right:3px;">
-                        {{resource.name}}
-                    </el-tag> 
-                </p> 
-                <b-alert show variant="danger" v-else>
-                    There is currently no available computing resource to run this application.
-                </b-alert>
-            </td>
-        </tr>
-        <tr>
-            <!--TODO-->
-            <th>Test Status</th>
-            <td><el-tag>Unknown</el-tag></td>
-        </tr>
-        <tr>
-            <th>Configuration Template</th>
-            <td>
-                <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
-            </td>
-        </tr>
-        <tr>
-            <th>Citation</th>
-            <td>
-                <p>
-                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i> 
-                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
-                </p> 
-            </td>
-        </tr>
-        </table>
+                        <div>
+                            <h3 style="color: #666; margin-bottom: 10px;">{{app.name}}</h3>
+                            <h6>
+                                <a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a>
+                                <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                            </h6>
+                            <p class="text-muted">{{app.desc}}</p>
+                        </div>
+                        <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                    </b-col>
+                    <b-col cols="3">
+                        <b-button-group style="float: right;">
+                            <b-button variant="danger" @click="remove()" v-if="app._canedit"><icon name="trash"/></b-button>
+                            <b-button variant="default" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit"><icon name="pencil"/> Edit</b-button>
+                            <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
+                        </b-button-group>
+                    </b-col>
+                </b-row>
+
+                <b-tabs class="brainlife-tab" v-model="tab_index">
+                    <b-tab title="Detail"/>
+                    <b-tab title="README"/>
+                    <b-tab title="Publication"/>
+                    <b-tab title="Status"/>
+                </b-tabs>
+            </b-container>
+        </div><!--header-->
+
+        <b-container>
+            <b-row>
+                <b-col>
+                    <el-alert v-if="app.removed" title="This app has been removed" type="warning" show-icon :closable="false"></el-alert>
+                    <!-- detail -->
+                    <div v-if="tab_index == 0">
+                        <b-row v-if="config.user">
+                            <b-col cols="3">
+                                <b class="text-muted">Administrators</b>
+                            </b-col>
+                            <b-col>
+                                <ul style="list-style: none; padding: 0px;">
+                                    <li v-for="c in app.admins" key="c._id">
+                                        <contact :id="c"></contact>
+                                    </li>
+                                </ul>
+                            </b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Contributors</b>
+                            </b-col>
+                            <b-col>
+                                <ul style="list-style: none; padding: 0px;">
+                                    <li v-for="dev in app.contributors" key="c._id">
+                                        <contact :fullname="dev.name" :email="dev.email"></contact>
+                                    </li>
+                                </ul>
+                            </b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Input Datatypes</b>
+                            </b-col>
+                            <b-col>
+                                <div class="item" v-for="input in app.inputs">
+                                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
+                                </div>
+                                <br>
+                                <p class="text-muted">This app uses above input datasets</p>
+                            </b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Output Datatypes</b>
+                            </b-col>
+                            <b-col>
+                                <div class="item" v-for="output in app.outputs">
+                                    <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags">
+                                        <div v-if="output.files">
+                                            <small>Output mapping</small>
+                                            <pre v-highlightjs><code class="json hljs">{{output.files}}</code></pre>
+                                        </div>
+                                    </datatype>
+                                </div>
+                                <br>
+                                <p class="text-muted">This app produces above output datasets</p>
+                            </b-col>
+                        </b-row>
+                        <b-row v-if="app.projects && app.projects.length > 0">
+                            <b-col cols="3">
+                                <b class="text-muted">Projects</b>
+                            </b-col>
+                            <b-col>
+                                <p class="alert alert-danger"><icon name="lock" /> Only the members of following project(s) can see / submit this app.</p>
+                                <b-card no-body>
+                                    <b-list-group flush>
+                                        <b-list-group-item v-for="project in app.projects" :key="project._id">
+                                            <project :project="project" :key="project._id"/>
+                                        </b-list-group-item>
+                                    </b-list-group>
+                                </b-card>
+                                <br>
+                            </b-col>
+                        </b-row>
+                        <!--
+                        <b-row v-if="app.retry">
+                            <b-col cols="3">
+                                <b>Retry</b>
+                            </b-col>
+                            <b-col>
+                                <p>If this app fails, it will automatically retry up to <b>{{app.retry}}</b> times</p>
+                            </b-col>
+                        </b-row>
+                        -->
+                        <b-row v-if="resources">
+                            <b-col cols="3">
+                                <b class="text-muted">Computing Resources</b>
+                            </b-col>
+                            <b-col>
+                                <b-table style="font-size: 90%;" :items="resource_table" :fields="['resource','status','score', 'detail']">
+                                    <template slot="resource" slot-scope="data">
+                                        <b>{{data.value}}</b>
+                                    </template>
+                                    <template slot="status" slot-scope="data">
+                                        <statustag :status="data.value"/>
+                                    </template>
+                                    <template slot="detail" slot-scope="data">
+                                        <p class="text-muted">{{data.value}}</p>
+                                    </template>
+                                </b-table>
+                                <b-alert show variant="danger" v-if="!preferred_resource">
+                                    This app currently can not run on any resource that you have access to.
+                                </b-alert>
+                                <p class="text-muted" v-else>This app could run on above resource(s)</p>
+                            </b-col>
+                        </b-row>
+
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">UI Configuration</b>
+                            </b-col>
+                            <b-col>
+                                <div class="margin: 20px; width: 80%; overflow: auto;">
+                                    <!-- this breaks the column layout if config has long strings
+                                    <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
+                                    -->
+                                    {{app.config}}
+                                </div>
+                            </b-col>
+                        </b-row>
+
+                        <!--
+                        <b-row>
+                            <b-col cols="3">
+                                <b>Citation</b>
+                            </b-col>
+                            <b-col>
+                                <i>Hayashi, S. (2017). Brain-Life {{selfurl}}</i>
+                                
+                                <pre>
+    @Misc{ bl.app.{{app._id}},
+    author =   {Hayashi, S.},
+    title =    { {{app.name}} },
+    howpublished = {\url{http://github.com/{{app.github}} } },
+    year = {2017}
+    }
+                                </pre> 
+                            </b-col>
+                        </b-row>
+                        -->
+
+                        <!--
+                        <tr>
+                            <th>Test Status</th>
+                            <td><el-tag>Unknown</el-tag></td>
+                        </tr>
+                        -->
+                    </div>
+                    <div v-if="tab_index == 1">
+                        <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
+                    </div>
+                    <div v-if="tab_index == 2">
+                        <p class="text-muted">No publication registered</p>
+                    </div>
+                    <div v-if="tab_index == 3">
+                        <p class="text-muted">No test status available yet</p>
+                    </div>
+                </b-col>
+
+                <b-col cols="3">
+                    <b-card v-if="service_stats">
+                        <center>
+                            <p class="text-muted">Total Runs</p>
+                            <h5>{{service_stats.tasks}}</h5>
+                            <br>
+
+                            <p class="text-muted">Users Used By</p>
+                            <h5>{{service_stats.users}}</h5>
+                            <br>
+
+                            <p class="text-muted">Success Rate</p>
+                            <h5>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}%</h5>
+                        </center>
+                    </b-card>
+                    <br>
+
+                    <b-card>
+                        <center>
+                            <span class="text-muted">Average User Rating</span>
+                            <br>
+                            <br>
+                            <el-rate v-model="app._rate" @change="ratechange()"></el-rate>
+                        </center>
+                    </b-card>
+                    <br>
+                </b-col>
+
+            </b-row>
+        </b-container>
 
         <br>
-        <el-card v-if="config.debug">
+        <b-card v-if="config.debug">
             <div slot="header">Debug</div>
             <h3>App</h3>
             <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
             <h3>Preferred Resource</h3>
             <pre v-highlightjs="JSON.stringify(preferred_resource, null, 4)"><code class="json hljs"></code></pre>
-        </el-card>
+        </b-card>
     </div><!--page-content-->
-</div><!--root-->
+</div>
 </template>
 
 <script>
@@ -163,12 +252,13 @@ import tags from '@/components/tags'
 import datatype from '@/components/datatype'
 import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
+import statustag from '@/components/statustag'
 
 export default {
     components: { 
         sidemenu, pageheader, contact, 
         project, tags, datatype, appavatar,
-        VueMarkdown, 
+        VueMarkdown, statustag,
      },
 
     data () {
@@ -181,8 +271,33 @@ export default {
 
             selfurl: document.location.href,
 
+            tab_index: 0,
+
             config: Vue.config,
         }
+    },
+
+    computed: {
+        resource_table: function() {
+            let items = [];
+            if(this.resources) {
+                this.resources.forEach(resource=>{
+                    var item = {
+                        resource: resource.name,
+                        status: resource.status,
+                        score: resource.score,
+                        detail: resource.detail,
+                    };
+
+                    //b-table shows _rowVariant as column..
+                    if(this.preferred_resource && resource.id == this.preferred_resource._id) {
+                        item._rowVariant = 'success';
+                    }
+                    items.push(item);
+                });
+            }
+            return items;
+        },
     },
 
     mounted: function() {
@@ -193,11 +308,11 @@ export default {
         //load app
         this.$http.get('app', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'inputs.datatype outputs.datatype project',
+            populate: 'inputs.datatype outputs.datatype projects',
         }})
         .then(res=>{
             this.app = res.body.apps[0];
-            if(this.app.github) this.find_resources(this.app.github);
+            if(this.config.user) this.find_resources(this.app.github);
             if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
 
             //then load task stats
@@ -240,13 +355,13 @@ export default {
                 service
             }})
             .then(res => {
-                if(res.body.nomatch)  return;
-                this.preferred_resource = res.body.resource;
+                if(res.body.resource) this.preferred_resource = res.body.resource;
                 this.resources = res.body.considered.sort((a, b) => {
                     if (a.score < b.score) return 1;
                     if (a.score > b.score) return -1;
                     return 0;
                 });
+                //console.dir(this.resources);
             })
             .catch(err => {
                 console.error(err);
@@ -254,10 +369,12 @@ export default {
         },
 
         remove: function() {
-            this.$http.delete('app/'+this.app._id)
-            .then(res=>{
-                this.go('/apps');        
-            });
+            if(confirm("Do you really want to remove this app ?")) {
+                this.$http.delete('app/'+this.app._id)
+                .then(res=>{
+                    this.go('/apps');        
+                });
+            }
         },
 
         ratechange: function() {
@@ -275,36 +392,18 @@ export default {
 </script>
 
 <style scoped>
-.ui.text.menu {
-margin: 0;
-}
 .header {
-background: #666;
-padding: 20px;
-margin-top: 50px;
-height: 80px;
-top: 0px;
-position: fixed;
-right: 0px;
-left: 90px;
-color: #666;
-z-index: 1;
-border-bottom: 1px solid #666;
-}
-.header h2 {
-color: #eee;
-}
-.header-bottom {
-height: 50px;
 background-color: white;
-position: fixed;
-top: 140px;
-right: 0px;
-left: 90px;
-border-bottom: 1px solid #ddd;
+margin-bottom: 30px;
+padding: 30px 0px 0px 0px;
+border-bottom: 1px solid #ccc;
 }
-.appdesc {
-margin: 20px 30px 30px 138px;
-color: gray;
+.topic {
+padding: 8px; 
+background-color: #eee;
+text-transform: uppercase;
+color: #999;
+border-radius: 0px;
+margin-right: 5px;
 }
 </style>

@@ -21,9 +21,13 @@
     <el-tag type="danger" v-else-if="status == 'failed'">
         <statusicon :status="status" :scale="scale"></statusicon> Failed
     </el-tag>
+    <el-tag type="success" v-else-if="status == 'ok'">
+        <statusicon :status="status" :scale="scale"></statusicon> OK
+    </el-tag>
     <el-tag type="warning" v-else>
         <statusicon :status="status" :scale="scale"></statusicon> Unknown
     </el-tag>
+
 </span>
 </template>
 

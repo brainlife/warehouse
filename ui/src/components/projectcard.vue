@@ -28,9 +28,11 @@ export default {
         click: function() {
             this.$router.push('/project/'+this.project._id);
         },
+        /*
         edit: function() {
             this.$router.push('/project/'+this.project._id+'/edit');
         },
+        */
     }
 }
 </script>
@@ -63,6 +65,7 @@ color: #333;
 line-height: 140%;
 text-overflow:ellipsis;
 overflow: hidden;
+margin: 10px;
 }
 .project-removed {
 opacity: 0.5;

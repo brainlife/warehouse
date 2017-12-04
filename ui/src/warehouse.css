@@ -1,14 +1,7 @@
 
-body, textarea, input, table {
-font-family: 'Roboto', sans-serif;
-font-size: 14px;
-}
-
-body {
-background-color: #f0f0f0;
-color: #444;
+/*needed to keep iframe 100% with for view*/
+html,body {
 height:100%;
-overflow: hidden;
 }
 
 .margin20 {
@@ -40,40 +33,6 @@ cursor: pointer;
 code.hljs {
 font-size: 80%;
 }
-/*
-h1,h2,h3,h4,h5,h6 {
-line-height: 100%;
-margin-top: 0px;
-}
-*/
-/*
-h1 {
-font-size: 26px;
-font-weight: bold;
-margin-bottom: 13px;
-}
-h2 {
-font-size: 22px;
-font-weight: bold;
-margin-bottom: 11px;
-}
-h3 {
-font-size: 18px;
-font-weight: bold;
-margin-bottom: 9px;
-}
-h4 {
-font-size: 15px;
-font-weight: bold;
-margin-bottom: 7px;
-}
-h5 {
-font-size: 13px;
-font-weight: bold;
-margin-bottom: 6px;
-}
-*/
-
 table.info {
 width: 100%;
 border-spacing: 1px;
@@ -126,24 +85,32 @@ box-shadow: none;
 cursor: pointer;
 }
 
-blockquote.readme {
-background-color: #f6f6f6; 
-padding: 10px; 
-margin-top: 10px;
+
+/*------------------------------------------------------------*/
+/* update bootstrap default tab */
+
+.brainlife-tab .nav-tabs {
+padding-top: 20px;
+border: none;
 }
-.readme h1 {
-font-size: 30px;
+
+.brainlife-tab .nav-item a {
+color: inherit;
+opacity: 0.5;
+border: none;
+transition: color 0.5s, opacity 0.5s;
 }
-.readme h2 {
-font-size: 26px;
+.brainlife-tab .nav-item a:hover {
+color: #007bff;
+opacity: 1;
 }
-.readme h3 {
-font-size: 22px;
+.brainlife-tab .nav-item a[aria-selected="true"] {
+color: #2693ff;
+opacity: 1;
+/*border-bottom: 3px solid #007bff;*/
+border-bottom: 3px solid #2693ff;
 }
-.readme h4 {
-font-size: 18px;
-}
-.readme h5 {
-font-size: 16px;
-}
+
+/*------------------------------------------------------------*/
+
 

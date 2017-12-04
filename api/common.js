@@ -1,4 +1,3 @@
-
 const request = require('request');
 const winston = require('winston');
 const tmp = require('tmp');
@@ -15,6 +14,7 @@ const prov = require('./prov');
 
 //TODO - should be called something like "get_my_projects"?
 exports.getprojects = function(user, cb) {
+    if(!user) return cb(null, [], []);
     //firt, find all public projects
     let project_query = {access: "public"};
     //if user is logged in, look for private ones also
@@ -46,7 +46,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
     //start by pulling datatype detail
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
         if(err) return cb(err);
-        if(!datatype) return cb("couoldn't find specified datatype:"+dataset.datatype);
+        if(!datatype) return cb("couldn't find specified datatype:"+dataset.datatype);
 
         //create temp directory to download things
         tmp.dir({unsafeCleanup: true}, (err, tmpdir, cleantmp)=>{
@@ -59,7 +59,13 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
             files.forEach(file=>{
                 dirs.forEach(dir=>{
                     if(dir.dirname == ".") file.skip = true; //TODO a bit brittle
-                    if(file.filename.startsWith(dir.dirname)) file.skip = true;
+
+                    //skip files that are contained inside another directory
+                    //for example..
+                    //(dirname)  dtiinit
+                    //(filename) dtiinit/something.mat
+                    //since something.mat is under dtiinit/, I can skip it
+                    if(file.filename.startsWith(dir.dirname+"/")) file.skip = true;
                 });
             });
 
@@ -79,9 +85,15 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     logger.debug("downloading from", srcpath, "and write to", fullpath);
                     writestream = fs.createWriteStream(fullpath);
                     writestream.on('finish', ()=>{
-                        if(!input_ok) return next_file("input failed for download");
-                        logger.debug("download complete");
-                        next_file()
+                        if(input_ok) {
+                            logger.debug("download complete");
+                            next_file()
+                        } else {
+                            if(file.required) return next_file("required input file failed for download");
+                            
+                            //failed but not required.. remove the file and move on
+                            fs.unlink(fullpath, next_file);            
+                        }
                     });
                 }
                 if(file.dirname) {
@@ -94,9 +106,15 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     writestream = untar.stdin;
                     untar.on('close', code=>{
                         if(code) return next_file("untar files with code:"+code);
-                        if(!input_ok) return next_file("input failed for download/untar");
-                        logger.debug("download/tar complete");
-                        next_file();
+                        if(input_ok) {
+                            logger.debug("download/tar complete");
+                            next_file();
+                        } else {
+                            if(file.required) return next_file("required input directory failed to download/untar");
+                            
+                            //failed but not required.. remove the directory
+                            fs.rmdir(fullpath, next_file);
+                        }
                     });
                 }
 
@@ -130,7 +148,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 var system = config.storage_systems[storage];
                 logger.debug("obtaining upload stream for ", storage);
                 system.upload(dataset, (err, writestream)=>{
-                    if(err) return next(err);
+                    if(err) return cb(err);
                     var tar = child_process.spawn("tar", ["hc", "."], {cwd: tmpdir});
                     tar.on('close', code=>{
                         cleantmp();
@@ -157,4 +175,81 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
         });
     });
 }
+
+exports.load_github_detail = function(service_name, cb) {
+    if(!config.github) return cb("no github config");
+
+    let auth = "?client_id="+config.github.client_id + "&client_secret="+config.github.client_secret;
+
+    //first load main repo info
+    logger.debug("loading repo detail");
+    logger.debug("https://api.github.com/repos/"+service_name+auth);
+    request("https://api.github.com/repos/"+service_name+auth, { json: true, headers: {
+        'User-Agent': 'brain-life/warehouse',
+        
+        //needed to get topic (which is currently in preview mode..)
+        //https://developer.github.com/v3/repos/#list-all-topics-for-a-repository
+        'Accept': "application/vnd.github.mercy-preview+json", 
+    }}, function(err, _res, git) {
+        if(err) return cb(err);
+        if(_res.statusCode != 200) {
+            logger.error(_res.body);
+            return cb("failed to query requested repo. code:"+_res.statusCode);
+        }
+
+        logger.debug("loading contributors");
+        request("https://api.github.com/repos/"+service_name+"/contributors"+auth, { json: true, headers: {
+            'User-Agent': 'brain-life/warehouse',
+        }}, function(err, _res, cons) {
+            if(err) return cb(err);
+            if(_res.statusCode != 200) {
+                logger.error(_res.body);
+                return cb("failed to query requested repo. code:"+_res.statusCode);
+            }
+
+            logger.debug("loading contributor details")
+            let con_details = [];
+            async.eachSeries(cons, (con, next_con)=>{
+                request(con.url+auth, { json: true, headers: {'User-Agent': 'brain-life/warehouse'} }, function(err, _res, detail) {
+                    if(err) return next_con(err);
+                    if(_res.statusCode != 200) {
+                        logger.error(_res.body);
+                        return next_con("failed to load user detail:"+_res.statusCode);
+                    }
+                    //console.dir(detail);
+                    con_details.push(detail);
+                    next_con();
+                });
+            }, err=>{
+                //console.dir(con_details);
+                cb(null, git, con_details);
+            });
+            //load collaborators (developers)
+            //cb(null, git, cons);
+        });
+                    
+    });
+}
+
+let cached_contacts = {};
+function cache_contact() {
+    logger.info("caching auth profiles");
+    request({
+        url: config.auth.api+"/profile", json: true,
+        headers: { authorization: "Bearer "+config.auth.jwt },
+    }, (err, res, body)=>{
+        if(err) return next(err);
+        if(res.statusCode != 200) return cb("couldn't obtain user jwt code:"+res.statusCode);
+        body.profiles.forEach(profile=>{
+            cached_contacts[profile.id.toString()] = profile;
+        });
+    });
+}
+cache_contact();
+setInterval(cache_contact, 1000*60*30); //cache every 30 minutes
+
+exports.deref_contact = function(id) {
+    return cached_contacts[id];
+}
+
 

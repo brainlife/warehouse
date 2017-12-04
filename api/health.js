@@ -38,9 +38,8 @@ exports.health_check = function() {
 				report.storages[system_id] = "ok";
 			}
             next();
-        }, 5000)); //5 seconds should be enough.. right?
+        }, system.timeout||8000)); //5 seconds is often not enough... let's use 8. also system can have timeout override to set it to even longer value
     }, err=>{
-		//logger.debug("reporting to redis");
 		redis_client.set("health.warehouse.api."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
     });
 }

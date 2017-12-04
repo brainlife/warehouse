@@ -1,63 +1,27 @@
 <template>
-    <b-modal title="Select Datasets" ref="modal" @ok="submit" @hide="hide">
-        <!--
-        <el-tabs v-model="mode">
-              
-            <el-tab-pane label="Selected Datasets" name="selected">
-                <p class="text-muted" v-if="Object.keys(selected).length == 0">Please go to <a href="#/datasets">Datasets</a> page to select datasets.</p>
-                <p class="text-muted" v-else>We will stage following datasets you have selected.</p>
-                <ul style="padding-left: 20px; max-height: 200px; overflow: auto; font-size: 90%;">
-                    <li v-for="(select, did) in selected" :key="did" style="margin-bottom: 2px;">
-                        <b>{{select.meta.subject}}</b>
-                        <datatypetag :datatype="datatypes[select.datatype]" :tags="select.datatype_tags" v-if="datatypes"></datatypetag>
-                        <small v-for="(tag,idx) in select.tags" :key="idx">| {{tag}} </small>
-                    </li>
-                </ul>
-            </el-tab-pane>
-
-            <el-tab-pane label="From Warehouse" name="warehouse">
-                <el-form label-width="120px">
-                <el-form-item label="Project">
-                    <projectselecter v-model="project"></projectselecter>
-                </el-form-item>
-                <div style="background-color: #eee; padding: 20px 20px 1px 20px; margin-bottom: 10px;">
-                    <h4>Filters</h4>
-                    <el-form-item label="Subject" v-if="subjects">
-                        <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
-                    </el-form-item>
-                    <el-form-item label="Datatype" v-if="datatypes_s2">
-                        <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
-                    </el-form-item>
-                </div>
-                <el-form-item label="Datasets">
-                    <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
-                </el-form-item>
-                </el-form>
-            </el-tab-pane>
-        </el-tabs>
-        -->
-        <el-form label-width="120px">
-        <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
-            <el-form-item label="Project">
-                <projectselecter v-model="project"></projectselecter>
-            </el-form-item>
-        </div>
-        <div style="background-color: #eee; padding: 10px 10px 1px 10px; margin-bottom: 10px;">
-            <b>Filters</b>
-            <el-form-item label="Subject" v-if="subjects">
-                <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
-            </el-form-item>
-            <el-form-item label="Datatype" v-if="datatypes_s2">
-                <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
-            </el-form-item>
-        </div>
-        <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
-            <el-form-item label="Datasets">
-                <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
-            </el-form-item>
-        </div>
-        </el-form>
-    </b-modal>
+<b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit">
+    <el-form label-width="120px">
+    <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
+        <el-form-item label="Project">
+            <projectselecter v-model="project"></projectselecter>
+        </el-form-item>
+    </div>
+    <div style="background-color: #eee; padding: 10px 10px 1px 10px; margin-bottom: 10px;">
+        <b>Filters</b>
+        <el-form-item label="Subject" v-if="subjects">
+            <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
+        </el-form-item>
+        <el-form-item label="Datatype" v-if="datatypes_s2">
+            <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
+        </el-form-item>
+    </div>
+    <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
+        <el-form-item label="Datasets">
+            <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
+        </el-form-item>
+    </div>
+    </el-form>
+</b-modal>
 </template>
 
 <script>
@@ -100,9 +64,6 @@ export default {
 
     methods: {
         close: function() {
-            //this.$emit('update:visible', false);
-            //this.$refs.modal.hide();
-
             console.log("resetting datasetselecter");
             this.selected_subjects = [];
             this.selected_datatypes = [];
@@ -261,6 +222,15 @@ export default {
          }
     },
 
+    mounted() {
+        //I should display this at root
+        document.body.appendChild(this.$refs.modal.$el);
+    },
+    destoyed() {
+        //TODO - not sure if this prevents the memory leak? Should I move it back to this component?
+        //document.body.remove(this.$refs.modal.$el);
+    },
+
     created: function() {
         //load datatypes
         this.$http.get('datatype', {params: {
@@ -278,3 +248,4 @@ export default {
     }
 }
 </script>
+

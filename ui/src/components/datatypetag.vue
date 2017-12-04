@@ -1,6 +1,10 @@
 <template>
-<div class="dt">
-    <div class="dot" :style="{backgroundColor: color}">{{name}}</div><div class="tags" v-for="tag in tags" :key="tag">{{tag}}</div>
+<div class="dt" :title="datatype.desc">
+    <div class="dot" :style="{backgroundColor: color}">{{name}}</div
+    ><div class="tags" v-for="tag in tags" :key="tag">
+        <span v-if="tag[0] == '!'"><small class="text-danger">!NOT</small> {{tag.substring(1)}}</span>
+        <span v-else>{{tag}}</span>
+    </div>
 </div>
 </template>
 

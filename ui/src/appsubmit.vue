@@ -1,23 +1,20 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/apps"></sidemenu>
-    <div class="page-content">
-        <div class="header">
-            <h2>Submit Application</h2>
+    <div class="header" v-if="app">
+        <appavatar :app="app" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></appavatar>
+        <h2>Submit - {{app.name}}</h2>
+    </div>
+    <div class="page-content" v-if="app" style="margin-top: 80px;">
+        <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
+            <br>
+            <p style="line-height: 150%;">{{app.desc}}</p>
         </div>
         <div class="content" v-if="app && projects">
-            <!--<h4 style="margin-left: 150px;">Inputs</h4>-->
-            <b-row style="margin-bottom: 10px;">
-                <b-col>Application to Submit</b-col>
-                <b-col cols="9"><app :appid="app._id"/></b-col>
-            </b-row>
-            
-            <!--<h4 v-if="app.inputs.length > 0">Inputs</h4>-->
             <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
                 <b-col>
                     <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
-                    <!--{{input.datatype.name+' '+input.datatype_tags}}-->
                 </b-col>
                 <b-col cols="4">
                     <projectselecter 
@@ -199,20 +196,6 @@ export default {
             });
         },
 
-        /*        
-        findbest: function(service) {
-          //find resource where we can run this app
-          this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
-              service: service,
-          }})
-          .then(res=>{
-            this.resource = res.body;
-          }, res=>{
-            console.error(res);
-          })
-        },
-        */
-        
         grab_items: function(input, params, cb) {
             // essentially the same code from datasetselecter.vue
             if (!params.page) params.page = 1;
@@ -396,7 +379,7 @@ export default {
                 console.log("submitting download task", download, _outputs);
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
-                    name: "Staging Input Dataset",
+                    name: "Staged Dataset",
                     service: "soichih/sca-product-raw",
                     config: { download, _outputs, _tid: 0 },
                 })
@@ -439,20 +422,14 @@ export default {
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
                     name: this.app.name,
-                    //desc: this.form.desc, 
                     service: this.app.github,
+                    service_branch: this.app.github_branch,
                     config,
                     deps: [ download_task._id ],
                     retry: this.app.retry,
                 })
             }).then(res=>{
                 console.log("submitted app task", res.body.task);
-/*
-                //then request for notifications
-                return this.request_notifications(instance, inst_config.output_task_id);
-            }).then(res=>{
-*/
-                //all done
                 this.$router.push("/processes/"+instance._id);
             }).catch(err=>{
                 console.error(err);
@@ -460,7 +437,7 @@ export default {
         },
 
         request_notifications: function(instance, task_id) {
-            var url = document.location.origin+document.location.pathname+"#/process/"+instance._id;
+            var url = document.location.origin+document.location.pathname+"/process/"+instance._id;
 
             //for success
             return this.$http.post(Vue.config.event_api+"/notification", {
@@ -495,11 +472,28 @@ background-color: white;
 padding: 20px;
 }
 .header {
-background-color: #666;
+background: #666;
 padding: 20px;
-color: white;
+margin-top: 50px;
+height: 80px;
+top: 0px;
+position: fixed;
+right: 0px;
+left: 90px;
+color: #666;
+z-index: 1;
+border-bottom: 1px solid #666;
 }
-.header h1 {
-margin: 0px;
+.header h2 {
+color: #eee;
+}
+.header-bottom {
+height: 50px;
+background-color: white;
+position: fixed;
+top: 140px;
+right: 0px;
+left: 90px;
+border-bottom: 1px solid #ddd;
 }
 </style>

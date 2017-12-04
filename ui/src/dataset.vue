@@ -1,13 +1,13 @@
 <template>
 <div v-if="dataset">
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/datasets"></sidemenu>
     <div class="header" vi-if="dataset">
-        <viewerselect @select="view" :datatype="dataset.datatype.name" style="float: right; margin-left: 10px;"></viewerselect>
         <b-button-group style="float: right;">
-            <b-button @click="remove()" v-if="dataset._canedit && !dataset.removed" icon="delete">Remove</b-button>
-            <b-button variant="primary" @click="download()" v-if="dataset.storage" icon="document">Download</b-button>
+            <b-button variant="default" v-b-modal.viewSelecter @click="openviewsel(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
+            <b-button @click="download" v-if="dataset.storage" icon="document"><icon name="download"/> Download</b-button>
         </b-button-group>
+        <b-button style="float: right; margin-right: 15px;" variant="danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
         <h2>
             <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
                 <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
@@ -40,8 +40,25 @@
             </td>
         </tr>
         <tr>
-            <th width="180px">Create Date</th>
+            <th>Create Date</th>
             <td>{{new Date(dataset.create_date).toLocaleString()}}</td>
+        </tr>
+        <!--
+        <tr>
+            <th>Backup Date</th>
+            <td>
+                <span v-if="dataset.backup_date">{{new Date(dataset.backup_date).toLocaleString()}}</span>
+                <span v-else>This dataset has not yet backed up to a permanent storage</span>
+            </td>
+        </tr>
+        -->
+        <tr v-if="dataset.size">
+            <th>Download Size</th>
+            <td>{{dataset.size | filesize}} </td>
+        </tr>        
+        <tr>
+            <th>Download Count</th>
+            <td>{{dataset.download_count}}</td>
         </tr>
         <tr>
             <th>Storage</th>
@@ -55,12 +72,13 @@
                 <span v-if="dataset.status == 'failed'" style="color: red;">
                     <icon name="exclamation-triangle"/> Failed to store on warehouse
                 </span> 
-                <span v-if="dataset.status == 'archived'">
-                    This dataset is currently stored in <b>{{dataset.storage}}</b> and archived in the permanent tape backup.
-                </span> 
                 <span v-if="!dataset.status">
                     Status is unknown
                 </span> 
+
+                <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
+                    <icon name="bookmark"/>
+                </span>
             </td>
         </tr>
         <tr>
@@ -167,7 +185,7 @@
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
                 <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
                     <div style="margin-right: 10px">
-                        <app :app="app" :dataset="dataset" :compact="true" :descheight="65"></app>
+                        <app :app="app" :dataset="dataset" :compact="true" descheight="65px"></app>
                     </div>
                 </div>
             </td>
@@ -180,6 +198,7 @@
                 </p> 
             </td>
         </tr>
+        <!--
         <tr>
             <th>Citation</th>
             <td>
@@ -187,6 +206,14 @@
                     <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i>
                     <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
                 </p> 
+            </td>
+        </tr>
+        -->
+        <tr v-if="dataset.publications && dataset.publications.length">
+            <th>Publications</th>
+            <td>
+                <p class="text-muted">This dataset is published through following publications</p>
+                <pubcard v-for="pub in dataset.publications" :key="pub._id" :pub="pub" compact="true" />
             </td>
         </tr>
         </table>
@@ -209,6 +236,7 @@
             </b-collapse>
         </div>
     </div><!--page-content-->
+    <viewselecter @select="view" :datatype_name="vsel.datatype_name"></viewselecter>
 </div><!--root-->
 </template>
 
@@ -224,10 +252,11 @@ import datatype from '@/components/datatype'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
-import viewerselect from '@/components/viewerselect'
+import viewselecter from '@/components/viewselecter'
 import datatypetag from '@/components/datatypetag'
 import select2 from '@/components/select2'
 import task from '@/components/task'
+import pubcard from '@/components/pubcard'
 
 const lib = require('./lib');
 
@@ -236,7 +265,7 @@ export default {
         sidemenu, contact, project, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
-        viewerselect, datatypetag, select2, task,
+        viewselecter, datatypetag, select2, task, pubcard
      },
     data () {
         return {
@@ -245,6 +274,10 @@ export default {
             apps: null,
             prov: null, 
             derivatives: {},
+
+            vsel: {
+                datatype_name: null,
+            },
 
             selfurl: document.location.href,
             
@@ -264,17 +297,6 @@ export default {
         '$route' (to, from) {
             this.load(this.$route.params.id);
         },
-        /*
-        comma_separated_tags: function(tags) {
-            // strip trailing whitespace after start/commas
-            tags = tags.split(",").map(s => s.trim());
-            
-            if (this.dataset) {
-                if (tags.length == 1 && tags[0] == "") this.dataset.tags = [];
-                else this.dataset.tags = tags;
-            }
-        }
-        */
     },
 
     mounted: function() {
@@ -301,10 +323,12 @@ export default {
             console.log(url);
         },
         remove: function() {
-            this.$http.delete('dataset/'+this.dataset._id)
-            .then(res=>{
-                this.go('/datasets');        
-            });
+            if(confirm("Do you really want to remove this dataset ?")) {
+                this.$http.delete('dataset/'+this.dataset._id)
+                .then(res=>{
+                    this.go('/datasets');        
+                });
+            }
         },
 
         load_status: function(id) {
@@ -326,7 +350,7 @@ export default {
         load: function(id) {
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                populate: "project datatype prov.app prov.deps.dataset",
+                populate: "project datatype prov.app prov.deps.dataset publications",
             }})
             .then(res=>{
                 if(res.body.count == 0) {
@@ -405,13 +429,18 @@ export default {
                 }
             }).then(res=>res.body);
         },
+
+        openviewsel: function(datatype_name) {
+            //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
+            this.vsel.datatype_name = datatype_name;
+        },
         view: function(view) {
             function openview(task) {
-                var _view = view.split('/').join('.'); //replace all / with .
-                console.log("instatnce", task.instance_id);
-                console.log("task", task._id);
-                console.log("view", _view);
-                window.open("#/view/"+task.instance_id+"/"+task._id+"/"+_view+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+                if(view.docker) {
+                    window.open("/warehouse/novnc/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+                } else {
+                    window.open("/warehouse/view/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
+                }
             }
 
             //first, query for the viewing task to see if it already exist

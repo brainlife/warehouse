@@ -1,0 +1,38 @@
+main:
+  - title: "API Doc"
+    url: /apidoc/
+  - title: "Github"
+    url: https://github.com/brain-life/warehouse
+
+docs:
+  - title: Introduction
+    children:
+      - title: "About Warehouse"
+        url: /
+
+  - title: User Guide
+    children:
+      - title: "User Guide"
+        url: /user
+
+  - title: Developer Guide
+    children:
+      - title: "What is app?"
+        url: /whatisapp
+      - title: "HelloWorld"
+        url: /helloworld
+      - title: "Registering App"
+        url: /registerapp
+      - title: "Customizing Lifecycle Hooks"
+        url: /customhooks
+
+  - title: Resource Adminstration
+    children:
+      - title: "Registering Resource"
+        url: /resource
+
+  - title: Misc.
+    children:
+      - title: "Contact"
+        url: /contact
+

@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('express-jwt');
 const winston = require('winston');
+const request = require('request');
 
 const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
@@ -44,6 +45,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     }
 
     //TODO I should only allow querying for projects that user has access?
+    //right now, user can query for all project..
+
     db.Projects.find(find)
     .select(select)
     .limit(req.query.limit || 0)
@@ -83,20 +86,40 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @apiSuccess {Object}         Project record registered
  */
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
+
+    delete req.body._id; //shouldn't be set
+
     req.body.user_id = req.user.sub;//override
-    var project = new db.Projects(req.body);
-    project.save(function(err) {
-        if (err) return next(err); 
-        project = JSON.parse(JSON.stringify(project));
-        project._canedit = canedit(req.user, project);
-        res.json(project);
-    });
+
+    //TODO - should I validate admins/members? how?
+
+	//create a new group
+	request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,
+		body: {
+			name: new Date().getTime(), //TODO - better name?
+            desc: req.body.desc,
+			admins: req.body.admins,
+			members: req.body.members,
+		}
+	}, (err, _res, group)=>{
+		if(err) return next(err);
+
+        //now update the warehouse project
+		var project = new db.Projects(req.body);
+		project.group_id = group.group.id;
+		project.save(err=>{
+			if (err) return next(err); 
+			project = JSON.parse(JSON.stringify(project));
+			project._canedit = canedit(req.user, project);
+			res.json(project);
+		});
+	});
+
 });
 
 /**
  * @apiGroup Project
  * @api {put} /project/:id
- *                              Put Project
  * @apiDescription              Update project
  *
  * @apiParam {String} [access]  "public" or "private"
@@ -128,8 +151,35 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             project.save((err)=>{
                 if(err) return next(err);
                 project = JSON.parse(JSON.stringify(project));
-                project._canedit = canedit(req.user, project);
-                res.json(project);
+				project._canedit = canedit(req.user, project);
+
+                if(project.group_id) {
+                    //update group
+                    request.put({ url: config.auth.api+"/group/"+project.group_id, headers: { authorization: req.headers.authorization }, json: true,
+                        body: {
+                            //active: !req.body.removed, //I think I want group to be active even if project is removed
+                            desc: req.body.desc,
+                            admins: req.body.admins,
+                            members: req.body.members,
+                        }
+                    }, (err, _res, group)=>{
+                        if(err) return next(err);
+                        res.json(project);
+                    });
+                } else {
+                    //create group (for backward compatibility)
+                    request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,
+                        body: {
+                            name: new Date().getTime(), //TODO - better name?
+                            desc: req.body.desc,
+                            admins: req.body.admins,
+                            members: req.body.members,
+                        }
+                    }, (err, _res, group)=>{
+                        if(err) return next(err);
+                        res.json(project);
+                    });
+                }
             });
         } else return res.status(401).end("you are not administartor of this project");
     });
@@ -137,8 +187,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
 /**
  * @apiGroup Project
- * @api {delete} /project/:id
- *                              Hide project
+ * @api {delete} /project/:id   Hide project
  * @apiDescription              Logically remove project by setting "removed" to true
  *
  * @apiHeader {String} authorization 

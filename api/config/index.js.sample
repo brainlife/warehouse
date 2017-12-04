@@ -5,6 +5,9 @@ const child_process = require('child_process');
 
 const mkdirp = require('mkdirp'); //for dc2
 const pkgcloud = require('pkgcloud');
+const path = require('path');
+const archiver = require('archiver');
+const ssh2 = require('ssh2');
 
 exports.mongodb = "mongodb://localhost/warehouse";
 exports.neo4j = "http://neo4j:whatever@localhost:7474";
@@ -15,6 +18,11 @@ exports.redis = {
     //port: 6379,
 }
 
+exports.github = {
+    client_id: "6a581b698021c7f38c52",
+    client_secret: fs.readFileSync(__dirname+"/github.client.secret"),
+}
+
 exports.wf = {
     api: "https://dev1.soichi.us/api/wf",
 }
@@ -22,8 +30,7 @@ exports.wf = {
 exports.auth = {
     api: "https://dev1.soichi.us/api/auth",
     
-    //jwt used to request auth service to issue new user jwt to be used to submit tasks for the user
-    //~/git/auth/bin/auth.js issue --scopes '{ "sca": ["admin"] }' --sub 'warehouse'
+    //jwt used to request auth service to issue new user jwt to be used to submit tasks onbehalf of the user
     jwt: fs.readFileSync(__dirname+'/auth.jwt', 'ascii').trim(),
 }
 
@@ -73,6 +80,7 @@ exports.storage_default = function() {
 const js_config = require(__dirname+'/jetstream');
 const js_storage = pkgcloud.storage.createClient(js_config);
 exports.storage_systems.jetstream = {
+    need_backup: true,
     test: cb=>{
         js_storage.getContainers((err,containers)=>{
             if(err) return cb(err);
@@ -123,118 +131,167 @@ exports.storage_systems.jetstream = {
             filename = dataset.storage_config.filename;
         }
         var stream = js_storage.download({container: contname, remote: filename});
+        //console.log("created jetstream stream", stream);
         cb(null, stream, filename);
     },
 }
 
-//
-// dc2
-//
-const dc2_path = "/mnt/dc2/projects/brainlife/dev1-warehouse/datasets/";
+function connect_dc(cb) {
+    var conn = new ssh2.Client();
+    conn.on('ready', ()=>{
+        cb(null, conn); 
+    });
+    conn.on('error', err=>{
+        cb(err);
+    });
+    try {
+        console.log("connectint to dataxfer2");
+        conn.connect({
+            username: "hayashis",
+            host: "dataxfer2.bigred2.uits.iu.edu",
+            privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
+        });
+    } catch(err) {
+        cb(err);
+    }
+}
+
 exports.storage_systems.dc2 = {
-    //return archive_stream to pipe data to
+    need_backup: false,
     test: cb=>{
-        fs.stat(dc2_path, timeout((err,stats)=>{
+        //TODO - I should do more checking?
+        connect_dc((err, conn)=>{
             if(err) return cb(err);
-            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
+            conn.end();
             cb();
-        }, 2000, 'failed to stat '+dc2_path)); 
+        });
     }, 
     stat: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project.toString();
-        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
-        if(dataset.storage_config && dataset.storage_config.filename) filename = dataset.storage_config.filename;
-        fs.stat(dir+"/"+filename, cb);
+        //TODO..
+        cb();
     },
     upload: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project.toString();
-        var filename = dataset._id+".tar"; 
-        dataset.storage_config = { dir, filename }
-        mkdirp(dir, (err)=>{
-            if(err) return cb(err);
-            cb(null, fs.createWriteStream(dir+'/'+filename));
-        });
+        cb("no upload to dcwan/hcp");
     },
     download: (dataset, cb)=>{
-        var dir = dc2_path+dataset.project.toString();
-        var filename = dataset._id+".tar.gz"; //old ones were using .tar.gz
-        if(dataset.storage_config && dataset.storage_config.filename) filename = dataset.storage_config.filename;
-        var stream = fs.createReadStream(dir+"/"+filename);
-        cb(null, stream, filename);
+        connect_dc((err, conn)=>{
+            if(err) return cb(err);
+             conn.sftp((err, sftp)=>{
+                if (err) {
+                    conn.end();
+                    return cb(err);
+                }
+                var path = "/N/dc2/projects/brainlife/dev1-warehouse/datasets/"+dataset.project+"/"+dataset._id+".tar.gz";
+                var stream = sftp.createReadStream(path);
+                stream.on('error', err=>{
+                    console.error("stream failed but train has already left the station", err);
+                });
+                stream.on('close', code=>{
+                    conn.end();
+                });
+                cb(null, stream, dataset._id+".tar.gz");
+            });
+        });
     },
 } 
 
-//
-// dcwan/hcp (read only) 
-//
-const dcwan_hcp_path = "/mnt/dcwan/projects/brainlife/hcp/";
 exports.storage_systems["dcwan/hcp"] = {
     test: cb=>{
-        fs.stat(dcwan_hcp_path, timeout((err,stats)=>{
+        connect_dc((err, conn)=>{
             if(err) return cb(err);
-            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
+            conn.end();
             cb();
-        }, 2000, 'failed to stat '+dcwan_hcp_path)); 
+        });
     }, 
     stat: (dataset, cb)=>{
-        //can't obtain stats for .tar.gz because we are creating it on the fly
-        //but I can still check for the directory to exist and respond error
-        var dir = dcwan_hcp_path+dataset.storage_config.subdir;
-        fs.stat(dir, (err,stats)=>{
-            //stats is for the directory.. so I can't return it
-            cb(err, null); 
-        });
+        //TODO..
+        cb();
     },
     upload: (dataset, cb)=>{
-        //dataset.storage_config = { dir, filename }
         cb("no upload to dcwan/hcp");
     },
     download: (dataset, cb)=>{
-        var dir = dcwan_hcp_path+dataset.storage_config.subdir;
-        var child = child_process.spawn("tar", ["hc", "."], {cwd: dir});
-        cb(null, child.stdout, dataset._id+".tar");
-        child.stderr.on('data', function(data) {
-            console.error(data.toString());
-        });
-        child.on('error', (err)=>{
-            console.error(err);
+        connect_dc((err, conn)=>{
+            if(err) return cb(err);
+
+            if(dataset.storage_config.files) {
+                 conn.sftp((err, sftp)=>{
+                    if (err) {
+                        conn.end();
+                        return cb(err);
+                    }
+                    var archive = archiver('tar');
+                    dataset.storage_config.files.forEach(file=>{
+                        var stream = sftp.createReadStream(file.filepath);
+                        stream.on('error', err=>{
+                            console.error("stream failed but train has already left the station", err);
+                        });
+                        console.log("downloading", file.filepath, file.local);
+                        archive.append(stream, {name: file.local});
+                    });
+                    archive.on('finish', ()=>{
+                        conn.end();
+                    });
+                    archive.finalize();
+                    cb(null, archive, dataset._id+".tar");
+                });
+            }
+
+            if(dataset.storage_config.dirpath) {
+                var local = dataset.storage_config.local;
+                conn.exec("cd "+dataset.storage_config.dirpath+"/surf && tar hc * --transform 's|^|/"+local+"/|'", (err, stream)=>{
+                    if(err) return cb(err);
+                    stream.on('close', code=>{
+                        //console.log("done with tar stream - closing connection:",code)
+                        conn.end();
+                    });
+                    cb(null, stream, dataset._id+".tar");
+                });
+            }
         });
     },
 }
 
-const nki_goofy_path = "/mnt/fcp-indi";
-const nki_link_path = "/link/nki";
+const nki_config = require(__dirname+'/nki');
+const nki_storage = pkgcloud.storage.createClient(nki_config);
+//some BREATHHOLD files are inaccessible
+//https://www.nitrc.org/forum/forum.php?thread_id=8563&forum_id=1244
 exports.storage_systems["nki"] = {
     test: cb=>{
-        fs.stat(nki_goofy_path, timeout((err,stats)=>{
+        nki_storage.getContainer(nki_config.bucket, (err,container)=>{
             if(err) return cb(err);
-            if(!stats.isDirectory()) return cb(new Error("datasets directory is not a directory")); 
+            console.log("nki debug/test", container.files.length); //length should be 1000 (max)
             cb();
-        }, 2000, 'failed to stat nki goofy mount points')); 
+        }); 
     }, 
     stat: (dataset, cb)=>{
         //can't obtain stats for .tar.gz because we are creating it on the fly
-        //but I can still check for the directory to exist and respond error
-        var dir = nki_link_path+"/"+dataset.storage_config.subject+"/"+dataset.storage_config.session+"/"+dataset.storage_config.subdir;
-        fs.stat(dir, (err,stats)=>{
-            //.tar doesn't exist yet - so I can't stat
-            cb(err, null); 
-        });
+        cb(null);
     },
     upload: (dataset, cb)=>{
-        cb("no upload to dcwan/hcp");
+        cb("read only");
     },
     download: (dataset, cb)=>{
-        var dir = nki_link_path+"/"+dataset.storage_config.subject+"/"+dataset.storage_config.session+"/"+dataset.storage_config.subdir;
-        var child = child_process.spawn("tar", ["hc", "."], {cwd: dir});
-        cb(null, child.stdout, dataset._id+".tar");
-        child.stderr.on('data', function(data) {
-            console.error(data.toString());
+        var archive = archiver('tar');
+        dataset.storage_config.files.forEach(file=>{
+            console.log("downloading", file.s3, "from", nki_config.bucket, file.local);
+            var stream = nki_storage.download({container: nki_config.bucket, remote: file.s3});
+            archive.append(stream, {name: file.local});
         });
-        child.on('error', (err)=>{
-            console.error(err);
-        });
+        archive.finalize();
+        cb(null, archive, dataset._id+".tar");
     },
+}
+
+//config used to backup data from warehouse 
+exports.sda = {
+    ssh: {
+        username: "hayashis",
+        host: "sftp.sdarchive.iu.edu",
+        privateKey: fs.readFileSync('/home/hayashis/.ssh/id_rsa').toString(),
+        //debug: console.log,
+    },
+    basedir: "test",
 }
 
 exports.logger = {

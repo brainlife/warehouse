@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user"></pageheader>
+    <pageheader/>
     <sidemenu active="/apps"></sidemenu>
     <div class="fixed-top">
         <h2 v-if="$route.params.id == '_'">New App</h2>
@@ -12,57 +12,53 @@
             <el-form-item label="Name">
                 <el-input type="text" v-model="app.name" placeholder="Name of application"/>
             </el-form-item>
+            <!--
             <el-form-item label="Description">
-                <el-input type="textarea" :autosize="{minRows: 4}" v-model="app.desc" placeholder="Enter description for this application."/>
+                <b-form-textarea :rows="5" v-model="app.desc" placeholder="Enter description for this application"/>
+                <br>
             </el-form-item>
-            <br>
             <el-form-item label="Classification">
                 <select2 :options="alltags" v-model="app.tags" :multiple="true" :tags="true"></select2>
                 <p class="text-muted">Used to group similar application</p>
+                <b-alert show variant="danger">Description/name/classifications will be loaded from source github repository soon. Please update your repo description / name / topics as well as these fields.</b-alert>
             </el-form-item>
-            <el-form-item label="Developers">
+            -->
+            <el-form-item label="Admins">
                 <contactlist v-model="app.admins"></contactlist>
+                <p class="text-muted">Users who can update this application registration</p>
             </el-form-item>
             <el-form-item label="Avatar">
                 <el-input type="text" v-model="app.avatar" placeholder="URL of application avatar"/>
             </el-form-item>
-            <el-form-item label="Project">
-                <projectselecter v-model="app.project" :allownull="true" placeholder="(Does not belong to any project)"/>
-                <p class="text-muted">If a private project is selected, only the member of the project can access this app.</p>
+            <el-form-item label="Projects">
+                <projectselecter 
+                    v-model="app.projects" 
+                    :allownull="true" 
+                    access="private"
+                    placeholder="(Does not belong to any project - available to all users)"/>
+                <p class="text-muted">If a private project is selected, only the member of the project can access this app</p>
             </el-form-item>
 
             <el-form-item label="Source Code">
-                <!--
-                <el-tabs v-model="form.repotype" type="border-card">
-                    <el-tab-pane label="Github" name="github">
-                        <el-form-item>
-                            Reponame
-                            <el-input type="text" v-model="app.github" placeholder="org/repo"/>
-                        </el-form-item>
-                        <el-form-item>
-                            Branch
-                            <el-input type="text" v-model="app.github_branch" placeholder="master"/>
-                        </el-form-item>
-                    </el-tab-pane>
-                    <el-tab-pane label="Dockerhub" name="dockerhub">
-                        <el-form-item>
-                            Container Name
-                            <el-input type="text" v-model="app.dockerhub" placeholder="org/container"/>
-                        </el-form-item> 
-                    </el-tab-pane>
-                </el-tabs>
-                -->
-                <b-card>
-                    <el-form-item>
-                        Reponame
-                        <el-input type="text" v-model="app.github" placeholder="org/repo"/>
-                    </el-form-item>
-                    <el-form-item>
-                        Branch
-                        <el-input type="text" v-model="app.github_branch" placeholder="master"/>
-                    </el-form-item>
-                </b-card>
+                <b-input-group>
+                    <b-input-group-addon>Github Repository Name</b-input-group-addon>
+                    <b-form-input type="text" v-model="app.github" placeholder="brain-life/app-name"/>
+                    <b-input-group-addon>Branch</b-input-group-addon>
+                    <b-form-input type="text" v-model="app.github_branch" placeholder="master"/>
+                </b-input-group>
             </el-form-item>
+
+            <!--
+            <el-form-item label="Citation (bibtex)">
+                <b-form-textarea v-model="app.citation" :rows="4" placeholder='@misc{app-name,
+       author = {Doe, J, and Smith, M."},
+       title = "Application Name",
+       year = "2017"
+       doi = {10.1.1/123.456}
+}'/>
+                <p class="text-muted">Please see <a href="http://www.bibtex.org/Format/">http://www.bibtex.org/Format/</a> for bibtex format</p>
+            </el-form-item>
+            -->
 
             <br>
             <el-form-item label="Max Retry">
@@ -75,18 +71,19 @@
                     <b-card v-if="config.type == 'integer' || config.type == 'string'" :title="config.type | capitalize">
                         <b-button @click="remove_config(name)" style="float: right" size="sm" variant="danger"><icon name="trash"/></b-button>
                         <b-row>
-                            <b-col>
+                            <b-col sm="5">
                                 <div class="text-muted">Key</div>
                                 <b-form-input type="text" v-model="config._id"></b-form-input>
-                            </b-col>
-                            <b-col>
-                                <div class="text-muted">Default Value</div>
+
+                                <div class="text-muted">Default Value (optional)</div>
                                 <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default"></b-form-input>
                                 <b-form-input v-if="config.type == 'string'" type="text" v-model="config.default"></b-form-input>
                             </b-col>
                             <b-col>
-                                <div class="text-muted">Placeholder</div>
+                                <div class="text-muted">Placeholder (optional text to show inside the form element if no value is specified)</div>
                                 <b-form-input type="text" v-model="config.placeholder"></b-form-input>
+                                <div class="text-muted">Description (optional)</div>
+                                <b-form-textarea v-model="config.desc" placeholder="Enter description to add for this field" :rows="3" :max-rows="6"></b-form-textarea>
                             </b-col>
                         </b-row>
                     </b-card>
@@ -178,7 +175,7 @@
                             </b-col>
                         </b-row>
                         <br><b>File Mapping</b><br>
-                        <p class="text-muted">Please specify configuration key to map each input files/directory to.</p>
+                        <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
                         <b-card v-for="(config, name) in app.config" :key="name" v-if="config.type == 'input' && config.input_id == input.id">
                             <b-button @click="remove_config(name)" style="float: right" size="sm" variant="danger"><icon name="trash"/></b-button>
                             <b-row>
@@ -225,8 +222,8 @@
                                     v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
                             </b-col>
                             <b-col>
-                                <div class="text-muted" style="margin-top: 3px;">Datatype Mapping</div>
-                                <el-input type="textarea" v-model="output._files" autosize style="margin-top: 3px;" />
+                                <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
+                                <el-input type="textarea" v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
                             </b-col>
                         </b-row>
                     </b-card>
@@ -274,7 +271,7 @@ export default {
     data () {
         return {
             app: {
-                project: null,
+                projects: [],
                 admins: null,
 
                 name: null,
@@ -444,6 +441,8 @@ export default {
                 this.$http.put('app/'+this.app._id, this.app)
                 .then(res=>{
                     this.$router.push("/app/"+this.app._id);
+                }).catch(err=>{
+                    this.$notify({text: err.body.message, type: 'error' });
                 });
             } else {
                 //new
@@ -451,7 +450,7 @@ export default {
                 .then(res=>{
                     this.$router.push("/app/"+res.body._id);
                 }).catch(err=>{
-                    console.error(err);
+                    this.$notify({text: err.body.message, type: 'error' });
                 });
             } 
         },

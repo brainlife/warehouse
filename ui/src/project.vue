@@ -1,68 +1,90 @@
 <template>
-<div>
-    <pageheader :user="config.user"/>
+<div v-if="project">
+    <pageheader/>
     <sidemenu active="/projects"/>
-    <div class="header" v-if="project">
-        <b-button-group style="float: right;" v-if="project._canedit">
-            <b-button @click="remove()" v-if="!project.removed">Remove</b-button>
-            <b-button @click="edit()">Edit</b-button>
-        </b-button-group>
-        <projectavatar :project="project" style="float: left; margin-right: 20px; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3);"></projectavatar>
-        <h2>{{project.name}}</h2>
-    </div>
-    <div class="page-content" v-if="project" style="margin-top: 80px; padding-top: 20px">
-        <div style="margin-left: 130px; margin-bottom: 20px; min-height: 20px;">
-            <p style="line-height: 150%;">{{project.desc}}</p>
-        </div>
-        <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
-        <table class="info">
-            <tr>
-            <th width="200px">Stats</th>
-            <td>
-                <el-row>
-                    <el-col :span="8" v-if="datasets_attribs.num_subjects">
-                        <h4>{{datasets_attribs.num_subjects}}</h4>
-                        <b class="text-muted">Subjects</b>
-                    </el-col>
-                    <el-col :span="8" v-if="datasets_attribs.num_datasets">
-                        <h4>{{datasets_attribs.num_datasets}}</h4>
-                        <b class="text-muted">Datasets</b>
-                    </el-col>
-                </el-row>
-            </td>
-        </tr>
-        <tr>
-            <th>Access</th>
-            <td>
-                <projectaccess :access="project.access"/>
-            </td>
-        </tr>
-        <tr>
-            <th>Admins</th>
-            <td>
-                <contact v-for="c in project.admins" key="c._id" :id="c"></contact>
-            </td>
-        </tr>
-        <tr>
-            <th>Project Members</th>
-            <td>
-                <contact v-for="c in project.members" key="c._id" :id="c"></contact>
-            </td>
-        </tr>
-        <tr v-if="project.readme">
-            <th>README</th>
-            <td>
-                <vue-markdown :source="project.readme"></vue-markdown>
-            </td>
-        </tr>
-        <tr>
-            <th>TODO</th>
-            <td>
-                <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this project?</p>
-                <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
-            </td>
-        </tr>
-        </table>
+    <div class="page-content">
+        <div class="header">
+            <b-container>
+                <b-row>
+                    <b-col>
+                        <div style="float: left; margin-right: 40px; margin-bottom: 15px; height: 100%;">
+                            <projectavatar :project="project"/>
+                        </div>
+                        <div>
+                            <h3 style="color: #666; margin-bottom: 10px;">
+                                <projectaccess :access="project.access"/>
+                                {{project.name}}
+                            </h3>
+                            <p class="text-muted">{{project.desc}}</p>
+                        </div>
+                    </b-col>
+                    <b-col cols="3">
+                        <b-button-group style="float: right;" v-if="project._canedit">
+                            <b-button variant="danger" @click="remove()" v-if="!project.removed"><icon name="trash"/></b-button>
+                            <b-button variant="default" @click="edit()"><icon name="pencil"/> Edit</b-button>
+                        </b-button-group>
+                    </b-col>
+                </b-row>
+            </b-container>
+        </div><!--header-->
+
+        <b-container>
+            <b-row>
+                <b-col>
+                    <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
+                    <b-card no-body>
+                        <b-list-group flush>
+                            <b-list-group-item>
+                                <b-row>
+                                    <b-col>
+                                        <h6>Admins</h6>
+                                        <p class="text-muted">Users who can update name / desc / project members</p>
+                                        <contact v-for="c in project.admins" key="c._id" :id="c"></contact>
+                                    </b-col>
+                                    <b-col>
+                                        <h6>Members</h6>
+                                        <p class="text-muted">Users who can update datasets published on this project</p>
+                                        <contact v-for="c in project.members" key="c._id" :id="c"></contact>
+                                    </b-col>
+                                </b-row>
+                            </b-list-group-item>
+                            <b-list-group-item v-if="project.license">
+                                <!--
+                                <h6>License</h6>
+                                <p class="text-muted">Datasets / Applications published under this project are bounded to following licensing</p>
+                                -->
+                                <license :id="project.license"/>
+                            </b-list-group-item>
+                        </b-list-group>
+                    </b-card>
+                    <br>
+
+                    <vue-markdown v-if="project.readme" :source="project.readme"></vue-markdown>
+                    <!--
+                    <tr>
+                        <th>TODO</th>
+                        <td>
+                            <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this project?</p>
+                            <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
+                        </td>
+                    </tr>
+                    -->
+                </b-col>
+                <b-col cols="3">
+                    <div v-if="datasets_attribs.num_subjects">
+                        <center>
+                            <p class="text-muted">Subjects</p>
+                            <h5>{{datasets_attribs.num_subjects}}</h5>
+                            <br>
+
+                            <p class="text-muted">Datasets</p>
+                            <h5>{{datasets_attribs.num_datasets}}</h5>
+                            <br>
+                        </center>
+                    </div>
+                </b-col>
+            </b-row>
+        </b-container>
 
     </div><!--page-content-->
 </div>
@@ -81,12 +103,13 @@ import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
 import projectavatar from '@/components/projectavatar'
+import license from '@/components/license'
 
 export default {
     components: { 
         sidemenu, contactlist, project, 
         projectaccess, pageheader, contact, 
-        VueMarkdown, projectavatar 
+        VueMarkdown, projectavatar, license,
     },
 
     data () {
@@ -118,8 +141,6 @@ export default {
         })
         .then(res => {
             this.datasets_attribs.num_datasets = res.body.count;
-            //console.log(this.datasets_attribs);
-            
             return this.$http.get('dataset/distinct', {params: {
                 find: JSON.stringify({
                     project: this.project._id,
@@ -131,9 +152,7 @@ export default {
         .then(res => {
             this.datasets_attribs.num_subjects = res.body.length;
         })
-        .catch(err=>{
-            console.error(err);
-        });
+        .catch(console.error);
     },
 
     methods: {
@@ -141,13 +160,14 @@ export default {
             this.$router.push('/project/'+this.project._id+'/edit');
         },
         remove: function() {
-            this.$http.delete('project/'+this.project._id)
-            .then(res=>{
-                this.go('/projects');        
-            });
+            if(confirm("Do you really want to remove this project?")) {
+                this.$http.delete('project/'+this.project._id)
+                .then(res=>{
+                    this.go('/projects');        
+                });
+            }
         },
         go: function(path) {
-            console.log(path);
             this.$router.push(path);
         },
     },
@@ -163,33 +183,13 @@ font-weight:bold;
 .datasets_link:hover {
 color:#88f;
 }
+
 .header {
-background: #666;
-padding: 20px;
-padding-bottom: 30px;
-height: 80px;
-position: fixed;
-top: 50px;
-right: 0px;
-left: 90px;
-color: #666;
-z-index: 1;
-border-bottom: 1px solid #666;
-}
-.header h2 {
-color: #eee;
-}
-.header-bottom {
-height: 50px;
 background-color: white;
-position: fixed;
-top: 140px;
-right: 0px;
-left: 90px;
-border-bottom: 1px solid #ddd;
+margin-bottom: 30px;
+padding: 30px 0px 20px 0px;
+border-bottom: 1px solid #ccc;
 }
-.el-alert {
-border-radius: inherit;
-}
+
 
 </style>

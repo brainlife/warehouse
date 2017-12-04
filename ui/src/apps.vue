@@ -1,6 +1,6 @@
 <template>
 <div>
-    <pageheader :user="config.user">
+    <pageheader>
         <!--pageheader slot-->
         <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
     </pageheader>
@@ -10,11 +10,11 @@
         <div v-for="(apps, tag) in app_groups" key="tag" class="margin20">
             <h4 class="group-title">{{tag}}</h4> 
             <div v-for="app in apps" key="app._id" class="app">
-                <app :app="app" :descheight="130"></app>
+                <app :app="app" descheight="130px"></app>
             </div>
             <br clear="both">
         </div>
-        <b-button class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
+        <b-button v-if="config.user" class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
     </div><!--page-content-->
 </div><!--root-->
 </template>
@@ -31,7 +31,6 @@ export default {
         return {
             app_groups: null,
             query: "",
-
             config: Vue.config,
         }
     },
@@ -44,7 +43,7 @@ export default {
                     { removed: {$exists: false }},
                 ]
             }),
-            populate: 'inputs.datatype outputs.datatype',
+            populate: 'inputs.datatype outputs.datatype contributors',
         }})
         .then(res=>{
             //organize apps into various tags
@@ -88,3 +87,4 @@ width: 350px;
 float: left;
 }
 </style>
+

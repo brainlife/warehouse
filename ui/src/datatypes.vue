@@ -1,24 +1,13 @@
 <template>
 <div>
-    <pageheader :user="config.user">
-        <el-row :gutter="20">
-            <el-col :span="14">
-                <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
-            </el-col>
-            <!--
-            <el-col :span="10">
-                <el-button v-if="user" @click="newdatatype()" icon="plus">Add Datatype</el-button>
-            </el-col>
-            -->
-        </el-row>
-    </pageheader>
+    <pageheader/>
     <sidemenu active="/datatypes"></sidemenu>
     <div class="page-content">
         <div v-if="!datatypes" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="datatypes">
             <h2 class="group-title">Datatypes</h2>
             <div v-for="datatype in datatypes" :key="datatype._id" style="margin-bottom: 10px;">
-                <datatype :datatype="datatype"></datatype>
+                <datatype :datatype="datatype"/>
             </div>
             
         </div>
@@ -34,10 +23,10 @@ import Router from 'vue-router'
 import sidemenu from '@/components/sidemenu'
 import datatype from '@/components/datatype'
 import pageheader from '@/components/pageheader'
-//import datatypecard from '@/components/datatypecard'
+import contact from '@/components/contact'
 
 export default {
-    components: { sidemenu, datatype, pageheader } ,
+    components: { sidemenu, datatype, pageheader, contact } ,
 
     data () {
         return {
@@ -65,13 +54,6 @@ export default {
 
     mounted: function() {
         this.$http.get('datatype', {params: {
-            /*
-            find: JSON.stringify({$or: [
-                { members: Vue.config.user.sub}, 
-                { access: "public" },
-            
-            ]})
-            */
             sort: 'name'
         }})
         .then(res=>{

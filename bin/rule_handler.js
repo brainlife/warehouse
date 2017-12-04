@@ -79,9 +79,17 @@ function handle_rule(rule, cb) {
     if(!rule.output_tags) rule.output_tags = {};
 
     logger.info("handling rule ----------------------- ", rule._id.toString(), rule.name);
-
+    
     //prepare for stage / app / archive
     async.series([
+
+        //validate
+        next=>{
+            if(!rule.input_project) return next("missing or no matching input_project");
+            if(!rule.output_project) return next("missing or no matching output_project");
+            if(!rule.app) return next("missing or no matching app");
+            next();
+        },
             
         //issue user jwt
         next=>{
@@ -133,10 +141,8 @@ function handle_rule(rule, cb) {
 
         //enumerate all subjects under rule's project
         next=>{
-            //logger.debug("enum subjects");
             db.Datasets.find({
                 project: rule.input_project._id,
-                //storage: { $exists: true },
                 removed: false,
             })
             .distinct("meta.subject", (err, _subjects)=>{
@@ -371,6 +377,9 @@ function handle_rule(rule, cb) {
                         if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
                         if(task && task.status != 'removed'/* && task.instance_id == instance._id*/) {
                             logger.debug("found the task generated the input dataset");
+
+			    //find output from task
+			    let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
                             deps.push(task._id); 
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
@@ -379,6 +388,7 @@ function handle_rule(rule, cb) {
                                 app_id: input.prov.app, //dataset stored app_id under "app" because it's meant to be populated (task_id is from other service)
                                 subdir: input.prov.subdir,
                                 output_id: input.prov.output_id,
+                                files: output_detail.files,
                                 prov: null, //remove dataset prov
                             }));
                             return true;
@@ -517,10 +527,11 @@ function handle_rule(rule, cb) {
                         desc: output.desc,
                         meta: meta,
                         tags: rule.output_tags[output.id], 
+                        files: output.files,
                         archive: {
                             project: rule.output_project._id,  
                             desc: rule.name,
-                            tags: rule.output_tags[output.id], //deprecated by parent's tags.. (remove this eventually)
+                            //tags: rule.output_tags[output.id], //deprecated by parent's tags.. (remove this eventually)
                         }
                     });
                 });
@@ -552,37 +563,31 @@ function handle_rule(rule, cb) {
 }
 
 function process_input_config(config, inputs, datasets, task_stage) {
-    function walk(node, out) {
-        for(var k in node) {
-            var v = node[k];
-            if(v.type === undefined) {
-                //must be grouping object.. traverse to child 
-                out[k] = {};
-                walk(v, out[k]);
-                continue;
-            }
-            switch(v.type) {
-            case "input":
-                var input = inputs[v.input_id];
-                var dataset = datasets.find(d=>d.id == v.input_id);
-                //console.log("looking", v.input_id, "dataset is ", dataset);
-                var base = "../"+dataset.task_id;
-                if(dataset.subdir) base+="/"+dataset.subdir;
+    //logger.debug("process_input_config");
+    //logger.debug(JSON.stringify(datasets, null, 4));
+    var out = {};
+    for(var k in config) {
+        var v = config[k];
+        switch(v.type) {
+        case "input":
+            var input = inputs[v.input_id];
+            var dataset = datasets.find(d=>d.id == v.input_id);
+            var base = "../"+dataset.task_id;
+            if(dataset.subdir) base+="/"+dataset.subdir;
 
-                var file = input.datatype.files.find(file=>file.id == v.file_id);
-                out[k] = base+"/"+(file.filename||file.dirname);
-                //but override it if filemaping from the input dataset is specified.
-                if(dataset.files && dataset.files[node.input_id]) {
-                    out[k] = base+"/"+dataset.files[node.file_id];
-                }
-                break;
-            case "integer":
-            case "string":
-                //scalar configs are handled by the user
+            var file = input.datatype.files.find(file=>file.id == v.file_id);
+            out[k] = base+"/"+(file.filename||file.dirname);
+
+            //override if datasets.files exists.. which points to non-default input file location
+            if(dataset.files && dataset.files[v.file_id]) {
+                out[k] = base+"/"+dataset.files[v.file_id];
             }
+            break;
+        case "integer":
+        case "string":
+            //scalar configs are handled by the user
         }
-        return out;
     }
-    return walk(config, {});
+    return out;
 }
 

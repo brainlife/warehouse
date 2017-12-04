@@ -59,28 +59,26 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         });
     }
 
-    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+    common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         ands.push({project: {$in: canread_project_ids}});
 
-        var limit = 100;
-        if(req.query.limit) limit = parseInt(req.query.limit);
-        var skip = 0;
-        if(req.query.skip) skip = parseInt(req.query.skip);
+        var skip = req.query.skip||0;
+        let limit = req.query.limit||100;
 
         //then look for dataset
         db.Datasets.find({ $and: ands })
         .populate(req.query.populate || '') //all by default
         .select(req.query.select)
-        .limit(limit)
-        .skip(skip)
+        .limit(+limit)
+        .skip(+skip)
         .sort(req.query.sort || '_id')
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
             db.Datasets.count({$and: ands}).exec((err, count)=>{
                 if(err) return next(err);
-                datasets.forEach(function(rec) {
+                datasets.forEach(rec=>{
                     rec._canedit = canedit(req.user, rec, canwrite_project_ids);
                 });
                 res.json({datasets: datasets, count: count});
@@ -247,12 +245,15 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 
                 //should be deprecate with neo4j, but still used by UI
                 //also used by event_handler to see if the task output is archived already or not
+                //actually, I might keep this as source of truth and neo4j as tool to query similar information
                 prov: {
                     instance_id: task.instance_id,
                     task_id: task._id,
                     app: req.body.app_id, //deprecated
                     output_id: req.body.output_id,
                     subdir: req.body.subdir,
+
+                    //config: task.config, //tentative.. for now..
                 },
                 meta: req.body.meta||{},
             }).save((err, _dataset)=>{
@@ -330,6 +331,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  */
 router.get('/download/:id', jwt({
     secret: config.express.pubkey,
+    credentialsRequired: false,
     getToken: function(req) { 
         //load token from req.headers as well as query.at
         if(req.query.at) return req.query.at; 
@@ -344,16 +346,20 @@ router.get('/download/:id', jwt({
     logger.debug("requested for downloading dataset "+id);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        db.Datasets.findById(id, function(err, dataset) {
+        db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
             if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
-
-            canread_project_ids = canread_project_ids.map(id=>id.toString());
-            //logger.debug("user has access to", canread_project_ids);
-            if(!~canread_project_ids.indexOf(dataset.project.toString())) {
-                return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
-            } 
+            
+            if(dataset.publications && dataset.publications.length > 0) {
+                //this dataset is published .. no need for access control
+            } else {
+                //unpublished -- need to do access control
+                canread_project_ids = canread_project_ids.map(id=>id.toString());
+                if(!~canread_project_ids.indexOf(dataset.project.toString())) {
+                    return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
+                } 
+            }
             
             //open stream
             var system = config.storage_systems[dataset.storage];
@@ -363,32 +369,33 @@ router.get('/download/:id', jwt({
             }, 1000*15);
             system.stat(dataset, (err, stats)=>{
                 clearTimeout(stat_timer);
-                logger.debug(JSON.stringify(stats, null, 4));
                 if(err) return next(err);
-
                 system.download(dataset, (err, readstream, filename)=>{
                     if(err) return next(err);
 
-                    //file .. just stream using sftp stream
-                    //npm-mime uses filename to guess mime type, so I can use this locally
-                    //var mimetype = mime.lookup(fullpath);
-                    //logger.debug("mimetype:"+mimetype);
+                    if(!dataset.download_count) dataset.download_count = 1;
+                    else dataset.download_count++;
+                    dataset.save();
 
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+filename);
                     if(stats) res.setHeader('Content-Length', stats.size);
+                    else if(dataset.size) res.setHeader('Content-Length', dataset.size);
                     logger.debug("sent headers.. commencing download");
                     readstream.pipe(res);   
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);
                     });
+                    /* close event seems to be stream dependent.. can't rely on..
                     readstream.on('close', err=>{
                         //close won't fire if user cancel download mid-way
+                        logger.debug("incrementing download_count");
                         if(!dataset.download_count) dataset.download_count = 1;
                         else dataset.download_count++;
                         dataset.save();
                         //logger.debug("incremented download_count", dataset.download_count);
                     });
+                    */
                 });
             });
         });
