@@ -119,9 +119,7 @@
                                     <h6>{{pub.project.name}}</h6>
                                     <p>
                                         {{pub.project.desc}}
-                                        <!--
                                         <router-link :to="'/project/'+pub.project._id">More..</router-link>
-                                        -->
                                     </p>
                                 </b-card>
                                 <br>

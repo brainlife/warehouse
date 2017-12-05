@@ -12,32 +12,34 @@
         <!-- for everyone -->
         <li @click="go('/apps')"
             :class="{active: active == '/apps'}" >
-            <icon name="th-large" scale="2" ></icon><br>Apps
+            <icon name="th-large" scale="2" ></icon><br>App
         </li>
         <li @click="goraw('/pubs');"
             :class="{active: active == '/pubs'}">
-            <icon name="book" scale="2"></icon><br>Publications
+            <icon name="book" scale="2"></icon><br>Publication
 
         <!-- only for authenticated users -->
+        <li v-if="config.user" @click="go('/project')"
+            :class="{active: active == '/projects'}">
+            <icon name="shield" scale="2"></icon><br>Project
+        </li>
+        <!--
         <li v-if="config.user" @click="go('/datasets')"
             :class="{active: active == '/datasets'}">
-            <icon name="cubes" scale="2"></icon><br>Datasets
+            <icon name="cubes" scale="2"></icon><br>Dataset
         </li>
+        -->
         <li v-if="config.user" @click="go('/processes')"
             :class="{active: active == '/processes'}">
             <icon name="paper-plane" scale="2"></icon><br>Process
         </li>
-        <li v-if="config.user" @click="go('/projects')"
-            :class="{active: active == '/projects'}">
-            <icon name="shield" scale="2"></icon><br>Projects
-        </li>
         <li v-if="config.user && config.debug" @click="go('/datatypes')"
             :class="{active: active == '/datatypes'}">
-            <icon name="cube" scale="2"></icon><br>Datatypes
+            <icon name="cube" scale="2"></icon><br>Datatype
         </li>
         
         <li v-if="config.user" @click="setting">
-            <icon name="cog" scale="2"></icon><br>Settings
+            <icon name="cog" scale="2"></icon><br>Setting
         </li>
     </ul>
 </div>

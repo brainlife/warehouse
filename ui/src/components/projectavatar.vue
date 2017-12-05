@@ -1,8 +1,5 @@
 <template>
-<div class="projectavatar">
-    <!--herokuapp.com doesn't seem to scale well if all images are loaded simultanously .. so using v-lazy-->
-    <img v-lazy="project.avatar || 'http://eightbitavatar.herokuapp.com/?id='+project._id+'@3&s=male&size='+width" :width="width" :height="height"></img>
-</div>
+<img v-lazy="project.avatar || '//eightbitavatar.herokuapp.com/?id='+project._id+'@3&s=male&size='+width" :width="width" :height="height"></img>
 </template>
 
 <script>
@@ -14,10 +11,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-.projectavatar {
-background-color: #ddd;
-box-shadow: inset 0px 0px 10px #aaa;
-}
-</style>

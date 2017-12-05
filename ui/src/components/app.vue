@@ -1,12 +1,12 @@
 <template>
 <div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click()">
-        <icon v-if="app_.projects && app_.projects.length > 0" :scale="compact?0.9:1.2"
-            name="lock" style="float: right; margin: 5px;" title="not working.." class="text-danger"/>
         <div v-if="compact">
             <appavatar :app="app_" style="float: left;margin-right: 15px;"/>
             <div style="max-height: 73px; overflow: hidden;">
-                <h4 class="name">{{app_.name}} <small>{{app_.github}}</small></h4>
+                <h4 class="name">
+                    <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
+                    {{app_.name}} <small>{{app_.github}}</small></h4>
                 <div class="desc">{{app_.desc||'no desc..'}}</div>
             </div>
             <slot/>
@@ -14,7 +14,9 @@
         <div v-else>
             <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
             <div class="header">
-                <h4 class="name">{{app_.name}}</h4>
+                <h4 class="name">
+                    <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
+                    {{app_.name}}</h4>
                 <h5 class="github">{{app_.github}} <!--<b v-if="app_.github_branch">{{app_.github_branch}}</b>--></h5>
                 <div class="datatypes" v-if="!compact">
                     <div class="datatype" v-for="input in app_.inputs" key="input.id">

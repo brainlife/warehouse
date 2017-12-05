@@ -26,14 +26,14 @@
 import Vue from 'vue'
 
 // datatype UIs
-import dtiinit from '@/components/datauis/dtiinit'
-import freesurfer from '@/components/datauis/freesurfer'
-import wmc from '@/components/datauis/wmc'
-import lifeview from '@/components/datauis/lifeview'
-import life from '@/components/datauis/life'
-import evaluator from '@/components/datauis/evaluator'
-import images from '@/components/datauis/images'
-import volumeviewer from '@/components/datauis/volumeviewer'
+import dtiinit from '@/datauis/dtiinit'
+import freesurfer from '@/datauis/freesurfer'
+import wmc from '@/datauis/wmc'
+import lifeview from '@/datauis/lifeview'
+import life from '@/datauis/life'
+import evaluator from '@/datauis/evaluator'
+import images from '@/datauis/images'
+import volumeviewer from '@/datauis/volumeviewer'
 
 import filebrowser from '@/components/filebrowser'
 import task from '@/components/task'

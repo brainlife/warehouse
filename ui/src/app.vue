@@ -31,6 +31,7 @@
                     </b-col>
                 </b-row>
 
+                <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
                     <b-tab title="README"/>
@@ -227,7 +228,6 @@
                     </b-card>
                     <br>
                 </b-col>
-
             </b-row>
         </b-container>
 

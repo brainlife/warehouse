@@ -80,7 +80,7 @@ cursor: pointer;
 /* update bootstrap default tab */
 
 .brainlife-tab .nav-tabs {
-padding-top: 20px;
+padding-top: 10px;
 border: none;
 }
 
@@ -89,6 +89,7 @@ color: inherit;
 opacity: 0.5;
 border: none;
 transition: color 0.5s, opacity 0.5s;
+font-weight: bold;
 }
 .brainlife-tab .nav-item a:hover {
 color: #007bff;
@@ -97,7 +98,6 @@ opacity: 1;
 .brainlife-tab .nav-item a[aria-selected="true"] {
 color: #2693ff;
 opacity: 1;
-/*border-bottom: 3px solid #007bff;*/
 border-bottom: 3px solid #2693ff;
 }
 

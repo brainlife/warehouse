@@ -1,11 +1,6 @@
 <template>
 <div>
-    <pageheader>
-        <b-form-input type="search" placeholder="Filter Datasets" @keyup.native="change_query_debounce()" v-model="query"/>
-    </pageheader>
-    <sidemenu active="/datasets"></sidemenu>
     <div :class="{rightopen: selected_count}">
-        <projectmenu :active="project_id" :projects="projects"></projectmenu>
         <div class="page-header">
             <div class="row">
                 <div class="col-md-2"><h4>Subject</h4></div>
@@ -90,13 +85,13 @@
         </div>
         <div class="select-action">
             <b-button-group>
-                <b-button size="sm" v-b-modal.viewSelecter>View</b-button>
+                <b-button size="sm" v-b-modal.viewSelecter @click="set_viewsel_options">View</b-button>
                 <b-button size="sm" @click="download" title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
                 <b-button size="sm" @click="process" title="Run applications on selected datasets by creating a new process.">Process</b-button>
             </b-button-group>
         </div>
     </div>
-    <viewselecter @select="view" :datatype_names="selected_datatype_names"></viewselecter>
+    <!-- <viewselecter @select="view" :datatype_names="selected_datatype_names"></viewselecter> -->
 </div>
 </template>
 
@@ -109,7 +104,6 @@ import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import projectmenu from '@/components/projectmenu'
 import datatypetag from '@/components/datatypetag'
-import viewselecter from '@/components/viewselecter'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -122,8 +116,9 @@ export default {
     components: { 
         sidemenu, tags, metadata, 
         pageheader, projectmenu, 
-        datatypetag, viewselecter,
+        datatypetag, 
     },
+    props: ['project'],
     data () {
         return {
             pages: [], //groups of datasets 
@@ -137,7 +132,6 @@ export default {
             last_groups: {},
 
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
-            project_id: null, //project to limit search result
 
             query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
 
@@ -153,6 +147,7 @@ export default {
         selected_count: function() {
             return Object.keys(this.selected).length;
         },
+
         selected_datatype_names: function() {
             if(!this.datatypes) return null;
 
@@ -179,6 +174,8 @@ export default {
     },
 
     created() {
+        console.log("dataset created");
+        /*
         this.$http.get('project', {params: {
             find: JSON.stringify(
             {
@@ -195,10 +192,10 @@ export default {
                 this.projects[p._id] = p;
             });
             this.check_project_id(res.body.projects[0]);
+        */
 
-            //load all datatypes
-            return this.$http.get('datatype')
-        })
+        //load all datatypes (TODO .. cache it?)
+        return this.$http.get('datatype')
         .then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach((d)=>{
@@ -211,15 +208,15 @@ export default {
     },
 
     mounted() {
-        this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
+        //this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
         var area = document.getElementById("scrolled-area").parentNode;
 		area.addEventListener("scroll", this.page_scrolled);
     },
 
     watch: {
         //when user select different project, this gets called (mounted() won't be called anymore)
-        $route: function() {
-            this.check_project_id();
+        project: function() {
+            //this.check_project_id();
             this.query = ""; //clear query to avoid confusion
             if(this.loading) this.loading.abort();
             this.reload();
@@ -238,7 +235,7 @@ export default {
             //get number of subjects stored 
             this.$http.get('dataset/distinct', {params: {
                 find: JSON.stringify({
-                    project: this.project_id,
+                    project: this.project._id,
                     removed: false
                 }),
                 distinct: 'meta.subject'
@@ -247,6 +244,7 @@ export default {
             });
         },
         
+        /*
         check_project_id: function(def) {
             this.project_id = this.$route.params.projectid;
             if(!this.project_id) {
@@ -260,6 +258,7 @@ export default {
                 localStorage.setItem("last_projectid_used", this.project_id);
             }
         },
+        */
         
 		page_scrolled: function() {
             var e = document.getElementById("scrolled-area").parentNode;
@@ -296,7 +295,7 @@ export default {
 
 			var finds = [
                 {removed: false},
-                {project: this.project_id},
+                {project: this.project._id},
             ] 
 
             if(this.query) {
@@ -449,7 +448,7 @@ export default {
             }).then(res=>res.body);
         },
 
-        temp_stage_selected: function(instance/*, resource*/) {
+        temp_stage_selected: function(instance) {
             //create config to download all selected data from archive
             var download = [];
             var datatypes = {};
@@ -479,18 +478,30 @@ export default {
             }).then(res=>res.body.task);
         },
 
-        view: function(v) {
+        set_viewsel_options: function() {
+            //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
+            console.log(this.selected_datatype_names);
+            this.$root.$emit("viewselecter.option", {
+                datatype_names: this.selected_datatype_names, 
+                task_cb: this.create_view_task, 
+            });
+        },
+
+        create_view_task: function(cb) {
             var download_instance = null;
             this.get_instance().then(instance=>{
                 download_instance = instance;
                 return this.temp_stage_selected(download_instance);
             }).then(task=>{
                 this.clear_selected();
+                cb(task);
+                /*
                 if(v.docker) {
                     window.open("/warehouse/novnc/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
                 } else {
                     window.open("/warehouse/view/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
                 }
+                */
             });
         },
 
@@ -596,6 +607,7 @@ export default {
 .page-header,
 .page-content {
 position: fixed;
+margin-top: 50px;
 left: 350px;
 padding-left: 10px;
 right: 0;
@@ -640,7 +652,7 @@ right: 250px;
     position: fixed;
     right: -250px;
     width: 250px;
-    top: 50px;
+    top: 100px;
     bottom: 0px;
     z-index: 2;
     transition: right 0.2s;

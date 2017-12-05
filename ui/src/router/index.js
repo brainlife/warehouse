@@ -3,7 +3,7 @@ import Router from 'vue-router'
 
 import dashboard from '@/dashboard'
 
-import datasets from '@/datasets'
+//import datasets from '@/datasets'
 import dataset from '@/dataset'
 import upload from '@/upload'
 import download from '@/download'
@@ -40,9 +40,9 @@ export default new Router({
     mode: 'history',
     base: '/warehouse',
     routes: [
-        {path: '/', redirect: '/datasets'},
+        {path: '/', redirect: '/project'},
         {path: '/dashboard', component: dashboard},
-        {path: '/datasets/:projectid?', component: datasets},
+        //{path: '/datasets/:projectid?', component: datasets},
         {path: '/upload', component: upload},
         {path: '/dataset/:id', component: dataset},
         {path: '/download/:id', component: download},
@@ -56,9 +56,12 @@ export default new Router({
         {path: '/view/:instanceid/:taskid/:type/:subdir?', component: view, props: true},
         {path: '/novnc/:instanceid/:taskid/:type/:subdir?', component: novnc, props: true},
 
-        {path: '/projects', component: projects, meta: {public: true}},
+        {path: '/projects', component: projects, meta: {public: true}}, //deprecated by /project
+
+        {path: '/project', component: project},
         {path: '/project/:id', component: project},
         {path: '/project/:id/edit', component: projectedit},
+        {path: '/project/:id/:tab?/:subid?', component: project},
 
         {path: '/datatypes', component: datatypes},
         {path: '/datatype/:id', component: datatype},

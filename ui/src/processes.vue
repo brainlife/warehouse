@@ -51,9 +51,11 @@
                 <h3 class="text-muted" style="padding-top: 30px; padding-left: 30px;">Please select or create a new process</h3>
             </div>
             <div v-else>
+                <!--
                 <simpleprocess @view="view" v-if="selected && selected.config.type == 'simple'" :instance="selected"></simpleprocess>
                 <process @view="view" v-if="selected && selected.config.type == 'v1'" :instance="selected"></process>
-                <process2 @view="view" v-if="selected && selected.config.type == 'v2'" :instance="selected"></process2>
+                -->
+                <process2 v-if="selected && selected.config.type == 'v2'" :instance="selected"></process2>
             </div>
         </div>
     </div>
@@ -66,8 +68,8 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import statusicon from '@/components/statusicon'
 
-import simpleprocess from '@/simpleprocess'
-import process from '@/process'
+//import simpleprocess from '@/simpleprocess'
+//import process from '@/process'
 import process2 from '@/process2'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -77,7 +79,7 @@ var debounce = null;
 export default {
     components: { 
         sidemenu, pageheader, statusicon,
-        simpleprocess, process, process2,
+        process2,
     },
     data () {
         return {
@@ -209,6 +211,7 @@ export default {
                 });
             }
         },
+        /*
         view: function(opt) {
             let view = opt.view.split('/').join('.'); //replace all / with .
             let path;
@@ -220,6 +223,7 @@ export default {
             if(opt.subdir) path += '/'+opt.subdir;
             window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
         }
+        */
     },
     watch: {
         '$route': function() {

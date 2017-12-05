@@ -1,10 +1,10 @@
 <template>
 <div v-if="dataset">
     <pageheader/>
-    <sidemenu active="/datasets"></sidemenu>
+    <sidemenu active="/projects"></sidemenu>
     <div class="header" vi-if="dataset">
         <b-button-group style="float: right;">
-            <b-button variant="" v-b-modal.viewSelecter @click="openviewsel(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
+            <b-button variant="" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
             <b-button variant="" @click="download" v-if="dataset.storage" icon="document">Download 
                 <small style="opacity: 0.5" v-if="dataset.size">({{dataset.size|filesize}})</small>
             </b-button>
@@ -189,7 +189,7 @@
             </b-collapse>
         </div>
     </div><!--page-content-->
-    <viewselecter @select="view" :datatype_name="vsel.datatype_name"></viewselecter>
+    <!--<viewselecter @select="view" :datatype_name="vsel.datatype_name"></viewselecter>-->
 </div><!--root-->
 </template>
 
@@ -205,7 +205,6 @@ import datatype from '@/components/datatype'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
-import viewselecter from '@/components/viewselecter'
 import datatypetag from '@/components/datatypetag'
 import select2 from '@/components/select2'
 import task from '@/components/task'
@@ -221,7 +220,7 @@ export default {
         sidemenu, contact, project, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
-        viewselecter, datatypetag, select2, task, pubcard
+        datatypetag, select2, task, pubcard
      },
     data () {
         return {
@@ -231,9 +230,11 @@ export default {
             prov: null, 
             derivatives: {},
 
+            /*
             vsel: {
                 datatype_name: null,
             },
+            */
 
             selfurl: document.location.href,
             
@@ -448,11 +449,18 @@ export default {
             }).then(res=>res.body);
         },
 
-        openviewsel: function(datatype_name) {
+        set_viewsel_options: function(datatype_name) {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
-            this.vsel.datatype_name = datatype_name;
+            //this.vsel.datatype_name = datatype_name;
+            this.$root.$emit("viewselecter.option", {
+                datatype_name,
+                task_cb: this.create_view_task, 
+                subdir: "output",
+            });
         },
-        view: function(view) {
+
+        create_view_task: function(cb) {
+            /*
             function openview(task) {
                 if(view.docker) {
                     window.open("/warehouse/novnc/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
@@ -460,6 +468,7 @@ export default {
                     window.open("/warehouse/view/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
                 }
             }
+            */
 
             //first, query for the viewing task to see if it already exist
             var name = "brainlife.view "+this.dataset._id;
@@ -468,7 +477,7 @@ export default {
             }})
             .then(res=>{
                 if(res.body.count == 1) {
-                    openview(res.body.tasks[0]);
+                    cb(res.body.tasks[0]);
                 } else {
                     var download_instance = null;
                     this.get_instance().then(instance=>{
@@ -496,8 +505,9 @@ export default {
                         }).then(res=>res.body.task);
                         return this.stage_selected(download_instance);
                     }).then(task=>{
-                        openview(task);
-                    });
+                        console.log("created task", task); 
+                        cb(task);
+                    }).catch(console.error);
                 }
             });
         },

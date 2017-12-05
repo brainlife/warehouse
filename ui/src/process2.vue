@@ -78,7 +78,7 @@
                 <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 35px;">
                     <div class="float-right" style="position: relative; top: -4px;">
                         <b-button-group size="sm" v-if="task.status == 'finished'">
-                            <b-button v-b-modal.viewSelecter @click="openviewsel(task, datatypes[output.datatype].name, output.subdir)">View</b-button>
+                            <b-button v-b-modal.viewSelecter @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">View</b-button>
                             <b-button @click="download(task, output)">Download</b-button>
                             <b-button :pressed="archiving === output.did" variant="primary" @click="archiving = output.did">Archive</b-button>
                         </b-button-group>
@@ -267,8 +267,6 @@
             </el-collapse-item> 
         </el-collapse>
     </div>
-    <datasetselecter @submit="submit_stage"></datasetselecter>
-    <viewselecter @select="view" :datatype_name="vsel.datatype_name"></viewselecter>
 </div>
 </template>
 
@@ -288,11 +286,9 @@ import app from '@/components/app'
 import appname from '@/components/appname'
 import archiveform from '@/components/archiveform2'
 import projectselecter from '@/components/projectselecter'
-import datasetselecter from '@/components/datasetselecter'
 import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
 import mute from '@/components/mute'
-import viewselecter from '@/components/viewselecter'
 import datatypetag from '@/components/datatypetag'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -308,7 +304,6 @@ export default {
         filebrowser, pageheader, statustag,
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
-        viewselecter, datasetselecter,
         datatypetag, appname,
     },
 
@@ -327,11 +322,13 @@ export default {
             },
 
 
+            /*
             vsel: {
                 datatype_name: null,
                 task: null,
                 subdir: null,
             },
+            */
 
             //cache
             tasks: null,
@@ -347,6 +344,8 @@ export default {
     },
 
     mounted() {
+        this.$root.$on('datasetselecter.submit', this.submit_stage);
+
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach(datatype=>{
@@ -693,6 +692,7 @@ export default {
         },
 
         submit_stage: function(datasets) {
+            console.log("received datasets", datasets);
             var download = [];
             var _outputs = [];
             var did = this.next_did();
@@ -816,12 +816,13 @@ export default {
             localStorage.setItem("task.show."+task._id, task.show);
         },
 
-        openviewsel: function(task, datatype_name, subdir) {
+        set_viewsel_options: function(task, datatype_name, subdir) {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
-            this.vsel.datatype_name = datatype_name;
-            this.vsel.task = task;
-            this.vsel.subdir = subdir;
+            this.$root.$emit("viewselecter.option", {
+                datatype_name, task, subdir
+            });
         },
+/*
 
         view: function(v) {
             this.$emit('view', {
@@ -832,6 +833,7 @@ export default {
                 docker: v.docker,
             });
         },
+*/
     },
 }
 </script>

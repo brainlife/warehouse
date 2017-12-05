@@ -80,7 +80,7 @@ export default {
                 this.datasets.forEach(did=>{ 
                     os[did] = this.alldatasets[did];
                 });
-                this.$emit('submit', os);
+                this.$root.$emit("datasetselecter.submit", os);
             }
             this.close();
         },
@@ -222,6 +222,7 @@ export default {
          }
     },
 
+    /*
     mounted() {
         //I should display this at root
         document.body.appendChild(this.$refs.modal.$el);
@@ -230,6 +231,7 @@ export default {
         //TODO - not sure if this prevents the memory leak? Should I move it back to this component?
         //document.body.remove(this.$refs.modal.$el);
     },
+    */
 
     created: function() {
         //load datatypes

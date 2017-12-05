@@ -1,5 +1,6 @@
 <template>
 <b-modal title="Select Viewer" ref="modal" id="viewSelecter" size="lg" hide-footer>
+    {{datatype_name}}
     <b-card-group deck class="mb-1" style="padding-bottom: 10px;" v-for="(group, gidx) in views.chunk_inefficient(3)" :key="gidx">
         <b-card 
             v-for="(view, idx) in group" :key="idx"
@@ -37,20 +38,32 @@ if(![].chunk_inefficient) {
 }
 
 export default {
-    props: [ 'datatype_name', 'datatype_names' ],
-    components: { 
-    },
+    //props: [ 'datatype_name', 'datatype_names' ],
     data () {
         return {
+            //set by viewselecter.option
+            datatype_name: null,
+            datatype_names: null,
+
+            task: null, 
+            task_cb: null, 
+            subdir: null,
+
             config: Vue.config,
             view_catalog: {}, 
         } 
     },
     mounted() {
-        //I should display this at root
-        document.body.appendChild(this.$refs.modal.$el);
+        //document.body.appendChild(this.$refs.modal.$el); //move to root
+        this.$root.$on("viewselecter.option", (opt)=>{
+            this.datatype_name = opt.datatype_name;
+            this.datatype_names = opt.datatype_names;
+            this.task = opt.task;
+            this.task_cb = opt.task_cb;
+            this.subdir = opt.subdir;
+        });
 
-        //TODO - move to db
+        //TODO - move to db (part of datatype?)
         var catalog = [
             {
                 ui: "raw",
@@ -195,10 +208,27 @@ export default {
             return views;
         },
 
-        select: function(v) {
+        select: function(view) {
             this.$refs.modal.hide(); 
-            this.$emit('select', v);
+            if(this.task) this.openview(view, this.task, this.subdir);
+            if(this.task_cb) this.task_cb(task=>{
+                this.openview(view, task, this.subdir);
+            });
         },
+
+        openview: function(view, task, subdir) {
+            console.log("openview", view, task);
+
+            //let view = view.split('/').join('.'); //replace all / with .
+            let path;
+            if(view.docker) {
+                path = "/warehouse/novnc/"+task.instance_id+"/"+task._id+'/'+view.ui;
+            } else {
+                path = "/warehouse/view/"+task.instance_id+"/"+task._id+'/'+view.ui;
+            }
+            if(subdir) path += '/'+subdir;
+            window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
+        }
     }
 }
 
