@@ -43,7 +43,7 @@
 
         <b-container>
             <b-row>
-                <b-col>
+                <b-col :cols="9">
                     <el-alert v-if="app.removed" title="This app has been removed" type="warning" show-icon :closable="false"></el-alert>
                     <!-- detail -->
                     <div v-if="tab_index == 0">
@@ -153,13 +153,8 @@
                             <b-col cols="3">
                                 <b class="text-muted">UI Configuration</b>
                             </b-col>
-                            <b-col>
-                                <div class="margin: 20px; width: 80%; overflow: auto;">
-                                    <!-- this breaks the column layout if config has long strings
-                                    <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
-                                    -->
-                                    {{app.config}}
-                                </div>
+                            <b-col cols="9">
+                                <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
                             </b-col>
                         </b-row>
 

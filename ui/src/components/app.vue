@@ -1,6 +1,6 @@
 <template>
 <div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
-    <div @click="click()">
+    <div @click="click">
         <div v-if="compact">
             <appavatar :app="app_" style="float: left;margin-right: 15px;"/>
             <div style="max-height: 73px; overflow: hidden;">

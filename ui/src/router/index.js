@@ -4,7 +4,7 @@ import Router from 'vue-router'
 import dashboard from '@/dashboard'
 
 //import datasets from '@/datasets'
-import dataset from '@/dataset'
+//import dataset from '@/dataset'
 import upload from '@/upload'
 import download from '@/download'
 
@@ -42,12 +42,10 @@ export default new Router({
     routes: [
         {path: '/', redirect: '/project'},
         {path: '/dashboard', component: dashboard},
-        //{path: '/datasets/:projectid?', component: datasets},
         {path: '/upload', component: upload},
-        {path: '/dataset/:id', component: dataset},
         {path: '/download/:id', component: download},
         {path: '/processes/:id?', component: processes},
-
+        
         {path: '/apps', component: apps, meta: {public: true}},
         {path: '/app/:id', component: app, meta: {public: true}},
         {path: '/app/:id/submit', component: appsubmit},
@@ -74,6 +72,11 @@ export default new Router({
 
         {path: '/test', component: test},
         {path: '/404', component: missing, meta: {public: true}},
+        
+        //deprecated paths
+        {path: '/datasets/:id?', component: project},
+        //{path: '/dataset/:id', component: dataset},
+
     ]
 })
 

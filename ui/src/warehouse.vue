@@ -6,6 +6,7 @@
     <!-- dialogs that can be called from any view -->
     <datasetselecter/>
     <viewselecter/>
+    <dataset/>
 
 </div>
 </template>
@@ -13,10 +14,11 @@
 <script>
 import datasetselecter from '@/modals/datasetselecter'
 import viewselecter from '@/modals/viewselecter'
+import dataset from '@/modals/dataset'
 
 export default {
     components: {
-        viewselecter, datasetselecter,
+        viewselecter, datasetselecter, dataset,
     },
 
     /*

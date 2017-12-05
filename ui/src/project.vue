@@ -126,15 +126,18 @@
             </div>
 
             <div v-if="tab == 2">
-                <!--<b-alert :show="true">Processes page will be moved here soon.</b-alert>-->
-                <p>Processes page will be moved here soon by organizing each process under a specific project.</p>
-                <p>For now please visit the old processes page via the left hand side menu.</p>
+                <b-alert show>
+                    <b>Coming Soon!</b> 
+                    Processes page will be moved here soon by organizing each process under a specific project.
+                    For now please visit the old processes page via the left hand side menu.
+                </b-alert>
             </div>
 
             <div v-if="tab == 3">
+                <b-alert show><b>Coming Soon!</b> You will be able to view / register new pipeline rules.</b-alert>
                 <p class="text-muted" v-if="!rules || rules.length == 0">No pipline registered</p>
                 <div v-for="rule in rules" :key="rule._id">
-                    {{rule}}
+                    <pre v-highlightjs><code class="json hljs">{{rule}}</code></pre>
                 </div>
             </div>
 
@@ -284,6 +287,11 @@ export default {
             //open tab
             if(this.$route.params.tab) {
                 this.tab = parseInt(this.$route.params.tab);
+            }
+
+            //open dataset view
+            if(this.$route.params.subid) {
+                this.$root.$emit('dataset.view', this.$route.params.subid);
             }
         },
 

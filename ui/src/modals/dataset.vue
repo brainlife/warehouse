@@ -1,9 +1,8 @@
 <template>
-<div v-if="dataset">
-    <pageheader/>
-    <sidemenu active="/projects"></sidemenu>
-    <div class="header" vi-if="dataset">
-        <b-button-group style="float: right;">
+<div v-if="dataset" class="dataset-modal">
+    <div class="dataset-header">
+        <icon name="close" style="float: right; opacity: 0.7;" scale="2" @click.native="close"/>
+        <b-button-group style="float: right; margin-right: 30px;">
             <b-button variant="" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
             <b-button variant="" @click="download" v-if="dataset.storage" icon="document">Download 
                 <small style="opacity: 0.5" v-if="dataset.size">({{dataset.size|filesize}})</small>
@@ -16,74 +15,87 @@
                 <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </div>
         </h2>
-    </div>
-    <div class="page-content" v-if="dataset" style="margin-top: 80px;">
-        <!--
-        <div style="padding: 20px 20px 10px 20px; background-color: #666; color: white;">
-        </div>
-        -->
+    </div><!--header-->
+
+    <div class="dataset-content">
+        <!-- detail -->
         <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
-        <table class="info">
-        <tr>
-            <th width="200px">Description</th>
-            <td>
+
+        <b-row>
+            <b-col cols="3">
+                <b class="text-muted">Description</b>
+            </b-col>
+            <b-col>
                 <div v-if="dataset._canedit">
-                    <el-row>
-                        <el-col :span="20">
-                            <el-input type="textarea" v-model="dataset.desc" @change="dirty.desc = true"></el-input>
-                        </el-col>
-                        <el-col :span="4">
-                            <el-button v-if="dirty.desc" @click="update_dataset('desc')" type="primary" style="float:right;">Update</el-button>
-                        </el-col>
-                    </el-row>
+                    <b-form-textarea v-model="dataset.desc" @input="dirty.desc = true"/>
+                    <el-button v-if="dirty.desc" @click="update_dataset('desc')" type="primary" style="float:right;">Update</el-button>
                 </div>
                 <div v-else>
                     {{dataset.desc}}
                 </div>
-            </td>
-        </tr>
-        <tr>
-            <th>Create Date</th>
-            <td>{{new Date(dataset.create_date).toLocaleString()}}</td>
-        </tr>
-        <!--
-        <tr>
-            <th>Backup Date</th>
-            <td>
-                <span v-if="dataset.backup_date">{{new Date(dataset.backup_date).toLocaleString()}}</span>
-                <span v-else>This dataset has not yet backed up to a permanent storage</span>
-            </td>
-        </tr>
-        -->
-        <tr v-if="dataset.download_count > 0">
-            <th>Download Count</th>
-            <td>{{dataset.download_count}}</td>
-        </tr>
-        <tr>
-            <th>Storage</th>
-            <td>
-                <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                    <icon name="cog" :spin="true"/> Storing ...
-                </span> 
-                <span v-if="dataset.status == 'stored'">
-                    This dataset is currently stored in <b>{{dataset.storage}}</b> 
-                    <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
-                </span> 
-                <span v-if="dataset.status == 'failed'" style="color: red;">
-                    <icon name="exclamation-triangle"/> Failed to store on warehouse
-                </span> 
-                <span v-if="!dataset.status">
-                    Status is unknown
-                </span> 
+                <br>
+            </b-col>
+        </b-row>
 
-                <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
-                    <icon name="bookmark"/>
-                </span>
-            </td>
-        </tr>
-        <tr>
-            <th>Metadata</th>
-            <td>
+        <b-row>
+            <b-col cols="3"><b class="text-muted">User Tags</b></b-col>
+            <b-col>
+                <div v-if="dataset._canedit && alltags">
+                    <select2 :options="alltags" v-model="dataset.tags" :multiple="true" :tags="true" @input="dirty.tags = true"></select2>
+                    <el-button v-if="dirty.tags" @click="update_dataset('tags')" type="primary" style="float:right;">Update</el-button>
+                </div>
+                <div v-else>
+                    <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
+                    <tags :tags="dataset.tags"></tags>
+                </div>
+                <br>
+            </b-col>
+        </b-row>
+
+        <b-row>
+            <b-col cols="3"><b class="text-muted">Uploaded By</b></b-col>
+            <b-col>
+                <p>
+                    <contact :id="dataset.user_id"/> at <b>{{new Date(dataset.create_date).toLocaleString()}}</b>
+                </p>
+            </b-col>
+        </b-row>
+
+        <b-row v-if="dataset.download_count > 0">
+            <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
+            <b-col>
+                <p>{{dataset.download_count}}</p>
+            </b-col>
+        </b-row>
+
+        <b-row>
+            <b-col cols="3"><b class="text-muted">Storage</b></b-col>
+            <b-col>
+                <p>
+                    <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
+                        <icon name="cog" :spin="true"/> Storing ...
+                    </span> 
+                    <span v-if="dataset.status == 'stored'">
+                        This dataset is currently stored in <b>{{dataset.storage}}</b> 
+                        <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
+                    </span> 
+                    <span v-if="dataset.status == 'failed'" style="color: red;">
+                        <icon name="exclamation-triangle"/> Failed to store on warehouse
+                    </span> 
+                    <span v-if="!dataset.status">
+                        Status is unknown
+                    </span> 
+
+                    <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
+                        <icon name="bookmark"/>
+                    </span>
+                </p>
+            </b-col>
+        </b-row>
+
+        <b-row>
+            <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
+            <b-col>
                 <div v-if="dataset._canedit">
                     <el-row>
                         <el-col :span="6" v-for="(m, id) in dataset.meta" :key="id">
@@ -95,27 +107,19 @@
                     <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
                 </div>
                 <metadata v-else :metadata="dataset.meta"></metadata>
-            </td>
-        </tr>
-        <tr>
-            <th>User Tags</th>
-            <td>
-                <div v-if="dataset._canedit && alltags">
-                    <select2 :options="alltags" v-model="dataset.tags" :multiple="true" :tags="true" @input="dirty.tags = true"></select2>
-                    <el-button v-if="dirty.tags" @click="update_dataset('tags')" type="primary" style="float:right;">Update</el-button>
-                </div>
-                <div v-else>
-                    <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
-                    <tags :tags="dataset.tags"></tags>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <th>Data Type</th>
-            <td>
+                <br>
+            </b-col>
+        </b-row>
+
+        <b-row>
+            <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
+            <b-col>
                 <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
-            </td>
-        </tr>
+                <br>
+            </b-col>
+        </b-row>
+
+        <!--
         <tr>
             <th>Project</th>
             <td>
@@ -125,15 +129,19 @@
                 </el-card>
             </td>
         </tr>
-        <tr>
-            <th>Provenance</th>
-            <td>
-                <div ref="vis" style="background-color: #555; box-shadow: inset 2 2 8px #000; height: 700px;"/>
-            </td>
-        </tr>
-        <tr v-if="apps">
-            <th>Applications</th>
-            <td>
+        -->
+
+        <b-row>
+            <b-col cols="3"><b class="text-muted">Provenance</b></b-col>
+            <b-col>
+                <div ref="vis" style="height: 700px; background-color: white;"/>
+                <br>
+            </b-col>
+        </b-row>
+
+        <b-row v-if="apps">
+            <b-col cols="3"><b class="text-muted">Applications</b></b-col>
+            <b-col>
                 <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
                 <p v-if="apps.length == 0">There are no application that uses this datatype</p>
                 <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
@@ -141,16 +149,10 @@
                         <app :app="app" :dataset="dataset" :compact="true" descheight="65px"></app>
                     </div>
                 </div>
-            </td>
-        </tr>
-        <tr>
-            <th>Uploaded by</th>
-            <td>
-                <p>
-                    <contact :id="dataset.user_id"/>
-                </p> 
-            </td>
-        </tr>
+                <br>
+            </b-col>
+        </b-row>
+
         <!--
         <tr>
             <th>Citation</th>
@@ -162,15 +164,17 @@
             </td>
         </tr>
         -->
-        <tr v-if="dataset.publications && dataset.publications.length">
-            <th>Publications</th>
-            <td>
-                <p class="text-muted">This dataset is published through following publications</p>
-                <pubcard v-for="pub in dataset.publications" :key="pub._id" :pub="pub" compact="true" />
-            </td>
-        </tr>
-        </table>
 
+        <b-row v-if="dataset.publications && dataset.publications.length">
+            <b-col cols="3"><b class="text-muted">Publications</b></b-col>
+            <b-col>
+                <p class="text-muted">This dataset is published on following publications</p>
+                <pubcard v-for="pub in dataset.publications" :key="pub._id" :pub="pub" compact="true" />
+                <br>
+            </b-col>
+        </b-row>
+
+        <!--
         <br>
         <div v-if="config.debug">
             <h2>Debug</h2>
@@ -188,11 +192,10 @@
                 </b-card>
             </b-collapse>
         </div>
-    </div><!--page-content-->
-    <!--<viewselecter @select="view" :datatype_name="vsel.datatype_name"></viewselecter>-->
-</div><!--root-->
+        -->
+    </div>
+</div>
 </template>
-
 <script>
 import Vue from 'vue'
 
@@ -213,7 +216,7 @@ import pubcard from '@/components/pubcard'
 import vis from 'vis/dist/vis-network.min.js'
 import 'vis/dist/vis-network.min.css'
 
-const lib = require('./lib');
+const lib = require('@/lib');
 
 export default {
     components: { 
@@ -221,7 +224,7 @@ export default {
         app, tags, datatype, 
         metadata, pageheader, appavatar,
         datatypetag, select2, task, pubcard
-     },
+    },
     data () {
         return {
             dataset: null,
@@ -229,12 +232,6 @@ export default {
             apps: null,
             prov: null, 
             derivatives: {},
-
-            /*
-            vsel: {
-                datatype_name: null,
-            },
-            */
 
             selfurl: document.location.href,
             
@@ -245,34 +242,32 @@ export default {
             },
 
             alltags: null,
-
             config: Vue.config,
+        } 
+    },
+
+    mounted() {
+        //document.body.appendChild(this.$refs.modal.$el); //move to root
+        this.$root.$on("dataset.view", id=>{
+            console.log("requested to view", id);
+            this.load(id);
+        });
+    },
+    
+    watch: {
+        '$route': function() {
+            this.dataset = null;
         }
     },
 
-    watch: {
-        '$route' (to, from) {
-            this.load(this.$route.params.id);
-        },
-    },
-
-    mounted: function() {
-        this.load(this.$route.params.id);
-    },
     methods: {
         update_dataset: function(elem) {
             this.$http.put(Vue.config.api+'/dataset/'+this.dataset._id, this.dataset).then(res=>{this.$notify("saved")});
             this.dirty[elem] = false;
         },
         
-        opendataset: function(dataset) {
-            console.dir(dataset);
-        },
-        go: function(path) {
-            this.$router.push(path);
-        },
-        download_prov: function() {
-            alert("TODO..");
+        close: function() {
+            this.dataset = null;
         },
 
         download: function() {
@@ -319,7 +314,7 @@ export default {
                         ], 
                     },
                 }).then(res=>{
-                    //then jump!
+                    //then jump! (TODO - should move to /project soon)
                     this.$router.replace("/processes/"+instance._id);
                 });
             });
@@ -329,7 +324,7 @@ export default {
             if(confirm("Do you really want to remove this dataset ?")) {
                 this.$http.delete('dataset/'+this.dataset._id)
                 .then(res=>{
-                    this.go('/datasets');        
+                    this.$refs.modal.close();
                 });
             }
         },
@@ -418,20 +413,21 @@ export default {
                 this.prov = res.body;
 
                 //initialize vis
-                var gph = new vis.Network(this.$refs.vis, res.body, {
-                    /*
-                  layout: {
-                    hierarchical: {
-                        direction:"LR",
-                        levelSeparation: 100,
-                        sortMethod: "hubsize",
-                    }
-                  },
-                    */
-                    physics:{barnesHut:{gravitationalConstant:-3000}}
-                    //physics:{barnesHut:{gravitationalConstant:-3000,/* springConstant: 0.01,*/ avoidOverlap: 0.01}}
+                Vue.nextTick(()=>{
+                    var gph = new vis.Network(this.$refs.vis, res.body, {
+                        /*
+                      layout: {
+                        hierarchical: {
+                            direction:"LR",
+                            levelSeparation: 100,
+                            sortMethod: "hubsize",
+                        }
+                      },
+                        */
+                        physics:{barnesHut:{gravitationalConstant:-3000}}
+                        //physics:{barnesHut:{gravitationalConstant:-3000,/* springConstant: 0.01,*/ avoidOverlap: 0.01}}
+                    });
                 });
-
              }).catch(err=>{
                 console.error(err);
             });
@@ -511,40 +507,39 @@ export default {
                 }
             });
         },
-    },
+    }
 }
-</script>
 
+</script>
 <style scoped>
-.ui.text.menu {
-    margin: 0;
-}
-.dataset:hover {
-    cursor: pointer;
-    background-color: #ddd;
-}
-.header {
-background: #666;
-padding: 20px;
-padding-bottom: 20px;
-margin-top: 50px;
-height: 80px;
+.dataset-modal {
 position: fixed;
 top: 0px;
+left: 0px;
+bottom: 0px;
 right: 0px;
-left: 90px;
-color: #666;
-z-index: 1;
-border-bottom: 1px solid #666;
+background-color: #f0f0f0;
+z-index: 10;
+margin: 30px;
+box-shadow: 0 0 150px black;
 }
-.el-alert {
-border-radius: inherit;
+.dataset-header {
+position: fixed;
+left: 30px;
+right: 30px;
+height: 90px;
+z-index: 11;
+background-color: white;
+padding: 20px;
+box-shadow: 0 0 5px #555;
 }
-.task-desc {
-margin-top: 10px; 
-padding: 5px 10px; 
-margin-left: 90px;
-font-size: 90%; 
-background-color: #e0e0e0;
+.dataset-content {
+position: fixed;
+top: 120px;
+left: 30px;
+bottom: 30px;
+right: 30px;
+overflow: auto;
+padding: 20px;
 }
 </style>

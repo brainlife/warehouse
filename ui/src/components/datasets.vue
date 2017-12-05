@@ -244,22 +244,6 @@ export default {
             });
         },
         
-        /*
-        check_project_id: function(def) {
-            this.project_id = this.$route.params.projectid;
-            if(!this.project_id) {
-                var pid = localStorage.getItem("last_projectid_used");
-                if(!pid && def) {
-                    console.log("last_projectid not set.. using default one");
-                    pid = def._id; //just pick one that user has access
-                }
-                this.$router.replace("/datasets/"+pid);
-            } else {
-                localStorage.setItem("last_projectid_used", this.project_id);
-            }
-        },
-        */
-        
 		page_scrolled: function() {
             var e = document.getElementById("scrolled-area").parentNode;
             var scroll_top = e.scrollTop;
@@ -396,7 +380,13 @@ export default {
 
         open_dataset: function(dataset_id) {
             //TODO - we should probably use semi-fullscreen modal to display dataset
-            this.$router.push('/dataset/'+dataset_id);
+            this.$router.push('/project/'+this.project._id+'/1/'+dataset_id);
+            //this.$root.$emit('dataset.view', dataset_id);
+
+            //same code exists in project.vue (to handle URL based open)
+            if(this.$route.params.subid) {
+                this.$root.$emit('dataset.view', this.$route.params.subid);
+            }
         },
 
         check: function(dataset) {
