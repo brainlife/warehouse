@@ -99,7 +99,7 @@ export default {
                 name: "Volume Viewer",
                 desc: "to-be-written.",
                 avatar: "http://www.brainlife.io/images/ui-logos/ui-volumeviewer.png",
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/mask" ],
             },
             {
                 ui: "fslview",
