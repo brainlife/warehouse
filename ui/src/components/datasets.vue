@@ -485,13 +485,6 @@ export default {
             }).then(task=>{
                 this.clear_selected();
                 cb(task);
-                /*
-                if(v.docker) {
-                    window.open("/warehouse/novnc/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
-                } else {
-                    window.open("/warehouse/view/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
-                }
-                */
             });
         },
 

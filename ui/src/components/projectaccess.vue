@@ -4,7 +4,7 @@
         <h4><b-badge variant="success">Public</b-badge></h4>
     </div>
     <div v-if="access == 'private'" title="Only the members of project can access datasets">
-        <h4><b-badge variant="danger">Private</b-badge></h4>
+        <h4><b-badge variant="danger"><icon name="lock"/> Private</b-badge></h4>
     </div>
 </div>
 </template>

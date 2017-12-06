@@ -4,29 +4,7 @@
     <sidemenu active="/projects"/>
     <projectmenu :active="selected._id" :projects="projects" @change="change_project"></projectmenu>
     <div class="header">
-        <!--
-        <b-row>
-            <b-col>
-                <div style="float: left; margin-right: 40px; margin-bottom: 15px; height: 100%;">
-                    <projectavatar :project="selected"/>
-                </div>
-                <div>
-                    <h3 style="color: #666; margin-bottom: 10px;">
-                        <projectaccess :access="selected.access"/>
-                        {{selected.name}}
-                    </h3>
-                    <p class="text-muted">{{selected.desc}}</p>
-                </div>
-            </b-col>
-            <b-col cols="3">
-                <b-button-group style="float: right;" v-if="selected._canedit">
-                    <b-button variant="danger" @click="remove()" v-if="!selected.removed"><icon name="trash"/></b-button>
-                    <b-button variant="default" @click="edit()"><icon name="pencil"/> Edit</b-button>
-                </b-button-group>
-            </b-col>
-        </b-row>
-        -->
-        <b-tabs class="brainlife-tab" v-model="tab">
+        <b-tabs class="brainlife-tab" v-model="tab" @input="tab_change">
             <b-tab title="Detail"/>
             <b-tab title="Datasets"/>
             <b-tab title="Processes"/>
@@ -141,11 +119,33 @@
                 </div>
             </div>
 
-            <div v-if="tab == 4">
+            <div v-if="tab == 4 && !publishing">
                 <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered</p>
                 <div v-for="pub in pubs" :key="pub._id">
                     <pubcard :pub="pub"/>
                 </div>
+                <b-button class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
+            </div>
+            <div v-if="tab == 4 && publishing">
+                <transition name="slide-fade">
+                    <div v-if="publishing_page == 0">
+                        <p>This wizard will guide you through the process of publishing the currerntly available datasets under this project and applications used to generate those datasets.</p>
+                        <p>Once you publish your datasets, those datasets will be publically available (including guest users).</p>
+                    </div>
+                </transition>
+                <transition name="slide-fade">
+                    <div v-if="publishing_page == 1">
+                        page 1
+                    </div>
+                </transition>
+                <transition name="slide-fade">
+                    <div v-if="publishing_page == 2">
+                        page 2
+                    </div>
+                </transition>
+                <hr>
+                <button type="button" class="btn btn-secondary" @click="publishing = false">Cancel</button>
+                <button type="button" class="btn btn-primary" @click="publishing_page++">Next</button>
             </div>
 
             <!--
@@ -201,6 +201,9 @@ export default {
             rules: null, 
             pubs: null, 
 
+            publishing: false,
+            publishing_page: 0,
+
             tab: 0,
             projects: null, //all projects that user has access to
             config: Vue.config,
@@ -208,6 +211,10 @@ export default {
     },
 
     mounted: function() {
+
+        this.$root.$on("dataset.close", ()=>{
+            this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
+        });
 
         this.$http.get('project', {params: {
             find: JSON.stringify({
@@ -232,27 +239,14 @@ export default {
         .catch(console.error);
     },
 
-    watch: {
-        //when user select different project, this gets called (mounted() won't be called anymore)
-        /*
-        $route: function() {
-            var prev = this.selected;
-            this.parse_params();
-            if(prev != this.selected) {
-                console.log("project changed. loading project detail");
-                this.load();
-            }
-        },
-        */
-
-        tab: function() {
-            this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
-        },
-    },
-
     methods: {
         edit: function() {
             this.$router.push('/project/'+this.selected._id+'/edit');
+        },
+
+        tab_change: function() {
+            console.log("tab updated");
+            this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
         },
 
         remove: function() {
@@ -319,6 +313,11 @@ export default {
                 this.rules = res.body.rules; 
             })  
             .catch(console.error);
+        },
+
+        start_publish: function() {
+            this.publishing = true;
+            this.publishing_page = 0;
         }
     },
 }
@@ -353,5 +352,17 @@ margin-bottom: 20px;
 padding: 0;
 border-bottom: 1px solid #ccc;
 z-index: 1;
+}
+
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+.slide-fade-leave-active {
+  transition: none;
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
 }
 </style>

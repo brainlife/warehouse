@@ -1,200 +1,206 @@
 <template>
-<div v-if="dataset" class="dataset-modal">
-    <div class="dataset-header">
-        <icon name="close" style="float: right; opacity: 0.7;" scale="2" @click.native="close"/>
-        <b-button-group style="float: right; margin-right: 30px;">
-            <b-button variant="" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
-            <b-button variant="" @click="download" v-if="dataset.storage" icon="document">Download 
-                <small style="opacity: 0.5" v-if="dataset.size">({{dataset.size|filesize}})</small>
-            </b-button>
-            <b-button variant="" @click="process" v-if="dataset.storage" icon="document">Process</b-button>
-        </b-button-group>
-        <b-button style="float: right; margin-right: 15px;" variant="danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
-        <h2>
-            <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
-                <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
-            </div>
-        </h2>
-    </div><!--header-->
-
-    <div class="dataset-content">
-        <!-- detail -->
-        <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
-
-        <b-row>
-            <b-col cols="3">
-                <b class="text-muted">Description</b>
-            </b-col>
-            <b-col>
-                <div v-if="dataset._canedit">
-                    <b-form-textarea v-model="dataset.desc" @input="dirty.desc = true"/>
-                    <el-button v-if="dirty.desc" @click="update_dataset('desc')" type="primary" style="float:right;">Update</el-button>
+<transition name="fade">
+<div v-if="dataset" class="dataset-overlay">
+    <b-container>
+        <div class="dataset-header">
+            <icon name="close" style="float: right; opacity: 0.6; cursor: pointer;" scale="2" @click.native="close"/>
+            <b-button-group style="float: right; margin-right: 30px;">
+                <b-button variant="default" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
+                <b-button variant="default" @click="download" v-if="dataset.storage" icon="document">Download 
+                    <small style="opacity: 0.5" v-if="dataset.size">({{dataset.size|filesize}})</small>
+                </b-button>
+                <b-button variant="default" @click="process" v-if="dataset.storage" icon="document">Process</b-button>
+            </b-button-group>
+            <b-button style="float: right; margin-right: 15px;" variant="outline-danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
+            <h2>
+                <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
+                    <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
                 </div>
-                <div v-else>
-                    {{dataset.desc}}
-                </div>
-                <br>
-            </b-col>
-        </b-row>
+            </h2>
+        </div><!--header-->
 
-        <b-row>
-            <b-col cols="3"><b class="text-muted">User Tags</b></b-col>
-            <b-col>
-                <div v-if="dataset._canedit && alltags">
-                    <select2 :options="alltags" v-model="dataset.tags" :multiple="true" :tags="true" @input="dirty.tags = true"></select2>
-                    <el-button v-if="dirty.tags" @click="update_dataset('tags')" type="primary" style="float:right;">Update</el-button>
-                </div>
-                <div v-else>
-                    <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
-                    <tags :tags="dataset.tags"></tags>
-                </div>
-                <br>
-            </b-col>
-        </b-row>
+        <div class="dataset-content">
+            <!-- detail -->
+            <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
 
-        <b-row>
-            <b-col cols="3"><b class="text-muted">Uploaded By</b></b-col>
-            <b-col>
-                <p>
-                    <contact :id="dataset.user_id"/> at <b>{{new Date(dataset.create_date).toLocaleString()}}</b>
-                </p>
-            </b-col>
-        </b-row>
-
-        <b-row v-if="dataset.download_count > 0">
-            <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
-            <b-col>
-                <p>{{dataset.download_count}}</p>
-            </b-col>
-        </b-row>
-
-        <b-row>
-            <b-col cols="3"><b class="text-muted">Storage</b></b-col>
-            <b-col>
-                <p>
-                    <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                        <icon name="cog" :spin="true"/> Storing ...
-                    </span> 
-                    <span v-if="dataset.status == 'stored'">
-                        This dataset is currently stored in <b>{{dataset.storage}}</b> 
-                        <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
-                    </span> 
-                    <span v-if="dataset.status == 'failed'" style="color: red;">
-                        <icon name="exclamation-triangle"/> Failed to store on warehouse
-                    </span> 
-                    <span v-if="!dataset.status">
-                        Status is unknown
-                    </span> 
-
-                    <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
-                        <icon name="bookmark"/>
-                    </span>
-                </p>
-            </b-col>
-        </b-row>
-
-        <b-row>
-            <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
-            <b-col>
-                <div v-if="dataset._canedit">
-                    <el-row>
-                        <el-col :span="6" v-for="(m, id) in dataset.meta" :key="id">
-                            <el-input type="text" v-model="dataset.meta[id]" @change="dirty.meta = true">
-                                <template slot="prepend"><span style="text-transform: uppercase;">{{id}}</span></template>
-                            </el-input>
-                        </el-col>
-                    </el-row>
-                    <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
-                </div>
-                <metadata v-else :metadata="dataset.meta"></metadata>
-                <br>
-            </b-col>
-        </b-row>
-
-        <b-row>
-            <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
-            <b-col>
-                <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
-                <br>
-            </b-col>
-        </b-row>
-
-        <!--
-        <tr>
-            <th>Project</th>
-            <td>
-                <p class="text-muted">This dataset belongs to following project.</p>
-                <el-card>
-                    <project :project="dataset.project"></project>
-                </el-card>
-            </td>
-        </tr>
-        -->
-
-        <b-row>
-            <b-col cols="3"><b class="text-muted">Provenance</b></b-col>
-            <b-col>
-                <div ref="vis" style="height: 700px; background-color: white;"/>
-                <br>
-            </b-col>
-        </b-row>
-
-        <b-row v-if="apps">
-            <b-col cols="3"><b class="text-muted">Applications</b></b-col>
-            <b-col>
-                <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
-                <p v-if="apps.length == 0">There are no application that uses this datatype</p>
-                <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
-                    <div style="margin-right: 10px">
-                        <app :app="app" :dataset="dataset" :compact="true" descheight="65px"></app>
+            <b-row>
+                <b-col cols="3">
+                    <b class="text-muted">Description</b>
+                </b-col>
+                <b-col>
+                    <div v-if="dataset._canedit">
+                        <b-form-textarea v-model="dataset.desc" @input="dirty.desc = true"/>
+                        <el-button v-if="dirty.desc" @click="update_dataset('desc')" type="primary" style="float:right;">Update</el-button>
                     </div>
-                </div>
-                <br>
-            </b-col>
-        </b-row>
+                    <div v-else>
+                        {{dataset.desc}}
+                    </div>
+                    <br>
+                </b-col>
+            </b-row>
 
-        <!--
-        <tr>
-            <th>Citation</th>
-            <td>
-                <p>
-                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i>
-                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
-                </p> 
-            </td>
-        </tr>
-        -->
+            <b-row>
+                <b-col cols="3"><b class="text-muted">User Tags</b></b-col>
+                <b-col cols="9">
+                    <div v-if="dataset._canedit && alltags">
+                        <select2 :options="alltags" v-model="dataset.tags" :multiple="true" :tags="true" @input="dirty.tags = true"></select2>
+                        <el-button v-if="dirty.tags" @click="update_dataset('tags')" type="primary" style="float:right;">Update</el-button>
+                    </div>
+                    <div v-else>
+                        <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
+                        <tags :tags="dataset.tags"></tags>
+                    </div>
+                    <br>
+                </b-col>
+            </b-row>
 
-        <b-row v-if="dataset.publications && dataset.publications.length">
-            <b-col cols="3"><b class="text-muted">Publications</b></b-col>
-            <b-col>
-                <p class="text-muted">This dataset is published on following publications</p>
-                <pubcard v-for="pub in dataset.publications" :key="pub._id" :pub="pub" compact="true" />
-                <br>
-            </b-col>
-        </b-row>
+            <b-row>
+                <b-col cols="3"><b class="text-muted">Uploaded By</b></b-col>
+                <b-col>
+                    <p>
+                        <contact :id="dataset.user_id"/> at <b>{{new Date(dataset.create_date).toLocaleString()}}</b>
+                    </p>
+                </b-col>
+            </b-row>
 
-        <!--
-        <br>
-        <div v-if="config.debug">
-            <h2>Debug</h2>
-            <b-btn block v-b-toggle.dataset>Datasets</b-btn>
-            <b-collapse id="dataset" accorion="my-accordion">
-                <b-card>
-                    <pre v-highlightjs="JSON.stringify(dataset, null, 4)"><code class="json hljs"></code></pre>
-                </b-card>
-            </b-collapse>
+            <b-row v-if="dataset.download_count > 0">
+                <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
+                <b-col>
+                    <p>{{dataset.download_count}}</p>
+                </b-col>
+            </b-row>
 
-            <b-btn block v-b-toggle.prov>prov</b-btn>
-            <b-collapse id="prov" accorion="my-accordion">
-                <b-card>
-                    <pre v-highlightjs="JSON.stringify(prov, null, 4)"><code class="json hljs"></code></pre>
-                </b-card>
-            </b-collapse>
+            <b-row>
+                <b-col cols="3"><b class="text-muted">Storage</b></b-col>
+                <b-col>
+                    <p>
+                        <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
+                            <icon name="cog" :spin="true"/> Storing ...
+                        </span> 
+                        <span v-if="dataset.status == 'stored'">
+                            This dataset is currently stored in <b>{{dataset.storage}}</b> 
+                            <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
+                        </span> 
+                        <span v-if="dataset.status == 'failed'" style="color: red;">
+                            <icon name="exclamation-triangle"/> Failed to store on warehouse
+                        </span> 
+                        <span v-if="!dataset.status">
+                            Status is unknown
+                        </span> 
+
+                        <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
+                            <icon name="bookmark"/>
+                        </span>
+                    </p>
+                </b-col>
+            </b-row>
+
+            <b-row>
+                <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
+                <b-col>
+                    <div v-if="dataset._canedit">
+                        <el-row>
+                            <el-col :span="6" v-for="(m, id) in dataset.meta" :key="id">
+                                <el-input type="text" v-model="dataset.meta[id]" @change="dirty.meta = true">
+                                    <template slot="prepend"><span style="text-transform: uppercase;">{{id}}</span></template>
+                                </el-input>
+                            </el-col>
+                        </el-row>
+                        <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
+                    </div>
+                    <metadata v-else :metadata="dataset.meta"></metadata>
+                    <br>
+                </b-col>
+            </b-row>
+
+            <b-row>
+                <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
+                <b-col>
+                    <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+                    <br>
+                </b-col>
+            </b-row>
+
+            <!--
+            <tr>
+                <th>Project</th>
+                <td>
+                    <p class="text-muted">This dataset belongs to following project.</p>
+                    <el-card>
+                        <project :project="dataset.project"></project>
+                    </el-card>
+                </td>
+            </tr>
+            -->
+
+            <b-row>
+                <b-col cols="3"><b class="text-muted">Provenance</b></b-col>
+                <b-col>
+                    <div ref="vis" style="height: 700px; background-color: white;"/>
+                    <br>
+                </b-col>
+            </b-row>
+
+            <b-row v-if="apps">
+                <b-col cols="3"><b class="text-muted">Applications</b></b-col>
+                <b-col>
+                    <p v-if="apps.length > 0">You can use this data as input for following applications.</p>
+                    <p v-if="apps.length == 0">There are no application that uses this datatype</p>
+                    <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
+                        <div style="margin-right: 10px">
+                            <app :app="app" :dataset="dataset" :compact="true" descheight="65px"></app>
+                        </div>
+                    </div>
+                    <br>
+                </b-col>
+            </b-row>
+
+            <!--
+            <tr>
+                <th>Citation</th>
+                <td>
+                    <p>
+                        <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i>
+                        <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
+                    </p> 
+                </td>
+            </tr>
+            -->
+
+            <!-- I need to populate pub.project .. and I think it's a bit redundant since there is publications tab
+            <b-row v-if="dataset.publications && dataset.publications.length">
+                <b-col cols="3"><b class="text-muted">Publications</b></b-col>
+                <b-col>
+                    <p class="text-muted">This dataset is published on following publications</p>
+                    <pubcard v-for="pub in dataset.publications" :key="pub._id" :pub="pub" compact="true" />
+                    <br>
+                </b-col>
+            </b-row>
+            -->
+
+            <!--
+            <br>
+            <div v-if="config.debug">
+                <h2>Debug</h2>
+                <b-btn block v-b-toggle.dataset>Datasets</b-btn>
+                <b-collapse id="dataset" accorion="my-accordion">
+                    <b-card>
+                        <pre v-highlightjs="JSON.stringify(dataset, null, 4)"><code class="json hljs"></code></pre>
+                    </b-card>
+                </b-collapse>
+
+                <b-btn block v-b-toggle.prov>prov</b-btn>
+                <b-collapse id="prov" accorion="my-accordion">
+                    <b-card>
+                        <pre v-highlightjs="JSON.stringify(prov, null, 4)"><code class="json hljs"></code></pre>
+                    </b-card>
+                </b-collapse>
+            </div>
+            -->
         </div>
-        -->
-    </div>
+    </b-container>
 </div>
+</transition>
 </template>
 <script>
 import Vue from 'vue'
@@ -268,6 +274,7 @@ export default {
         
         close: function() {
             this.dataset = null;
+            this.$root.$emit("dataset.close");
         },
 
         download: function() {
@@ -512,34 +519,38 @@ export default {
 
 </script>
 <style scoped>
-.dataset-modal {
+.dataset-overlay {
 position: fixed;
 top: 0px;
 left: 0px;
 bottom: 0px;
 right: 0px;
-background-color: #f0f0f0;
+background-color: rgba(0,0,0,0.3);
 z-index: 10;
-margin: 30px;
-box-shadow: 0 0 150px black;
+padding: 30px;
 }
 .dataset-header {
-position: fixed;
-left: 30px;
-right: 30px;
-height: 90px;
-z-index: 11;
 background-color: white;
 padding: 20px;
-box-shadow: 0 0 5px #555;
+box-shadow: 0 0 3px rgba(0,0,0,0.5);
+z-index: 20;
+position: relative;
 }
 .dataset-content {
-position: fixed;
-top: 120px;
-left: 30px;
-bottom: 30px;
-right: 30px;
-overflow: auto;
+background-color: #f0f0f0;
 padding: 20px;
+overflow: auto;
+height: 90%;
+}
+.container {
+height: 100%;
+padding: 0px;
+box-shadow: 0 0 20px #000;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .3s
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0
 }
 </style>
