@@ -256,21 +256,21 @@ import tags from '@/components/tags'
 import app from '@/components/app'
 
 export default {
-    components: { pageheader, sidemenu, projectavatar, contact, VueMarkdown, license, projectcard, datatypetag, tags, app },
+
+    components: { 
+        pageheader, sidemenu, projectavatar, 
+        contact, VueMarkdown, license, 
+        projectcard, datatypetag, tags, 
+        app 
+    },
+
     data () {
         return {
-
             pub: null, //publication detail
             dataset_groups: null, //datasets inventory grouped 
             apps: null, //list of apps
 
-            /*
-            datasets_page: 1,
-            datasets_perpage: 100,
-            datasets_count: null,
-            datasets: null, //datasets for current page
-            datatypes: null,
-            */
+            datatypes: {}, 
 
             tab_index: 0,
             query: "",
@@ -291,7 +291,6 @@ export default {
     },
 
     mounted: function() {
-    
         //load publication detail
         this.$http.get('pub', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
@@ -304,7 +303,6 @@ export default {
             return this.$http.get('datatype');
         })
         .then(res=>{
-            this.datatypes = {};
             res.body.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
             });

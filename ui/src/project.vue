@@ -35,8 +35,6 @@
                         <p>{{selected.desc}}</p>
                     </b-col>
                 </b-row>
-
-
                 <hr>
 
                 <b-row>
@@ -119,33 +117,15 @@
                 </div>
             </div>
 
-            <div v-if="tab == 4 && !publishing">
-                <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered</p>
-                <div v-for="pub in pubs" :key="pub._id">
-                    <pubcard :pub="pub"/>
+            <div v-if="tab == 4">
+                <publisher :project="selected" v-if="publishing" @close="publishing = false"/>
+                <div v-else>
+                    <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered</p>
+                    <div v-for="pub in pubs" :key="pub._id">
+                        <pubcard :pub="pub"/>
+                    </div>
+                    <b-button class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
                 </div>
-                <b-button class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
-            </div>
-            <div v-if="tab == 4 && publishing">
-                <transition name="slide-fade">
-                    <div v-if="publishing_page == 0">
-                        <p>This wizard will guide you through the process of publishing the currerntly available datasets under this project and applications used to generate those datasets.</p>
-                        <p>Once you publish your datasets, those datasets will be publically available (including guest users).</p>
-                    </div>
-                </transition>
-                <transition name="slide-fade">
-                    <div v-if="publishing_page == 1">
-                        page 1
-                    </div>
-                </transition>
-                <transition name="slide-fade">
-                    <div v-if="publishing_page == 2">
-                        page 2
-                    </div>
-                </transition>
-                <hr>
-                <button type="button" class="btn btn-secondary" @click="publishing = false">Cancel</button>
-                <button type="button" class="btn btn-primary" @click="publishing_page++">Next</button>
             </div>
 
             <!--
@@ -179,6 +159,7 @@ import license from '@/components/license'
 import projectmenu from '@/components/projectmenu'
 import pubcard from '@/components/pubcard'
 import datasets from '@/components/datasets'
+import publisher from '@/components/publisher'
 
 export default {
     components: { 
@@ -186,6 +167,7 @@ export default {
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
+        publisher,
     },
 
     data () {
@@ -202,7 +184,6 @@ export default {
             pubs: null, 
 
             publishing: false,
-            publishing_page: 0,
 
             tab: 0,
             projects: null, //all projects that user has access to
@@ -317,7 +298,6 @@ export default {
 
         start_publish: function() {
             this.publishing = true;
-            this.publishing_page = 0;
         }
     },
 }

@@ -29,7 +29,7 @@
                 </b-col>
                 <b-col>
                     <div v-if="dataset._canedit">
-                        <b-form-textarea v-model="dataset.desc" @input="dirty.desc = true"/>
+                        <b-form-textarea v-model="dataset.desc" @input="dirty.desc = true" :rows="2"/>
                         <el-button v-if="dirty.desc" @click="update_dataset('desc')" type="primary" style="float:right;">Update</el-button>
                     </div>
                     <div v-else>

@@ -1,0 +1,173 @@
+<template>
+<div>
+    <transition name="slide-fade">
+        <div v-if="page == 0">
+            <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
+            <b-alert show variant="warning"><b>Warning!</b> Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</b-alert>
+            <hr>
+            <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
+            <button type="button" class="btn btn-primary" @click="page++">Start</button>
+        </div>
+    </transition>
+    <transition name="slide-fade">
+        <div v-if="page == 1">
+            <h4>Publication Details</h4>
+            <p class="text-muted">Please enter details for your publications</p>
+            <pubform :pub="pub" @submit="page++">
+                <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
+            </pubform>
+        </div>
+    </transition>
+    <transition name="slide-fade">
+        <div v-if="page == 2">
+            <h4>Select Datasets</h4>
+            <p class="text-muted">Please select datasets you'd like to include in this publication</p>
+            <div v-for="(group, datatype_id) in datatype_groups" :key="datatype_id">
+                <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 4px; margin: 1px;">
+                    <b-row>
+                        <b-col cols="1">
+                            <b-form-checkbox v-model="stat.include"/>
+                        </b-col>
+                        <b-col>
+                            <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)"/>
+                        </b-col>
+                        <b-col>
+                            <small>{{datatypes[datatype_id].desc}}</small>
+                        </b-col>
+                        <b-col>
+                             <b>{{stat.count}}</b> <span style="opacity: 0.8">datasets</span>
+                            <div style="display: inline-block" v-if="stat.size">
+                                <span style="opacity: 0.8">Size</span> <b>{{stat.size|filesize}}</b>
+                            </div>
+                        </b-col>
+                    </b-row>
+                </div>
+            </div>
+            <hr>
+            <button type="button" class="btn btn-secondary" @click="page--">Back</button>
+            <button type="button" class="btn btn-primary" @click="page++">Next</button>
+        </div>
+    </transition>
+</div>
+</template>
+
+<script>
+
+import Vue from 'vue'
+import select2 from '@/components/select2'
+import pubform from '@/components/pubform'
+import datatypetag from '@/components/datatypetag'
+
+export default {
+    components: { 
+        select2, pubform, datatypetag,
+    },
+
+    props: {
+        project: { type: Object },
+    },
+    data () {
+        return {
+            page: 0,
+            pub: {
+                //defaults
+                name: (Vue.config.debug?"test":""),
+                desc: "hello",
+                tags: [],
+                readme: (Vue.config.debug?"test":""),
+                license: "ccby.40",
+                doi: "",
+                fundings: [],
+                authors: [ Vue.config.user.sub.toString() ],
+                contributors: [],
+            },
+            datatype_groups: {},
+            datatypes: {}, 
+        }
+    },
+
+    mounted: function() {
+    
+/*
+        //load all datatypes
+        this.$http.get('dataset/distinct', {params: {
+            find: JSON.stringify({project: this.project._id}),
+            distinct: 'datatype', 
+        }})
+        .then(res=>{
+            //load datatype details
+            return this.$http.get('datatype', {params: {
+                find: JSON.stringify({_id: {$in: res.body}}),
+            }});
+        }) 
+        .then(res=>{
+            res.body.datatypes.forEach((d)=>{
+                this.datatypes[d._id] = d;
+            });
+*/
+
+        //load dataset inventory..
+        this.$http.get('dataset/inventory', {params: {
+            find: JSON.stringify({
+                removed: false,
+                project: this.project._id.toString(),
+            }),
+        }})
+        .then(res=>{
+            let groups = {};
+            res.body.forEach(rec=>{
+                let subject = rec._id.subject;
+                let datatype = rec._id.datatype;
+                let datatype_tags = rec._id.datatype_tags;
+                let datatype_tags_s = JSON.stringify(rec._id.datatype_tags);
+                if(!groups[datatype]) {
+                    groups[datatype] = { size: 0, count:0, datatype_tags: {}};
+                }
+                if(!groups[datatype].datatype_tags[datatype_tags_s]) {
+                    groups[datatype].datatype_tags[datatype_tags_s] = {size: 0, count: 0, include: false};
+                }
+                groups[datatype].datatype_tags[datatype_tags_s].size += rec.size;
+                groups[datatype].datatype_tags[datatype_tags_s].count += rec.count;
+                groups[datatype].size += rec.size;
+                groups[datatype].count += rec.count;
+            });
+            this.datatype_groups = groups;
+
+            //load datatypes
+            return this.$http.get('datatype', {params: {
+                find: JSON.stringify({_id: {$in: Object.keys(groups)}}),
+            }});
+        }) 
+        .then(res=>{
+            res.body.datatypes.forEach((d)=>{
+                this.datatypes[d._id] = d;
+            });
+        }).catch(console.error);
+    },
+    methods: {
+        close() {
+            this.page = 0;
+            this.$emit("close");
+        }
+    }
+}
+</script>
+
+<style scoped>
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+.slide-fade-leave-active {
+  transition: none;
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
+}
+.included {
+background-color: #2693ff;
+color: white;
+}
+</style>
+
