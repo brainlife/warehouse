@@ -88,7 +88,7 @@
                                 </ul>
                             </b-col>
                         </b-row>
-                        <b-row>
+                        <b-row v-if="pub.contributors.length > 0">
                             <b-col cols="3">
                                 <b class="text-muted">Contributors</b>
                             </b-col>
@@ -132,8 +132,9 @@
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
                                     <li v-for="funding in pub.fundings" key="funding._id" class="funder">
-                                        <div v-if="funding.funder == 'nsf'" class="funder-label bg-success">NSF</div>
-                                        <div v-if="funding.funder == 'nih'" class="funder-label bg-info">NIH</div>
+                                        <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
+                                        <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
+                                        <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
                                         {{funding.id}}
                                     </li>
                                 </ul>
@@ -295,6 +296,7 @@ export default {
         this.$http.get('pub', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'project',
+            deref_contacts: true,
         }})
         .then(res=>{
             this.pub = res.body.pubs[0];

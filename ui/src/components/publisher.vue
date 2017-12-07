@@ -3,25 +3,19 @@
     <transition name="slide-fade">
         <div v-if="page == 0">
             <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
-            <b-alert show variant="warning"><b>Warning!</b> Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</b-alert>
+            <p class="text-danger">Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</p>
             <hr>
-            <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="page++">Start</button>
+            <div style="float: right">
+                <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
+                <button type="button" class="btn btn-primary" @click="page++">Start</button>
+            </div>
         </div>
     </transition>
     <transition name="slide-fade">
         <div v-if="page == 1">
-            <h4>Publication Details</h4>
-            <p class="text-muted">Please enter details for your publications</p>
-            <pubform :pub="pub" @submit="page++">
-                <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
-            </pubform>
-        </div>
-    </transition>
-    <transition name="slide-fade">
-        <div v-if="page == 2">
             <h4>Select Datasets</h4>
-            <p class="text-muted">Please select datasets you'd like to include in this publication</p>
+            <b-alert v-if="Object.keys(datatype_groups).length == 0" show variant="danger">There are no datasets to publish</b-alert>
+            <p class="text-muted">Please select datasets you'd like to publish</p>
             <div v-for="(group, datatype_id) in datatype_groups" :key="datatype_id">
                 <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 4px; margin: 1px;">
                     <b-row>
@@ -44,8 +38,19 @@
                 </div>
             </div>
             <hr>
-            <button type="button" class="btn btn-secondary" @click="page--">Back</button>
-            <button type="button" class="btn btn-primary" @click="page++">Next</button>
+            <div style="float: right">
+                <button type="button" class="btn btn-secondary" @click="page--">Back</button>
+                <button type="button" class="btn btn-primary" @click="page++">Next</button>
+            </div>
+        </div>
+    </transition>
+    <transition name="slide-fade">
+        <div v-if="page == 2">
+            <h4>Publication Details</h4>
+            <p class="text-muted">Please enter details for your publications</p>
+            <pubform :pub="pub" @submit.once="publish">
+                <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
+            </pubform>
         </div>
     </transition>
 </div>
@@ -76,7 +81,7 @@ export default {
                 tags: [],
                 readme: (Vue.config.debug?"test":""),
                 license: "ccby.40",
-                doi: "",
+
                 fundings: [],
                 authors: [ Vue.config.user.sub.toString() ],
                 contributors: [],
@@ -148,6 +153,12 @@ export default {
         close() {
             this.page = 0;
             this.$emit("close");
+        },
+        publish() {
+            this.$http.post('pub', Object.assign({project: this.project._id}, this.pub)).then(res=>{
+                this.$notify("Successfully published!");
+                this.$emit("submit", res.body);
+            });
         }
     }
 }
@@ -168,6 +179,9 @@ export default {
 .included {
 background-color: #2693ff;
 color: white;
+}
+h4 {
+opacity: 0.8;
 }
 </style>
 

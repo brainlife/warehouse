@@ -25,7 +25,7 @@
                     <b-col>
                         <b-button-group style="float: right;" v-if="selected._canedit">
                             <b-button variant="danger" @click="remove()" v-if="!selected.removed"><icon name="trash"/></b-button>
-                            <b-button variant="default" @click="edit()"><icon name="pencil"/> Edit</b-button>
+                            <b-button variant="default" @click="edit()"><icon name="pencil"/></b-button>
                         </b-button-group>
 
                         <h3 style="color: #666; margin-bottom: 10px;">
@@ -118,13 +118,35 @@
             </div>
 
             <div v-if="tab == 4">
-                <publisher :project="selected" v-if="publishing" @close="publishing = false"/>
+                <div v-if="publishing">
+                    <h3 style="opacity: 0.7">New Publication</h3>
+                    <br>
+                    <publisher :project="selected" @close="publishing = false" @submit="publish"/>
+                </div>
+                <div v-else-if="pub_editing">
+                    <h3 style="opacity: 0.7">Edit Publication</h3>
+                    <br>
+                    <pubform :pub="pub_editing" @submit="save_pub">
+                        <button type="button" class="btn btn-secondary" @click="pub_editing = null">Cancel</button>
+                    </pubform>
+                </div>
                 <div v-else>
                     <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered</p>
-                    <div v-for="pub in pubs" :key="pub._id">
-                        <pubcard :pub="pub"/>
-                    </div>
-                    <b-button class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
+
+                    <!--show publication-->
+                    <b-card v-for="pub in pubs" :key="pub._id" style="margin-bottom: 10px;">
+                        <div slot="header">
+                            <b-button style="float: right;" size="sm" @click="pub_editing = pub">
+                                <icon name="pencil"/>
+                            </b-button>
+                            <h6>{{pub.name}}</h6>
+                        </div>
+                        <div style="float: right">
+                            <span style="opacity: 0.6">Published on</span> <b>{{new Date(pub.create_date).toLocaleDateString()}}</b>
+                        </div>
+                        {{pub.desc}}
+                    </b-card>
+                    <b-button v-if="selected._canedit" class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
                 </div>
             </div>
 
@@ -160,6 +182,7 @@ import projectmenu from '@/components/projectmenu'
 import pubcard from '@/components/pubcard'
 import datasets from '@/components/datasets'
 import publisher from '@/components/publisher'
+import pubform from '@/components/pubform'
 
 export default {
     components: { 
@@ -167,7 +190,7 @@ export default {
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
-        publisher,
+        publisher, pubform,
     },
 
     data () {
@@ -184,6 +207,7 @@ export default {
             pubs: null, 
 
             publishing: false,
+            pub_editing: null,
 
             tab: 0,
             projects: null, //all projects that user has access to
@@ -217,7 +241,9 @@ export default {
             //TODO.. selecte default?
             //this.check_project_id(res.body.projects[0]);
         })
-        .catch(console.error);
+        .catch(res=>{
+            this.$notify({type: 'error', text: res.body});
+        });
     },
 
     methods: {
@@ -225,8 +251,23 @@ export default {
             this.$router.push('/project/'+this.selected._id+'/edit');
         },
 
+        save_pub: function(pub) {
+            this.$http.put('pub/'+pub._id, pub)
+            .then(res=>{
+                this.$notify("Successfully updated!");
+                for(var k in res.body) {
+                    this.pub_editing[k] = res.body[k];
+                }
+                this.pub_editing = null;
+            }).catch(res=>{
+                this.$notify({type: 'error', text: res.body});
+            });
+        },
+
         tab_change: function() {
             console.log("tab updated");
+            this.publishing = false;
+            this.pub_editing = null;
             this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
         },
 
@@ -244,6 +285,8 @@ export default {
             console.log("project changed too", project);
             this.$router.replace("/project/"+project._id+"/"+this.tab);
             this.parse_params();
+            this.publishing = false;
+            this.pub_editing = null;
             this.load();
         },
 
@@ -283,7 +326,6 @@ export default {
             }})
             .then(res=>{
                 this.pubs = res.body.pubs; 
-
                 return this.$http.get('rule', {params: {
                     find: JSON.stringify({
                         project: this.selected._id, 
@@ -292,12 +334,19 @@ export default {
             })
             .then(res=>{
                 this.rules = res.body.rules; 
-            })  
-            .catch(console.error);
+            }).catch(res=>{
+                this.$notify({type: 'error', text: res.body});
+            });
         },
 
         start_publish: function() {
             this.publishing = true;
+        },
+
+        publish: function(pub) {
+            this.publishing = false;
+            pub.project = this.selected; //pubcard needs project populated
+            this.pubs.push(pub);
         }
     },
 }

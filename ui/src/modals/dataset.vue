@@ -537,7 +537,7 @@ z-index: 20;
 position: relative;
 }
 .dataset-content {
-background-color: #f0f0f0;
+background-color: #f9f9f9;
 padding: 20px;
 overflow: auto;
 height: 90%;

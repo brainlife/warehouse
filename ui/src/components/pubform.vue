@@ -7,7 +7,7 @@
         <b-form-textarea v-model="pub.desc" :rows="2" placeholder="A short summary of the abstract"></b-form-textarea>
     </b-form-group>
     <b-form-group label="Tags" horizontal>
-        <select2 v-model="pub.tags" :multiple="true" :tags="true"></select2>
+        <select2 :options="oldtags" v-model="pub.tags" :multiple="true" :tags="true"></select2>
     </b-form-group>
     <b-form-group label="README *" horizontal>
         <b-form-textarea required v-model="pub.readme" :rows="6" placeholder="Content from abstract, or any other details about this publications"></b-form-textarea>
@@ -17,16 +17,18 @@
         <b-form-select :options="licenses" required v-model="pub.license"/>
         <b-card><license :id="pub.license"/></b-card>
     </b-form-group>
+    <!--
     <b-form-group label="DOI" horizontal>
         <b-form-input v-model="pub.doi" type="text" placeholder="Not issued yet"></b-form-input>
     </b-form-group>
+    -->
     <b-form-group label="Fundings" horizontal>
         <b-input-group v-for="(funding, idx) in pub.fundings" :key="idx" style="margin-bottom: 5px;">
             <b-input-group-addon>Funder</b-input-group-addon>
             <!--https://www.grants.gov/web/grants/learn-grants/grant-making-agencies.html-->
             <b-form-select :options="['NSF', 'NIH', 'DOE', 'DOD']" required v-model="funding.funder"/>
             <b-input-group-addon>ID</b-input-group-addon>
-            <b-form-input type="text" v-model="funding.id" placeholder=""/>
+            <b-form-input type="text" required v-model="funding.id" placeholder=""/>
             <b-input-group-button>
                 <b-button @click="remove_funder(idx)"><icon name="trash"/></b-button>
             </b-input-group-button>
@@ -41,8 +43,13 @@
     </b-form-group>
 
     <hr>
-    <slot/>
-    <b-button type="submit" variant="primary">Next</b-button>
+    <div style="float: right">
+        <slot/>
+        <b-button type="submit" variant="primary">Submit</b-button>
+    </div>
+    <br>
+    <br>
+    <br>
 </b-form>
 </template>
 
@@ -67,9 +74,16 @@ export default {
                 {value: 'cc0', text: 'CC0'},
                 {value: 'pddl', text: 'PDDL'},
                 {value: 'odc.by', text: 'ODC BY 1.0'},
-            ]
+            ],
+            oldtags: null,
         }
     },
+
+    mounted() {
+        //select2 needs option set to show existing tags.. so we copy my own tags and use it as options.. stupid select2
+        this.oldtags = Object.assign(this.pub.tags);
+    },
+
     methods: {
         submit: function(evt) {
             evt.preventDefault();
