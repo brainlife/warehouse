@@ -95,6 +95,15 @@
                     </b-col>
                 </b-row>
 
+                <b-row>
+                    <b-col cols="3">
+                        <b class="text-muted">Comments</b>
+                    </b-col>
+                    <b-col>
+                        <vue-disqus shortname="brain-life"/>
+                    </b-col>
+                </b-row>
+
             </div>
 
             <div v-if="tab == 1">
@@ -195,13 +204,15 @@ import datasets from '@/components/datasets'
 import publisher from '@/components/publisher'
 import pubform from '@/components/pubform'
 
+import VueDisqus from 'vue-disqus/VueDisqus.vue'
+
 export default {
     components: { 
         sidemenu, contactlist, project, 
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
-        publisher, pubform,
+        publisher, pubform, VueDisqus,
     },
 
     data () {

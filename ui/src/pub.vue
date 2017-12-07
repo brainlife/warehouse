@@ -140,6 +140,14 @@
                                 </ul>
                             </b-col>
                         </b-row>
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Comments</b>
+                            </b-col>
+                            <b-col>
+                                <vue-disqus shortname="brain-life"/>
+                            </b-col>
+                        </b-row>
                     </div>
                     <div v-if="tab_index == 1">
                         <!-- datasets -->
@@ -236,6 +244,8 @@
                     </div>
                 </b-col>
             </b-row>
+
+
         </b-container>
         <br>
         <br>
@@ -256,13 +266,15 @@ import datatypetag from '@/components/datatypetag'
 import tags from '@/components/tags'
 import app from '@/components/app'
 
+import VueDisqus from 'vue-disqus/VueDisqus.vue'
+
 export default {
 
     components: { 
         pageheader, sidemenu, projectavatar, 
         contact, VueMarkdown, license, 
         projectcard, datatypetag, tags, 
-        app 
+        app, VueDisqus,
     },
 
     data () {

@@ -3,15 +3,7 @@
 <div v-if="dataset" class="dataset-overlay">
     <b-container>
         <div class="dataset-header">
-            <icon name="close" style="float: right; opacity: 0.6; cursor: pointer;" scale="2" @click.native="close"/>
-            <b-button-group style="float: right; margin-right: 30px;">
-                <b-button variant="default" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
-                <b-button variant="default" @click="download" v-if="dataset.storage" icon="document">Download 
-                    <small style="opacity: 0.5" v-if="dataset.size">({{dataset.size|filesize}})</small>
-                </b-button>
-                <b-button variant="default" @click="process" v-if="dataset.storage" icon="document">Process</b-button>
-            </b-button-group>
-            <b-button style="float: right; margin-right: 15px;" variant="outline-danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
+            <icon name="close" style="float: right; opacity: 0.6; cursor: pointer; position: relative; top: 5px;" scale="2.5" @click.native="close"/>
             <h2>
                 <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
                     <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
@@ -22,7 +14,23 @@
         <div class="dataset-content">
             <!-- detail -->
             <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
+            <b-row>
+                <b-col>
+                </b-col>
+                <b-col>
+                    <b-button-group style="float: right;">
+                        <b-button variant="default" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
+                        <b-button variant="default" @click="download" v-if="dataset.storage" icon="document">Download 
+                            <small style="opacity: 0.5" v-if="dataset.size">({{dataset.size|filesize}})</small>
+                        </b-button>
+                        <b-button variant="default" @click="process" v-if="dataset.storage" icon="document">Process</b-button>
+                    </b-button-group>
+                    <b-button style="float: right; margin-right: 15px;" variant="danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
+                </b-col>
+            </b-row>
 
+            <br clear="both">
+            
             <b-row>
                 <b-col cols="3">
                     <b class="text-muted">Description</b>
@@ -55,30 +63,23 @@
             </b-row>
 
             <b-row>
-                <b-col cols="3"><b class="text-muted">Uploaded By</b></b-col>
+                <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
                 <b-col>
-                    <p>
-                        <contact :id="dataset.user_id"/> at <b>{{new Date(dataset.create_date).toLocaleString()}}</b>
-                    </p>
-                </b-col>
-            </b-row>
-
-            <b-row v-if="dataset.download_count > 0">
-                <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
-                <b-col>
-                    <p>{{dataset.download_count}}</p>
+                    <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+                    <br>
                 </b-col>
             </b-row>
 
             <b-row>
-                <b-col cols="3"><b class="text-muted">Storage</b></b-col>
+                <b-col cols="3"><b class="text-muted">Archived by</b></b-col>
                 <b-col>
                     <p>
+                        <contact :id="dataset.user_id"/> at <b>{{new Date(dataset.create_date).toLocaleString()}}</b>
                         <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
                             <icon name="cog" :spin="true"/> Storing ...
                         </span> 
                         <span v-if="dataset.status == 'stored'">
-                            This dataset is currently stored in <b>{{dataset.storage}}</b> 
+                            on <b>{{dataset.storage}}</b> 
                             <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                         </span> 
                         <span v-if="dataset.status == 'failed'" style="color: red;">
@@ -92,6 +93,13 @@
                             <icon name="bookmark"/>
                         </span>
                     </p>
+                </b-col>
+            </b-row>
+
+            <b-row v-if="dataset.download_count > 0">
+                <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
+                <b-col>
+                    <p>{{dataset.download_count}}</p>
                 </b-col>
             </b-row>
 
@@ -109,14 +117,6 @@
                         <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
                     </div>
                     <metadata v-else :metadata="dataset.meta"></metadata>
-                    <br>
-                </b-col>
-            </b-row>
-
-            <b-row>
-                <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
-                <b-col>
-                    <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
                     <br>
                 </b-col>
             </b-row>
@@ -531,7 +531,7 @@ padding: 30px;
 }
 .dataset-header {
 background-color: white;
-padding: 20px;
+padding: 10px 20px;
 box-shadow: 0 0 3px rgba(0,0,0,0.5);
 z-index: 20;
 position: relative;

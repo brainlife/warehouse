@@ -184,6 +184,15 @@
                             <td><el-tag>Unknown</el-tag></td>
                         </tr>
                         -->
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Comments</b>
+                            </b-col>
+                            <b-col>
+                                <vue-disqus shortname="brain-life"/>
+                            </b-col>
+                        </b-row>
+
                     </div>
                     <div v-if="tab_index == 1">
                         <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
@@ -251,11 +260,13 @@ import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
 
+import VueDisqus from 'vue-disqus/VueDisqus.vue'
+
 export default {
     components: { 
         sidemenu, pageheader, contact, 
         project, tags, datatype, appavatar,
-        VueMarkdown, statustag,
+        VueMarkdown, statustag, VueDisqus,
      },
 
     data () {

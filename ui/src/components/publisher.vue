@@ -3,8 +3,10 @@
     <transition name="slide-fade">
         <div v-if="page == 0">
             <br>
-            <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
-            <p class="text-danger">Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</p>
+            <b-card>
+                <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
+                <p class="text-danger">Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</p>
+            </b-card>
             <br>
             <hr>
             <div style="float: right">
