@@ -120,12 +120,11 @@
             <div v-if="tab == 4">
                 <div v-if="publishing">
                     <h3 style="opacity: 0.7">New Publication</h3>
-                    <br>
                     <publisher :project="selected" @close="publishing = false" @submit="publish"/>
                 </div>
                 <div v-else-if="pub_editing">
                     <h3 style="opacity: 0.7">Edit Publication</h3>
-                    <br>
+                    <p style="opacity: 0.7">Only the publication metadata can be edited at this time. To update published datasets, please contact administrator.</p>
                     <pubform :pub="pub_editing" @submit="save_pub">
                         <button type="button" class="btn btn-secondary" @click="pub_editing = null">Cancel</button>
                     </pubform>
@@ -134,18 +133,32 @@
                     <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered</p>
 
                     <!--show publication-->
-                    <b-card v-for="pub in pubs" :key="pub._id" style="margin-bottom: 10px;">
-                        <div slot="header">
-                            <b-button style="float: right;" size="sm" @click="pub_editing = pub">
-                                <icon name="pencil"/>
-                            </b-button>
-                            <h6>{{pub.name}}</h6>
-                        </div>
-                        <div style="float: right">
-                            <span style="opacity: 0.6">Published on</span> <b>{{new Date(pub.create_date).toLocaleDateString()}}</b>
-                        </div>
-                        {{pub.desc}}
-                    </b-card>
+                    <div v-for="pub in pubs" :key="pub._id" style="padding: 5px; margin-bottom: 5px; border-bottom: 1px solid #eee;" :class="{'pub-removed': pub.removed}">
+                        <b-row>
+                            <b-col>
+                                <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
+                                <b>{{pub.name}}</b><br>
+                                {{pub.desc}}
+                            </b-col>
+                            <b-col>
+                                <contact :id="pub.user_id"/>     
+                            </b-col>
+                            <b-col cols="2">
+                                {{new Date(pub.create_date).toLocaleDateString()}}
+                            </b-col>
+                            <b-col cols="1">
+                                <b-button style="float: right;" size="sm" @click="pub_editing = pub">
+                                    <icon name="pencil"/>
+                                </b-button>
+                            </b-col>
+                        </b-row>
+                    </div>
+                    <!--space to make sure add button won't overwrap the pub list-->
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
                     <b-button v-if="selected._canedit" class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
                 </div>
             </div>
@@ -357,7 +370,7 @@ export default {
 position: fixed;
 left: 350px;
 right: 0;
-margin-top: 60px;
+margin-top: 50px;
 }
 
 .datasets_link {
@@ -393,5 +406,9 @@ z-index: 1;
 /* .slide-fade-leave-active below version 2.1.8 */ {
   transform: translateX(10px);
   opacity: 0;
+}
+.pub-removed {
+background-color: #aaa;
+opacity: 0.6;
 }
 </style>

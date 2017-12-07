@@ -125,7 +125,7 @@
                                 <br>
                             </b-col>
                         </b-row>                      
-                        <b-row>
+                        <b-row v-if="pub.fundings.length > 0">
                             <b-col cols="3">
                                 <b class="text-muted">Funded by</b>
                             </b-col>
@@ -230,7 +230,7 @@
                         <p class="text-muted">Following applications are used to generate published datasets.</p>
                         <b-row>
                             <b-col cols="6" v-for="app in apps" key="app._id" style="margin-bottom: 10px;">
-                                <app :app="app" descheight="130px" compact="true"></app>
+                                <app :app="app" descheight="130px" :compact="true"></app>
                             </b-col>
                         </b-row>
                     </div>

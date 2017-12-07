@@ -15,7 +15,11 @@
     </b-form-group>
     <b-form-group label="License *" horizontal>
         <b-form-select :options="licenses" required v-model="pub.license"/>
-        <b-card><license :id="pub.license"/></b-card>
+        <div style="margin-top:10px; margin-left: 10px; opacity: 0.8">
+            <small>
+                <license :id="pub.license"/>
+            </small>
+        </div>
     </b-form-group>
     <!--
     <b-form-group label="DOI" horizontal>
@@ -40,6 +44,9 @@
     </b-form-group>
     <b-form-group label="Contributors" horizontal>
         <contactlist v-model="pub.contributors"></contactlist>
+    </b-form-group>
+    <b-form-group label="" horizontal>
+        <b-form-checkbox v-model="pub.removed">Removed</b-form-checkbox>
     </b-form-group>
 
     <hr>

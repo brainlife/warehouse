@@ -2,8 +2,10 @@
 <div>
     <transition name="slide-fade">
         <div v-if="page == 0">
+            <br>
             <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
             <p class="text-danger">Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</p>
+            <br>
             <hr>
             <div style="float: right">
                 <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
@@ -13,11 +15,11 @@
     </transition>
     <transition name="slide-fade">
         <div v-if="page == 1">
-            <h4>Select Datasets</h4>
+            <!--<h4>Select Datasets</h4>-->
             <b-alert v-if="Object.keys(datatype_groups).length == 0" show variant="danger">There are no datasets to publish</b-alert>
             <p class="text-muted">Please select datasets you'd like to publish</p>
             <div v-for="(group, datatype_id) in datatype_groups" :key="datatype_id">
-                <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 4px; margin: 1px;">
+                <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 4px; margin: 1px; transition: all 0.3s">
                     <b-row>
                         <b-col cols="1">
                             <b-form-checkbox v-model="stat.include"/>
@@ -46,13 +48,15 @@
     </transition>
     <transition name="slide-fade">
         <div v-if="page == 2">
-            <h4>Publication Details</h4>
+            <!--<h4>Publication Details</h4>-->
             <p class="text-muted">Please enter details for your publications</p>
             <pubform :pub="pub" @submit.once="publish">
-                <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
+                <button type="button" class="btn btn-secondary" @click="page--">Back</button>
             </pubform>
         </div>
     </transition>
+    <br>
+    <br>
 </div>
 </template>
 
@@ -62,6 +66,8 @@ import Vue from 'vue'
 import select2 from '@/components/select2'
 import pubform from '@/components/pubform'
 import datatypetag from '@/components/datatypetag'
+
+const async = require('async');
 
 export default {
     components: { 
@@ -155,9 +161,41 @@ export default {
             this.$emit("close");
         },
         publish() {
+            //publish metadata
             this.$http.post('pub', Object.assign({project: this.project._id}, this.pub)).then(res=>{
-                this.$notify("Successfully published!");
-                this.$emit("submit", res.body);
+                let pub = res.body;
+                console.log("registered pub", pub);
+
+                //create list of datatype / tags that we want to publish 
+                let sets = []
+                for(let datatype in this.datatype_groups) {
+                    let group = this.datatype_groups[datatype];
+                    for(let tags_s in group.datatype_tags) {
+                        let stat = group.datatype_tags[tags_s];
+                        if(stat.include) {
+                            sets.push({datatype, datatype_tags: JSON.parse(tags_s)});
+                        }
+                    }
+                }
+
+                async.forEach(sets, (set, next_set)=>{
+                    console.log("publishing datasets", set);
+                    this.$http.put('pub/'+pub._id+'/datasets', {
+                        project: this.project._id,
+                        datatype: set.datatype,
+                        datatype_tags: set.datatype_tags,
+                    }).then(res=>{
+                        console.log("successfully published a set", set, res.body);
+                        next_set();     
+                    }).catch(res=>{
+                        next_set(res.body);
+                    });
+                }, err=>{
+                    if(err) return this.$notify(err);
+
+                    this.$notify("Successfully published!");
+                    this.$emit("submit", pub);
+                })
             });
         }
     }
