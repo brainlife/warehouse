@@ -112,7 +112,7 @@ var publicationSchema = mongoose.Schema({
     //user who created this publication 
     user_id: {type: String, index: true}, 
 
-    citation: String, //preferred citation
+    //citation: String, //preferred citation
     license: String, //cc0, ccby.40, etc.
 
     doi: String, 
@@ -124,10 +124,10 @@ var publicationSchema = mongoose.Schema({
     authors: [ String ], //list of users who are the author/creator of this publicaions
     //authors_ext: [new mongoose.Schema({name: 'string', email: 'string'})],
 
-    contributor: [ String ], //list of users who contributed (PI, etc..)
+    contributors: [ String ], //list of users who contributed (PI, etc..)
     //contributor_ext: [new mongoose.Schema({name: 'string', email: 'string'})],
 
-    contacts: [ String ], //list of users who can be used as contact
+    //contacts: [ String ], //list of users who can be used as contact
 
     name: String, //title of the publication
     desc: String, 
@@ -331,7 +331,13 @@ var ruleSchema = mongoose.Schema({
     user_id: {type: String, index: true}, 
     
     //project to look for missing datasets and to archive generated data
-    input_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    //input_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    //project to store generated dataset
+    //output_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+
+    //project to look for input datasets and store generated datasets to
+    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+
     //any tags to look for each input id (object with key(output id)=>array(tags))
     input_tags: mongoose.Schema.Types.Mixed,
     
@@ -343,8 +349,6 @@ var ruleSchema = mongoose.Schema({
     //scalar configs (input configs are used to detect new datasets)
     config: mongoose.Schema.Types.Mixed, 
 
-    //project to store generated dataset
-    output_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
     //any tags to set for each output id (object with key(output id)=>array(tags))
     output_tags: mongoose.Schema.Types.Mixed,
 
