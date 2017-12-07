@@ -25,12 +25,13 @@
                     <b-col cols="3">
                         <b-button-group style="float: right;">
                             <b-button variant="danger" @click="remove()" v-if="app._canedit"><icon name="trash"/></b-button>
-                            <b-button variant="default" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit"><icon name="pencil"/> Edit</b-button>
+                            <b-button variant="default" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit"><icon name="pencil"/></b-button>
                             <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
                         </b-button-group>
                     </b-col>
                 </b-row>
 
+                <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
                     <b-tab title="README"/>
@@ -42,7 +43,7 @@
 
         <b-container>
             <b-row>
-                <b-col>
+                <b-col :cols="9">
                     <el-alert v-if="app.removed" title="This app has been removed" type="warning" show-icon :closable="false"></el-alert>
                     <!-- detail -->
                     <div v-if="tab_index == 0">
@@ -152,13 +153,8 @@
                             <b-col cols="3">
                                 <b class="text-muted">UI Configuration</b>
                             </b-col>
-                            <b-col>
-                                <div class="margin: 20px; width: 80%; overflow: auto;">
-                                    <!-- this breaks the column layout if config has long strings
-                                    <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
-                                    -->
-                                    {{app.config}}
-                                </div>
+                            <b-col cols="9">
+                                <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
                             </b-col>
                         </b-row>
 
@@ -227,7 +223,6 @@
                     </b-card>
                     <br>
                 </b-col>
-
             </b-row>
         </b-container>
 

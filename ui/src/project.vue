@@ -1,89 +1,178 @@
 <template>
-<div v-if="project">
+<div v-if="selected">
     <pageheader/>
     <sidemenu active="/projects"/>
+    <projectmenu :active="selected._id" :projects="projects" @change="change_project"></projectmenu>
+    <div class="header">
+        <b-tabs class="brainlife-tab" v-model="tab" @input="tab_change">
+            <b-tab title="Detail"/>
+            <b-tab title="Datasets"/>
+            <b-tab title="Processes"/>
+            <b-tab title="Pipelines"/>
+            <b-tab title="Publications"/>
+        </b-tabs>
+    </div><!--header-->
     <div class="page-content">
-        <div class="header">
-            <b-container>
+        <div class="margin20">
+            <el-alert v-if="selected.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
+
+            <!--detail-->
+            <div v-if="tab == 0">
                 <b-row>
-                    <b-col>
-                        <div style="float: left; margin-right: 40px; margin-bottom: 15px; height: 100%;">
-                            <projectavatar :project="project"/>
-                        </div>
-                        <div>
-                            <h3 style="color: #666; margin-bottom: 10px;">
-                                <projectaccess :access="project.access"/>
-                                {{project.name}}
-                            </h3>
-                            <p class="text-muted">{{project.desc}}</p>
-                        </div>
-                    </b-col>
                     <b-col cols="3">
-                        <b-button-group style="float: right;" v-if="project._canedit">
-                            <b-button variant="danger" @click="remove()" v-if="!project.removed"><icon name="trash"/></b-button>
-                            <b-button variant="default" @click="edit()"><icon name="pencil"/> Edit</b-button>
+                        <projectavatar :project="selected"/>
+                    </b-col>
+                    <b-col>
+                        <b-button-group style="float: right;" v-if="selected._canedit">
+                            <b-button variant="danger" @click="remove()" v-if="!selected.removed"><icon name="trash"/></b-button>
+                            <b-button variant="default" @click="edit()"><icon name="pencil"/></b-button>
                         </b-button-group>
+
+                        <h3 style="color: #666; margin-bottom: 10px;">
+                            <projectaccess :access="selected.access"/>
+                            {{selected.name}}
+                        </h3>
+                        <p>{{selected.desc}}</p>
                     </b-col>
                 </b-row>
-            </b-container>
-        </div><!--header-->
+                <hr>
 
-        <b-container>
-            <b-row>
-                <b-col>
-                    <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
-                    <b-card no-body>
-                        <b-list-group flush>
-                            <b-list-group-item>
-                                <b-row>
-                                    <b-col>
-                                        <h6>Admins</h6>
-                                        <p class="text-muted">Users who can update name / desc / project members</p>
-                                        <contact v-for="c in project.admins" key="c._id" :id="c"></contact>
-                                    </b-col>
-                                    <b-col>
-                                        <h6>Members</h6>
-                                        <p class="text-muted">Users who can update datasets published on this project</p>
-                                        <contact v-for="c in project.members" key="c._id" :id="c"></contact>
-                                    </b-col>
-                                </b-row>
-                            </b-list-group-item>
-                            <!--
-                            <b-list-group-item v-if="project.license">
-                                <license :id="project.license"/>
-                            </b-list-group-item>
-                            -->
-                        </b-list-group>
-                    </b-card>
-                    <br>
+                <b-row>
+                    <b-col cols="3">
+                        <b class="text-muted">Admins</b>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <contact v-for="c in selected.admins" key="c._id" :id="c"></contact>
+                        </p>
+                        <p class="text-muted">Users who can update name / desc / project members</p>
+                    </b-col>
+                </b-row>
+                
+                <b-row>
+                    <b-col cols="3"> 
+                        <b class="text-muted">Members</b>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <contact v-for="c in selected.members" key="c._id" :id="c"></contact>
+                        </p>
+                        <p class="text-muted">Users who can update datasets published on this project</p>
+                    </b-col>
+                </b-row>
 
-                    <vue-markdown v-if="project.readme" :source="project.readme"></vue-markdown>
-                    <!--
-                    <tr>
-                        <th>TODO</th>
-                        <td>
-                            <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this project?</p>
-                            <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
-                        </td>
-                    </tr>
-                    -->
-                </b-col>
-                <b-col cols="3">
-                    <div v-if="datasets_attribs.num_subjects">
-                        <center>
-                            <p class="text-muted">Subjects</p>
-                            <h5>{{datasets_attribs.num_subjects}}</h5>
-                            <br>
+                <!--
+                <b-row v-if="datasets_attribs.num_subjects">
+                    <b-col cols="3"> 
+                        <b class="text-muted">Datasets</b>
+                    </b-col>
+                    <b-col>
+                        <b-card>
+                            <b-row>
+                                <b-col>
+                                    <p class="text-muted">Subjects</p>
+                                    <h5>{{datasets_attribs.num_subjects}}</h5>
+                                </b-col>
 
-                            <p class="text-muted">Datasets</p>
-                            <h5>{{datasets_attribs.num_datasets}}</h5>
-                            <br>
-                        </center>
+                                <b-col>
+                                    <p class="text-muted">Datasets</p>
+                                    <h5>{{datasets_attribs.num_datasets}}</h5>
+                                </b-col>
+                            </b-row>
+                        </b-card>
+                    </b-col>
+                </b-row>
+                -->
+
+                <br>
+                <b-row>
+                    <b-col cols="3"> 
+                        <b class="text-muted">README</b>
+                    </b-col>
+                    <b-col>
+                        <p class="text-muted" v-if="!selected.readme">Please edit README content</p>
+                        <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
+                    </b-col>
+                </b-row>
+
+            </div>
+
+            <div v-if="tab == 1">
+                <datasets :project="selected"></datasets>
+            </div>
+
+            <div v-if="tab == 2">
+                <b-alert show>
+                    <b>Coming Soon!</b> 
+                    Processes page will be moved here soon by organizing each process under a specific project.
+                    For now please visit the old processes page via the left hand side menu.
+                </b-alert>
+            </div>
+
+            <div v-if="tab == 3">
+                <b-alert show><b>Coming Soon!</b> You will be able to view / register new pipeline rules.</b-alert>
+                <p class="text-muted" v-if="!rules || rules.length == 0">No pipline registered</p>
+                <div v-for="rule in rules" :key="rule._id">
+                    <pre v-highlightjs><code class="json hljs">{{rule}}</code></pre>
+                </div>
+            </div>
+
+            <div v-if="tab == 4">
+                <div v-if="publishing">
+                    <h3 style="opacity: 0.7">New Publication</h3>
+                    <publisher :project="selected" @close="publishing = false" @submit="publish"/>
+                </div>
+                <div v-else-if="pub_editing">
+                    <h3 style="opacity: 0.7">Edit Publication</h3>
+                    <p style="opacity: 0.7">Only the publication metadata can be edited at this time. To update published datasets, please contact administrator.</p>
+                    <pubform :pub="pub_editing" @submit="save_pub">
+                        <button type="button" class="btn btn-secondary" @click="pub_editing = null">Cancel</button>
+                    </pubform>
+                </div>
+                <div v-else>
+                    <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered</p>
+
+                    <!--show publication-->
+                    <div v-for="pub in pubs" :key="pub._id" style="padding: 5px; margin-bottom: 5px; border-bottom: 1px solid #eee;" :class="{'pub-removed': pub.removed}">
+                        <b-row>
+                            <b-col>
+                                <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
+                                <b>{{pub.name}}</b><br>
+                                {{pub.desc}}
+                            </b-col>
+                            <b-col>
+                                <contact :id="pub.user_id"/>     
+                            </b-col>
+                            <b-col cols="2">
+                                {{new Date(pub.create_date).toLocaleDateString()}}
+                            </b-col>
+                            <b-col cols="1">
+                                <b-button style="float: right;" size="sm" @click="pub_editing = pub">
+                                    <icon name="pencil"/>
+                                </b-button>
+                            </b-col>
+                        </b-row>
                     </div>
-                </b-col>
-            </b-row>
-        </b-container>
+                    <!--space to make sure add button won't overwrap the pub list-->
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <b-button v-if="selected._canedit" class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
+                </div>
+            </div>
 
+            <!--
+            <tr>
+                <th>TODO</th>
+                <td>
+                    <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this project?</p>
+                    <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
+                </td>
+            </tr>
+            -->
+        </div>
     </div><!--page-content-->
 </div>
 </template>
@@ -102,92 +191,224 @@ import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
 import projectavatar from '@/components/projectavatar'
 import license from '@/components/license'
+import projectmenu from '@/components/projectmenu'
+import pubcard from '@/components/pubcard'
+import datasets from '@/components/datasets'
+import publisher from '@/components/publisher'
+import pubform from '@/components/pubform'
 
 export default {
     components: { 
         sidemenu, contactlist, project, 
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
+        projectmenu, pubcard, datasets,
+        publisher, pubform,
     },
 
     data () {
         return {
-            project: null,
+            selected: null, 
+            /*
             datasets_attribs: {
                 num_datasets: null,
                 num_subjects: null
             },
-            
+            */
+
+            rules: null, 
+            pubs: null, 
+
+            publishing: false,
+            pub_editing: null,
+
+            tab: 0,
+            projects: null, //all projects that user has access to
             config: Vue.config,
         }
     },
 
     mounted: function() {
+
+        this.$root.$on("dataset.close", ()=>{
+            this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
+        });
+
         this.$http.get('project', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
+            find: JSON.stringify({
+            $or: [
+                { members: Vue.config.user.sub }, 
+                { admins: Vue.config.user.sub }, 
+                { access: "public" },
+            ]})
         }})
         .then(res=>{
-            this.project = res.body.projects[0];
-            
-            return this.$http.get('dataset', {params: {
-                find: JSON.stringify({
-                    project: this.project._id,
-                    storage: {$exists: true},
-                    removed: false
-                })
-            }});
+            this.projects = {};
+            res.body.projects.forEach((p)=>{
+                this.projects[p._id] = p;
+            });
+
+            this.parse_params();
+            this.load();
+
+            //TODO.. selecte default?
+            //this.check_project_id(res.body.projects[0]);
         })
-        .then(res => {
-            this.datasets_attribs.num_datasets = res.body.count;
-            return this.$http.get('dataset/distinct', {params: {
-                find: JSON.stringify({
-                    project: this.project._id,
-                    removed: false
-                }),
-                distinct: 'meta.subject'
-            }})
-        })
-        .then(res => {
-            this.datasets_attribs.num_subjects = res.body.length;
-        })
-        .catch(console.error);
+        .catch(res=>{
+            this.$notify({type: 'error', text: res.body});
+        });
     },
 
     methods: {
         edit: function() {
-            this.$router.push('/project/'+this.project._id+'/edit');
+            this.$router.push('/project/'+this.selected._id+'/edit');
         },
+
+        save_pub: function(pub) {
+            this.$http.put('pub/'+pub._id, pub)
+            .then(res=>{
+                this.$notify("Successfully updated!");
+                for(var k in res.body) {
+                    this.pub_editing[k] = res.body[k];
+                }
+                this.pub_editing = null;
+            }).catch(res=>{
+                this.$notify({type: 'error', text: res.body});
+            });
+        },
+
+        tab_change: function() {
+            console.log("tab updated");
+            this.publishing = false;
+            this.pub_editing = null;
+            this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
+        },
+
         remove: function() {
             if(confirm("Do you really want to remove this project?")) {
-                this.$http.delete('project/'+this.project._id)
+                this.$http.delete('project/'+this.selected._id)
                 .then(res=>{
-                    this.go('/projects');        
+                    this.selected.removed = true;
+                    this.$router.push('/project');        
                 });
             }
         },
-        go: function(path) {
-            this.$router.push(path);
+
+        change_project: function(project) {
+            console.log("project changed too", project);
+            this.$router.replace("/project/"+project._id+"/"+this.tab);
+            this.parse_params();
+            this.publishing = false;
+            this.pub_editing = null;
+            this.load();
         },
+
+        parse_params: function() {
+            //decide which project to load
+            let project_id = this.$route.params.id
+            if(!project_id) {
+                //grab the first project.
+                let ids = Object.keys(this.projects); 
+                project_id = localStorage.getItem("last_projectid_used") || ids[0];
+                this.$router.replace("/project/"+project_id);
+            }
+            localStorage.setItem("last_projectid_used", project_id);
+            this.selected = this.projects[project_id]
+
+            //open tab
+            if(this.$route.params.tab) {
+                this.tab = parseInt(this.$route.params.tab);
+            }
+
+            //open dataset view
+            if(this.$route.params.subid) {
+                this.$root.$emit('dataset.view', this.$route.params.subid);
+            }
+        },
+
+        //load other details about currently selected project
+        load: function() {
+            if(!this.selected) return; //no project selected..
+
+            //load all details about this project
+            this.$http.get('pub', {params: {
+                find: JSON.stringify({
+                    project: this.selected._id,
+                }),
+                populate: 'project', //needed by pubcard
+            }})
+            .then(res=>{
+                this.pubs = res.body.pubs; 
+                return this.$http.get('rule', {params: {
+                    find: JSON.stringify({
+                        project: this.selected._id, 
+                    }),
+                }})
+            })
+            .then(res=>{
+                this.rules = res.body.rules; 
+            }).catch(res=>{
+                this.$notify({type: 'error', text: res.body});
+            });
+        },
+
+        start_publish: function() {
+            this.publishing = true;
+        },
+
+        publish: function(pub) {
+            this.publishing = false;
+            pub.project = this.selected; //pubcard needs project populated
+            this.pubs.push(pub);
+        }
     },
 }
 </script>
 
 <style scoped>
+.page-content {
+position: fixed;
+left: 350px;
+right: 0;
+margin-top: 50px;
+}
+
 .datasets_link {
 color:#44f;
 cursor:pointer;
 font-weight:bold;
 }
+
 .datasets_link:hover {
 color:#88f;
 }
 
 .header {
+position: fixed;
+top: 50px;
+left: 350px;
+right: 0px;
+
 background-color: white;
-margin-bottom: 30px;
-padding: 30px 0px 20px 0px;
+margin-bottom: 20px;
+padding: 0;
 border-bottom: 1px solid #ccc;
+z-index: 1;
 }
 
-
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+.slide-fade-leave-active {
+  transition: none;
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
+}
+.pub-removed {
+background-color: #aaa;
+opacity: 0.6;
+}
 </style>

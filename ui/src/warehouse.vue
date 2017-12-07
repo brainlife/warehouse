@@ -1,13 +1,38 @@
 <template>
-    <div id="warehouse">
-        <router-view></router-view>
-        <notifications position="bottom right"/>
-    </div>
+<div id="warehouse">
+    <router-view></router-view>
+    <notifications position="bottom right"/>
+
+    <!-- dialogs that can be called from any view -->
+    <datasetselecter/>
+    <viewselecter/>
+    <dataset/>
+
+</div>
 </template>
 
 <script>
+import datasetselecter from '@/modals/datasetselecter'
+import viewselecter from '@/modals/viewselecter'
+import dataset from '@/modals/dataset'
+
 export default {
-  name: 'warehouse'
+    components: {
+        viewselecter, datasetselecter, dataset,
+    },
+
+    /*
+    events: {
+        "viewselecter.open": function(config) {
+            console.log("viewselecter open called");
+            console.dir(config);
+            //TODO.. :datatype_name="vsel.datatype_name"
+        },
+    },
+    */
+
+    methods: {
+    }
 }
 </script>
 

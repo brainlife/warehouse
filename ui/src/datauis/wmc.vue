@@ -102,7 +102,7 @@ export default {
                 cb(tracts);
             }).catch(err=>{
                 console.error("failed to load tracts.json - probably output from old afq. using afq.tract.json template");
-                fetch("https://brain-life.org/ui/tractview/afq.tracts.json")
+                fetch("https://brainlife.io/ui/tractview/afq.tracts.json")
                     .then(res=>res.json())
                     .then(tracts=>{
                     tracts.forEach(tract=>{

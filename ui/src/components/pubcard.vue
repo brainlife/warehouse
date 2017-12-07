@@ -5,7 +5,7 @@
             <projectavatar :project="pub.project"/>
         </div>
         <div style="margin: 0px 10px 5px 100px;">
-            <h5 class="name">{{pub.name}}</h5>
+            <h5 class="name"><small>{{pub.project.name}} <icon name="arrow-right"/></small> {{pub.name}}</h5>
             <p> {{pub.desc}} </p>
             <div style="line-height: 200%;">
                 <b-badge v-for="tag in pub.tags" :key="tag" class="topic">{{tag}}</b-badge>
@@ -16,7 +16,7 @@
             <div style="margin: 0px 10px 5px 100px;">
                 <p>
                     <b class="text-muted">Authors</b> <contact v-for="contact in pub.authors" :key="contact.id" :fullname="contact.fullname" :email="contact.email"></contact>
-                    <b class="text-muted">Published on </b> {{new Date(pub.create_date).toLocaleDateString()}}
+                    <b class="text-muted">Published On </b> {{new Date(pub.create_date).toLocaleDateString()}}
                 </p>
                 <el-tag v-if="pub.removed" type="warning">Removed</el-tag>
             </div>

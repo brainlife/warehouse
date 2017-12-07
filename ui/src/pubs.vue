@@ -39,6 +39,7 @@ export default {
                 removed: false 
             }),
             populate: 'project',
+            deref_contacts: true,
         }})
         .then(res=>{
             this.pubs = res.body.pubs;
@@ -54,5 +55,6 @@ export default {
 
 <style scoped>
 .pub {
+margin-bottom: 10px;
 }
 </style>

@@ -175,6 +175,13 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "String[]",
+            "optional": true,
+            "field": "projects",
+            "description": "<p>List of project IDs that this app should be exposed in</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String",
             "optional": true,
             "field": "github_branch",
@@ -342,6 +349,13 @@ define({ "api": [
             "optional": true,
             "field": "outputs",
             "description": "<p>Output datatypes and tags</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": true,
+            "field": "projects",
+            "description": "<p>List of project IDs that this app should be exposed in</p>"
           },
           {
             "group": "Parameter",
@@ -1094,7 +1108,7 @@ define({ "api": [
     "group": "Project",
     "type": "put",
     "url": "/project/:id",
-    "title": "Put Project",
+    "title": "",
     "description": "<p>Update project</p>",
     "parameter": {
       "fields": {
@@ -1174,5 +1188,193 @@ define({ "api": [
     "filename": "api/controllers/project.js",
     "groupTitle": "Project",
     "name": "PutProjectId"
+  },
+  {
+    "group": "Publications",
+    "type": "get",
+    "url": "/pub",
+    "title": "Query registered publications",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": true,
+            "field": "find",
+            "description": "<p>Optional Mongo find query - defaults to {}</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": true,
+            "field": "sort",
+            "description": "<p>Optional Mongo sort object - defaults to {}</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "select",
+            "description": "<p>Fields to load - multiple fields can be entered with %20 as delimiter</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "populate",
+            "description": "<p>Relational fields to populate</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>Optional Maximum number of records to return - defaults to 0(no limit)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "skip",
+            "description": "<p>Optional Record offset for pagination</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "List",
+            "description": "<p>of publications (maybe limited / skipped) and total count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/pub.js",
+    "groupTitle": "Publications",
+    "name": "GetPub"
+  },
+  {
+    "group": "Publications",
+    "type": "get",
+    "url": "/pub/apps/:pubid",
+    "title": "Enumerate applications used to generate datasets",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "Application",
+            "description": "<p>objects</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/pub.js",
+    "groupTitle": "Publications",
+    "name": "GetPubAppsPubid"
+  },
+  {
+    "group": "Publications",
+    "type": "get",
+    "url": "/pub/datasets-inventory/:pubid",
+    "title": "Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:pubid to get the actual list of datasets for each subject / datatypes / etc..",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "Object",
+            "description": "<p>containing counts</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/pub.js",
+    "groupTitle": "Publications",
+    "name": "GetPubDatasetsInventoryPubid"
+  },
+  {
+    "group": "Publications",
+    "type": "get",
+    "url": "/pub/datasets/:pubid",
+    "title": "Query published datasets",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": true,
+            "field": "find",
+            "description": "<p>Optional Mongo find query - defaults to {}</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": true,
+            "field": "sort",
+            "description": "<p>Optional Mongo sort object - defaults to {}</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "select",
+            "description": "<p>Fields to load - multiple fields can be entered with %20 as delimiter</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": true,
+            "field": "populate",
+            "description": "<p>Relational fields to populate</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "limit",
+            "description": "<p>Optional Maximum number of records to return - defaults to 0(no limit)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "skip",
+            "description": "<p>Optional Record offset for pagination</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "List",
+            "description": "<p>of dataasets (maybe limited / skipped) and total count</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/pub.js",
+    "groupTitle": "Publications",
+    "name": "GetPubDatasetsPubid"
   }
 ] });

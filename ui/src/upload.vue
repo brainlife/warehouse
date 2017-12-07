@@ -1,7 +1,7 @@
 <template>
 <div>
     <pageheader/>
-    <sidemenu active="/datasets"></sidemenu>
+    <sidemenu active="/projects"></sidemenu>
     <div class="page-content">
         <div class="margin20">
             <h2><icon name="upload" scale="2"></icon> Upload Dataset</h2>
