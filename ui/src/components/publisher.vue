@@ -181,9 +181,11 @@ export default {
                 async.forEach(sets, (set, next_set)=>{
                     console.log("publishing datasets", set);
                     this.$http.put('pub/'+pub._id+'/datasets', {
-                        project: this.project._id,
-                        datatype: set.datatype,
-                        datatype_tags: set.datatype_tags,
+                        //project: this.project._id,
+                        find: JSON.stringify({
+                            datatype: set.datatype,
+                            datatype_tags: set.datatype_tags,
+                        })
                     }).then(res=>{
                         console.log("successfully published a set", set, res.body);
                         next_set();     

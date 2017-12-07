@@ -133,26 +133,24 @@
                     <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered</p>
 
                     <!--show publication-->
-                    <div v-for="pub in pubs" :key="pub._id" style="padding: 5px; margin-bottom: 5px; border-bottom: 1px solid #eee;" :class="{'pub-removed': pub.removed}">
-                        <b-row>
-                            <b-col>
-                                <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
-                                <b>{{pub.name}}</b><br>
-                                {{pub.desc}}
-                            </b-col>
-                            <b-col>
-                                <contact :id="pub.user_id"/>     
-                            </b-col>
-                            <b-col cols="2">
-                                {{new Date(pub.create_date).toLocaleDateString()}}
-                            </b-col>
-                            <b-col cols="1">
-                                <b-button style="float: right;" size="sm" @click="pub_editing = pub">
-                                    <icon name="pencil"/>
-                                </b-button>
-                            </b-col>
-                        </b-row>
-                    </div>
+                    <b-row v-for="pub in pubs" :key="pub._id" @click="open_pub(pub)" class="pub" :class="{'pub-removed': pub.removed}">
+                        <b-col>
+                            <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
+                            <b>{{pub.name}}</b><br>
+                            {{pub.desc}}
+                        </b-col>
+                        <b-col>
+                            <contact :id="pub.user_id"/>     
+                        </b-col>
+                        <b-col cols="2">
+                            {{new Date(pub.create_date).toLocaleDateString()}}
+                        </b-col>
+                        <b-col cols="1">
+                            <b-button style="float: right;" size="sm" @click.stop="pub_editing = pub">
+                                <icon name="pencil"/>
+                            </b-button>
+                        </b-col>
+                    </b-row>
                     <!--space to make sure add button won't overwrap the pub list-->
                     <br>
                     <br>
@@ -275,6 +273,10 @@ export default {
             }).catch(res=>{
                 this.$notify({type: 'error', text: res.body});
             });
+        },
+
+        open_pub: function(pub) {
+            document.location = "/pub/"+pub._id;
         },
 
         tab_change: function() {
@@ -410,5 +412,14 @@ z-index: 1;
 .pub-removed {
 background-color: #aaa;
 opacity: 0.6;
+}
+.pub {
+padding: 5px; 
+margin-bottom: 5px; 
+border-bottom: 1px solid #eee;
+cursor: pointer;
+}
+.pub:hover {
+background-color: #eee;
 }
 </style>
