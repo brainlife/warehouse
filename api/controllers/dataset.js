@@ -8,6 +8,8 @@ const jwt = require('express-jwt');
 const async = require('async');
 const request = require('request');
 
+const mongoose = require('mongoose');
+
 //mine
 const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
@@ -98,7 +100,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @api {get} /dataset/distinct Query distinct values
  * @apiDescription              Returns all dataset entries accessible to the user has access
  *
- * @apiParam {String} distinct  Field(s) to pull distinct values
+ * @apiParam {String} distinct  A field to pull distinct values (can't do multiple)
  * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
  * 
  * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
@@ -121,6 +123,51 @@ router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired:
 		.exec((err, values)=>{
             if(err) return next(err);
             res.json(values);
+        });
+    });
+});
+
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/inventory
+ * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
+ *                              Get counts of unique subject/datatype/datatype_tags. 
+ * @apiSuccess {Object}         Object containing counts
+ * 
+ */
+//similar code in pub.js
+router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    var find = {};
+    if(req.query.find) {
+        find = JSON.parse(req.query.find);
+        //mongoose doesn't cast object id on aggregate pipeline .. https://github.com/Automattic/mongoose/issues/1399
+        //somewhat futile attempt to convert all string that looks like objectid to objectid.
+        function convert(node) {
+            for(var k in node) {
+                var v = node[k];
+                if(v === null) continue;
+                if(typeof v == 'string' && mongoose.Types.ObjectId.isValid(v)) node[k] = mongoose.Types.ObjectId(v);
+                if(typeof v == 'object') convert(v); //recurse
+            }
+        }
+        convert(find);         
+    }
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return next(err);
+        db.Datasets.aggregate()
+        .match({ 
+            $and: [
+                {project: {$in: canread_project_ids}},
+                find,
+                //{removed: false, project: mongoose.Types.ObjectId("592dcc5b0188fd1eecf7b4ec")},
+            ]
+        })
+        .group({_id: {"subject": "$meta.subject", "datatype": "$datatype", "datatype_tags": "$datatype_tags"}, 
+            count: {$sum: 1}, size: {$sum: "$size"} })
+        .sort({"_id.subject":1})
+        .exec((err, stats)=>{
+            if(err) return next(err);
+            res.json(stats);
         });
     });
 });

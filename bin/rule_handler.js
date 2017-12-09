@@ -54,7 +54,7 @@ function run() {
         active: true,
         removed: false,
     })
-    .populate('app output_project input_project')
+    .populate('app project')
     .exec((err, rules)=>{
 		if(err) throw err;
         async.eachSeries(rules, (rule, next_rule)=>{
@@ -85,9 +85,8 @@ function handle_rule(rule, cb) {
 
         //validate
         next=>{
-            if(!rule.input_project) return next("missing or no matching input_project");
-            if(!rule.output_project) return next("missing or no matching output_project");
-            if(!rule.app) return next("missing or no matching app");
+            if(!rule.project) return next("project not specified");
+            if(!rule.app) return next("app not specified");
             next();
         },
             
@@ -142,7 +141,7 @@ function handle_rule(rule, cb) {
         //enumerate all subjects under rule's project
         next=>{
             db.Datasets.find({
-                project: rule.input_project._id,
+                project: rule.project._id,
                 removed: false,
             })
             .distinct("meta.subject", (err, _subjects)=>{
@@ -184,7 +183,7 @@ function handle_rule(rule, cb) {
         var missing = false;
         async.eachSeries(rule.app.outputs, (output, next_output)=>{
             var query = {
-                project: rule.output_project._id,
+                project: rule.project._id,
                 datatype: output.datatype,
                 "meta.subject": subject,
                 storage: { $exists: true },
@@ -228,7 +227,7 @@ function handle_rule(rule, cb) {
         var inputs = {};
         async.eachSeries(rule.app.inputs, (input, next_input)=>{
             var query = {
-                project: rule.input_project._id,
+                project: rule.project._id,
                 datatype: input.datatype,
                 "meta.subject": subject,
                 storage: { $exists: true },
@@ -291,8 +290,8 @@ function handle_rule(rule, cb) {
         var deps = [];
         var tasks = {};
 
-        var instance_name = "brainlife.rule project:"+rule.output_project._id+" subject:"+subject;
-        var instance_desc = "rule:"+rule.name+" for project:"+rule.output_project.name+" subject:"+subject;
+        var instance_name = "brainlife.rule project:"+rule.project._id+" subject:"+subject;
+        var instance_desc = "rule:"+rule.name+" for project:"+rule.project.name+" subject:"+subject;
         running++;
 
         //prepare for stage / app / archive
@@ -529,7 +528,7 @@ function handle_rule(rule, cb) {
                         tags: rule.output_tags[output.id], 
                         files: output.files,
                         archive: {
-                            project: rule.output_project._id,  
+                            project: rule.project._id,  
                             desc: rule.name,
                             //tags: rule.output_tags[output.id], //deprecated by parent's tags.. (remove this eventually)
                         }
