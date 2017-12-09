@@ -109,9 +109,13 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  */
 router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
-    if(req.query.find) find = JSON.parse(req.query.find);
+    if(req.query.find) {
+        find = JSON.parse(req.query.find);
+        //cast_mongoid(find);
+    }
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
+        console.dir(find);
         db.Datasets
         .find({
             $and: [
@@ -127,6 +131,17 @@ router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired:
     });
 });
 
+//mongoose doesn't cast object id on aggregate pipeline .. https://github.com/Automattic/mongoose/issues/1399
+//somewhat futile attempt to convert all string that looks like objectid to objectid.
+function cast_mongoid(node) {
+    for(var k in node) {
+        var v = node[k];
+        if(v === null) continue;
+        if(typeof v == 'string' && mongoose.Types.ObjectId.isValid(v)) node[k] = mongoose.Types.ObjectId(v);
+        if(typeof v == 'object') cast_mongoid(v); //recurse
+    }
+}
+
 /**
  * @apiGroup Dataset
  * @api {get} /dataset/inventory
@@ -140,17 +155,7 @@ router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired
     var find = {};
     if(req.query.find) {
         find = JSON.parse(req.query.find);
-        //mongoose doesn't cast object id on aggregate pipeline .. https://github.com/Automattic/mongoose/issues/1399
-        //somewhat futile attempt to convert all string that looks like objectid to objectid.
-        function convert(node) {
-            for(var k in node) {
-                var v = node[k];
-                if(v === null) continue;
-                if(typeof v == 'string' && mongoose.Types.ObjectId.isValid(v)) node[k] = mongoose.Types.ObjectId(v);
-                if(typeof v == 'object') convert(v); //recurse
-            }
-        }
-        convert(find);         
+        cast_mongoid(find);
     }
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
@@ -676,7 +681,7 @@ router.get('/download/:id', jwt({
     }
 }), function(req, res, next) {
     var id = req.params.id;
-    logger.debug("requested for downloading dataset "+id);
+    //logger.debug("requested to download dataset "+id);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
         db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
@@ -686,6 +691,7 @@ router.get('/download/:id', jwt({
             
             if(dataset.publications && dataset.publications.length > 0) {
                 //this dataset is published .. no need for access control
+                //TODO - maybe I should still limit download without correct publication id? (what's the point?)
             } else {
                 //unpublished -- need to do access control
                 canread_project_ids = canread_project_ids.map(id=>id.toString());
@@ -703,9 +709,10 @@ router.get('/download/:id', jwt({
             system.stat(dataset, (err, stats)=>{
                 clearTimeout(stat_timer);
                 if(err) return next(err);
+                logger.debug("obtaining download stream", dataset.storage);
                 system.download(dataset, (err, readstream, filename)=>{
                     if(err) return next(err);
-
+                    logger.debug("updating download_count");
                     if(!dataset.download_count) dataset.download_count = 1;
                     else dataset.download_count++;
                     dataset.save();
@@ -719,6 +726,10 @@ router.get('/download/:id', jwt({
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);
                     });
+                    readstream.on('close', ()=>{
+                        logger.error("close event");
+                    });
+                    
                     /* close event seems to be stream dependent.. can't rely on..
                     readstream.on('close', err=>{
                         //close won't fire if user cancel download mid-way
