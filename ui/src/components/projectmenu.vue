@@ -35,6 +35,7 @@ export default {
         }
     },
 
+    /*
     watch: {
         active: function() {
             //scroll to selected project
@@ -48,6 +49,17 @@ export default {
                     area.scrollTop = elem.offsetTop - area.clientHeight/2;
                 }
             });
+        }
+    },
+    */
+
+    mounted () {
+        //scroll to selected project
+        var elem = document.getElementById(this.active);
+        if(!elem) return;
+        var area = document.getElementsByClassName("projectmenu")[0];
+        if(area.clientHeight < elem.offsetTop) {
+            area.scrollTop = elem.offsetTop - area.clientHeight/2;
         }
     },
 

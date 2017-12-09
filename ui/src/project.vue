@@ -5,11 +5,7 @@
     <projectmenu :active="selected._id" :projects="projects" @change="change_project"></projectmenu>
     <div class="header">
         <b-tabs class="brainlife-tab" v-model="tab" @input="tab_change">
-            <b-tab title="Detail"/>
-            <b-tab title="Datasets"/>
-            <b-tab title="Processes"/>
-            <b-tab title="Pipelines"/>
-            <b-tab title="Publications"/>
+            <b-tab v-for="tabinfo in tabs" :key="tabinfo.id" :title="tabinfo.label"/>
         </b-tabs>
     </div><!--header-->
     <div class="page-content">
@@ -17,16 +13,26 @@
             <el-alert v-if="selected.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
 
             <!--detail-->
-            <div v-if="tab == 0">
+            <div v-if="tabs[tab].id == 'detail'">
                 <b-row>
                     <b-col cols="3">
                         <projectavatar :project="selected"/>
                     </b-col>
                     <b-col>
+                        <!--
                         <b-button-group style="float: right;" v-if="selected._canedit">
                             <b-button variant="danger" @click="remove()" v-if="!selected.removed"><icon name="trash"/></b-button>
                             <b-button variant="default" @click="edit()"><icon name="pencil"/></b-button>
                         </b-button-group>
+                        -->
+                        <div style="float: right;" v-if="selected._canedit">
+                            <div @click="remove()" v-if="!selected.removed" class="button button-danger">
+                                <icon name="trash" scale="1.25"/>
+                            </div>
+                            <div @click="edit()" class="button">
+                                <icon name="pencil" scale="1.25"/>
+                            </div>
+                        </div>
 
                         <h3 style="color: #666; margin-bottom: 10px;">
                             <projectaccess :access="selected.access"/>
@@ -106,11 +112,11 @@
 
             </div>
 
-            <div v-if="tab == 1">
+            <div v-if="tabs[tab].id == 'dataset'">
                 <datasets :project="selected"></datasets>
             </div>
 
-            <div v-if="tab == 2">
+            <div v-if="tabs[tab].id == 'process'">
                 <b-alert show>
                     <b>Coming Soon!</b> 
                     Processes page will be moved here soon by organizing each process under a specific project.
@@ -118,7 +124,7 @@
                 </b-alert>
             </div>
 
-            <div v-if="tab == 3">
+            <div v-if="tabs[tab].id == 'pipeline'">
                 <b-alert show><b>Coming Soon!</b> You will be able to view / register new pipeline rules.</b-alert>
                 <p class="text-muted" v-if="!rules || rules.length == 0">No pipline registered</p>
                 <div v-for="rule in rules" :key="rule._id">
@@ -126,7 +132,7 @@
                 </div>
             </div>
 
-            <div v-if="tab == 4">
+            <div v-if="tabs[tab].id == 'pub'">
                 <div v-if="publishing">
                     <h3 style="opacity: 0.7">New Publication</h3>
                     <publisher :project="selected" @close="publishing = false" @submit="publish"/>
@@ -139,27 +145,39 @@
                     </pubform>
                 </div>
                 <div v-else>
-                    <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered</p>
 
-                    <!--show publication-->
-                    <b-row v-for="pub in pubs" :key="pub._id" @click="open_pub(pub)" class="pub" :class="{'pub-removed': pub.removed}">
-                        <b-col>
-                            <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
-                            <b>{{pub.name}}</b><br>
-                            {{pub.desc}}
-                        </b-col>
-                        <b-col>
-                            <contact :id="pub.user_id"/>     
-                        </b-col>
-                        <b-col cols="2">
-                            {{new Date(pub.create_date).toLocaleDateString()}}
-                        </b-col>
-                        <b-col cols="1">
-                            <b-button style="float: right;" size="sm" @click.stop="pub_editing = pub">
-                                <icon name="pencil"/>
-                            </b-button>
-                        </b-col>
-                    </b-row>
+                    <table class="table">
+                    <thead class="thead-default">
+                        <tr>
+                            <th>Name</th>
+                            <th>Publisher</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="pub in pubs" :key="pub._id" @click="open_pub(pub)" class="pub" :class="{'pub-removed': pub.removed}">
+                            <td>
+                                <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
+                                <b>{{pub.name}}</b><br>
+                                {{pub.desc}}
+                            </td>
+                            <td>
+                                <contact :id="pub.user_id"/>     
+                            </td>
+                            <td>
+                                {{new Date(pub.create_date).toLocaleDateString()}}
+                            </td>
+                            <td>
+                                <b-button style="float: right;" size="sm" @click.stop="pub_editing = pub">
+                                    <icon name="pencil"/>
+                                </b-button>
+                            </td>
+                        </tr>
+                    </tbody>
+                    </table>
+                    <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered for this project</p>
+
                     <!--space to make sure add button won't overwrap the pub list-->
                     <br>
                     <br>
@@ -231,9 +249,23 @@ export default {
             publishing: false,
             pub_editing: null,
 
-            tab: 0,
+            tabs: [ 
+                {id: "detail", label: "Detail"},
+                {id: "dataset", label: "Datasets"},
+                {id: "process", label: "Processes"},
+                {id: "pipeline", label: "Pipelines"},
+                {id: "pub", label: "Publications"},
+            ],
+            tab: 0, //current tab
+
             projects: null, //all projects that user has access to
             config: Vue.config,
+        }
+    },
+
+    watch: {
+        '$route': function() {
+            this.parse_params();
         }
     },
 
@@ -294,7 +326,7 @@ export default {
             console.log("tab updated");
             this.publishing = false;
             this.pub_editing = null;
-            this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
+            this.$router.push("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
         },
 
         remove: function() {
@@ -330,7 +362,9 @@ export default {
 
             //open tab
             if(this.$route.params.tab) {
-                this.tab = parseInt(this.$route.params.tab);
+                this.tabs.forEach((tab, idx)=>{  
+                    if(tab.id == this.$route.params.tab) this.tab = idx;
+                });
             }
 
             //open dataset view

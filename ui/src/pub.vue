@@ -17,7 +17,7 @@
                         </div>
                         <div>
                             <h4 style="color: #666; margin-bottom: 10px;">
-                                <b-badge style="float: right; opacity: 0.7;"><a style="color: inherit;" :href="'https://doi.org/'+pub.doi">DOI {{pub.doi}}</a></b-badge>
+                                <b-badge style="float: right; opacity: 0.7;" v-if="pub.doi"><a style="color: inherit;" :href="'https://doi.org/'+pub.doi">DOI {{pub.doi}}</a></b-badge>
                                 {{pub.name}} 
                             </h4>
                             <p class="text-muted">{{pub.desc}}</p>
@@ -191,7 +191,7 @@
                             <b-list-group-item v-for="(group, subject) in dataset_groups" :key="subject">
                                 <b-row>
                                     <b-col cols="3">
-                                        <b><icon name="caret-right"/> {{subject}}</b>
+                                        <b>{{subject}}</b>
                                         <small class="text-muted">
                                             <br v-if="group.count > 1">
                                             <span><b>{{group.count}}</b> datasets</span>

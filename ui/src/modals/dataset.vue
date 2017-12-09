@@ -3,7 +3,23 @@
 <div v-if="dataset" class="dataset-overlay">
     <b-container>
         <div class="dataset-header">
-            <icon name="close" style="float: right; opacity: 0.6; cursor: pointer; position: relative; top: 5px;" scale="2.5" @click.native="close"/>
+            <div class="button" style="float: right; opacity: 0.7" @click="close">
+                <icon name="close" scale="1.5"/>
+            </div>
+            <div style="float: right; margin-right: 20px; margin-top: 4px;">
+                <b-button variant="outline-danger" size="sm" @click="remove()" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
+                    <icon name="trash"/>
+                </b-button>
+                <b-button variant="outline-secondary" size="sm" @click="download" v-if="dataset.storage" title="Download">
+                    <icon name="download"/>
+                    <span v-if="dataset.size">{{dataset.size|filesize}}</span>
+                    <span v-else>Download</span>
+                </b-button>
+                <b-button variant="outline-secondary" size="sm" @click="process" v-if="dataset.storage" title="Process">
+                    <icon name="paper-plane"/> Process
+                </b-button>
+                <b-button variant="outline-secondary" size="sm" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
+            </div>
             <h2>
                 <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
                     <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
@@ -11,26 +27,9 @@
             </h2>
         </div><!--header-->
 
+        <el-alert v-if="dataset.removed" style="border-radius: 0px" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         <div class="dataset-content">
             <!-- detail -->
-            <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
-            <b-row>
-                <b-col>
-                </b-col>
-                <b-col>
-                    <b-button-group style="float: right;">
-                        <b-button variant="default" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
-                        <b-button variant="default" @click="download" v-if="dataset.storage" icon="document">Download 
-                            <small style="opacity: 0.5" v-if="dataset.size">({{dataset.size|filesize}})</small>
-                        </b-button>
-                        <b-button variant="default" @click="process" v-if="dataset.storage" icon="document">Process</b-button>
-                    </b-button-group>
-                    <b-button style="float: right; margin-right: 15px;" variant="danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
-                </b-col>
-            </b-row>
-
-            <br clear="both">
-            
             <b-row>
                 <b-col cols="3">
                     <b class="text-muted">Description</b>
@@ -253,11 +252,17 @@ export default {
     },
 
     mounted() {
-        //document.body.appendChild(this.$refs.modal.$el); //move to root
         this.$root.$on("dataset.view", id=>{
             console.log("requested to view", id);
             this.load(id);
         });
+
+        document.addEventListener("keydown", e => {
+            if (e.keyCode == 27) {
+                this.close();
+            }
+        });
+
     },
     
     watch: {
@@ -328,10 +333,11 @@ export default {
         },
 
         remove: function() {
-            if(confirm("Do you really want to remove this dataset ?")) {
+            if(confirm("Do you really want to remove this dataset?")) {
                 this.$http.delete('dataset/'+this.dataset._id)
                 .then(res=>{
-                    this.$refs.modal.close();
+                    this.dataset = null;
+                    this.$root.$emit("dataset.remove", this.dataset);
                 });
             }
         },

@@ -21,7 +21,7 @@
             <b-alert v-if="Object.keys(datatype_groups).length == 0" show variant="danger">There are no datasets to publish</b-alert>
             <p class="text-muted">Please select datasets you'd like to publish</p>
             <div v-for="(group, datatype_id) in datatype_groups" :key="datatype_id">
-                <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 4px; margin: 1px; transition: all 0.3s">
+                <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 1px 5px; margin: 1px; transition: all 0.3s">
                     <b-row>
                         <b-col cols="1">
                             <b-form-checkbox v-model="stat.include"/>

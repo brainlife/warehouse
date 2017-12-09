@@ -735,12 +735,15 @@ opacity: 0.7;
 width: 50px;
 transition: 0.3s width;
 margin: 6px 0px;
+cursor: pointer;
 }
 .filter:focus {
 opacity: 1;
 width: 100%;
+cursor: inherit;
 }
 .filter-active {
+cursor: inherit;
 opacity: 1;
 background-color: #2693ff;
 color: white;

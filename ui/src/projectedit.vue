@@ -11,9 +11,6 @@
     <div class="main-section">
         <b-container>
             <b-form @submit="submit">
-                <b-form-group horizontal>
-                    <b-form-checkbox v-if="project._id" v-model="project.removed">Removed</b-form-checkbox>
-                </b-form-group>
                 <b-form-group label="Name" horizontal>
                     <el-input type="text" v-model="project.name" placeholder="Project Name"></el-input>
                 </b-form-group>
@@ -51,6 +48,9 @@
                 </b-form-group>
                 <b-form-group label="Avatar" horizontal>
                     <el-input type="text" v-model="project.avatar" placeholder="URL of project avatar (optional)"/>
+                </b-form-group>
+                <b-form-group horizontal>
+                    <b-form-checkbox v-if="project._id" v-model="project.removed">Removed</b-form-checkbox>
                 </b-form-group>
                 <b-form-group horizontal>
                     <b-button type="button" variant="secondary" @click="cancel">Cancel</b-button>
