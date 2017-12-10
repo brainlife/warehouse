@@ -7,6 +7,20 @@
                 <icon name="close" scale="1.5"/>
             </div>
             <div style="float: right; margin-right: 20px; margin-top: 4px;">
+                <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
+                    <icon name="trash" scale="1.25"/>
+                </div>
+                <div class="button" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)" title="View Dataset">
+                    <icon name="eye" scale="1.25"/>
+                </div>
+                <div class="button" @click="download" v-if="dataset.storage">
+                    <icon name="download" scale="1.25"/>
+                </div>
+                <div class="button" @click="process" v-if="dataset.storage" title="Process">
+                    <icon name="paper-plane" scale="1.25"/> 
+                </div>
+
+                <!--
                 <b-button variant="outline-danger" size="sm" @click="remove()" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash"/>
                 </b-button>
@@ -19,12 +33,13 @@
                     <icon name="paper-plane"/> Process
                 </b-button>
                 <b-button variant="outline-secondary" size="sm" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
+                -->
             </div>
-            <h2>
+            <h4>
                 <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
                     <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
                 </div>
-            </h2>
+            </h4>
         </div><!--header-->
 
         <el-alert v-if="dataset.removed" style="border-radius: 0px" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
@@ -327,7 +342,7 @@ export default {
                     },
                 }).then(res=>{
                     //then jump! (TODO - should move to /project soon)
-                    this.$router.replace("/processes/"+instance._id);
+                    this.$router.push("/processes/"+instance._id);
                 });
             });
         },
@@ -437,8 +452,12 @@ export default {
                         }
                       },
                         */
-                        physics:{barnesHut:{gravitationalConstant:-3000}}
+                        physics:{barnesHut:{gravitationalConstant:-3000}},
                         //physics:{barnesHut:{gravitationalConstant:-3000,/* springConstant: 0.01,*/ avoidOverlap: 0.01}}
+                        nodes: {
+                            shadow: true,
+                            borderWidth: 0,
+                        },
                     });
                 });
              }).catch(err=>{

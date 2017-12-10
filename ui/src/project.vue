@@ -19,12 +19,6 @@
                         <projectavatar :project="selected"/>
                     </b-col>
                     <b-col>
-                        <!--
-                        <b-button-group style="float: right;" v-if="selected._canedit">
-                            <b-button variant="danger" @click="remove()" v-if="!selected.removed"><icon name="trash"/></b-button>
-                            <b-button variant="default" @click="edit()"><icon name="pencil"/></b-button>
-                        </b-button-group>
-                        -->
                         <div style="float: right;" v-if="selected._canedit">
                             <div @click="remove()" v-if="!selected.removed" class="button button-danger">
                                 <icon name="trash" scale="1.25"/>
@@ -66,30 +60,6 @@
                         <p class="text-muted">Users who can update datasets published on this project</p>
                     </b-col>
                 </b-row>
-
-                <!--
-                <b-row v-if="datasets_attribs.num_subjects">
-                    <b-col cols="3"> 
-                        <b class="text-muted">Datasets</b>
-                    </b-col>
-                    <b-col>
-                        <b-card>
-                            <b-row>
-                                <b-col>
-                                    <p class="text-muted">Subjects</p>
-                                    <h5>{{datasets_attribs.num_subjects}}</h5>
-                                </b-col>
-
-                                <b-col>
-                                    <p class="text-muted">Datasets</p>
-                                    <h5>{{datasets_attribs.num_datasets}}</h5>
-                                </b-col>
-                            </b-row>
-                        </b-card>
-                    </b-col>
-                </b-row>
-                -->
-
                 <br>
                 <b-row>
                     <b-col cols="3"> 
@@ -272,7 +242,7 @@ export default {
     mounted: function() {
 
         this.$root.$on("dataset.close", ()=>{
-            this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
+            this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
         });
 
         this.$http.get('project', {params: {
@@ -341,7 +311,7 @@ export default {
 
         change_project: function(project) {
             console.log("project changed too", project);
-            this.$router.replace("/project/"+project._id+"/"+this.tab);
+            this.$router.replace("/project/"+project._id+"/"+this.tabs[this.tab].id);
             this.parse_params();
             this.publishing = false;
             this.pub_editing = null;

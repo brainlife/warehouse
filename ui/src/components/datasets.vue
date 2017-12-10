@@ -242,11 +242,9 @@ export default {
             this.load();
 
             //get number of subjects stored 
+            //console.log("querying subjects");
             this.$http.get('dataset/distinct', {params: {
-                find: JSON.stringify({
-                    project: this.project._id,
-                    removed: false
-                }),
+                find: JSON.stringify({$and: this.get_mongo_query()}),
                 distinct: 'meta.subject'
             }}).then(res=>{
                 this.total_subjects = res.body.length;
@@ -283,18 +281,14 @@ export default {
             this.reload();
         },
 
-        load: function() {
-            if(this.loading) return;
-
+        get_mongo_query: function() {
 			var finds = [
                 {removed: false},
                 {project: this.project._id},
             ] 
 
             if(this.query) {
-
                 let ands = [];
-
                 //split query into each token and allow for regex search on each token
                 //so that we can query against multiple fields simultanously
                 this.query.split(" ").forEach(q=>{
@@ -313,9 +307,13 @@ export default {
                         {"datatype": {$in: datatype_ids}},
                     ]});
                 });
-
                 finds.push({$and: ands});
             }
+            return finds;
+        },
+
+        load: function() {
+            if(this.loading) return;
 
             //count number of datasets already loaded
             var loaded = 0;
@@ -336,7 +334,7 @@ export default {
                     this.loading = request;
                 },
                 params: {
-                    find: JSON.stringify({$and: finds}),
+                    find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,
                     limit: 200,
                     select: '-prov',
@@ -388,9 +386,7 @@ export default {
         },
 
         open_dataset: function(dataset_id) {
-            //TODO - we should probably use semi-fullscreen modal to display dataset
-            this.$router.push('/project/'+this.project._id+'/1/'+dataset_id);
-            //this.$root.$emit('dataset.view', dataset_id);
+            this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
 
             //same code exists in project.vue (to handle URL based open)
             if(this.$route.params.subid) {
