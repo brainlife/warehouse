@@ -238,7 +238,7 @@ router.get('/prov/:id', (req, res, next)=>{
     }
 
     function compose_label(task) {
-        let label = task.service+"\n";
+        let label = task.service+"\n"; //task.name is sometime like "brainlife.process"..
         for(let id in task.config) {
             if(id[0] == "_") continue;
             let v = task.config[id];
@@ -261,9 +261,10 @@ router.get('/prov/:id', (req, res, next)=>{
             let user = common.deref_contact(dataset.user_id);
             add_node({
                 id: "input."+dataset._id,
-                color: "#ff8",
+                color: "#159957",
                 shape: "box",
                 label: user.fullname,
+                font: {color: "#fff"},
             });            
             edges.push({
                 from: "input."+dataset._id,
@@ -294,7 +295,7 @@ router.get('/prov/:id', (req, res, next)=>{
                         from: "task."+task._id,
                         to,
                         arrows: "to",
-                        label: "(no app) ",
+                        label: "(no app)",
                     });
                     load_task_prov(task, cb);
                 }
@@ -319,7 +320,7 @@ router.get('/prov/:id', (req, res, next)=>{
                     to,
                     arrows: "to",
                     //dashes: true,
-                    font: {size: 11, strokeColor: "rgba(0,0,0,0)", color: "rgb(50, 50, 50)"},
+                    //font: {size: 11, strokeColor: "rgba(0,0,0,0)", color: "rgb(50, 50, 50)"},
                     label,
                 });
                 load_task_prov(task, cb);
@@ -339,7 +340,7 @@ router.get('/prov/:id', (req, res, next)=>{
         //load all datasets
         db.Datasets
         .find({ _id: {$in: dataset_ids} })
-        .populate('prov.app')
+        .populate('prov.app project')
         .exec((err, datasets)=>{
             if(err) return cb(err);
             async.eachSeries(datasets, (dataset, next_dataset)=>{
@@ -353,14 +354,14 @@ router.get('/prov/:id', (req, res, next)=>{
                         color: "#ccc",
                         shape: "box",
                         font: {size: 12},
-                        label: dataset.meta.subject+" / "+datatypes[dataset.datatype].name+"\n"+dataset.desc,
+                        //label: dataset.meta.subject+" / "+datatypes[dataset.datatype].name+"\n"+dataset.desc,
+                        label:dataset.project.name+" / "+ dataset.meta.subject + "\n" +datatypes[dataset.datatype].name,
                     },
                     edge: {
                         from: "dataset."+dataset._id,
                         to,
                         arrows: "to",
-                        //dashes: true,
-                        //label: "??2",
+                        //label: datatypes[dataset.datatype].name, //+"\n"+(dataset.desc||''),
                     },
                     to,
                 };
@@ -394,7 +395,7 @@ router.get('/prov/:id', (req, res, next)=>{
                         id: "task."+input.task_id,
                         color: "#fff",
                         shape: "box",
-                        font: {size: 12},
+                        //font: {size: 12},
                         label: compose_label(dep_task),
                     });
                     edges.push({
@@ -402,7 +403,8 @@ router.get('/prov/:id', (req, res, next)=>{
                         to: "task."+task._id,
                         arrows: "to",
                         color: "#ff0",
-                        label: input.id,
+                        //label: datatype.name, // || input.id || input.input_id,
+                        label: datatypes[input.datatype].name, //+"\n"+(dataset.desc||''),
                     });
                     load_task_prov(dep_task, next_dep); //recurse to its deps
                 }
@@ -435,7 +437,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 color: "#2693ff",
                 shape: "box",
                 margin: 10,
-                font: {size: 20, color: "#fff"},
+                font: {/*size: 20,*/ color: "#fff"},
                 //fixed: {x: true, y: true},
 
                 //push it toward right bottom

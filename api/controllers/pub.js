@@ -169,8 +169,7 @@ function can_publish(req, project_id, cb) {
  *
  * @apiParam {Boolean} removed          If this is a removed publication
  *
- * @apiHeader {String} authorization 
- *                              A valid JWT token "Bearer: xxxxx"
+ * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
  *
  * @apiSuccess {Object}                 Publication record created
  *                              
@@ -270,8 +269,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiParam {Object} [find]            Mongo query to subset datasets (all datasets in the project by default)
  *
- * @apiHeader {String} authorization 
- *                                      A valid JWT token "Bearer: xxxxx"
+ * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
  *
  * @apiSuccess {Object}                 Number of published datasets, etc..
  */
@@ -293,15 +291,54 @@ router.put('/:id/datasets', jwt({secret: config.express.pubkey}), (req, res, nex
             find.removed = false; //no point of publishing removed dataset right?
 
             db.Datasets.update(
-                //query
-                //{project: pub.project, datatype: req.body.datatype, datatype_tags: req.body.datatype_tags, removed: false}, 
                 find,
-                //update
                 {$addToSet: {publications: pub._id}}, 
                 {multi: true},
             (err, _res)=>{
                 if(err) return next(err);
                 res.json(_res);
+            });
+        });
+    });
+}); 
+
+/**
+ * @apiGroup Publications
+ * @api {put} /pub/:pubid/doi
+ *                              
+ * @apiDescription                      Issue DOI for publication record (or update URL)
+ *
+ * @apiParam {String} url               URL to associate the minted DOI
+ *
+ * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
+ *
+ * @apiSuccess {Object}                 Publication object with doi field
+ */
+router.put('/:id/doi', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    let id = req.params.id;
+    let url = req.body.url;
+    //logger.debug(id, url);
+
+    //TODO - maybe we shouldn't let user control the url?
+
+    db.Publications.findById(id, (err, pub)=>{
+        if(err) return next(err);
+        if(!pub) return res.status(404).end();
+        if(pub.doi) return res.status(404).end("doi already issued");
+        
+        can_publish(req, pub.project, (err, can)=>{
+            if(err) return next(err);
+            if(!can) return res.status(401).end("you can't publish on this project");
+
+            //register metadata and attach url to it
+            common.doi_post_metadata(pub, (err, doi)=>{
+                if(err) return next(err);
+                //let url = "https://brainlife.io/pub/"+pub._id; 
+                logger.debug("making request", doi, url);
+                common.doi_put_url(doi, url, err=>{
+                    if(err) return next(err);
+                    res.json(pub);
+                });
             });
         });
     });

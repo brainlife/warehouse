@@ -66,6 +66,13 @@ exports.express = {
     pubkey: fs.readFileSync('/home/hayashis/git/auth/api/config/auth.pub'),
 }
 
+exports.datacite = {
+    prefix: "10.0322",  //test account
+    username: "DATACITE.BL",
+    password: fs.readFileSync(__dirname+'/datacite.password', {encoding: "ascii"}).trim(),
+    api: "https://mds.test.datacite.org",
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  storage system where we can archive data
