@@ -5,11 +5,7 @@
     <projectmenu :active="selected._id" :projects="projects" @change="change_project"></projectmenu>
     <div class="header">
         <b-tabs class="brainlife-tab" v-model="tab" @input="tab_change">
-            <b-tab title="Detail"/>
-            <b-tab title="Datasets"/>
-            <b-tab title="Processes"/>
-            <b-tab title="Pipelines"/>
-            <b-tab title="Publications"/>
+            <b-tab v-for="tabinfo in tabs" :key="tabinfo.id" :title="tabinfo.label"/>
         </b-tabs>
     </div><!--header-->
     <div class="page-content">
@@ -17,16 +13,20 @@
             <el-alert v-if="selected.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
 
             <!--detail-->
-            <div v-if="tab == 0">
+            <div v-if="tabs[tab].id == 'detail'">
                 <b-row>
                     <b-col cols="3">
                         <projectavatar :project="selected"/>
                     </b-col>
                     <b-col>
-                        <b-button-group style="float: right;" v-if="selected._canedit">
-                            <b-button variant="danger" @click="remove()" v-if="!selected.removed"><icon name="trash"/></b-button>
-                            <b-button variant="default" @click="edit()"><icon name="pencil"/></b-button>
-                        </b-button-group>
+                        <div style="float: right;" v-if="selected._canedit">
+                            <div @click="remove()" v-if="!selected.removed" class="button button-danger">
+                                <icon name="trash" scale="1.25"/>
+                            </div>
+                            <div @click="edit()" class="button">
+                                <icon name="pencil" scale="1.25"/>
+                            </div>
+                        </div>
 
                         <h3 style="color: #666; margin-bottom: 10px;">
                             <projectaccess :access="selected.access"/>
@@ -60,30 +60,6 @@
                         <p class="text-muted">Users who can update datasets published on this project</p>
                     </b-col>
                 </b-row>
-
-                <!--
-                <b-row v-if="datasets_attribs.num_subjects">
-                    <b-col cols="3"> 
-                        <b class="text-muted">Datasets</b>
-                    </b-col>
-                    <b-col>
-                        <b-card>
-                            <b-row>
-                                <b-col>
-                                    <p class="text-muted">Subjects</p>
-                                    <h5>{{datasets_attribs.num_subjects}}</h5>
-                                </b-col>
-
-                                <b-col>
-                                    <p class="text-muted">Datasets</p>
-                                    <h5>{{datasets_attribs.num_datasets}}</h5>
-                                </b-col>
-                            </b-row>
-                        </b-card>
-                    </b-col>
-                </b-row>
-                -->
-
                 <br>
                 <b-row>
                     <b-col cols="3"> 
@@ -95,13 +71,22 @@
                     </b-col>
                 </b-row>
 
+                <b-row>
+                    <b-col cols="3">
+                        <b class="text-muted">Comments</b>
+                    </b-col>
+                    <b-col>
+                        <vue-disqus shortname="brain-life"/>
+                    </b-col>
+                </b-row>
+
             </div>
 
-            <div v-if="tab == 1">
+            <div v-if="tabs[tab].id == 'dataset'">
                 <datasets :project="selected"></datasets>
             </div>
 
-            <div v-if="tab == 2">
+            <div v-if="tabs[tab].id == 'process'">
                 <b-alert show>
                     <b>Coming Soon!</b> 
                     Processes page will be moved here soon by organizing each process under a specific project.
@@ -109,7 +94,7 @@
                 </b-alert>
             </div>
 
-            <div v-if="tab == 3">
+            <div v-if="tabs[tab].id == 'pipeline'">
                 <b-alert show><b>Coming Soon!</b> You will be able to view / register new pipeline rules.</b-alert>
                 <p class="text-muted" v-if="!rules || rules.length == 0">No pipline registered</p>
                 <div v-for="rule in rules" :key="rule._id">
@@ -117,7 +102,7 @@
                 </div>
             </div>
 
-            <div v-if="tab == 4">
+            <div v-if="tabs[tab].id == 'pub'">
                 <div v-if="publishing">
                     <h3 style="opacity: 0.7">New Publication</h3>
                     <publisher :project="selected" @close="publishing = false" @submit="publish"/>
@@ -126,39 +111,39 @@
                     <h3 style="opacity: 0.7">Edit Publication</h3>
                     <p style="opacity: 0.7">Only the publication metadata can be edited at this time. To update published datasets, please contact administrator.</p>
                     <pubform :pub="pub_editing" @submit="save_pub">
-                        <button type="button" class="btn btn-secondary" @click="pub_editing = null">Cancel</button>
+                        <button type="button" class="btn btn-secondary" @click="tab_change()">Cancel</button>
                     </pubform>
                 </div>
                 <div v-else>
-                    <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered</p>
+                    <b-card no-body>
+                        <b-list-group flush>
+                            <b-list-group-item v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed}">
+                                <b-row>
+                                <b-col>
+                                    <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
+                                    <b>{{pub.name}}</b><br>
+                                    {{pub.desc}}
+                                </b-col>
+                                <b-col cols="2">
+                                    <div class="button" style="float: right;" @click.stop="edit_pub(pub)">
+                                        <icon name="pencil"/>
+                                    </div>
+                                    <div class="button" style="float: right;" @click.stop="open_pub(pub)">
+                                        <icon name="eye"/>
+                                    </div>
+                                    <span style="clear: right; float: right; opacity: 0.7;"><b>{{new Date(pub.create_date).toLocaleDateString()}}</b></span>
+                                    <!--
+                                    <contact :id="pub.user_id"/>     
+                                    -->
+                                </b-col>
+                                </b-row>
+                            </b-list-group-item>
+                        </b-list-group>
+                        <p class="text-muted" style="margin: 20px;" v-if="!pubs || pubs.length == 0">No publication registered for this project</p>
+                    </b-card>
 
-                    <!--show publication-->
-                    <div v-for="pub in pubs" :key="pub._id" style="padding: 5px; margin-bottom: 5px; border-bottom: 1px solid #eee;" :class="{'pub-removed': pub.removed}">
-                        <b-row>
-                            <b-col>
-                                <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
-                                <b>{{pub.name}}</b><br>
-                                {{pub.desc}}
-                            </b-col>
-                            <b-col>
-                                <contact :id="pub.user_id"/>     
-                            </b-col>
-                            <b-col cols="2">
-                                {{new Date(pub.create_date).toLocaleDateString()}}
-                            </b-col>
-                            <b-col cols="1">
-                                <b-button style="float: right;" size="sm" @click="pub_editing = pub">
-                                    <icon name="pencil"/>
-                                </b-button>
-                            </b-col>
-                        </b-row>
-                    </div>
                     <!--space to make sure add button won't overwrap the pub list-->
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
+                    <p style="padding-top: 100px;">&nbsp;</p>
                     <b-button v-if="selected._canedit" class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
                 </div>
             </div>
@@ -197,13 +182,15 @@ import datasets from '@/components/datasets'
 import publisher from '@/components/publisher'
 import pubform from '@/components/pubform'
 
+import VueDisqus from 'vue-disqus/VueDisqus.vue'
+
 export default {
     components: { 
         sidemenu, contactlist, project, 
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
-        publisher, pubform,
+        publisher, pubform, VueDisqus,
     },
 
     data () {
@@ -222,16 +209,31 @@ export default {
             publishing: false,
             pub_editing: null,
 
-            tab: 0,
+            tabs: [ 
+                {id: "detail", label: "Detail"},
+                {id: "dataset", label: "Datasets"},
+                {id: "process", label: "Processes"},
+                {id: "pipeline", label: "Pipelines"},
+                {id: "pub", label: "Publications"},
+            ],
+            tab: 0, //current tab
+
             projects: null, //all projects that user has access to
             config: Vue.config,
+        }
+    },
+
+    watch: {
+        '$route': function() {
+            this.parse_params();
+            this.parse_sub_params();
         }
     },
 
     mounted: function() {
 
         this.$root.$on("dataset.close", ()=>{
-            this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
+            this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
         });
 
         this.$http.get('project', {params: {
@@ -271,17 +273,26 @@ export default {
                 for(var k in res.body) {
                     this.pub_editing[k] = res.body[k];
                 }
-                this.pub_editing = null;
+                this.tab_change();
             }).catch(res=>{
                 this.$notify({type: 'error', text: res.body});
             });
+        },
+
+        open_pub: function(pub) {
+            document.location = "/pub/"+pub._id;
+        },
+
+        edit_pub: function(pub) {
+            this.$router.push("/project/"+this.selected._id+"/pub/"+pub._id);
+            this.pub_editing = pub;
         },
 
         tab_change: function() {
             console.log("tab updated");
             this.publishing = false;
             this.pub_editing = null;
-            this.$router.replace("/project/"+this.selected._id+"/"+this.tab);
+            this.$router.push("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
         },
 
         remove: function() {
@@ -296,10 +307,8 @@ export default {
 
         change_project: function(project) {
             console.log("project changed too", project);
-            this.$router.replace("/project/"+project._id+"/"+this.tab);
+            this.$router.replace("/project/"+project._id+"/"+this.tabs[this.tab].id);
             this.parse_params();
-            this.publishing = false;
-            this.pub_editing = null;
             this.load();
         },
 
@@ -317,12 +326,29 @@ export default {
 
             //open tab
             if(this.$route.params.tab) {
-                this.tab = parseInt(this.$route.params.tab);
+                this.tabs.forEach((tab, idx)=>{  
+                    if(tab.id == this.$route.params.tab) this.tab = idx;
+                });
+            } else {
+                this.$router.replace("/project/"+project_id+"/detail");
             }
+        },
 
-            //open dataset view
+        parse_sub_params: function() {
+            //handle subid
+            this.publishing = false;
+            this.pub_editing = null;
             if(this.$route.params.subid) {
-                this.$root.$emit('dataset.view', this.$route.params.subid);
+                let subid = this.$route.params.subid;
+                let tab = this.tabs[this.tab];
+                switch(tab.id) {
+                case "dataset":
+                    this.$root.$emit('dataset.view', subid);
+                    break;
+                case "pub":
+                    this.pub_editing = this.pubs.find(pub=>{return pub._id == subid});
+                    break;
+                } 
             }
         },
 
@@ -347,6 +373,7 @@ export default {
             })
             .then(res=>{
                 this.rules = res.body.rules; 
+                this.parse_sub_params();
             }).catch(res=>{
                 this.$notify({type: 'error', text: res.body});
             });
@@ -402,13 +429,15 @@ z-index: 1;
 .slide-fade-leave-active {
   transition: none;
 }
-.slide-fade-enter, .slide-fade-leave-to
-/* .slide-fade-leave-active below version 2.1.8 */ {
+.slide-fade-enter, .slide-fade-leave-to {
   transform: translateX(10px);
   opacity: 0;
 }
 .pub-removed {
 background-color: #aaa;
 opacity: 0.6;
+}
+.pub:hover {
+background-color: #eee;
 }
 </style>

@@ -91,7 +91,7 @@
                         (d.{{output.did}})
                     </mute>
                     <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
-                    <span @click="go('/dataset/'+output.dataset_id)" class="clickable">
+                    <span @click="go('/project/'+output.project+'/dataset/'+output.dataset_id)" class="clickable">
                         <el-tag v-if="output.dataset_id" :title="projects[output.project].desc">From <b>{{projects[output.project].name}}</b></el-tag>
                     </span>
 
@@ -99,7 +99,7 @@
                     <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
                         <div class="archived-datasets-title">Archived Datasets</div>
                         <ul class="archived">
-                            <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/dataset/'+dataset._id)" class="clickable">
+                            <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/project/'+dataset.project+'/dataset/'+dataset._id)" class="clickable">
                                 <icon name="cubes"></icon>
                                 <b>{{projects[dataset.project].name}}</b>
                                 <mute>{{dataset.desc}}</mute>

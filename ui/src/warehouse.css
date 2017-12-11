@@ -75,6 +75,25 @@ transform: rotate(180deg);
 box-shadow: none;
 cursor: pointer;
 }
+.button {
+display: inline-block;
+color: gray;
+padding: 5px 8px;
+min-width: 25px;
+cursor: pointer;
+border-radius: 3px;
+}
+.button:hover {
+background-color: gray;
+color: white;
+}
+.button-danger {
+color: #dc3545;
+}
+.button-danger:hover {
+background-color: #dc3545;
+color: white;
+}
 
 /*------------------------------------------------------------*/
 /* update bootstrap default tab */

@@ -45,9 +45,12 @@
     <b-form-group label="Contributors" horizontal>
         <contactlist v-model="pub.contributors"></contactlist>
     </b-form-group>
+
+    <!-- we should never remove publication
     <b-form-group label="" horizontal>
         <b-form-checkbox v-model="pub.removed">Removed</b-form-checkbox>
     </b-form-group>
+    -->
 
     <hr>
     <div style="float: right">

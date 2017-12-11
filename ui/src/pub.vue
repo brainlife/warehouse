@@ -17,7 +17,6 @@
                         </div>
                         <div>
                             <h4 style="color: #666; margin-bottom: 10px;">
-                                <b-badge style="float: right; opacity: 0.7;"><a style="color: inherit;" :href="'https://doi.org/'+pub.doi">DOI {{pub.doi}}</a></b-badge>
                                 {{pub.name}} 
                             </h4>
                             <p class="text-muted">{{pub.desc}}</p>
@@ -58,6 +57,17 @@
                             </b-col>
                             <b-col>
                                 <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
+                            </b-col>
+                        </b-row>                         
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">DOI</b>
+                            </b-col>
+                            <b-col>
+                                <p>
+                                    <a v-if="pub.doi" :href="'https://doi.org/'+pub.doi">{{pub.doi}}</a>
+                                    <span v-else style="opacity: 0.5">Not Issued</span>
+                                </p>
                             </b-col>
                         </b-row>                         
                         <b-row>
@@ -140,6 +150,14 @@
                                 </ul>
                             </b-col>
                         </b-row>
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Comments</b>
+                            </b-col>
+                            <b-col>
+                                <vue-disqus shortname="brain-life"/>
+                            </b-col>
+                        </b-row>
                     </div>
                     <div v-if="tab_index == 1">
                         <!-- datasets -->
@@ -183,7 +201,7 @@
                             <b-list-group-item v-for="(group, subject) in dataset_groups" :key="subject">
                                 <b-row>
                                     <b-col cols="3">
-                                        <b><icon name="caret-right"/> {{subject}}</b>
+                                        <b>{{subject}}</b>
                                         <small class="text-muted">
                                             <br v-if="group.count > 1">
                                             <span><b>{{group.count}}</b> datasets</span>
@@ -236,6 +254,8 @@
                     </div>
                 </b-col>
             </b-row>
+
+
         </b-container>
         <br>
         <br>
@@ -256,13 +276,15 @@ import datatypetag from '@/components/datatypetag'
 import tags from '@/components/tags'
 import app from '@/components/app'
 
+import VueDisqus from 'vue-disqus/VueDisqus.vue'
+
 export default {
 
     components: { 
         pageheader, sidemenu, projectavatar, 
         contact, VueMarkdown, license, 
         projectcard, datatypetag, tags, 
-        app 
+        app, VueDisqus,
     },
 
     data () {

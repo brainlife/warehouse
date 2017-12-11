@@ -23,11 +23,11 @@
                         </p>
                     </b-col>
                     <b-col cols="3">
-                        <b-button-group style="float: right;">
-                            <b-button variant="danger" @click="remove()" v-if="app._canedit"><icon name="trash"/></b-button>
-                            <b-button variant="default" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" icon="edit"><icon name="pencil"/></b-button>
-                            <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
-                        </b-button-group>
+                        <div style="float: right;">
+                            <span class="button button-danger" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
+                            <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
+                            <span class="button" @click="go('/app/'+app._id+'/submit')" title="Process"><icon name="paper-plane" scale="1.25"/></span>
+                        </div>
                     </b-col>
                 </b-row>
 
@@ -184,6 +184,15 @@
                             <td><el-tag>Unknown</el-tag></td>
                         </tr>
                         -->
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Comments</b>
+                            </b-col>
+                            <b-col>
+                                <vue-disqus shortname="brain-life"/>
+                            </b-col>
+                        </b-row>
+
                     </div>
                     <div v-if="tab_index == 1">
                         <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
@@ -251,11 +260,13 @@ import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
 
+import VueDisqus from 'vue-disqus/VueDisqus.vue'
+
 export default {
     components: { 
         sidemenu, pageheader, contact, 
         project, tags, datatype, appavatar,
-        VueMarkdown, statustag,
+        VueMarkdown, statustag, VueDisqus,
      },
 
     data () {

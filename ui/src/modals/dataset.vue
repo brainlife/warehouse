@@ -3,26 +3,49 @@
 <div v-if="dataset" class="dataset-overlay">
     <b-container>
         <div class="dataset-header">
-            <icon name="close" style="float: right; opacity: 0.6; cursor: pointer;" scale="2" @click.native="close"/>
-            <b-button-group style="float: right; margin-right: 30px;">
-                <b-button variant="default" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
-                <b-button variant="default" @click="download" v-if="dataset.storage" icon="document">Download 
-                    <small style="opacity: 0.5" v-if="dataset.size">({{dataset.size|filesize}})</small>
+            <div style="float: right;">
+                <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
+                    <icon name="trash" scale="1.25"/>
+                </div>
+                <div class="button" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)" title="View Dataset">
+                    <icon name="eye" scale="1.25"/>
+                </div>
+                <div class="button" @click="download" v-if="dataset.storage">
+                    <icon name="download" scale="1.25"/>
+                </div>
+                <div class="button" @click="process" v-if="dataset.storage" title="Process">
+                    <icon name="paper-plane" scale="1.25"/> 
+                </div>
+
+                <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
+                    <icon name="close" scale="1.5"/>
+                </div>
+
+                <!--
+                <b-button variant="outline-danger" size="sm" @click="remove()" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
+                    <icon name="trash"/>
                 </b-button>
-                <b-button variant="default" @click="process" v-if="dataset.storage" icon="document">Process</b-button>
-            </b-button-group>
-            <b-button style="float: right; margin-right: 15px;" variant="outline-danger" @click="remove()" v-if="dataset._canedit && !dataset.removed"><icon name="trash"/></b-button>
-            <h2>
+                <b-button variant="outline-secondary" size="sm" @click="download" v-if="dataset.storage" title="Download">
+                    <icon name="download"/>
+                    <span v-if="dataset.size">{{dataset.size|filesize}}</span>
+                    <span v-else>Download</span>
+                </b-button>
+                <b-button variant="outline-secondary" size="sm" @click="process" v-if="dataset.storage" title="Process">
+                    <icon name="paper-plane"/> Process
+                </b-button>
+                <b-button variant="outline-secondary" size="sm" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
+                -->
+            </div>
+            <h4>
                 <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
                     <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
                 </div>
-            </h2>
+            </h4>
         </div><!--header-->
 
+        <el-alert v-if="dataset.removed" style="border-radius: 0px" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
         <div class="dataset-content">
             <!-- detail -->
-            <el-alert v-if="dataset.removed" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
-
             <b-row>
                 <b-col cols="3">
                     <b class="text-muted">Description</b>
@@ -55,30 +78,23 @@
             </b-row>
 
             <b-row>
-                <b-col cols="3"><b class="text-muted">Uploaded By</b></b-col>
+                <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
                 <b-col>
-                    <p>
-                        <contact :id="dataset.user_id"/> at <b>{{new Date(dataset.create_date).toLocaleString()}}</b>
-                    </p>
-                </b-col>
-            </b-row>
-
-            <b-row v-if="dataset.download_count > 0">
-                <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
-                <b-col>
-                    <p>{{dataset.download_count}}</p>
+                    <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+                    <br>
                 </b-col>
             </b-row>
 
             <b-row>
-                <b-col cols="3"><b class="text-muted">Storage</b></b-col>
+                <b-col cols="3"><b class="text-muted">Archived by</b></b-col>
                 <b-col>
                     <p>
+                        <contact :id="dataset.user_id"/> at <b>{{new Date(dataset.create_date).toLocaleString()}}</b>
                         <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
                             <icon name="cog" :spin="true"/> Storing ...
                         </span> 
                         <span v-if="dataset.status == 'stored'">
-                            This dataset is currently stored in <b>{{dataset.storage}}</b> 
+                            on <b>{{dataset.storage}}</b> 
                             <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                         </span> 
                         <span v-if="dataset.status == 'failed'" style="color: red;">
@@ -92,6 +108,13 @@
                             <icon name="bookmark"/>
                         </span>
                     </p>
+                </b-col>
+            </b-row>
+
+            <b-row v-if="dataset.download_count > 0">
+                <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
+                <b-col>
+                    <p>{{dataset.download_count}}</p>
                 </b-col>
             </b-row>
 
@@ -109,14 +132,6 @@
                         <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
                     </div>
                     <metadata v-else :metadata="dataset.meta"></metadata>
-                    <br>
-                </b-col>
-            </b-row>
-
-            <b-row>
-                <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
-                <b-col>
-                    <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
                     <br>
                 </b-col>
             </b-row>
@@ -253,11 +268,17 @@ export default {
     },
 
     mounted() {
-        //document.body.appendChild(this.$refs.modal.$el); //move to root
         this.$root.$on("dataset.view", id=>{
             console.log("requested to view", id);
             this.load(id);
         });
+
+        document.addEventListener("keydown", e => {
+            if (e.keyCode == 27) {
+                this.close();
+            }
+        });
+
     },
     
     watch: {
@@ -322,16 +343,17 @@ export default {
                     },
                 }).then(res=>{
                     //then jump! (TODO - should move to /project soon)
-                    this.$router.replace("/processes/"+instance._id);
+                    this.$router.push("/processes/"+instance._id);
                 });
             });
         },
 
         remove: function() {
-            if(confirm("Do you really want to remove this dataset ?")) {
+            if(confirm("Do you really want to remove this dataset?")) {
                 this.$http.delete('dataset/'+this.dataset._id)
                 .then(res=>{
-                    this.$refs.modal.close();
+                    this.dataset = null;
+                    this.$root.$emit("dataset.remove", this.dataset);
                 });
             }
         },
@@ -431,8 +453,12 @@ export default {
                         }
                       },
                         */
-                        physics:{barnesHut:{gravitationalConstant:-3000}}
+                        physics:{barnesHut:{gravitationalConstant:-3000}},
                         //physics:{barnesHut:{gravitationalConstant:-3000,/* springConstant: 0.01,*/ avoidOverlap: 0.01}}
+                        nodes: {
+                            shadow: true,
+                            borderWidth: 0,
+                        },
                     });
                 });
              }).catch(err=>{
@@ -531,7 +557,7 @@ padding: 30px;
 }
 .dataset-header {
 background-color: white;
-padding: 20px;
+padding: 10px 20px;
 box-shadow: 0 0 3px rgba(0,0,0,0.5);
 z-index: 20;
 position: relative;

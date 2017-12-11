@@ -3,8 +3,10 @@
     <transition name="slide-fade">
         <div v-if="page == 0">
             <br>
-            <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
-            <p class="text-danger">Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</p>
+            <b-alert show variant="warning">
+                <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
+                <p>Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</p>
+            </b-alert>
             <br>
             <hr>
             <div style="float: right">
@@ -19,7 +21,7 @@
             <b-alert v-if="Object.keys(datatype_groups).length == 0" show variant="danger">There are no datasets to publish</b-alert>
             <p class="text-muted">Please select datasets you'd like to publish</p>
             <div v-for="(group, datatype_id) in datatype_groups" :key="datatype_id">
-                <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 4px; margin: 1px; transition: all 0.3s">
+                <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 1px 5px; margin: 1px; transition: all 0.3s">
                     <b-row>
                         <b-col cols="1">
                             <b-form-checkbox v-model="stat.include"/>
@@ -161,7 +163,7 @@ export default {
             this.$emit("close");
         },
         publish() {
-            //publish metadata
+            //register publication record
             this.$http.post('pub', Object.assign({project: this.project._id}, this.pub)).then(res=>{
                 let pub = res.body;
                 console.log("registered pub", pub);
@@ -178,12 +180,15 @@ export default {
                     }
                 }
 
+                //publish datasets
                 async.forEach(sets, (set, next_set)=>{
                     console.log("publishing datasets", set);
                     this.$http.put('pub/'+pub._id+'/datasets', {
-                        project: this.project._id,
-                        datatype: set.datatype,
-                        datatype_tags: set.datatype_tags,
+                        //project: this.project._id,
+                        find: JSON.stringify({
+                            datatype: set.datatype,
+                            datatype_tags: set.datatype_tags,
+                        })
                     }).then(res=>{
                         console.log("successfully published a set", set, res.body);
                         next_set();     
@@ -193,8 +198,14 @@ export default {
                 }, err=>{
                     if(err) return this.$notify(err);
 
-                    this.$notify("Successfully published!");
-                    this.$emit("submit", pub);
+                    console.log("done with publishing datasets");
+
+                    //lastly, register doi metadata
+                    var url = (new URL("/pub/"+pub._id, document.location)).href
+                    this.$http.put('pub/'+pub._id+'/doi', {url}).then(res=>{
+                        this.$notify("Successfully published!");
+                        this.$emit("submit", pub);
+                    }); 
                 })
             });
         }

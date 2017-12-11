@@ -2,17 +2,27 @@
 <div>
     <div :class="{rightopen: selected_count}">
         <div class="page-header">
-            <div class="row">
-                <div class="col-md-2"><h4>Subject</h4></div>
-                <div class="col-md-10">
-                    <div class="row">
-                        <div class="col-md-3"><h4>Datatype</h4></div>
-                        <div class="col-md-3"><h4>Description</h4></div>
-                        <div class="col-md-3"><h4>Create&nbsp;Date</h4></div>
-                        <div class="col-md-3"><h4>Tags</h4></div>
+            <b-row>
+                <b-col cols="4">
+                    <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
+                </b-col>
+                <b-col>
+                    <div class="list-header" style="float: right; position: relative; top: 4px;">
+                        <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
                     </div>
-                </div><!--col-->
-            </div><!--row-->
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col cols="2"><h4>Subject</h4></b-col>
+                <b-col>
+                    <b-row>
+                        <b-col><h4>Datatype</h4></b-col>
+                        <b-col><h4>Description</h4></b-col>
+                        <b-col><h4>Create&nbsp;Date</h4></b-col>
+                        <b-col><h4>Tags</h4></b-col>
+                    </b-row>
+                </b-col>
+            </b-row>
         </div>
 
         <div class="page-content">
@@ -20,7 +30,6 @@
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
-                <div class="text-muted list-header"><b>{{total_subjects}}</b> Subjects | <b>{{total_datasets}}</b> Datasets</div>
                 <div v-for="(page, page_idx) in pages">
                     <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
                         :style="{height: page_info[page_idx].height}">
@@ -233,11 +242,9 @@ export default {
             this.load();
 
             //get number of subjects stored 
+            //console.log("querying subjects");
             this.$http.get('dataset/distinct', {params: {
-                find: JSON.stringify({
-                    project: this.project._id,
-                    removed: false
-                }),
+                find: JSON.stringify({$and: this.get_mongo_query()}),
                 distinct: 'meta.subject'
             }}).then(res=>{
                 this.total_subjects = res.body.length;
@@ -274,18 +281,14 @@ export default {
             this.reload();
         },
 
-        load: function() {
-            if(this.loading) return;
-
+        get_mongo_query: function() {
 			var finds = [
                 {removed: false},
                 {project: this.project._id},
             ] 
 
             if(this.query) {
-
                 let ands = [];
-
                 //split query into each token and allow for regex search on each token
                 //so that we can query against multiple fields simultanously
                 this.query.split(" ").forEach(q=>{
@@ -304,9 +307,13 @@ export default {
                         {"datatype": {$in: datatype_ids}},
                     ]});
                 });
-
                 finds.push({$and: ands});
             }
+            return finds;
+        },
+
+        load: function() {
+            if(this.loading) return;
 
             //count number of datasets already loaded
             var loaded = 0;
@@ -327,7 +334,7 @@ export default {
                     this.loading = request;
                 },
                 params: {
-                    find: JSON.stringify({$and: finds}),
+                    find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,
                     limit: 200,
                     select: '-prov',
@@ -379,9 +386,7 @@ export default {
         },
 
         open_dataset: function(dataset_id) {
-            //TODO - we should probably use semi-fullscreen modal to display dataset
-            this.$router.push('/project/'+this.project._id+'/1/'+dataset_id);
-            //this.$root.$emit('dataset.view', dataset_id);
+            this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
 
             //same code exists in project.vue (to handle URL based open)
             if(this.$route.params.subid) {
@@ -603,8 +608,10 @@ margin-bottom: 7px;
 }
 
 .page-header {
-top: 63px;
-margin-right: 15px; /*to align with scrollbar*/
+top: 50px;
+padding-right: 15px; /*to align with scrollbar*/
+height: 70px;
+border-bottom: 1px solid #eee;
 }
 .page-header h4 {
 font-size: 16px;
@@ -615,7 +622,7 @@ color: #999;
 .page-content {
 background-color: white;
 transition: right 0.2s, bottom 0.2s;
-top: 90px;
+top: 120px;
 overflow-y: scroll;
 overflow-x: hidden;
 font-size: 12px;
@@ -691,11 +698,11 @@ right: 250px;
 .list .dataset.selected:hover {
     background-color: #2693ff;
 }
-.list .list-header {
-    padding: 10px 0px;
+.list-header {
+    opacity: 0.5;
 }
 .list .subjects {
-    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
     padding: 5px 0px;
 }
 .list .truncate {
@@ -718,6 +725,25 @@ right: 250px;
 }
 .button-fixed.selected-view-open {
 right: 300px;
+}
+.filter {
+opacity: 0.7;
+width: 50px;
+transition: 0.3s width;
+margin: 6px 0px;
+cursor: pointer;
+}
+.filter:focus {
+opacity: 1;
+width: 100%;
+cursor: inherit;
+}
+.filter-active {
+cursor: inherit;
+opacity: 1;
+background-color: #2693ff;
+color: white;
+width: 100%;
 }
 </style>
 

@@ -8,7 +8,7 @@
             <div v-if="selected">
                 <statusicon :status="selected.status" :scale="1.75" style="float: left; margin: 15px;opacity: 0.8;"/>
                 <div style="margin: 10px; float: right;">
-                    <button v-if="!selected.config.removing" type="button" class="btn btn-outline-secondary" @click="remove()" title="Remove Process"><icon name="trash"/></button>
+                    <div v-if="!selected.config.removing" class="button" @click="remove()" title="Remove Process"><icon name="trash" scale="1.25"/></div>
                 </div>
                 <div class="description">
                     <b-form-textarea placeholder="Please enter process description" @keyup.native="changedesc()" v-model="selected.desc" :rows="2"/>
