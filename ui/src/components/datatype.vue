@@ -1,8 +1,8 @@
 <template>
-<el-card class="box-card" v-if="datatype">
+<el-card class="box-card" v-if="datatype" style="margin-bottom: 8px;">
     <div slot="header">
+        <b style="opacity: 0.5;">{{id}}</b>
         <datatypetag :datatype="datatype" :tags="datatype_tags"/>
-        <b-badge>{{id}}</b-badge>
         <small class="text-muted">{{datatype.desc}}</small>
     </div>
 

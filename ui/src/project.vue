@@ -111,49 +111,39 @@
                     <h3 style="opacity: 0.7">Edit Publication</h3>
                     <p style="opacity: 0.7">Only the publication metadata can be edited at this time. To update published datasets, please contact administrator.</p>
                     <pubform :pub="pub_editing" @submit="save_pub">
-                        <button type="button" class="btn btn-secondary" @click="pub_editing = null">Cancel</button>
+                        <button type="button" class="btn btn-secondary" @click="tab_change()">Cancel</button>
                     </pubform>
                 </div>
                 <div v-else>
-
-                    <table class="table">
-                    <thead class="thead-default">
-                        <tr>
-                            <th>Name</th>
-                            <th>Publisher</th>
-                            <th>Date</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="pub in pubs" :key="pub._id" @click="open_pub(pub)" class="pub" :class="{'pub-removed': pub.removed}">
-                            <td>
-                                <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
-                                <b>{{pub.name}}</b><br>
-                                {{pub.desc}}
-                            </td>
-                            <td>
-                                <contact :id="pub.user_id"/>     
-                            </td>
-                            <td>
-                                {{new Date(pub.create_date).toLocaleDateString()}}
-                            </td>
-                            <td>
-                                <b-button style="float: right;" size="sm" @click.stop="pub_editing = pub">
-                                    <icon name="pencil"/>
-                                </b-button>
-                            </td>
-                        </tr>
-                    </tbody>
-                    </table>
-                    <p class="text-muted" v-if="!pubs || pubs.length == 0">No publication registered for this project</p>
+                    <b-card no-body>
+                        <b-list-group flush>
+                            <b-list-group-item v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed}">
+                                <b-row>
+                                <b-col>
+                                    <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
+                                    <b>{{pub.name}}</b><br>
+                                    {{pub.desc}}
+                                </b-col>
+                                <b-col cols="2">
+                                    <div class="button" style="float: right;" @click.stop="edit_pub(pub)">
+                                        <icon name="pencil"/>
+                                    </div>
+                                    <div class="button" style="float: right;" @click.stop="open_pub(pub)">
+                                        <icon name="eye"/>
+                                    </div>
+                                    <span style="clear: right; float: right; opacity: 0.7;"><b>{{new Date(pub.create_date).toLocaleDateString()}}</b></span>
+                                    <!--
+                                    <contact :id="pub.user_id"/>     
+                                    -->
+                                </b-col>
+                                </b-row>
+                            </b-list-group-item>
+                        </b-list-group>
+                        <p class="text-muted" style="margin: 20px;" v-if="!pubs || pubs.length == 0">No publication registered for this project</p>
+                    </b-card>
 
                     <!--space to make sure add button won't overwrap the pub list-->
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
+                    <p style="padding-top: 100px;">&nbsp;</p>
                     <b-button v-if="selected._canedit" class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
                 </div>
             </div>
@@ -236,6 +226,7 @@ export default {
     watch: {
         '$route': function() {
             this.parse_params();
+            this.parse_sub_params();
         }
     },
 
@@ -282,7 +273,7 @@ export default {
                 for(var k in res.body) {
                     this.pub_editing[k] = res.body[k];
                 }
-                this.pub_editing = null;
+                this.tab_change();
             }).catch(res=>{
                 this.$notify({type: 'error', text: res.body});
             });
@@ -290,6 +281,11 @@ export default {
 
         open_pub: function(pub) {
             document.location = "/pub/"+pub._id;
+        },
+
+        edit_pub: function(pub) {
+            this.$router.push("/project/"+this.selected._id+"/pub/"+pub._id);
+            this.pub_editing = pub;
         },
 
         tab_change: function() {
@@ -313,8 +309,6 @@ export default {
             console.log("project changed too", project);
             this.$router.replace("/project/"+project._id+"/"+this.tabs[this.tab].id);
             this.parse_params();
-            this.publishing = false;
-            this.pub_editing = null;
             this.load();
         },
 
@@ -335,11 +329,26 @@ export default {
                 this.tabs.forEach((tab, idx)=>{  
                     if(tab.id == this.$route.params.tab) this.tab = idx;
                 });
+            } else {
+                this.$router.replace("/project/"+project_id+"/detail");
             }
+        },
 
-            //open dataset view
+        parse_sub_params: function() {
+            //handle subid
+            this.publishing = false;
+            this.pub_editing = null;
             if(this.$route.params.subid) {
-                this.$root.$emit('dataset.view', this.$route.params.subid);
+                let subid = this.$route.params.subid;
+                let tab = this.tabs[this.tab];
+                switch(tab.id) {
+                case "dataset":
+                    this.$root.$emit('dataset.view', subid);
+                    break;
+                case "pub":
+                    this.pub_editing = this.pubs.find(pub=>{return pub._id == subid});
+                    break;
+                } 
             }
         },
 
@@ -364,6 +373,7 @@ export default {
             })
             .then(res=>{
                 this.rules = res.body.rules; 
+                this.parse_sub_params();
             }).catch(res=>{
                 this.$notify({type: 'error', text: res.body});
             });
@@ -419,20 +429,13 @@ z-index: 1;
 .slide-fade-leave-active {
   transition: none;
 }
-.slide-fade-enter, .slide-fade-leave-to
-/* .slide-fade-leave-active below version 2.1.8 */ {
+.slide-fade-enter, .slide-fade-leave-to {
   transform: translateX(10px);
   opacity: 0;
 }
 .pub-removed {
 background-color: #aaa;
 opacity: 0.6;
-}
-.pub {
-padding: 5px; 
-margin-bottom: 5px; 
-border-bottom: 1px solid #eee;
-cursor: pointer;
 }
 .pub:hover {
 background-color: #eee;

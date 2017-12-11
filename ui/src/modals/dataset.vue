@@ -3,10 +3,7 @@
 <div v-if="dataset" class="dataset-overlay">
     <b-container>
         <div class="dataset-header">
-            <div class="button" style="float: right; opacity: 0.7" @click="close">
-                <icon name="close" scale="1.5"/>
-            </div>
-            <div style="float: right; margin-right: 20px; margin-top: 4px;">
+            <div style="float: right;">
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.25"/>
                 </div>
@@ -18,6 +15,10 @@
                 </div>
                 <div class="button" @click="process" v-if="dataset.storage" title="Process">
                     <icon name="paper-plane" scale="1.25"/> 
+                </div>
+
+                <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
+                    <icon name="close" scale="1.5"/>
                 </div>
 
                 <!--

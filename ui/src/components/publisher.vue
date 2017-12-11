@@ -3,10 +3,10 @@
     <transition name="slide-fade">
         <div v-if="page == 0">
             <br>
-            <b-card>
+            <b-alert show variant="warning">
                 <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
-                <p class="text-danger">Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</p>
-            </b-card>
+                <p>Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</p>
+            </b-alert>
             <br>
             <hr>
             <div style="float: right">
@@ -163,7 +163,7 @@ export default {
             this.$emit("close");
         },
         publish() {
-            //publish metadata
+            //register publication record
             this.$http.post('pub', Object.assign({project: this.project._id}, this.pub)).then(res=>{
                 let pub = res.body;
                 console.log("registered pub", pub);
@@ -180,6 +180,7 @@ export default {
                     }
                 }
 
+                //publish datasets
                 async.forEach(sets, (set, next_set)=>{
                     console.log("publishing datasets", set);
                     this.$http.put('pub/'+pub._id+'/datasets', {
@@ -197,8 +198,14 @@ export default {
                 }, err=>{
                     if(err) return this.$notify(err);
 
-                    this.$notify("Successfully published!");
-                    this.$emit("submit", pub);
+                    console.log("done with publishing datasets");
+
+                    //lastly, register doi metadata
+                    var url = (new URL("/pub/"+pub._id, document.location)).href
+                    this.$http.put('pub/'+pub._id+'/doi', {url}).then(res=>{
+                        this.$notify("Successfully published!");
+                        this.$emit("submit", pub);
+                    }); 
                 })
             });
         }

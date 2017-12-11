@@ -17,7 +17,6 @@
                         </div>
                         <div>
                             <h4 style="color: #666; margin-bottom: 10px;">
-                                <b-badge style="float: right; opacity: 0.7;" v-if="pub.doi"><a style="color: inherit;" :href="'https://doi.org/'+pub.doi">DOI {{pub.doi}}</a></b-badge>
                                 {{pub.name}} 
                             </h4>
                             <p class="text-muted">{{pub.desc}}</p>
@@ -58,6 +57,17 @@
                             </b-col>
                             <b-col>
                                 <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
+                            </b-col>
+                        </b-row>                         
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">DOI</b>
+                            </b-col>
+                            <b-col>
+                                <p>
+                                    <a v-if="pub.doi" :href="'https://doi.org/'+pub.doi">{{pub.doi}}</a>
+                                    <span v-else style="opacity: 0.5">Not Issued</span>
+                                </p>
                             </b-col>
                         </b-row>                         
                         <b-row>
