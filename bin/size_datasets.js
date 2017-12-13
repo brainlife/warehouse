@@ -21,13 +21,6 @@ db.init(function(err) {
 
             conn.end();
             db.disconnect();
-
-            //amqp disconnect() is broken
-            //https://github.com/postwait/node-amqp/issues/462
-            setTimeout(()=>{
-                console.log("killing myself - until node-amqp bug is fixed");
-                process.exit(0);
-            }, 1000);
         });
     });
 });

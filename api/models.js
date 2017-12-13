@@ -62,6 +62,7 @@ exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
     if(amqp_conn) {
         logger.debug("disconnecting from amqp");
+        amqp_conn.setImplOptions({reconnect: false}); //https://github.com/postwait/node-amqp/issues/462
         amqp_conn.disconnect();
     }
 }
@@ -362,5 +363,18 @@ var ruleSchema = mongoose.Schema({
     active: { type: Boolean, default: true} ,
 });
 exports.Rules = mongoose.model('Rules', ruleSchema);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+//keeps up with all doi issued 
+var doiSchema = mongoose.Schema({
+    //issuer: { type: String, default: "datacite" },
+    id: Number, //used as part of doi
+    doi: String, //full doi issued
+    url: String, //brain-life url registered to this doi
+});
+exports.Dois = mongoose.model('Dois', doiSchema);
+*/
 
 
