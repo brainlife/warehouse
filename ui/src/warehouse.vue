@@ -7,6 +7,7 @@
     <datasetselecter/>
     <viewselecter/>
     <dataset/>
+    <uploader/>
 
 </div>
 </template>
@@ -15,24 +16,12 @@
 import datasetselecter from '@/modals/datasetselecter'
 import viewselecter from '@/modals/viewselecter'
 import dataset from '@/modals/dataset'
+import uploader from '@/modals/uploader'
 
 export default {
     components: {
-        viewselecter, datasetselecter, dataset,
+        viewselecter, datasetselecter, dataset, uploader,
     },
-
-    /*
-    events: {
-        "viewselecter.open": function(config) {
-            console.log("viewselecter open called");
-            console.dir(config);
-            //TODO.. :datatype_name="vsel.datatype_name"
-        },
-    },
-    */
-
-    methods: {
-    }
 }
 </script>
 

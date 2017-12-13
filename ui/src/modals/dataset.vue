@@ -7,10 +7,10 @@
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.25"/>
                 </div>
-                <div class="button" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)" title="View Dataset">
+                <div class="button" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)" v-if="dataset.storage" title="View Dataset">
                     <icon name="eye" scale="1.25"/>
                 </div>
-                <div class="button" @click="download" v-if="dataset.storage">
+                <div class="button" @click="download" v-if="dataset.storage" title="Downlnoad Dataset">
                     <icon name="download" scale="1.25"/>
                 </div>
                 <div class="button" @click="process" v-if="dataset.storage" title="Process">
@@ -20,21 +20,6 @@
                 <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
                     <icon name="close" scale="1.5"/>
                 </div>
-
-                <!--
-                <b-button variant="outline-danger" size="sm" @click="remove()" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
-                    <icon name="trash"/>
-                </b-button>
-                <b-button variant="outline-secondary" size="sm" @click="download" v-if="dataset.storage" title="Download">
-                    <icon name="download"/>
-                    <span v-if="dataset.size">{{dataset.size|filesize}}</span>
-                    <span v-else>Download</span>
-                </b-button>
-                <b-button variant="outline-secondary" size="sm" @click="process" v-if="dataset.storage" title="Process">
-                    <icon name="paper-plane"/> Process
-                </b-button>
-                <b-button variant="outline-secondary" size="sm" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)">View <icon name="caret-down"/></b-button>
-                -->
             </div>
             <h4>
                 <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
@@ -53,7 +38,7 @@
                 <b-col>
                     <div v-if="dataset._canedit">
                         <b-form-textarea v-model="dataset.desc" @input="dirty.desc = true" :rows="2"/>
-                        <el-button v-if="dirty.desc" @click="update_dataset('desc')" type="primary" style="float:right;">Update</el-button>
+                        <b-button v-if="dirty.desc" @click="update_dataset('desc')" variant="primary" style="float:right;">Update</b-button>
                     </div>
                     <div v-else>
                         {{dataset.desc}}
@@ -67,7 +52,7 @@
                 <b-col cols="9">
                     <div v-if="dataset._canedit && alltags">
                         <select2 :options="alltags" v-model="dataset.tags" :multiple="true" :tags="true" @input="dirty.tags = true"></select2>
-                        <el-button v-if="dirty.tags" @click="update_dataset('tags')" type="primary" style="float:right;">Update</el-button>
+                        <b-button v-if="dirty.tags" @click="update_dataset('tags')" variant="primary" style="float:right;">Update</b-button>
                     </div>
                     <div v-else>
                         <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
@@ -249,6 +234,7 @@ export default {
     data () {
         return {
             dataset: null,
+
             task: null, //task that produced this dataset (optional)
             apps: null,
             prov: null, 
@@ -294,14 +280,16 @@ export default {
         },
         
         close: function() {
+            if(!this.dataset) return;
             this.dataset = null;
+            console.log("modal/dataset.vue - methods/close");
             this.$root.$emit("dataset.close");
         },
 
         download: function() {
             var url = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
             document.location = url;
-            console.log(url);
+            //console.log(url);
         },
 
         process: function() {
@@ -379,6 +367,7 @@ export default {
         },
 
         load: function(id) {
+            console.log("modal/dataset.vue loading");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 populate: "project datatype prov.app prov.deps.dataset publications",
@@ -402,7 +391,7 @@ export default {
 
                 //load tags from other datasets in this project
                 return this.$http.get('dataset/distinct', {params: {
-                    find: JSON.stringify({"project": this.dataset.project}),
+                    find: JSON.stringify({"project": this.dataset.project._id}),
                     distinct: 'tags',
                 }});
             }).then(res=>{
@@ -465,9 +454,13 @@ export default {
                 console.error(err);
             });
         },
+
+        /*
         bibtex: function() {
             document.location = '/api/warehouse/dataset/bibtex/'+this.dataset._id;
         },
+        */
+
         get_instance: function() {
             //first create an instance to download things to
             return this.$http.post(Vue.config.wf_api+'/instance', {

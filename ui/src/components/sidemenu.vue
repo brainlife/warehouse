@@ -98,12 +98,16 @@ ul.items li {
     margin: 0px;
     padding: 7px 0px;
     transition: background-color 0.2s, color 0.2s;
-    padding-left: 3px;
+    padding-left: 4px;
 }
 ul.items li.active {
     padding-left: 0px;
-    border-left: 3px solid #2693ff;
     color: white;
+    border-left: 4px solid #2693ff;
+    /*
+    box-shadow: inset -5px 0 10px rgba(0,0,0,0.2);
+    */
+    background-color: #1c1c1c;
 }
 ul.items li:hover {
     background-color: #444;

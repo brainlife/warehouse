@@ -5,7 +5,7 @@ import dashboard from '@/dashboard'
 
 //import datasets from '@/datasets'
 //import dataset from '@/dataset'
-import upload from '@/upload'
+//import upload from '@/upload'
 import download from '@/download'
 
 import view from '@/view'
@@ -42,7 +42,7 @@ export default new Router({
     routes: [
         {path: '/', redirect: '/project'},
         {path: '/dashboard', component: dashboard},
-        {path: '/upload', component: upload},
+        //{path: '/upload', component: upload},
         {path: '/download/:id', component: download},
         {path: '/processes/:id?', component: processes},
         
@@ -58,6 +58,7 @@ export default new Router({
 
         {path: '/project', component: project},
         {path: '/project/:id', component: project},
+        {path: '/project/:id/upload', component: projectedit},
         {path: '/project/:id/edit', component: projectedit},
         {path: '/project/:id/:tab?/:subid?', component: project},
 

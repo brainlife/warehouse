@@ -16,7 +16,7 @@
                                 <a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a>
                                 <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
                             </h6>
-                            <p class="text-muted">{{app.desc}}</p>
+                            <p style="opacity: 0.8">{{app.desc}}</p>
                         </div>
                         <p>
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
