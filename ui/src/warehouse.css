@@ -90,6 +90,9 @@ color: white;
 .button-danger {
 color: #dc3545;
 }
+.button-gray {
+opacity: 0.5;
+}
 .button-danger:hover {
 background-color: #dc3545;
 color: white;

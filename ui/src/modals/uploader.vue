@@ -155,6 +155,10 @@ export default {
         reset: function() {
             this.mode = "upload";
             this.project = null;
+            this.meta = {};
+            if(this.datatype_id) this.datatypes[this.datatype_id].files.forEach(this.clearfile);
+            this.datatype_id = null;
+            this.desc = "";
         },
 
         filechange: function(file, e) {

@@ -82,7 +82,7 @@
                                 <icon name="eye"/>
                             </div>
                             <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                            <b-button size="sm" :pressed="archiving === output.did" variant="default" @click="archiving = output.did">Archive</b-button>
+                            <div class="button" :class="{'button-gray': archiving === output.did}" title="Archive" @click="archiving = output.did"><icon name="archive"/></div>
                         </div>
                     </div>
 
