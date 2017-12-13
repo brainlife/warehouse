@@ -19,7 +19,7 @@
                             <h4 style="color: #666; margin-bottom: 10px;">
                                 {{pub.name}} 
                             </h4>
-                            <p class="text-muted">{{pub.desc}}</p>
+                            <p style="opacity: 0.8">{{pub.desc}}</p>
                         </div>
                         <p style="line-height: 180%;">
                             <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>

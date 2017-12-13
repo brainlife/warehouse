@@ -139,7 +139,7 @@ export default {
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
             },
             {
-                ui: "freeview",
+                ui: "freeview-gpu",
                 name: "FreeView",
                 desc: "to-be-written.",
                 avatar: "http://www.brainlife.io/images/ui-logos/freeview.png",

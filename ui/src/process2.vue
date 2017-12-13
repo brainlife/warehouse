@@ -77,11 +77,13 @@
             <el-collapse-item title="Output" name="output" slot="output" v-if="task.config._outputs.length > 0">
                 <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 35px;">
                     <div class="float-right" style="position: relative; top: -4px;">
-                        <b-button-group size="sm" v-if="task.status == 'finished'">
-                            <b-button v-b-modal.viewSelecter @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">View</b-button>
-                            <b-button @click="download(task, output)">Download</b-button>
-                            <b-button :pressed="archiving === output.did" variant="primary" @click="archiving = output.did">Archive</b-button>
-                        </b-button-group>
+                        <div v-if="task.status == 'finished'">
+                            <div class="button" v-b-modal.viewSelecter title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
+                                <icon name="eye"/>
+                            </div>
+                            <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
+                            <div class="button" :class="{'button-gray': archiving === output.did}" title="Archive" @click="archiving = output.did"><icon name="archive"/></div>
+                        </div>
                     </div>
 
                     <b v-if="output.meta.subject">{{output.meta.subject}}</b>

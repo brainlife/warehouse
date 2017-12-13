@@ -45,7 +45,7 @@
                                 <div class="row">
                                     <div class="col-md-3 truncate">
                                         <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset)" class="dataset-checker">
-                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"></datatypetag>
                                         <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
@@ -66,7 +66,7 @@
                     </b-row>
                  </div> 
             </div><!--scrolled-area-->
-            <b-button class="button-fixed" @click="go('/upload')" title="Upload Dataset" :class="{'selected-view-open':selected_count}"><icon name="plus" scale="2"/></b-button>
+            <b-button class="button-fixed" v-b-modal.uploader @click="set_uploader_options" title="Upload Dataset" :class="{'selected-view-open':selected_count}"><icon name="plus" scale="2"/></b-button>
         </div><!--page-content-->
     </div>
 
@@ -100,7 +100,6 @@
             </b-button-group>
         </div>
     </div>
-    <!-- <viewselecter @select="view" :datatype_names="selected_datatype_names"></viewselecter> -->
 </div>
 </template>
 
@@ -381,8 +380,14 @@ export default {
             });
         },
 
+        /*
         go: function(path) {
             this.$router.push(path);
+        },
+        */
+
+        start_upload: function() {
+            this.uploading = true;
         },
 
         open_dataset: function(dataset_id) {
@@ -475,10 +480,16 @@ export default {
 
         set_viewsel_options: function() {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
-            console.log(this.selected_datatype_names);
             this.$root.$emit("viewselecter.option", {
                 datatype_names: this.selected_datatype_names, 
                 task_cb: this.create_view_task, 
+            });
+        },
+
+        set_uploader_options: function() {
+            //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
+            this.$root.$emit("uploader.option", {
+                project: this.project,
             });
         },
 

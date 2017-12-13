@@ -10,12 +10,11 @@
     </div><!--header-->
     <div class="page-content">
         <div class="margin20">
-            <el-alert v-if="selected.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
 
             <!--detail-->
             <div v-if="tabs[tab].id == 'detail'">
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <projectavatar :project="selected"/>
                     </b-col>
                     <b-col>
@@ -32,13 +31,14 @@
                             <projectaccess :access="selected.access"/>
                             {{selected.name}}
                         </h3>
-                        <p>{{selected.desc}}</p>
+                        <el-alert v-if="selected.removed" style="border-radius: 0px" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
+                        <p style="opacity: 0.8;">{{selected.desc}}</p>
                     </b-col>
                 </b-row>
                 <hr>
 
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <b class="text-muted">Admins</b>
                     </b-col>
                     <b-col>
@@ -50,7 +50,7 @@
                 </b-row>
                 
                 <b-row>
-                    <b-col cols="3"> 
+                    <b-col cols="2"> 
                         <b class="text-muted">Members</b>
                     </b-col>
                     <b-col>
@@ -62,17 +62,17 @@
                 </b-row>
                 <br>
                 <b-row>
-                    <b-col cols="3"> 
+                    <b-col cols="2"> 
                         <b class="text-muted">README</b>
                     </b-col>
-                    <b-col>
+                    <b-col cols="10">
                         <p class="text-muted" v-if="!selected.readme">Please edit README content</p>
                         <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
                     </b-col>
                 </b-row>
 
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <b class="text-muted">Comments</b>
                     </b-col>
                     <b-col>
@@ -122,7 +122,7 @@
                                 <b-col>
                                     <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
                                     <b>{{pub.name}}</b><br>
-                                    {{pub.desc}}
+                                    <p style="opacity: 0.8;">{{pub.desc}}</p>
                                 </b-col>
                                 <b-col cols="2">
                                     <div class="button" style="float: right;" @click.stop="edit_pub(pub)">
@@ -233,6 +233,7 @@ export default {
     mounted: function() {
 
         this.$root.$on("dataset.close", ()=>{
+            console.log("project.view receivved dataset.close");
             this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
         });
 
