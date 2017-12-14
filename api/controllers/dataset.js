@@ -238,7 +238,9 @@ router.get('/prov/:id', (req, res, next)=>{
     }
 
     function compose_label(task) {
-        let label = task.service+"\n"; //task.name is sometime like "brainlife.process"..
+        let label = task.service; //task.name is sometime like "brainlife.process"..
+        if(task.service_branch) label += "("+task.service_branch+")";
+        label+="\n"; //task.name is sometime like "brainlife.process"..
         for(let id in task.config) {
             if(id[0] == "_") continue;
             let v = task.config[id];
@@ -258,6 +260,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 add_node(defer.node);
                 edges.push(defer.edge);
             }
+            /*
             let user = common.deref_contact(dataset.user_id);
             add_node({
                 id: "input."+dataset._id,
@@ -272,9 +275,10 @@ router.get('/prov/:id', (req, res, next)=>{
                 arrows: "to",
                 label: "Upload",
             });
+            */
             return cb();
         } else if(defer) {
-            logger.debug("has defer");
+            logger.debug("has defer", defer.to);
             to = defer.to;
         }
         logger.debug("on dataset", dataset._id.toString());
@@ -287,10 +291,19 @@ router.get('/prov/:id', (req, res, next)=>{
             //logger.debug(compose_label(task));
             if(!dataset.prov || !dataset.prov.app) {
                 //dataset created by 
-                logger.error("..................................no prov.app on dataset:"+dataset._id.toString());
+                //logger.error("..................................no prov.app on dataset:"+dataset._id.toString());
                 if(task.service == "soichih/sca-product-raw") { //TODO might change in the future
                     load_product_raw(to, task, cb);
+                } else if(task.service.indexOf("brain-life/validator-") === 0) { 
+                    cb(); //ignore validator
                 } else {
+                    add_node({
+                        id: "task."+task._id, 
+                        color: "#fff",
+                        shape: "box",
+                        font: {size: 11},
+                        label: compose_label(task),
+                    });
                     edges.push({
                         from: "task."+task._id,
                         to,
@@ -307,7 +320,6 @@ router.get('/prov/:id', (req, res, next)=>{
                     font: {size: 11},
                     label: compose_label(task),
                 });
-                
                 //dataset created by another *app*
                 let output = dataset.prov.app.outputs.find(output=>{ return output.id == dataset.prov.output_id });
                 let label = dataset.prov.output_id+"?";
@@ -351,9 +363,9 @@ router.get('/prov/:id', (req, res, next)=>{
                 let defer = {
                     node: {
                         id: "dataset."+dataset._id, 
-                        color: "#ccc",
+                        color: "#159957",
                         shape: "box",
-                        font: {size: 12},
+                        font: {size: 12, color: "#fff"},
                         //label: dataset.meta.subject+" / "+datatypes[dataset.datatype].name+"\n"+dataset.desc,
                         label:dataset.project.name+" / "+ dataset.meta.subject + "\n" +datatypes[dataset.datatype].name,
                     },
@@ -361,6 +373,7 @@ router.get('/prov/:id', (req, res, next)=>{
                         from: "dataset."+dataset._id,
                         to,
                         arrows: "to",
+                        color: "#ccc",
                         //label: datatypes[dataset.datatype].name, //+"\n"+(dataset.desc||''),
                     },
                     to,
@@ -379,8 +392,9 @@ router.get('/prov/:id', (req, res, next)=>{
         if(!task.deps) return cb(); //just in case?
         if(!task.config) return cb(); 
         async.eachSeries(task.config._inputs, (input, next_dep)=>{
-            //logger.debug("loading task prov");
-            //logger.debug(input);
+            //logger.debug("loading input");
+            //logger.debug(JSON.stringify(input, null, 4));
+            if(!input.task_id) return next_dep(); //old task didn't have this set?
             load_task(input.task_id, (err, dep_task)=>{
                 if(err) return next_dep(err);
                 
@@ -402,7 +416,7 @@ router.get('/prov/:id', (req, res, next)=>{
                         from: "task."+input.task_id,
                         to: "task."+task._id,
                         arrows: "to",
-                        color: "#ff0",
+                        //color: "#ff0",
                         //label: datatype.name, // || input.id || input.input_id,
                         label: datatypes[input.datatype].name, //+"\n"+(dataset.desc||''),
                     });
@@ -435,9 +449,9 @@ router.get('/prov/:id', (req, res, next)=>{
             nodes.push({
                 id: "dataset."+dataset._id, 
                 color: "#2693ff",
+                font: {/*size: 20,*/ color: "#fff"},
                 shape: "box",
                 margin: 10,
-                font: {/*size: 20,*/ color: "#fff"},
                 //fixed: {x: true, y: true},
 
                 //push it toward right bottom
