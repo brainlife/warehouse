@@ -39,8 +39,8 @@
                             </b-col>
                             <b-col>
                                 <div v-if="dataset._canedit">
-                                    <b-form-textarea v-model="dataset.desc" @input="dirty.desc = true" :rows="2"/>
-                                    <b-button v-if="dirty.desc" @click="update_dataset('desc')" variant="primary" style="float:right;">Update</b-button>
+                                    <b-form-textarea v-model="dataset.desc" @input="update_dataset('desc')" :rows="2"/>
+                                    <!--<b-button v-if="dirty.desc" @click="update_dataset('desc')" variant="primary" style="float:right;">Update</b-button>-->
                                 </div>
                                 <div v-else>
                                     {{dataset.desc}}
@@ -53,8 +53,11 @@
                             <b-col cols="3"><b class="text-muted">User Tags</b></b-col>
                             <b-col cols="9">
                                 <div v-if="dataset._canedit && alltags">
+                                    <!--
                                     <select2 :options="alltags" v-model="dataset.tags" :multiple="true" :tags="true" @input="dirty.tags = true"></select2>
                                     <b-button v-if="dirty.tags" @click="update_dataset('tags')" variant="primary" style="float:right;">Update</b-button>
+                                    -->
+                                    <tageditor v-model="dataset.tags" @input="update_dataset('tags')"/>
                                 </div>
                                 <div v-else>
                                     <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
@@ -80,7 +83,7 @@
                                         <icon name="cog" :spin="true"/> Storing ...
                                     </span> 
                                     <span v-if="dataset.status == 'stored'">
-                                        <b>{{dataset.storage}}</b> 
+                                        <b>{{dataset.storage|uppercase}}</b> 
                                         <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                     </span> 
                                     <span v-if="dataset.status == 'failed'" style="color: red;">
@@ -111,12 +114,14 @@
                                 <div v-if="dataset._canedit">
                                     <el-row>
                                         <el-col :span="6" v-for="(m, id) in dataset.meta" :key="id">
-                                            <el-input type="text" v-model="dataset.meta[id]" @change="dirty.meta = true">
+                                            <el-input type="text" v-model="dataset.meta[id]" @change="update_dataset('meta')">
                                                 <template slot="prepend"><span style="text-transform: uppercase;">{{id}}</span></template>
                                             </el-input>
                                         </el-col>
                                     </el-row>
+                                    <!--
                                     <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
+                                    -->
                                 </div>
                                 <metadata v-else :metadata="dataset.meta"></metadata>
                                 <br>
@@ -226,21 +231,24 @@ import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import datatypetag from '@/components/datatypetag'
-import select2 from '@/components/select2'
+//import select2 from '@/components/select2'
 import task from '@/components/task'
 import pubcard from '@/components/pubcard'
+import tageditor from '@/components/tageditor'
 
 import vis from 'vis/dist/vis-network.min.js'
 import 'vis/dist/vis-network.min.css'
 
 const lib = require('@/lib');
 
+let debounce;
+
 export default {
     components: { 
         sidemenu, contact, project, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
-        datatypetag, select2, task, pubcard
+        datatypetag, task, pubcard, tageditor,
     },
     data () {
         return {
@@ -255,11 +263,13 @@ export default {
 
             selfurl: document.location.href,
             
+            /*
             dirty: {
                 desc: false,
                 meta: false,
                 tags: false
             },
+            */
 
             alltags: null,
             config: Vue.config,
@@ -285,6 +295,12 @@ export default {
             this.dataset = null;
         },
 
+        /*
+        'dataset.tags': function() {
+            console.log("dataset tags changed"); 
+        },
+        */
+
         tab_index: function() {
             console.log("tab_index changed", this.prov);
             if(this.tab_index == 1 && this.prov == null) {
@@ -300,8 +316,12 @@ export default {
 
     methods: {
         update_dataset: function(elem) {
-            this.$http.put(Vue.config.api+'/dataset/'+this.dataset._id, this.dataset).then(res=>{this.$notify("saved")});
-            this.dirty[elem] = false;
+            if(debounce) clearTimeout(debounce);
+            debounce = setTimeout(()=>{
+                this.$http.put(Vue.config.api+'/dataset/'+this.dataset._id, this.dataset).then(res=>{
+                    this.$notify({type: "success", text: "Saved "+elem});
+                });
+            }, 500);
         },
 
         load_prov: function() {
@@ -350,18 +370,15 @@ export default {
     
         close: function() {
             if(!this.dataset) return;
-            console.log("modal/dataset.vue - methods/close");
             this.$root.$emit("dataset.close");
         },
 
         download: function() {
             var url = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
             document.location = url;
-            //console.log(url);
         },
 
         process: function() {
-            console.log("creating new instance");
             this.$http.post(Vue.config.wf_api+'/instance', {
                 config: {
                     brainlife: true,
@@ -416,16 +433,13 @@ export default {
 
         load_status: function(id) {
             console.log("loading dataset status");
+            if(!this.dataset) return; //route changed before timeout was fired?
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 //select: "status storage size desc",
             }})
             .then(res=>{
                 var dataset = res.body.datasets[0];
-                if(!dataset) {
-                    this.$notify({type: "danger", text: "couldn't find specified dataset"});
-                    rerturn;
-                }
                 this.dataset.size = dataset.size;
                 this.dataset.status = dataset.status;
                 this.dataset.storage = dataset.storage;
@@ -492,12 +506,6 @@ export default {
             });
         },
 
-        /*
-        bibtex: function() {
-            document.location = '/api/warehouse/dataset/bibtex/'+this.dataset._id;
-        },
-        */
-
         get_instance: function() {
             //first create an instance to download things to
             return this.$http.post(Vue.config.wf_api+'/instance', {
@@ -519,16 +527,6 @@ export default {
         },
 
         create_view_task: function(cb) {
-            /*
-            function openview(task) {
-                if(view.docker) {
-                    window.open("/warehouse/novnc/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
-                } else {
-                    window.open("/warehouse/view/"+task.instance_id+"/"+task._id+"/"+view.ui+"/output", "", "width=1200,height=800,resizable=no,menubar=no"); 
-                }
-            }
-            */
-
             //first, query for the viewing task to see if it already exist
             var name = "brainlife.view "+this.dataset._id;
             this.$http.get(Vue.config.wf_api+'/task', {params: {

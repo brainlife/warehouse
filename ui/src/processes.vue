@@ -93,6 +93,7 @@ export default {
             config: Vue.config,
         }
     },
+
     mounted: function() {
         //load (all!) application details (TODO figure out a better way)
         console.log("loading apps");
@@ -148,14 +149,13 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("binding to instance updates");
+                console.log("binding to all instance updates");
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
                         key: Vue.config.user.sub+".#",
                     }
                 }));
-
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
