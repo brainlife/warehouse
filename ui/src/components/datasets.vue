@@ -42,7 +42,7 @@
                         </b-col>
                         <b-col>
                             <div v-for="dataset in datasets" :key="dataset._id" @click="open_dataset(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
-                                <div class="row">
+                                <div class="row" v-if="!dataset.removed">
                                     <div class="col-md-3 truncate">
                                         <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset)" class="dataset-checker">
                                         <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"></datatypetag>
@@ -61,6 +61,7 @@
                                         <tags :tags="dataset.tags"></tags> &nbsp;
                                     </div>
                                 </div>
+                                <!--<p v-else>Removed</p>-->
                             </div>
                         </b-col>
                     </b-row>
@@ -113,12 +114,12 @@ import metadata from '@/components/metadata'
 import projectmenu from '@/components/projectmenu'
 import datatypetag from '@/components/datatypetag'
 
-import ReconnectingWebSocket from 'reconnectingwebsocket'
-
 const async = require('async');
 
 var query_debounce = null;
 var scroll_debounce = null;
+
+import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
     components: { 
@@ -142,6 +143,7 @@ export default {
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
 
             query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
+            ws: null, //websocket
 
             //cache
             datatypes: null,
@@ -183,25 +185,6 @@ export default {
 
     created() {
         console.log("dataset created");
-        /*
-        this.$http.get('project', {params: {
-            find: JSON.stringify(
-            {
-                removed: false,
-                $or: [
-                { members: Vue.config.user.sub}, 
-                { admins: Vue.config.user.sub}, 
-                { access: "public" },
-            ]})
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.body.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-            this.check_project_id(res.body.projects[0]);
-        */
-
         //load all datatypes (TODO .. cache it?)
         return this.$http.get('datatype')
         .then(res=>{
@@ -224,7 +207,6 @@ export default {
     watch: {
         //when user select different project, this gets called (mounted() won't be called anymore)
         project: function() {
-            //this.check_project_id();
             this.query = ""; //clear query to avoid confusion
             if(this.loading) this.loading.abort();
             this.reload();
@@ -248,6 +230,41 @@ export default {
             }}).then(res=>{
                 this.total_subjects = res.body.length;
             });
+
+            //listen to all dataset change enent under this project
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            if(this.ws) this.ws.close();
+            this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+                console.log("binding to dataset updates", this.project._id);
+                this.ws.send(JSON.stringify({
+                    bind: {
+                        ex: "warehouse.dataset",
+                        key: this.project._id+".#",
+                    }
+                }));
+
+            }
+            this.ws.onmessage = (json)=>{
+                var event = JSON.parse(json.data);
+                switch(event.dinfo.exchange) {
+                case "warehouse.dataset":
+                    let dataset = event.msg;
+
+                    //look for the dataset
+                    this.pages.forEach(page=>{
+                        for(var subject in page) {
+                            var datasets = page[subject];
+                            var _dataset = datasets.find(d=>d._id == dataset._id);
+                            if(_dataset) {
+                                //apply updates
+                                for(var k in dataset) _dataset[k] = dataset[k];
+                                this.$forceUpdate(); //need this because I am not inside vue hook?
+                            }
+                        }
+                    });
+                 } 
+            }
         },
         
 		page_scrolled: function() {
@@ -258,12 +275,6 @@ export default {
             if (page_margin_bottom < 300) {
                 this.load();
             }
-
-            /* hiding invisible page trick is broken.. invisible area flickers with height?
-            this.page_info.forEach((page,idx)=>{
-                page.visible = scroll_top-1000 < page.bottom && (scroll_top + client_height) > page.top;
-            });
-            */
         },
 
         change_query_debounce: function() {
@@ -380,12 +391,6 @@ export default {
             });
         },
 
-        /*
-        go: function(path) {
-            this.$router.push(path);
-        },
-        */
-
         start_upload: function() {
             this.uploading = true;
         },
@@ -393,10 +398,9 @@ export default {
         open_dataset: function(dataset_id) {
             this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
 
-            //same code exists in project.vue (to handle URL based open)
-            if(this.$route.params.subid) {
-                this.$root.$emit('dataset.view', this.$route.params.subid);
-            }
+            //similar code exists in project.vue (to handle URL based open)
+            //requesting dataset modal to load the specified dataset
+            this.$root.$emit('dataset.view', dataset_id);
         },
 
         check: function(dataset) {

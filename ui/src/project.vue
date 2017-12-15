@@ -76,7 +76,7 @@
                         <b class="text-muted">Comments</b>
                     </b-col>
                     <b-col>
-                        <vue-disqus shortname="brain-life"/>
+                        <vue-disqus shortname="brain-life" :identifier="selected._id"/>
                     </b-col>
                 </b-row>
 
@@ -196,13 +196,6 @@ export default {
     data () {
         return {
             selected: null, 
-            /*
-            datasets_attribs: {
-                num_datasets: null,
-                num_subjects: null
-            },
-            */
-
             rules: null, 
             pubs: null, 
 
@@ -344,6 +337,7 @@ export default {
                 let tab = this.tabs[this.tab];
                 switch(tab.id) {
                 case "dataset":
+                    //request dataset modal to load subid
                     this.$root.$emit('dataset.view', subid);
                     break;
                 case "pub":

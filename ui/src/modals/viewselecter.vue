@@ -155,6 +155,15 @@ export default {
                 datatypes: [ "neuro/conneval" ],
             },
 
+            {
+                ui: "conn",
+                name: "CONN",
+                desc: "Experimental",
+                avatar: "http://www.brainlife.io/images/ui-logos/conn.png",
+                docker: true,
+                datatypes: [ "raw" ], 
+            },
+
         ];
         
         //organize into object so that I can lookup via ui name
