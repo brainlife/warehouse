@@ -75,6 +75,17 @@
                             </b-col>
                         </b-row>
 
+                        <b-row v-if="dataset.prov">
+                            <b-col cols="3"><b class="text-muted">App</b></b-col>
+                            <b-col>
+                                <app :appid="dataset.prov.app"/>
+                                <div style="padding: 10px; background-color: white;">
+                                    <taskconfig :taskid="dataset.prov.task_id"/>
+                                </div>
+                                <br>
+                            </b-col>
+                        </b-row>
+
                         <b-row>
                             <b-col cols="3"><b class="text-muted">Storage</b></b-col>
                             <b-col>
@@ -231,10 +242,10 @@ import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import datatypetag from '@/components/datatypetag'
-//import select2 from '@/components/select2'
 import task from '@/components/task'
 import pubcard from '@/components/pubcard'
 import tageditor from '@/components/tageditor'
+import taskconfig from '@/components/taskconfig'
 
 import vis from 'vis/dist/vis-network.min.js'
 import 'vis/dist/vis-network.min.css'
@@ -248,7 +259,8 @@ export default {
         sidemenu, contact, project, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
-        datatypetag, task, pubcard, tageditor,
+        datatypetag, task, pubcard, 
+        tageditor, taskconfig,
     },
     data () {
         return {
@@ -461,7 +473,7 @@ export default {
             console.log("modal/dataset.vue loading");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                populate: "project datatype prov.app prov.deps.dataset publications",
+                populate: "project datatype prov.deps.dataset publications",
             }})
             .then(res=>{
                 if(res.body.count == 0) {

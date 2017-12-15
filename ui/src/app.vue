@@ -189,7 +189,7 @@
                                 <b class="text-muted">Comments</b>
                             </b-col>
                             <b-col>
-                                <vue-disqus shortname="brain-life"/>
+                                <vue-disqus shortname="brain-life" :identifier="app._id"/>
                             </b-col>
                         </b-row>
 
