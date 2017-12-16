@@ -355,7 +355,16 @@ export default {
                       },
                         */
                         //physics:{barnesHut:{/*gravitationalConstant:-3500, springConstant: 0.01, avoidOverlap: 0.02*/}},
-                        physics:{barnesHut:{springConstant: 0.03}},
+                        physics:{
+                            barnesHut:{
+                                //springConstant: 0.20,
+                                //springLength: 150,
+                                //avoidOverlap: 0.2,
+                                //damping: 0.3,
+                                gravitationalConstant: -6000,
+                            }
+                        },
+
                         nodes: {
                             shadow: true,
                             borderWidth: 0,
