@@ -273,6 +273,10 @@ router.get('/prov/:id', (req, res, next)=>{
             if(err) return cb(err);
             if(!dataset.prov || !dataset.prov.app) { //TODO - do I really need to check for prov.app?
                 if(task.service == "soichih/sca-product-raw") { //TODO might change in the future
+                    if(defer) {
+                        add_node(defer.node);
+                        edges.push(defer.edge);
+                    }
                     load_product_raw(to, dataset._id, cb);
                 } else if(task.service.indexOf("brain-life/validator-") === 0) { 
                     if(defer) {

@@ -81,6 +81,7 @@ export default {
         return {
             licenses: [
                 {value: 'ccby.40', text: 'CC BY 4.0'},
+                {value: 'ccbysa.30', text: 'CC BY-SA 3.0'},
                 {value: 'cc0', text: 'CC0'},
                 {value: 'pddl', text: 'PDDL'},
                 {value: 'odc.by', text: 'ODC BY 1.0'},
