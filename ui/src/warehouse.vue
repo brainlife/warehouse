@@ -1,13 +1,27 @@
 <template>
-    <div id="warehouse">
-        <router-view></router-view>
-        <notifications position="bottom right"/>
-    </div>
+<div id="warehouse">
+    <router-view></router-view>
+    <notifications position="bottom right"/>
+
+    <!-- dialogs that can be called from any view -->
+    <datasetselecter/>
+    <viewselecter/>
+    <dataset/>
+    <uploader/>
+
+</div>
 </template>
 
 <script>
+import datasetselecter from '@/modals/datasetselecter'
+import viewselecter from '@/modals/viewselecter'
+import dataset from '@/modals/dataset'
+import uploader from '@/modals/uploader'
+
 export default {
-  name: 'warehouse'
+    components: {
+        viewselecter, datasetselecter, dataset, uploader,
+    },
 }
 </script>
 

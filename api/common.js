@@ -246,7 +246,80 @@ exports.load_github_detail = function(service_name, cb) {
             //load collaborators (developers)
             //cb(null, git, cons);
         });
-                    
+    });
+}
+
+//create new doi (need to set url once it's minted)
+exports.doi_post_metadata = function(pub, cb) {
+    //get next doi id - use number of publication record with doi
+    db.Publications.count({doi: {$exists: true}}).exec((err, count)=>{
+        if(err) return cb(err);
+        let doi = config.datacite.prefix+"/bl.p."+count; //TODO - should make the "shoulder" configurable?
+            /*
+              <givenName>Soichi</givenName>
+              <familyName>Hayashi</familyName>
+              <nameIdentifier schemeURI="http://orcid.org/" nameIdentifierScheme="ORCID">0000-0003-3641-3491</nameIdentifier>
+            */
+
+        let creator = cached_contacts[pub.user_id];
+        let metadata = `<?xml version="1.0" encoding="UTF-8"?>
+        <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+          <identifier identifierType="DOI">${doi}</identifier>
+          <creators>
+            <creator>
+              <creatorName>${creator.fullname}</creatorName>
+            </creator>
+          </creators>
+          <titles>
+            <title>${pub.name}</title>
+          </titles>
+          <publisher>Brainlife.io</publisher>
+          <publicationYear>2017</publicationYear>
+          <resourceType resourceTypeGeneral="Software">XML</resourceType>
+          <dates/>
+        </resource>`;
+
+        //register!
+        logger.debug("registering doi metadata");
+        //logger.debug(metadata);
+        request.post({
+            url: config.datacite.api+"/metadata",
+            auth: {
+                user: config.datacite.username,
+                pass: config.datacite.password,
+            },
+            body: metadata,
+        }, (err, res, body)=>{
+            if(err) return cb(err); 
+            logger.debug(res.statusCode, body);
+            if(res.statusCode != 201) return cb(body);
+            logger.debug("storing doi to pub record");
+
+            //store the doi!
+            pub.doi = doi;
+            pub.save(err=>{
+                cb(err, doi);
+            });
+        });
+    });
+}
+
+//datacite api doc >  https://mds.test.datacite.org/static/apidoc
+//set / update the url associated with doi
+exports.doi_put_url = function(doi, url, cb) {
+    console.log("registering doi url", url);
+    request.put({
+        url: config.datacite.api+"/doi/"+doi,
+            auth: {
+                user: config.datacite.username,
+                pass: config.datacite.password,
+            },
+        body: "doi="+doi+"\nurl="+url,
+    }, (err, res, body)=>{
+        if(err) return cb(err); 
+        if(res.statusCode != 201) return cb(body);
+        logger.debug("registration success", doi, url, body);
+        cb(null);
     });
 }
 
@@ -258,7 +331,7 @@ function cache_contact() {
         headers: { authorization: "Bearer "+config.auth.jwt },
     }, (err, res, body)=>{
         if(err) return logger.error(err);
-        if(res.statusCode != 200) logger.error("couldn't obtain user jwt code:"+res.statusCode);
+        if(res.statusCode != 201) logger.error("couldn't obtain user jwt code:"+res.statusCode);
         body.profiles.forEach(profile=>{
             cached_contacts[profile.id.toString()] = profile;
         });

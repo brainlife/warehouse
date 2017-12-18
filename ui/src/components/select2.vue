@@ -1,5 +1,5 @@
 <template>
-<select>
+<select style="width: 100%;">
     <slot></slot>
 </select>
 </template>
@@ -132,14 +132,6 @@ export default {
     },
 }
 </script>
-
-<style scoped>
-select {
-width: 100%;
-max-width:100%;
-box-sizing: border-box;
-}
-</style>
 
 <style>
 .menu-item {

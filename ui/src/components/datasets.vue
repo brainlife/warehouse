@@ -1,23 +1,28 @@
 <template>
 <div>
-    <pageheader>
-        <b-form-input type="search" placeholder="Filter Datasets" @keyup.native="change_query_debounce()" v-model="query"/>
-    </pageheader>
-    <sidemenu active="/datasets"></sidemenu>
     <div :class="{rightopen: selected_count}">
-        <projectmenu :active="project_id" :projects="projects"></projectmenu>
         <div class="page-header">
-            <div class="row">
-                <div class="col-md-2"><h4>Subject</h4></div>
-                <div class="col-md-10">
-                    <div class="row">
-                        <div class="col-md-3"><h4>Datatype</h4></div>
-                        <div class="col-md-3"><h4>Description</h4></div>
-                        <div class="col-md-3"><h4>Create&nbsp;Date</h4></div>
-                        <div class="col-md-3"><h4>Tags</h4></div>
+            <b-row>
+                <b-col cols="4">
+                    <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
+                </b-col>
+                <b-col>
+                    <div class="list-header" style="float: right; position: relative; top: 4px;">
+                        <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
                     </div>
-                </div><!--col-->
-            </div><!--row-->
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col cols="2"><h4>Subject</h4></b-col>
+                <b-col>
+                    <b-row>
+                        <b-col><h4>Datatype</h4></b-col>
+                        <b-col><h4>Description</h4></b-col>
+                        <b-col><h4>Create&nbsp;Date</h4></b-col>
+                        <b-col><h4>Tags</h4></b-col>
+                    </b-row>
+                </b-col>
+            </b-row>
         </div>
 
         <div class="page-content">
@@ -25,7 +30,6 @@
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
-                <div class="text-muted list-header"><b>{{total_subjects}}</b> Subjects | <b>{{total_datasets}}</b> Datasets</div>
                 <div v-for="(page, page_idx) in pages">
                     <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
                         :style="{height: page_info[page_idx].height}">
@@ -38,10 +42,10 @@
                         </b-col>
                         <b-col>
                             <div v-for="dataset in datasets" :key="dataset._id" @click="open_dataset(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
-                                <div class="row">
+                                <div class="row" v-if="!dataset.removed">
                                     <div class="col-md-3 truncate">
                                         <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset)" class="dataset-checker">
-                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag>
+                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"></datatypetag>
                                         <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
@@ -57,12 +61,13 @@
                                         <tags :tags="dataset.tags"></tags> &nbsp;
                                     </div>
                                 </div>
+                                <!--<p v-else>Removed</p>-->
                             </div>
                         </b-col>
                     </b-row>
                  </div> 
             </div><!--scrolled-area-->
-            <b-button class="button-fixed" @click="go('/upload')" title="Upload Dataset" :class="{'selected-view-open':selected_count}"><icon name="plus" scale="2"/></b-button>
+            <b-button class="button-fixed" v-b-modal.uploader @click="set_uploader_options" title="Upload Dataset" :class="{'selected-view-open':selected_count}"><icon name="plus" scale="2"/></b-button>
         </div><!--page-content-->
     </div>
 
@@ -90,13 +95,12 @@
         </div>
         <div class="select-action">
             <b-button-group>
-                <b-button size="sm" v-b-modal.viewSelecter>View</b-button>
+                <b-button size="sm" v-b-modal.viewSelecter @click="set_viewsel_options">View</b-button>
                 <b-button size="sm" @click="download" title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
                 <b-button size="sm" @click="process" title="Run applications on selected datasets by creating a new process.">Process</b-button>
             </b-button-group>
         </div>
     </div>
-    <viewselecter @select="view" :datatype_names="selected_datatype_names"></viewselecter>
 </div>
 </template>
 
@@ -109,21 +113,21 @@ import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import projectmenu from '@/components/projectmenu'
 import datatypetag from '@/components/datatypetag'
-import viewselecter from '@/components/viewselecter'
-
-import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const async = require('async');
 
 var query_debounce = null;
 var scroll_debounce = null;
 
+import ReconnectingWebSocket from 'reconnectingwebsocket'
+
 export default {
     components: { 
         sidemenu, tags, metadata, 
         pageheader, projectmenu, 
-        datatypetag, viewselecter,
+        datatypetag, 
     },
+    props: ['project'],
     data () {
         return {
             pages: [], //groups of datasets 
@@ -137,9 +141,9 @@ export default {
             last_groups: {},
 
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
-            project_id: null, //project to limit search result
 
             query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
+            ws: null, //websocket
 
             //cache
             datatypes: null,
@@ -153,6 +157,7 @@ export default {
         selected_count: function() {
             return Object.keys(this.selected).length;
         },
+
         selected_datatype_names: function() {
             if(!this.datatypes) return null;
 
@@ -179,26 +184,8 @@ export default {
     },
 
     created() {
-        this.$http.get('project', {params: {
-            find: JSON.stringify(
-            {
-                removed: false,
-                $or: [
-                { members: Vue.config.user.sub}, 
-                { admins: Vue.config.user.sub}, 
-                { access: "public" },
-            ]})
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.body.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-            this.check_project_id(res.body.projects[0]);
-
-            //load all datatypes
-            return this.$http.get('datatype')
-        })
+        //load all datatypes (TODO .. cache it?)
+        return this.$http.get('datatype')
         .then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach((d)=>{
@@ -211,15 +198,14 @@ export default {
     },
 
     mounted() {
-        this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
+        //this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
         var area = document.getElementById("scrolled-area").parentNode;
 		area.addEventListener("scroll", this.page_scrolled);
     },
 
     watch: {
         //when user select different project, this gets called (mounted() won't be called anymore)
-        $route: function() {
-            this.check_project_id();
+        project: function() {
             this.query = ""; //clear query to avoid confusion
             if(this.loading) this.loading.abort();
             this.reload();
@@ -236,28 +222,51 @@ export default {
             this.load();
 
             //get number of subjects stored 
+            //console.log("querying subjects");
             this.$http.get('dataset/distinct', {params: {
-                find: JSON.stringify({
-                    project: this.project_id,
-                    removed: false
-                }),
+                find: JSON.stringify({$and: this.get_mongo_query()}),
                 distinct: 'meta.subject'
             }}).then(res=>{
                 this.total_subjects = res.body.length;
             });
-        },
-        
-        check_project_id: function(def) {
-            this.project_id = this.$route.params.projectid;
-            if(!this.project_id) {
-                var pid = localStorage.getItem("last_projectid_used");
-                if(!pid && def) {
-                    console.log("last_projectid not set.. using default one");
-                    pid = def._id; //just pick one that user has access
-                }
-                this.$router.replace("/datasets/"+pid);
-            } else {
-                localStorage.setItem("last_projectid_used", this.project_id);
+
+            //listen to all dataset change enent under this project
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            if(this.ws) this.ws.close();
+            this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+                console.log("binding to dataset updates", this.project._id);
+                this.ws.send(JSON.stringify({
+                    bind: {
+                        ex: "warehouse.dataset",
+                        key: this.project._id+".#",
+                    }
+                }));
+
+            }
+            this.ws.onmessage = (json)=>{
+                var event = JSON.parse(json.data);
+                switch(event.dinfo.exchange) {
+                case "warehouse.dataset":
+                    let dataset = event.msg;
+
+                    //look for the dataset
+                    this.pages.forEach(page=>{
+                        let old_dataset = null;
+                        for(var subject in page) {
+                            var datasets = page[subject];
+                            old_dataset = datasets.find(d=>d._id == dataset._id);
+                            if(old_dataset) break;
+                        }
+                        if(old_dataset) {
+                            //apply updates
+                            for(var k in dataset) old_dataset[k] = dataset[k];
+                            this.$forceUpdate(); //need this because I am not inside vue hook?
+                        } else {
+                            this.reload();
+                        }
+                    });
+                 } 
             }
         },
         
@@ -269,12 +278,6 @@ export default {
             if (page_margin_bottom < 300) {
                 this.load();
             }
-
-            /* hiding invisible page trick is broken.. invisible area flickers with height?
-            this.page_info.forEach((page,idx)=>{
-                page.visible = scroll_top-1000 < page.bottom && (scroll_top + client_height) > page.top;
-            });
-            */
         },
 
         change_query_debounce: function() {
@@ -291,18 +294,14 @@ export default {
             this.reload();
         },
 
-        load: function() {
-            if(this.loading) return;
-
+        get_mongo_query: function() {
 			var finds = [
                 {removed: false},
-                {project: this.project_id},
+                {project: this.project._id},
             ] 
 
             if(this.query) {
-
                 let ands = [];
-
                 //split query into each token and allow for regex search on each token
                 //so that we can query against multiple fields simultanously
                 this.query.split(" ").forEach(q=>{
@@ -321,9 +320,13 @@ export default {
                         {"datatype": {$in: datatype_ids}},
                     ]});
                 });
-
                 finds.push({$and: ands});
             }
+            return finds;
+        },
+
+        load: function() {
+            if(this.loading) return;
 
             //count number of datasets already loaded
             var loaded = 0;
@@ -344,7 +347,7 @@ export default {
                     this.loading = request;
                 },
                 params: {
-                    find: JSON.stringify({$and: finds}),
+                    find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,
                     limit: 200,
                     select: '-prov',
@@ -391,13 +394,16 @@ export default {
             });
         },
 
-        go: function(path) {
-            this.$router.push(path);
+        start_upload: function() {
+            this.uploading = true;
         },
 
         open_dataset: function(dataset_id) {
-            //TODO - we should probably use semi-fullscreen modal to display dataset
-            this.$router.push('/dataset/'+dataset_id);
+            this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
+
+            //similar code exists in project.vue (to handle URL based open)
+            //requesting dataset modal to load the specified dataset
+            this.$root.$emit('dataset.view', dataset_id);
         },
 
         check: function(dataset) {
@@ -449,7 +455,7 @@ export default {
             }).then(res=>res.body);
         },
 
-        temp_stage_selected: function(instance/*, resource*/) {
+        temp_stage_selected: function(instance) {
             //create config to download all selected data from archive
             var download = [];
             var datatypes = {};
@@ -479,18 +485,29 @@ export default {
             }).then(res=>res.body.task);
         },
 
-        view: function(v) {
+        set_viewsel_options: function() {
+            //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
+            this.$root.$emit("viewselecter.option", {
+                datatype_names: this.selected_datatype_names, 
+                task_cb: this.create_view_task, 
+            });
+        },
+
+        set_uploader_options: function() {
+            //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
+            this.$root.$emit("uploader.option", {
+                project: this.project,
+            });
+        },
+
+        create_view_task: function(cb) {
             var download_instance = null;
             this.get_instance().then(instance=>{
                 download_instance = instance;
                 return this.temp_stage_selected(download_instance);
             }).then(task=>{
                 this.clear_selected();
-                if(v.docker) {
-                    window.open("/warehouse/novnc/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
-                } else {
-                    window.open("/warehouse/view/"+download_instance._id+"/"+task._id+"/"+v.ui, "", "width=1200,height=800,resizable=no,menubar=no"); 
-                }
+                cb(task);
             });
         },
 
@@ -596,6 +613,7 @@ export default {
 .page-header,
 .page-content {
 position: fixed;
+margin-top: 50px;
 left: 350px;
 padding-left: 10px;
 right: 0;
@@ -608,8 +626,10 @@ margin-bottom: 7px;
 }
 
 .page-header {
-top: 63px;
-margin-right: 15px; /*to align with scrollbar*/
+top: 50px;
+padding-right: 15px; /*to align with scrollbar*/
+height: 70px;
+border-bottom: 1px solid #eee;
 }
 .page-header h4 {
 font-size: 16px;
@@ -620,7 +640,7 @@ color: #999;
 .page-content {
 background-color: white;
 transition: right 0.2s, bottom 0.2s;
-top: 90px;
+top: 120px;
 overflow-y: scroll;
 overflow-x: hidden;
 font-size: 12px;
@@ -640,7 +660,7 @@ right: 250px;
     position: fixed;
     right: -250px;
     width: 250px;
-    top: 50px;
+    top: 100px;
     bottom: 0px;
     z-index: 2;
     transition: right 0.2s;
@@ -696,11 +716,11 @@ right: 250px;
 .list .dataset.selected:hover {
     background-color: #2693ff;
 }
-.list .list-header {
-    padding: 10px 0px;
+.list-header {
+    opacity: 0.5;
 }
 .list .subjects {
-    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
     padding: 5px 0px;
 }
 .list .truncate {
@@ -723,6 +743,25 @@ right: 250px;
 }
 .button-fixed.selected-view-open {
 right: 300px;
+}
+.filter {
+opacity: 0.7;
+width: 50px;
+transition: 0.3s width;
+margin: 6px 0px;
+cursor: pointer;
+}
+.filter:focus {
+opacity: 1;
+width: 100%;
+cursor: inherit;
+}
+.filter-active {
+cursor: inherit;
+opacity: 1;
+background-color: #2693ff;
+color: white;
+width: 100%;
 }
 </style>
 

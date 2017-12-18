@@ -9,6 +9,14 @@
             <a target="license" href="//creativecommons.org/licenses/by/4.0/">More ..</a>
         </p>
     </div>
+    <div v-if="id == 'ccbysa.30'">
+        <img src="//i.creativecommons.org/l/by-sa/3.0/88x31.png" style="float: right;"/>
+        <h6>CC BY-SA 3.0 - Creative Commons  / Attribution-ShareAlike 3.0 Unported</h6>
+        <p>
+            This license lets others remix, tweak, and build upon your work even for commercial purposes, as long as they credit you and license their new creations under the identical terms. This license is often compared to “copyleft” free and open source software licenses. All new works based on yours will carry the same license, so any derivatives will also allow commercial use. This is the license used by Wikipedia, and is recommended for materials that would benefit from incorporating content from Wikipedia and similarly licensed projects.
+            <a target="license" href="//creativecommons.org/licenses/by-sa/3.0/">More ..</a>
+        </p>
+    </div>
     <div v-else-if="id == 'cc0'">
         <img src="//i.creativecommons.org/p/zero/1.0/88x31.png" style="float: right;" alt="CC0">
         <h6>CC0 - Creative Commons / Public Domain Dedication</h6>

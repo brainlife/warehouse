@@ -1,6 +1,6 @@
 <template>
 <div class="appavatar">
-    <img :src="app.avatar || 'https://robohash.org/'+app._id+'.png'" :width="width" :height="height"></img>
+    <img :src="app.avatar || '//robohash.org/'+app._id+'.png'" :width="width" :height="height"></img>
 </div>
 </template>
 

@@ -8,6 +8,8 @@ const jwt = require('express-jwt');
 const async = require('async');
 const request = require('request');
 
+const mongoose = require('mongoose');
+
 //mine
 const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
@@ -98,7 +100,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  * @api {get} /dataset/distinct Query distinct values
  * @apiDescription              Returns all dataset entries accessible to the user has access
  *
- * @apiParam {String} distinct  Field(s) to pull distinct values
+ * @apiParam {String} distinct  A field to pull distinct values (can't do multiple)
  * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
  * 
  * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
@@ -107,7 +109,10 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  */
 router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
-    if(req.query.find) find = JSON.parse(req.query.find);
+    if(req.query.find) {
+        find = JSON.parse(req.query.find);
+        //cast_mongoid(find);
+    }
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
         db.Datasets
@@ -121,6 +126,52 @@ router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired:
 		.exec((err, values)=>{
             if(err) return next(err);
             res.json(values);
+        });
+    });
+});
+
+//mongoose doesn't cast object id on aggregate pipeline .. https://github.com/Automattic/mongoose/issues/1399
+//somewhat futile attempt to convert all string that looks like objectid to objectid.
+function cast_mongoid(node) {
+    for(var k in node) {
+        var v = node[k];
+        if(v === null) continue;
+        if(typeof v == 'string' && mongoose.Types.ObjectId.isValid(v)) node[k] = mongoose.Types.ObjectId(v);
+        if(typeof v == 'object') cast_mongoid(v); //recurse
+    }
+}
+
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/inventory
+ * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
+ *                              Get counts of unique subject/datatype/datatype_tags. 
+ * @apiSuccess {Object}         Object containing counts
+ * 
+ */
+//similar code in pub.js
+router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    var find = {};
+    if(req.query.find) {
+        find = JSON.parse(req.query.find);
+        cast_mongoid(find);
+    }
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return next(err);
+        db.Datasets.aggregate()
+        .match({ 
+            $and: [
+                {project: {$in: canread_project_ids}},
+                find,
+                //{removed: false, project: mongoose.Types.ObjectId("592dcc5b0188fd1eecf7b4ec")},
+            ]
+        })
+        .group({_id: {"subject": "$meta.subject", "datatype": "$datatype", "datatype_tags": "$datatype_tags"}, 
+            count: {$sum: 1}, size: {$sum: "$size"} })
+        .sort({"_id.subject":1})
+        .exec((err, stats)=>{
+            if(err) return next(err);
+            res.json(stats);
         });
     });
 });
@@ -167,6 +218,7 @@ router.get('/prov/:id', (req, res, next)=>{
     let datatypes = {};
     let nodes = [];
     let edges = [];
+
     function load_task(id, cb) {
         request.get({
             url: config.wf.api+"/task",
@@ -185,7 +237,9 @@ router.get('/prov/:id', (req, res, next)=>{
     }
 
     function compose_label(task) {
-        let label = task.service+"\n";
+        let label = task.service; //task.name is sometime like "brainlife.process"..
+        if(task.service_branch) label += "("+task.service_branch+")";
+        label+="\n"; //task.name is sometime like "brainlife.process"..
         for(let id in task.config) {
             if(id[0] == "_") continue;
             let v = task.config[id];
@@ -200,53 +254,122 @@ router.get('/prov/:id', (req, res, next)=>{
     function load_dataset_prov(dataset, defer, cb) {
         let to = "dataset."+dataset._id;
         if(!dataset.prov.task_id) {
-            logger.debug("no dataset.prov.task_id");
+            logger.debug("no dataset.prov.task_id", to);
             if(defer) {
                 add_node(defer.node);
                 edges.push(defer.edge);
             }
             return cb();
-        } else if(defer) {
-            logger.debug("has defer");
+        } 
+        
+        if(defer) {
+            logger.debug("has defer", defer.to);
             to = defer.to;
         }
+
+        logger.debug("on dataset", dataset._id.toString());
         logger.debug("loading task", dataset.prov.task_id);
-        //logger.debug("load_dataset_prov.................................", dataset._id.toString());
-        //logger.debug(dataset.prov.toString());
         load_task(dataset.prov.task_id, (err, task)=>{
             if(err) return cb(err);
-            add_node({
-                id: "task."+task._id, 
-                color: "#fff",
-                shape: "box",
-                font: {size: 11},
-                label: compose_label(task),
-            });
-            if(!dataset.prov || !dataset.prov.app) {
-                logger.error("no prov.app on dataset:"+dataset._id.toString());
-                edges.push({
-                    from: "task."+task._id,
-                    to,
-                    arrows: "to",
-                    //label: "(no app) ",
-                });
+            if(!dataset.prov || !dataset.prov.app) { //TODO - do I really need to check for prov.app?
+                if(task.service == "soichih/sca-product-raw") { //TODO might change in the future
+                    if(defer) {
+                        add_node(defer.node);
+                        edges.push(defer.edge);
+                    }
+                    load_product_raw(to, dataset._id, cb);
+                } else if(task.service.indexOf("brain-life/validator-") === 0) { 
+                    if(defer) {
+                        add_node(defer.node);
+                        edges.push(defer.edge);
+                    }
+                    cb(); //ignore validator
+                } else {
+                    add_node({
+                        id: "task."+task._id, 
+                        color: "#fff",
+                        shape: "box",
+                        font: {size: 11},
+                        label: compose_label(task),
+                    });
+                    edges.push({
+                        from: "task."+task._id,
+                        to,
+                        arrows: "to",
+                        label: "(no app)",
+                    });
+                    load_task_prov(task, cb);
+                }
             } else {
+                add_node({
+                    id: "task."+task._id, 
+                    color: "#fff",
+                    shape: "box",
+                    font: {size: 11},
+                    label: compose_label(task),
+                });
+                //dataset created by another *app*
                 let output = dataset.prov.app.outputs.find(output=>{ return output.id == dataset.prov.output_id });
                 let label = dataset.prov.output_id+"?";
                 if(output) {
                     label = datatypes[output.datatype].name;
-                    if(output.datatype_tags && output.datatype_tags.length>0) label += " : "+output.datatype_tags.toString();
+                    if(output.datatype_tags && output.datatype_tags.length>0) label += "\n"+output.datatype_tags.toString();
                 }
                 edges.push({
                     from: "task."+task._id,
                     to,
                     arrows: "to",
-                    dashes: true,
-                    font: {size: 11, strokeColor: "rgba(0,0,0,0)", color: "rgb(200, 200, 200)"},
+                    //dashes: true,
+                    //font: {size: 11, strokeColor: "rgba(0,0,0,0)", color: "rgb(50, 50, 50)"},
                     label,
                 });
+                load_task_prov(task, cb);
             }
-            load_task_prov(task, cb);
+            //load_task_prov(task, cb);
+        });
+    }
+
+    function load_product_raw(to, dataset_id, cb) {
+        //staging task should be shown as dataset input.. 
+        /*
+        if(!dep_task.config._outputs) {
+            logger.debug("load_product_raw - missing _outputs");
+            return cb();
+        }
+        */
+        if(~datasets_analyzed.indexOf(dataset_id.toString())) return cb();
+        datasets_analyzed.push(dataset_id.toString());
+        
+        //load all datasets that sca-product-raw has loaded
+        db.Datasets
+        .findById(dataset_id)
+        .populate('prov.app project')
+        .exec((err, dataset)=>{
+            if(err) return cb(err);
+            
+            //but.. we don't want to show this dataset node yet.. it might be generated by other tasks
+            //so, let's create "defer" object and pass it to load_dataset_prov. If it is indeed the edge,
+            //then load_dataset_prov will display
+            let defer = {
+                node: {
+                    id: "dataset."+dataset_id, 
+                    color: "#159957",
+                    shape: "box",
+                    font: {size: 12, color: "#fff"},
+                    //label: dataset.meta.subject+" / "+datatypes[dataset.datatype].name+"\n"+dataset.desc,
+                    label:dataset.project.name+" / "+ dataset.meta.subject + "\n" +datatypes[dataset.datatype].name,
+                },
+                edge: {
+                    from: "dataset."+dataset_id,
+                    to,
+                    arrows: "to",
+                    color: "#ccc",
+                    //label: datatypes[dataset.datatype].name, //+"\n"+(dataset.desc||''),
+                },
+                to,
+            };
+            logger.debug("defer", defer);
+            load_dataset_prov(dataset, defer, cb);
         });
     }
 
@@ -258,59 +381,34 @@ router.get('/prov/:id', (req, res, next)=>{
         if(!task.deps) return cb(); //just in case?
         if(!task.config) return cb(); 
         async.eachSeries(task.config._inputs, (input, next_dep)=>{
+            //logger.debug("loading input");
+            //logger.debug(JSON.stringify(input, null, 4));
+            if(!input.task_id) return next_dep(); //old task didn't have this set?
             load_task(input.task_id, (err, dep_task)=>{
                 if(err) return next_dep(err);
                 
+                //process uses sca-product-raw to load input datasets
+                //instead of showing that, let's *skip* this node back to datasets that it loaded
+                //and load their tasks
                 if(dep_task.service == "soichih/sca-product-raw") { //TODO might change in the future
-                    //staging task should be shown as dataset input.. 
-                    let dataset_ids = dep_task.config._outputs.map(output=>{return output.dataset_id||output._id});
-                    logger.debug("sca-product-raw", dep_task._id, dataset_ids);
-                    //load all datasets
-                    db.Datasets
-                    .find({ _id: {$in: dataset_ids} })
-                    .populate('prov.app')
-                    .exec((err, datasets)=>{
-                        if(err) return next_dep(err);
-                        async.eachSeries(datasets, (dataset, next_dataset)=>{
-                            if(~datasets_analyzed.indexOf(dataset._id.toString())) return next_dataset();
-                            datasets_analyzed.push(dataset._id.toString());
-                            
-                            //logger.debug(dataset);
-                            let defer = {
-                                node: {
-                                    id: "dataset."+dataset._id, 
-                                    color: "#ccc",
-                                    shape: "box",
-                                    font: {size: 12},
-                                    label: dataset.meta.subject+" / "+datatypes[dataset.datatype].name+"\n"+dataset.desc,
-                                },
-                                edge: {
-                                    from: "dataset."+dataset._id,
-                                    to: "task."+task._id,
-                                    arrows: "to",
-                                    //dashes: true,
-                                    //label: "??2",
-                                },
-                                to: "task."+task._id,
-                            };
-                            logger.debug("defer", defer);
-                            load_dataset_prov(dataset, defer, next_dataset);
-                        }, next_dep);
-                    });
+                    console.log(JSON.stringify(input, null, 4));
+                    load_product_raw("task."+task._id, input.dataset_id||input._id||input.subdir, next_dep);
                 } else {
                     //task2task
                     add_node({
                         id: "task."+input.task_id,
                         color: "#fff",
                         shape: "box",
-                        font: {size: 12},
+                        //font: {size: 12},
                         label: compose_label(dep_task),
                     });
                     edges.push({
                         from: "task."+input.task_id,
                         to: "task."+task._id,
                         arrows: "to",
-                        label: input.id,
+                        //color: "#ff0",
+                        //label: datatype.name, // || input.id || input.input_id,
+                        label: datatypes[input.datatype].name, //+"\n"+(dataset.desc||''),
                     });
                     load_task_prov(dep_task, next_dep); //recurse to its deps
                 }
@@ -341,11 +439,13 @@ router.get('/prov/:id', (req, res, next)=>{
             nodes.push({
                 id: "dataset."+dataset._id, 
                 color: "#2693ff",
+                font: {/*size: 20,*/ color: "#fff"},
                 shape: "box",
                 margin: 10,
-                font: {size: 20, color: "#fff"},
                 //fixed: {x: true, y: true},
-                x: 1000,
+
+                //push it toward right bottom
+                //x: 1000,
                 y: 1500,
                 label: "This Dataset"
             });
@@ -629,7 +729,7 @@ router.get('/download/:id', jwt({
     }
 }), function(req, res, next) {
     var id = req.params.id;
-    logger.debug("requested for downloading dataset "+id);
+    //logger.debug("requested to download dataset "+id);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
         db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
@@ -639,6 +739,7 @@ router.get('/download/:id', jwt({
             
             if(dataset.publications && dataset.publications.length > 0) {
                 //this dataset is published .. no need for access control
+                //TODO - maybe I should still limit download without correct publication id? (what's the point?)
             } else {
                 //unpublished -- need to do access control
                 canread_project_ids = canread_project_ids.map(id=>id.toString());
@@ -656,9 +757,10 @@ router.get('/download/:id', jwt({
             system.stat(dataset, (err, stats)=>{
                 clearTimeout(stat_timer);
                 if(err) return next(err);
+                logger.debug("obtaining download stream", dataset.storage);
                 system.download(dataset, (err, readstream, filename)=>{
                     if(err) return next(err);
-
+                    logger.debug("updating download_count");
                     if(!dataset.download_count) dataset.download_count = 1;
                     else dataset.download_count++;
                     dataset.save();
@@ -672,6 +774,10 @@ router.get('/download/:id', jwt({
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);
                     });
+                    readstream.on('close', ()=>{
+                        logger.error("close event");
+                    });
+                    
                     /* close event seems to be stream dependent.. can't rely on..
                     readstream.on('close', err=>{
                         //close won't fire if user cancel download mid-way

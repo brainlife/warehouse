@@ -17,10 +17,9 @@
                         </div>
                         <div>
                             <h4 style="color: #666; margin-bottom: 10px;">
-                                <b-badge style="float: right; opacity: 0.7;"><a style="color: inherit;" :href="'https://doi.org/'+pub.doi">DOI {{pub.doi}}</a></b-badge>
                                 {{pub.name}} 
                             </h4>
-                            <p class="text-muted">{{pub.desc}}</p>
+                            <p style="opacity: 0.8">{{pub.desc}}</p>
                         </div>
                         <p style="line-height: 180%;">
                             <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
@@ -62,6 +61,17 @@
                         </b-row>                         
                         <b-row>
                             <b-col cols="3">
+                                <b class="text-muted">DOI</b>
+                            </b-col>
+                            <b-col>
+                                <p>
+                                    <a v-if="pub.doi" :href="'https://doi.org/'+pub.doi">{{pub.doi}}</a>
+                                    <span v-else style="opacity: 0.5">Not Issued</span>
+                                </p>
+                            </b-col>
+                        </b-row>                         
+                        <b-row>
+                            <b-col cols="3">
                                 <b class="text-muted">Abstract</b>
                             </b-col>
                             <b-col>
@@ -88,7 +98,7 @@
                                 </ul>
                             </b-col>
                         </b-row>
-                        <b-row>
+                        <b-row v-if="pub.contributors.length > 0">
                             <b-col cols="3">
                                 <b class="text-muted">Contributors</b>
                             </b-col>
@@ -119,26 +129,33 @@
                                     <h6>{{pub.project.name}}</h6>
                                     <p>
                                         {{pub.project.desc}}
-                                        <!--
                                         <router-link :to="'/project/'+pub.project._id">More..</router-link>
-                                        -->
                                     </p>
                                 </b-card>
                                 <br>
                             </b-col>
                         </b-row>                      
-                        <b-row>
+                        <b-row v-if="pub.fundings.length > 0">
                             <b-col cols="3">
                                 <b class="text-muted">Funded by</b>
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
                                     <li v-for="funding in pub.fundings" key="funding._id" class="funder">
-                                        <div v-if="funding.funder == 'nsf'" class="funder-label bg-success">NSF</div>
-                                        <div v-if="funding.funder == 'nih'" class="funder-label bg-info">NIH</div>
+                                        <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
+                                        <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
+                                        <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
                                         {{funding.id}}
                                     </li>
                                 </ul>
+                            </b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Comments</b>
+                            </b-col>
+                            <b-col>
+                                <vue-disqus shortname="brain-life" :identifier="pub._id"/>
                             </b-col>
                         </b-row>
                     </div>
@@ -184,7 +201,7 @@
                             <b-list-group-item v-for="(group, subject) in dataset_groups" :key="subject">
                                 <b-row>
                                     <b-col cols="3">
-                                        <b><icon name="caret-right"/> {{subject}}</b>
+                                        <b>{{subject}}</b>
                                         <small class="text-muted">
                                             <br v-if="group.count > 1">
                                             <span><b>{{group.count}}</b> datasets</span>
@@ -231,12 +248,14 @@
                         <p class="text-muted">Following applications are used to generate published datasets.</p>
                         <b-row>
                             <b-col cols="6" v-for="app in apps" key="app._id" style="margin-bottom: 10px;">
-                                <app :app="app" descheight="130px" compact="true"></app>
+                                <app :app="app" descheight="130px" :compact="true"></app>
                             </b-col>
                         </b-row>
                     </div>
                 </b-col>
             </b-row>
+
+
         </b-container>
         <br>
         <br>
@@ -257,22 +276,24 @@ import datatypetag from '@/components/datatypetag'
 import tags from '@/components/tags'
 import app from '@/components/app'
 
+import VueDisqus from 'vue-disqus/VueDisqus.vue'
+
 export default {
-    components: { pageheader, sidemenu, projectavatar, contact, VueMarkdown, license, projectcard, datatypetag, tags, app },
+
+    components: { 
+        pageheader, sidemenu, projectavatar, 
+        contact, VueMarkdown, license, 
+        projectcard, datatypetag, tags, 
+        app, VueDisqus,
+    },
+
     data () {
         return {
-
             pub: null, //publication detail
             dataset_groups: null, //datasets inventory grouped 
             apps: null, //list of apps
 
-            /*
-            datasets_page: 1,
-            datasets_perpage: 100,
-            datasets_count: null,
-            datasets: null, //datasets for current page
-            datatypes: null,
-            */
+            datatypes: {}, 
 
             tab_index: 0,
             query: "",
@@ -293,11 +314,11 @@ export default {
     },
 
     mounted: function() {
-    
         //load publication detail
         this.$http.get('pub', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'project',
+            deref_contacts: true,
         }})
         .then(res=>{
             this.pub = res.body.pubs[0];
@@ -306,7 +327,6 @@ export default {
             return this.$http.get('datatype');
         })
         .then(res=>{
-            this.datatypes = {};
             res.body.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
             });

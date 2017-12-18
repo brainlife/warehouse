@@ -18,13 +18,6 @@ db.init(function(err) {
         if(err) throw err;
         logger.info("all done.. disconnecting");
         db.disconnect();
-        
-        //amqp disconnect() is broken
-        //https://github.com/postwait/node-amqp/issues/462
-        setTimeout(()=>{
-            console.log("killing myself - until node-amqp bug is fixed");
-            process.exit(0);
-        }, 1000);
     });
 });
 
@@ -57,14 +50,14 @@ function run(cb) {
         ]
     })
     .sort('create_date') //oldest first (give published datasets precedencde)
-    .limit(100)  //limit to 100 datasets at a time
+    .limit(1000) 
     .exec((err,datasets)=>{
         if(err) return cb(err);
         logger.debug("datasets needs removed:",datasets.length);
         let count = 0;
         async.eachSeries(datasets, (dataset, next_dataset)=>{
             count++;
-            logger.debug("handling dataset", dataset.toString());
+            logger.debug("removing dataset", count, dataset.toString());
             var system = config.storage_systems[dataset.storage];
             system.remove(dataset, err=>{
                 if(err) return next_dataset(err);

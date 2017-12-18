@@ -6,7 +6,7 @@
         Private <icon name="lock"></icon> 
     </h4>
     <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id"
-        v-if="project.access == 'private'" @click="go('/datasets/'+project_id)" :class="{active: project_id == active}">
+        v-if="project.access == 'private' && project.removed == false" @click="change(project)" :class="{active: project_id == active}">
         <h5>{{project.name}}</h5>
         <div class="desc">{{project.desc}}</div>
     </div>
@@ -15,7 +15,7 @@
         <icon name="caret-down" scale="1"></icon>&nbsp;
         Public</h4>
     <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id" 
-        v-if="project.access == 'public'" @click="go('/datasets/'+project_id)" :class="{active: project_id == active}">
+        v-if="project.access == 'public' && project.removed == false" @click="change(project)" :class="{active: project_id == active}">
         <h5>{{project.name}}</h5>
         <div class="desc">{{project.desc}}</div>
     </div>
@@ -35,6 +35,7 @@ export default {
         }
     },
 
+    /*
     watch: {
         active: function() {
             //scroll to selected project
@@ -50,10 +51,21 @@ export default {
             });
         }
     },
+    */
+
+    mounted () {
+        //scroll to selected project
+        var elem = document.getElementById(this.active);
+        if(!elem) return;
+        var area = document.getElementsByClassName("projectmenu")[0];
+        if(area.clientHeight < elem.offsetTop) {
+            area.scrollTop = elem.offsetTop - area.clientHeight/2;
+        }
+    },
 
     methods: {
-        go: function(path) {
-            this.$router.push(path);
+        change: function(project) {
+            this.$emit("change", project);
         }
     },
 }

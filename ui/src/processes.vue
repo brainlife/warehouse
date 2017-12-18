@@ -8,7 +8,7 @@
             <div v-if="selected">
                 <statusicon :status="selected.status" :scale="1.75" style="float: left; margin: 15px;opacity: 0.8;"/>
                 <div style="margin: 10px; float: right;">
-                    <button v-if="!selected.config.removing" type="button" class="btn btn-outline-secondary" @click="remove()" title="Remove Process"><icon name="trash"/></button>
+                    <div v-if="!selected.config.removing" class="button" @click="remove()" title="Remove Process"><icon name="trash" scale="1.25"/></div>
                 </div>
                 <div class="description">
                     <b-form-textarea placeholder="Please enter process description" @keyup.native="changedesc()" v-model="selected.desc" :rows="2"/>
@@ -51,9 +51,11 @@
                 <h3 class="text-muted" style="padding-top: 30px; padding-left: 30px;">Please select or create a new process</h3>
             </div>
             <div v-else>
+                <!--
                 <simpleprocess @view="view" v-if="selected && selected.config.type == 'simple'" :instance="selected"></simpleprocess>
                 <process @view="view" v-if="selected && selected.config.type == 'v1'" :instance="selected"></process>
-                <process2 @view="view" v-if="selected && selected.config.type == 'v2'" :instance="selected"></process2>
+                -->
+                <process2 v-if="selected && selected.config.type == 'v2'" :instance="selected"></process2>
             </div>
         </div>
     </div>
@@ -66,8 +68,8 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import statusicon from '@/components/statusicon'
 
-import simpleprocess from '@/simpleprocess'
-import process from '@/process'
+//import simpleprocess from '@/simpleprocess'
+//import process from '@/process'
 import process2 from '@/process2'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
@@ -77,7 +79,7 @@ var debounce = null;
 export default {
     components: { 
         sidemenu, pageheader, statusicon,
-        simpleprocess, process, process2,
+        process2,
     },
     data () {
         return {
@@ -91,6 +93,7 @@ export default {
             config: Vue.config,
         }
     },
+
     mounted: function() {
         //load (all!) application details (TODO figure out a better way)
         console.log("loading apps");
@@ -146,14 +149,13 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("binding to instance updates");
+                console.log("binding to all instance updates");
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
                         key: Vue.config.user.sub+".#",
                     }
                 }));
-
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
@@ -209,6 +211,7 @@ export default {
                 });
             }
         },
+        /*
         view: function(opt) {
             let view = opt.view.split('/').join('.'); //replace all / with .
             let path;
@@ -220,6 +223,7 @@ export default {
             if(opt.subdir) path += '/'+opt.subdir;
             window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
         }
+        */
     },
     watch: {
         '$route': function() {

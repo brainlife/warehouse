@@ -66,6 +66,13 @@ exports.express = {
     pubkey: fs.readFileSync('/home/hayashis/git/auth/api/config/auth.pub'),
 }
 
+exports.datacite = {
+    prefix: "10.0322",  //test account
+    username: "DATACITE.BL",
+    password: fs.readFileSync(__dirname+'/datacite.password', {encoding: "ascii"}).trim(),
+    api: "https://mds.test.datacite.org",
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  storage system where we can archive data
@@ -317,6 +324,9 @@ exports.storage_systems["openneuro"] = {
         var archive = archiver('tar');
         dataset.storage_config.files.forEach(file=>{
             console.log("downloading", file.s3, "from", openneuro_config.bucket, file.local);
+            //downloading from s3 takes 30 seconds before the first byte arrives.
+            //it's not archiver's fault or anything else.
+            //https://github.com/pkgcloud/pkgcloud/issues/596
             var stream = openneuro_storage.download({container: openneuro_config.bucket, remote: file.s3});
             archive.append(stream, {name: file.local});
         });

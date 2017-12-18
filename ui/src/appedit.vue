@@ -69,7 +69,9 @@
             <el-form-item label="Configuration Parameters">
                 <div v-for="(config, name) in app.config" :key="name" style="margin:5px;">
                     <b-card v-if="config.type == 'integer' || config.type == 'string'" :title="config.type | capitalize">
-                        <b-button @click="remove_config(name)" style="float: right" size="sm" variant="danger"><icon name="trash"/></b-button>
+                        <div class="button button-danger" @click="remove_config(name)" style="float: right">
+                            <icon name="trash" scale="1.25"/>
+                        </div>
                         <b-row>
                             <b-col sm="5">
                                 <div class="text-muted">Key</div>
@@ -88,7 +90,9 @@
                         </b-row>
                     </b-card>
                     <b-card v-if="config.type == 'boolean'" :title="config.type | capitalize">
-                        <b-button @click="remove_config(name)" style="float: right" size="sm" variant="danger"><icon name="trash"/></b-button>
+                        <div class="button button-danger" @click="remove_config(name)" style="float: right">
+                            <icon name="trash" scale="1.25"/>
+                        </div>
                         <b-row>
                             <b-col>
                                 <div class="text-muted">Key</div>
@@ -105,7 +109,9 @@
                         </b-row>
                     </b-card>
                     <b-card v-else-if="config.type == 'enum'" :title="config.type | capitalize">
-                        <b-button @click="remove_config(name)" size="sm" style="float: right" variant="danger"><icon name="trash"/></b-button>
+                        <div class="button button-danger" @click="remove_config(name)" style="float: right">
+                            <icon name="trash" scale="1.25"/>
+                        </div>
                         <b-row>
                             <b-col>
                                 <div class="text-muted">Key</div>
@@ -122,7 +128,9 @@
                         </b-row>
                         <br><b>Options</b><br>
                         <b-card v-for="(option, idx) in config.options" :key="idx">
-                            <b-button @click="config.options.splice(idx, 1)" style="float: right" size="sm" variant="danger"><icon name="trash"/></b-button>
+                            <div class="button button-danger" @click="config.options.splice(idx, 1)" style="float: right">
+                                <icon name="trash"/>
+                            </div>
                             <b-row>
                                 <b-col>
                                     <div class="text-muted">Value</div>
@@ -155,7 +163,9 @@
             <el-form-item label="Input Datasets">
                 <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 20px;">
                     <b-card>
-                        <b-button @click="remove_input(idx)" style="float: right;" size="sm" variant="danger"><icon name="trash"/></b-button>
+                        <div class="button button-danger" @click="remove_input(idx)" style="float: right;">
+                            <icon name="trash" scale="1.25"/>
+                        </div>
                         <b-row>
                             <!-- we probably don't need to expose this to user
                             <b-col>
@@ -177,7 +187,9 @@
                         <br><b>File Mapping</b><br>
                         <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
                         <b-card v-for="(config, name) in app.config" :key="name" v-if="config.type == 'input' && config.input_id == input.id">
-                            <b-button @click="remove_config(name)" style="float: right" size="sm" variant="danger"><icon name="trash"/></b-button>
+                            <div class="button button-danger" @click="remove_config(name)" style="float: right">
+                                <icon name="trash"/>
+                            </div>
                             <b-row>
                                 <b-col>
                                     <div class="text-muted">Key</div>
@@ -202,7 +214,9 @@
             <el-form-item label="Output Datasets">
                 <div v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
                     <b-card>
-                        <b-button @click="app.outputs.splice(idx, 1)" icon="delete" style="float: right" size="sm" variant="danger"><icon name="trash"/></b-button>
+                        <div class="button button-danger" @click="app.outputs.splice(idx, 1)" style="float: right">
+                            <icon name="trash" scale="1.25"/>
+                        </div>
                         <b-row>
                             <!-- let's not expose input/output IDs anymore
                             <b-col>
