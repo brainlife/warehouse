@@ -184,7 +184,6 @@ export default {
     },
 
     created() {
-        console.log("dataset created");
         //load all datatypes (TODO .. cache it?)
         return this.$http.get('datatype')
         .then(res=>{
@@ -253,14 +252,18 @@ export default {
 
                     //look for the dataset
                     this.pages.forEach(page=>{
+                        let old_dataset = null;
                         for(var subject in page) {
                             var datasets = page[subject];
-                            var _dataset = datasets.find(d=>d._id == dataset._id);
-                            if(_dataset) {
-                                //apply updates
-                                for(var k in dataset) _dataset[k] = dataset[k];
-                                this.$forceUpdate(); //need this because I am not inside vue hook?
-                            }
+                            old_dataset = datasets.find(d=>d._id == dataset._id);
+                            if(old_dataset) break;
+                        }
+                        if(old_dataset) {
+                            //apply updates
+                            for(var k in dataset) old_dataset[k] = dataset[k];
+                            this.$forceUpdate(); //need this because I am not inside vue hook?
+                        } else {
+                            this.reload();
                         }
                     });
                  } 

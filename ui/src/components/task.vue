@@ -27,16 +27,15 @@
         </div>
     </el-card>
 
+    <!--
+    <taskconfig style="margin: 10px 20px;" :task="task"/>
+    -->
+
     <el-collapse v-model="activeSections">
+
         <el-collapse-item title="Configuration" name="config" class="config-area">
-            <!--<el-alert title="todo">display this in more user friendly way</el-alert>-->
-            <pre v-highlightjs style="margin-bottom: 0px"><code class="json hljs" v-if="!show_masked_config">{{task.config|mask}}</code></pre>
-            <!--
-            <pre v-highlightjs><code class="json hljs" v-if="show_masked_config">{{task.config}}</code></pre>
-            <b-button variant="outline-secondary" style="float: right; margin-bottom: 5px;" @click="show_masked_config = true" size="sm" v-if="!show_masked_config">
-                <icon name="info"/>
-            </b-button>
-            -->
+            <taskconfig :task="task"/>
+            <!--<pre v-highlightjs style="margin-bottom: 0px"><code class="json hljs" v-if="!show_masked_config">{{task.config|mask}}</code></pre>-->
         </el-collapse-item>
         <slot name="input"></slot>
         <slot name="output"></slot>
@@ -57,10 +56,11 @@ import filebrowser from '@/components/filebrowser'
 import statusicon from '@/components/statusicon'
 import mute from '@/components/mute'
 import tags from '@/components/tags'
+import taskconfig from '@/components/taskconfig'
 
 export default {
     props: ['task'],
-    components: { filebrowser, statusicon, mute, tags },
+    components: { filebrowser, statusicon, mute, tags, taskconfig },
     name: "contact",
     data () {
         return {
@@ -171,7 +171,9 @@ margin-bottom: 2px;
 .el-card .btn-secondary:hover {
     opacity: 1;
 }
+/*
 .config-area .el-collapse-item__content {
     padding: 0px;
 }
+*/
 </style>

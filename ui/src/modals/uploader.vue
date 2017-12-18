@@ -284,7 +284,6 @@ export default {
             return this.datatypes[this.datatype_id].validator;
         },
 
-
         cancel() {
             this.$refs.modal.hide();
         },

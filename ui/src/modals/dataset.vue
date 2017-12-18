@@ -75,13 +75,13 @@
                             </b-col>
                         </b-row>
 
-                        <b-row v-if="dataset.prov">
+                        <b-row v-if="dataset.prov && dataset.prov.app">
                             <b-col cols="3"><b class="text-muted">App</b></b-col>
                             <b-col>
-                                <app :appid="dataset.prov.app"/>
-                                <div style="padding: 10px; background-color: white;">
-                                    <taskconfig :taskid="dataset.prov.task_id"/>
-                                </div>
+                                <app slot="header" :appid="dataset.prov.app">
+                                    <hr>
+                                    <taskconfig style="margin: 10px;" :taskid="dataset.prov.task_id"/>
+                                </app>
                                 <br>
                             </b-col>
                         </b-row>
@@ -206,7 +206,7 @@
             </b-tab>
             <b-tab title="Provenance">
                 <div v-if="prov" class="dataset-provenance">
-                    <div v-if="prov.nodes.length == 1" class="margin20">
+                    <div v-if="prov.edges.length == 0" class="margin20">
                         <b-alert show variance="info">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
                     </div>
                     <div ref="vis" v-else style="height: 100%;"/>
@@ -304,7 +304,8 @@ export default {
     
     watch: {
         '$route': function() {
-            this.dataset = null;
+            //this.dataset = null;
+            this.close();
         },
 
         /*
@@ -342,26 +343,36 @@ export default {
                 this.prov = res.body;
                 console.log("loaded provenance", this.prov);
 
-                //initialize vis
-                Vue.nextTick(()=>{
-                    var gph = new vis.Network(this.$refs.vis, res.body, {
-                        /*
-                      layout: {
-                        hierarchical: {
-                            direction:"LR",
-                            levelSeparation: 100,
-                            sortMethod: "hubsize",
-                        }
-                      },
-                        */
-                        //physics:{barnesHut:{/*gravitationalConstant:-3500, springConstant: 0.01, avoidOverlap: 0.02*/}},
-                        physics:{barnesHut:{springConstant: 0.03}},
-                        nodes: {
-                            shadow: true,
-                            borderWidth: 0,
-                        },
+                if(this.prov.edges.length) {
+                    Vue.nextTick(()=>{
+                        var gph = new vis.Network(this.$refs.vis, res.body, {
+                            /*
+                          layout: {
+                            hierarchical: {
+                                direction:"LR",
+                                levelSeparation: 100,
+                                sortMethod: "hubsize",
+                            }
+                          },
+                            */
+                            //physics:{barnesHut:{/*gravitationalConstant:-3500, springConstant: 0.01, avoidOverlap: 0.02*/}},
+                            physics:{
+                                barnesHut:{
+                                    //springConstant: 0.20,
+                                    //springLength: 150,
+                                    //avoidOverlap: 0.2,
+                                    //damping: 0.3,
+                                    gravitationalConstant: -6000,
+                                }
+                            },
+
+                            nodes: {
+                                shadow: true,
+                                borderWidth: 0,
+                            },
+                        });
                     });
-                });
+                }
             });
         },
 
@@ -382,6 +393,7 @@ export default {
     
         close: function() {
             if(!this.dataset) return;
+            this.dataset = null;
             this.$root.$emit("dataset.close");
         },
 
@@ -437,8 +449,9 @@ export default {
             if(confirm("Do you really want to remove this dataset?")) {
                 this.$http.delete('dataset/'+this.dataset._id)
                 .then(res=>{
-                    this.dataset = null;
-                    this.$root.$emit("dataset.remove", this.dataset);
+                    //this.dataset = null;
+                    //this.$root.$emit("dataset.remove", this.dataset);
+                    this.close();
                 });
             }
         },
