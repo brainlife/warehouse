@@ -12,6 +12,7 @@
             <p style="line-height: 150%;">{{app.desc_override||app.desc}}</p>
         </div>
         <div class="content" v-if="app && projects">
+            <b-form-group>
             <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
                 <b-col>
                     <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
@@ -23,33 +24,36 @@
                         @input="preselect_single_items(input)"/>
                 </b-col>
                 <b-col cols="5">
-                    <select2 style="width: 100%; max-width: 100%;" 
-                        v-model="form.inputs[input.id]" 
-                        :dataAdapter="debounce_grab_items(input)" 
-                        :multiple="false" 
-                        :placeholder="'Input Dataset'" 
-                        :options="form.options[input.id]"/>
+                        <select2 style="width: 100%; max-width: 100%;" 
+                            v-model="form.inputs[input.id]" 
+                            :dataAdapter="debounce_grab_items(input)" 
+                            :multiple="false" 
+                            :placeholder="'Input Dataset'" 
+                            :options="form.options[input.id]"/>
                 </b-col>
             </b-row>
+            </b-form-group>
             
             <!--<h4>Configuration Parameters</h4>-->
             <b-row v-for="(v,k) in app.config" :key="k" v-if="v.type && v.type != 'input'">
                 <b-col>{{k}}</b-col>
                 <b-col cols="9">
-                    <input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01" :placeholder="v.placeholder">
-                    <el-input type="number" v-if="v.type == 'integer'" v-model.number="form.config[k]" :placeholder="v.placeholder"></el-input>
-                    <el-input v-if="v.type == 'string'" v-model="form.config[k]" :placeholder="v.placeholder"></el-input>
-                    <div v-if="v.type == 'boolean'">
-                        <el-checkbox v-if="v.type == 'boolean'" v-model="form.config[k]"></el-checkbox> <span>{{v.desc}}</span>
-                    </div>
-                    <el-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder" style="width: 100%;">
-                        <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
-                            <b>{{option.label}}</b>
-                            <small> - {{option.desc}}</small>
-                        </el-option>
-                    </el-select>
-
-                    <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
+                    <b-form-group>
+                        <!--<b-form-input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01" :placeholder="v.placeholder"/>-->
+                        <!--integer is deprecated-->
+                        <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" :readonly="v.readonly"  v-model.number="form.config[k]" :placeholder="v.placeholder"/>
+                        <b-form-input type="text" v-if="v.type == 'string'" :readonly="v.readonly" v-model="form.config[k]" :placeholder="v.placeholder"></b-form-input>
+                        <div v-if="v.type == 'boolean'">
+                            <b-form-checkbox :disabled="v.readonly" v-if="v.type == 'boolean'" v-model="form.config[k]">{{v.desc}}</b-form-checkbox>
+                        </div>
+                        <b-form-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder" :disabled="v.readonly">
+                            <option v-for="(option, idx) in v.options" :key="idx" :value="option.value">
+                                {{option.label}} <small>({{option.value}})</small>
+                                <span v-if="option.desc"> - {{option.desc}}</span>
+                            </option>
+                        </b-form-select>
+                        <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
+                    </b-form-group>
                 </b-col>
             </b-row>
 

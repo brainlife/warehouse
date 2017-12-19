@@ -41,9 +41,9 @@ export default {
             if (data.header) result.classList.add('header');
             if (data.text) result.innerHTML += ascii_escape(data.text);
             if (data.datatype && data.tags) {
-                result.innerHTML += data.datatype.name;
+                result.innerHTML += " <span class='datatype'>"+data.datatype.name+"</span>";
                 data.tags.forEach(tag => {
-                    result.innerHTML += "<span class='tag'>"+ascii_escape(tag)+"</span>";
+                    result.innerHTML += " <span class='tag'>"+ascii_escape(tag)+"</span>";
                 });
             }
             
@@ -143,11 +143,15 @@ export default {
     color:#999;
     float: right;
 }
+.menu-item .datatype {
+    padding: 2px 4px;
+    background-color: gray;
+    color: white;
+}
 .menu-item .tag {
     padding:2px 4px;
     color:#999;
 }
-
 .select2-results__option--highlighted .tag,
 .select2-results__option--highlighted time {
     color: #ddd;

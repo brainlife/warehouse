@@ -11,7 +11,9 @@
             <b-tab title="Details"/>
             <b-tab title="Configuration"/>
             <b-tab title="Input / Output"/>
+            <!--citation can be stored in README..
             <b-tab title="Citation / Reference"/>
+            -->
         </b-tabs>
     </div>
 
@@ -87,13 +89,14 @@
                 <b-form-group>
                     <b-dropdown size="sm" text="Add Configuration Parameter" variant="success">
                         <b-dropdown-item @click="add_config('string')">String</b-dropdown-item>
-                        <b-dropdown-item @click="add_config('integer')">Integer</b-dropdown-item>
+                        <b-dropdown-item @click="add_config('number')">Number</b-dropdown-item>
                         <b-dropdown-item @click="add_config('boolean')">Boolean</b-dropdown-item>
                         <b-dropdown-item @click="add_config('enum')">Enum</b-dropdown-item>
+                        <!--integer is deprecated-->
                     </b-dropdown>
                     <transition-group name="height">
                     <div v-for="(config, name) in app.config" :key="name" style="margin:5px;">
-                        <b-card v-if="config.type == 'integer' || config.type == 'string'" :title="config.type | capitalize">
+                        <b-card v-if="config.type == 'integer' || config.type == 'number' || config.type == 'string'" :title="config.type | capitalize">
                             <div class="button button-danger" @click="remove_config(name)" style="float: right">
                                 <icon name="trash"/>
                             </div>
@@ -106,7 +109,8 @@
 
                                     <b-form-group>
                                         <div class="text-muted">Default Value <small>optional</small></div>
-                                        <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default"></b-form-input>
+                                        <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default"></b-form-input><!--deprecated-->
+                                        <b-form-input v-if="config.type == 'number'" type="number" v-model.number="config.default"></b-form-input>
                                         <b-form-input v-if="config.type == 'string'" type="text" v-model="config.default"></b-form-input>
                                     </b-form-group>
 
@@ -300,8 +304,8 @@
             </div>
             </transition>
 
+            <!-- citation
             <transition name="slide-fade">
-            <!-- citation -->
             <div v-if="tab_index == 3">
                 <b-form-group horizontal label="Preferred Citation">
                     <b-form-textarea v-model="app.citation" placeholder="Enter citation you'd like to be used to cite this application" :rows="2" :max-rows="4"></b-form-textarea>
@@ -315,6 +319,7 @@
                 </b-form-group>
             </div>
             </transition>
+            -->
             
             <hr>
             <div style="float: right">
@@ -481,7 +486,7 @@ export default {
                 config.options = [];
                 break;
             case "string":
-                break;
+            case "number":
             case "integer":
                 break;
             }

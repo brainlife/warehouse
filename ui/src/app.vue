@@ -35,8 +35,8 @@
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
                     <b-tab title="README"/>
-                    <b-tab title="Citation / References"/>
                     <b-tab title="Status"/>
+                    <!--<b-tab title="Citation / References"/>-->
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -198,6 +198,10 @@
                         <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
                     </div>
                     <div v-if="tab_index == 2">
+                        <p class="text-muted">No test status available yet</p>
+                    </div>
+                    <!--
+                    <div v-if="tab_index == 3">
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Preferred Citation</b>
@@ -220,11 +224,8 @@
                             </b-col>
                         </b-row>
                         <br>
-                       
                     </div>
-                    <div v-if="tab_index == 3">
-                        <p class="text-muted">No test status available yet</p>
-                    </div>
+                    -->
                 </b-col>
 
                 <b-col cols="3">

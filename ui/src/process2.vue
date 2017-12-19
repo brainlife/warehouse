@@ -161,20 +161,22 @@
                     <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                 </b-col>
                 <b-col>
-                    <el-select @change="validate()" v-model="input.dataset_idx" 
-                        no-data-text="No dataset available for this datatype / tags"
-                        placeholder="Please select input dataset" 
-                        style="width: 100%;">
-                        <el-option v-for="dataset in filter_datasets(input)" :key="dataset.idx"
-                                :value="dataset.idx" 
-                                :label="dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject+' > '+dataset.datatype_tags+' | '+dataset.tags+' (d.'+dataset.did+')'">
-                            <span v-if="dataset.task.status != 'finished'">(Processing)</span>
-                            {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
-                            <b>{{dataset.meta.subject}}</b> 
-                            <small>{{dataset.datatype_tags.toString()}}</small>
-                            (d.{{dataset.did}})
-                        </el-option>
-                    </el-select>
+                    <b-form-group>
+                        <el-select @change="validate()" v-model="input.dataset_idx" 
+                            no-data-text="No dataset available for this datatype / tags"
+                            placeholder="Please select input dataset" 
+                            style="width: 100%;">
+                            <el-option v-for="dataset in filter_datasets(input)" :key="dataset.idx"
+                                    :value="dataset.idx" 
+                                    :label="dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject+' > '+dataset.datatype_tags+' | '+dataset.tags+' (d.'+dataset.did+')'">
+                                <span v-if="dataset.task.status != 'finished'">(Processing)</span>
+                                {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
+                                <b>{{dataset.meta.subject}}</b> 
+                                <small>{{dataset.datatype_tags.toString()}}</small>
+                                (d.{{dataset.did}})
+                            </el-option>
+                        </el-select>
+                    </b-form-group>
                 </b-col>
             </b-row>
 
@@ -182,20 +184,21 @@
             <b-row v-for="(v,k) in newtask.app.config" :key="k" v-if="v.type && v.type != 'input'">
                 <b-col cols="3">{{k}}</b-col>
                 <b-col>
-                    <input v-if="v.type == 'float'" type="number" v-model.number="newtask.config[k]" step="0.01" :placeholder="v.placeholder">
-                    <el-input type="number" v-if="v.type == 'integer'" v-model.number="newtask.config[k]" :placeholder="v.placeholder"/>
-                    <el-input v-if="v.type == 'string'" v-model="newtask.config[k]" :placeholder="v.placeholder"/>
-                    <div v-if="v.type == 'boolean'">
-                        <el-checkbox v-model="newtask.config[k]" style="margin-top: 9px;"/> {{v.desc}}
-                    </div>
-                    <el-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder" style="width: 100%;">
-                        <el-option v-for="option in v.options" :key="option.value" :label="option.label" :value="option.value">
-                            <b>{{option.label}}</b>
-                            <small> - {{option.desc}}</small>
-                        </el-option>
-                    </el-select>
-
-                    <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
+                    <b-form-group>
+                        <!--integer is deprecated-->
+                        <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" :readonly="v.readonly" v-model.number="newtask.config[k]" :placeholder="v.placeholder"/>
+                        <b-form-input type="text" v-if="v.type == 'string'" :readonly="v.readonly" v-model="newtask.config[k]" :placeholder="v.placeholder"/>
+                        <div v-if="v.type == 'boolean'">
+                            <b-form-checkbox :disabled="v.readonly" v-model="newtask.config[k]">{{v.desc}}</b-form-checkbox>
+                        </div>
+                        <b-form-select v-if="v.type == 'enum'" v-model="newtask.config[k]" :placeholder="v.placeholder" :disabled="v.readonly">
+                            <option v-for="(option, idx) in v.options" :key="idx" :value="option.value">
+                                {{option.label}} <small>({{option.value}})</small>
+                                <span v-if="option.desc"> - {{option.desc}}</span>
+                            </option>
+                        </b-form-select>
+                        <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
+                    </b-form-group>
                 </b-col>
             </b-row>
 
@@ -444,6 +447,8 @@ export default {
 
 
         load() {
+            this.archiving = null;
+
             //(re)connect to websocket
             if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;

@@ -42,7 +42,6 @@
     "ssh2": "^0.5.5",
     "tar": "^4.0.2",
     "tmp": "0.0.33",
-    "vue-timeago": "^3.4.2",
     "winston": "^2.4.0"
   },
   "devDependencies": {
