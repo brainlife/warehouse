@@ -254,6 +254,9 @@ var appSchema = mongoose.Schema({
 
     name: String,
 
+    citation: String,
+    references: [ new mongoose.Schema({text: 'string'}) ], 
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //
     //
@@ -265,6 +268,8 @@ var appSchema = mongoose.Schema({
     // https://api.github.com/repos/brain-life/app-life
     //      https://api.github.com/repos/brain-life/app-life/contributors
     desc: String,  //pulled from github
+    desc_override: String, //if user wants to override the githut desc
+
     tags: [String], //pulled fro github/repo topics
     contributors: [ new mongoose.Schema({name: 'string', email: 'string'}) ], //TODO - pull from github
     //

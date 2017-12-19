@@ -392,7 +392,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 //and load their tasks
                 if(dep_task.service == "soichih/sca-product-raw") { //TODO might change in the future
                     console.log(JSON.stringify(input, null, 4));
-                    load_product_raw("task."+task._id, input.dataset_id||input._id, next_dep);
+                    load_product_raw("task."+task._id, input.dataset_id||input._id||input.subdir, next_dep);
                 } else {
                     //task2task
                     add_node({
@@ -445,7 +445,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 //fixed: {x: true, y: true},
 
                 //push it toward right bottom
-                x: 1000,
+                //x: 1000,
                 y: 1500,
                 label: "This Dataset"
             });
