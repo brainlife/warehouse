@@ -17,7 +17,7 @@
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
                     <time v-if="task.status == 'finished'">at {{new Date(task.finish_date).toLocaleString()}}</time>
-                    <time v-if="task.status == 'running'">since {{new Date(task.start_date).toLocaleString()}}</time>
+                    <time v-if="task.status == 'running'">since {{timeSinceStartDate(task.start_date)}} ago</time>
                     <time v-if="task.status == 'requested'">at {{new Date(task.create_date).toLocaleString()}}</time>
                     <time v-if="task.status == 'failed'">at {{new Date(task.fail_date).toLocaleString()}}</time>
                     <time v-if="task.status == 'removed'">at {{new Date(task.remove_date).toLocaleString()}}</time>
@@ -81,6 +81,27 @@ export default {
     },
 
     methods: {
+        timeSinceStartDate(startString) {
+            var timeRunning = new Date().getTime() - new Date(startString).getTime();
+            
+            var mill = timeRunning % 1000;
+            timeRunning = (timeRunning - mill) / 1000;
+            
+            var seconds = timeRunning % 60;
+            timeRunning = (timeRunning - seconds) / 60;
+            
+            var minutes = timeRunning % 60;
+            timeRunning = (timeRunning - minutes) / 60;
+            
+            var hours = timeRunning % 24;
+            timeRunning = (timeRunning - hours) / 24;
+            
+            if (timeRunning > 0) return `${timeRunning} days`;
+            else if (hours > 0) return `${hours} hours`;
+            else if (minutes > 0) return `${minutes} minutes`;
+            return `${seconds} seconds`;
+        },
+        
         rerun() {
             this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.task._id)
             .then(res=>{
