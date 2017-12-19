@@ -9,7 +9,7 @@
     <div class="page-content" v-if="app" style="margin-top: 80px;">
         <div style="margin-left: 130px; margin-bottom: 10px; min-height: 60px;">
             <br>
-            <p style="line-height: 150%;">{{app.desc}}</p>
+            <p style="line-height: 150%;">{{app.desc_override||app.desc}}</p>
         </div>
         <div class="content" v-if="app && projects">
             <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">

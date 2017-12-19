@@ -417,17 +417,6 @@ padding: 0;
 border-bottom: 1px solid #ccc;
 z-index: 1;
 }
-
-.slide-fade-enter-active {
-  transition: all .3s ease;
-}
-.slide-fade-leave-active {
-  transition: none;
-}
-.slide-fade-enter, .slide-fade-leave-to {
-  transform: translateX(10px);
-  opacity: 0;
-}
 .pub-removed {
 background-color: #aaa;
 opacity: 0.6;

@@ -7,7 +7,7 @@
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
                     {{app_.name}} <small>{{app_.github}}</small></h4>
-                <div class="desc">{{app_.desc||'no desc..'}}</div>
+                <div class="desc">{{app_.desc_override||app_.desc||'no desc..'}}</div>
             </div>
             <slot/>
         </div>
@@ -28,7 +28,7 @@
                     </div>
                 </div>
             </div>
-            <div class="desc" :style="{height: descheight}">{{app_.desc||'no desc..'}}</div>
+            <div class="desc" :style="{height: descheight}">{{app_.desc_override||app_.desc||'no description..'}}</div>
             <slot/>
             <div class="devs">
                 <contact v-for="c in app_.contributors" key="c._id" :fullname="c.name" :email="c.email"></contact>
