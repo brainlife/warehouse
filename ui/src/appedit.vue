@@ -31,7 +31,7 @@
                 <el-input type="text" v-model="app.avatar" placeholder="URL of application avatar"/>
             </el-form-item>
             <el-form-item label="Projects">
-                <projectselecter 
+                <projectsselecter 
                     v-model="app.projects" 
                     :allownull="true" 
                     access="private"
@@ -273,13 +273,13 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import select2 from '@/components/select2'
-import projectselecter from '@/components/projectselecter'
+import projectsselecter from '@/components/projectsselecter'
 import trueorfalse from '@/components/trueorfalse'
 
 export default {
     components: { 
         sidemenu, editor, contactlist, 
-        pageheader, select2, projectselecter,
+        pageheader, select2, projectsselecter,
         trueorfalse
     },
     data () {

@@ -17,7 +17,7 @@
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
                     <time v-if="task.status == 'finished'">at {{new Date(task.finish_date).toLocaleString()}}</time>
-                    <time v-if="task.status == 'running'">since {{timeSinceStartDate(task.start_date)}} ago</time>
+                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :format="formatTime" :auto-update="60"></timeago></time>
                     <time v-if="task.status == 'requested'">at {{new Date(task.create_date).toLocaleString()}}</time>
                     <time v-if="task.status == 'failed'">at {{new Date(task.fail_date).toLocaleString()}}</time>
                     <time v-if="task.status == 'removed'">at {{new Date(task.remove_date).toLocaleString()}}</time>
@@ -57,6 +57,15 @@ import statusicon from '@/components/statusicon'
 import mute from '@/components/mute'
 import tags from '@/components/tags'
 import taskconfig from '@/components/taskconfig'
+import VueTimeago from 'vue-timeago'
+
+Vue.use(VueTimeago, {
+    name: 'timeago',
+    locale: 'en-US',
+    locales: {
+        'en-US': require('vue-timeago/locales/en-US.json')
+    }
+});
 
 export default {
     props: ['task'],
@@ -81,25 +90,8 @@ export default {
     },
 
     methods: {
-        timeSinceStartDate(startString) {
-            var timeRunning = new Date().getTime() - new Date(startString).getTime();
-            
-            var mill = timeRunning % 1000;
-            timeRunning = (timeRunning - mill) / 1000;
-            
-            var seconds = timeRunning % 60;
-            timeRunning = (timeRunning - seconds) / 60;
-            
-            var minutes = timeRunning % 60;
-            timeRunning = (timeRunning - minutes) / 60;
-            
-            var hours = timeRunning % 24;
-            timeRunning = (timeRunning - hours) / 24;
-            
-            if (timeRunning > 0) return `${timeRunning} days`;
-            else if (hours > 0) return `${hours} hours`;
-            else if (minutes > 0) return `${minutes} minutes`;
-            return `${seconds} seconds`;
+        formatTime(time) {
+            return new Date(time).toLocaleString();
         },
         
         rerun() {
