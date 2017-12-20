@@ -14,6 +14,8 @@ docs:
     children:
       - title: "User Guide"
         url: /user
+      - title: "Data Access Policies"
+        url: /access
 
   - title: Developer Guide
     children:
