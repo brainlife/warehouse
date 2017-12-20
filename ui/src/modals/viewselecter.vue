@@ -213,6 +213,12 @@ export default {
             if(JSON.stringify(sorted_names) == JSON.stringify(["neuro/dtiinit", "neuro/wmc"])) {
                 views.push(this.view_catalog["tractview"]);
             }
+            if(JSON.stringify(sorted_names) == JSON.stringify(["neuro/dwi/recon", "neuro/wmc"])) {
+                views.push(this.view_catalog["tractview"]);
+            }
+            if(JSON.stringify(sorted_names) == JSON.stringify(["neuro/wmc", "raw"])) {
+                views.push(this.view_catalog["tractview"]);
+            }
 
             return views;
         },

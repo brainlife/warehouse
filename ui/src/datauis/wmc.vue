@@ -55,6 +55,41 @@ export default {
                             //"&at="+Vue.config.jwt;
                     });
                     next_entry();
+                } else if(datatype.name == "neuro/dwi/recon") { //TODO - maybe we should define noddi output?
+                    //items to expect out of raw:noddi
+                    config.layers = [
+                        { name: "fa.nii.gz", filename: "fa.nii.gz"},
+                        { name: "dt.nii.gz", filename: "dt.nii.gz"},
+                        { name: "whitematter.nii.gz", filename: "whitematter.nii.gz"},
+                        { name: "brainmask.nii.gz", filename: "brainmask.nii.gz"},
+                        { name: "csd.nii.gz", filename: "csd.nii.gz"},
+                    ];
+
+                    //create url for each layer
+                    var path = this.task.instance_id+"/"+this.task._id+"/"+did;
+                    config.layers.forEach(layer=>{
+                        layer.url = Vue.config.wf_api+"/resource/download?"+
+                            "r="+this.task.resource_id+
+                            "&p="+encodeURIComponent(path+"/"+layer.filename);
+                    });
+                    next_entry();
+                } else if(datatype.name == "raw") { //TODO - maybe we should define noddi output?
+                    //items to expect out of raw:noddi
+                    config.layers = [
+                        { name: "FIT_ICVF_NEW", filename: "FIT_ICVF_NEW.nii.gz"},
+                        { name: "FIT_OD_NEW", filename: "FIT_OD_NEW.nii.gz"},
+                        { name: "FIT_ISOVF_NEW", filename: "FIT_ISOVF_NEW.nii.gz"},
+                        { name: "FIT_dir", filename: "FIT_dir.nii.gz"},
+                    ];
+
+                    //create url for each layer
+                    var path = this.task.instance_id+"/"+this.task._id+"/"+did;
+                    config.layers.forEach(layer=>{
+                        layer.url = Vue.config.wf_api+"/resource/download?"+
+                            "r="+this.task.resource_id+
+                            "&p="+encodeURIComponent(path+"/"+layer.filename);
+                    });
+                    next_entry();
                 } else {
                     console.log("I don't care about", datatype.name);
                     next_entry();
