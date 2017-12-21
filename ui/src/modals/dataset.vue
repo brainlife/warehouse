@@ -303,10 +303,12 @@ export default {
     },
     
     watch: {
+        /*
         '$route': function() {
             //this.dataset = null;
             this.close();
         },
+        */
 
         /*
         'dataset.tags': function() {
@@ -393,8 +395,9 @@ export default {
     
         close: function() {
             if(!this.dataset) return;
+            console.log("going back to dataset tab");
+            this.$router.replace("/project/"+this.dataset.project._id+"/dataset"); //+"/"+this.tabs[this.tab].id);
             this.dataset = null;
-            this.$root.$emit("dataset.close");
         },
 
         download: function() {
@@ -410,7 +413,7 @@ export default {
                 },
             }).then(res=>{
                 var instance = res.body;
-                console.log("submitting staging task");
+                console.log("submitting staging task", this.dataset);
                 this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
                     name: "Staged Datasets - "+this.dataset.datatype.name,
@@ -440,6 +443,8 @@ export default {
                     },
                 }).then(res=>{
                     //then jump! (TODO - should move to /project soon)
+                    this.close();
+                    console.log("jumping to processes page");
                     this.$router.push("/processes/"+instance._id);
                 });
             });
@@ -449,7 +454,6 @@ export default {
             if(confirm("Do you really want to remove this dataset?")) {
                 this.$http.delete('dataset/'+this.dataset._id)
                 .then(res=>{
-                    //this.dataset = null;
                     //this.$root.$emit("dataset.remove", this.dataset);
                     this.close();
                 });

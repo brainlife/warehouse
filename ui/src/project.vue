@@ -225,10 +225,12 @@ export default {
 
     mounted: function() {
 
+        /*
         this.$root.$on("dataset.close", ()=>{
             console.log("project.view receivved dataset.close");
             this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
         });
+        */
 
         this.$http.get('project', {params: {
             find: JSON.stringify({

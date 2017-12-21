@@ -259,8 +259,10 @@ export default {
                             if(old_dataset) break;
                         }
                         if(old_dataset) {
-                            //apply updates
-                            for(var k in dataset) old_dataset[k] = dataset[k];
+                            //apply updates (don't apply all changes.. it could blow up populated field)
+                            old_dataset.desc = dataset.desc;
+                            old_dataset.tags = dataset.tags;
+                            old_dataset.meta = dataset.meta;
                             this.$forceUpdate(); //need this because I am not inside vue hook?
                         } else {
                             this.reload();

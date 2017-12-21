@@ -1,5 +1,5 @@
 <template>
-<div class="dt" :title="datatype.desc">
+<div v-if="datatype" class="dt" :title="datatype.desc">
     <div class="dot" :style="{backgroundColor: color}">{{name}}</div
     ><div class="tags" v-for="tag in tags" :key="tag">
         <span v-if="tag[0] == '!'"><small class="text-danger">!NOT</small> {{tag.substring(1)}}</span>
