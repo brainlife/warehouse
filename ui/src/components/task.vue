@@ -16,11 +16,11 @@
             </div>
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
-                    <time v-if="task.status == 'finished'">at {{new Date(task.finish_date).toLocaleString()}}</time>
+                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :format="formatTime" :auto-update="60"></timeago></time>
                     <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :format="formatTime" :auto-update="60"></timeago></time>
-                    <time v-if="task.status == 'requested'">at {{new Date(task.create_date).toLocaleString()}}</time>
-                    <time v-if="task.status == 'failed'">at {{new Date(task.fail_date).toLocaleString()}}</time>
-                    <time v-if="task.status == 'removed'">at {{new Date(task.remove_date).toLocaleString()}}</time>
+                    <time v-if="task.status == 'requested'"><timeago :since="task.create_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <time v-if="task.status == 'failed'"><timeago :since="task.fail_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :format="formatTime" :auto-update="60"></timeago></time>
                 </small>
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
