@@ -6,7 +6,7 @@
         <div v-if="!datatypes" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="datatypes">
             <h2 class="group-title">Datatypes</h2>
-            <div v-for="datatype in datatypes" :key="datatype._id" style="margin-bottom: 10px;">
+            <div v-if="datatype_tags != null" v-for="datatype in datatypes" :key="datatype._id" style="margin-bottom: 10px;">
                 <datatype :datatype="datatype" :datatype_tags="datatype_tags[datatype._id]" />
             </div>
             
@@ -31,7 +31,7 @@ export default {
     data () {
         return {
             datatypes: null,
-            datatype_tags: {},
+            datatype_tags: null,
             count: 0, //total counts of datatypes (not paged)
 
             user: Vue.config.user, //see if user is logged in
@@ -61,10 +61,6 @@ export default {
             this.datatypes = res.body.datatypes;
             this.count = res.body.count;
             
-            res.body.datatypes.forEach(type=>{
-                this.datatype_tags[type._id] = [];
-            });
-            
             //load datatype_tags from all apps
             //from appedit
             // could return this promise or just have it all here...leaving it as is for now
@@ -72,6 +68,11 @@ export default {
                 select: 'inputs outputs',
             }}).then(res=>{
                 var v = this;
+                v.datatype_tags = {};
+                v.datatypes.forEach(type=>{
+                    v.datatype_tags[type._id] = [];
+                });
+                
                 function aggregate_tags(dataset) {
                     if(!dataset.datatype_tags) return;
                     dataset.datatype_tags.forEach(tag=>{
@@ -83,6 +84,7 @@ export default {
                     app.outputs.forEach(aggregate_tags);
                 });
                 
+                console.log(v.datatype_tags);
             });
         }).catch(console.error);
     },
