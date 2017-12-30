@@ -140,9 +140,13 @@ export default {
             //scroll to elem if it's outside the scrolling window
             Vue.nextTick(()=>{
                 var elem = document.getElementById(selected_id);
-                var area = document.getElementById("process-list");
-                if(area.clientHeight < elem.offsetTop) {
-                    area.scrollTop = elem.offsetTop - area.clientHeight/2;
+                var processlist = document.getElementById("process-list");
+                if(!processlist) {
+                    console.log("no processlist.. navigated away?");
+                    return;
+                }
+                if(processlist.clientHeight < elem.offsetTop) {
+                    processlist.scrollTop = elem.offsetTop - processlist.clientHeight/2;
                 }
             });
 

@@ -225,10 +225,12 @@ export default {
 
     mounted: function() {
 
+        /*
         this.$root.$on("dataset.close", ()=>{
             console.log("project.view receivved dataset.close");
             this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
         });
+        */
 
         this.$http.get('project', {params: {
             find: JSON.stringify({
@@ -416,17 +418,6 @@ margin-bottom: 20px;
 padding: 0;
 border-bottom: 1px solid #ccc;
 z-index: 1;
-}
-
-.slide-fade-enter-active {
-  transition: all .3s ease;
-}
-.slide-fade-leave-active {
-  transition: none;
-}
-.slide-fade-enter, .slide-fade-leave-to {
-  transform: translateX(10px);
-  opacity: 0;
 }
 .pub-removed {
 background-color: #aaa;

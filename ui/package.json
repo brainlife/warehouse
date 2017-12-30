@@ -50,7 +50,8 @@
     "vue-template-compiler": "^2.5.3",
     "vue2-ace": "^1.0.6",
     "vue2-animate": "^1.0.4",
-    "vue2-filters": "^0.2.2"
+    "vue2-filters": "^0.2.2",
+    "vue-timeago": "^3.4.2"
   },
   "devDependencies": {
     "superagent": "^3.8.1",
