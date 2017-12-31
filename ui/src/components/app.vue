@@ -17,13 +17,13 @@
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
                     {{app_.name}}</h4>
-                <h5 class="github">{{app_.github}} <!--<b v-if="app_.github_branch">{{app_.github_branch}}</b>--></h5>
+                <h5 class="github">{{app_.github}}</h5>
                 <div class="datatypes" v-if="!compact">
-                    <div class="datatype" v-for="input in app_.inputs" key="input.id">
+                    <div class="datatype" v-for="input in app_.inputs" :key="input.id">
                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                     </div>
                     <icon scale="0.7" name="arrow-right"/>
-                    <div class="datatype" v-for="output in app_.outputs" key="outputs.id">
+                    <div class="datatype" v-for="output in app_.outputs" :key="output.id">
                         <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
             <div class="desc" :style="{height: descheight}">{{app_.desc_override||app_.desc||'no description..'}}</div>
             <slot/>
             <div class="devs">
-                <contact v-for="c in app_.contributors" key="c._id" :fullname="c.name" :email="c.email"></contact>
+                <contact v-for="c in app_.contributors" :key="c._id" :fullname="c.name" :email="c.email"></contact>
             </div>
         </div>
     </div>
@@ -76,6 +76,7 @@ export default {
         click: function() {
             if(this.clickable) {
                 this.$router.push('/app/'+this.app_._id);
+                this.$emit("open", this.app_._id);
             }
         },
     },

@@ -7,10 +7,10 @@
     </p>
     <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
     <div v-if="files">
-        <el-button-group :style="{marginBottom: '5px', marginLeft: offset, opacity: 0.7}">
-            <el-button size="mini" @click="download()" icon="document">Download</el-button>
-            <el-button size="mini" @click="load()"><icon scale="0.6" name="refresh"></icon> Refresh</el-button>
-        </el-button-group>
+        <div :style="{marginLeft: offset}">
+            <div class="button" @click="download()" title="Download"><icon name="download"/></div>
+            <div class="button" @click="load()" title="Refresh"><icon name="refresh"/></div>
+        </div>
 
         <p v-if="files.length == 0" class="text-muted" :style="{marginLeft: offset}">Empty Directory</p>
 
@@ -51,7 +51,7 @@ export default {
     props: {
         task: { type: Object },
         path: { type: String },
-        depth: { type: Number, default: 0}
+        depth: { type: Number, default: 1}
     },
     components: { mute },
 

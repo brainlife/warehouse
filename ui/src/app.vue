@@ -53,8 +53,8 @@
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="c in app.admins" key="c._id">
-                                        <contact :id="c"></contact>
+                                    <li v-for="c in app.admins" :key="c._id">
+                                        <contact :id="c"/>
                                     </li>
                                 </ul>
                             </b-col>
@@ -65,8 +65,8 @@
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="dev in app.contributors" key="c._id">
-                                        <contact :fullname="dev.name" :email="dev.email"></contact>
+                                    <li v-for="dev in app.contributors" :key="dev._id">
+                                        <contact :fullname="dev.name" :email="dev.email"/>
                                     </li>
                                 </ul>
                             </b-col>
@@ -77,7 +77,7 @@
                             </b-col>
                             <b-col>
                                 <div class="item" v-for="input in app.inputs">
-                                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
+                                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags"/>
                                 </div>
                                 <br>
                                 <p class="text-muted">This app uses above input datasets</p>

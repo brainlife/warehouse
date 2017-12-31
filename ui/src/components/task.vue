@@ -5,14 +5,17 @@
     </slot>
 
     <!--status indicator-->
-    <el-card :class="task.status" style="clear: both;" body-style="padding: 8px;">
+    <b-card :class="task.status" style="clear: both; border: none;">
         <statusicon :status="task.status" scale="1.5" style="float: left; padding: 2px 8px;" @click.native="poke"/>
         <div style="padding-left: 45px;">
             <div style="float: right;">
-                <b-button size="sm" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun()">
-                    <icon name="repeat"/></b-button>
-                <b-button size="sm" v-if="task.status == 'requested' || task.status == 'running'" @click="stop()" title="Stop Task"><icon name="stop"/></b-button>
-                <b-button size="sm" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" title="Remove Task"><icon name="trash"/></b-button>
+                <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun()">
+                    <icon name="repeat"/>
+                </div>
+                <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop()" title="Stop Task"><icon name="stop"/>
+                </div>
+                <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" title="Remove Task"><icon name="trash"/>
+                </div>
             </div>
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
@@ -25,27 +28,39 @@
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
         </div>
-    </el-card>
+    </b-card>
 
-    <!--
-    <taskconfig style="margin: 10px 20px;" :task="task"/>
-    -->
-
-    <el-collapse v-model="activeSections">
-
-        <el-collapse-item title="Configuration" name="config" class="config-area">
+    <div @click="toggle('config')" class="toggler"><icon name="caret-right" class="caret"/> Configuration</div>
+    <transition name="fadeHeight">
+        <div v-if="activeSections.config">
             <taskconfig :task="task"/>
-            <!--<pre v-highlightjs style="margin-bottom: 0px"><code class="json hljs" v-if="!show_masked_config">{{task.config|mask}}</code></pre>-->
-        </el-collapse-item>
-        <slot name="input"></slot>
-        <slot name="output"></slot>
+        </div>
+    </transition>
 
-        <el-collapse-item title="Raw Output" name="rawoutput" v-if="task.status != 'removed'">
-            <filebrowser v-if="task.resource_id && ~activeSections.indexOf('rawoutput')" :task="task"></filebrowser>
-            <el-alert v-if="!task.resource_id" title="Not yet submitted to computing resource" type="warning"></el-alert>
-        </el-collapse-item>
+    <div @click="toggle('input')" class="toggler"><icon name="caret-right" class="caret"/> Input</div>
+    <transition name="fadeHeight">
+        <div v-if="activeSections.input" class="margin10">
+            <slot name="input"></slot>
+        </div>
+    </transition>
 
-    </el-collapse>
+    <div @click="toggle('output')" class="toggler"><icon name="caret-right" class="caret"/> Output</div>
+    <transition name="fadeHeight">
+        <div v-if="activeSections.output" class="margin10">
+            <slot name="output"></slot>
+        </div>
+    </transition>
+
+    <div v-if="task.status != 'removed'">
+        <div @click="toggle('rawoutput')" class="toggler"><icon name="caret-right" class="caret"/> Raw Output</div>
+        <transition name="fadeHeight">
+            <div v-if="activeSections.rawoutput">
+                <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
+                <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
+            </div>
+        </transition>
+    </div>
+
 </div>
 </template>
 
@@ -73,7 +88,10 @@ export default {
     name: "contact",
     data () {
         return {
-            activeSections: ['output', 'input'],
+            activeSections: {
+                output: true, 
+                input: true,
+            },
             show_masked_config: false,
         }
     },
@@ -90,10 +108,15 @@ export default {
     },
 
     methods: {
+        toggle(section) {
+            if(this.activeSections[section] === undefined) {
+                Vue.set(this.activeSections, section, true);
+            } else this.activeSections[section] = !this.activeSections[section];
+        },
+
         formatTime(time) {
             return new Date(time).toLocaleString();
         },
-        
         rerun() {
             this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.task._id)
             .then(res=>{
@@ -137,26 +160,32 @@ export default {
 </script>
 
 <style scoped>
-.el-card.finished {
+.card-body {
+padding: 8px;
+}
+.card.finished {
 color: white;
 background-color: green;
 }
-.el-card.failed {
+.card.failed {
 color: white;
 background-color: #c00;
 }
-.el-card.running {
+.card.running {
 color: white;
 background-color: #2693ff;
 }
-.el-card.requested {
+.card.requested {
 color: white;
 background-color: #50bfff;
 }
-.el-card.removed,
-.el-card.stopped {
+.card.removed,
+.card.stopped {
 color: white;
 background-color: gray;
+}
+.card .button {
+color: white;
 }
 time {
 color: white;
@@ -172,21 +201,30 @@ font-size: 15px;
 font-weight: bold;
 margin-bottom: 2px;
 }
+.toggler {
+padding: 10px;
+color: #666;
+border-top: 1px solid #eee;
+}
+.toggler:hover {
+background-color: #ddd;
+cursor: pointer;
+}
+.toggler .caret {
+position: relative;
+top: 2px;
+margin-right: 5px;
+}
 
-</style>
-
-<style>
-.el-card .btn-secondary {
-    opacity: 0.8;
-    background-color: transparent;
-    border: none;
+.fadeHeight-enter-active,
+.fadeHeight-leave-active {
+transition: all 0.2s;
+max-height: 230px;
 }
-.el-card .btn-secondary:hover {
-    opacity: 1;
+.fadeHeight-enter,
+.fadeHeight-leave-to
+{
+opacity: 0;
+max-height: 0px;
 }
-/*
-.config-area .el-collapse-item__content {
-    padding: 0px;
-}
-*/
 </style>

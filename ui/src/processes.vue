@@ -50,13 +50,7 @@
             <div v-if="!selected">
                 <h3 class="text-muted" style="padding-top: 30px; padding-left: 30px;">Please select or create a new process</h3>
             </div>
-            <div v-else>
-                <!--
-                <simpleprocess @view="view" v-if="selected && selected.config.type == 'simple'" :instance="selected"></simpleprocess>
-                <process @view="view" v-if="selected && selected.config.type == 'v1'" :instance="selected"></process>
-                -->
-                <process2 v-if="selected && selected.config.type == 'v2'" :instance="selected"></process2>
-            </div>
+            <process2 v-if="selected && selected.config.type == 'v2'" :instance="selected"></process2>
         </div>
     </div>
 </div>
@@ -259,13 +253,12 @@ overflow: hidden;
 transition: left 0.5s;
 }
 .page-content {
-position: fixed;
 left: 390px;
 right: 300px;
 top: 110px;
 bottom: 0px;
-overflow: auto;
 transition: left 0.5s;
+overflow-x: hidden;
 }
 .process-list-header {
 padding: 5px 10px;
@@ -408,22 +401,4 @@ border: none;
 background-color: white;
 }
 </style>
-<style>
-.el-card .btn-secondary {
-    opacity: 0.8;
-    background-color: transparent;
-    border: none;
-}
-.el-card .btn-secondary:hover {
-    opacity: 1;
-}
-</style><style>
-.el-card .btn-secondary {
-    opacity: 0.8;
-    background-color: transparent;
-    border: none;
-}
-.el-card .btn-secondary:hover {
-    opacity: 1;
-}
-</style>
+

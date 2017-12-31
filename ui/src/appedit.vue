@@ -11,9 +11,6 @@
             <b-tab title="Details"/>
             <b-tab title="Configuration"/>
             <b-tab title="Input / Output"/>
-            <!--citation can be stored in README..
-            <b-tab title="Citation / Reference"/>
-            -->
         </b-tabs>
     </div>
 
@@ -28,17 +25,6 @@
                 <b-form-group horizontal label="Description Override">
                     <b-form-textarea v-model="app.desc_override" placeholder="(Leave empty to use github repo description)" :rows="3" :max-rows="6"></b-form-textarea>
                 </b-form-group>
-                <!--
-                <b-form-group horizontal label="Description">
-                    <b-form-textarea :rows="5" v-model="app.desc" placeholder="Enter description for this application"/>
-                    <br>
-                </b-form-group>
-                <b-form-group horizontal label="Classification">
-                    <select2 :options="alltags" v-model="app.tags" :multiple="true" :tags="true"></select2>
-                    <p class="text-muted">Used to group similar application</p>
-                    <b-alert show variant="danger">Description/name/classifications will be loaded from source github repository soon. Please update your repo description / name / topics as well as these fields.</b-alert>
-                </b-form-group>
-                -->
                 <b-form-group horizontal label="Admins">
                     <contactlist v-model="app.admins"></contactlist>
                     <p class="text-muted">Users who can update this application registration</p>
@@ -63,19 +49,6 @@
                         <b-form-input type="text" v-model="app.github_branch" placeholder="master"/>
                     </b-input-group>
                 </b-form-group>
-
-                <!--
-                <b-form-group horizontal label="Citation (bibtex)">
-                    <b-form-textarea v-model="app.citation" :rows="4" placeholder='@misc{app-name,
-           author = {Doe, J, and Smith, M."},
-           title = "Application Name",
-           year = "2017"
-           doi = {10.1.1/123.456}
-    }'/>
-                    <p class="text-muted">Please see <a href="http://www.bibtex.org/Format/">http://www.bibtex.org/Format/</a> for bibtex format</p>
-                </b-form-group>
-                -->
-
                 <br>
                 <b-form-group horizontal label="Max Retry">
                     <el-input type="text" v-model="app.retry" placeholder="0"/>
@@ -231,7 +204,10 @@
                                 </b-col>
                                 <b-col>
                                     <div class="text-muted">Datatype Tags <small>optional</small></div>
+                                    <tageditor v-if="input.datatype" v-model="input.datatype_tags"/>
+                                    <!--
                                     <select2 v-if="input.datatype" :options="(datatypes[input.datatype]||{_tags:[]})._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
+                                    -->
                                 </b-col>
                             </b-row>
                             <br><b>File Mapping</b><br>
@@ -272,12 +248,6 @@
                                 <icon name="trash"/>
                             </div>
                             <b-row>
-                                <!-- let's not expose input/output IDs anymore
-                                <b-col>
-                                    <div class="text-muted">ID</div>
-                                    <el-input v-model="output.id"></el-input>
-                                </b-col>
-                                -->
                                 <b-col>
                                     <div class="text-muted">Datatype</div>
                                     <el-select v-model="output.datatype" style="width: 100%">
@@ -286,8 +256,11 @@
                                 </b-col>
                                 <b-col>
                                     <div class="text-muted">Datatype Tags <small>optional</small></div>
+                                    <tageditor v-if="output.datatype" v-model="output.datatype_tags"/>
+                                    <!--
                                     <select2 v-if="output.datatype" :options="datatypes[output.datatype]._tags" 
                                         v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
+                                    -->
                                 </b-col>
                                 <b-col>
                                     <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
@@ -354,15 +327,15 @@ import 'brace/theme/chrome'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
-import select2 from '@/components/select2'
 import projectsselecter from '@/components/projectsselecter'
 import trueorfalse from '@/components/trueorfalse'
+import tageditor from '@/components/tageditor'
 
 export default {
     components: { 
         sidemenu, editor, contactlist, 
-        pageheader, select2, projectsselecter,
-        trueorfalse
+        pageheader, projectsselecter,
+        trueorfalse, tageditor,
     },
     data () {
         return {
@@ -591,10 +564,10 @@ position: fixed;
 top: 50px;
 left: 90px;
 right: 0px;
-height: 130px;
+height: 131px;
 z-index: 1;
-border-bottom: 1px solid #ccc;
 background-color: #666;
+border-bottom: 1px solid #ccc;
 }
 .main-section {
 position: fixed;
