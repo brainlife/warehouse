@@ -503,7 +503,6 @@ export default {
                 return;
             }
             
-            return;
             try {
                 this.app.outputs.forEach(output=>{
                     output.files = null;
