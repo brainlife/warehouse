@@ -498,6 +498,12 @@ export default {
 
         submit: function() {
             //parse output file mapping JSON
+            if (this.app.outputs.length == 0) {
+                this.$notify({text: "At least one output is required", type: 'error' });
+                return;
+            }
+            
+            return;
             try {
                 this.app.outputs.forEach(output=>{
                     output.files = null;
