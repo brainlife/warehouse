@@ -12,6 +12,9 @@ export default {
         $(this.$el).select2({
             tags: true,
             data: _options,
+            language: {
+                noResults: ()=>"(Please enter tag)",
+            },
         })
         .val(this.value)
         .trigger('change')

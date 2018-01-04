@@ -35,15 +35,14 @@
                         <p style="opacity: 0.8;">{{selected.desc}}</p>
                     </b-col>
                 </b-row>
-                <hr>
 
                 <b-row>
                     <b-col cols="2">
                         <b class="text-muted">Admins</b>
                     </b-col>
                     <b-col>
-                        <p>
-                            <contact v-for="c in selected.admins" key="c._id" :id="c"></contact>
+                        <p v-for="c in selected.admins" :key="c._id">
+                            <contact :id="c"/>
                         </p>
                         <p class="text-muted">Users who can update name / desc / project members</p>
                     </b-col>
@@ -54,8 +53,8 @@
                         <b class="text-muted">Members</b>
                     </b-col>
                     <b-col>
-                        <p>
-                            <contact v-for="c in selected.members" key="c._id" :id="c"></contact>
+                        <p v-for="c in selected.admins" :key="c._id">
+                            <contact :id="c"/>
                         </p>
                         <p class="text-muted">Users who can update datasets published on this project</p>
                     </b-col>

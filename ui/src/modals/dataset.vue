@@ -16,7 +16,6 @@
                 <div class="button" @click="process" v-if="dataset.storage" title="Process">
                     <icon name="paper-plane" scale="1.25"/> 
                 </div>
-
                 <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
                     <icon name="close" scale="1.5"/>
                 </div>
@@ -40,7 +39,6 @@
                             <b-col>
                                 <div v-if="dataset._canedit">
                                     <b-form-textarea v-model="dataset.desc" @input="update_dataset('desc')" :rows="2"/>
-                                    <!--<b-button v-if="dirty.desc" @click="update_dataset('desc')" variant="primary" style="float:right;">Update</b-button>-->
                                 </div>
                                 <div v-else>
                                     {{dataset.desc}}
@@ -53,10 +51,6 @@
                             <b-col cols="3"><b class="text-muted">User Tags</b></b-col>
                             <b-col cols="9">
                                 <div v-if="dataset._canedit && alltags">
-                                    <!--
-                                    <select2 :options="alltags" v-model="dataset.tags" :multiple="true" :tags="true" @input="dirty.tags = true"></select2>
-                                    <b-button v-if="dirty.tags" @click="update_dataset('tags')" variant="primary" style="float:right;">Update</b-button>
-                                    -->
                                     <tageditor v-model="dataset.tags" @input="update_dataset('tags')"/>
                                 </div>
                                 <div v-else>
@@ -79,7 +73,6 @@
                             <b-col cols="3"><b class="text-muted">App</b></b-col>
                             <b-col>
                                 <app slot="header" :appid="dataset.prov.app">
-                                    <hr>
                                     <taskconfig style="margin: 10px;" :taskid="dataset.prov.task_id"/>
                                 </app>
                                 <br>
@@ -91,7 +84,8 @@
                             <b-col>
                                 <p>
                                     <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                                        <icon name="cog" :spin="true"/> Storing ...
+                                        <icon name="cog" :spin="true"/> <b>Storing ... </b> 
+                                        Please wait before you download / process this dataset.
                                     </span> 
                                     <span v-if="dataset.status == 'stored'">
                                         <b>{{dataset.storage|uppercase}}</b> 
@@ -130,9 +124,6 @@
                                             </el-input>
                                         </el-col>
                                     </el-row>
-                                    <!--
-                                    <el-button v-if="dirty.meta" @click="update_dataset('meta')" type="primary" style="float:right;">Update</el-button>
-                                    -->
                                 </div>
                                 <metadata v-else :metadata="dataset.meta"></metadata>
                                 <br>
@@ -146,61 +137,6 @@
                             </b-col>
                         </b-row>
 
-
-                        <!--
-                        <tr>
-                            <th>Project</th>
-                            <td>
-                                <p class="text-muted">This dataset belongs to following project.</p>
-                                <el-card>
-                                    <project :project="dataset.project"></project>
-                                </el-card>
-                            </td>
-                        </tr>
-                        -->
-
-                        <!--
-                        <tr>
-                            <th>Citation</th>
-                            <td>
-                                <p>
-                                    <i>Hayashi, S. (2016). Brain-Life {{selfurl}}</i>
-                                    <el-button size="mini" type="primary" @click="bibtex()">BibTex</el-button>
-                                </p> 
-                            </td>
-                        </tr>
-                        -->
-
-                        <!-- I need to populate pub.project .. and I think it's a bit redundant since there is publications tab
-                        <b-row v-if="dataset.publications && dataset.publications.length">
-                            <b-col cols="3"><b class="text-muted">Publications</b></b-col>
-                            <b-col>
-                                <p class="text-muted">This dataset is published on following publications</p>
-                                <pubcard v-for="pub in dataset.publications" :key="pub._id" :pub="pub" compact="true" />
-                                <br>
-                            </b-col>
-                        </b-row>
-                        -->
-
-                        <!--
-                        <br>
-                        <div v-if="config.debug">
-                            <h2>Debug</h2>
-                            <b-btn block v-b-toggle.dataset>Datasets</b-btn>
-                            <b-collapse id="dataset" accorion="my-accordion">
-                                <b-card>
-                                    <pre v-highlightjs="JSON.stringify(dataset, null, 4)"><code class="json hljs"></code></pre>
-                                </b-card>
-                            </b-collapse>
-
-                            <b-btn block v-b-toggle.prov>prov</b-btn>
-                            <b-collapse id="prov" accorion="my-accordion">
-                                <b-card>
-                                    <pre v-highlightjs="JSON.stringify(prov, null, 4)"><code class="json hljs"></code></pre>
-                                </b-card>
-                            </b-collapse>
-                        </div>
-                        -->
                     </div>
                 </div><!--dataset-detail-->
             </b-tab>
@@ -218,8 +154,8 @@
                     <p v-if="apps.length > 0">The following apps can be submitted with this dataset.</p>
                     <b-alert show variant="info" v-if="apps.length == 0">There are currently no applications that use the datatype from this dataset.</b-alert>
                     <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
-                        <div style="margin-right: 10px; margin-bottom: 10px;">
-                            <app :app="app" descheight="80px"></app>
+                        <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)">
+                            <app :app="app" descheight="80px" :clickable="false"></app>
                         </div>
                     </div>
                 </div>
@@ -299,23 +235,9 @@ export default {
                 this.close();
             }
         });
-
     },
     
     watch: {
-        /*
-        '$route': function() {
-            //this.dataset = null;
-            this.close();
-        },
-        */
-
-        /*
-        'dataset.tags': function() {
-            console.log("dataset tags changed"); 
-        },
-        */
-
         tab_index: function() {
             console.log("tab_index changed", this.prov);
             if(this.tab_index == 1 && this.prov == null) {
@@ -396,7 +318,13 @@ export default {
         close: function() {
             if(!this.dataset) return;
             console.log("going back to dataset tab");
-            this.$router.replace("/project/"+this.dataset.project._id+"/dataset"); //+"/"+this.tabs[this.tab].id);
+            this.$router.replace("/project/"+this.dataset.project._id+"/dataset"); 
+            this.dataset = null;
+        },
+
+        openapp: function(app_id) {
+            if(!this.dataset) return;
+            this.$router.push('/app/'+app_id);
             this.dataset = null;
         },
 
@@ -554,6 +482,7 @@ export default {
                 subdir: "output",
             });
         },
+
 
         create_view_task: function(cb) {
             //first, query for the viewing task to see if it already exist

@@ -7,9 +7,9 @@
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
-        <div v-for="(apps, tag) in app_groups" key="tag" class="margin20">
+        <div v-for="(apps, tag) in app_groups" :key="tag" class="margin20">
             <h4 class="group-title">{{tag}}</h4> 
-            <div v-for="app in apps" key="app._id" class="app">
+            <div v-for="app in apps" :key="app._id" class="app">
                 <app :app="app" descheight="130px"></app>
             </div>
             <br clear="both">

@@ -47,7 +47,7 @@
             </div>
 
             <!--input-->
-            <el-collapse-item title="Input" name="input" slot="input" v-if="task.config._inputs">
+            <div slot="input" v-if="task.config._inputs">
                 <div v-for="input in task.config._inputs" :key="input.did" style="padding: 3px 5px;">
                     <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
@@ -71,10 +71,10 @@
                         <b-badge variant="danger">Removed</b-badge>
                     </div>
                 </div>
-            </el-collapse-item>
+            </div>
 
             <!--output-->
-            <el-collapse-item title="Output" name="output" slot="output" v-if="task.config._outputs.length > 0">
+            <div slot="output" v-if="task.config._outputs.length > 0">
                 <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 35px;">
                     <div class="float-right" style="position: relative; top: -4px;">
                         <div v-if="task.status == 'finished'">
@@ -97,11 +97,10 @@
                         <el-tag v-if="output.dataset_id" :title="projects[output.project].desc">From <b>{{projects[output.project].name}}</b></el-tag>
                     </span>
 
-                    <!--list of archived datasets-->
                     <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
                         <div class="archived-datasets-title">Archived Datasets</div>
                         <ul class="archived">
-                            <li v-for="dataset in findarchived(task, output)" _key="dataset._id" @click="go('/project/'+dataset.project+'/dataset/'+dataset._id)" class="clickable">
+                            <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="go('/project/'+dataset.project+'/dataset/'+dataset._id)" class="clickable">
                                 <icon name="cubes"></icon>
                                 <b>{{projects[dataset.project].name}}</b>
                                 <mute>{{dataset.desc}}</mute>
@@ -119,7 +118,7 @@
                 <div v-if="task.product">
                     <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
                 </div>
-            </el-collapse-item>
+            </div>
         </task>
 
         <div v-else class="task-summary" style="color: #666;">
@@ -134,7 +133,7 @@
     <div v-if="apps && apps.length == 0" style="margin: 20px;">
         <p class="text-muted">You have no application that you can submit with currently staged datasets.<br><br>Please try staging more datasets.</p>
     </div>
-    <el-card v-if="apps && apps.length > 0">
+    <b-card v-if="apps && apps.length > 0">
         <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">Run Application</h5>
 
         <!--newprocess form-->
@@ -218,7 +217,7 @@
                     <div v-if="!newtask.archive.enable">
                         <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive all output datasets when finished
                     </div>
-                    <el-card v-if="newtask.archive.enable">
+                    <b-card v-if="newtask.archive.enable">
                         <el-checkbox v-model="newtask.archive.enable"></el-checkbox> Archive all output datasets when finished
                         <p>
                             <b>Dataset Description</b>
@@ -228,16 +227,7 @@
                             <b>Project</b> <mute>where you'd like to store this datasets</mute>
                             <projectselecter v-model="newtask.archive.project"/>
                         </p>
-                        <!-- I need to let user specify tags for each output datsets, and tags are now set under config.output - not config.output.archive
-                        <p>
-                            <b>Tags</b> <mute>you'd like to add to this dataset to make it easier to search / organize</mute>
-                            <el-select v-model="newtask.archive.tags" style="width: 100%"
-                                multiple filterable allow-create placeholder="Optional">
-                                <el-option v-for="tag in newtask.archive.tags" key="tag" :label="tag" :value="tag"></el-option>
-                            </el-select>
-                        </p>
-                        -->
-                    </el-card>
+                    </b-card>
                 </b-col>
             </b-row>
             <br>
@@ -252,7 +242,7 @@
             <br>
         </div>
         </transition>
-    </el-card>
+    </b-card>
     <br>
     <br>
     <div v-if="config.debug">
@@ -325,15 +315,6 @@ export default {
                 deps: [],
                 valid: false, //form is ready to submit or not
             },
-
-
-            /*
-            vsel: {
-                datatype_name: null,
-                task: null,
-                subdir: null,
-            },
-            */
 
             //cache
             tasks: null,
@@ -871,10 +852,10 @@ background-color: #fff;
 }
 .task {
 box-shadow: 0px 2px 4px #999;
-margin: 0px;
 margin-bottom: 15px;
 transition: height 0.5s ease;
 }
+
 .task.v-enter, .task.v-leave {
 height: 0;
 }
@@ -926,7 +907,7 @@ color: #2693ff;
 .el-collapse-item__content {
 line-height: inherit;
 }
-.el-card {
+.card {
 border: none;
 }
 .task-id {
