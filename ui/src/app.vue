@@ -26,7 +26,9 @@
                         <div style="float: right;">
                             <span class="button button-danger" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
+                            <!--
                             <span class="button" @click="go('/app/'+app._id+'/submit')" title="Process"><icon name="paper-plane" scale="1.25"/></span>
+                            -->
                         </div>
                     </b-col>
                 </b-row>
@@ -35,18 +37,20 @@
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
                     <b-tab title="README"/>
-                    <b-tab title="Status"/>
+                    <b-tab title="Execute"/>
+                    <b-tab title="Test Status"/>
                     <!--<b-tab title="Citation / References"/>-->
                 </b-tabs>
             </b-container>
         </div><!--header-->
 
         <b-container>
-            <b-row>
-                <b-col :cols="9">
-                    <el-alert v-if="app.removed" title="This app has been removed" type="warning" show-icon :closable="false"></el-alert>
-                    <!-- detail -->
-                    <div v-if="tab_index == 0">
+            <el-alert v-if="app.removed" title="This app has been removed" type="warning" show-icon :closable="false"></el-alert>
+            <!-- detail -->
+            <div v-if="tab_index == 0">
+                <b-row>
+                    <b-col cols="9">
+                        <!--detail table-->
                         <b-row v-if="config.user">
                             <b-col cols="3">
                                 <b class="text-muted">Administrators</b>
@@ -167,12 +171,12 @@
                                 <i>Hayashi, S. (2017). Brain-Life {{selfurl}}</i>
                                 
                                 <pre>
-    @Misc{ bl.app.{{app._id}},
-    author =   {Hayashi, S.},
-    title =    { {{app.name}} },
-    howpublished = {\url{http://github.com/{{app.github}} } },
-    year = {2017}
-    }
+        @Misc{ bl.app.{{app._id}},
+        author =   {Hayashi, S.},
+        title =    { {{app.name}} },
+        howpublished = {\url{http://github.com/{{app.github}} } },
+        year = {2017}
+        }
                                 </pre> 
                             </b-col>
                         </b-row>
@@ -192,70 +196,75 @@
                                 <vue-disqus shortname="brain-life" :identifier="app._id"/>
                             </b-col>
                         </b-row>
+                    </b-col>
 
-                    </div>
-                    <div v-if="tab_index == 1">
-                        <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
-                    </div>
-                    <div v-if="tab_index == 2">
-                        <p class="text-muted">No test status available yet</p>
-                    </div>
-                    <!--
-                    <div v-if="tab_index == 3">
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Preferred Citation</b>
-                            </b-col>
-                            <b-col>
-                                {{app.citation}}
-                                <span class="text-muted" v-if="!app.citation">No preferred citation specified</span>
-                            </b-col>
-                        </b-row>
+                    <b-col>
+                        <b-card v-if="service_stats">
+                            <center>
+                                <p class="text-muted">Total Runs</p>
+                                <h5>{{service_stats.tasks}}</h5>
+                                <br>
+
+                                <p class="text-muted">Users Used By</p>
+                                <h5>{{service_stats.users}}</h5>
+                                <br>
+
+                                <p class="text-muted">Success Rate</p>
+                                <h5>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}%</h5>
+                            </center>
+                        </b-card>
                         <br>
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">References</b>
-                            </b-col>
-                            <b-col>
-                                <span class="text-muted" v-if="!app.references || app.references.length == 0">No reference</span>
-                                <ul>
-                                    <li v-for="(reference, idx) in app.references" :key="idx">{{reference.text}}</li>
-                                </ul>
-                            </b-col>
-                        </b-row>
-                        <br>
-                    </div>
-                    -->
-                </b-col>
 
-                <b-col cols="3">
-                    <b-card v-if="service_stats">
-                        <center>
-                            <p class="text-muted">Total Runs</p>
-                            <h5>{{service_stats.tasks}}</h5>
-                            <br>
+                        <b-card>
+                            <center>
+                                <span class="text-muted">Average User Rating</span>
+                                <br>
+                                <br>
+                                <el-rate v-model="app._rate" @change="ratechange()"></el-rate>
+                            </center>
+                        </b-card>
+                    </b-col>
+                </b-row>
 
-                            <p class="text-muted">Users Used By</p>
-                            <h5>{{service_stats.users}}</h5>
-                            <br>
+            </div>
+            <div v-if="tab_index == 1">
+                <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
+            </div>
+            <div v-if="tab_index == 2">
+                <appsubmit :id="app._id"/>
+            </div>
+            <div v-if="tab_index == 3">
+                <p class="text-muted">No test status available yet</p>
+            </div>
 
-                            <p class="text-muted">Success Rate</p>
-                            <h5>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}%</h5>
-                        </center>
-                    </b-card>
-                    <br>
+            <!--
+            <div v-if="tab_index == 3">
+                <b-row>
+                    <b-col cols="3">
+                        <b class="text-muted">Preferred Citation</b>
+                    </b-col>
+                    <b-col>
+                        {{app.citation}}
+                        <span class="text-muted" v-if="!app.citation">No preferred citation specified</span>
+                    </b-col>
+                </b-row>
+                <br>
+                <b-row>
+                    <b-col cols="3">
+                        <b class="text-muted">References</b>
+                    </b-col>
+                    <b-col>
+                        <span class="text-muted" v-if="!app.references || app.references.length == 0">No reference</span>
+                        <ul>
+                            <li v-for="(reference, idx) in app.references" :key="idx">{{reference.text}}</li>
+                        </ul>
+                    </b-col>
+                </b-row>
+                <br>
+            </div>
+            -->
 
-                    <b-card>
-                        <center>
-                            <span class="text-muted">Average User Rating</span>
-                            <br>
-                            <br>
-                            <el-rate v-model="app._rate" @change="ratechange()"></el-rate>
-                        </center>
-                    </b-card>
-                    <br>
-                </b-col>
-            </b-row>
+            <br>
         </b-container>
 
         <br>
@@ -282,6 +291,7 @@ import datatype from '@/components/datatype'
 import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
+import appsubmit from '@/components/appsubmit'
 
 import VueDisqus from 'vue-disqus/VueDisqus.vue'
 
@@ -290,6 +300,7 @@ export default {
         sidemenu, pageheader, contact, 
         project, tags, datatype, appavatar,
         VueMarkdown, statustag, VueDisqus,
+        appsubmit,
      },
 
     data () {

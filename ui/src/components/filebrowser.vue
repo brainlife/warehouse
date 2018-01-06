@@ -28,7 +28,7 @@
             <div class="content" v-if="file.open">
                 <filebrowser :task="task" :path="fullpath+'/'+file.filename" :depth="depth+1"></filebrowser>
             </div>
-            <div v-if="file.content" style="position: relative;">
+            <div v-if="file.content" :style="{marginLeft: offset}" style="margin-right: 20px">
                 <el-button-group v-if="file.content != '(empty)\n'" 
                     style="position: absolute; top: 0px; right: 0px; opacity: 0.7;">
                     <el-button size="mini" @click="download_file(file)" icon="document">Download</el-button>
