@@ -16,7 +16,7 @@
                                 <a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a>
                                 <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
                             </h6>
-                            <p style="opacity: 0.8">{{app.desc}}</p>
+                            <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
                         </div>
                         <p>
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
@@ -35,8 +35,8 @@
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
                     <b-tab title="README"/>
-                    <b-tab title="Publication"/>
                     <b-tab title="Status"/>
+                    <!--<b-tab title="Citation / References"/>-->
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -53,8 +53,8 @@
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="c in app.admins" key="c._id">
-                                        <contact :id="c"></contact>
+                                    <li v-for="c in app.admins" :key="c._id">
+                                        <contact :id="c"/>
                                     </li>
                                 </ul>
                             </b-col>
@@ -65,8 +65,8 @@
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="dev in app.contributors" key="c._id">
-                                        <contact :fullname="dev.name" :email="dev.email"></contact>
+                                    <li v-for="dev in app.contributors" :key="dev._id">
+                                        <contact :fullname="dev.name" :email="dev.email"/>
                                     </li>
                                 </ul>
                             </b-col>
@@ -77,7 +77,7 @@
                             </b-col>
                             <b-col>
                                 <div class="item" v-for="input in app.inputs">
-                                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags"></datatype>
+                                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags"/>
                                 </div>
                                 <br>
                                 <p class="text-muted">This app uses above input datasets</p>
@@ -198,11 +198,34 @@
                         <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
                     </div>
                     <div v-if="tab_index == 2">
-                        <p class="text-muted">No publication registered</p>
-                    </div>
-                    <div v-if="tab_index == 3">
                         <p class="text-muted">No test status available yet</p>
                     </div>
+                    <!--
+                    <div v-if="tab_index == 3">
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Preferred Citation</b>
+                            </b-col>
+                            <b-col>
+                                {{app.citation}}
+                                <span class="text-muted" v-if="!app.citation">No preferred citation specified</span>
+                            </b-col>
+                        </b-row>
+                        <br>
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">References</b>
+                            </b-col>
+                            <b-col>
+                                <span class="text-muted" v-if="!app.references || app.references.length == 0">No reference</span>
+                                <ul>
+                                    <li v-for="(reference, idx) in app.references" :key="idx">{{reference.text}}</li>
+                                </ul>
+                            </b-col>
+                        </b-row>
+                        <br>
+                    </div>
+                    -->
                 </b-col>
 
                 <b-col cols="3">

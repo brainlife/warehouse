@@ -13,6 +13,9 @@ cursor: pointer;
 .margin20 {
 margin: 20px;
 }
+.margin10 {
+margin: 10px;
+}
 .page-content {
 position: fixed;
 left: 90px;
@@ -104,6 +107,8 @@ color: white;
 .brainlife-tab .nav-tabs {
 padding-top: 10px;
 border: none;
+height: 50px;
+background-color: white;
 }
 
 .brainlife-tab .nav-item a {

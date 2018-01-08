@@ -92,7 +92,7 @@
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="contact in pub.authors" key="contact._id">
+                                    <li v-for="contact in pub.authors" :key="contact._id">
                                         <contact :fullname="contact.fullname" :email="contact.email"></contact>
                                     </li>
                                 </ul>
@@ -104,7 +104,7 @@
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="contact in pub.contributors" key="contact._id">
+                                    <li v-for="contact in pub.contributors" :key="contact._id">
                                         <contact :fullname="contact.fullname" :email="contact.email"></contact>
                                     </li>
                                 </ul>
@@ -141,7 +141,7 @@
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="funding in pub.fundings" key="funding._id" class="funder">
+                                    <li v-for="funding in pub.fundings" :key="funding._id" class="funder">
                                         <div v-if="funding.funder == 'NSF'" class="funder-label bg-success">NSF</div>
                                         <div v-else-if="funding.funder == 'NIH'" class="funder-label bg-info">NIH</div>
                                         <div v-else class="funder-label bg-warning">{{funding.funder}}</div>
@@ -247,7 +247,7 @@
                         <!--apps-->
                         <p class="text-muted">Following applications are used to generate published datasets.</p>
                         <b-row>
-                            <b-col cols="6" v-for="app in apps" key="app._id" style="margin-bottom: 10px;">
+                            <b-col cols="6" v-for="app in apps" :key="app._id" style="margin-bottom: 10px;">
                                 <app :app="app" descheight="130px" :compact="true"></app>
                             </b-col>
                         </b-row>
@@ -460,14 +460,14 @@ background-color: #eee;
 }
 .fadeHeight-enter-active,
 .fadeHeight-leave-active {
-  transition: all 0.2s;
-  max-height: 230px;
+transition: all 0.2s;
+max-height: 230px;
 }
 .fadeHeight-enter,
 .fadeHeight-leave-to
 {
-  opacity: 0;
-  max-height: 0px;
+opacity: 0;
+max-height: 0px;
 }
 </style>
 

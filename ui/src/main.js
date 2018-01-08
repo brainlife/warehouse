@@ -1,35 +1,37 @@
 
+//CSS
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
+
+//theme for element-ui
+import '../theme/index.css' 
+
+import 'select2/dist/css/select2.css'
+import 'highlight.js/styles/default.css'
+
+import './warehouse.css'
+
 //3rd parties
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
 
-//vue things
 import Vue from 'vue'
 
 import VueResource from 'vue-resource'
 import VueHighlightJS from 'vue-highlightjs'
 import Vue2Filters from 'vue2-filters'
 
-import '../theme/index.css'
-import ElementUI from 'element-ui'
+import Element from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
-import Notifications from 'vue-notification' //overridden element-ui ugly $notify..
+
+import Notifications from 'vue-notification' //override element-ui ugly $notify..
 import 'vue-awesome/icons'
 import Icon from 'vue-awesome/components/Icon.vue'
 import VueLazyload from 'vue-lazyload'
 import BootstrapVue from 'bootstrap-vue' //bootstrap will eventually replace ElementUI / locale
 
-import router from './router'
+import router from './router.js'
 import warehouse from './warehouse'
-
-//CSS
-import 'select2/dist/css/select2.css'
-import 'highlight.js/styles/default.css'
-
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
-
-import './warehouse.css'
 
 Vue.config.productionTip = false
 
@@ -37,7 +39,7 @@ Vue.component('icon', Icon)
 
 Vue.use(VueHighlightJS)
 Vue.use(VueResource)
-Vue.use(ElementUI, {locale})
+Vue.use(Element, {locale})
 Vue.use(Notifications);
 Vue.use(VueLazyload)
 Vue.use(BootstrapVue);

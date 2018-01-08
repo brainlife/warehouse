@@ -24,13 +24,13 @@
         <tr>
             <th>Admins</th>
             <td>
-                <contact v-for="c in datatype.admins" key="c._id" :id="c"></contact>
+                <contact v-for="c in datatype.admins" :key="c._id" :id="c"></contact>
             </td>
         </tr>
         <tr>
             <th>Datatype Members</th>
             <td>
-                <contact v-for="c in datatype.members" key="c._id" :id="c"></contact>
+                <contact v-for="c in datatype.members" :key="c._id" :id="c"></contact>
             </td>
         </tr>
         <tr>

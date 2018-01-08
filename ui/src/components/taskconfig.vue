@@ -1,14 +1,15 @@
 <template>
 <div v-if="taskconfig">
     <span class="text-muted" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
-    <b-row v-for="(v,k) in taskconfig" :key="k">
-        <b-col :cols="4"><span class="text-muted">{{k}}</span></b-col>
-        <b-col v-if="typeof v == 'object'">
-            <pre v-highlightjs style="margin-bottom: 0px"><code class="json hljs">{{v}}</code></pre>
-        </b-col>
-        <b-col v-else><b>{{v}}</b></b-col>
-    </b-row>
-    <!--<pre v-if="config.debug">{{task.config}}</pre>-->
+    <table class="table table-sm" style="margin-bottom: 0px; font-size: 85%;">
+    <tr v-for="(v,k) in taskconfig" :key="k">
+        <th width="30%" style="opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
+        <td v-if="typeof v == 'object'">
+            <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
+        </td>
+        <td v-else>{{v}}</td>
+    </tr>
+    </table>
 </div>
 </template>
 

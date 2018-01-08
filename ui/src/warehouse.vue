@@ -1,6 +1,6 @@
 <template>
 <div id="warehouse">
-    <router-view></router-view>
+    <router-view/>
     <notifications position="bottom right"/>
 
     <!-- dialogs that can be called from any view -->
@@ -8,11 +8,11 @@
     <viewselecter/>
     <dataset/>
     <uploader/>
-
 </div>
 </template>
 
 <script>
+
 import datasetselecter from '@/modals/datasetselecter'
 import viewselecter from '@/modals/viewselecter'
 import dataset from '@/modals/dataset'
@@ -23,6 +23,7 @@ export default {
         viewselecter, datasetselecter, dataset, uploader,
     },
 }
+
 </script>
 
 <style scoped>
@@ -30,6 +31,8 @@ export default {
 height: 100%;
 background-color: #f9f9f9;
 color: #444;
-font-size: 14px; /*default is 16px for bootstrap*/
+font-size: 14px; 
 }
 </style>
+
+

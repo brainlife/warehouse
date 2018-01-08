@@ -23,7 +23,7 @@
                     <el-select v-model="dataset.tags" 
                         style="width: 100%"
                         multiple filterable allow-create placeholder="Enter tags">
-                        <el-option v-for="tag in dataset.tags" key="tag" :label="tag" :value="tag"></el-option>
+                        <el-option v-for="tag in dataset.tags" :key="tag" :label="tag" :value="tag"></el-option>
                     </el-select>
                     <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
                 </el-form-item>
