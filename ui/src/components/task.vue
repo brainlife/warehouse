@@ -54,7 +54,7 @@
     <div v-if="task.status != 'removed'">
         <div @click="toggle('rawoutput')" class="toggler"><icon name="caret-right" class="caret"/> Raw Output</div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.rawoutput">
+            <div v-if="activeSections.rawoutput" style="padding-bottom: 8px">
                 <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
                 <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
             </div>

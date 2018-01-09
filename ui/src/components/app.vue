@@ -19,11 +19,11 @@
                     {{app_.name}}</h4>
                 <h5 class="github">{{app_.github}}</h5>
                 <div class="datatypes" v-if="!compact">
-                    <div class="datatype" v-for="input in app_.inputs" :key="input.id">
+                    <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id">
                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                     </div>
                     <icon scale="0.7" name="arrow-right"/>
-                    <div class="datatype" v-for="output in app_.outputs" :key="output.id">
+                    <div class="datatype" v-for="output in app_.outputs" :key="'output.'+output.id">
                         <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                     </div>
                 </div>
