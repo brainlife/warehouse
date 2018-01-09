@@ -249,6 +249,7 @@ exports.load_github_detail = function(service_name, cb) {
     });
 }
 
+//https://support.datacite.org/v1.1/docs/mds-2
 //create new doi (need to set url once it's minted)
 exports.doi_post_metadata = function(pub, cb) {
     //get next doi id - use number of publication record with doi
@@ -288,6 +289,7 @@ exports.doi_post_metadata = function(pub, cb) {
                 user: config.datacite.username,
                 pass: config.datacite.password,
             },
+            headers: { 'content-type': 'application/xml' },
             body: metadata,
         }, (err, res, body)=>{
             if(err) return cb(err); 
@@ -310,10 +312,11 @@ exports.doi_put_url = function(doi, url, cb) {
     console.log("registering doi url", url);
     request.put({
         url: config.datacite.api+"/doi/"+doi,
-            auth: {
-                user: config.datacite.username,
-                pass: config.datacite.password,
-            },
+        auth: {
+            user: config.datacite.username,
+            pass: config.datacite.password,
+        },
+        headers: { 'content-type': 'text/plain' },
         body: "doi="+doi+"\nurl="+url,
     }, (err, res, body)=>{
         if(err) return cb(err); 
@@ -331,7 +334,7 @@ function cache_contact() {
         headers: { authorization: "Bearer "+config.auth.jwt },
     }, (err, res, body)=>{
         if(err) return logger.error(err);
-        if(res.statusCode != 201) logger.error("couldn't obtain user jwt code:"+res.statusCode);
+        if(res.statusCode != 200) logger.error("couldn't obtain user jwt code:"+res.statusCode);
         body.profiles.forEach(profile=>{
             cached_contacts[profile.id.toString()] = profile;
         });

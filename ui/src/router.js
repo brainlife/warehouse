@@ -62,6 +62,7 @@ export default new Router({
         {path: '/project/:id/:tab?/:subid?', component: project},
 
         {path: '/datatypes', component: datatypes},
+        {path: '/datatypes/:id', component: datatypes},
         {path: '/datatype/:id', component: datatype},
         {path: '/datatype/:id/edit', component: datatypeedit},
 

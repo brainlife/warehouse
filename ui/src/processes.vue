@@ -20,8 +20,13 @@
             <div class="process-list-header">
                 <div class="process-list-hider" @click="show_process_list = false;"><icon name="bars"/></div> Processes
             </div>
+            <div>
+                <b-tabs class="brainlife-tab-dark" v-model="process_filter_tab">
+                    <b-tab v-for="tabinfo in process_filter_tabs" :key="tabinfo.id" :title="tabinfo.label"/>
+                </b-tabs>
+            </div>
             <ul>
-                <li v-for="instance in instances" :id="instance._id" :key="instance._id" @click="click(instance)" :class="{selected: selected == instance}">
+                <li v-for="instance in instances" :id="instance._id" :key="instance._id" @click="click(instance)" :class="{selected: selected == instance}" v-if="process_filter_tabs[process_filter_tab].id == 'all' || process_filter_tabs[process_filter_tab].id == instance.status">
                     <div style="float: left; margin-top: 3px;">
                         <span class="status status-running" v-if="instance.status == 'running'"><icon name="cog" :spin="true"/></span>
                         <span class="status status-requested" v-else-if="instance.status == 'requested'"><icon name="hourglass-o"/></span>
@@ -83,6 +88,13 @@ export default {
             apps: null, //keyed by _id
             ws: null, //websocket
             show_process_list: false,
+            
+            process_filter_tab: 0,
+            process_filter_tabs: [ 
+                {id: "all", label: "All"},
+                {id: "running", label: "Running"},
+                {id: "finished", label: "Finished"},
+            ],
 
             config: Vue.config,
         }
@@ -208,7 +220,7 @@ export default {
                     this.$notify({type: "success", text: "Removed the process"});
                 });
             }
-        },
+        }
         /*
         view: function(opt) {
             let view = opt.view.split('/').join('.'); //replace all / with .
@@ -228,7 +240,7 @@ export default {
             console.log("route changed");
             var selected_id = this.$route.params.id;
             this.selected = this.instances.find(i=>i._id == selected_id);
-        },
+        }
     }
 }
 
