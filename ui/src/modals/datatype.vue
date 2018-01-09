@@ -20,8 +20,8 @@
                     <b-alert show variant="info" v-if="apps.length == 0">There are currently no applications that use this datatype.</b-alert>
                     <p v-else>The following apps require this datatype as an input.</p>
                     <div v-for="app in apps" :key="app._id" style="display:inline-block; width: 33%;">
-                        <div style="margin-left: 5px; margin-right: 5px; margin-bottom: 10px;">
-                            <app :app="app" descheight="80px"></app>
+                        <div style="margin-left: 5px; margin-right: 5px; margin-bottom: 10px; cursor: pointer;" @click="openapp(app._id)">
+                            <app :app="app" descheight="80px" :clickable="false"></app>
                         </div>
                     </div>
                 </div>
@@ -95,6 +95,12 @@ export default {
         close: function() {
             if(!this.datatype) return;
             this.$router.replace("/datatypes");
+            this.datatype = null;
+        },
+        
+        openapp: function(app_id) {
+            if(!this.datatype) return;
+            this.$router.push('/app/'+app_id);
             this.datatype = null;
         },
     }
