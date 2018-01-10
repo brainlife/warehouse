@@ -7,6 +7,7 @@
     <datasetselecter/>
     <viewselecter/>
     <dataset/>
+    <datatype/>
     <uploader/>
 </div>
 </template>
@@ -16,11 +17,12 @@
 import datasetselecter from '@/modals/datasetselecter'
 import viewselecter from '@/modals/viewselecter'
 import dataset from '@/modals/dataset'
+import datatype from '@/modals/datatype'
 import uploader from '@/modals/uploader'
 
 export default {
     components: {
-        viewselecter, datasetselecter, dataset, uploader,
+        viewselecter, datasetselecter, dataset, datatype, uploader,
     },
 }
 

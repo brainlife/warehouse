@@ -22,13 +22,13 @@
                         <icon name="folder" v-if="file.directory && !file.open" style="color: #2693ff"></icon>
                     </span>
                     {{file.filename}}
-                    <span style="float: right; width: 150px;">{{new Date(file.attrs.mtime*1000).toLocaleString()}}</span>
+                    <span style="float: right; width: 150px;"><timeago :since="file.attrs.mtime*1000" :format="formatTime" :auto-update="60"></timeago><!--{{new Date(file.attrs.mtime*1000).toLocaleString()}}--></span>
                     <mute style="float: right; margin-right: 20px;">{{file.attrs.size|filesize}}</mute>
             </div>
             <div class="content" v-if="file.open">
                 <filebrowser :task="task" :path="fullpath+'/'+file.filename" :depth="depth+1"></filebrowser>
             </div>
-            <div v-if="file.content" style="position: relative;">
+            <div v-if="file.content" :style="{marginLeft: offset}" style="margin-right: 20px">
                 <el-button-group v-if="file.content != '(empty)\n'" 
                     style="position: absolute; top: 0px; right: 0px; opacity: 0.7;">
                     <el-button size="mini" @click="download_file(file)" icon="document">Download</el-button>
@@ -45,6 +45,15 @@
 import Vue from 'vue'
 
 import mute from '@/components/mute'
+import VueTimeago from 'vue-timeago'
+
+Vue.use(VueTimeago, {
+    name: 'timeago',
+    locale: 'en-US',
+    locales: {
+        'en-US': require('vue-timeago/locales/en-US.json')
+    }
+});
 
 export default {
     name: "filebrowser", //needed to recurse itself

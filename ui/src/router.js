@@ -16,7 +16,6 @@ import processes from '@/processes'
 import apps from '@/apps'
 import app from '@/app'
 import appedit from '@/appedit'
-import appsubmit from '@/appsubmit'
 
 import projects from '@/projects'
 import project from '@/project'
@@ -48,7 +47,7 @@ export default new Router({
         
         {path: '/apps', component: apps, meta: {public: true}},
         {path: '/app/:id', component: app, meta: {public: true}},
-        {path: '/app/:id/submit', component: appsubmit},
+        //{path: '/app/:id/submit', component: appsubmit},
         {path: '/app/:id/edit', component: appedit},
 
         {path: '/view/:instanceid/:taskid/:type/:subdir?', component: view, props: true},
@@ -63,6 +62,7 @@ export default new Router({
         {path: '/project/:id/:tab?/:subid?', component: project},
 
         {path: '/datatypes', component: datatypes},
+        {path: '/datatypes/:id', component: datatypes},
         {path: '/datatype/:id', component: datatype},
         {path: '/datatype/:id/edit', component: datatypeedit},
 
