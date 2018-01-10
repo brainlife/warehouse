@@ -1,11 +1,13 @@
 <template>
 <div>
     <pageheader/>
-    <sidemenu active="/dashboard"></sidemenu>
+    <sidemenu active="/admin"></sidemenu>
     <div class="ui pusher">
         <div class="page-content">
 		<div class="margin20">
             <b-alert show>todo</b-alert>
+            <h3>Running</h3>
+            <pre>{{running}}</pre>
         </div><!--magin20-->
         </div><!--page-content-->
     </div><!--off-sidemenu-->
@@ -21,9 +23,16 @@ export default {
     components: { sidemenu, pageheader },
     data () {
         return {
-            msg: 'Welcome to Your Vue.js App',
+            running: [],
             config: Vue.config,
         }
+    },
+    mounted() {
+        //load counts of apps currently running
+        this.$http.get(Vue.config.wf_api+'/task/running')
+        .then(res=>{
+            this.running = res.body;
+        });
     },
 }
 </script>

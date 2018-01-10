@@ -33,6 +33,8 @@ import missing from '@/missing'
 import pubs from '@/pubs'
 import pub from '@/pub'
 
+import admin from '@/admin'
+
 Vue.use(Router)
 
 export default new Router({
@@ -77,6 +79,8 @@ export default new Router({
         //deprecated paths
         {path: '/datasets/:id?', component: project},
         //{path: '/dataset/:id', component: dataset},
+
+        {path: '/admin', component: admin},
 
     ]
 })

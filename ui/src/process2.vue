@@ -846,12 +846,10 @@ margin: 0px;
 .task-header {
 margin: 0px;
 padding: 15px;
-border: 1px solid rgb(230, 230, 230);
-border-bottom: none;
 background-color: #fff;
 }
 .task {
-box-shadow: 0px 2px 4px #999;
+box-shadow: 0px 2px 4px #ccc;
 margin-bottom: 15px;
 transition: height 0.5s ease;
 }
@@ -923,6 +921,6 @@ color: black;
 padding: 5px 10px;
 background-color: white;
 margin-bottom: 4px;
-/*border: 1px solid rgb(230, 230, 230);*/
+box-shadow: 0px 2px 4px #ccc;
 }
 </style>
