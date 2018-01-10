@@ -34,8 +34,8 @@
         <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.config}"/> Configuration
     </div>
     <transition name="fadeHeight">
-        <div v-if="activeSections.config" class="margin10">
-            <taskconfig :task="task"/>
+        <div v-if="activeSections.config">
+            <taskconfig :task="task" style="padding: 10px; background-color: #f0f0f0;"/>
         </div>
     </transition>
 
@@ -44,7 +44,7 @@
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.input" class="margin10">
+            <div v-if="activeSections.input" style="padding: 10px; background-color: #f0f0f0;">
                 <slot name="input"></slot>
             </div>
         </transition>
@@ -54,7 +54,7 @@
         <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output
     </div>
     <transition name="fadeHeight">
-        <div v-if="activeSections.output" class="margin10">
+        <div v-if="activeSections.output" style="padding: 10px; background-color: #f0f0f0;">
             <slot name="output"></slot>
         </div>
     </transition>
@@ -64,7 +64,7 @@
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.rawoutput" style="padding-bottom: 8px">
+            <div v-if="activeSections.rawoutput" style="padding: 10px; background-color: #f0f0f0;">
                 <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
                 <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
             </div>
@@ -231,7 +231,7 @@ position: relative;
 top: 3px;
 margin-right: 5px;
 transition: transform 0.3s;
-opacity: 0.5;
+opacity: 0.3;
 }
 .toggler .caret-open {
 transform: rotate(90deg);

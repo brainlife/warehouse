@@ -75,8 +75,8 @@
 
             <!--output-->
             <div slot="output" v-if="task.config._outputs.length > 0">
-                <div v-for="output in task.config._outputs" :key="output.id" style="min-height: 35px;">
-                    <div class="float-right" style="position: relative; top: -4px;">
+                <div v-for="output in task.config._outputs" :key="output.id">
+                    <div class="float-right" style="position: relative; top: -5px;">
                         <div v-if="task.status == 'finished'">
                             <div class="button" v-b-modal.viewSelecter title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
                                 <icon name="eye"/>
@@ -92,7 +92,7 @@
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                         (d.{{output.did}})
                     </mute>
-                    <el-tag v-if="output.archive" type="primary">Auto Archive <icon name="arrow-right" scale="0.8"/> {{projects[output.archive.project].name}}</el-tag>
+                    <b-badge v-if="output.archive" variant="primary">Auto Archive: {{projects[output.archive.project].name}}</b-badge>
                     <span @click="go('/project/'+output.project+'/dataset/'+output.dataset_id)" class="clickable">
                         <el-tag v-if="output.dataset_id" :title="projects[output.project].desc">From <b>{{projects[output.project].name}}</b></el-tag>
                     </span>
@@ -133,8 +133,9 @@
     <div v-if="apps && apps.length == 0" style="margin: 20px;">
         <p class="text-muted">You have no application that you can submit with currently staged datasets.<br><br>Please try staging more datasets.</p>
     </div>
-    <b-card v-if="apps && apps.length > 0">
-        <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase; margin-bottom: 0px;">Run Application</h5>
+
+    <div v-if="apps && apps.length > 0" class="newtask-fakemodal">
+        <h5 id="newtaskdialog" slot="header" style="color: #bbb; text-transform: uppercase;">Run Application</h5>
 
         <!--newprocess form-->
         <transition name="fade">
@@ -242,7 +243,7 @@
             <br>
         </div>
         </transition>
-    </b-card>
+    </div>
     <br>
     <br>
     <div v-if="config.debug">
@@ -902,12 +903,6 @@ color: #c00;
 .sidebar .statusicon-running {
 color: #2693ff;
 }
-.el-collapse-item__content {
-line-height: inherit;
-}
-.card {
-border: none;
-}
 .task-id {
 cursor: pointer;
 color: gray;
@@ -922,5 +917,9 @@ padding: 5px 10px;
 background-color: white;
 margin-bottom: 4px;
 box-shadow: 0px 2px 4px #ccc;
+}
+.newtask-fakemodal {
+padding: 10px;
+background-color: white;
 }
 </style>
