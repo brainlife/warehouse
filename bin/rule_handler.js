@@ -138,10 +138,17 @@ function handle_rule(rule, cb) {
             });
         },
 
-        //enumerate all subjects under rule's project
+        //enumerate all subjects under rule's project (and all input_project_overrides)
         next=>{
+            let projects = [ rule.project._id ];
+            if(rule.input_project_override) {
+                for(var input_id in rule.input_project_override) {
+                    projects.push(rule.input_project_override[input_id]); 
+                }
+            }                
+
             db.Datasets.find({
-                project: rule.project._id,
+                project: { $in: projects }, 
                 removed: false,
             })
             .distinct("meta.subject", (err, _subjects)=>{
@@ -377,8 +384,8 @@ function handle_rule(rule, cb) {
                         if(task && task.status != 'removed'/* && task.instance_id == instance._id*/) {
                             logger.debug("found the task generated the input dataset");
 
-			    //find output from task
-			    let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
+                            //find output from task
+                            let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
                             deps.push(task._id); 
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
