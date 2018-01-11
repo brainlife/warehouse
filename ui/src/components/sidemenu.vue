@@ -42,6 +42,15 @@
             <icon name="cog" scale="2"></icon><br>Setting
         </li>
     </ul>
+
+    <!--admin items-->
+    <ul class="items" v-if="is_admin">
+        <li class="divider"></li>
+        <li @click="go('/admin')"
+            :class="{active: active == '/admin'}">
+            <icon name="wrench" scale="2"></icon><br>Admin
+        </li>
+    </ul>
 </div>
 </template>
 
@@ -59,6 +68,14 @@ export default {
 	props: { active: String },
 	mounted: function() {
 	},
+    computed: {
+        is_admin: function() {
+            if( Vue.config.user && 
+                Vue.config.user.scopes.warehouse && 
+                Vue.config.user.scopes.warehouse.indexOf('admin')) return true;
+            return false;
+        }
+    },
     methods: {
         setting: function() {
             window.open("/auth/#!/settings/account", "_blank");

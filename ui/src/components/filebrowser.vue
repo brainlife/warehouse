@@ -7,7 +7,7 @@
     </p>
     <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
     <div v-if="files">
-        <div :style="{marginLeft: offset}">
+        <div :style="{marginLeft: offset, opacity: 0.5}">
             <div class="button" @click="download()" title="Download"><icon name="download"/></div>
             <div class="button" @click="load()" title="Refresh"><icon name="refresh"/></div>
         </div>
@@ -22,18 +22,19 @@
                         <icon name="folder" v-if="file.directory && !file.open" style="color: #2693ff"></icon>
                     </span>
                     {{file.filename}}
-                    <span style="float: right; width: 150px;"><timeago :since="file.attrs.mtime*1000" :format="formatTime" :auto-update="60"></timeago><!--{{new Date(file.attrs.mtime*1000).toLocaleString()}}--></span>
+                    <span style="float: right; width: 150px;">
+                        <timeago :since="file.attrs.mtime*1000" :format="formatTime" :auto-update="60"></timeago>
+                    </span>
                     <mute style="float: right; margin-right: 20px;">{{file.attrs.size|filesize}}</mute>
             </div>
             <div class="content" v-if="file.open">
                 <filebrowser :task="task" :path="fullpath+'/'+file.filename" :depth="depth+1"></filebrowser>
             </div>
-            <div v-if="file.content" :style="{marginLeft: offset}" style="margin-right: 20px">
-                <el-button-group v-if="file.content != '(empty)\n'" 
-                    style="position: absolute; top: 0px; right: 0px; opacity: 0.7;">
-                    <el-button size="mini" @click="download_file(file)" icon="document">Download</el-button>
-                    <el-button size="mini" @click="refresh_file(file)"><icon scale="0.6" name="refresh"></icon> Refresh</el-button>
-                </el-button-group>
+            <div v-if="file.content" :style="{marginLeft: offset}" style="margin-right: 20px; position: relative;">
+                <div v-if="file.content != '(empty)\n'" style="position: absolute; top: 5px; right: 15px; opacity: 0.7;">
+                    <div class="button" @click="download_file(file)"><icon name="download"/></div>
+                    <div class="button" @click="refresh_file(file)"><icon name="refresh"/></div>
+                </div>
                 <pre v-highlightjs="file.content" class="file-content"><code :class="file.type+' hljs'"></code></pre>
             </div>
         </div>
@@ -92,6 +93,9 @@ export default {
     },
     
     methods: {
+        formatTime(time) {
+            return new Date(time).toLocaleString();
+        },
         get_download_url: function(file) {
             var p = this.fullpath;
             if(file) p+='/'+file.filename;

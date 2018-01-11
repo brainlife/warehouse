@@ -30,31 +30,41 @@
         </div>
     </b-card>
 
-    <div @click="toggle('config')" class="toggler"><icon name="caret-right" class="caret"/> Configuration</div>
+    <div @click="toggle('config')" class="toggler">
+        <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.config}"/> Configuration
+    </div>
     <transition name="fadeHeight">
         <div v-if="activeSections.config">
-            <taskconfig :task="task"/>
+            <taskconfig :task="task" style="padding: 10px; background-color: #f0f0f0;"/>
         </div>
     </transition>
 
-    <div @click="toggle('input')" class="toggler"><icon name="caret-right" class="caret"/> Input</div>
-    <transition name="fadeHeight">
-        <div v-if="activeSections.input" class="margin10">
-            <slot name="input"></slot>
+    <div v-if="has_input_slot">
+        <div @click="toggle('input')" class="toggler">
+            <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
         </div>
-    </transition>
+        <transition name="fadeHeight">
+            <div v-if="activeSections.input" style="padding: 10px; background-color: #f0f0f0;">
+                <slot name="input"></slot>
+            </div>
+        </transition>
+    </div>
 
-    <div @click="toggle('output')" class="toggler"><icon name="caret-right" class="caret"/> Output</div>
+    <div @click="toggle('output')" class="toggler">
+        <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output
+    </div>
     <transition name="fadeHeight">
-        <div v-if="activeSections.output" class="margin10">
+        <div v-if="activeSections.output" style="padding: 10px; background-color: #f0f0f0;">
             <slot name="output"></slot>
         </div>
     </transition>
 
     <div v-if="task.status != 'removed'">
-        <div @click="toggle('rawoutput')" class="toggler"><icon name="caret-right" class="caret"/> Raw Output</div>
+        <div @click="toggle('rawoutput')" class="toggler">
+            <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
+        </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.rawoutput" style="padding-bottom: 8px">
+            <div v-if="activeSections.rawoutput" style="padding: 10px; background-color: #f0f0f0;">
                 <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
                 <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
             </div>
@@ -93,6 +103,12 @@ export default {
                 input: true,
             },
             show_masked_config: false,
+        }
+    },
+
+    computed: {
+        has_input_slot() {
+            return !!this.$slots.input;
         }
     },
 
@@ -212,8 +228,13 @@ cursor: pointer;
 }
 .toggler .caret {
 position: relative;
-top: 2px;
+top: 3px;
 margin-right: 5px;
+transition: transform 0.3s;
+opacity: 0.3;
+}
+.toggler .caret-open {
+transform: rotate(90deg);
 }
 
 .fadeHeight-enter-active,
