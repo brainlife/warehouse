@@ -16,19 +16,19 @@
 
         <div v-for="file in files">
             <div class="fileitem" @click="click(file)">
-                    <span class="text-muted" :style="{marginLeft: offset}">
-                        <icon name="file-o" v-if="!file.directory"></icon>
-                        <icon name="folder-open" v-if="file.directory && file.open" style="color: #2693ff"></icon>
-                        <icon name="folder" v-if="file.directory && !file.open" style="color: #2693ff"></icon>
-                    </span>
-                    {{file.filename}}
-                    <span style="float: right; width: 150px;">
-                        <timeago :since="file.attrs.mtime*1000" :format="formatTime" :auto-update="60"></timeago>
-                    </span>
-                    <mute style="float: right; margin-right: 20px;">{{file.attrs.size|filesize}}</mute>
+                <span class="text-muted" :style="{marginLeft: offset}">
+                    <icon name="file-o" v-if="!file.directory"></icon>
+                    <icon name="folder-open" v-if="file.directory && file.open" style="color: #2693ff"></icon>
+                    <icon name="folder" v-if="file.directory && !file.open" style="color: #2693ff"></icon>
+                </span>
+                {{file.filename}}
+                <span style="float: right; width: 150px;">
+                    <timeago :since="file.attrs.mtime*1000" :format="formatTime" :auto-update="60"></timeago>
+                </span>
+                <mute style="float: right; margin-right: 20px;">{{file.attrs.size|filesize}}</mute>
             </div>
             <div class="content" v-if="file.open">
-                <filebrowser :task="task" :path="fullpath+'/'+file.filename" :depth="depth+1"></filebrowser>
+                <filebrowser :task="task" :path="subpath(file)" :depth="depth+1"></filebrowser>
             </div>
             <div v-if="file.content" :style="{marginLeft: offset}" style="margin-right: 20px; position: relative;">
                 <div v-if="file.content != '(empty)\n'" style="position: absolute; top: 5px; right: 15px; opacity: 0.7;">
@@ -67,7 +67,7 @@ export default {
 
     data() {
         return {
-            fullpath: null,
+            //fullpath: null,
             files: null,
             error: null,
         }
@@ -86,9 +86,6 @@ export default {
     },
 
     mounted: function() {
-        this.fullpath = this.path;
-        if(!this.fullpath) this.fullpath = this.task.instance_id+'/'+this.task._id;
-        console.log("loading", this.fullpath);
         this.load();
     },
     
@@ -96,24 +93,29 @@ export default {
         formatTime(time) {
             return new Date(time).toLocaleString();
         },
+        subpath: function(file) {
+            let subpath = "";
+            if(this.path) subpath += this.path;
+            if(file) {
+                if(subpath) subpath += "/";
+                subpath += file.filename;
+            }
+            return subpath;
+        },
         get_download_url: function(file) {
-            var p = this.fullpath;
-            if(file) p+='/'+file.filename;
-            var url = Vue.config.wf_api+'/resource/download'+
-                '?r='+this.task.resource_id+
-                '&p='+encodeURIComponent(p)+
-                '&at='+Vue.config.jwt;
+            var url = Vue.config.wf_api+'/task/download/'+this.task._id+'?at='+Vue.config.jwt;
+            var p = this.subpath(file);
+            if(p) url += "&p="+encodeURIComponent(p);
             return url;
         },
-
         download: function() {
-            console.log("downloading",url);
             var url = this.get_download_url();
             document.location = url;
         },
-
         load: function() {
-            this.$http.get(Vue.config.wf_api+'/resource/ls/'+this.task.resource_id+'?path='+encodeURIComponent(this.fullpath)).then(res=>{
+            var url = Vue.config.wf_api+'/task/ls/'+this.task._id;
+            if(this.path) url += '?p='+encodeURIComponent(this.path);
+            this.$http.get(url).then(res=>{
                 this.files = res.body.files.sort((a, b)=>{
                     if(a.attrs.mtime == b.attrs.mtime) {
                         return a.attrs.filename||a.attrs.dirname > b.attrs.filename||b.attrs.dirname;
@@ -126,19 +128,16 @@ export default {
                 this.error = err.body.message || err.statusText;
             })
         },
-
         download_file: function(file) {
             document.location = this.get_download_url(file);
         },
-
         refresh_file: function(file) {
             file.content = "";
             this.click(file);
         },
-
         click: function(file){
+            //just close file view if it's open
             if(file.content) {
-                //*close* file
                 file.content = "";
                 return;
             }

@@ -3,7 +3,7 @@
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
             <el-select v-model="datatype_id" placeholder="Please select" @change="change_datatype" style="width: 100%;">
-                <el-option v-for="(type,id) in datatypes_with_validator" key="id" :value="id" :label="type.desc"></el-option>
+                <el-option v-for="(type,id) in datatypes_with_validator" :key="id" :value="id" :label="type.desc"></el-option>
             </el-select>
         </b-form-group>
 
@@ -256,10 +256,11 @@ export default {
             file.type = f.type;
             file.progress = {};
 
-            var path = this.instance._id+'/'+this.tasks.upload._id+'/'+file.filename;
+            //var path = this.instance._id+'/'+this.tasks.upload._id+'/'+file.filename;
             var xhr = new XMLHttpRequest();
             file.xhr = xhr; //so that I can abort it if user wants to
-            xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+this.tasks.upload.resource_id+"/"+btoa(path));
+            //xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+this.tasks.upload.resource_id+"/"+btoa(path));
+            xhr.open("POST", Vue.config.wf_api+"/task/upload/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename));
             xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
             xhr.upload.addEventListener("progress", (evt)=>{
                 file.progress = {loaded: evt.loaded, total: evt.total};
@@ -319,7 +320,7 @@ export default {
             var validation_product = this.tasks.validation.product;
             this.$http.post('dataset', {
                 project: this.project._id,
-                task_id: this.tasks.validation, 
+                task_id: this.tasks.validation._id, 
 
                 datatype: this.datatype_id,
                 datatype_tags: validation_product.datatype_tags, 
