@@ -148,7 +148,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 var storage = config.storage_default();
                 var system = config.storage_systems[storage];
                 logger.debug("obtaining upload stream for", storage);
-                system.upload(dataset, (err, writestream)=>{
+                system.upload(dataset, (err, writestream, done)=>{
                     if(err) return cb(err);
                     var tar = child_process.spawn("tar", ["hc", "."], {cwd: tmpdir});
                     tar.on('close', code=>{
@@ -173,7 +173,9 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
 
                     //TODO - I am not sure if all writestream returnes file object (pkgcloud does.. but this makes it a bit less generic)
                     //maybe I should run system.stat()?
-                    writestream.on('success', file=>{
+                    //writestream.on('success', file=>{
+                    done.then(file=>{
+
                         logger.debug("streaming success", JSON.stringify(file));
                         
                         dataset.storage = storage;
@@ -331,6 +333,9 @@ function cache_contact() {
     logger.info("caching auth profiles");
     request({
         url: config.auth.api+"/profile", json: true,
+        qs: {
+            limit: 5000, //TODO -- really!?
+        },
         headers: { authorization: "Bearer "+config.auth.jwt },
     }, (err, res, body)=>{
         if(err) return logger.error(err);
