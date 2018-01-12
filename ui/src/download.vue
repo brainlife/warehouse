@@ -181,10 +181,13 @@ export default {
         },
 
         download: function() {
+            /*
             var url = Vue.config.wf_api+'/resource/download'+
                 '?r='+this.task_bids.resource_id+
                 '&p='+encodeURIComponent(this.task_bids.instance_id+'/'+this.task_bids._id+'/download')+
                 '&at='+Vue.config.jwt;            
+            */
+            var url = Vue.config.wf_api+"/task/download/"+this.task_bids._id+"?p=download&at="+Vue.config.jwt;
             console.log(url);
             document.location = url;
         },
