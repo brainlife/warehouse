@@ -74,13 +74,15 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 });
             });
 
+            let filenames = [];
+
             //now download files to temp directory
             async.eachSeries(datatype.files, (file, next_file)=>{
                 if(file.skip) return next_file();
 
                 logger.debug("processing file", file.toString());
                 var writestream = null;
-                var srcpath = task.instance_id+"/"+task._id+"/";
+                var srcpath = "";
                 if(dataset.prov.subdir) srcpath += dataset.prov.subdir+"/";
                 if(file.filename) {
                     //files can be downloaded directly to tmpdir
@@ -92,6 +94,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     writestream.on('finish', ()=>{
                         if(input_ok) {
                             logger.debug("download complete");
+                            filenames.push(file.filename);
                             next_file()
                         } else {
                             if(file.required) return next_file("required input file failed for download");
@@ -113,6 +116,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         if(code) return next_file("untar files with code:"+code);
                         if(input_ok) {
                             logger.debug("download/tar complete");
+                            filenames.push(file.dirname);
                             next_file();
                         } else {
                             if(file.required) return next_file("required input directory failed to download/untar");
@@ -125,15 +129,15 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
 
                 //now start feeding the writestream
                 request({
-                    url: config.wf.api+"/resource/download",
+                    url: config.wf.api+"/task/download/"+task._id,
                     qs: {
-                        r: task.resource_id, p: srcpath,
+                        p: srcpath,
                     },
                     headers: { authorization: auth }
                 })
                 .on('response', function(r) {
                     if(r.statusCode != 200) {
-                        logger.error("/resource/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth);
+                        logger.error("/task/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth);
                         input_ok = false;
                     }
                 }).pipe(writestream);
@@ -154,7 +158,8 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 logger.debug("obtaining upload stream for", storage);
                 system.upload(dataset, (err, writestream, done)=>{
                     if(err) return cb(err);
-                    var tar = child_process.spawn("tar", ["hc", "."], {cwd: tmpdir});
+                    filenames.unshift("hc");
+                    var tar = child_process.spawn("tar", filenames, {cwd: tmpdir});
                     tar.on('close', code=>{
                         logger.debug("tar finished", code);
                         cleantmp();
