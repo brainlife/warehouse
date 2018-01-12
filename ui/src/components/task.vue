@@ -35,7 +35,7 @@
     </div>
     <transition name="fadeHeight">
         <div v-if="activeSections.config">
-            <taskconfig :task="task" style="padding: 10px; background-color: #f0f0f0;"/>
+            <taskconfig :task="task" style="padding: 10px; background-color: #f6f6f6;"/>
         </div>
     </transition>
 
@@ -44,27 +44,29 @@
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.input" style="padding: 10px; background-color: #f0f0f0;">
+            <div v-if="activeSections.input" style="padding: 10px; background-color: #f6f6f6;">
                 <slot name="input"></slot>
             </div>
         </transition>
     </div>
 
-    <div @click="toggle('output')" class="toggler">
-        <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output
-    </div>
-    <transition name="fadeHeight">
-        <div v-if="activeSections.output" style="padding: 10px; background-color: #f0f0f0;">
-            <slot name="output"></slot>
+    <div v-if="has_output_slot">
+        <div @click="toggle('output')" class="toggler">
+            <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output
         </div>
-    </transition>
+        <transition name="fadeHeight">
+            <div v-if="activeSections.output" style="padding: 10px; background-color: #f6f6f6;">
+                <slot name="output"></slot>
+            </div>
+        </transition>
+    </div>
 
     <div v-if="task.status != 'removed'">
         <div @click="toggle('rawoutput')" class="toggler">
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.rawoutput" style="padding: 10px; background-color: #f0f0f0;">
+            <div v-if="activeSections.rawoutput" style="padding: 10px 0px; background-color: #f6f6f6;">
                 <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
                 <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
             </div>
@@ -109,7 +111,10 @@ export default {
     computed: {
         has_input_slot() {
             return !!this.$slots.input;
-        }
+        },
+        has_output_slot() {
+            return !!this.$slots.output;
+        },
     },
 
     filters: {
@@ -219,6 +224,7 @@ margin-bottom: 2px;
 }
 .toggler {
 padding: 10px;
+padding-left: 18px;
 color: #666;
 border-top: 1px solid #eee;
 }

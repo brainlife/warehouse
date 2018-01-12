@@ -15,7 +15,7 @@
             -->
 
             <h1><icon name="download" scale="2"></icon> Download</h1>
-            <el-card>
+            <b-card>
                 <div slot="header" style="padding: 15px;">
                     <p style="float: right;"><span class="text-muted">Requested at</span> <b><time>{{new Date(instance.create_date).toLocaleString()}}</time></b></p>
                     <el-steps :space="200" :active="active">
@@ -25,9 +25,7 @@
                     </el-steps>
                     
                     <br>
-                    <el-alert v-if="error" type="error" title="Failed" 
-                        :description="error" show-icon :closable="false"></el-alert>
-
+                    <el-alert v-if="error" type="error" title="Failed" :description="error" show-icon :closable="false"></el-alert> 
                     <div v-if="active == 3">
                         <el-button type="primary" class="animated bounceIn" size="large" @click="download()" icon="document">Download (bids.tar.gz)</el-button>    
                     </div>
@@ -38,8 +36,7 @@
                     <task :task="task"></task>
                     <br>
                 </div>
-
-            </el-card>
+            </b-card>
 
             <br>
             <el-card v-if="config.debug">
@@ -101,7 +98,7 @@ export default {
         .then(res=>{
           this.instance = res.body.instances[0];
 
-          //load tasks
+          //load tasks under this instance
           return this.$http.get(Vue.config.wf_api+'/task', {params: {
               find: JSON.stringify({instance_id: this.instance._id})
           }})
