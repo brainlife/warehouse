@@ -62,10 +62,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     }
 
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
-        //logger.debug("..............................................................");
-        //canread_project_ids.forEach(id=>{logger.debug(id.toString());});
-        //logger.debug("..............................................................");
-
         if(err) return next(err);
         ands.push({project: {$in: canread_project_ids}});
 

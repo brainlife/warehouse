@@ -6,11 +6,16 @@ const path = require('path');
 const child_process = require('child_process');
 const fs = require('fs');
 const async = require('async');
+const redis = require('redis');
 
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
 const prov = require('./prov');
+
+//connect to redis - used to store various shared caches
+exports.redis = redis.createClient(config.redis.port, config.redis.server);
+exports.redis.on('error', err=>{throw err});
 
 //TODO - should be called something like "get_my_projects"?
 exports.getprojects = function(user, cb) {
@@ -60,7 +65,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
             files.forEach(file=>{
                 dirs.forEach(dir=>{
                     if(dir.dirname == ".") file.skip = true; //TODO a bit brittle
-
                     //skip files that are contained inside another directory
                     //for example..
                     //(dirname)  dtiinit
@@ -160,24 +164,12 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             dataset.status = "failed";
                         }
                     });
-                    writestream.on('error', err=>{
-                        logger.error("streaming failed", err);
-
-                        dataset.desc = "Failed to archive "+err.toString();
-                        dataset.status = "failed";
-                        dataset.save(_err=>{
-                            if(_err) logger.error(_err); //ignore..?
-                            cb(err); //return error from streaming which is more interesting
-                        });
-                    });
 
                     //TODO - I am not sure if all writestream returnes file object (pkgcloud does.. but this makes it a bit less generic)
                     //maybe I should run system.stat()?
                     //writestream.on('success', file=>{
                     done.then(file=>{
-
                         logger.debug("streaming success", JSON.stringify(file));
-                        
                         dataset.storage = storage;
                         dataset.status = "stored";
                         dataset.size = file.size;
@@ -186,6 +178,14 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         //also register to neo4j.. I might deprecate
                         prov.register_dataset(dataset, err=>{
                             if(err) logger.error(err); //fall through
+                        });
+                    }).catch(err=>{
+                        logger.error("streaming failed", err);
+                        dataset.desc = "Failed to archive "+err.toString();
+                        dataset.status = "failed";
+                        dataset.save(_err=>{
+                            if(_err) logger.error(_err); //ignore..?
+                            cb(err); //return error from streaming which is more interesting
                         });
                     });
 
@@ -207,7 +207,6 @@ exports.load_github_detail = function(service_name, cb) {
     logger.debug("https://api.github.com/repos/"+service_name+auth);
     request("https://api.github.com/repos/"+service_name+auth, { json: true, headers: {
         'User-Agent': 'brain-life/warehouse',
-        
         //needed to get topic (which is currently in preview mode..)
         //https://developer.github.com/v3/repos/#list-all-topics-for-a-repository
         'Accept': "application/vnd.github.mercy-preview+json", 
@@ -258,12 +257,6 @@ exports.doi_post_metadata = function(pub, cb) {
     db.Publications.count({doi: {$exists: true}}).exec((err, count)=>{
         if(err) return cb(err);
         let doi = config.datacite.prefix+"/bl.p."+count; //TODO - should make the "shoulder" configurable?
-            /*
-              <givenName>Soichi</givenName>
-              <familyName>Hayashi</familyName>
-              <nameIdentifier schemeURI="http://orcid.org/" nameIdentifierScheme="ORCID">0000-0003-3641-3491</nameIdentifier>
-            */
-
         let creator = cached_contacts[pub.user_id];
         let metadata = `<?xml version="1.0" encoding="UTF-8"?>
         <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
