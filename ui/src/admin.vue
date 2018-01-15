@@ -6,8 +6,8 @@
         <div class="page-content">
 		<div class="margin20">
             <b-alert show>todo</b-alert>
-            <h3>Running</h3>
-            <pre>{{running}}</pre>
+            <h3>Services Running</h3>
+            <pre>{{service_running}}</pre>
         </div><!--magin20-->
         </div><!--page-content-->
     </div><!--off-sidemenu-->
@@ -23,16 +23,24 @@ export default {
     components: { sidemenu, pageheader },
     data () {
         return {
-            running: [],
+            service_running: [],
             config: Vue.config,
         }
     },
     mounted() {
         //load counts of apps currently running
-        this.$http.get(Vue.config.wf_api+'/task/running')
+        this.$http.get(Vue.config.wf_api+'/admin/services/running')
         .then(res=>{
-            this.running = res.body;
+            this.service_running = res.body;
         });
+
+        /*
+        //load counts of resource currently running
+        this.$http.get(Vue.config.wf_api+'/admin/resources/running')
+        .then(res=>{
+            this.resource_running = res.body;
+        });
+        */
     },
 }
 </script>

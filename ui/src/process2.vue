@@ -273,7 +273,6 @@ import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import message from '@/components/message'
 import task from '@/components/task'
-import file from '@/components/file'
 import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
 import pageheader from '@/components/pageheader'
@@ -296,7 +295,7 @@ export default {
 
     components: { 
         sidemenu, contact, task, 
-        message, file, tags, 
+        message, tags, 
         filebrowser, pageheader, statustag,
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
@@ -666,12 +665,8 @@ export default {
         },
 
         download: function(task, dataset) {
-            var path = task.instance_id+'/'+task._id;
-            if(dataset.subdir) path+='/'+dataset.subdir;
-            var url = Vue.config.wf_api+'/resource/download'+
-                '?r='+task.resource_id+
-                '&p='+encodeURIComponent(path)+
-                '&at='+Vue.config.jwt;
+            var url = Vue.config.wf_api+'/task/download/'+task._id+'?at='+Vue.config.jwt;
+            if(dataset.subdir) url+='&p='+encodeURIComponent(dataset.subdir);
             document.location = url;
         },
 

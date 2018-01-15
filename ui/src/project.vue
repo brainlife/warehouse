@@ -53,7 +53,7 @@
                         <b class="text-muted">Members</b>
                     </b-col>
                     <b-col>
-                        <p v-for="c in selected.admins" :key="c._id">
+                        <p v-for="c in selected.members" :key="c._id">
                             <contact :id="c"/>
                         </p>
                         <p class="text-muted">Users who can update datasets published on this project</p>
