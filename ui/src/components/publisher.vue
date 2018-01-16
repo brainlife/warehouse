@@ -3,10 +3,8 @@
     <transition name="slide-fade">
         <div v-if="page == 0">
             <br>
-            <b-alert show variant="warning">
-                <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
-                <p>Once you publish your datasets, they will be publically accessible (including guest users) regardless of the current project access settings.</p>
-            </b-alert>
+            <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
+            <p>Once you publish your datasets, they will be publically accessible (including guest users) regardless of the project access settings.</p>
             <br>
             <hr>
             <div style="float: right">
@@ -51,7 +49,7 @@
     <transition name="slide-fade">
         <div v-if="page == 2">
             <!--<h4>Publication Details</h4>-->
-            <p class="text-muted">Please enter details for your publications</p>
+            <p class="text-muted">Please enter details for your publications (you can update this information anytime later).</p>
             <pubform :pub="pub" @submit.once="publish">
                 <button type="button" class="btn btn-secondary" @click="page--">Back</button>
             </pubform>

@@ -48,7 +48,7 @@
 
             <!--input-->
             <div slot="input" v-if="task.config._inputs">
-                <div v-for="input in task.config._inputs" :key="input.did" style="padding: 3px 5px;">
+                <div v-for="input in task.config._inputs" :key="input.did" style="padding: 5px;">
                     <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
                         <b v-if="input.meta.subject">{{input.meta.subject}}</b>
@@ -75,7 +75,7 @@
 
             <!--output-->
             <div slot="output" v-if="task.config._outputs.length > 0">
-                <div v-for="output in task.config._outputs" :key="output.id">
+                <div v-for="output in task.config._outputs" :key="output.id" style="padding: 5px;">
                     <div class="float-right" style="position: relative; top: -5px;">
                         <div v-if="task.status == 'finished'">
                             <div class="button" v-b-modal.viewSelecter title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">

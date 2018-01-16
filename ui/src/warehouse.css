@@ -81,7 +81,7 @@ cursor: pointer;
 .button {
 display: inline-block;
 color: gray;
-padding: 5px 8px;
+padding: 4px 8px;
 min-width: 25px;
 cursor: pointer;
 border-radius: 3px;
