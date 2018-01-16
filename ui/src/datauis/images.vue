@@ -13,7 +13,6 @@
 <script>
 import Vue from 'vue'
 
-// From stackoverflow somewhere
 if (![].chunk_inefficient) {
     Object.defineProperty(Array.prototype, 'chunk_inefficient', {
         value: function(chunkSize) {
@@ -36,18 +35,16 @@ export default {
     },
     mounted() {
         // Load image.json
-        var basepath = this.task.instance_id+'/'+this.task._id;
-        if(this.subdir) basepath +='/'+this.subdir;
-        var url = Vue.config.wf_api+'/resource/download'+
-            '?r='+this.task.resource_id+
-            '&p='+encodeURIComponent(basepath+'/images.json')+
+        var basepath = "";
+        if(this.subdir) basepath+=this.subdir+"/";
+        var url = Vue.config.wf_api+'/task/download/'+this.task._id+
+            '?p='+encodeURIComponent(basepath+'images.json')+
             '&at='+Vue.config.jwt;
         this.$http.get(url).then(res=>{
             console.dir(res.body);
             res.body.images.forEach(image=>{
-                var src = Vue.config.wf_api+'/resource/download'+
-                    '?r='+this.task.resource_id+
-                    '&p='+encodeURIComponent(basepath+'/'+image.filename)+
+                var src = Vue.config.wf_api+'/task/download/'+this.task._id+
+                    '?p='+encodeURIComponent(basepath+image.filename)+
                     '&at='+Vue.config.jwt;
                 
                 this.images.push({
@@ -56,12 +53,10 @@ export default {
                     src
                 });
             });
-            //console.dir(this.images);
         });
     },
     methods: {
         click: function(image) {
-            //window.open(image.src, "_blank", "width=800,height=800,resizable=no,menubar=no");
             document.location = image.src;
         },
         handler: function(it) {

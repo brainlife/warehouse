@@ -121,7 +121,7 @@ exports.storage_systems.jetstream = {
         let contname = dataset.project.toString();
         let filename = dataset._id+'.tar';
         console.log("uploading dataset", contname, filename);
-    
+
         //make sure container exists (if it exists, it's noop)
         js_storage.createContainer({
             name: contname,
@@ -130,8 +130,14 @@ exports.storage_systems.jetstream = {
             },
         }, (err, container)=> {
             if(err) return cb(err);
+            let stream = js_storage.upload({container, remote: filename});
+            let success = new Promise((resolve, reject)=>{
+                stream.on('success', resolve);
+                stream.on('error', reject);
+            });
+        
             dataset.storage_config = { contname, filename };
-            cb(null, js_storage.upload({container, remote: filename}));
+            cb(null, stream, success);
         });
     },
     download: (dataset, cb)=>{

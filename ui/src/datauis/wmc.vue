@@ -47,12 +47,10 @@ export default {
                     ];
 
                     //create url for each layer
-                    var path = this.task.instance_id+"/"+this.task._id+"/"+did;
+                    var basepath = "";
+                    if(did) basepath += did+"/";
                     config.layers.forEach(layer=>{
-                        layer.url = Vue.config.wf_api+"/resource/download?"+
-                            "r="+this.task.resource_id+
-                            "&p="+encodeURIComponent(path+"/dti/bin/"+layer.filename);
-                            //"&at="+Vue.config.jwt;
+                        layer.url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"dti/bin/"+layer.filename);
                     });
                     next_entry();
                 } else if(datatype.name == "neuro/dwi/recon") { //TODO - maybe we should define noddi output?
@@ -66,11 +64,10 @@ export default {
                     ];
 
                     //create url for each layer
-                    var path = this.task.instance_id+"/"+this.task._id+"/"+did;
+                    var basepath = "";
+                    if(did) basepath += did+"/";
                     config.layers.forEach(layer=>{
-                        layer.url = Vue.config.wf_api+"/resource/download?"+
-                            "r="+this.task.resource_id+
-                            "&p="+encodeURIComponent(path+"/"+layer.filename);
+                        layer.url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+layer.filename);
                     });
                     next_entry();
                 } else if(datatype.name == "raw") { //TODO - maybe we should define noddi output?
@@ -83,11 +80,10 @@ export default {
                     ];
 
                     //create url for each layer
-                    var path = this.task.instance_id+"/"+this.task._id+"/"+did;
+                    var basepath = "";
+                    if(did) basepath += did+"/";
                     config.layers.forEach(layer=>{
-                        layer.url = Vue.config.wf_api+"/resource/download?"+
-                            "r="+this.task.resource_id+
-                            "&p="+encodeURIComponent(path+"/"+layer.filename);
+                        layer.url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+layer.filename);
                     });
                     next_entry();
                 } else {
@@ -120,19 +116,13 @@ export default {
         },
 
         load_tracts: function(subdir, cb) {
-            var path = this.task.instance_id+"/"+this.task._id;
-            if(subdir) path += "/"+subdir;
-            path += "/tracts";
-            this.$http.get(Vue.config.wf_api+"/resource/download", {params: {
-                r: this.task.resource_id, p: path+"/tracts.json",
-            }})
+            var basepath = "";
+            if(subdir) basepath += subdir+"/";
+            this.$http.get(Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/tracts.json"))
             .then(res=>{
                 var tracts = res.body;
                 tracts.forEach(tract=>{
-                    tract.url = Vue.config.wf_api+"/resource/download?"+
-                        "r="+this.task.resource_id+
-                        "&p="+encodeURIComponent(path+"/"+tract.filename)
-                        //"&at="+Vue.config.jwt;
+                    tract.url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/"+tract.filename)
                 });
                 cb(tracts);
             }).catch(err=>{
@@ -141,13 +131,10 @@ export default {
                     .then(res=>res.json())
                     .then(tracts=>{
                     tracts.forEach(tract=>{
-                        tract.url = Vue.config.wf_api+"/resource/download?"+
-                            "r="+this.task.resource_id+
-                            "&p="+encodeURIComponent(path+"/"+tract.filename)
+                        tract.url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/"+tract.filename)
                     });
                     cb(tracts);
                 });
-
             });
         }
     }

@@ -25,12 +25,10 @@ export default {
         }
     },
     created() {
-        //fetch data (construct /resource/download and do $http.get() to load any data
-        var basepath = this.task.instance_id+'/'+this.task._id;
-        if(this.subdir) basepath +='/'+this.subdir;
-        var url = Vue.config.wf_api+'/resource/download'+
-            '?r='+this.task.resource_id+
-            '&p='+encodeURIComponent(basepath+'/out.json')+
+        var basepath = "";
+        if(this.subdir) basepath +=this.subdir+"/";
+        var url = Vue.config.wf_api+'/task/download/'+this.task._id+
+            '?p='+encodeURIComponent(basepath+'out.json')+
             '&at='+Vue.config.jwt;
         this.$http.get(url).then(res=>{
             //console.dir(res.body);

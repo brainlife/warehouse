@@ -40,11 +40,10 @@ export default {
         }
     },
     mounted() {
-        var basepath = this.task.instance_id+'/'+this.task._id;
-        if(this.subdir) basepath +='/'+this.subdir;
-        this.url = Vue.config.wf_api+'/resource/download'+
-            '?r='+this.task.resource_id+
-            '&p='+encodeURIComponent(basepath+'/life_results.json')+
+        var basepath = "";
+        if(this.subdir) basepath+=this.subdir="/";
+        this.url = Vue.config.wf_api+'/task/download/'+this.task._id+
+            '?p='+encodeURIComponent(basepath+'output/life_results.json')+
             '&at='+Vue.config.jwt;
         this.$http.get(this.url)
         .then(res=>{
