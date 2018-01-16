@@ -288,11 +288,14 @@ router.get('/prov/:id', (req, res, next)=>{
                         font: {size: 11},
                         label: compose_label(task),
                     });
+                    logger.debug("debug------------------------------------------");
+                    //logger.debug(JSON.stringify(task, null, 4));
+                    //logger.debug(JSON.stringify(dataset, null, 4));
                     edges.push({
                         from: "task."+task._id,
                         to,
                         arrows: "to",
-                        label: "(no app)",
+                        label: datatypes[dataset.datatype].name,
                     });
                     load_task_prov(task, cb);
                 }

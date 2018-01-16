@@ -17,7 +17,7 @@ const prov = require('../api/prov');
 
 logger.info("starting event handler");
 
-setInterval(health_check, 1000*60*3); //It has to be long enough - when it needs to transfer data
+setInterval(health_check, 1000*60*10); //It has to be long enough - when it needs to transfer data
 
 db.init(err=>{
     logger.info("connected to mongo");
@@ -96,7 +96,7 @@ function health_check() {
         date: new Date(),
         counts: _counts,
         //_health,
-        maxage: 1000*60*6,  //should be double the check frequency to avoid going stale while development
+        maxage: 1000*60*20,  //should be double the check frequency to avoid going stale while development
     }
 
     if(_counts.tasks == 0) {
@@ -218,7 +218,7 @@ function archive_dataset(task, output, cb) {
 function handle_instance(instance, cb) {
     _counts.instances++;
 
-    logger.debug("TODO",instance);
+    logger.debug("instance evevnt handling TODO",instance);
     cb();
 }
 
