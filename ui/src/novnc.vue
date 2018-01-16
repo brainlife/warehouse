@@ -175,7 +175,8 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             ws.onopen = (e)=>{
-                var key = Vue.config.user.sub+"."+instanceid+"."+taskid;
+                //var key = Vue.config.user.sub+"."+instanceid+"."+taskid;
+                var key = instanceid+"."+taskid;
                 console.log("websocket opened: binding to ", key);
                 ws.send(JSON.stringify({
                     bind: { ex: "wf.task", key }

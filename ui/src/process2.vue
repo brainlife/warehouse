@@ -2,7 +2,7 @@
 <div v-if="instance">
     <div class="sidebar">
         <h6>Datasets</h6>
-        <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
+        <div v-for="(dataset,idx) in _datasets" :key="idx" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
             <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
             <b v-else class="text-muted">(no subject)</b>
@@ -469,18 +469,20 @@ export default {
                     }})
                 })
                 .then(res=>{
-                    console.log("loaded");
-                    console.log(res.body);
+                    //console.log("loaded");
+                    //console.log(res.body);
                     this.archived = res.body.datasets;
 
                     this.ws.send(JSON.stringify({
                         bind: {
                             ex: "wf.task",
-                            key: Vue.config.user.sub+"."+this.instance._id+".#",
+                            //key: Vue.config.user.sub+"."+this.instance._id+".#",
+                            key: this.instance._id+".#",
                         }
                     }));
 
                     this.ws.onmessage = (json)=>{
+                        //console.log(json);
                         var event = JSON.parse(json.data);
                         if(event.error) {
                             console.error(event.error);
@@ -791,7 +793,7 @@ export default {
                 this.newtask.app = null;
                 var task = res.body.task;
                 this.update_apps();
-            });
+            }).catch(err=>console.error);
         },
 
         toggle_task: function(task) {

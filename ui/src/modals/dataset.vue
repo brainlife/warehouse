@@ -98,7 +98,7 @@
                                         Status is unknown
                                     </span> 
                                     <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
-                                        <icon name="bookmark"/>
+                                        <b-badge variant="success">Backed Up</b-badge>
                                     </span>
                                 </p>
                             </b-col>

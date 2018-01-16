@@ -33,6 +33,7 @@ import BootstrapVue from 'bootstrap-vue' //bootstrap will eventually replace Ele
 import router from './router.js'
 import warehouse from './warehouse'
 
+
 Vue.config.productionTip = false
 
 Vue.component('icon', Icon)
