@@ -18,11 +18,10 @@ export default {
         }
     },
     mounted() {
-        var basepath = this.task.instance_id+'/'+this.task._id;
-        if(this.subdir) basepath +='/'+this.subdir;
-        this.url = Vue.config.wf_api+'/resource/download'+
-            '?r='+this.task.resource_id+
-            '&p='+encodeURIComponent(basepath+'/dti/t1pdd.png')+
+        var basepath = "";
+        if(this.subdir) basepath+=this.subdir+"/";
+        this.url = Vue.config.wf_api+'/task/download/'+this.task._id+
+            '?p='+encodeURIComponent(basepath+'dti/t1pdd.png')+
             '&at='+Vue.config.jwt;
     }
 }

@@ -1,5 +1,4 @@
 
-const redis = require('redis');
 const winston = require('winston');
 const timeout = require('callback-timeout');
 const async = require('async');
@@ -9,9 +8,11 @@ const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
 const common = require('./common');
 
+/*
 var redis_client = redis.createClient(config.redis.port, config.redis.server);
 redis_client.on('error', err=>{throw err});
-redis_client.on('ready', ()=>{
+*/
+common.redis.on('ready', ()=>{
     logger.info("connected to redis");
     exports.health_check();
     setInterval(exports.health_check, 1000*60); //post health status every minutes
@@ -40,14 +41,14 @@ exports.health_check = function() {
             next();
         }, system.timeout||8000)); //5 seconds is often not enough... let's use 8. also system can have timeout override to set it to even longer value
     }, err=>{
-		redis_client.set("health.warehouse.api."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
+		common.redis.set("health.warehouse.api."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
     });
 }
 
 exports.get_reports = function(cb) {
-    redis_client.keys("health.warehouse.*", (err, keys)=>{
+    common.redis.keys("health.warehouse.*", (err, keys)=>{
         if(err) return cb(err);
-        redis_client.mget(keys, (err, _reports)=>{
+        common.redis.mget(keys, (err, _reports)=>{
             if(err) return cb(err);
             var reports = {};
             _reports.forEach((report, idx)=>{
@@ -57,5 +58,4 @@ exports.get_reports = function(cb) {
         });
     });
 }
-
 

@@ -62,10 +62,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     }
 
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
-        //logger.debug("..............................................................");
-        //canread_project_ids.forEach(id=>{logger.debug(id.toString());});
-        //logger.debug("..............................................................");
-
         if(err) return next(err);
         ands.push({project: {$in: canread_project_ids}});
 
@@ -221,17 +217,17 @@ router.get('/prov/:id', (req, res, next)=>{
 
     function load_task(id, cb) {
         request.get({
-            url: config.wf.api+"/task",
-            qs: { find: JSON.stringify({"_id": id, user_id: null}) },
+            url: config.wf.api+"/task/"+id,
+            //qs: { find: JSON.stringify({"_id": id, user_id: null}) },
             json: true,
             headers: {
-                //authorization: req.headers.authorization, 
-                authorization: "Bearer "+config.wf.jwt, //pass admin jwt to query all tasks
+                //authorization: "Bearer "+config.wf.jwt, //pass admin jwt to query all tasks
+                authorization: req.headers.authorization, 
             }
-        }, (err, _res, ret)=>{
+        }, (err, _res, task)=>{
             if(err) return cb(err);
-            if(ret.tasks.length != 1) return cb("couldn't find task:"+id);
-            let task = ret.tasks[0];
+            //if(ret.tasks.length != 1) return cb("couldn't find task:"+id);
+            //let task = ret.tasks[0];
             cb(null, task);
         });
     }
@@ -585,21 +581,15 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 
     async.series([
         next=>{
-            //get task
+            //get the task to archive
             request.get({
-                url: config.wf.api+"/task",
-                qs: {
-                    find: JSON.stringify({"_id": req.body.task_id}),
-                },
-                json: true,
-                //TODO - I need to deal with cookie based jwt also?
-                headers: {
-                    authorization: req.headers.authorization, 
-                }
-            }, (err, _res, ret)=>{
-                if(ret.tasks.length != 1) return next("couldn't find task");
-                var _task = ret.tasks[0];
-                if(_task.user_id != req.user.sub) return next("you don't own this instance");
+                url: config.wf.api+"/task/"+req.body.task_id, json: true,
+                headers: { authorization: req.headers.authorization, }
+            }, (err, _res, _task)=>{
+                //if(ret.tasks.length != 1) return next("couldn't find task");
+                //var _task = ret.tasks[0];
+                console.dir(_task);
+                if(_task.user_id != req.user.sub) return next("you don't own this task");
                 if(!_task.resource_id) return next("resource_id not set");
                 if(_task.status != "finished") return next("task not in finished state");
                 
@@ -633,13 +623,14 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 //also used by event_handler to see if the task output is archived already or not
                 //actually, I might keep this as source of truth and neo4j as tool to query similar information
                 prov: {
+                    //always set
                     instance_id: task.instance_id,
                     task_id: task._id,
-                    app: req.body.app_id, //deprecated
+                    //app: req.body.app_id, //deprecated
+
+                    //optional
                     output_id: req.body.output_id,
                     subdir: req.body.subdir,
-
-                    //config: task.config, //tentative.. for now..
                 },
                 meta: req.body.meta||{},
             }).save((err, _dataset)=>{

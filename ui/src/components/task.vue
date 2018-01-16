@@ -19,11 +19,13 @@
             </div>
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
-                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :format="formatTime" :auto-update="60"></timeago></time>
-                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :format="formatTime" :auto-update="60"></timeago></time>
                     <time v-if="task.status == 'requested'"><timeago :since="task.create_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :format="formatTime" :auto-update="60"></timeago></time>
                     <time v-if="task.status == 'failed'"><timeago :since="task.fail_date" :format="formatTime" :auto-update="60"></timeago></time>
                     <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <!--<time v-if="task.status == 'stopped'"><timeago :since="task.stop_date" :format="formatTime" :auto-update="60"></timeago></time>-->
                 </small>
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
@@ -35,7 +37,7 @@
     </div>
     <transition name="fadeHeight">
         <div v-if="activeSections.config">
-            <taskconfig :task="task" style="padding: 10px; background-color: #f0f0f0;"/>
+            <taskconfig :task="task" style="padding: 10px; background-color: #f6f6f6;"/>
         </div>
     </transition>
 
@@ -44,27 +46,29 @@
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.input" style="padding: 10px; background-color: #f0f0f0;">
+            <div v-if="activeSections.input" style="padding: 10px; background-color: #f6f6f6;">
                 <slot name="input"></slot>
             </div>
         </transition>
     </div>
 
-    <div @click="toggle('output')" class="toggler">
-        <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output
-    </div>
-    <transition name="fadeHeight">
-        <div v-if="activeSections.output" style="padding: 10px; background-color: #f0f0f0;">
-            <slot name="output"></slot>
+    <div v-if="has_output_slot">
+        <div @click="toggle('output')" class="toggler">
+            <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output
         </div>
-    </transition>
+        <transition name="fadeHeight">
+            <div v-if="activeSections.output" style="padding: 10px; background-color: #f6f6f6;">
+                <slot name="output"></slot>
+            </div>
+        </transition>
+    </div>
 
     <div v-if="task.status != 'removed'">
         <div @click="toggle('rawoutput')" class="toggler">
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.rawoutput" style="padding: 10px; background-color: #f0f0f0;">
+            <div v-if="activeSections.rawoutput" style="padding: 10px 0px; background-color: #f6f6f6;">
                 <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
                 <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
             </div>
@@ -109,7 +113,10 @@ export default {
     computed: {
         has_input_slot() {
             return !!this.$slots.input;
-        }
+        },
+        has_output_slot() {
+            return !!this.$slots.output;
+        },
     },
 
     filters: {
@@ -187,15 +194,22 @@ background-color: green;
 color: white;
 background-color: #c00;
 }
+.card.running_sync,
 .card.running {
 color: white;
-background-color: #2693ff;
+/* background-color: #2693ff; */
+background-color: #007bff;
+}
+.card.waiting {
+color: white;
+background-color: #50bfff;
 }
 .card.requested {
 color: white;
 background-color: #50bfff;
 }
 .card.removed,
+.card.stop_requested,
 .card.stopped {
 color: white;
 background-color: gray;
@@ -219,6 +233,7 @@ margin-bottom: 2px;
 }
 .toggler {
 padding: 10px;
+padding-left: 18px;
 color: #666;
 border-top: 1px solid #eee;
 }

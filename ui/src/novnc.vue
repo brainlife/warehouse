@@ -127,10 +127,8 @@ export default {
                 //var msgpart = this.novnc_task.status_msg.trim();
                 //if(msgpart == "running") {
                     //load url.txt
-                    var path = this.novnc_task.instance_id+'/'+this.novnc_task._id+'/url.txt'
-                    var url = Vue.config.wf_api+'/resource/download'+
-                        '?r='+this.novnc_task.resource_id+
-                        '&p='+encodeURIComponent(path)+
+                    var url = Vue.config.wf_api+'/task/download/'+this.novnc_task._id+
+                        '?p='+encodeURIComponent('url.txt')+
                         '&at='+Vue.config.jwt;
                     this.$http.get(url).then(function(res) {
                         //load novnc!

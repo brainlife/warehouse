@@ -15,7 +15,7 @@
             -->
 
             <h1><icon name="download" scale="2"></icon> Download</h1>
-            <el-card>
+            <b-card>
                 <div slot="header" style="padding: 15px;">
                     <p style="float: right;"><span class="text-muted">Requested at</span> <b><time>{{new Date(instance.create_date).toLocaleString()}}</time></b></p>
                     <el-steps :space="200" :active="active">
@@ -25,9 +25,7 @@
                     </el-steps>
                     
                     <br>
-                    <el-alert v-if="error" type="error" title="Failed" 
-                        :description="error" show-icon :closable="false"></el-alert>
-
+                    <el-alert v-if="error" type="error" title="Failed" :description="error" show-icon :closable="false"></el-alert> 
                     <div v-if="active == 3">
                         <el-button type="primary" class="animated bounceIn" size="large" @click="download()" icon="document">Download (bids.tar.gz)</el-button>    
                     </div>
@@ -38,8 +36,7 @@
                     <task :task="task"></task>
                     <br>
                 </div>
-
-            </el-card>
+            </b-card>
 
             <br>
             <el-card v-if="config.debug">
@@ -68,7 +65,6 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import task from '@/components/task'
-import file from '@/components/file'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
@@ -76,7 +72,7 @@ import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    components: { sidemenu, contact, task, file, tags, metadata, pageheader },
+    components: { sidemenu, contact, task, tags, metadata, pageheader },
 
     data () {
         return {
@@ -101,7 +97,7 @@ export default {
         .then(res=>{
           this.instance = res.body.instances[0];
 
-          //load tasks
+          //load tasks under this instance
           return this.$http.get(Vue.config.wf_api+'/task', {params: {
               find: JSON.stringify({instance_id: this.instance._id})
           }})
@@ -184,10 +180,7 @@ export default {
         },
 
         download: function() {
-            var url = Vue.config.wf_api+'/resource/download'+
-                '?r='+this.task_bids.resource_id+
-                '&p='+encodeURIComponent(this.task_bids.instance_id+'/'+this.task_bids._id+'/download')+
-                '&at='+Vue.config.jwt;            
+            var url = Vue.config.wf_api+"/task/download/"+this.task_bids._id+"?p=download&at="+Vue.config.jwt;
             console.log(url);
             document.location = url;
         },
