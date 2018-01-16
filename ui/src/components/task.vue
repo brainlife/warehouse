@@ -19,11 +19,13 @@
             </div>
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
-                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :format="formatTime" :auto-update="60"></timeago></time>
-                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :format="formatTime" :auto-update="60"></timeago></time>
                     <time v-if="task.status == 'requested'"><timeago :since="task.create_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :format="formatTime" :auto-update="60"></timeago></time>
                     <time v-if="task.status == 'failed'"><timeago :since="task.fail_date" :format="formatTime" :auto-update="60"></timeago></time>
                     <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :format="formatTime" :auto-update="60"></timeago></time>
+                    <!--<time v-if="task.status == 'stopped'"><timeago :since="task.stop_date" :format="formatTime" :auto-update="60"></timeago></time>-->
                 </small>
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
@@ -192,15 +194,22 @@ background-color: green;
 color: white;
 background-color: #c00;
 }
+.card.running_sync,
 .card.running {
 color: white;
-background-color: #2693ff;
+/* background-color: #2693ff; */
+background-color: #007bff;
+}
+.card.waiting {
+color: white;
+background-color: #50bfff;
 }
 .card.requested {
 color: white;
 background-color: #50bfff;
 }
 .card.removed,
+.card.stop_requested,
 .card.stopped {
 color: white;
 background-color: gray;

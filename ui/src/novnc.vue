@@ -127,10 +127,8 @@ export default {
                 //var msgpart = this.novnc_task.status_msg.trim();
                 //if(msgpart == "running") {
                     //load url.txt
-                    var path = this.novnc_task.instance_id+'/'+this.novnc_task._id+'/url.txt'
-                    var url = Vue.config.wf_api+'/resource/download'+
-                        '?r='+this.novnc_task.resource_id+
-                        '&p='+encodeURIComponent(path)+
+                    var url = Vue.config.wf_api+'/task/download/'+this.novnc_task._id+
+                        '?p='+encodeURIComponent('url.txt')+
                         '&at='+Vue.config.jwt;
                     this.$http.get(url).then(function(res) {
                         //load novnc!
@@ -177,7 +175,8 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             ws.onopen = (e)=>{
-                var key = Vue.config.user.sub+"."+instanceid+"."+taskid;
+                //var key = Vue.config.user.sub+"."+instanceid+"."+taskid;
+                var key = instanceid+"."+taskid;
                 console.log("websocket opened: binding to ", key);
                 ws.send(JSON.stringify({
                     bind: { ex: "wf.task", key }

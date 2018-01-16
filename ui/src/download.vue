@@ -65,7 +65,6 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import task from '@/components/task'
-import file from '@/components/file'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
@@ -73,7 +72,7 @@ import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    components: { sidemenu, contact, task, file, tags, metadata, pageheader },
+    components: { sidemenu, contact, task, tags, metadata, pageheader },
 
     data () {
         return {
@@ -114,13 +113,15 @@ export default {
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
-                        key: Vue.config.user.sub+"."+this.instance._id+".#",
+                        //key: Vue.config.user.sub+"."+this.instance._id+".#",
+                        key: this.instance._id+".#",
                     }
                 }));
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
-                        key: Vue.config.user.sub+"."+this.instance._id,
+                        //key: Vue.config.user.sub+"."+this.instance._id,
+                        key: "*."+this.instance._id, //any group, but specific instance
                     }
                 }));
             }
@@ -181,12 +182,6 @@ export default {
         },
 
         download: function() {
-            /*
-            var url = Vue.config.wf_api+'/resource/download'+
-                '?r='+this.task_bids.resource_id+
-                '&p='+encodeURIComponent(this.task_bids.instance_id+'/'+this.task_bids._id+'/download')+
-                '&at='+Vue.config.jwt;            
-            */
             var url = Vue.config.wf_api+"/task/download/"+this.task_bids._id+"?p=download&at="+Vue.config.jwt;
             console.log(url);
             document.location = url;

@@ -2,7 +2,7 @@
 <div v-if="instance">
     <div class="sidebar">
         <h6>Datasets</h6>
-        <div v-for="dataset in _datasets" :key="dataset.did" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
+        <div v-for="(dataset,idx) in _datasets" :key="idx" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
             <b v-if="dataset.meta.subject">{{dataset.meta.subject}}</b>
             <b v-else class="text-muted">(no subject)</b>
@@ -48,7 +48,7 @@
 
             <!--input-->
             <div slot="input" v-if="task.config._inputs">
-                <div v-for="input in task.config._inputs" :key="input.did" style="padding: 3px 5px;">
+                <div v-for="input in task.config._inputs" :key="input.did" style="padding: 5px;">
                     <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
                         <b v-if="input.meta.subject">{{input.meta.subject}}</b>
@@ -75,7 +75,7 @@
 
             <!--output-->
             <div slot="output" v-if="task.config._outputs.length > 0">
-                <div v-for="output in task.config._outputs" :key="output.id">
+                <div v-for="output in task.config._outputs" :key="output.id" style="padding: 5px;">
                     <div class="float-right" style="position: relative; top: -5px;">
                         <div v-if="task.status == 'finished'">
                             <div class="button" v-b-modal.viewSelecter title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
@@ -273,7 +273,6 @@ import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import message from '@/components/message'
 import task from '@/components/task'
-import file from '@/components/file'
 import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
 import pageheader from '@/components/pageheader'
@@ -296,7 +295,7 @@ export default {
 
     components: { 
         sidemenu, contact, task, 
-        message, file, tags, 
+        message, tags, 
         filebrowser, pageheader, statustag,
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
@@ -470,18 +469,20 @@ export default {
                     }})
                 })
                 .then(res=>{
-                    console.log("loaded");
-                    console.log(res.body);
+                    //console.log("loaded");
+                    //console.log(res.body);
                     this.archived = res.body.datasets;
 
                     this.ws.send(JSON.stringify({
                         bind: {
                             ex: "wf.task",
-                            key: Vue.config.user.sub+"."+this.instance._id+".#",
+                            //key: Vue.config.user.sub+"."+this.instance._id+".#",
+                            key: this.instance._id+".#",
                         }
                     }));
 
                     this.ws.onmessage = (json)=>{
+                        //console.log(json);
                         var event = JSON.parse(json.data);
                         if(event.error) {
                             console.error(event.error);
@@ -666,12 +667,8 @@ export default {
         },
 
         download: function(task, dataset) {
-            var path = task.instance_id+'/'+task._id;
-            if(dataset.subdir) path+='/'+dataset.subdir;
-            var url = Vue.config.wf_api+'/resource/download'+
-                '?r='+task.resource_id+
-                '&p='+encodeURIComponent(path)+
-                '&at='+Vue.config.jwt;
+            var url = Vue.config.wf_api+'/task/download/'+task._id+'?at='+Vue.config.jwt;
+            if(dataset.subdir) url+='&p='+encodeURIComponent(dataset.subdir);
             document.location = url;
         },
 
@@ -796,7 +793,7 @@ export default {
                 this.newtask.app = null;
                 var task = res.body.task;
                 this.update_apps();
-            });
+            }).catch(err=>console.error);
         },
 
         toggle_task: function(task) {

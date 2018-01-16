@@ -181,7 +181,8 @@ export default {
                     ws.send(JSON.stringify({
                       bind: {
                         ex: "wf.task",
-                        key: Vue.config.user.sub+"."+this.instance._id+".#",
+                        //key: Vue.config.user.sub+"."+this.instance._id+".#",
+                        key: this.instance._id+".#",
                       }
                     }));
                 }

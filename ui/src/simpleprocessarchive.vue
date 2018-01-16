@@ -61,7 +61,6 @@ import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
 import message from '@/components/message'
 import task from '@/components/task'
-import file from '@/components/file'
 import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
@@ -76,7 +75,7 @@ export default {
 
     components: { 
         sidemenu, contact, task, 
-        message, file, tags, 
+        message, tags, 
         metadata, filebrowser, 
         appavatar, projectselecter, datatypetag,
     },

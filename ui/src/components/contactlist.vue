@@ -1,21 +1,13 @@
 <template>
 <div v-if="profiles">
     <select2 style="width: 100%;" v-model="values" :options="profiles" :multiple="true"></select2>
-    <!--
-    <el-select v-model="values" @input="updateValue" multiple style="width: 100%;">
-        <el-option v-for="profile in profiles" :key="profile.id" :label="profile.text" :value="profile.id.toString()">
-             {{profile.text}}
-        </el-option>
-    </el-select>
-    -->
 </div><!--root-->
 </template>
 
 <script>
 
 import Vue from 'vue'
-import select2 from '@/components/select2'
-//import vSelect from 'vue-select'
+import select2 from '@/components/select2' //TODO - use vue-select instead
 
 var profiles = null;
 
@@ -52,14 +44,5 @@ export default {
             console.error(res);
         });
     },
-
-    /*
-    methods: {
-        updateValue: function(values) {
-            //just pass it back to parent
-            this.$emit('input', values);
-        }
-    },
-    */
 }
 </script>
