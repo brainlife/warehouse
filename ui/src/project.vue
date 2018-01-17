@@ -91,6 +91,7 @@
                     Processes page will be moved here soon by organizing each process under a specific project.
                     For now please visit the old processes page via the left hand side menu.
                 </b-alert>
+                <processes :project="selected"/> 
             </div>
 
             <div v-if="tabs[tab].id == 'pipeline'">
@@ -180,6 +181,7 @@ import pubcard from '@/components/pubcard'
 import datasets from '@/components/datasets'
 import publisher from '@/components/publisher'
 import pubform from '@/components/pubform'
+import processes from '@/components/processes'
 
 import VueDisqus from 'vue-disqus/VueDisqus.vue'
 
@@ -190,6 +192,7 @@ export default {
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
         publisher, pubform, VueDisqus,
+        processes,
     },
 
     data () {
@@ -224,13 +227,6 @@ export default {
 
     mounted: function() {
 
-        /*
-        this.$root.$on("dataset.close", ()=>{
-            console.log("project.view receivved dataset.close");
-            this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
-        });
-        */
-
         this.$http.get('project', {params: {
             find: JSON.stringify({
             $or: [
@@ -247,9 +243,6 @@ export default {
 
             this.parse_params();
             this.load();
-
-            //TODO.. selecte default?
-            //this.check_project_id(res.body.projects[0]);
         })
         .catch(res=>{
             this.$notify({type: 'error', text: res.body});
