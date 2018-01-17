@@ -118,6 +118,7 @@ export default {
                 find: JSON.stringify({
                     "config.brainlife": true,
                     status: {$ne: "removed"},
+                    group_id: {$exists: false},
                     "config.removing": {$exists: false},
                 }),
                 limit: 2000,
@@ -164,7 +165,7 @@ export default {
                     bind: {
                         ex: "wf.instance",
                         //key: Vue.config.user.sub+".#",
-                        key: "1.#", //any instance under "na" group (instances that doen't belong to any group)
+                        key: "na.#", //any instance under "na" group (instances that doen't belong to any group)
                     }
                 }));
             }

@@ -7,12 +7,17 @@
                     <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
                 </b-col>
                 <b-col>
-                    <div class="list-header" style="float: right; position: relative; top: 4px;">
+                    <div class="stats" style="float: right; position: relative; top: 10px;">
                         <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
                     </div>
                 </b-col>
             </b-row>
-            <b-row>
+        </div>
+
+        <div class="page-content">
+            <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
+
+            <b-row class="list-header">
                 <b-col cols="2"><h4>Subject</h4></b-col>
                 <b-col>
                     <b-row>
@@ -23,10 +28,6 @@
                     </b-row>
                 </b-col>
             </b-row>
-        </div>
-
-        <div class="page-content">
-            <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
@@ -75,24 +76,19 @@
         <h4 class="header">
             <icon name="check-square"></icon> {{selected_count}} Selected 
         </h4>
-        <div class="select-group">
-            <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]">
-                <datatypetag :datatype="datatypes[did]"/>
-                <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open_dataset(id)">
-                    <div>
-                        <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
-                            <icon name="close"></icon>
-                        </div>
-                        {{dataset.meta.subject}}
-                        <small>
-                            <tags :tags="dataset.datatype_tags"></tags>
-                        </small>
-                    </div>
+        <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
+            <datatypetag :datatype="datatypes[did]"/>
+            <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open_dataset(id)">
+                <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
+                    <icon name="close"></icon>
                 </div>
-                <br>
+                {{dataset.meta.subject}}
+                <small>
+                    <tags :tags="dataset.datatype_tags"></tags>
+                </small>
             </div>
-            <b-button size="sm" variant="link" @click="clear_selected()" style="padding: 0px;"><icon name="close"/> Unselect All</b-button>
         </div>
+        <b-button size="sm" variant="link" @click="clear_selected()" style="padding: 5px;"><icon name="close"/> Unselect All</b-button>
         <div class="select-action">
             <b-button-group>
                 <b-button size="sm" v-b-modal.viewSelecter @click="set_viewsel_options">View</b-button>
@@ -642,8 +638,7 @@ color: #999;
 .page-content {
 background-color: white;
 transition: right 0.2s, bottom 0.2s;
-top: 120px;
-overflow-y: scroll;
+top: 90px;
 overflow-x: hidden;
 font-size: 12px;
 }
@@ -657,7 +652,7 @@ right: 250px;
     color: white;
 }
 .selected-view {
-    background-color: #444;
+    background-color: #ddd;
     overflow-x: hidden;
     position: fixed;
     right: -250px;
@@ -666,42 +661,29 @@ right: 250px;
     bottom: 0px;
     z-index: 2;
     transition: right 0.2s;
+    box-shadow: inset 1px 0px 1px #aaa;
+}
+.selected-view .header {
+    color: #999;
 }
 .selected-view-open {
     right: 0px;
 }
-.selected-view {
-    color: #eee;
+.selected-view .selected-item {
+    background-color: rgba(0,0,0,0.05);
+    padding: 4px;
+    padding-left: 10px;
 }
 .selected-view .selected-item:hover {
-    background-color: #eee;
+    color: #2693ff;
     cursor: pointer;
 }
-.selected-view .select-group,
 .selected-view .select-action {
-    padding: 10px;
-    box-sizing: border-box;
+    margin: 10px;
 }
-.selected-view .select-group {
-    box-shadow: inset 3px 0px 3px #999;
-    background-color: white;
-    color: #333;
-}
-.selected-view .select-action p {
+.select-group {
     margin-bottom: 10px;
 }
-
-/*
-.header-content {
-    position: fixed;
-    left: 320px;
-    top: 0px;
-    padding-top: 7px;
-    width: 400px;
-    z-index: 10;
-}
-*/
-
 .header {
     padding: 10px 0px 3px 10px;
     text-transform: uppercase;
@@ -718,11 +700,11 @@ right: 250px;
 .list .dataset.selected:hover {
     background-color: #2693ff;
 }
-.list-header {
+.stats {
     opacity: 0.5;
 }
 .list .subjects {
-    border-bottom: 1px solid #eee;
+    border-top: 1px solid #eee;
     padding: 5px 0px;
 }
 .list .truncate {
@@ -752,6 +734,8 @@ width: 50px;
 transition: 0.3s width;
 margin: 6px 0px;
 cursor: pointer;
+position: relative;
+top: -1px;
 }
 .filter:focus {
 opacity: 1;
@@ -764,6 +748,11 @@ opacity: 1;
 background-color: #2693ff;
 color: white;
 width: 100%;
+}
+.list-header {
+opacity: 0.4;
+padding-top: 5px;
+text-transform: uppercase;
 }
 </style>
 

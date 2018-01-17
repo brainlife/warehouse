@@ -92,7 +92,7 @@ h3 {
 h4 {
     font-size: 16px;
     padding: 10px 15px;
-    color: #777;
+    opacity: 0.3;
     text-transform: uppercase;
     margin-bottom: 0px;
 }
@@ -115,7 +115,7 @@ h5 {
     background-color: #2693ff;
 }
 .project .desc {
-    opacity: 0.7;
+    opacity: 0.6;
     font-size: 80%;
     line-height: 140%;
 

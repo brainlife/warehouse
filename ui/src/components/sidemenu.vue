@@ -72,9 +72,9 @@ export default {
         is_admin: function() {
             if( Vue.config.user && 
                 Vue.config.user.scopes.warehouse && 
-                Vue.config.user.scopes.warehouse.indexOf('admin') &&
+                ~Vue.config.user.scopes.warehouse.indexOf('admin') &&
                 Vue.config.user.scopes.amaretti && 
-                Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
+                ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
             return false;
         }
     },
