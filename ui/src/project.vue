@@ -9,155 +9,156 @@
         </b-tabs>
     </div><!--header-->
     <div class="page-content">
-        <div class="margin20">
-
-            <!--detail-->
-            <div v-if="tabs[tab].id == 'detail'">
-                <b-row>
-                    <b-col cols="2">
-                        <projectavatar :project="selected"/>
-                    </b-col>
-                    <b-col>
-                        <div style="float: right;" v-if="selected._canedit">
-                            <div @click="remove()" v-if="!selected.removed" class="button button-danger">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
-                            <div @click="edit()" class="button">
-                                <icon name="pencil" scale="1.25"/>
-                            </div>
+        <!--detail-->
+        <div v-if="tabs[tab].id == 'detail'" class="margin20">
+            <b-row>
+                <b-col cols="2">
+                    <projectavatar :project="selected"/>
+                </b-col>
+                <b-col>
+                    <div style="float: right;" v-if="selected._canedit">
+                        <div @click="remove()" v-if="!selected.removed" class="button button-danger">
+                            <icon name="trash" scale="1.25"/>
                         </div>
+                        <div @click="edit()" class="button">
+                            <icon name="pencil" scale="1.25"/>
+                        </div>
+                    </div>
 
-                        <h3 style="color: #666; margin-bottom: 10px;">
-                            <projectaccess :access="selected.access"/>
-                            {{selected.name}}
-                        </h3>
-                        <el-alert v-if="selected.removed" style="border-radius: 0px" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
-                        <p style="opacity: 0.8;">{{selected.desc}}</p>
-                    </b-col>
-                </b-row>
+                    <h3 style="color: #666; margin-bottom: 10px;">
+                        <projectaccess :access="selected.access"/>
+                        {{selected.name}}
+                    </h3>
+                    <el-alert v-if="selected.removed" style="border-radius: 0px" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
+                    <p style="opacity: 0.8;">{{selected.desc}}</p>
+                </b-col>
+            </b-row>
 
-                <b-row>
-                    <b-col cols="2">
-                        <b class="text-muted">Admins</b>
-                    </b-col>
-                    <b-col>
-                        <p v-for="c in selected.admins" :key="c._id">
-                            <contact :id="c"/>
-                        </p>
-                        <p class="text-muted">Users who can update name / desc / project members</p>
-                    </b-col>
-                </b-row>
-                
-                <b-row>
-                    <b-col cols="2"> 
-                        <b class="text-muted">Members</b>
-                    </b-col>
-                    <b-col>
-                        <p v-for="c in selected.members" :key="c._id">
-                            <contact :id="c"/>
-                        </p>
-                        <p class="text-muted">Users who can update datasets published on this project</p>
-                    </b-col>
-                </b-row>
-                <br>
-                <b-row>
-                    <b-col cols="2"> 
-                        <b class="text-muted">README</b>
-                    </b-col>
-                    <b-col cols="10">
-                        <p class="text-muted" v-if="!selected.readme">Please edit README content</p>
-                        <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
-                    </b-col>
-                </b-row>
+            <b-row>
+                <b-col cols="2">
+                    <b class="text-muted">Admins</b>
+                </b-col>
+                <b-col>
+                    <p v-for="c in selected.admins" :key="c._id">
+                        <contact :id="c"/>
+                    </p>
+                    <p class="text-muted">Users who can update name / desc / project members</p>
+                </b-col>
+            </b-row>
+            
+            <b-row>
+                <b-col cols="2"> 
+                    <b class="text-muted">Members</b>
+                </b-col>
+                <b-col>
+                    <p v-for="c in selected.members" :key="c._id">
+                        <contact :id="c"/>
+                    </p>
+                    <p class="text-muted">Users who can update datasets published on this project</p>
+                </b-col>
+            </b-row>
+            <br>
+            <b-row>
+                <b-col cols="2"> 
+                    <b class="text-muted">README</b>
+                </b-col>
+                <b-col cols="10">
+                    <p class="text-muted" v-if="!selected.readme">Please edit README content</p>
+                    <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
+                </b-col>
+            </b-row>
 
-                <b-row>
-                    <b-col cols="2">
-                        <b class="text-muted">Comments</b>
-                    </b-col>
-                    <b-col>
-                        <vue-disqus shortname="brain-life" :identifier="selected._id"/>
-                    </b-col>
-                </b-row>
+            <b-row>
+                <b-col cols="2">
+                    <b class="text-muted">Comments</b>
+                </b-col>
+                <b-col>
+                    <vue-disqus shortname="brain-life" :identifier="selected._id"/>
+                </b-col>
+            </b-row>
 
-            </div>
+        </div>
 
-            <div v-if="tabs[tab].id == 'dataset'">
-                <datasets :project="selected"></datasets>
-            </div>
+        <div v-if="tabs[tab].id == 'dataset'">
+            <datasets :project="selected"></datasets>
+        </div>
 
-            <div v-if="tabs[tab].id == 'process'">
-                <b-alert show>
-                    <b>Coming Soon!</b> 
-                    Processes page will be moved here soon by organizing each process under a specific project.
-                    For now please visit the old processes page via the left hand side menu.
-                </b-alert>
-                <processes :project="selected"/> 
-            </div>
+        <div v-if="tabs[tab].id == 'process'">
+            <!--
+            <b-alert show>
+                <b>Coming Soon!</b> 
+                Processes page will be moved here soon by organizing each process under a specific project.
+                For now please visit the old processes page via the left hand side menu.
+            </b-alert>
+            -->
+            <processes :project="selected"/> 
+        </div>
 
-            <div v-if="tabs[tab].id == 'pipeline'">
-                <b-alert show><b>Coming Soon!</b> You will be able to view / register new pipeline rules.</b-alert>
+        <div v-if="tabs[tab].id == 'pipeline'">
+            <b-alert show><b>Coming Soon!</b> You will be able to view / register new pipeline rules.</b-alert>
+            <div class="margin20">
                 <p class="text-muted" v-if="!rules || rules.length == 0">No pipline registered</p>
                 <div v-for="rule in rules" :key="rule._id">
                     <pre v-highlightjs><code class="json hljs">{{rule}}</code></pre>
                 </div>
             </div>
-
-            <div v-if="tabs[tab].id == 'pub'">
-                <div v-if="publishing">
-                    <h3 style="opacity: 0.7">New Publication</h3>
-                    <publisher :project="selected" @close="publishing = false" @submit="publish"/>
-                </div>
-                <div v-else-if="pub_editing">
-                    <h3 style="opacity: 0.7">Edit Publication</h3>
-                    <p style="opacity: 0.7">Only the publication metadata can be edited at this time. To update published datasets, please contact administrator.</p>
-                    <pubform :pub="pub_editing" @submit="save_pub">
-                        <button type="button" class="btn btn-secondary" @click="tab_change()">Cancel</button>
-                    </pubform>
-                </div>
-                <div v-else>
-                    <b-card no-body>
-                        <b-list-group flush>
-                            <b-list-group-item v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed}">
-                                <b-row>
-                                <b-col>
-                                    <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
-                                    <b>{{pub.name}}</b><br>
-                                    <p style="opacity: 0.8;">{{pub.desc}}</p>
-                                </b-col>
-                                <b-col cols="2">
-                                    <div class="button" style="float: right;" @click.stop="edit_pub(pub)">
-                                        <icon name="pencil"/>
-                                    </div>
-                                    <div class="button" style="float: right;" @click.stop="open_pub(pub)">
-                                        <icon name="eye"/>
-                                    </div>
-                                    <span style="clear: right; float: right; opacity: 0.7;"><b>{{new Date(pub.create_date).toLocaleDateString()}}</b></span>
-                                    <!--
-                                    <contact :id="pub.user_id"/>     
-                                    -->
-                                </b-col>
-                                </b-row>
-                            </b-list-group-item>
-                        </b-list-group>
-                        <p class="text-muted" style="margin: 20px;" v-if="!pubs || pubs.length == 0">No publication registered for this project</p>
-                    </b-card>
-
-                    <!--space to make sure add button won't overwrap the pub list-->
-                    <p style="padding-top: 100px;">&nbsp;</p>
-                    <b-button v-if="selected._canedit" class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
-                </div>
-            </div>
-
-            <!--
-            <tr>
-                <th>TODO</th>
-                <td>
-                    <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this project?</p>
-                    <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
-                </td>
-            </tr>
-            -->
         </div>
+
+        <div v-if="tabs[tab].id == 'pub'" class="margin20">
+            <div v-if="publishing">
+                <h3 style="opacity: 0.7">New Publication</h3>
+                <publisher :project="selected" @close="publishing = false" @submit="publish"/>
+            </div>
+            <div v-else-if="pub_editing">
+                <h3 style="opacity: 0.7">Edit Publication</h3>
+                <p style="opacity: 0.7">Only the publication metadata can be edited at this time. To update published datasets, please contact administrator.</p>
+                <pubform :pub="pub_editing" @submit="save_pub">
+                    <button type="button" class="btn btn-secondary" @click="tab_change()">Cancel</button>
+                </pubform>
+            </div>
+            <div v-else>
+                <b-card no-body>
+                    <b-list-group flush>
+                        <b-list-group-item v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed}">
+                            <b-row>
+                            <b-col>
+                                <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
+                                <b>{{pub.name}}</b><br>
+                                <p style="opacity: 0.8;">{{pub.desc}}</p>
+                            </b-col>
+                            <b-col cols="2">
+                                <div class="button" style="float: right;" @click.stop="edit_pub(pub)">
+                                    <icon name="pencil"/>
+                                </div>
+                                <div class="button" style="float: right;" @click.stop="open_pub(pub)">
+                                    <icon name="eye"/>
+                                </div>
+                                <span style="clear: right; float: right; opacity: 0.7;"><b>{{new Date(pub.create_date).toLocaleDateString()}}</b></span>
+                                <!--
+                                <contact :id="pub.user_id"/>     
+                                -->
+                            </b-col>
+                            </b-row>
+                        </b-list-group-item>
+                    </b-list-group>
+                    <p class="text-muted" style="margin: 20px;" v-if="!pubs || pubs.length == 0">No publication registered for this project</p>
+                </b-card>
+
+                <!--space to make sure add button won't overwrap the pub list-->
+                <p style="padding-top: 100px;">&nbsp;</p>
+                <b-button v-if="selected._canedit" class="button-fixed" @click="start_publish" title="Create new publication"><icon name="plus" scale="2"/></b-button>
+            </div>
+        </div>
+
+        <!--
+        <tr>
+            <th>TODO</th>
+            <td>
+                <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this project?</p>
+                <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
+            </td>
+        </tr>
+        -->
     </div><!--page-content-->
 </div>
 </template>
@@ -226,7 +227,6 @@ export default {
     },
 
     mounted: function() {
-
         this.$http.get('project', {params: {
             find: JSON.stringify({
             $or: [

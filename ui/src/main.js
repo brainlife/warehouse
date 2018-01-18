@@ -9,8 +9,6 @@ import '../theme/index.css'
 import 'select2/dist/css/select2.css'
 import 'highlight.js/styles/default.css'
 
-import './warehouse.css'
-
 //3rd parties
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
@@ -32,7 +30,7 @@ import BootstrapVue from 'bootstrap-vue' //bootstrap will eventually replace Ele
 
 import router from './router.js'
 import warehouse from './warehouse'
-
+import VueTimeago from 'vue-timeago'
 
 Vue.config.productionTip = false
 
@@ -45,6 +43,14 @@ Vue.use(Notifications);
 Vue.use(VueLazyload)
 Vue.use(BootstrapVue);
 Vue.use(Vue2Filters)
+
+Vue.use(VueTimeago, {
+    name: 'timeago',
+    locale: 'en-US',
+    locales: {
+        'en-US': require('vue-timeago/locales/en-US.json')
+    }
+});
 
 var jwt_decode = require('jwt-decode');
 

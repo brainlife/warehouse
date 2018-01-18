@@ -23,7 +23,7 @@
                 </span>
                 {{file.filename}}
                 <span style="float: right; width: 150px;">
-                    <timeago :since="file.attrs.mtime*1000" :format="formatTime" :auto-update="60"></timeago>
+                    <timeago :since="file.attrs.mtime*1000"/>
                 </span>
                 <mute style="float: right; margin-right: 20px;">{{file.attrs.size|filesize}}</mute>
             </div>
@@ -44,17 +44,7 @@
 
 <script>
 import Vue from 'vue'
-
 import mute from '@/components/mute'
-import VueTimeago from 'vue-timeago'
-
-Vue.use(VueTimeago, {
-    name: 'timeago',
-    locale: 'en-US',
-    locales: {
-        'en-US': require('vue-timeago/locales/en-US.json')
-    }
-});
 
 export default {
     name: "filebrowser", //needed to recurse itself
@@ -90,9 +80,11 @@ export default {
     },
     
     methods: {
+        /*
         formatTime(time) {
             return new Date(time).toLocaleString();
         },
+        */
         subpath: function(file) {
             let subpath = "";
             if(this.path) subpath += this.path;

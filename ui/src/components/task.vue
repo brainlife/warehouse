@@ -19,13 +19,13 @@
             </div>
             <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
-                    <time v-if="task.status == 'requested'"><timeago :since="task.create_date" :format="formatTime" :auto-update="60"></timeago></time>
-                    <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date" :format="formatTime" :auto-update="60"></timeago></time>
-                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :format="formatTime" :auto-update="60"></timeago></time>
-                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :format="formatTime" :auto-update="60"></timeago></time>
-                    <time v-if="task.status == 'failed'"><timeago :since="task.fail_date" :format="formatTime" :auto-update="60"></timeago></time>
-                    <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :format="formatTime" :auto-update="60"></timeago></time>
-                    <!--<time v-if="task.status == 'stopped'"><timeago :since="task.stop_date" :format="formatTime" :auto-update="60"></timeago></time>-->
+                    <time v-if="task.status == 'requested'"><timeago :since="task.create_date"/></time>
+                    <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date"/></time>
+                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date"/></time>
+                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date"/></time>
+                    <time v-if="task.status == 'failed'"><timeago :since="task.fail_date"/></time>
+                    <time v-if="task.status == 'removed'"><timeago :since="task.remove_date"/></time>
+                    <!--<time v-if="task.status == 'stopped'"><timeago :since="task.stop_date"/></time>-->
                 </small>
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
@@ -63,7 +63,7 @@
         </transition>
     </div>
 
-    <div v-if="task.status != 'removed'">
+    <div v-if="task.resource_ids.length > 0">
         <div @click="toggle('rawoutput')" class="toggler">
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
         </div>
@@ -86,15 +86,6 @@ import statusicon from '@/components/statusicon'
 import mute from '@/components/mute'
 import tags from '@/components/tags'
 import taskconfig from '@/components/taskconfig'
-import VueTimeago from 'vue-timeago'
-
-Vue.use(VueTimeago, {
-    name: 'timeago',
-    locale: 'en-US',
-    locales: {
-        'en-US': require('vue-timeago/locales/en-US.json')
-    }
-});
 
 export default {
     props: ['task'],
@@ -137,9 +128,11 @@ export default {
             } else this.activeSections[section] = !this.activeSections[section];
         },
 
+        /*
         formatTime(time) {
             return new Date(time).toLocaleString();
         },
+        */
         rerun() {
             this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.task._id)
             .then(res=>{

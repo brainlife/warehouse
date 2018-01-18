@@ -121,12 +121,13 @@
             </div>
         </task>
 
+        <!--task summary (hidden)-->
         <div v-else class="task-summary" style="color: #666;">
-            <statusicon :status="task.status"/>
             <b>
                 <appname v-if="task.config._app" :appid="task.config._app"/>
                 <span v-else class="text-muted">{{task.name}}</span>
             </b>
+            <statustag :status="task.status"/>
         </div>
     </div>
 
@@ -296,10 +297,10 @@ export default {
     components: { 
         sidemenu, contact, task, 
         message, tags, 
-        filebrowser, pageheader, statustag,
+        filebrowser, pageheader, 
         appavatar, app, archiveform, 
         projectselecter, statusicon, mute,
-        datatypetag, appname,
+        datatypetag, appname, statustag,
     },
 
     data() {

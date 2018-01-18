@@ -9,8 +9,8 @@
         </div>
         <b-tabs class="brainlife-tab" v-model="tab_index">
             <b-tab title="Details"/>
-            <b-tab title="Configuration"/>
             <b-tab title="Input / Output"/>
+            <b-tab title="Configuration Parameter"/>
         </b-tabs>
     </div>
 
@@ -59,6 +59,103 @@
 
             <transition name="slide-fade">
             <div v-if="tab_index == 1">
+                <b-form-group horizontal label="Input Datatype">
+                    <transition-group name="height">
+                    <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
+                        <b-card>
+                            <div class="button button-danger" @click="remove_input(idx)" style="float: right;">
+                                <icon name="trash"/>
+                            </div>
+                            <b-row>
+                                <!-- we probably don't need to expose this to user
+                                <b-col>
+                                    <div class="text-muted">ID</div>
+                                    <el-input v-model="input.id"></el-input>
+                                </b-col>
+                                -->
+                                <b-col>
+                                    <div class="text-muted">Datatype</div>
+                                    <el-select v-model="input.datatype" style="width: 100%;">
+                                        <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                                    </el-select>
+                                </b-col>
+                                <b-col>
+                                    <div class="text-muted">Datatype Tags <small>optional</small></div>
+                                    <tageditor v-if="input.datatype" v-model="input.datatype_tags"/>
+                                    <!--
+                                    <select2 v-if="input.datatype" :options="(datatypes[input.datatype]||{_tags:[]})._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
+                                    -->
+                                </b-col>
+                            </b-row>
+                            <br><b>File Mapping</b><br>
+                            <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
+                            <transition-group name="height">
+                                <b-card v-for="(config, name) in app.config" :key="name" v-if="config.type == 'input' && config.input_id == input.id">
+                                    <div class="button" @click="remove_config(name)" style="float: right">
+                                        <icon name="trash"/>
+                                    </div>
+                                    <b-row>
+                                        <b-col>
+                                            <div class="text-muted">Key</div>
+                                            <el-input v-model="config._id"></el-input>
+                                        </b-col>
+                                        
+                                        <b-col v-if="input.datatype">
+                                            <div class="text-muted">File/Directory</div>
+                                            <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id"></b-form-select>
+                                        </b-col>
+                                    </b-row>
+                                </b-card>
+                            </transition-group>
+                            <br>
+                            <b-button @click="add_config('input', input)" v-if="input.datatype" size="sm"><icon name="plus"/> Add File Mapping</b-button>
+                        </b-card>
+                    </div>
+                    </transition-group>
+                    <p>
+                        <b-button size="sm" @click="add_dataset(app.inputs)" variant="success"><icon name="plus"/> Add Input Dataset</b-button>
+                    </p>
+                </b-form-group>
+
+                <b-form-group horizontal label="Output Datatype">
+                    <transition-group name="height">
+                    <div v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
+                        <b-card>
+                            <div class="button button-danger" @click="app.outputs.splice(idx, 1)" style="float: right">
+                                <icon name="trash"/>
+                            </div>
+                            <b-row>
+                                <b-col>
+                                    <div class="text-muted">Datatype</div>
+                                    <el-select v-model="output.datatype" style="width: 100%">
+                                        <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
+                                    </el-select>
+                                </b-col>
+                                <b-col>
+                                    <div class="text-muted">Datatype Tags <small>optional</small></div>
+                                    <tageditor v-if="output.datatype" v-model="output.datatype_tags"/>
+                                    <!--
+                                    <select2 v-if="output.datatype" :options="datatypes[output.datatype]._tags" 
+                                        v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
+                                    -->
+                                </b-col>
+                                <b-col>
+                                    <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
+                                    <el-input type="textarea" v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
+                                </b-col>
+                            </b-row>
+                        </b-card>
+                    </div>
+                    </transition-group>
+                    <p>
+                        <b-button size="sm" @click="add_dataset(app.outputs)" variant="success"><icon name="plus"/> Add Output Dataset</b-button>
+                    </p>
+                </b-form-group>
+            </div>
+            </transition>
+
+            <transition name="slide-fade">
+            <div v-if="tab_index == 2">
                 <b-form-group>
                     <b-dropdown size="sm" text="Add Configuration Parameter" variant="success">
                         <b-dropdown-item @click="add_config('string')">String</b-dropdown-item>
@@ -176,103 +273,6 @@
                     </div>
                     </transition-group> 
 
-                </b-form-group>
-            </div>
-            </transition>
-
-            <transition name="slide-fade">
-            <div v-if="tab_index == 2">
-                <b-form-group horizontal label="Input Datatype">
-                    <transition-group name="height">
-                    <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
-                        <b-card>
-                            <div class="button button-danger" @click="remove_input(idx)" style="float: right;">
-                                <icon name="trash"/>
-                            </div>
-                            <b-row>
-                                <!-- we probably don't need to expose this to user
-                                <b-col>
-                                    <div class="text-muted">ID</div>
-                                    <el-input v-model="input.id"></el-input>
-                                </b-col>
-                                -->
-                                <b-col>
-                                    <div class="text-muted">Datatype</div>
-                                    <el-select v-model="input.datatype" style="width: 100%;">
-                                        <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                                    </el-select>
-                                </b-col>
-                                <b-col>
-                                    <div class="text-muted">Datatype Tags <small>optional</small></div>
-                                    <tageditor v-if="input.datatype" v-model="input.datatype_tags"/>
-                                    <!--
-                                    <select2 v-if="input.datatype" :options="(datatypes[input.datatype]||{_tags:[]})._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
-                                    -->
-                                </b-col>
-                            </b-row>
-                            <br><b>File Mapping</b><br>
-                            <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
-                            <transition-group name="height">
-                                <b-card v-for="(config, name) in app.config" :key="name" v-if="config.type == 'input' && config.input_id == input.id">
-                                    <div class="button" @click="remove_config(name)" style="float: right">
-                                        <icon name="trash"/>
-                                    </div>
-                                    <b-row>
-                                        <b-col>
-                                            <div class="text-muted">Key</div>
-                                            <el-input v-model="config._id"></el-input>
-                                        </b-col>
-                                        
-                                        <b-col v-if="input.datatype">
-                                            <div class="text-muted">File/Directory</div>
-                                            <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id"></b-form-select>
-                                        </b-col>
-                                    </b-row>
-                                </b-card>
-                            </transition-group>
-                            <br>
-                            <b-button @click="add_config('input', input)" v-if="input.datatype" size="sm"><icon name="plus"/> Add File Mapping</b-button>
-                        </b-card>
-                    </div>
-                    </transition-group>
-                    <p>
-                        <b-button size="sm" @click="add_dataset(app.inputs)" variant="success"><icon name="plus"/> Add Input Dataset</b-button>
-                    </p>
-                </b-form-group>
-
-                <b-form-group horizontal label="Output Datatype">
-                    <transition-group name="height">
-                    <div v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
-                        <b-card>
-                            <div class="button button-danger" @click="app.outputs.splice(idx, 1)" style="float: right">
-                                <icon name="trash"/>
-                            </div>
-                            <b-row>
-                                <b-col>
-                                    <div class="text-muted">Datatype</div>
-                                    <el-select v-model="output.datatype" style="width: 100%">
-                                        <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                                    </el-select>
-                                </b-col>
-                                <b-col>
-                                    <div class="text-muted">Datatype Tags <small>optional</small></div>
-                                    <tageditor v-if="output.datatype" v-model="output.datatype_tags"/>
-                                    <!--
-                                    <select2 v-if="output.datatype" :options="datatypes[output.datatype]._tags" 
-                                        v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
-                                    -->
-                                </b-col>
-                                <b-col>
-                                    <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
-                                    <el-input type="textarea" v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
-                                </b-col>
-                            </b-row>
-                        </b-card>
-                    </div>
-                    </transition-group>
-                    <p>
-                        <b-button size="sm" @click="add_dataset(app.outputs)" variant="success"><icon name="plus"/> Add Output Dataset</b-button>
-                    </p>
                 </b-form-group>
             </div>
             </transition>

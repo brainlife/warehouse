@@ -2,6 +2,7 @@
 <div>
     <div :class="{rightopen: selected_count}">
         <div class="page-header">
+            <!--TODO - do I really need b-row here?-->
             <b-row>
                 <b-col cols="4">
                     <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
@@ -74,8 +75,11 @@
 
     <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
         <h4 class="header">
-            <icon name="check-square"></icon> {{selected_count}} Selected 
+            <div class="button" style="float: right; position: relative; top: -3px" @click="clear_selected()"><icon name="close"/></div>
+            <icon name="check-square" style="position: relative; top: 3px; margin-right: 10px;"/> {{selected_count}} Selected 
         </h4>
+
+
         <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
             <datatypetag :datatype="datatypes[did]"/>
             <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open_dataset(id)">
@@ -88,14 +92,15 @@
                 </small>
             </div>
         </div>
-        <b-button size="sm" variant="link" @click="clear_selected()" style="padding: 5px;"><icon name="close"/> Unselect All</b-button>
+
         <div class="select-action">
-            <b-button-group>
-                <b-button size="sm" v-b-modal.viewSelecter @click="set_viewsel_options">View</b-button>
-                <b-button size="sm" @click="download" title="Organize selected datasets into BIDS data structure and download.">Download</b-button>
-                <b-button size="sm" @click="process" title="Run applications on selected datasets by creating a new process.">Process</b-button>
-            </b-button-group>
+                <!--
+                <div class="button" v-b-modal.viewSelecter @click="set_viewsel_options"><icon name="eye"/></div>
+                -->
+                <div class="button" @click="download" title="Organize selected datasets into BIDS data structure and download."><icon name="download"/></div>
+                <div class="button" @click="process" title="Run applications on selected datasets by creating a new process."><icon name="paper-plane"/></div>
         </div>
+        <br clear="both">
     </div>
 </div>
 </template>
@@ -626,8 +631,7 @@ margin-bottom: 7px;
 .page-header {
 top: 50px;
 padding-right: 15px; /*to align with scrollbar*/
-height: 70px;
-border-bottom: 1px solid #eee;
+height: 45px;
 }
 .page-header h4 {
 font-size: 16px;
@@ -638,7 +642,7 @@ color: #999;
 .page-content {
 background-color: white;
 transition: right 0.2s, bottom 0.2s;
-top: 90px;
+top: 95px;
 overflow-x: hidden;
 font-size: 12px;
 }
@@ -652,7 +656,8 @@ right: 250px;
     color: white;
 }
 .selected-view {
-    background-color: #ddd;
+    border-left: 1px solid #ddd;
+    background-color: #eee;
     overflow-x: hidden;
     position: fixed;
     right: -250px;
@@ -661,16 +666,19 @@ right: 250px;
     bottom: 0px;
     z-index: 2;
     transition: right 0.2s;
-    box-shadow: inset 1px 0px 1px #aaa;
 }
 .selected-view .header {
-    color: #999;
+    color: #666;
+    background-color: rgba(0,0,0,0.1);
+    padding: 10px;
+    text-transform: uppercase;
 }
 .selected-view-open {
     right: 0px;
 }
 .selected-view .selected-item {
-    background-color: rgba(0,0,0,0.05);
+    background-color: rgba(0,0,0,0.04);
+    margin-bottom: 1px;
     padding: 4px;
     padding-left: 10px;
 }
@@ -679,14 +687,10 @@ right: 250px;
     cursor: pointer;
 }
 .selected-view .select-action {
-    margin: 10px;
+    float: right;
 }
 .select-group {
     margin-bottom: 10px;
-}
-.header {
-    padding: 10px 0px 3px 10px;
-    text-transform: uppercase;
 }
 .list .dataset {
     transition: background-color 0.3s;
@@ -735,7 +739,6 @@ transition: 0.3s width;
 margin: 6px 0px;
 cursor: pointer;
 position: relative;
-top: -1px;
 }
 .filter:focus {
 opacity: 1;

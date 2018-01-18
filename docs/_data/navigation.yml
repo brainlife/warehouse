@@ -25,6 +25,8 @@ docs:
         url: /helloworld
       - title: "Registering App"
         url: /registerapp
+      - title: "Dockerizing App"
+        url: /dockerapp
       - title: "Customizing Lifecycle Hooks"
         url: /customhooks
 

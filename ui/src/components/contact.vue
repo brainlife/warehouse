@@ -1,11 +1,11 @@
 <template>
-<div class="contact" :class="{'text-muted': !profile.active}">
+<div class="contact" :class="{'text-muted': !profile.active}" :title="profile.email">
     <img :src="gurl">
     <div class="name" v-if="profile.fullname">
         {{profile.fullname||'No Name'}}
     </div><div class="name" v-else>
         <span class="text-muted">No Name</span>
-    </div><div class="email" v-if="profile.email">&lt;{{profile.email}}&gt;</div>
+    </div><div class="email" v-if="profile.email && !short">&lt;{{profile.email}}&gt;</div>
 </div>
 </template>
 
@@ -16,7 +16,7 @@ import md5 from 'md5'
 var profiles = null;
 
 export default {
-    props: ['id', 'fullname', 'email'],
+    props: ['id', 'fullname', 'email', 'short'],
     data () {
         return {
             profile: {
@@ -79,6 +79,11 @@ margin: 2px 0px;
 line-height: 22px;
 box-shadow: 1px 1px 2px rgba(0,0,0,0.15);
 margin-right: 5px;
+
+/*
+text-overflow: ellipsis;
+overflow: hidden;
+*/
 }
 .contact img {
 float: left;
