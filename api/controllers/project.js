@@ -140,48 +140,51 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     db.Projects.findById(id, (err, project)=>{
         if(err) return next(err);
         if(!project) return res.status(404).end();
+        if(!canedit(req.user, project)) return res.status(401).end("you are not administartor of this project");
+        
+        //user can't update following fields
+        delete req.body.user_id;
+        delete req.body.create_date;
+        delete req.body.group_id;
+        for(var k in req.body) project[k] = req.body[k];
 
-        //check access
-        //if(project.user_id != req.user.sub && !~project.admins.indexOf(req.user.sub)) {
-        if(canedit(req.user, project)) {
-            //user can't update some fields
-            delete req.body.user_id;
-            delete req.body.create_date;
-            for(var k in req.body) project[k] = req.body[k];
+        function post_process() {
             project.save((err)=>{
                 if(err) return next(err);
-                project = JSON.parse(JSON.stringify(project));
-				project._canedit = canedit(req.user, project);
-
-                if(project.group_id) {
-                    //update group
-                    request.put({ url: config.auth.api+"/group/"+project.group_id, headers: { authorization: req.headers.authorization }, json: true,
-                        body: {
-                            //active: !req.body.removed, //I think I want group to be active even if project is removed
-                            desc: req.body.desc,
-                            admins: req.body.admins,
-                            members: req.body.members,
-                        }
-                    }, (err, _res, group)=>{
-                        if(err) return next(err);
-                        res.json(project);
-                    });
-                } else {
-                    //create group (for backward compatibility)
-                    request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,
-                        body: {
-                            name: new Date().getTime(), //TODO - better name?
-                            desc: req.body.desc,
-                            admins: req.body.admins,
-                            members: req.body.members,
-                        }
-                    }, (err, _res, group)=>{
-                        if(err) return next(err);
-                        res.json(project);
-                    });
-                }
+                //project = JSON.parse(JSON.stringify(project));
+                //project._canedit = canedit(req.user, project);
+                res.json(Object.assign({_canedit: canedit(req.user, project)}, project));
             });
-        } else return res.status(401).end("you are not administartor of this project");
+        }
+
+        if(project.group_id) {
+            logger.debug("update existing group on auth service");
+            request.put({ url: config.auth.api+"/group/"+project.group_id, headers: { authorization: req.headers.authorization }, json: true,
+                body: {
+                    name: req.body.name,
+                    desc: "For project "+project._id,
+                    admins: req.body.admins,
+                    members: req.body.members,
+                }
+            }, (err, _res, group)=>{
+                if(err) return next(err);
+                post_process();
+            });
+        } else {
+            logger.debug("create new group (for old project - for backward compatibility)");
+            request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,
+                body: {
+                    name: req.body.name,
+                    desc: "For project "+project._id,
+                    admins: req.body.admins,
+                    members: req.body.members,
+                }
+            }, (err, _res, body)=>{
+                if(err) return next(err);
+                project.group_id = body.group.id;
+                post_process();
+            });
+        }
     });
 });
 
