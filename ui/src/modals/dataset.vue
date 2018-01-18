@@ -29,9 +29,26 @@
         <b-tabs class="brainlife-tab" v-model="tab_index">
             <b-tab title="Details">
                 <div class="dataset-detail">
-                    <el-alert v-if="dataset.removed" style="border-radius: 0px" title="This dataset has been removed" type="warning" show-icon :closable="false"></el-alert>
+                    <b-alert :show="dataset.removed" variant="warning">This dataset has been removed</b-alert>
                     <!-- detail -->
                     <div class="margin20">
+                        <b-row>
+                            <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
+                            <b-col>
+                                <div v-if="dataset._canedit">
+                                    <b-row>
+                                        <b-col v-for="(m, id) in dataset.meta" :key="id">
+                                            <b-input-group :left="id.toUpperCase()">
+                                                <b-form-input v-model="dataset.meta[id]" @keyup.native="update_dataset('meta')"/>
+                                            </b-input-group>
+                                        </b-col>
+                                    </b-row>
+                                </div>
+                                <metadata v-else :metadata="dataset.meta"></metadata>
+                                <br>
+                            </b-col>
+                        </b-row>
+
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Description</b>
@@ -61,26 +78,9 @@
                             </b-col>
                         </b-row>
 
-                        <b-row>
-                            <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
-                            <b-col>
-                                <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
-                                <br>
-                            </b-col>
-                        </b-row>
-
-                        <b-row v-if="dataset.prov && dataset.prov.app">
-                            <b-col cols="3"><b class="text-muted">App</b></b-col>
-                            <b-col>
-                                <app slot="header" :appid="dataset.prov.app">
-                                    <taskconfig style="margin: 10px;" :taskid="dataset.prov.task_id"/>
-                                </app>
-                                <br>
-                            </b-col>
-                        </b-row>
 
                         <b-row>
-                            <b-col cols="3"><b class="text-muted">Storage</b></b-col>
+                            <b-col cols="3"><b class="text-muted">Stored in</b></b-col>
                             <b-col>
                                 <p>
                                     <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
@@ -98,37 +98,51 @@
                                         Status is unknown
                                     </span> 
                                     <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
-                                        <icon name="bookmark"/>
+                                        <b-badge variant="success">Backed Up</b-badge>
                                     </span>
                                 </p>
                             </b-col>
                         </b-row>
 
                         <b-row>
-                            <b-col cols="3"><b class="text-muted">Archived by</b></b-col>
+                            <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
+                            <b-col>
+                                <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+                                <br>
+                            </b-col>
+                        </b-row>
+
+                        <b-row v-if="dataset.prov && dataset.prov.app">
+                            <b-col cols="3"><b class="text-muted">Produced by</b></b-col>
+                            <b-col>
+                                <app slot="header" :appid="dataset.prov.app" :clickable="false" @click.native="openapp(dataset.prov.app)">
+                                    <!--TODO I should allow just passing this.task-->
+                                    <taskconfig style="margin: 10px;" :taskid="dataset.prov.task_id"/>
+                                </app>
+                                <br>
+                            </b-col>
+                        </b-row>
+
+                        <b-row v-if="task && task.product">
+                            <b-col cols="3"><b class="text-muted">Task Result <small>(product.json)</small></b></b-col>
                             <b-col>
                                 <p>
-                                    <contact :id="dataset.user_id"/> <span class="text-muted">at</span> {{new Date(dataset.create_date).toLocaleString()}}
+                                    <pre v-highlightjs><code class="json">{{task.product}}</code></pre>
                                 </p>
                             </b-col>
                         </b-row>
 
+
                         <b-row>
-                            <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
+                            <b-col cols="3"><b class="text-muted">Archived by</b></b-col>
                             <b-col>
-                                <div v-if="dataset._canedit">
-                                    <el-row>
-                                        <el-col :span="6" v-for="(m, id) in dataset.meta" :key="id">
-                                            <el-input type="text" v-model="dataset.meta[id]" @change="update_dataset('meta')">
-                                                <template slot="prepend"><span style="text-transform: uppercase;">{{id}}</span></template>
-                                            </el-input>
-                                        </el-col>
-                                    </el-row>
-                                </div>
-                                <metadata v-else :metadata="dataset.meta"></metadata>
-                                <br>
+                                <p>
+                                    <contact :id="dataset.user_id"/> 
+                                    <span class="text-muted">at {{new Date(dataset.create_date).toLocaleString()}}</span>
+                                </p>
                             </b-col>
                         </b-row>
+
 
                         <b-row v-if="dataset.download_count > 0">
                             <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
@@ -230,6 +244,7 @@ export default {
             this.load(id);
         });
 
+        //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
         document.addEventListener("keydown", e => {
             if (e.keyCode == 27) {
                 this.close();

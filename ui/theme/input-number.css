@@ -639,9 +639,13 @@
   .el-input-group--prepend .el-input__inner {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0; }
+  .el-input-group--prepend .el-select .el-input.is-focus .el-input__inner {
+    border-color: transparent; }
   .el-input-group--append .el-input__inner {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0; }
+  .el-input-group--append .el-select .el-input.is-focus .el-input__inner {
+    border-color: transparent; }
 
 .el-textarea {
   display: inline-block;

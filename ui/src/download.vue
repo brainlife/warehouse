@@ -113,13 +113,15 @@ export default {
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
-                        key: Vue.config.user.sub+"."+this.instance._id+".#",
+                        //key: Vue.config.user.sub+"."+this.instance._id+".#",
+                        key: this.instance._id+".#",
                     }
                 }));
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
-                        key: Vue.config.user.sub+"."+this.instance._id,
+                        //key: Vue.config.user.sub+"."+this.instance._id,
+                        key: "*."+this.instance._id, //any group, but specific instance
                     }
                 }));
             }

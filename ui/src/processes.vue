@@ -118,6 +118,7 @@ export default {
                 find: JSON.stringify({
                     "config.brainlife": true,
                     status: {$ne: "removed"},
+                    group_id: {$exists: false},
                     "config.removing": {$exists: false},
                 }),
                 limit: 2000,
@@ -163,16 +164,15 @@ export default {
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
-                        key: Vue.config.user.sub+".#",
+                        //key: Vue.config.user.sub+".#",
+                        key: "na.#", //any instance under "na" group (instances that doen't belong to any group)
                     }
                 }));
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
-                switch(event.dinfo.exchange) {
-                case "wf.instance":
-                    console.log("instance update");
-                    console.dir(event);
+                console.log("instance update----------------", event);
+                if(event.dinfo && event.dinfo.exchange == "wf.instance") {
                     var instance = this.instances.find(i=>i._id == event.msg._id);
                     if(instance) {
                         for(var k in event.msg) instance[k] = event.msg[k];

@@ -77,7 +77,7 @@ var projectSchema = mongoose.Schema({
     admins: [ String ], //list of users who can administer this project (co-PIs?)
     members: [ String ], //list of users who can access things under this project
 
-    group_id: String, //group id from auth service to host admins/members
+    group_id: Number, //group id from auth service to host admins/members
 
     tags: [String], //used to classify projects
 
