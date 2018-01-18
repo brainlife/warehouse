@@ -1,6 +1,6 @@
 <template>
 <div v-if="app && projects">
-    <el-alert v-if="!this.resource_available" style="margin-bottom:14px;" title="There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available." type="warning" show-icon :closable="false"></el-alert>
+    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available.</b-alert>
     
     <b-form-group>
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
