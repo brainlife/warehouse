@@ -7,7 +7,8 @@
             <div class="process-list-toggler" @click="show_process_list = !show_process_list"> <icon scale="1.5" name="bars"/> </div>
             <div v-if="selected">
                 <statusicon :status="selected.status" :scale="1.75" style="float: left; margin: 15px;opacity: 0.8;"/>
-                <div style="margin: 10px; float: right;">
+                <div class="datasets-toggler" @click="show_datasets = !show_datasets;"><icon name="bars" scale="1.25"/></div>
+                <div style="margin: 12px; float: right;">
                     <div v-if="!selected.config.removing" class="button" @click="remove()" title="Remove Process"><icon name="trash" scale="1.25"/></div>
                 </div>
                 <div class="description">
@@ -55,7 +56,7 @@
             <div v-if="!selected">
                 <h3 class="text-muted" style="padding-top: 30px; padding-left: 30px;">Please select or create a new process</h3>
             </div>
-            <process2 v-if="selected && selected.config.type == 'v2'" :instance="selected"></process2>
+            <process2 v-if="selected && selected.config.type == 'v2'" :instance="selected" :showDatasets="show_datasets"></process2>
         </div>
     </div>
 </div>
@@ -88,6 +89,7 @@ export default {
             apps: null, //keyed by _id
             ws: null, //websocket
             show_process_list: false,
+            show_datasets: false,
             
             process_filter_tab: 0,
             process_filter_tabs: [ 
@@ -269,7 +271,7 @@ left: 390px;
 right: 300px;
 top: 110px;
 bottom: 0px;
-transition: left 0.5s;
+transition: left 0.5s, right 0.5s;
 overflow-x: hidden;
 }
 .process-list-header {
@@ -303,13 +305,16 @@ margin-right: 300px;
 left: 290px;
 right: inherit;
 }
-.process-list-toggler {
+.process-list-toggler, .datasets-toggler {
     display: none;
     padding: 18px 15px;
     opacity: 0.7;
     cursor: pointer;
 }
-.process-list-toggler:hover {
+.datasets-toggler {
+    float: right;
+}
+.process-list-toggler:hover, .datasets-toggler:hover {
     opacity: 1;
 }
 .process-list-hider {
@@ -354,6 +359,17 @@ right: inherit;
     .process-list-toggler {
         display: inline-block;
         float: left;
+    }
+}
+
+/* The addition of both this and the style change on process2 is ugly, perhaps we could refactor to a single file? */
+@media screen and (max-width: 900px) {
+    .page-content {
+        right: 0;
+    }
+    .datasets-toggler {
+        display: inline-block;
+        float: right;
     }
 }
 

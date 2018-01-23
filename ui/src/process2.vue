@@ -1,6 +1,6 @@
 <template>
 <div v-if="instance">
-    <div class="sidebar">
+    <div :class="{'sidebar':true,'show':showDatasets}">
         <h6>Datasets</h6>
         <div v-for="(dataset,idx) in _datasets" :key="idx" class="dataset clickable" @click="scrollto(dataset.task._id)" :title="dataset.task.name">
             <mute>t.{{dataset.task.config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
@@ -292,7 +292,7 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 const lib = require('./lib');
 
 export default {
-    props: [ 'instance' ],
+    props: [ 'instance', 'showDatasets' ],
 
     components: { 
         sidemenu, contact, task, 
@@ -833,8 +833,19 @@ top: 110px;
 bottom: 0px;
 width: 300px;
 right: 0px;
+z-index:6;
 overflow: auto;
 padding-bottom: 50px; /*so it won't be covered by notification*/
+transition:right 0.5s;
+}
+@media screen and (max-width: 900px) {
+    .sidebar {
+        right: -300px;
+        /* box-shadow: -1px 0px 1px rgba(0,0,0,0.5); */
+    }
+    .sidebar.show {
+        right: 0;
+    }
 }
 .sidebar h6 {
 font-weight: bold;
