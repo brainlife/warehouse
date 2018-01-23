@@ -1,5 +1,7 @@
 <template>
 <div v-if="app && projects">
+    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available.</b-alert>
+    
     <b-form-group>
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col>
@@ -95,6 +97,7 @@ export default {
     data () {
         return {
             app: null,
+            resource_available: null,
             //resource: null,
 
             form: {
@@ -118,6 +121,7 @@ export default {
     mounted: function() {
         //load project names
         console.log("loading projects");
+        
         this.$http.get('project', {params: {
             find: JSON.stringify({
                 $or: [
@@ -151,7 +155,14 @@ export default {
                     Vue.set(this.form.config, k, v.default);
                 }
             }
-        }).catch(err=>{
+            return this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
+                service: this.app.github
+            }});
+        })
+        .then(res => {
+            this.resource_available = !!res.body.resource
+        })
+        .catch(err=>{
             console.error(err);
         });
     },
