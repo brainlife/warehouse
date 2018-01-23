@@ -122,10 +122,7 @@ ul.items li {
 ul.items li.active {
     padding-left: 0px;
     color: white;
-    border-left: 4px solid #2693ff;
-    /*
-    box-shadow: inset -5px 0 10px rgba(0,0,0,0.2);
-    */
+    border-left: 4px solid #007bff;
     background-color: #1c1c1c;
 }
 ul.items li:hover {

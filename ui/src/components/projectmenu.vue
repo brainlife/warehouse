@@ -112,7 +112,7 @@ h5 {
     background-color: black;
 }
 .project.active {
-    background-color: #2693ff;
+    background-color: #007bff;
 }
 .project .desc {
     opacity: 0.6;

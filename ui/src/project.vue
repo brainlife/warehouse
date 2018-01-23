@@ -160,6 +160,9 @@
         </tr>
         -->
     </div><!--page-content-->
+
+    <!--modal-->
+    <newtask-modal/>
 </div>
 </template>
 
@@ -183,8 +186,10 @@ import datasets from '@/components/datasets'
 import publisher from '@/components/publisher'
 import pubform from '@/components/pubform'
 import processes from '@/components/processes'
-
 import VueDisqus from 'vue-disqus/VueDisqus.vue'
+
+//modals
+import newtaskModal from '@/modals/newtask'
 
 export default {
     components: { 
@@ -194,6 +199,8 @@ export default {
         projectmenu, pubcard, datasets,
         publisher, pubform, VueDisqus,
         processes,
+
+        newtaskModal,
     },
 
     data () {

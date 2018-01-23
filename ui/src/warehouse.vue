@@ -3,26 +3,32 @@
     <router-view/>
     <notifications position="bottom right"/>
 
-    <!-- dialogs that can be called from any view -->
-    <datasetselecter/>
+    <!--modal that can be called from any view -->
     <viewselecter/>
     <dataset/>
     <datatype/>
+
+    <!--models only used by project page (TODO - move to project page eventually -->
+    <datasetselecter/>
     <uploader/>
 </div>
 </template>
 
 <script>
 
-import datasetselecter from '@/modals/datasetselecter'
+import Vue from 'vue'
+
+//modals
 import viewselecter from '@/modals/viewselecter'
 import dataset from '@/modals/dataset'
 import datatype from '@/modals/datatype'
+import datasetselecter from '@/modals/datasetselecter'
 import uploader from '@/modals/uploader'
 
 export default {
     components: {
-        viewselecter, datasetselecter, dataset, datatype, uploader,
+        //modals
+        viewselecter, dataset, datatype, uploader, datasetselecter,
     },
 }
 
@@ -114,14 +120,15 @@ cursor: pointer;
 }
 .button {
 display: inline-block;
-color: gray;
+color: rgba(0,0,0,0.5);
 padding: 4px 8px;
 min-width: 25px;
 cursor: pointer;
 border-radius: 3px;
+transition: background-color 0.3s;
 }
 .button:hover {
-background-color: gray;
+background-color: rgba(0,0,0,0.3);
 color: white;
 }
 .button-danger {
@@ -191,6 +198,32 @@ border: none;
 }
 #warehouse .card {
 border-radius: 0;
+}
+
+.brainlife-modal {
+background-color: #fff;
+height: 100%;
+padding: 0px;
+box-shadow: 0 0 20px #000;
+position: relative;
+}
+.brainlife-modal-overlay {
+position: fixed;
+top: 0px;
+left: 0px;
+bottom: 0px;
+right: 0px;
+background-color: rgba(0,0,0,0.3);
+z-index: 10;
+padding: 30px;
+}
+.brainlife-modal-header {
+background-color: white;
+padding: 10px 20px;
+box-shadow: 0 0 3px rgba(0,0,0,0.5);
+z-index: 20;
+height: 60px;
+position: relative;
 }
 
 </style>

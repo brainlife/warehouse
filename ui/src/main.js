@@ -151,22 +151,38 @@ new Vue({
     template: '<warehouse/>',
     components: { warehouse },
     mounted() {
-        //start token refresh
-        if(!Vue.config.debug && Vue.config.jwt) {
-            setInterval(()=>{
-                console.log("refreshing token");
-                this.$http.post(Vue.config.auth_api+'/refresh').then(res=>{
-                    if(res.body.jwt) {
-                        Vue.config.jwt = res.body.jwt;
-                        Vue.config.user = jwt_decode(Vue.config.jwt);
-                        localStorage.setItem("jwt", res.body.jwt);
-                    }
-                }).catch(err=>{
-                    console.error(err); //TODO - I should send message to auth service?
-                    document.location = "/auth#!/signin";
-                });
-            }, 1000*3600); //1hour
+        console.log("starting jwt token interval");
+        setInterval(()=>{
+            this.refresh_jwt();
+        }, 1000*3600); //every 1hour?
+
+        this.$on("refresh_jwt", ()=>{
+            this.refresh_jwt();
+        });
+    },
+    methods: {
+        refresh_jwt: function() {
+            if(Vue.config.debug) {
+                console.log("not refreshing token.. as this is running in debug mode");
+                return;
+            }
+            if(!Vue.config.jwt) {
+                console.log("no jwt.. not refreshing");
+                return;
+            }
+            console.log("refreshing jwt token");
+            this.$http.post(Vue.config.auth_api+'/refresh').then(res=>{
+                if(res.body.jwt) {
+                    console.log("renewed!");
+                    Vue.config.jwt = res.body.jwt;
+                    Vue.config.user = jwt_decode(Vue.config.jwt);
+                    localStorage.setItem("jwt", res.body.jwt);
+                }
+            }).catch(err=>{
+                console.error(err); 
+                document.location = "/auth#!/signin";
+            });
         }
-    }
+    },
 })
 

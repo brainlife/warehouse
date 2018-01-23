@@ -1,8 +1,8 @@
 <template>
 <transition name="fade">
-<div v-if="dataset" class="dataset-overlay">
-    <b-container class="dataset-modal">
-        <div class="dataset-header">
+<div v-if="dataset" class="brainlife-modal-overlay">
+    <b-container class="brainlife-modal">
+        <div class="brainlife-modal-header">
             <div style="float: right;">
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.25"/>
@@ -212,6 +212,7 @@ export default {
         datatypetag, task, pubcard, 
         tageditor, taskconfig,
     },
+
     data () {
         return {
             dataset: null,
@@ -225,14 +226,6 @@ export default {
 
             selfurl: document.location.href,
             
-            /*
-            dirty: {
-                desc: false,
-                meta: false,
-                tags: false
-            },
-            */
-
             alltags: null,
             config: Vue.config,
         } 
@@ -349,6 +342,7 @@ export default {
         },
 
         process: function() {
+            alert('ask user for group id to use');
             this.$http.post(Vue.config.wf_api+'/instance', {
                 config: {
                     brainlife: true,
@@ -545,33 +539,8 @@ export default {
 }
 
 </script>
-<style scoped>
-.dataset-overlay {
-position: fixed;
-top: 0px;
-left: 0px;
-bottom: 0px;
-right: 0px;
-background-color: rgba(0,0,0,0.3);
-z-index: 10;
-padding: 30px;
-}
-.dataset-header {
-background-color: white;
-padding: 10px 20px;
-box-shadow: 0 0 3px rgba(0,0,0,0.5);
-z-index: 20;
-height: 60px;
-position: relative;
-}
-.dataset-modal {
-background-color: #fff;
-height: 100%;
-padding: 0px;
-box-shadow: 0 0 20px #000;
-position: relative;
-}
 
+<style scoped>
 .dataset-detail,
 .dataset-apps,
 .dataset-provenance {
@@ -582,7 +551,6 @@ left: 0;
 right: 0;
 bottom: 0px;
 }
-
 .dataset-detail {
 overflow: auto;
 }
@@ -592,9 +560,11 @@ padding: 20px;
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .3s
+    transition: opacity .3s
 }
-.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0
+.fade-enter, .fade-leave-to {
+    opacity: 0
 }
 </style>
+
+

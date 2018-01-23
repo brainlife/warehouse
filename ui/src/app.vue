@@ -24,8 +24,8 @@
                     </b-col>
                     <b-col cols="3">
                         <div style="float: right;">
-                            <span class="button button-danger" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
+                            <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                             <!--
                             <span class="button" @click="go('/app/'+app._id+'/submit')" title="Process"><icon name="paper-plane" scale="1.25"/></span>
                             -->
@@ -80,11 +80,34 @@
                                 <b class="text-muted">Input</b>
                             </b-col>
                             <b-col>
+                                <!--<p class="text-muted">This app uses above input datasets</p>-->
+                                <!--
                                 <div class="item" v-for="input in app.inputs">
                                     <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags"/>
+                                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/> 
+                                </div>
+                                -->
+                                <b-row style="color: #999; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
+                                    <b-col :cols="3"> Datatype </b-col>
+                                    <b-col :cols="3"> config.json key </b-col>
+                                    <b-col> File/dir in datatype</b-col>
+                                </b-row>
+ 
+                                <div v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'" style="margin-bottom: 5px;">
+                                    <b-row>
+                                        <b-col :cols="3">
+                                            <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
+                                        </b-col>
+                                        <b-col :cols="3">
+                                            <b><pre style="background-color: white;">"{{key}}"</pre></b>
+                                        </b-col>
+                                        <b-col>
+                                            <small class="text-muted" style="float: right;">({{con.input_id}})</small><!--internal input id-->
+                                            <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
+                                        </b-col>
+                                    </b-row>
                                 </div>
                                 <br>
-                                <p class="text-muted">This app uses above input datasets</p>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -92,16 +115,26 @@
                                 <b class="text-muted">Output</b>
                             </b-col>
                             <b-col>
-                                <div class="item" v-for="output in app.outputs">
-                                    <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags">
-                                        <div v-if="output.files">
-                                            <small>Output mapping</small>
-                                            <pre v-highlightjs><code class="json hljs">{{output.files}}</code></pre>
-                                        </div>
-                                    </datatype>
+                                <!--<p class="text-muted">This app produces above output datasets</p>-->
+                                <b-row style="color: #999; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
+                                    <b-col :cols="6"> Datatype </b-col>
+                                    <b-col> Filemapping</b-col>
+                                </b-row>
+                                 <div class="item" v-for="output in app.outputs" style="margin-bottom: 5px;">
+                                    <b-row>
+                                        <b-col :cols="6">
+                                            <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
+                                        </b-col>
+                                        <b-col>
+                                            <div style="position: relative"> 
+                                                <small class="text-muted" style="right: 10px; position: absolute;">({{output.id}})</small><!--internal output id-->
+                                                <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
+                                                <small class="text-muted" v-else>No Mapping</small>
+                                            </div>
+                                        </b-col>
+                                    </b-row>
                                 </div>
                                 <br>
-                                <p class="text-muted">This app produces above output datasets</p>
                             </b-col>
                         </b-row>
                         <b-row v-if="app.projects && app.projects.length > 0">
@@ -109,7 +142,7 @@
                                 <b class="text-muted">Projects</b>
                             </b-col>
                             <b-col>
-                                <p class="alert alert-danger"><icon name="lock" /> Only the members of following project(s) can see / submit this app.</p>
+                                <p class="alert alert-success"><icon name="lock" /> Only the members of following project(s) can see / submit this app.</p>
                                 <b-card no-body>
                                     <b-list-group flush>
                                         <b-list-group-item v-for="project in app.projects" :key="project._id">
@@ -288,6 +321,8 @@ import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
 import datatype from '@/components/datatype'
+import datatypefile from '@/components/datatypefile'
+import datatypetag from '@/components/datatypetag'
 import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
@@ -300,7 +335,7 @@ export default {
         sidemenu, pageheader, contact, 
         project, tags, datatype, appavatar,
         VueMarkdown, statustag, VueDisqus,
-        appsubmit,
+        appsubmit, datatypetag, datatypefile,
      },
 
     data () {
@@ -429,6 +464,10 @@ export default {
         bibtex: function() {
             document.location = '/api/warehouse/app/bibtex/'+this.app._id;
         },
+
+        find_by_id: function(list, id) {
+            return list.find(it=>it.id == id);
+        }
     },
 }
 </script>

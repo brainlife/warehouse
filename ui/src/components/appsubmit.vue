@@ -1,33 +1,52 @@
 <template>
 <div v-if="app && projects">
-    <b-form-group>
+
+    <b-row>
+        <b-col>Project</b-col>
+        <b-col cols="9">
+            <projectselecter v-model="project"/> 
+            <br>
+            <small class="text-muted">Project you'd like to run this process in</small>
+        </b-col>
+    </b-row>
+    <br>
+
+    <b-row>
+        <b-col>Description</b-col>
+        <b-col cols="9">
+            <b-form-textarea v-model="form.desc"
+                 placeholder="Optional description for this processing"
+                 :rows="3"
+                 :max-rows="6"/>
+            <br>
+        </b-col>
+    </b-row>
+
+    <!--<h4>Input Datasets</h4>-->
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col>
             <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
         </b-col>
         <b-col cols="4">
             <projectselecter 
-                v-model="form.projects[input.id]" 
-                :placeholder="'Project'" 
-                @input="preselect_single_items(input)"/>
+                v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
         </b-col>
         <b-col cols="5">
-                <select2 style="width: 100%; max-width: 100%;" 
-                    v-model="form.inputs[input.id]" 
-                    :dataAdapter="debounce_grab_items(input)" 
-                    :multiple="false" 
-                    :placeholder="'Input Dataset'" 
-                    :options="form.options[input.id]"/>
+            <select2 style="width: 100%; max-width: 100%;" 
+                v-model="form.inputs[input.id]" 
+                :dataAdapter="debounce_grab_items(input)" 
+                :multiple="false" 
+                :placeholder="'Input Dataset'" 
+                :options="form.options[input.id]"/>
+            <br>
         </b-col>
     </b-row>
-    </b-form-group>
     
-    <!--<h4>Configuration Parameters</h4>-->
+    <!--<h4>Configuration</h4>-->
     <b-row v-for="(v,k) in app.config" :key="k" v-if="v.type && v.type != 'input'">
         <b-col>{{k}}</b-col>
         <b-col cols="9">
             <b-form-group>
-                <!--<b-form-input v-if="v.type == 'float'" type="number" v-model.number="form.config[k]" step="0.01" :placeholder="v.placeholder"/>-->
                 <!--integer is deprecated-->
                 <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" :readonly="v.readonly"  v-model.number="form.config[k]" :placeholder="v.placeholder"/>
                 <b-form-input type="text" v-if="v.type == 'string'" :readonly="v.readonly" v-model="form.config[k]" :placeholder="v.placeholder"></b-form-input>
@@ -45,17 +64,8 @@
         </b-col>
     </b-row>
 
-    <b-row>
-        <b-col>Description</b-col>
-        <b-col cols="9">
-            <b-form-textarea v-model="form.desc"
-                 placeholder="Optional description for this processing"
-                 :rows="3"
-                 :max-rows="6"/>
-        </b-col>
-    </b-row>
-    <br>
 
+    <br>
     <b-row>
         <b-col></b-col>
         <b-col cols="9">
@@ -94,12 +104,12 @@ export default {
 
     data () {
         return {
+            project: null,
+
             app: null,
-            //resource: null,
 
             form: {
                 desc: "",
-                //project_id: localStorage.getItem("last_projectid_used")||"", 
                 inputs: {},
                 options: {}, // explicit options to load (temporary)
                 
@@ -109,7 +119,7 @@ export default {
 
             //cache
             datasets: {}, //available datasets grouped by input._id then project_id then array of datasets
-            projects: [], //just names
+            projects: [], //just names and group_ids
             
             config: Vue.config,
         }
@@ -126,7 +136,7 @@ export default {
                 ],
                 removed: false,
             }),
-            select: 'name',
+            select: 'name group_id',
         }})
         .then(res=>{
             this.projects = {};
@@ -304,14 +314,16 @@ export default {
                 return;
             }
 
-            var did = 0;
+            //var did = 0;
             var app_inputs = [];
             var meta = {};
+
+            var project = this.projects[this.project];
 
             //first create an instance to run everything
             var instance = null;
             this.$http.post(Vue.config.wf_api+'/instance', {
-                //name: "brainlife process for app:"+this.app._id,
+                group_id: project.group_id,
                 desc: this.form.desc||this.app.name,
                 config: {
                     brainlife: true,
@@ -345,7 +357,7 @@ export default {
                         dir: dataset_id,
                     });
                     var output = Object.assign(datasets[dataset_id], {
-                        did: did++,
+                        //did: did++,
                         subdir: dataset_id, 
                         dataset_id,
                         prov: null, //not needed
@@ -383,7 +395,7 @@ export default {
                 this.app.outputs.forEach(output=>{
                     var output_req = {
                         id: output.id,
-                        did: did++,
+                        //did: did++,
                         datatype: output.datatype._id,
                         datatype_tags: output.datatype_tags,
                         desc: output.id+ " from "+this.app.name,
@@ -411,7 +423,7 @@ export default {
                 })
             }).then(res=>{
                 console.log("submitted app task", res.body.task);
-                this.$router.push("/processes/"+instance._id);
+                this.$router.push("/project/"+this.project+"/process/"+instance._id);
             }).catch(err=>{
                 console.error(err);
             });
@@ -441,40 +453,12 @@ export default {
 </script>
 
 <style scoped>
-.ui.text.menu {
-margin: 0;
-}
-.dataset:hover {
-cursor: pointer;
-background-color: #ddd;
-}
-.content {
-background-color: white;
-padding: 20px;
-}
-.header {
-background: #666;
-padding: 20px;
-margin-top: 50px;
-height: 80px;
-top: 0px;
-position: fixed;
-right: 0px;
-left: 90px;
-color: #666;
-z-index: 1;
-border-bottom: 1px solid #666;
-}
-.header h2 {
-color: #eee;
-}
-.header-bottom {
-height: 50px;
-background-color: white;
-position: fixed;
-top: 140px;
-right: 0px;
-left: 90px;
+h4 {
+margin-top: 20px;
+opacity: 0.6;
+padding-bottom: 10px;
 border-bottom: 1px solid #ddd;
+font-size: 18px;
+font-weight: bold;
 }
 </style>

@@ -595,13 +595,4 @@ padding: 20px;
   opacity: 0;
 }
 
-.height-enter-active, .height-leave-active {
-transition: all .5s ease;
-max-height: 200px;
-}
-.height-enter, .height-leave-to {
-opacity: 0;
-max-height: 0px;
-}
-
 </style>

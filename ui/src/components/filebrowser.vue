@@ -30,12 +30,12 @@
             <div class="content" v-if="file.open">
                 <filebrowser :task="task" :path="subpath(file)" :depth="depth+1"></filebrowser>
             </div>
-            <div v-if="file.content" :style="{marginLeft: offset}" style="margin-right: 20px; position: relative;">
-                <div v-if="file.content != '(empty)\n'" style="position: absolute; top: 5px; right: 15px; opacity: 0.7;">
+            <div v-if="file.content" :style="{marginLeft: offset}" class="file-content">
+                <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
                     <div class="button" @click="download_file(file)"><icon name="download"/></div>
                     <div class="button" @click="refresh_file(file)"><icon name="refresh"/></div>
                 </div>
-                <pre v-highlightjs="file.content" class="file-content"><code :class="file.type+' hljs'"></code></pre>
+                <pre v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
             </div>
         </div>
     </div>
@@ -208,7 +208,7 @@ background-color: #ddd;
 .hljs {
 background: #f0f0f0;
 }
-pre.file-content {
+.file-content pre {
 overflow: auto;
 font-family: 'monospace';
 margin: 0px;
@@ -218,5 +218,19 @@ padding: 0px;
 padding-left: 10px;
 max-height: 400px;
 background-color: #d7d7d7;
+}
+.file-content {
+position: relative;
+margin-right: 20px;
+}
+.file-content-buttons {
+position: absolute; 
+top: 5px; 
+right: 15px; 
+opacity: 0;
+transition: opacity 0.5s;
+}
+.file-content:hover .file-content-buttons {
+opacity: 0.7;
 }
 </style>

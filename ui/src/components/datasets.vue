@@ -2,17 +2,12 @@
 <div>
     <div :class="{rightopen: selected_count}">
         <div class="page-header">
-            <!--TODO - do I really need b-row here?-->
-            <b-row>
-                <b-col cols="4">
-                    <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
-                </b-col>
-                <b-col>
-                    <div class="stats" style="float: right; position: relative; top: 10px;">
-                        <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
-                    </div>
-                </b-col>
-            </b-row>
+            <div style="float: right; position: relative; top: -3px;">
+                <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
+            </div>
+            <div style="margin-top: 2px;">
+                <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
+            </div>
         </div>
 
         <div class="page-content">
@@ -43,7 +38,7 @@
                             <strong>{{subject}}</strong>
                         </b-col>
                         <b-col>
-                            <div v-for="dataset in datasets" :key="dataset._id" @click="open_dataset(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
+                            <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
                                 <div class="row" v-if="!dataset.removed">
                                     <div class="col-md-3 truncate">
                                         <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset)" class="dataset-checker">
@@ -82,7 +77,7 @@
 
         <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
             <datatypetag :datatype="datatypes[did]"/>
-            <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open_dataset(id)">
+            <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open(id)">
                 <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
                     <icon name="close"></icon>
                 </div>
@@ -401,7 +396,7 @@ export default {
             this.uploading = true;
         },
 
-        open_dataset: function(dataset_id) {
+        open: function(dataset_id) {
             this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
 
             //similar code exists in project.vue (to handle URL based open)
@@ -565,11 +560,13 @@ export default {
         },
 
         process: function() {
+            alert('ask user which group to use');
             this.$http.post(Vue.config.wf_api+'/instance', {
                 config: {
                     brainlife: true,
-                    type: "v2",
+                    //type: "v2",
                 },
+                //group_id: this.project.group_id,
             }).then(res=>{
                 var instance = res.body;
 
@@ -604,7 +601,7 @@ export default {
                     });
                 }, err=>{
                     this.clear_selected();
-                    this.$router.push("/processes/"+instance._id);
+                    this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
                 });
             });
         }
@@ -613,7 +610,18 @@ export default {
 </script>
 
 <style scoped>
-.page-header,
+
+.page-header {
+position: fixed;
+top: 100px;
+left: 350px;
+padding: 10px;
+right: 15px;
+height: 45px;
+color: #999;
+z-index: 1;
+}
+
 .page-content {
 position: fixed;
 margin-top: 50px;
@@ -621,18 +629,12 @@ left: 350px;
 padding-left: 10px;
 right: 0;
 }
-
 h4 {
 font-size: 15px;
 font-weight: bold;
 margin-bottom: 7px;
 }
 
-.page-header {
-top: 50px;
-padding-right: 15px; /*to align with scrollbar*/
-height: 45px;
-}
 .page-header h4 {
 font-size: 16px;
 font-weight: bold;
@@ -688,6 +690,7 @@ right: 250px;
 }
 .selected-view .select-action {
     float: right;
+    margin-right: 10px;
 }
 .select-group {
     margin-bottom: 10px;
@@ -735,10 +738,7 @@ right: 300px;
 .filter {
 opacity: 0.7;
 width: 50px;
-transition: 0.3s width;
-margin: 6px 0px;
 cursor: pointer;
-position: relative;
 }
 .filter:focus {
 opacity: 1;

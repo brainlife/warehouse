@@ -10,7 +10,7 @@
         <div v-for="(apps, tag) in app_groups" :key="tag" class="margin20">
             <h4 class="group-title">{{tag}}</h4> 
             <div v-for="app in apps" :key="app._id" class="app">
-                <app :app="app" descheight="130px"></app>
+                <app :app="app" descheight="130px" devsheight="75px"></app>
             </div>
             <br clear="both">
         </div>

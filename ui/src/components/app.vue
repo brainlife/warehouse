@@ -30,7 +30,7 @@
             </div>
             <div class="desc" :style="{height: descheight}">{{app_.desc_override||app_.desc||'no description..'}}</div>
             <slot/>
-            <div class="devs">
+            <div class="devs" :style="{height: devsheight}">
                 <contact v-for="c in app_.contributors" short="true" :key="c._id" :fullname="c.name" :email="c.email"></contact>
             </div>
         </div>
@@ -55,6 +55,7 @@ export default {
         appid: String,
         clickable: {type: Boolean, default: true},
         descheight: String,
+        devsheight: String,
     },
     data() {
         return {
@@ -166,7 +167,6 @@ margin-bottom: 0px;
 .devs {
 background-color: #eee;
 padding: 10px;
-height: 75px;
 overflow-y: auto;
 overflow-x: hidden;
 }
