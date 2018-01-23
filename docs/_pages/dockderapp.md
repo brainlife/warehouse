@@ -7,68 +7,56 @@ sidebar:
 comments: true
 ---
 
-This document describes steps to dockerize your MatLab and Python applications using the MatLab/Python compiler as an intermediate step. 
+Docker is a software containerization tool that allow you to package your app and its dependencies into a portable package ("container") that you can then run on any machine as long as it supports singularity regardless of the type of OSes.
 
-To build docker container, you will need docker engine. We recommend [installing Docker on your machine](https://docs.docker.com/machine/install-machine/) and do the following on the same machine.
+Although you can create a fully functional standalone docker container for your app, normally we only need to containerize the application "dependendencies, but not the apps themselves (your python or bash scripts that drives your application). Once the application environment is containerized, your app can simply use the environment to execute the most ideosyncratic parts of your app. You can also share the same "environment" container across multiple applications - as long as you are careful about which version (tag) of the container you are using in your app.
+
+To build a docker container, you need a docker engine. We recommend [installing Docker on your machine](https://docs.docker.com/machine/install-machine/) or find a server that has docker engine installed. (Contact [Soichi](hayashis@iu.edu) if you need a help.)
 
 ## Git Repo
 
-Make sure that your application is hosted on Github. Ideally, you should publish Brain-Life Apps at [Brain-Life](www.github.com/brain-life/), but you can also use your personal account or a different organization. All following steps assumes that you are making changes inside a cloned git repo on a machine on which you can gain root access, this is required by [Docker](https://docs.docker.com/engine/security/security/).
-
-## config.json
-
-Your application should read configuration from config.json in a local (working) directory. Here is an example of a sample config.json (https://github.com/brain-life/app-dipy-tracking/blob/master/config.json.template)
-
-In Matlab, you can do something like following to read json
-```
-addpath(genpath('/N/u/hayashis/BigRed2/git/jsonlab'))
-config = loadjson('config.json');
-disp(config.some.param);
-```
-
-In Python, you can do something like the following to read json
-```
-import json
-with open('config.json') as config_json:
-    config = json.load(config_json)
-
-# Load the data
-print(config['data_file'])
-```
-
-jsonlab comes from `https://github.com/fangq/jsonlab.git`
-
-Input parameter should include paths to various input files, or command line parameters passed to various sub-processes. By using config.json, it makes it easier to run it via Docker. (It also prepares your application to be more [ABCD Specification](https://github.com/soichih/abcd-spec) compatible.)
-
-All input parameters are assumed to be text (char). You need to write your functions that are going to be MATLAB compiled with all the arguments as text. Arguments passing a number need to be given as text and within the function converted to integers values (str2num(), etc.). 
-
-## Output files
-
-Your application should generate any output to current working directory `pwd` (But you can organize your output files by creating a sub-directories inside your current working directory).
+This documentation assumes you already have your Brainlife app hosted on Github. This document assumes that you are making changes inside a cloned git repo on a machine with Docker engine.
 
 ## Compile Matlab
 
-All Matlab scripts need to be compiled to a binary format using the [`mcc` MatLab command](https://www.mathworks.com/help/compiler/mcc.html). The easiest way to do this is to run something like commands below inside MatLab. We suggest that before you do this you test your brain-life application in MatLab. Below we provide one example compiling a standalone only using MatLab files (first example) and one also adding other files, such as MEX files (second example).
+To run your application through a container, all Matlab scripts need to be compiled to a binary format using the [`mcc` MatLab command](https://www.mathworks.com/help/compiler/mcc.html). You can create a script that runs something like following.
+
 
 ```
-mkdir msa
-mcc -m main -R -nodisplay -d msa
-```
+#!/bin/bash
+module load matlab/2017a
+
+mkdir -p compiled
+
+cat > build.m <<END
+addpath(genpath('/N/u/brlife/git/vistasoft'))
+addpath(genpath('/N/u/brlife/git/jsonlab'))
+addpath(genpath('/N/soft/mason/SPM/spm8'))
+mcc -m -R -nodisplay -d compiled myapp
+exit
+END
+matlab -nodisplay -nosplash -r build
 
 ```
-mkdir msa
-mcc -m main -R -nodisplay  -a /N/u/hayashis/BigRed2/git/encode/mexfiles -d msa
-```
+
+This script generates a Matlab script called `build.m` and immediately executes it. `build.m` will setup the path and run Matlab command called `mcc` which does the actual compilation of your Matlab code and generates a binary that can be run without Matlab license. The generated binary still requires a few Matlab proprietary libraries called MCR. You can freely download MCR library from Matlab website, or use MCR container such as brainlife/mcr to execute your binary with.
+
+You will need to adjust addpath() to include all of your dependencies that your application requires. "myapp" is the name of the matlab script that you use to execute your application. mcc commad will create a binary with the same name "myapp" inside the ./compiled directory.
 
 * `-m ...` tells the name of the main entry function (in this case it's `main`) of your application (it reads your config.json and runs the whole application)
 * `-R -nodisplay` sets the command line options you'd normally pass when you run MatLab on the command line.
-* `-a ...` is used to *add* non-matlab files as part of the executable so that your executable can find it at runtime.
-* -d ...` tells where to output the generated binary. You should avoid writing it out to the application root directory; mcc generates a lot of files
+* -d ...` tells where to output the generated binary. You should avoid writing it out to the application root directory; just to keep things organized.
 
-* You can use OpenMP to parallelize your application for Docker.
-* mcc compiled application can't run certain Matlab statements; like addpath(). You might need to create a stripped down version of the main function that does not include those statements (or wrap them inside a if statement that gets executed only when you run it). To add paths, run the addpath commands prior to compiling the application, the compiler will then add all necessary dependencies. If you have a startup.m file you may want to rename it while compiling.
+If your app uses any MEX files (.c code) you will need to add an extra option (-a) to specify where those MEX files are stored. For example..
 
-If you don't have MatLab installed on your machine, then you should first checkout your repo on a directory accessible via Karst desktop, then run mcc on Matlab on Karst desktop. Then commit and `git push` the ./msa directory, go back to your machine and do `git pull` locally.
+```
+mcc -m -R -nodisplay -a /N/u/hayashis/BigRed2/git/encode/mexfiles -d compiled myapp
+```
+
+* You can use OpenMP to parallelize your application by using a container that has libgomp1 installed.
+* mcc compiled application can't run certain Matlab statements; like addpath(). You might need to create a stripped down version of the main function that does not include those statements (or wrap them inside `if not isdeployed` statement that gets executed only when you run it directly on Matlab) . 
+
+If you don't have MatLab installed on your local machine, then you can do the compliation on the machine that has Matlab installed, the build the docker container on your own machine.
 
 ## Loading an ENCODE fe structure from an mcc application
 
@@ -290,7 +278,6 @@ You will also probably need to give your run_docker.sh and build.sh permissions.
 ```
 chmod +x build.sh run_docker.sh
 ```
-
 
 ## README
 
