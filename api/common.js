@@ -35,6 +35,7 @@ exports.getprojects = function(user, cb) {
 
     db.Projects.find(project_query).select('_id admins members').lean().exec((err, projects)=>{
         if(err) return cb(err);
+        ///TODO I really don't like cannwrite / canread.. it should be isadmin / ismember
         let canread_ids = projects.map(p=>p._id);
         let canwrite_projects = projects.filter(p=>{
             if(p.members.includes(user.sub.toString())) return true;

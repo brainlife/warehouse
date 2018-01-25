@@ -10,10 +10,18 @@ const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
 
-function canedit(user, rec) {
+function isadmin(user, rec) {
     if(user) {
         if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
         if(~rec.admins.indexOf(user.sub.toString())) return true;
+    }
+    return false;
+}
+
+function ismember(user, rec) {
+    if(user) {
+        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
+        if(~rec.members.indexOf(user.sub.toString())) return true;
     }
     return false;
 }
@@ -60,7 +68,9 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
             //adding some derivatives
             recs.forEach(function(rec) {
-                rec._canedit = canedit(req.user, rec);
+                rec._canedit = isadmin(req.user, rec);//deprecated
+                rec._isadmin = isadmin(req.user, rec);
+                rec._ismember = ismember(req.user, rec);
             });
             res.json({projects: recs, count: count});
         });
@@ -110,7 +120,9 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 		project.save(err=>{
 			if (err) return next(err); 
 			project = JSON.parse(JSON.stringify(project));
-			project._canedit = canedit(req.user, project);
+			project._canedit = isadmin(req.user, project); //deprecated
+			project._isadmin = isadmin(req.user, project);
+			project._ismember = ismember(req.user, project);
 			res.json(project);
 		});
 	});
@@ -140,7 +152,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     db.Projects.findById(id, (err, project)=>{
         if(err) return next(err);
         if(!project) return res.status(404).end();
-        if(!canedit(req.user, project)) return res.status(401).end("you are not administartor of this project");
+        if(!isadmin(req.user, project)) return res.status(401).end("you are not administartor of this project");
         
         //user can't update following fields
         delete req.body.user_id;
@@ -151,9 +163,11 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         function post_process() {
             project.save((err)=>{
                 if(err) return next(err);
-                //project = JSON.parse(JSON.stringify(project));
-                //project._canedit = canedit(req.user, project);
-                res.json(Object.assign({_canedit: canedit(req.user, project)}, project));
+                res.json(Object.assign({
+                    _canedit: isadmin(req.user, project), //deprecated
+                    _isadmin: isadmin(req.user, project),
+                    _ismember: ismember(req.user, project),
+                }, project));
             });
         }
 
@@ -203,12 +217,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
         if(err) return next(err);
         if(!project) return next(new Error("can't find the project with id:"+req.params.id));
         //only superadmin or admin of this test spec can update
-        if(canedit(req.user, project)) {
-            /*
-            project.remove().then(function() {
-                res.json({status: "ok"});
-            }); 
-            */
+        if(isadmin(req.user, project)) {
             project.removed = true;
             project.save(function(err) {
                 if(err) return next(err);
