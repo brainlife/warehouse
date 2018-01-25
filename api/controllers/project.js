@@ -18,6 +18,7 @@ function isadmin(user, rec) {
     return false;
 }
 
+/*
 function ismember(user, rec) {
     if(user) {
         if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
@@ -25,6 +26,7 @@ function ismember(user, rec) {
     }
     return false;
 }
+*/
     
 /**
  * @apiGroup Project
@@ -49,12 +51,15 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     var select = null;
     if(req.query.select) {
         select = req.query.select;
+        /*
+        //needed for is...
         if(!~select.indexOf("admins")) select+=" admins";
+        if(!~select.indexOf("members")) select+=" members";
+        */
     }
 
     //TODO I should only allow querying for projects that user has access?
     //right now, user can query for all project..
-
     db.Projects.find(find)
     .select(select)
     .limit(req.query.limit || 0)
@@ -65,13 +70,14 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         if(err) return next(err);
         db.Projects.count(find).exec((err, count)=>{
             if(err) return next(err);
-
+            /*
             //adding some derivatives
             recs.forEach(function(rec) {
                 rec._canedit = isadmin(req.user, rec);//deprecated
                 rec._isadmin = isadmin(req.user, rec);
                 rec._ismember = ismember(req.user, rec);
             });
+            */
             res.json({projects: recs, count: count});
         });
     });
@@ -98,7 +104,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
 
     delete req.body._id; //shouldn't be set
-
     req.body.user_id = req.user.sub;//override
 
     //TODO - should I validate admins/members? how?
@@ -120,9 +125,11 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 		project.save(err=>{
 			if (err) return next(err); 
 			project = JSON.parse(JSON.stringify(project));
+            /*
 			project._canedit = isadmin(req.user, project); //deprecated
 			project._isadmin = isadmin(req.user, project);
 			project._ismember = ismember(req.user, project);
+            */
 			res.json(project);
 		});
 	});
@@ -152,7 +159,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     db.Projects.findById(id, (err, project)=>{
         if(err) return next(err);
         if(!project) return res.status(404).end();
-        if(!isadmin(req.user, project)) return res.status(401).end("you are not administartor of this project");
+        if(!isadmin(req.user, project)) return res.status(401).end("you are not an administartor of this project");
         
         //user can't update following fields
         delete req.body.user_id;
@@ -160,17 +167,31 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         delete req.body.group_id;
         for(var k in req.body) project[k] = req.body[k];
 
-        function post_process() {
+        logger.debug("update existing group on auth service");
+        request.put({ url: config.auth.api+"/group/"+project.group_id, headers: { authorization: req.headers.authorization }, json: true,
+            body: {
+                name: req.body.name,
+                desc: "For project "+project._id,
+                admins: req.body.admins,
+                members: req.body.members,
+            }
+        }, (err, _res, group)=>{
+            if(err) return next(err);
+            logger.debug("done updating group");
             project.save((err)=>{
                 if(err) return next(err);
+                /*
                 res.json(Object.assign({
                     _canedit: isadmin(req.user, project), //deprecated
                     _isadmin: isadmin(req.user, project),
                     _ismember: ismember(req.user, project),
                 }, project));
+                */
+                res.json(project);
             });
-        }
+        });
 
+        /*
         if(project.group_id) {
             logger.debug("update existing group on auth service");
             request.put({ url: config.auth.api+"/group/"+project.group_id, headers: { authorization: req.headers.authorization }, json: true,
@@ -182,10 +203,11 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 }
             }, (err, _res, group)=>{
                 if(err) return next(err);
+                logger.debug("done updating group");
                 post_process();
             });
         } else {
-            logger.debug("create new group (for old project - for backward compatibility)");
+            logger.debug("creating new group (for old project - for backward compatibility)");
             request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,
                 body: {
                     name: req.body.name,
@@ -195,10 +217,12 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 }
             }, (err, _res, body)=>{
                 if(err) return next(err);
+                logger.debug("done creating new group");
                 project.group_id = body.group.id;
                 post_process();
             });
         }
+        */
     });
 });
 
