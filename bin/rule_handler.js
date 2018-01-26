@@ -337,9 +337,10 @@ function handle_rule(rule, cb) {
                     body: {
                         name: instance_name,
                         desc: instance_desc,
+                        group_id: rule.project.group_id, 
                         config: {
                             brainlife: true,
-                            type: "v2",
+                            //type: "v2",
                         }
                     },
                 }, (err, res, body)=>{
@@ -371,7 +372,7 @@ function handle_rule(rule, cb) {
 
             //submit input staging task for datasets that aren't staged yet
             next=>{
-                var did = next_tid*10;
+                //var did = next_tid*10;
                 var _outputs = [];
                 var downloads = [];
                 for(var input_id in inputs) {
@@ -389,7 +390,7 @@ function handle_rule(rule, cb) {
                             deps.push(task._id); 
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                                did: did++,
+                                //did: did++,
                                 task_id: task._id,
                                 app_id: input.prov.app, //dataset stored app_id under "app" because it's meant to be populated (task_id is from other service)
                                 subdir: input.prov.subdir,
@@ -423,7 +424,7 @@ function handle_rule(rule, cb) {
                             deps.push(task._id); 
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                                did: did++,
+                                //did: did++,
                                 task_id: task._id,
                                 subdir: output.subdir, 
                                 dataset_id: output.dataset_id,
@@ -445,7 +446,7 @@ function handle_rule(rule, cb) {
                         });
                         var output = Object.assign({}, input, {
                             datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                            did: did++,
+                            //did: did++,
                             subdir: input._id,
                             dataset_id: input._id, 
                             prov: null, //remove dataset prov
@@ -508,7 +509,7 @@ function handle_rule(rule, cb) {
 
             //submit the app task!
             next=>{
-                var did = next_tid*10;
+                //var did = next_tid*10;
                 var _config = Object.assign(
                     rule.config, 
                     process_input_config(rule.app.config, inputs, _app_inputs, task_stage), 
@@ -527,7 +528,7 @@ function handle_rule(rule, cb) {
 				rule.app.outputs.forEach(output=>{
                     _config._outputs.push({
                         id: output.id,
-                        did: did++,
+                        //did: did++,
                         datatype: output.datatype,
                         datatype_tags: output.datatype_tags,
                         desc: output.desc,

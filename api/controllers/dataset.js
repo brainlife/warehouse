@@ -600,10 +600,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 db.Projects.findById(req.body.project, (err, project)=>{
                     if(err) return next(err);
                     if(!project) return next("couldn't find the project");
-                    //TODO should I only allow members but not admin?
-                    if(!~project.admins.indexOf(req.user.sub) && !~project.members.indexOf(req.user.sub)) 
-                        return next("you are not member of this project");
-                    //logger.debug("task loaded", _task);
+                    if(!~project.members.indexOf(req.user.sub)) return next("you are not member of this project");
                     task = _task;
                     next();
                 });
