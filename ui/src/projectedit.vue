@@ -86,8 +86,8 @@ export default {
                 name: "New Project",
                 desc: "",
                 access: "private",
-                admins: [Vue.config.user.sub.toString()],
-                members: [Vue.config.user.sub.toString()],
+                admins: [Vue.config.user.sub],
+                members: [Vue.config.user.sub],
                 license: "ccby.40",
             },
 

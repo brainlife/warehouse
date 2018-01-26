@@ -88,21 +88,21 @@
                                 </div>
                                 -->
                                 <b-row style="color: #999; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
-                                    <b-col :cols="3"> Datatype </b-col>
+                                    <b-col :cols="4"> Datatype </b-col>
                                     <b-col :cols="3"> config.json key </b-col>
-                                    <b-col> File/dir in datatype</b-col>
+                                    <b-col> File Mapping</b-col>
                                 </b-row>
  
                                 <div v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'" style="margin-bottom: 5px;">
                                     <b-row>
-                                        <b-col :cols="3">
+                                        <b-col :cols="4">
                                             <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
                                         </b-col>
                                         <b-col :cols="3">
                                             <b><pre style="background-color: white;">"{{key}}"</pre></b>
                                         </b-col>
                                         <b-col>
-                                            <small class="text-muted" style="float: right;">({{con.input_id}})</small><!--internal input id-->
+                                            <small class="text-muted" style="float: right; margin-right: 10px">({{con.input_id}})</small><!--internal input id-->
                                             <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
                                         </b-col>
                                     </b-row>
@@ -116,20 +116,22 @@
                             </b-col>
                             <b-col>
                                 <!--<p class="text-muted">This app produces above output datasets</p>-->
+                                <!--
                                 <b-row style="color: #999; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
-                                    <b-col :cols="6"> Datatype </b-col>
+                                    <b-col :cols="7"> Datatype </b-col>
                                     <b-col> Filemapping</b-col>
                                 </b-row>
-                                 <div class="item" v-for="output in app.outputs" style="margin-bottom: 5px;">
+                                -->
+                                <div class="item" v-for="output in app.outputs" style="margin-bottom: 5px;">
                                     <b-row>
-                                        <b-col :cols="6">
+                                        <b-col :cols="7">
                                             <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                                         </b-col>
                                         <b-col>
                                             <div style="position: relative"> 
                                                 <small class="text-muted" style="right: 10px; position: absolute;">({{output.id}})</small><!--internal output id-->
                                                 <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
-                                                <small class="text-muted" v-else>No Mapping</small>
+                                                <!--<small class="text-muted" v-else>No Mapping</small>-->
                                             </div>
                                         </b-col>
                                     </b-row>
@@ -191,6 +193,7 @@
                                 <b class="text-muted">UI Configuration</b>
                             </b-col>
                             <b-col cols="9">
+                                <b-alert show variant="info">TODO .. show this in more user friently way</b-alert>
                                 <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
                             </b-col>
                         </b-row>

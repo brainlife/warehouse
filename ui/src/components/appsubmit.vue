@@ -1,12 +1,9 @@
 <template>
 <div v-if="app && projects">
-
     <b-row>
         <b-col>Project</b-col>
         <b-col cols="9">
-            <projectselecter v-model="project"/> 
-            <br>
-            <small class="text-muted">Project you'd like to run this process in</small>
+            <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in"/> 
         </b-col>
     </b-row>
     <br>
@@ -23,6 +20,8 @@
     </b-row>
 
     <!--<h4>Input Datasets</h4>-->
+    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available.</b-alert>
+    
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col>
             <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
@@ -64,15 +63,14 @@
         </b-col>
     </b-row>
 
-
     <br>
     <b-row>
         <b-col></b-col>
         <b-col cols="9">
-            <el-button type="primary" @click="submit()">Submit</el-button>
+            <b-button variant="primary" @click="submit()">Submit</b-button>
         </b-col>
     </b-row>
-</div><!--root-->
+</div>
 </template>
 
 <script>
@@ -107,6 +105,8 @@ export default {
             project: null,
 
             app: null,
+            resource_available: null,
+            //resource: null,
 
             form: {
                 desc: "",
@@ -126,12 +126,13 @@ export default {
     },
 
     mounted: function() {
-        //load project names
-        console.log("loading projects");
+        console.log("mounted");
+
+        //load project names (used in various input selecters)
         this.$http.get('project', {params: {
             find: JSON.stringify({
                 $or: [
-                    { members: Vue.config.user.sub}, 
+                    { members: Vue.config.user.sub }, 
                     { access: "public" },
                 ],
                 removed: false,
@@ -144,6 +145,8 @@ export default {
                 this.projects[p._id] = p;
             });
 
+            console.log("loaded projects");
+
             //load app detail
             return this.$http.get('app', {params: {
                 find: JSON.stringify({_id: this.id}),
@@ -152,7 +155,6 @@ export default {
         })
         .then(res=>{
             this.app = res.body.apps[0];
-            //if(this.app.github) this.findbest(this.app.github);
 
             //TODO - update to handle nested parameters
             for(var k in this.app.config) {
@@ -161,7 +163,14 @@ export default {
                     Vue.set(this.form.config, k, v.default);
                 }
             }
-        }).catch(err=>{
+            return this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
+                service: this.app.github
+            }});
+        })
+        .then(res => {
+            this.resource_available = !!res.body.resource
+        })
+        .catch(err=>{
             console.error(err);
         });
     },

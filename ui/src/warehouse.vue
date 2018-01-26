@@ -11,6 +11,7 @@
     <!--models only used by project page (TODO - move to project page eventually -->
     <datasetselecter/>
     <uploader/>
+    <instanceselecter/>
 </div>
 </template>
 
@@ -24,11 +25,13 @@ import dataset from '@/modals/dataset'
 import datatype from '@/modals/datatype'
 import datasetselecter from '@/modals/datasetselecter'
 import uploader from '@/modals/uploader'
+import instanceselecter from '@/modals/instanceselecter'
 
 export default {
     components: {
         //modals
-        viewselecter, dataset, datatype, uploader, datasetselecter,
+        viewselecter, dataset, datatype, 
+        uploader, datasetselecter, instanceselecter
     },
 }
 
@@ -41,6 +44,14 @@ height: 100%;
 background-color: #f9f9f9;
 color: #444;
 font-size: 14px; 
+}
+
+/*adjust bootstrap font sizes*/
+.form-control {
+font-size: inherit;
+}
+legend {
+font-size: 1.1rem;
 }
 
 /*needed to keep iframe 100% with for view*/
@@ -225,6 +236,9 @@ z-index: 20;
 height: 60px;
 position: relative;
 }
-
+.readme pre {
+background-color: white;
+padding: 10px;
+}
 </style>
 

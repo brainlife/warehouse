@@ -8,8 +8,7 @@
     </b-row>
     <br>
 
-    <b-card style="background-color: #eee; opacity; 0.7">
-        <b>Filters</b>
+    <b-card style="background-color: #eee; opacity; 0.7" title="Filters">
         <b-row v-if="subjects">
             <b-col>Subjects</b-col>
             <b-col cols="9">

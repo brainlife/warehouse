@@ -429,7 +429,7 @@ export default {
                         });
                     } else {
                         //init.. (can't do it in data() for some reason (maybe because contact list is not setup?)
-                        this.app.admins = [Vue.config.user.sub.toString()];
+                        this.app.admins = [Vue.config.user.sub];
                         this.ready = true;
                     }
 

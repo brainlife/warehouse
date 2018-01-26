@@ -118,6 +118,7 @@ export default {
             }).catch(err=>{
                 console.error(err);
                 this.error = err.body.message || err.statusText;
+                this.files = [];
             })
         },
         download_file: function(file) {

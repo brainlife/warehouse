@@ -12,6 +12,7 @@ import 'highlight.js/styles/default.css'
 //3rd parties
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
+import 'katex/dist/katex.css'
 
 import Vue from 'vue'
 
@@ -108,10 +109,17 @@ Vue.http.options.root = Vue.config.api; //default root for $http
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+function jwt_decode_brainlife(jwt) {
+    Vue.config.user = jwt_decode(jwt);
+    
+    //auth service should return sub in string format, but currently it doesn't..
+    //let's just covert it to string 
+    Vue.config.user.sub = Vue.config.user.sub.toString()
+}
+
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
 if(Vue.config.jwt) {
-    //validate jwt..
-    Vue.config.user = jwt_decode(Vue.config.jwt);
+    jwt_decode_brainlife(Vue.config.jwt);
     if(Vue.config.user.exp && Vue.config.user.exp < Date.now()/1000) {
         console.error("jwt expired", Vue.config.user.exp, Date.now()/1000);
         delete Vue.config.jwt;
@@ -175,7 +183,7 @@ new Vue({
                 if(res.body.jwt) {
                     console.log("renewed!");
                     Vue.config.jwt = res.body.jwt;
-                    Vue.config.user = jwt_decode(Vue.config.jwt);
+                    jwt_decode_brainlife(Vue.config.jwt);
                     localStorage.setItem("jwt", res.body.jwt);
                 }
             }).catch(err=>{

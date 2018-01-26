@@ -334,6 +334,11 @@ export default {
                 var dataset = res.body;
                 this.$notify({ type: 'success', text: 'Successfully uploaded a new dataset. Please give a few minutes for your data to become available.', });
                 this.$router.push("/project/"+this.project._id+"/dataset/"+dataset._id);
+
+                //TODO need to reload so that new subject group will show up on dataset paage..
+                //it will be nice if I can just force dataset reload (just use event?)
+                document.location.reload(); 
+
                 this.reset();
             }, res=>{
                 console.error(res);

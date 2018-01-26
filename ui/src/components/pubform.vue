@@ -4,13 +4,13 @@
         <b-form-input required v-model="pub.name" type="text" placeholder="Title of the paper"></b-form-input>
     </b-form-group>
     <b-form-group label="Description" horizontal>
-        <b-form-textarea v-model="pub.desc" :rows="2" placeholder="A short summary of the abstract"></b-form-textarea>
+        <b-form-textarea v-model="pub.desc" :rows="5" placeholder="A short summary of the abstract"></b-form-textarea>
     </b-form-group>
     <b-form-group label="Tags" horizontal>
         <select2 :options="oldtags" v-model="pub.tags" :multiple="true" :tags="true"></select2>
     </b-form-group>
     <b-form-group label="README *" horizontal>
-        <b-form-textarea required v-model="pub.readme" :rows="6" placeholder="Content from abstract, or any other details about this publications"></b-form-textarea>
+        <b-form-textarea required v-model="pub.readme" :rows="10" placeholder="Content from abstract, or any other details about this publications"></b-form-textarea>
         <small class="text-muted">in markdown</small>
     </b-form-group>
     <b-form-group label="License *" horizontal>

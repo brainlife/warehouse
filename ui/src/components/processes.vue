@@ -1,7 +1,6 @@
 <template>
 <div v-if="instances">
-    <b-alert :show="!project.group_id">Please update your project detail first (to reset the group ID)</b-alert>
-    <div class="page-header" v-if="project.group_id">
+    <div class="page-header">
         <!--TODO.. show this in dropdown menu
         <div>
             <b-tabs class="brainlife-tab-dark" v-model="process_filter_tab">
@@ -13,7 +12,8 @@
             <b>{{instances.length}}</b> Processes
         </div>
     </div>
-    <div class="instances">
+    <div class="instances" id="scrolled-area">
+        <br>
         <div v-if="instances.length > 0">
             <!--
             <thead>
@@ -26,7 +26,7 @@
             </thead>
             -->
 
-            <div v-for="instance in instances" :key="instance._id" :id="instance._id">
+            <div v-for="instance in instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <!--instance header-->
                 <div :class="instance_class(instance)" @click="toggle_instance(instance)">
                     <div style="float: left;" class="instance-status" :class="'instance-status-'+instance.status">
@@ -54,6 +54,7 @@
                 <process v-if="instance == selected" :project="project" :instance="instance" class="process"/>
             </div>
         </div>
+        <br>
     </div><!--instances-->
     <b-button class="button-fixed" @click="newinstance" title="Create New Process"><icon name="plus" scale="2"/></b-button>
 </div>
@@ -99,6 +100,7 @@ export default {
     },
 
     mounted: function() {
+        console.log("processed mounted", this.$route.params);
         this.load();
     },
 
@@ -129,7 +131,6 @@ export default {
             if(instance.edit) return;
             if(this.selected != instance) {
                 this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
-                //this.$root.$emit('process.view', instance._id);
                 this.selected = instance;
             } else {
                 this.$router.push("/project/"+this.project._id+"/process");
@@ -149,7 +150,9 @@ export default {
         },
 
         newinstance: function() {
+            var desc = prompt("Please enter process description");
             this.$http.post(Vue.config.wf_api+'/instance', {
+                desc,
                 config: {
                     brainlife: true,
                     //type: "v2", //deprecated..
@@ -158,9 +161,7 @@ export default {
             }).then(res=>{
                 let instance = res.body;
                 this.instances.unshift(instance);
-                this.open(instance);
-                //this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
-                //this.$root.$emit('process.view', instance._id);
+                this.toggle_instance(instance);
             }).catch(err=>{
                 console.error(err);
                 this.$notify({type: 'error', text: err.body.message});
@@ -189,7 +190,7 @@ export default {
         },
 
         instance_class: function(instance) {
-            let a = ["instance"];
+            let a = ["instance-header"];
             a.push("instance-"+instance.status);
             if(instance == this.selected) a.push("instance-active");
             return a;
@@ -227,9 +228,7 @@ export default {
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
-                        //key: Vue.config.user.sub+".#",
-                        //key: "na.#", //any instance under "na" group (instances that doen't belong to any group)
-                        key: this.project.group_id+".#", //any instance under "na" group (instances that doen't belong to any group)
+                        key: this.project.group_id+".#", 
                     }
                 }));
                 if(cb) cb();
@@ -241,6 +240,9 @@ export default {
                     var instance = this.instances.find(i=>i._id == event.msg._id);
                     if(instance) {
                         for(var k in event.msg) instance[k] = event.msg[k];
+                    } else {
+                        //new instance created by other user?
+                        this.instances.unshift(event.msg);
                     }
                 } 
             }
@@ -271,38 +273,45 @@ bottom: 0px;
 right: 0px;
 overflow: auto;
 margin-top: 45px;
-padding-bottom: 50px;
-/*
-padding-top: 3px;
-background-color: #f7f7f7;
-*/
-padding-top: 10px;
 background-color: white;
+
+/*adjusting these requires sticky to be adjusted also*/
+/*padding-bottom: 50px;*/
 }
 
-.instance {
+.instance-header {
 padding: 5px 15px;
 background-color: white;
 box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 /*transition: background-color 0.5s, margin 0.5s;*/
 margin-left: 20px;
-margin-right: 300px;
+margin-right: 20px;
 min-height: 35px;
 z-index: 1; /*app desc/github name shows up on top without it*/
 transition: margin 0.3s, background-color 0.3s;
 }
-.instance:hover {
+
+/*
+@media screen and (min-width: 1100px) {
+    .instance-header {
+        margin-right: 20%;
+    }
+}
+*/
+
+.instance-header:hover {
 /*background-color: #eee;*/
 cursor: pointer;
 }
 .instance-active {
 padding: 15px;
-padding-top: 10px;
-margin: 20px 0px 0 0;
-position: sticky; top: 0px;
+margin: 0px;
+position: sticky; top: 0px; 
 box-shadow: none;
 background-color: #f0f0f0;
-box-shadow: inset 0px 2px 2px rgba(0,0,0,0.1); 
+}
+.instance-item:not(:first-child) .instance-active {
+margin-top: 20px;
 }
 .instance-desc {
 font-size: 95%;
@@ -333,7 +342,7 @@ padding: 8px 0px;
 opacity: 0;
 transition: opacity 0.5s;
 }
-.instance:hover .process-action {
+.instance-header:hover .process-action {
 opacity: 1;
 }
 
@@ -365,7 +374,7 @@ background-color: #868e96;
 background-olor: #464a4e;
 }
 .instance-requested .instance-status {
-background-color: #17a2b8;
+background-color: #50bfff;
 }
 .instance-running .instance-status {
 background-color: #007bff;

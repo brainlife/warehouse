@@ -52,18 +52,31 @@ export default {
         }
     },
     */
-
-    mounted () {
-        //scroll to selected project
-        var elem = document.getElementById(this.active);
-        if(!elem) return;
-        var area = document.getElementsByClassName("projectmenu")[0];
-        if(area.clientHeight < elem.offsetTop) {
-            area.scrollTop = elem.offsetTop - area.clientHeight/2;
+    watch: {
+        active: function() {
+            this.scroll_to_active();
         }
     },
 
+    mounted () {
+        this.scroll_to_active();
+    },
+
     methods: {
+        scroll_to_active: function() {
+            //scroll to selected project
+            var elem = document.getElementById(this.active);
+            if(!elem) return;
+            var area = document.getElementsByClassName("projectmenu")[0];
+            if(area.clientHeight < elem.offsetTop) {
+                area.scrollTop = elem.offsetTop - area.clientHeight/2;
+            }
+
+            //I also need to scroll back to top if area is above..
+            if(elem.offsetTop < area.scrollTop) {
+                area.scrollTop = elem.offsetTop - 300;
+            }
+        },
         change: function(project) {
             this.$emit("change", project);
         }
@@ -80,8 +93,18 @@ export default {
     background-color: #444;
     color: white;
     left: 90px;
-    overflow-y: auto;
+    overflow: auto;
 }
+/*
+::-webkit-scrollbar
+{
+    background-color: blue;
+}
+::-webkit-scrollbar-track-piece
+{
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+*/
 h3 {
     font-size: 18px;
     padding: 10px 15px;

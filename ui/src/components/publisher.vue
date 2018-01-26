@@ -1,10 +1,10 @@
 <template>
-<div>
+<div v-if="datatypes">
+    <!--
     <transition name="slide-fade">
         <div v-if="page == 0">
             <br>
             <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
-            <p>Once you publish your datasets, they will be publically accessible (including guest users) regardless of the project access settings.</p>
             <br>
             <hr>
             <div style="float: right">
@@ -13,11 +13,12 @@
             </div>
         </div>
     </transition>
+    -->
     <transition name="slide-fade">
         <div v-if="page == 1">
             <!--<h4>Select Datasets</h4>-->
             <b-alert v-if="Object.keys(datatype_groups).length == 0" show variant="danger">There are no datasets to publish</b-alert>
-            <p class="text-muted">Please select datasets you'd like to publish</p>
+            <p v-else class="text-muted">Please select datasets you'd like to publish (and make them publically downloadable)</p>
             <div v-for="(group, datatype_id) in datatype_groups" :key="datatype_id">
                 <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 1px 5px; margin: 1px; transition: all 0.3s">
                     <b-row>
@@ -41,7 +42,7 @@
             </div>
             <hr>
             <div style="float: right">
-                <button type="button" class="btn btn-secondary" @click="page--">Back</button>
+                <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
                 <button type="button" class="btn btn-primary" @click="page++">Next</button>
             </div>
         </div>
@@ -77,9 +78,10 @@ export default {
     props: {
         project: { type: Object },
     },
+
     data () {
         return {
-            page: 0,
+            page: 1,
             pub: {
                 //defaults
                 name: (Vue.config.debug?"test":""),
@@ -89,34 +91,15 @@ export default {
                 license: "ccby.40",
 
                 fundings: [],
-                authors: [ Vue.config.user.sub.toString() ],
+                authors: [ Vue.config.user.sub ],
                 contributors: [],
             },
             datatype_groups: {},
-            datatypes: {}, 
+            datatypes: null, 
         }
     },
 
-    mounted: function() {
-    
-/*
-        //load all datatypes
-        this.$http.get('dataset/distinct', {params: {
-            find: JSON.stringify({project: this.project._id}),
-            distinct: 'datatype', 
-        }})
-        .then(res=>{
-            //load datatype details
-            return this.$http.get('datatype', {params: {
-                find: JSON.stringify({_id: {$in: res.body}}),
-            }});
-        }) 
-        .then(res=>{
-            res.body.datatypes.forEach((d)=>{
-                this.datatypes[d._id] = d;
-            });
-*/
-
+    created: function() {
         //load dataset inventory..
         this.$http.get('dataset/inventory', {params: {
             find: JSON.stringify({
@@ -125,6 +108,8 @@ export default {
             }),
         }})
         .then(res=>{
+
+            //group datasets by datatype
             let groups = {};
             res.body.forEach(rec=>{
                 let subject = rec._id.subject;
@@ -144,22 +129,26 @@ export default {
             });
             this.datatype_groups = groups;
 
-            //load datatypes
+            //load datatype details
             return this.$http.get('datatype', {params: {
-                find: JSON.stringify({_id: {$in: Object.keys(groups)}}),
+                find: JSON.stringify({_id: {$in: Object.keys(this.datatype_groups)}}),
             }});
         }) 
         .then(res=>{
+            this.datatypes = {};
             res.body.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
             });
+            this.$forceUpdate();
         }).catch(console.error);
     },
+
     methods: {
         close() {
-            this.page = 0;
+            this.page = 1;
             this.$emit("close");
         },
+
         publish() {
             //register publication record
             this.$http.post('pub', Object.assign({project: this.project._id}, this.pub)).then(res=>{

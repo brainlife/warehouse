@@ -118,6 +118,7 @@ export default {
     data () {
         return {
             app: null,
+            resource_available: null,
             //resource: null,
 
             form: {
@@ -174,9 +175,8 @@ export default {
                     Vue.set(this.form.config, k, v.default);
                 }
             }
-        }).catch(err=>{
-            console.error(err);
-        });
+        })
+        .catch(console.error);
     },
 
     methods: {

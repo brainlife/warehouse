@@ -64,7 +64,14 @@
                     </b-row>
                  </div> 
             </div><!--scrolled-area-->
-            <b-button class="button-fixed" v-b-modal.uploader @click="set_uploader_options" title="Upload Dataset" :class="{'selected-view-open':selected_count}"><icon name="plus" scale="2"/></b-button>
+
+            <b-button class="button-fixed" v-b-modal.uploader 
+                @click="set_uploader_options" v-if="ismember()"
+                title="Upload Dataset" 
+                :class="{'selected-view-open':selected_count}">
+                <icon name="plus" scale="2"/>
+            </b-button>
+
         </div><!--page-content-->
     </div>
 
@@ -74,24 +81,23 @@
             <icon name="check-square" style="position: relative; top: 3px; margin-right: 10px;"/> {{selected_count}} Selected 
         </h4>
 
-
         <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
             <datatypetag :datatype="datatypes[did]"/>
             <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open(id)">
                 <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
                     <icon name="close"></icon>
                 </div>
-                {{dataset.meta.subject}}
+                {{dataset.meta.subject}} 
                 <small>
                     <tags :tags="dataset.datatype_tags"></tags>
+                </small>
+                <small v-if="dataset.project != project._id" style="opacity: 0.5">
+                    <icon name="shield"/> {{projects[dataset.project].name}}</span>
                 </small>
             </div>
         </div>
 
         <div class="select-action">
-                <!--
-                <div class="button" v-b-modal.viewSelecter @click="set_viewsel_options"><icon name="eye"/></div>
-                -->
                 <div class="button" @click="download" title="Organize selected datasets into BIDS data structure and download."><icon name="download"/></div>
                 <div class="button" @click="process" title="Run applications on selected datasets by creating a new process."><icon name="paper-plane"/></div>
         </div>
@@ -123,7 +129,7 @@ export default {
         pageheader, projectmenu, 
         datatypetag, 
     },
-    props: ['project'],
+    props: ['project', 'projects'],
     data () {
         return {
             pages: [], //groups of datasets 
@@ -143,7 +149,6 @@ export default {
 
             //cache
             datatypes: null,
-            projects: null,
 
             config: Vue.config,
         }
@@ -194,9 +199,11 @@ export default {
     },
 
     mounted() {
-        //this.selected = JSON.parse(localStorage.getItem('datasets.selected')) || {};
         var area = document.getElementById("scrolled-area").parentNode;
 		area.addEventListener("scroll", this.page_scrolled);
+
+        let subid = this.$route.params.subid;
+        if(subid) this.$root.$emit('dataset.view', subid);
     },
 
     watch: {
@@ -209,6 +216,12 @@ export default {
     },
 
 	methods: {
+        ismember: function() {
+            if(!this.project) return false;
+            if(~this.project.members.indexOf(Vue.config.user.sub)) return true;
+            return false;
+        },
+
         reload: function() {
             this.pages = [];
             this.page_info = [];
@@ -238,7 +251,6 @@ export default {
                         key: this.project._id+".#",
                     }
                 }));
-
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
@@ -259,9 +271,11 @@ export default {
                             old_dataset.desc = dataset.desc;
                             old_dataset.tags = dataset.tags;
                             old_dataset.meta = dataset.meta;
+                            old_dataset.removed = dataset.removed;
                             this.$forceUpdate(); //need this because I am not inside vue hook?
                         } else {
-                            this.reload();
+                            //this causes whole page to get reloaded when user update dataset.. why does this exist anyway?
+                            //this.reload();
                         }
                     });
                  } 
@@ -398,9 +412,6 @@ export default {
 
         open: function(dataset_id) {
             this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
-
-            //similar code exists in project.vue (to handle URL based open)
-            //requesting dataset modal to load the specified dataset
             this.$root.$emit('dataset.view', dataset_id);
         },
 
@@ -560,49 +571,70 @@ export default {
         },
 
         process: function() {
-            alert('ask user which group to use');
-            this.$http.post(Vue.config.wf_api+'/instance', {
-                config: {
-                    brainlife: true,
-                    //type: "v2",
-                },
-                //group_id: this.project.group_id,
-            }).then(res=>{
-                var instance = res.body;
-
-                //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject)
-                var tid = 0;
-                var did = 0;
-                async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
-                    var download = [];
-                    var _outputs = [];
-                    for(var dataset_id in datasets) {
-                        download.push({
-                            url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
-                            untar: "auto",
-                            dir: dataset_id,
-                        });
-                        _outputs.push(Object.assign(datasets[dataset_id], {
-                            id: dataset_id, 
-                            did: did++,
-                            subdir: dataset_id, 
-                            dataset_id,
-                            prov: null,
-                        }));
-                    }
-                    this.$http.post(Vue.config.wf_api+'/task', {
-                        instance_id: instance._id,
-                        name: "Staged Datasets - "+this.datatypes[datatype_id].name,
-                        service: "soichih/sca-product-raw",
-                        config: { download, _outputs, _tid: tid++ },
+            this.$root.$emit('instanceselecter.open', opt=>{
+                if(opt.instance) {
+                    //using existing instance.. just submit staging task
+                    this.submit_process(opt.project_id, opt.instance);
+                } else {
+                    //need to create a new instance
+                    //var project = this.projects[opt.project_id];
+                    this.$http.post(Vue.config.wf_api+'/instance', {
+                        desc: opt.desc,
+                        config: {
+                            brainlife: true,
+                        },
+                        group_id: opt.group_id,
                     }).then(res=>{
-                        console.log("submitted download task", res.body.task);
-                        next_group();
+                        this.submit_process(opt.project_id, res.body);
+                    }).catch(err=>{
+                        console.error(err);
+                        this.$notify({type: 'error', text: err.body.message});
+                    })
+                }
+            });
+        },
+
+        submit_process: function(project_id, instance) {
+            //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject)
+            var tid = 0;
+            var did = 0;
+            async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
+                var download = [];
+                var _outputs = [];
+                for(var dataset_id in datasets) {
+                    download.push({
+                        url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
+                        untar: "auto",
+                        dir: dataset_id,
                     });
-                }, err=>{
-                    this.clear_selected();
-                    this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
+                    _outputs.push(Object.assign(datasets[dataset_id], {
+                        id: dataset_id, 
+                        did: did++,
+                        subdir: dataset_id, 
+                        dataset_id,
+                        prov: null,
+                    }));
+                }
+                this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: instance._id,
+                    name: "Staged Datasets - "+this.datatypes[datatype_id].name,
+                    service: "soichih/sca-product-raw",
+                    config: { download, _outputs, _tid: tid++ },
+                }).then(res=>{
+                    console.log("submitted download task", res.body.task);
+                    next_group();
+                }).catch(err=>{
+                    next_group(err.body.message);
                 });
+            }, err=>{
+                if(err) {
+                    console.error(err);
+                    this.$notify({type: 'error', text: err});
+                    return;
+                }
+
+                this.clear_selected();
+                this.$router.push("/project/"+project_id+"/process/"+instance._id);
             });
         }
     },
@@ -628,7 +660,25 @@ margin-top: 50px;
 left: 350px;
 padding-left: 10px;
 right: 0;
+/*
+overflow-y: hidden;
+padding-right: 14px;
+background-color: white;
+*/
 }
+/*
+.page-content::-webkit-scrollbar {
+width: 30px;
+overflow-y: scroll;
+}
+*/
+.page-content:hover {
+/*
+padding-right: 0px;
+*/
+overflow-y: visible;
+}
+
 h4 {
 font-size: 15px;
 font-weight: bold;
@@ -648,15 +698,18 @@ top: 95px;
 overflow-x: hidden;
 font-size: 12px;
 }
+
 .rightopen .page-content,
 .rightopen .page-header {
 right: 250px;
 }
+
 .selected {
     transition: color, background-color 0.2s;
     background-color: #2185d0;
     color: white;
 }
+
 .selected-view {
     border-left: 1px solid #ddd;
     background-color: #eee;

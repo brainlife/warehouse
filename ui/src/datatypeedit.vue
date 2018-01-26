@@ -74,8 +74,8 @@ export default {
                 name: "",
                 desc: "",
                 access: "private",
-                admins: [Vue.config.user.sub.toString()],
-                members: [Vue.config.user.sub.toString()],
+                admins: [Vue.config.user.sub],
+                members: [Vue.config.user.sub],
             },
 
             config: Vue.config,

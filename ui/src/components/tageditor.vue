@@ -1,4 +1,5 @@
 <template>
+<!--replace with vue-select-->
 <select multiple="multiple" style="width: 100%;"/>
 </template>
 

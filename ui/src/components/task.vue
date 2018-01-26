@@ -11,7 +11,7 @@
         </div>
         <div style="margin-left: 45px;">
             <div style="float: right;">
-                <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun()">
+                <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="repeat"/>
                 </div>
                 <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop()" title="Stop Task"><icon name="stop"/>
@@ -165,7 +165,7 @@ export default {
             .catch(err=>{
                 console.error(err); 
             });
-        }
+        },
     },
 }
 </script>
