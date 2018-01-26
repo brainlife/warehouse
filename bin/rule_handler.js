@@ -337,7 +337,7 @@ function handle_rule(rule, cb) {
                     body: {
                         name: instance_name,
                         desc: instance_desc,
-                        group_id: project.group_id, 
+                        group_id: rule.project.group_id, 
                         config: {
                             brainlife: true,
                             //type: "v2",
