@@ -34,21 +34,25 @@
         </div>
     </div>
 
+    <!--
     <div @click="toggle('config')" class="toggler">
         <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.config}"/> Configuration
     </div>
     <transition name="fadeHeight">
         <div v-if="activeSections.config">
-            <taskconfig :task="task" style="padding: 10px; background-color: #f6f6f6;"/>
+            <taskconfig :task="task" class="task-content"/>
         </div>
     </transition>
-
+    -->
+    <div v-if="task.service != 'soichih/sca-product-raw'">
+        <taskconfig :task="task" class="task-content"/>
+    </div>
     <div v-if="has_input_slot">
         <div @click="toggle('input')" class="toggler">
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.input" style="padding: 10px; background-color: #f6f6f6;">
+            <div v-if="activeSections.input" class="task-content">
                 <slot name="input"></slot>
             </div>
         </transition>
@@ -59,7 +63,7 @@
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.output" style="padding: 10px; background-color: #f6f6f6;">
+            <div v-if="activeSections.output" class="task-content">
                 <slot name="output"></slot>
             </div>
         </transition>
@@ -70,7 +74,7 @@
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.rawoutput" style="padding: 10px 0px; background-color: #f6f6f6;">
+            <div v-if="activeSections.rawoutput" class="task-content">
                 <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
                 <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
             </div>
@@ -223,7 +227,7 @@ margin-bottom: 2px;
 padding: 10px;
 padding-left: 18px;
 color: #666;
-border-top: 1px solid #eee;
+border-top: 1px solid #f3f3f3;
 background-color: white;
 /*transition: background-color 0.5s;*/
 }
@@ -252,5 +256,9 @@ max-height: 230px;
 {
 opacity: 0;
 max-height: 0px;
+}
+.task-content {
+padding: 10px;
+background-color: #fafafa;
 }
 </style>

@@ -16,6 +16,7 @@
                             <projectavatar :project="pub.project"/>
                         </div>
                         <div>
+                            <doibadge style="float: right;" :doi="pub.doi"/>
                             <h4 style="color: #666; margin-bottom: 10px;">
                                 {{pub.name}} 
                             </h4>
@@ -46,7 +47,7 @@
 
         <!--main content-->
         <b-container>
-            <b-row>
+ <b-row>
                 <b-col>
                     <el-alert v-if="pub.removed" title="This publication has been removed" type="warning" show-icon :closable="false"></el-alert>
                     <!-- detail -->
@@ -56,34 +57,34 @@
                                 <b class="text-muted">Publish Date</b>
                             </b-col>
                             <b-col>
-                                <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
+                                <p><time>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</time></p>
                             </b-col>
                         </b-row>                         
+                        <!--
                         <b-row>
                             <b-col cols="3">
-                                <b class="text-muted">DOI</b>
+                                <b class="text-muted">Publisher</b>
+                            </b-col>
+                            <b-col>
+                                <p>{{pub.publisher}}</p>
+                            </b-col>
+                        </b-row>
+                        -->
+                        <b-row v-if="pub.doi">
+                            <b-col cols="3">
+                                <b class="text-muted">Citations</b>
                             </b-col>
                             <b-col>
                                 <p>
-                                    <a v-if="pub.doi" :href="'https://doi.org/'+pub.doi">{{pub.doi}}</a>
-                                    <span v-else style="opacity: 0.5">Not Issued</span>
+                                    <citation :doi="pub.doi"/>
+                                    <small style="opacity: 0.5">Citation to this dataset/app published on Brainlife</small>
                                 </p>
-                            </b-col>
-                        </b-row>                         
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Abstract</b>
-                            </b-col>
-                            <b-col>
-                                <vue-markdown :source="pub.readme"></vue-markdown>
-                            </b-col>
-                        </b-row>  
-                        <b-row v-if="pub.citation">
-                            <b-col cols="3">
-                                <b class="text-muted">Citation</b>
-                            </b-col>
-                            <b-col>
-                                <i>{{pub.citation}}</i>
+                                <!--
+                                <p>TODO</p>
+                                <p>
+                                    <small style="opacity: 0.5">Citation to the paper published</small>
+                                </p>
+                                -->
                             </b-col>
                         </b-row>  
                         <b-row>
@@ -98,6 +99,14 @@
                                 </ul>
                             </b-col>
                         </b-row>
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Abstract</b>
+                            </b-col>
+                            <b-col>
+                                <vue-markdown :source="pub.readme"></vue-markdown>
+                            </b-col>
+                        </b-row>  
                         <b-row v-if="pub.contributors.length > 0">
                             <b-col cols="3">
                                 <b class="text-muted">Contributors</b>
@@ -274,7 +283,9 @@ import VueMarkdown from 'vue-markdown'
 import license from '@/components/license'
 import datatypetag from '@/components/datatypetag'
 import tags from '@/components/tags'
+import citation from '@/components/citation'
 import app from '@/components/app'
+import doibadge from '@/components/doibadge'
 
 import VueDisqus from 'vue-disqus/VueDisqus.vue'
 
@@ -284,7 +295,8 @@ export default {
         pageheader, sidemenu, projectavatar, 
         contact, VueMarkdown, license, 
         projectcard, datatypetag, tags, 
-        app, VueDisqus,
+        app, VueDisqus, citation,
+        doibadge,
     },
 
     data () {

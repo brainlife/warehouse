@@ -18,6 +18,7 @@
         </div>
 
         <div id="process-list" :class="{'process-list-show': show_process_list}">
+            <b-alert show variant="danger">This page has been deprecated. Please use process tab under each project.</b-alert>
             <div class="process-list-header">
                 <div class="process-list-hider" @click="show_process_list = false;"><icon name="bars"/></div> Processes
             </div>

@@ -12,6 +12,7 @@ import select2 from '@/components/select2' //TODO - use vue-select instead
 var profiles = null;
 
 export default {
+    props: ['value'],
     components: { select2 },
     data () {
         return {
@@ -19,7 +20,6 @@ export default {
             profiles: null,
         }
     },
-    props: ['value'],
 
     watch: {
         value: function(values) {

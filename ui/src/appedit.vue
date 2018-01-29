@@ -3,9 +3,9 @@
     <pageheader/>
     <sidemenu active="/apps"></sidemenu>
     <div class="fixed-top">
-        <div class="margin20" style="color: white;">
+        <div class="margin20" style="color: white; height: 50px;">
             <h2 v-if="$route.params.id == '_'">New App</h2>
-            <h2 v-else><icon name="pencil" scale="2"/> {{app.name}}</h2>
+            <h2 v-else><icon name="pencil" scale="2" style="opacity: 0.5"/> {{app.name}}</h2>
         </div>
         <b-tabs class="brainlife-tab" v-model="tab_index">
             <b-tab title="Details"/>
@@ -569,7 +569,7 @@ position: fixed;
 top: 50px;
 left: 90px;
 right: 0px;
-height: 131px;
+height: 130px;
 z-index: 1;
 background-color: #666;
 border-bottom: 1px solid #ccc;

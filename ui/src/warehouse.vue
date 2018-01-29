@@ -153,6 +153,10 @@ background-color: #dc3545;
 color: white;
 }
 
+.table th, .table td {
+border-top: none;
+}
+
 /*------------------------------------------------------------*/
 /* update bootstrap default tab */
 

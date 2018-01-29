@@ -23,7 +23,6 @@
         <el-alert type="error" title="">This process has been removed</el-alert>
     </p>
 
-    <b-alert show variant="danger">This page has been deprecated. Please use process tab under each project.</b-alert>
     <div v-if="tasks" v-for="task in tasks" :key="task._id">
         <!--task-id and toggler-->
         <div style="float: right" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">

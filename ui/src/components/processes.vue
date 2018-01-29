@@ -108,7 +108,29 @@ export default {
         project: function() {
             console.log("project changed.. need to reload");
             this.load();
-        }
+        },
+        '$route': function() {
+            var subid = this.$route.params.subid;
+            if(subid) {
+                if(this.selected && this.selected._id != subid) {
+                    //update
+                    console.log("need to open process", subid);
+                    var selected = this.instances.find(it=>it._id == subid);
+                    this.toggle_instance(selected);
+                } else {
+                    //newly opened via router.. scroll to it
+                    //TODO - I want to scroll to the instance that user open via router change, but since 
+                    //route change happens whenever user clicks on the instance (not when it get redirected..) 
+                    //so we can't handle it here..
+                }
+            } else {
+                if(this.selected) {
+                    //close
+                    console.log("need to close opened instance");
+                    this.toggle_instance(this.selected); //close it
+                }
+            }
+        },
     },
 
     methods: {
@@ -127,9 +149,30 @@ export default {
             this.$notify({type: 'error', text: err.body.message});
         },
 
+        /*
+        scrollto: function(id) {
+            var elem = document.getElementById(id);
+            var top = elem.offsetTop;
+            console.dir(elem);
+            document.getElementById("scrolled-area").scrollTop = top;
+        },
+        */
+
         toggle_instance: function(instance) {
-            if(instance.edit) return;
+            //if(instance.edit) return;
             if(this.selected != instance) {
+
+                //if jumping to instance below currently selected, I should adjust current scroll position
+                if(this.selected) {
+                    //var elem = document.getElementsByClassName("process")[0];
+                    var olditem = document.getElementById(this.selected._id);
+                    var newitem = document.getElementById(instance._id);
+                    if(olditem.offsetTop < newitem.offsetTop) {
+                        //console.log("click below .. need to adjust scroll position", olditem.clientHeight);
+                        document.getElementById("scrolled-area").scrollTop -= olditem.clientHeight;
+                    }
+                }
+
                 this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
                 this.selected = instance;
             } else {

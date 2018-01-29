@@ -63,6 +63,9 @@
                                 </ul>
                             </b-col>
                         </b-row>
+                        <br>
+
+
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Contributors</b>
@@ -75,7 +78,21 @@
                                 </ul>
                             </b-col>
                         </b-row>
+
+                        <!--input/output header-->
                         <b-row>
+                            <b-col cols="3">
+                            </b-col>
+                            <b-col>
+                                <b-row style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 90%;">
+                                    <b-col :cols="4">Datatype</b-col>
+                                    <b-col :cols="3">config.json key</b-col>
+                                    <b-col>File Mapping</b-col>
+                                </b-row>
+                                <hr>
+                            </b-col>
+                        </b-row>
+                       <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Input</b>
                             </b-col>
@@ -87,11 +104,6 @@
                                     <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/> 
                                 </div>
                                 -->
-                                <b-row style="color: #999; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
-                                    <b-col :cols="4"> Datatype </b-col>
-                                    <b-col :cols="3"> config.json key </b-col>
-                                    <b-col> File Mapping</b-col>
-                                </b-row>
  
                                 <div v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'" style="margin-bottom: 5px;">
                                     <b-row>
@@ -102,7 +114,7 @@
                                             <b><pre style="background-color: white;">"{{key}}"</pre></b>
                                         </b-col>
                                         <b-col>
-                                            <small class="text-muted" style="float: right; margin-right: 10px">({{con.input_id}})</small><!--internal input id-->
+                                            <small style="opacity: 0.3; float: right; margin-right: 10px">{{con.input_id}}</small><!--internal input id-->
                                             <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
                                         </b-col>
                                     </b-row>
@@ -129,7 +141,7 @@
                                         </b-col>
                                         <b-col>
                                             <div style="position: relative"> 
-                                                <small class="text-muted" style="right: 10px; position: absolute;">({{output.id}})</small><!--internal output id-->
+                                                <small style="opacity: 0.3; right: 10px; position: absolute;">{{output.id}}</small><!--internal output id-->
                                                 <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
                                                 <!--<small class="text-muted" v-else>No Mapping</small>-->
                                             </div>
@@ -172,6 +184,7 @@
                             <b-col>
                                 <b-table style="font-size: 90%;" :items="resource_table" :fields="['resource','status','score', 'detail']">
                                     <template slot="resource" slot-scope="data">
+                                        <icon class="preferred-icon" v-if="data.item.preferred" name="thumbs-up"/>
                                         <b>{{data.value}}</b>
                                     </template>
                                     <template slot="status" slot-scope="data">
@@ -184,7 +197,7 @@
                                 <b-alert show variant="danger" v-if="!preferred_resource">
                                     This app currently can not run on any resource that you have access to.
                                 </b-alert>
-                                <p class="text-muted" v-else>This app could run on above resource(s)</p>
+                                <!--<small class="text-muted" v-else>This app could run on one of above resource(s)</small>-->
                             </b-col>
                         </b-row>
 
@@ -259,6 +272,18 @@
                                 <el-rate v-model="app._rate" @change="ratechange()"></el-rate>
                             </center>
                         </b-card>
+                        <br>
+
+                        <b-card>
+                            <center>
+                                <span class="text-muted">Badges</span>
+                                <br>
+                                <br>
+                                <img :src="'https://img.shields.io/badge/brainlife.io-app-green.svg'" @click="show_badge_url()"><br>
+                            </center>
+                        </b-card>
+                        <br>
+
                     </b-col>
                 </b-row>
 
@@ -371,7 +396,8 @@ export default {
 
                     //b-table shows _rowVariant as column..
                     if(this.preferred_resource && resource.id == this.preferred_resource._id) {
-                        item._rowVariant = 'success';
+                        //item._rowVariant = 'success';
+                        item.preferred = true;
                     }
                     items.push(item);
                 });
@@ -448,6 +474,10 @@ export default {
             });
         },
 
+        show_badge_url() {
+            prompt("The Badge Markdown", "[![brainlife.io/app](https://img.shields.io/badge/brainlife.io-app-green.svg)]("+this.selfurl+")");
+        },
+
         remove: function() {
             if(confirm("Do you really want to remove this app ?")) {
                 this.$http.delete('app/'+this.app._id)
@@ -489,5 +519,11 @@ text-transform: uppercase;
 color: #999;
 border-radius: 0px;
 margin-right: 5px;
+}
+.preferred-icon {
+color: green;
+position: absolute;
+left: 0px;
+font-weight: bold;
 }
 </style>

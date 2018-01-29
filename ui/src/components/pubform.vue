@@ -1,7 +1,19 @@
 <template>
 <b-form @submit="submit">
+    <h3 style="opacity: 0.7">{{pub.doi||pub._id+' (no doi)'}}</h3>
+    <p style="opacity: 0.7">Only the publication metadata can be edited at this time. To update published datasets, please contact administrator.</p>
     <b-form-group label="Title *" horizontal>
         <b-form-input required v-model="pub.name" type="text" placeholder="Title of the paper"></b-form-input>
+    </b-form-group>
+    <!--
+    <b-form-group label="Publisher *" horizontal>
+        <b-form-input required v-model="pub.publisher" type="text" placeholder="Name of the journal to publish this paper"></b-form-input>
+        <small class="text-muted">This property will be used to formulate the citation, so consider the prominence of the role.</small>
+    </b-form-group>
+    -->
+    <b-form-group label="Publication Date" horizontal>
+        <b-form-input required v-model="pub._publish_date" type="date" @change="change_pubdate"></b-form-input>
+        <small class="text-muted">If not published yet, please enter an estimated publication date. You can be updated this later.</small>
     </b-form-group>
     <b-form-group label="Description" horizontal>
         <b-form-textarea v-model="pub.desc" :rows="5" placeholder="A short summary of the abstract"></b-form-textarea>
@@ -9,7 +21,7 @@
     <b-form-group label="Tags" horizontal>
         <select2 :options="oldtags" v-model="pub.tags" :multiple="true" :tags="true"></select2>
     </b-form-group>
-    <b-form-group label="README *" horizontal>
+    <b-form-group label="Abstract *" horizontal>
         <b-form-textarea required v-model="pub.readme" :rows="10" placeholder="Content from abstract, or any other details about this publications"></b-form-textarea>
         <small class="text-muted">in markdown</small>
     </b-form-group>
@@ -40,7 +52,7 @@
         <b-button type="button" @click="pub.fundings.push({})" size="sm"><icon name="plus"/> Add Funder</b-button>
     </b-form-group>
     <b-form-group label="Authors" horizontal>
-        <contactlist v-model="pub.authors"></contactlist>
+        <contactlist v-model="pub.authors"/>
     </b-form-group>
     <b-form-group label="Contributors" horizontal>
         <contactlist v-model="pub.contributors"></contactlist>
@@ -89,22 +101,39 @@ export default {
             oldtags: null,
         }
     },
+    
+    /*
+    watch: {
+        pub: function() {
+            
+        }
+    }
+    */
 
     mounted() {
         //select2 needs option set to show existing tags.. so we copy my own tags and use it as options.. stupid select2
         this.oldtags = Object.assign(this.pub.tags);
+        if(!this.pub.publish_date) this.pub.publish_date = new Date(); //backward compatibility
+        else this.pub.publish_date = new Date(this.pub.publish_date); //convert from iso string to javascript date
+        this.pub._publish_date = this.pub.publish_date.toISOString().split("T")[0];//TODO - better way?
     },
 
     methods: {
         submit: function(evt) {
             evt.preventDefault();
+            this.pub.publish_date = new Date(this.pub._publish_date);
             this.$emit("submit", this.pub);
         },
-    
+
         remove_funder: function(idx) {
             console.log("removing", idx);
             this.pub.fundings.splice(idx, 1);            
             console.log(this.pub.fundings);
+        },
+
+        //vue bootstrap's date controller doesn't do 2way binding?
+        change_pubdate: function(d) {
+            this.pub._publish_date = new Date(d);
         },
     }
 }

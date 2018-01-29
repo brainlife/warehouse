@@ -433,8 +433,9 @@ export default {
             }).then(res=>{
                 console.log("submitted app task", res.body.task);
                 this.$router.push("/project/"+this.project+"/process/"+instance._id);
-            }).catch(err=>{
-                console.error(err);
+            }).catch(res=>{
+                console.error(res);
+                this.$notify({ text: res.body.message , type: 'error' });
             });
         },
 

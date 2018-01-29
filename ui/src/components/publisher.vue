@@ -89,6 +89,10 @@ export default {
                 tags: [],
                 readme: (Vue.config.debug?"test":""),
                 license: "ccby.40",
+            
+                publisher: "Nature",
+                publish_date: new Date(),
+                //publication_year: new Date().getFullYear(),
 
                 fundings: [],
                 authors: [ Vue.config.user.sub ],
@@ -187,12 +191,17 @@ export default {
 
                     console.log("done with publishing datasets");
 
+                    //TODO - register metadata automatically by POST /pub
+                    /*
                     //lastly, register doi metadata
                     var url = (new URL("/pub/"+pub._id, document.location)).href
                     this.$http.put('pub/'+pub._id+'/doi', {url}).then(res=>{
                         this.$notify("Successfully published!");
                         this.$emit("submit", pub);
                     }); 
+                    */
+                    this.$notify("Successfully published!");
+                    this.$emit("submit", pub);
                 })
             });
         }

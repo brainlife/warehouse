@@ -5,6 +5,7 @@
             <projectavatar :project="pub.project"/>
         </div>
         <div style="margin: 0px 10px 5px 100px;">
+            <doibadge :doi="pub.doi" style="float: right; margin-top: 10px;"/>
             <h5 class="name"><small>{{pub.project.name}} <icon name="arrow-right"/></small> {{pub.name}}</h5>
             <p style="opacity: 0.8;">{{pub.desc}}</p>
             <div style="line-height: 200%;">
@@ -30,9 +31,10 @@ import Vue from 'vue'
 
 import contact from '@/components/contact'
 import projectavatar from '@/components/projectavatar'
+import doibadge from '@/components/doibadge'
 
 export default {
-    components: { contact, projectavatar },
+    components: { contact, projectavatar, doibadge },
     props: ['pub', 'compact'],
 
     methods: {

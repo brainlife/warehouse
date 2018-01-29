@@ -11,8 +11,6 @@
             <publisher :project="project" @close="publishing = false" @submit="publish"/>
         </div>
         <div v-else-if="pub_editing">
-            <h3 style="opacity: 0.7">Edit Publication</h3>
-            <p style="opacity: 0.7">Only the publication metadata can be edited at this time. To update published datasets, please contact administrator.</p>
             <pubform :pub="pub_editing" @submit="save_pub">
                 <button type="button" class="btn btn-secondary" @click="cancel_pub">Cancel</button>
             </pubform>
@@ -23,11 +21,15 @@
                 <b-row>
                 <b-col>
                     <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
-                    <h5 style="margin-top: 10px;">{{pub.name}}</h5>
+                    <h5 style="margin-top: 10px;">
+                        {{pub.name}}
+                        <tags :tags="pub.tags"/> 
+                    </h5>
                     <p style="opacity: 0.7;">{{pub.desc}}</p>
                 </b-col>
-                <b-col cols="3">
-                    <span style="float: right; opacity: 0.7;"><b>{{new Date(pub.create_date).toLocaleDateString()}}</b></span>
+                <b-col>
+                    <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
+                    <!--<doibadge :doi="pub.doi"/>-->
                     <div class="pub-action" style="display: inline-block; float: right; margin-right: 10px;" v-if="ismember()">
                         <div class="button" @click.stop="open_pub(pub)">
                             <icon name="eye"/>
@@ -68,6 +70,8 @@ import contact from '@/components/contact'
 import process from '@/components/process'
 import pubform from '@/components/pubform'
 import publisher from '@/components/publisher'
+import tags from '@/components/tags'
+import doibadge from '@/components/doibadge'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -77,7 +81,8 @@ export default {
     props: [ 'project' ], 
     components: { 
         statusicon, contact, process,
-        pubform, publisher,
+        pubform, publisher, tags,
+        doibadge,
     },
     data () {
         return {

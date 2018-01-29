@@ -275,7 +275,6 @@ export default {
     watch: {
         instance: function() {
             console.log("instance updated");
-            //document.getElementById("scrolled-area").scrollTop = 0;
             this.load();
         },
         'input_dialog.project': function(p) {
@@ -294,8 +293,9 @@ export default {
         },
 
         scrollto: function(id) {
+            var header = document.getElementsByClassName("instance-active")[0];
             var elem = document.getElementById(id);
-            var top = elem.offsetTop-150;
+            var top = elem.offsetTop-header.clientHeight;
             document.getElementById("scrolled-area").scrollTop = top;
         },
 
