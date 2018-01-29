@@ -64,11 +64,11 @@ export default {
 
     methods: {
         scroll_to_active: function() {
-            //scroll to selected project
+            //scroll to selected project if it's out the scroll window
             var elem = document.getElementById(this.active);
             if(!elem) return;
             var area = document.getElementsByClassName("projectmenu")[0];
-            if(area.clientHeight < elem.offsetTop) {
+            if(area.clientHeight + area.scrollTop < elem.offsetTop) {
                 area.scrollTop = elem.offsetTop - area.clientHeight/2;
             }
 

@@ -164,6 +164,7 @@ import datatypetag from '@/components/datatypetag'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const lib = require('../lib');
+const async = require('async');
 
 export default {
     props: [ 'project', 'instance' ],
@@ -306,48 +307,60 @@ export default {
         },
 
         load() {
+            console.log("loading process");
             this.archiving = null;
 
-            //(re)connect to websocket
-            if(this.ws) this.ws.close();
-            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-            this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
-            this.ws.onopen = (e)=>{
-                console.log("connected to websocket ..loading tasks");
+            async.parallel([
+                cb=>{
+                    console.log("(re)connecting to task updates");
+                    if(this.ws) this.ws.close();
+                    var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+                    this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
+                    this.ws.onopen = (e)=>{
+                        console.log("connected to websocket ..loading tasks");
+                        cb();
+                    };
+                },
 
-                this.$http.get(Vue.config.wf_api+'/task', {params: {
-                    find: JSON.stringify({
-                        instance_id: this.instance._id,
-                        status: {$ne: "removed"},
-                        'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
-                    }),
-                    limit: 1000, //should be enough.. for now
-                    sort: 'create_date',
-                }})
-                .then(res=>{
-                    //load show/hide status
-                    res.body.tasks.forEach(task=>{
-                        task.show = true;
-                        var show = localStorage.getItem("task.show."+task._id);
-                        if(show == "false") task.show = false;
-                    });
-
-                    this.tasks = res.body.tasks;
-                    //this.update_apps();
-
-                    //loading archived datasets for all tasks
-                    var task_ids = this.tasks.map(task=>task._id); 
-                    return this.$http.get('dataset', {params: {
+                cb=>{
+                    console.log("loading tasks");
+                    this.$http.get(Vue.config.wf_api+'/task', {params: {
                         find: JSON.stringify({
-                            "prov.instance_id": this.instance._id,
-                            removed: false,
+                            instance_id: this.instance._id,
+                            status: {$ne: "removed"},
+                            'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
                         }),
-                        limit: 300,
+                        limit: 1000, //should be enough.. for now
+                        sort: 'create_date',
                     }})
-                })
-                .then(res=>{
+                    .then(res=>{
+                        console.log("got tasks");
+
+                        //load show/hide status
+                        res.body.tasks.forEach(task=>{
+                            task.show = true;
+                            var show = localStorage.getItem("task.show."+task._id);
+                            if(show == "false") task.show = false;
+                        });
+
+                        this.tasks = res.body.tasks;
+                        cb();
+                    });
+                },
+
+            ], (err, res)=>{
+                //loading archived datasets for all tasks
+                var task_ids = this.tasks.map(task=>task._id); 
+                this.$http.get('dataset', {params: {
+                    find: JSON.stringify({
+                        "prov.instance_id": this.instance._id,
+                        removed: false,
+                    }),
+                    limit: 300,
+                }}).then(res=>{
                     this.archived = res.body.datasets;
 
+                    console.log("binding to task update");
                     this.ws.send(JSON.stringify({
                         bind: {
                             ex: "wf.task",
@@ -386,11 +399,9 @@ export default {
                                 t[k] = msg[k];
                             }
                         }
-                    }
-                }).catch((err)=>{
-                    console.error(err);
+                    };
                 });
-            } //websocket onopen
+            });
         },
 
         findarchived: function(task, output) {
