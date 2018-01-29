@@ -128,6 +128,9 @@ var publicationSchema = mongoose.Schema({
     contributors: [ String ], //list of users who contributed (PI, etc..)
     //contributor_ext: [new mongoose.Schema({name: 'string', email: 'string'})],
 
+    //DOI metadata
+    publisher: String, //NatureScientificData
+    
     //contacts: [ String ], //list of users who can be used as contact
 
     name: String, //title of the publication
@@ -136,6 +139,7 @@ var publicationSchema = mongoose.Schema({
     readme: String, //markdown (abstract in https://purl.stanford.edu/rt034xr8593)
 
     create_date: { type: Date, default: Date.now },
+    publish_date: { type: Date, default: Date.now }, //used for publication date
 
     removed: { type: Boolean, default: false },
 });

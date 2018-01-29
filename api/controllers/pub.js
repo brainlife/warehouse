@@ -5,6 +5,7 @@ const router = express.Router();
 const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
+const request = require('request');
 
 const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
@@ -183,25 +184,29 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     can_publish(req, req.body.project, (err, can)=>{
         if(err) return next(err);
         if(!can) return res.status(401).end("you can't publish this project");
-        new db.Publications({
-            user_id: req.user.sub, //user who submitted it
-
-            project: req.body.project,
-            name: req.body.name,
-            desc: req.body.desc,
-            readme: req.body.readme,
-            tags: req.body.tags||[],
-
-            license: req.body.license,
-            fundings: req.body.fundings,
-
-            authors: req.body.authors,
-            contributors: req.body.contributors,
-
-            removed: req.body.removed,
-        }).save((err, _pub)=>{
+        let def = {
+            tags: [],
+        }
+        let override = {
+            user_id: req.user.sub, 
+        }
+        new db.Publications(Object.assign(def, req.body, override)).save((err, pub)=>{
             if(err) return next(err);
-            res.json(_pub); 
+
+            common.doi_mint(pub, err=>{
+                if(err) return next(err);
+
+                common.doi_post_metadata(pub, err=>{
+                    if(err) return next(err);
+
+                    res.json(pub);
+
+                    //then attach url to it (to "mint" it!)
+                    let url = "https://brainlife.io/pub/"+pub._id;  //TODO make it configurable?
+                    common.doi_put_url(pub.doi, url, logger.error);
+                });
+            });
+            
         });
  
     });
@@ -242,20 +247,23 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             if(!can) return res.status(401).end("you can't publish this project");
 
             //TODO - should I check to see if the user is listed as author?
-            
-            //apply updates
-            if(req.body.license) pub.license = req.body.license;
-            if(req.body.fundings) pub.fundings = req.body.fundings;
-            if(req.body.authors) pub.authors = req.body.authors;
-            if(req.body.contributors) pub.contributors = req.body.contributors;
-            if(req.body.name) pub.name = req.body.name;
-            if(req.body.desc) pub.desc = req.body.desc;
-            if(req.body.readme) pub.readme = req.body.readme;
-            if(req.body.tags) pub.tags = req.body.tags;
-            if(req.body.removed) pub.removed = req.body.removed;
-            pub.save((err, _pub)=>{
+
+            //disallow user from making changes to protected fields
+            delete req.body.user_id;
+            delete req.body.project;
+            delete req.body.doi;
+            delete req.body.create_date;
+            //delete req.body.removed; //let's secretly allow removal for now..
+
+            //update pub record
+            for(let k in req.body) pub[k] = req.body[k];
+            pub.save((err, pub)=>{
                 if(err) return next(err);
-                res.json(_pub); 
+
+                res.json(pub); 
+
+                if(!pub.doi) return; //for backward compatibility.. should I new doi?register?
+                common.doi_post_metadata(pub, logger.error); 
             });
         });
     });
@@ -314,6 +322,7 @@ router.put('/:id/datasets', jwt({secret: config.express.pubkey}), (req, res, nex
  *
  * @apiSuccess {Object}                 Publication object with doi field
  */
+/*
 router.put('/:id/doi', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     let id = req.params.id;
     let url = req.body.url;
@@ -343,6 +352,23 @@ router.put('/:id/doi', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         });
     });
 }); 
+*/
+
+//proxy doi.org doi resolver
+router.get('/doi', (req, res, next)=>{
+    logger.debug("querying doi", req.query.doi);
+    request({
+        url: "https://doi.org/"+req.query.doi, //TODO validate!
+        headers: {
+            //Accept: "text/x-bibliography; style=harvard3",
+            //Accept: "application/x-bibtex",
+            accept: req.query.accept,
+        }
+    }, (err, _res, body)=>{
+        if(err) return next(err);
+        res.status(_res.statusCode).send(body);
+    });
+});
 
 module.exports = router;
 
