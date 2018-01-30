@@ -148,6 +148,7 @@
                                         </b-col>
                                     </b-row>
                                 </div>
+                                <b-alert show variant="warning" v-if="app.outputs.length == 0">No Outputs</b-alert>
                                 <br>
                             </b-col>
                         </b-row>
@@ -206,7 +207,7 @@
                                 <b class="text-muted">UI Configuration</b>
                             </b-col>
                             <b-col cols="9">
-                                <b-alert show variant="info">TODO .. show this in more user friently way</b-alert>
+                                <b-alert show variant="info">TODO .. show this in more user friendly way</b-alert>
                                 <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
                             </b-col>
                         </b-row>

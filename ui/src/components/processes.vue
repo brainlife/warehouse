@@ -385,6 +385,7 @@ padding: 8px 0px;
 opacity: 0;
 transition: opacity 0.5s;
 }
+.instance-active .process-action,
 .instance-header:hover .process-action {
 opacity: 1;
 }

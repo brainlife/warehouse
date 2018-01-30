@@ -3,24 +3,28 @@
     <pageheader/>
     <sidemenu active="/apps"></sidemenu>
     <div class="fixed-top">
-        <div class="margin20" style="color: white; height: 50px;">
-            <h2 v-if="$route.params.id == '_'">New App</h2>
-            <h2 v-else><icon name="pencil" scale="2" style="opacity: 0.5"/> {{app.name}}</h2>
+        <div class="container" style="height: 50px;">
+            <div style="color: white; margin: 20px 0px;">
+                <h2 v-if="$route.params.id == '_'">New App</h2>
+                <h2 v-else><icon name="pencil" scale="2" style="opacity: 0.5"/> {{app.name}}</h2>
+            </div>
         </div>
+        <!--
         <b-tabs class="brainlife-tab" v-model="tab_index">
             <b-tab title="Details"/>
             <b-tab title="Input / Output"/>
             <b-tab title="Configuration Parameter"/>
         </b-tabs>
+        -->
     </div>
 
     <div class="main-section" v-if="ready">
-        <b-form>
+        <b-form @submit="submit" class="container">
             <!--detail-->
-            <transition name="slide-fade">
-            <div v-if="tab_index == 0">
-                <b-form-group horizontal label="Name">
-                    <el-input type="text" v-model="app.name" placeholder="Name of application"/>
+            <div>
+                <h4>Detail</h4>
+                <b-form-group horizontal label="Name *">
+                    <b-form-input type="text" v-model="app.name" placeholder="Name of application" required/>
                 </b-form-group>
                 <b-form-group horizontal label="Description Override">
                     <b-form-textarea v-model="app.desc_override" placeholder="(Leave empty to use github repo description)" :rows="3" :max-rows="6"></b-form-textarea>
@@ -38,16 +42,22 @@
                         :allownull="true" 
                         access="private"
                         placeholder="(Leave it empty to make it available for all users)"/>
-                    <p class="text-muted">If a private project is selected, only the member of the project can access this app</p>
+                    <small class="text-muted">If a private project is selected, only the member of the project can access this app</small>
                 </b-form-group>
 
                 <b-form-group horizontal label="Source Code">
-                    <b-input-group>
-                        <b-input-group-addon>Github Repository Name</b-input-group-addon>
-                        <b-form-input type="text" v-model="app.github" placeholder="brain-life/app-name"/>
-                        <b-input-group-addon>Branch</b-input-group-addon>
-                        <b-form-input type="text" v-model="app.github_branch" placeholder="master"/>
-                    </b-input-group>
+                    <b-row>
+                        <b-col>
+                            <b-input-group prepend="Github Repository Name *">
+                                <b-form-input type="text" v-model="app.github" placeholder="brain-life/app-name" required/>
+                            </b-input-group>
+                        </b-col>
+                        <b-col>
+                            <b-input-group prepend="Branch (optional)">
+                                <b-form-input type="text" v-model="app.github_branch" placeholder="master"/>
+                            </b-input-group>
+                        </b-col>
+                    </b-row>
                 </b-form-group>
                 <br>
                 <b-form-group horizontal label="Max Retry">
@@ -55,10 +65,9 @@
                     <p class="text-muted">If a task fails, it will rerun up to this count (0 means no retry)</p>
                 </b-form-group>
             </div>
-            </transition>
 
-            <transition name="slide-fade">
-            <div v-if="tab_index == 1">
+            <div>
+                <h4>Input / Output</h4>
                 <b-form-group horizontal label="Input Datatype">
                     <transition-group name="height">
                     <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
@@ -97,12 +106,12 @@
                                     <b-row>
                                         <b-col>
                                             <div class="text-muted">Key</div>
-                                            <el-input v-model="config._id"></el-input>
+                                            <b-form-input type="text" v-model="config._id" placeholder="key to reference in your config.json" required/>
                                         </b-col>
                                         
                                         <b-col v-if="input.datatype">
                                             <div class="text-muted">File/Directory</div>
-                                            <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id"></b-form-select>
+                                            <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id" required/>
                                         </b-col>
                                     </b-row>
                                 </b-card>
@@ -152,11 +161,10 @@
                     </p>
                 </b-form-group>
             </div>
-            </transition>
 
-            <transition name="slide-fade">
-            <div v-if="tab_index == 2">
-                <b-form-group>
+            <div>
+                <h4>Configuration</h4>
+                <b-form-group horizontal label="Configuration">
                     <b-dropdown size="sm" text="Add Configuration Parameter" variant="success">
                         <b-dropdown-item @click="add_config('string')">String</b-dropdown-item>
                         <b-dropdown-item @click="add_config('number')">Number</b-dropdown-item>
@@ -272,10 +280,8 @@
                         </b-card>
                     </div>
                     </transition-group> 
-
                 </b-form-group>
             </div>
-            </transition>
 
             <!-- citation
             <transition name="slide-fade">
@@ -294,10 +300,11 @@
             </transition>
             -->
             
-            <hr>
+            <br>
+            <br>
             <div style="float: right">
                 <b-button @click="cancel">Cancel</b-button>
-                <b-button variant="primary" @click="submit">Submit</b-button>
+                <b-button type="submit" variant="primary">Submit</b-button>
             </div>
             <br clear="both">
 
@@ -339,7 +346,7 @@ export default {
     },
     data () {
         return {
-            tab_index: 0,
+            //tab_index: 0,
             app: {
                 projects: [],
                 admins: null,
@@ -496,11 +503,31 @@ export default {
             this.$router.go(-1);
         },
 
-        submit: function() {
-            //parse output file mapping JSON
+        submit: function(evt) {
+            evt.preventDefault();
+            console.log("clicked submit");
+            /*
             if (this.app.outputs.length == 0) {
                 this.$notify({text: "At least one output is required", type: 'error' });
                 return;
+            }
+            */
+        
+            var valid = true;
+            this.app.inputs.forEach(input=>{
+                //find the input mapping
+                var found = null;
+                for (var k in this.app.config) {
+                    if (this.app.config[k].input_id == input.id) found = this.app.config;
+                }
+                if(!found) {
+                    valid = false;
+                    this.$notify({text: "Please enter at least one file mapping per each input", type: 'error' });
+                }
+            }); 
+            if(!valid) {
+                console.error("invalid form");
+                return; 
             }
             
             try {
@@ -512,6 +539,8 @@ export default {
                 this.$notify({ test: 'Failed to parse output mapping', type: 'error' });
                 return;
             }
+
+            console.log("form good");
 
             //update config object key with _id specified by the user - instead of ones that are generated for UI
             let keyed_app = Object.assign({}, this.app);
@@ -569,16 +598,22 @@ position: fixed;
 top: 50px;
 left: 90px;
 right: 0px;
-height: 130px;
+height: 80px;
 z-index: 1;
 background-color: #666;
 border-bottom: 1px solid #ccc;
+}
+h4 {
+color: #999;
+border-bottom: 1px solid #ddd;
+padding-bottom: 10px;
+margin-bottom: 15px;
 }
 .main-section {
 position: fixed;
 left: 90px;
 right: 0px;
-top: 180px;
+top: 130px;
 bottom: 0px;
 overflow: auto;
 padding: 20px;

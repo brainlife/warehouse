@@ -306,49 +306,83 @@ export default {
             this.$router.push("/project/"+this.project._id+"/dataset/"+id);
         },
 
+        bind_ws() {
+        },
+
         load() {
             console.log("loading process");
             this.archiving = null;
 
-            async.parallel([
-                cb=>{
-                    console.log("(re)connecting to task updates");
-                    if(this.ws) this.ws.close();
-                    var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-                    this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
-                    this.ws.onopen = (e)=>{
-                        console.log("connected to websocket ..loading tasks");
-                        cb();
-                    };
-                },
+            console.log("(re)connecting to task updates");
+            if(this.ws) this.ws.close();
+            var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
+            this.ws.onopen = (e)=>{
+                console.log("(re)connected to websocket - binding (again)");
+                console.log("binding to task update");
+                this.ws.send(JSON.stringify({
+                    bind: {
+                        ex: "wf.task",
+                        key: this.instance._id+".#",
+                    }
+                }));
 
-                cb=>{
-                    console.log("loading tasks");
-                    this.$http.get(Vue.config.wf_api+'/task', {params: {
-                        find: JSON.stringify({
-                            instance_id: this.instance._id,
-                            status: {$ne: "removed"},
-                            'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
-                        }),
-                        limit: 1000, //should be enough.. for now
-                        sort: 'create_date',
-                    }})
-                    .then(res=>{
-                        console.log("got tasks");
+                this.ws.onmessage = (json)=>{
+                    var event = JSON.parse(json.data);
+                    if(event.error) {
+                        console.error(event.error);
+                        return;
+                    }
+                    var msg = event.msg;
+                    if(!msg || !msg._id) return; //odd..
+                    var t = this.tasks.find(t=>t._id == msg._id);
+                    if(!t) {
+                        //new task?
+                        this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
+                        msg.show = true;
+                        this.tasks.push(msg); 
+                    } else {
+                        //update
+                        if(t.status != msg.status) {
+                            var text = "t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg;
+                            var type = null;
+                            switch(msg.status) {
+                            case "failed": type = "error"; break;
+                            case "finished": type = "success"; break;
+                            case "stopped": type = "warn"; break;
+                            }
+                            console.log("notification type", type, msg.status);
+                            this.$notify({type, text});
+                        }
+                        for(var k in msg) {
+                            t[k] = msg[k];
+                        }
+                    }
+                };
+            };
 
-                        //load show/hide status
-                        res.body.tasks.forEach(task=>{
-                            task.show = true;
-                            var show = localStorage.getItem("task.show."+task._id);
-                            if(show == "false") task.show = false;
-                        });
+            console.log("loading tasks");
+            this.$http.get(Vue.config.wf_api+'/task', {params: {
+                find: JSON.stringify({
+                    instance_id: this.instance._id,
+                    status: {$ne: "removed"},
+                    'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
+                }),
+                limit: 1000, //should be enough.. for now
+                sort: 'create_date',
+            }})
+            .then(res=>{
+                console.log("got tasks");
 
-                        this.tasks = res.body.tasks;
-                        cb();
-                    });
-                },
+                //load show/hide status
+                res.body.tasks.forEach(task=>{
+                    task.show = true;
+                    var show = localStorage.getItem("task.show."+task._id);
+                    if(show == "false") task.show = false;
+                });
 
-            ], (err, res)=>{
+                this.tasks = res.body.tasks;
+
                 //loading archived datasets for all tasks
                 var task_ids = this.tasks.map(task=>task._id); 
                 this.$http.get('dataset', {params: {
@@ -360,46 +394,6 @@ export default {
                 }}).then(res=>{
                     this.archived = res.body.datasets;
 
-                    console.log("binding to task update");
-                    this.ws.send(JSON.stringify({
-                        bind: {
-                            ex: "wf.task",
-                            key: this.instance._id+".#",
-                        }
-                    }));
-
-                    this.ws.onmessage = (json)=>{
-                        var event = JSON.parse(json.data);
-                        if(event.error) {
-                            console.error(event.error);
-                            return;
-                        }
-                        var msg = event.msg;
-                        if(!msg || !msg._id) return; //odd..
-                        var t = this.tasks.find(t=>t._id == msg._id);
-                        if(!t) {
-                            //new task?
-                            this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
-                            msg.show = true;
-                            this.tasks.push(msg); 
-                        } else {
-                            //update
-                            if(t.status != msg.status) {
-                                var text = "t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg;
-                                var type = null;
-                                switch(msg.status) {
-                                case "failed": type = "error"; break;
-                                case "finished": type = "success"; break;
-                                case "stopped": type = "warn"; break;
-                                }
-                                console.log("notification type", type, msg.status);
-                                this.$notify({type, text});
-                            }
-                            for(var k in msg) {
-                                t[k] = msg[k];
-                            }
-                        }
-                    };
                 });
             });
         },

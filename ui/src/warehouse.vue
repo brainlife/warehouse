@@ -39,12 +39,30 @@ export default {
 
 
 <style>
+
+/*@import url('https://fonts.googleapis.com/css?family=Cabin|Inconsolata|Nunito|Nunito+Sans|Pacifico|Quicksand|Rubik|VT323');
+font-family: 'Rubik', sans-serif;
+font-family: 'Pacifico', cursive;
+font-family: 'Quicksand', sans-serif;
+font-family: 'Inconsolata', monospace;
+font-family: 'Cabin', sans-serif;
+font-family: 'VT323', monospace;
+font-family: 'Nunito', sans-serif;
+font-family: 'Nunito Sans', sans-serif;
+*/
+
 #warehouse {
 height: 100%;
 background-color: #f9f9f9;
 color: #444;
-font-size: 14px; 
+font-size: 14px;
 }
+
+/*
+h1,h2,h3 {
+font-family: 'Cabin', sans-serif;
+}
+*/
 
 /*adjust bootstrap font sizes*/
 .form-control {

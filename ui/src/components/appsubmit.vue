@@ -1,9 +1,10 @@
 <template>
 <div v-if="app && projects">
     <b-row>
-        <b-col>Project</b-col>
+        <b-col>Project *</b-col>
         <b-col cols="9">
             <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in"/> 
+            <small class="text-muted">Project where you want to stage and execute this application.</small>
         </b-col>
     </b-row>
     <br>
@@ -311,15 +312,15 @@ export default {
             return config;
         },
 
-        //v2 process submit
         submit: function() {
             //make sure all inputs are selected
             var validated = true;
             for(var k in this.form.inputs) {
                 if(!this.form.inputs[k]) validated = false;
             }
+            if(!this.project) validated = false;
             if(!validated) {
-                this.$notify({ title: 'Missing Input', text: 'Please select all inputs', type: 'error' });
+                this.$notify({ text: 'Please select all required field', type: 'error' });
                 return;
             }
 

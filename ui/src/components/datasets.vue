@@ -254,6 +254,7 @@ export default {
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
+                if(!event.dinfo) return; //??
                 switch(event.dinfo.exchange) {
                 case "warehouse.dataset":
                     let dataset = event.msg;

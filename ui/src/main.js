@@ -12,7 +12,7 @@ import 'highlight.js/styles/default.css'
 //3rd parties
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
-import 'katex/dist/katex.css'
+import 'katex/dist/katex.min.css'
 
 import Vue from 'vue'
 
