@@ -45,6 +45,7 @@
     "vue2-ace": "^1.0.6",
     "vue2-animate": "^1.0.4",
     "vue2-filters": "^0.2.2",
+    "vue2-scrollbar": "0.0.3",
     "webpack-dev-middleware": "^2.0.4"
   },
   "devDependencies": {

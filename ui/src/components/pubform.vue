@@ -39,16 +39,23 @@
     </b-form-group>
     -->
     <b-form-group label="Fundings" horizontal>
-        <b-input-group v-for="(funding, idx) in pub.fundings" :key="idx" style="margin-bottom: 5px;">
-            <b-input-group-addon>Funder</b-input-group-addon>
-            <!--https://www.grants.gov/web/grants/learn-grants/grant-making-agencies.html-->
-            <b-form-select :options="['NSF', 'NIH', 'DOE', 'DOD']" required v-model="funding.funder"/>
-            <b-input-group-addon>ID</b-input-group-addon>
-            <b-form-input type="text" required v-model="funding.id" placeholder=""/>
-            <b-input-group-button>
-                <b-button @click="remove_funder(idx)"><icon name="trash"/></b-button>
-            </b-input-group-button>
-        </b-input-group>
+        <b-row v-for="(funding, idx) in pub.fundings" :key="idx" style="margin-bottom: 3px;">
+            <b-col>
+                <b-input-group prepent="Funder">
+                    <b-form-select :options="['NSF', 'NIH', 'DOE', 'DOD']" required v-model="funding.funder"/>
+                </b-input-group>
+            </b-col>
+            <b-col>
+                <b-input-group prepent="ID">
+                    <b-form-input type="text" required v-model="funding.id" placeholder=""/>
+                </b-input-group>
+            </b-col>
+            <b-col cols="1">
+                <b-input-group-button>
+                    <div class="button" @click="remove_funder(idx)"><icon name="trash"/></div>
+                </b-input-group-button>
+            </b-col>
+        </b-row>
         <b-button type="button" @click="pub.fundings.push({})" size="sm"><icon name="plus"/> Add Funder</b-button>
     </b-form-group>
     <b-form-group label="Authors" horizontal>

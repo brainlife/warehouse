@@ -1,27 +1,9 @@
 <template>
 <div v-if="app && projects">
-    <b-row>
-        <b-col>Project *</b-col>
-        <b-col cols="9">
-            <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in"/> 
-            <small class="text-muted">Project where you want to stage and execute this application.</small>
-        </b-col>
-    </b-row>
-    <br>
+    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available.</b-alert>
 
-    <b-row>
-        <b-col>Description</b-col>
-        <b-col cols="9">
-            <b-form-textarea v-model="form.desc"
-                 placeholder="Optional description for this processing"
-                 :rows="3"
-                 :max-rows="6"/>
-            <br>
-        </b-col>
-    </b-row>
 
     <!--<h4>Input Datasets</h4>-->
-    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available.</b-alert>
     
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col>
@@ -61,6 +43,26 @@
                 </b-form-select>
                 <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
             </b-form-group>
+        </b-col>
+    </b-row>
+
+    <b-row>
+        <b-col>Project *</b-col>
+        <b-col cols="9">
+            <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in"/> 
+            <small class="text-muted">Project where you want to stage and execute this application.</small>
+        </b-col>
+    </b-row>
+    <br>
+
+    <b-row>
+        <b-col>Description</b-col>
+        <b-col cols="9">
+            <b-form-textarea v-model="form.desc"
+                 placeholder="Optional description for this processing"
+                 :rows="3"
+                 :max-rows="6"/>
+            <br>
         </b-col>
     </b-row>
 

@@ -23,9 +23,11 @@
                     <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
                     <h5 style="margin-top: 10px;">
                         {{pub.name}}
-                        <small><tags :tags="pub.tags"/></small>
                     </h5>
-                    <p style="opacity: 0.7;">{{pub.desc}}</p>
+                    <p style="opacity: 0.7;">
+                        {{pub.desc}}
+                        <small><tags :tags="pub.tags"/></small>
+                    </p>
                 </b-col>
                 <b-col :cols="1">
                     <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
