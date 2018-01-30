@@ -376,7 +376,7 @@ border-bottom: 1px solid #e0e0e0;
 }
 
 .button-fixed {
-right: 50px;
+right: 30px;
 }
 .table-header th {
 padding: 8px 0px;

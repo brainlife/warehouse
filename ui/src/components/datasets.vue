@@ -490,7 +490,8 @@ export default {
                 name: "brainlife.download.stage",
                 service: "soichih/sca-product-raw",
                 //preferred_resource_id: resource,
-                config: { download, _datatypes : datatypes },
+                //config: { download, _datatypes : datatypes },
+                config: { download },
                 remove_date: remove_date,
             }).then(res=>res.body.task);
         },
@@ -568,6 +569,8 @@ export default {
                 this.bids_task = res.body.task;
                 this.clear_selected();
                 this.$router.push("/download/"+download_instance._id);
+            }).catch(res=>{
+                this.$notify({type: 'error', text: res.body.message});
             });
         },
 
@@ -618,7 +621,7 @@ export default {
                 }
                 this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: instance._id,
-                    name: "Staged Datasets - "+this.datatypes[datatype_id].name,
+                    name: "Staging Datasets - "+this.datatypes[datatype_id].name,
                     service: "soichih/sca-product-raw",
                     config: { download, _outputs, _tid: tid++ },
                 }).then(res=>{

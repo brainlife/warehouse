@@ -10,32 +10,19 @@
                         https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24301
                         https://searchworks.stanford.edu/view/rt034xr8593
                 -->
-                <b-row>
-                    <b-col>
-                        <div style="float: left; margin-right: 40px; margin-bottom: 15px; height: 100%;">
-                            <projectavatar :project="pub.project"/>
-                        </div>
-                        <div>
-                            <doibadge style="float: right;" :doi="pub.doi"/>
-                            <h4 style="color: #666; margin-bottom: 10px;">
-                                {{pub.name}} 
-                            </h4>
-                            <p style="opacity: 0.8">{{pub.desc}}</p>
-                        </div>
-                        <p style="line-height: 180%;">
-                            <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
-                        </p>
-                    </b-col>
-                    <!--
-                    <b-col cols="3">
-                        <b-button-group style="float: right;">
-                            <b-button @click="remove()" v-if="pub._canedit" icon="delete">Remove</b-button>
-                            <b-button @click="go('/pub/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</b-button>
-                            <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
-                        </b-button-group>
-                    </b-col>
-                    -->
-                </b-row>
+                <div style="float: left; margin-bottom: 15px; height: 100%;">
+                    <projectavatar :project="pub.project"/>
+                </div>
+                <div style="margin-left: 120px;">
+                    <doibadge style="float: right;" :doi="pub.doi"/>
+                    <h4 style="color: #666; margin-bottom: 10px;">
+                        {{pub.name}} 
+                    </h4>
+                    <p style="opacity: 0.8">{{pub.desc}}</p>
+                    <p style="line-height: 180%;">
+                        <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
+                    </p>
+                </div>
                 <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Details"/>

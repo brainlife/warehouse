@@ -134,7 +134,10 @@ opacity: 0;
 left: 250px;
 }
 .projectmenu:hover .button-fixed {
-opacity: inherit;
+opacity: 0.8;
+}
+.projectmenu:hover .button-fixed:hover {
+opacity: 1;
 }
 </style>
 

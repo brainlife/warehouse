@@ -5,34 +5,28 @@
     <div class="page-content">
         <div class="header">
             <b-container>
-                <b-row>
-                    <b-col>
-                        <div style="float: left; margin-right: 40px; margin-bottom: 15px; height: 100%;">
-                            <appavatar :app="app"/>
-                        </div>
-                        <div>
-                            <h3 style="color: #666; margin-bottom: 10px;">{{app.name}}</h3>
-                            <h6>
-                                <a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a>
-                                <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
-                            </h6>
-                            <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
-                        </div>
-                        <p>
-                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                        </p>
-                    </b-col>
-                    <b-col cols="3">
-                        <div style="float: right;">
-                            <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
-                            <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
-                            <!--
-                            <span class="button" @click="go('/app/'+app._id+'/submit')" title="Process"><icon name="paper-plane" scale="1.25"/></span>
-                            -->
-                        </div>
-                    </b-col>
-                </b-row>
+                <div style="float: left; margin-bottom: 15px; height: 100%;">
+                    <appavatar :app="app"/>
+                </div>
+                <div style="margin-left: 120px;">
+                    <div style="float: right;">
+                        <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
+                        <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
+                        <!--
+                        <span class="button" @click="go('/app/'+app._id+'/submit')" title="Process"><icon name="paper-plane" scale="1.25"/></span>
+                        -->
+                    </div>
 
+                    <h3 style="color: #666; margin-bottom: 10px;">{{app.name}}</h3>
+                    <h6>
+                        <a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a>
+                        <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                    </h6>
+                    <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
+                    <p>
+                        <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                    </p>
+                </div>
                 <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>

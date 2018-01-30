@@ -36,7 +36,7 @@
                         <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
                         <b-col>
                             <div v-if="dataset._canedit">
-                                <b-row v-for="(m, id) in dataset.meta" :key="id">
+                                <b-row v-for="(m, id) in dataset.meta" :key="id" style="margin-bottom: 3px;">
                                     <b-col :cols="3">  
                                         <b>{{id.toUpperCase()}}</b>
                                     </b-col>
