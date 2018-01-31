@@ -91,7 +91,7 @@ export default {
                 license: "ccby.40",
             
                 publisher: "Nature",
-                publish_date: new Date(),
+                //publish_date: new Date(),
                 //publication_year: new Date().getFullYear(),
 
                 fundings: [],

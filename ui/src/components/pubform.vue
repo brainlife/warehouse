@@ -11,10 +11,19 @@
         <small class="text-muted">This property will be used to formulate the citation, so consider the prominence of the role.</small>
     </b-form-group>
     -->
+    <!--
     <b-form-group label="Publication Date" horizontal>
         <b-form-input required v-model="pub._publish_date" type="date" @change="change_pubdate"></b-form-input>
         <small class="text-muted">If not published yet, please enter an estimated publication date. You can be updated this later.</small>
     </b-form-group>
+    -->
+    <!--
+    <b-form-group label="Publication DOI" horizontal>
+        <b-form-input required v-model="pub.paper_doi" type="text" placeholder="10.123/123"></b-form-input>
+        <small class="text-muted">DOI of the paper that references this datasets</small>
+    </b-form-group>
+    -->
+
     <b-form-group label="Description" horizontal>
         <b-form-textarea v-model="pub.desc" :rows="5" placeholder="A short summary of the abstract"></b-form-textarea>
     </b-form-group>
@@ -120,15 +129,18 @@ export default {
     mounted() {
         //select2 needs option set to show existing tags.. so we copy my own tags and use it as options.. stupid select2
         this.oldtags = Object.assign(this.pub.tags);
+
+        /*
         if(!this.pub.publish_date) this.pub.publish_date = new Date(); //backward compatibility
         else this.pub.publish_date = new Date(this.pub.publish_date); //convert from iso string to javascript date
         this.pub._publish_date = this.pub.publish_date.toISOString().split("T")[0];//TODO - better way?
+        */
     },
 
     methods: {
         submit: function(evt) {
             evt.preventDefault();
-            this.pub.publish_date = new Date(this.pub._publish_date);
+            //this.pub.publish_date = new Date(this.pub._publish_date);
             this.$emit("submit", this.pub);
         },
 
@@ -138,10 +150,12 @@ export default {
             console.log(this.pub.fundings);
         },
 
+        /*
         //vue bootstrap's date controller doesn't do 2way binding?
         change_pubdate: function(d) {
             this.pub._publish_date = new Date(d);
         },
+        */
     }
 }
 </script>

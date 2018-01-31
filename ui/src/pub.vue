@@ -34,17 +34,17 @@
 
         <!--main content-->
         <b-container>
- <b-row>
+            <b-row>
                 <b-col>
                     <el-alert v-if="pub.removed" title="This publication has been removed" type="warning" show-icon :closable="false"></el-alert>
                     <!-- detail -->
                     <div v-if="tab_index == 0">
                         <b-row>
                             <b-col cols="3">
-                                <b class="text-muted">Publish Date</b>
+                                <b class="text-muted">Created on</b>
                             </b-col>
                             <b-col>
-                                <p><time>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</time></p>
+                                <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
                             </b-col>
                         </b-row>                         
                         <!--
@@ -57,6 +57,7 @@
                             </b-col>
                         </b-row>
                         -->
+                        <!--
                         <b-row v-if="pub.doi">
                             <b-col cols="3">
                                 <b class="text-muted">Citations</b>
@@ -66,14 +67,9 @@
                                     <citation :doi="pub.doi"/>
                                     <small style="opacity: 0.5">Citation to this dataset/app published on Brainlife</small>
                                 </p>
-                                <!--
-                                <p>TODO</p>
-                                <p>
-                                    <small style="opacity: 0.5">Citation to the paper published</small>
-                                </p>
-                                -->
                             </b-col>
                         </b-row>  
+                        -->
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Authors</b>
@@ -250,8 +246,6 @@
                     </div>
                 </b-col>
             </b-row>
-
-
         </b-container>
         <br>
         <br>
