@@ -5,8 +5,8 @@
     <div class="fixed-top">
         <div class="container" style="height: 50px;">
             <div style="color: white; margin: 20px 0px;">
-                <h2 v-if="$route.params.id == '_'">New App</h2>
-                <h2 v-else><icon name="pencil" scale="2" style="opacity: 0.5"/> {{app.name}}</h2>
+                <h3 v-if="$route.params.id == '_'">New App</h3>
+                <h3 v-else><icon name="pencil" scale="1.5" style="opacity: 0.5"/> {{app.name}}</h3>
             </div>
         </div>
         <!--
@@ -188,7 +188,7 @@
                                     <b-form-group>
                                         <div class="text-muted">Default Value <small>optional</small></div>
                                         <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default"></b-form-input><!--deprecated-->
-                                        <b-form-input v-if="config.type == 'number'" type="number" v-model.number="config.default"></b-form-input>
+                                        <b-form-input v-if="config.type == 'number'" type="number" step="0.01" v-model.number="config.default"></b-form-input>
                                         <b-form-input v-if="config.type == 'string'" type="text" v-model="config.default"></b-form-input>
                                     </b-form-group>
 

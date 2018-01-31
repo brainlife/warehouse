@@ -17,9 +17,9 @@
                         -->
                     </div>
 
-                    <h3 style="color: #666; margin-bottom: 10px;">{{app.name}}</h3>
+                    <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
                     <h6>
-                        <a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a>
+                        <a :href="'http://github.com/'+app.github"><icon name="github" scale="0.9"/> {{app.github}}</a>
                         <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
                     </h6>
                     <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
@@ -453,7 +453,7 @@ export default {
         
         find_resources: function(service) {
             this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
-                service
+                service,
             }})
             .then(res => {
                 if(res.body.resource) this.preferred_resource = res.body.resource;

@@ -11,9 +11,19 @@
             <publisher :project="project" @close="publishing = false" @submit="publish"/>
         </div>
         <div v-else-if="pub_editing">
-            <pubform :pub="pub_editing" @submit="save_pub">
-                <button type="button" class="btn btn-secondary" @click="cancel_pub">Cancel</button>
-            </pubform>
+            <h3 style="opacity: 0.7">{{pub_editing.doi||pub_editing._id+' (no doi)'}}</h3>
+            <b-tabs class="brainlife-tab">
+                <br>
+                <b-tab title="Details">
+                    <pubform :pub="pub_editing" @submit="save_pub">
+                        <button type="button" class="btn btn-secondary" @click="cancel_pub">Cancel</button>
+                    </pubform>
+                </b-tab>
+                <b-tab title="Datasets">
+                    <b-alert show variant="warning">Only the publication detail can be edited at this time. To update published datasets, please contact the administrator.</b-alert>
+                     
+                </b-tab>
+            </b-tabs>
         </div>
         <div v-else>
             <!--list view-->
@@ -37,14 +47,6 @@
                             <icon name="eye"/>
                         </div>
                     </div>
-                    <!--
-                    <div class="button" style="float: right;" @click.stop="edit_pub(pub)">
-                        <icon name="pencil"/>
-                    </div>
-                    -->
-                    <!--
-                    <contact :id="pub.user_id"/>     
-                    -->
                 </b-col>
                 </b-row>
             </div>

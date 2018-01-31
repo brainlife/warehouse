@@ -15,6 +15,7 @@
 
             <b-row class="list-header">
                 <b-col cols="2"><h4>Subject</h4></b-col>
+                <!--everything under subject is grouped, thus a odd layout-->
                 <b-col>
                     <b-row>
                         <b-col><h4>Datatype</h4></b-col>
@@ -47,6 +48,10 @@
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
                                         <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
+                                        <span class="text-primary" v-if="dataset.publications && dataset.publications.length > 0">
+                                            <icon name="book" scale="0.8"/>
+                                            <small v-if="dataset.publications.length > 1">{{dataset.publications.length}}</small>
+                                        </span>
                                     </div>
                                     <div class="col-md-3 truncate">
                                         {{dataset.desc||'&nbsp;'}}

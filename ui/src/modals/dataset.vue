@@ -35,17 +35,14 @@
                     <b-row>
                         <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
                         <b-col>
-                            <div v-if="dataset._canedit">
-                                <b-row v-for="(m, id) in dataset.meta" :key="id" style="margin-bottom: 3px;">
-                                    <b-col :cols="3">  
-                                        <b>{{id.toUpperCase()}}</b>
-                                    </b-col>
-                                    <b-col>
-                                        <b-form-input v-model="dataset.meta[id]" 
-                                            @keyup.native="update_dataset('meta')"/>
-                                    </b-col>
-                                </b-row>
-                            </div>
+                            <b-row v-if="dataset._canedit">
+                                <!-- TODO - I should display in json?-->
+                                <b-col :cols="6" v-for="(m, id) in dataset.meta" :key="id" style="margin-bottom: 3px;">
+                                    <b-input-group :prepend="id.toUpperCase()">
+                                        <b-form-input v-model="dataset.meta[id]" @keyup.native="update_dataset('meta')"/>
+                                    </b-input-group>
+                                </b-col>
+                            </b-row>
                             <metadata v-else :metadata="dataset.meta"></metadata>
                             <br>
                         </b-col>
@@ -90,7 +87,7 @@
                                         <!--Please wait before you download / process this dataset.-->
                                     </span> 
                                     <span v-if="dataset.status == 'stored'">
-                                        <b>{{dataset.storage|uppercase}}</b> 
+                                        {{dataset.storage}}
                                         <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                     </span> 
                                     <span v-if="dataset.status == 'failed'" style="color: red;">
@@ -134,9 +131,8 @@
                             </b-col>
                         </b-row>
 
-
                         <b-row>
-                            <b-col cols="3"><b class="text-muted">Archived by</b></b-col>
+                            <b-col cols="3"><b class="text-muted"><icon name="archive"/> Archived by</b></b-col>
                             <b-col>
                                 <p>
                                     <contact :id="dataset.user_id"/> 
@@ -145,11 +141,19 @@
                             </b-col>
                         </b-row>
 
-
                         <b-row v-if="dataset.download_count > 0">
                             <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
                             <b-col>
                                 <p>{{dataset.download_count}}</p>
+                            </b-col>
+                        </b-row>
+
+                        <b-row v-if="dataset.publications && dataset.publications.length > 0">
+                            <b-col cols="3"><b class="text-muted"><icon name="book"/> Publications</b></b-col>
+                            <b-col cols="9">
+                                <small class="text-muted">This dataset has been published on following publications.</small>
+                                <b-table small hover :items="dataset.publications" :fields="['name', 'desc', 'doi']" @row-clicked="openpub" style="background-color: white;">
+                                </b-table>
                             </b-col>
                         </b-row>
 
@@ -511,7 +515,6 @@ export default {
             });
         },
 
-
         create_view_task: function(cb) {
             //first, query for the viewing task to see if it already exist
             var name = "brainlife.view "+this.dataset._id;
@@ -553,6 +556,10 @@ export default {
                     }).catch(console.error);
                 }
             });
+        },
+
+        openpub: function(pub) {
+            document.location = '/pub/'+pub._id;
         },
     }
 }

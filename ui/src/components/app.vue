@@ -6,7 +6,7 @@
             <div style="max-height: 73px; overflow: hidden;">
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
-                    {{app_.name}} <span class="github">{{app_.github}}</span></h4>
+                    {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span></h4>
                 <div class="desc">{{app_.desc_override||app_.desc||'no desc..'}}</div>
             </div>
             <slot/>
@@ -112,14 +112,14 @@ overflow: hidden;
 color: #666;
 padding: 0px;
 padding-top: 10px;
-margin-bottom: 4px;
+margin-bottom: 0px;
 transition: color 0.5s;
 }
 .github {
-opacity: 0.45;
+opacity: 0.7;
 font-size: 85%;
 transition: color 0.5s;
-margin-bottom: 0px;
+margin-bottom: 2px;
 }
 .desc {
 opacity: 0.8;
@@ -148,8 +148,6 @@ padding-bottom: 0px;
 }
 h5 {
 font-size: 13px;
-font-weight: bold;
-opacity: 0.7;
 }
 .compact .name {
 padding: 0px;

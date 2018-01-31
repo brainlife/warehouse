@@ -39,10 +39,10 @@
                     <b class="text-muted">Admins</b>
                 </b-col>
                 <b-col>
+                    <small class="text-muted">Users who can update name / desc / project members, and create publications.</small>
                     <p v-for="c in selected.admins" :key="c._id">
                         <contact :id="c"/>
                     </p>
-                    <p class="text-muted">Users who can update name / desc / project members, and create publications.</p>
                 </b-col>
             </b-row>
             
@@ -51,10 +51,10 @@
                     <b class="text-muted">Members</b>
                 </b-col>
                 <b-col>
+                    <small class="text-muted">Users who can archive and update datasets on this project, and create publications.</small>
                     <p v-for="c in selected.members" :key="c._id">
                         <contact :id="c"/>
                     </p>
-                    <p class="text-muted">Users who can archive and update datasets on this project, and create publications.</p>
                 </b-col>
             </b-row>
             <br>

@@ -9,7 +9,11 @@
     </p>
     <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id"
         v-if="project.access == 'private' && project.removed == false" @click="change(project)" :class="{active: project_id == active}">
-        <p class="name">{{project.name}}</p>
+
+        <p class="name">
+            <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
+            {{project.name}}
+        </p>
         <div class="desc">{{project.desc}}</div>
     </div>
 
@@ -19,7 +23,9 @@
     </p>
     <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id" 
         v-if="project.access == 'public' && project.removed == false" @click="change(project)" :class="{active: project_id == active}">
-        <p class="name">{{project.name}}</p>
+        <p class="name">
+            <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
+            {{project.name}}</p>
         <div class="desc">{{project.desc}}</div>
     </div>
 
@@ -37,9 +43,10 @@ import Vue from 'vue'
 //vue2-scrollbar
 import 'vue2-scrollbar/dist/style/vue2-scrollbar.css'
 import VueScrollbar from 'vue2-scrollbar'
+import projectavatar from '@/components/projectavatar'
 
 export default {
-    components: { VueScrollbar },
+    components: { VueScrollbar, projectavatar },
 	props: [ 'active', 'projects' ],
     data () {
         return {
@@ -138,6 +145,12 @@ opacity: 0.8;
 }
 .projectmenu:hover .button-fixed:hover {
 opacity: 1;
+}
+.projectavatar {
+opacity: 1;
+position: relative;
+top: -3px;
+left: -3px;
 }
 </style>
 

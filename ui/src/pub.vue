@@ -82,9 +82,9 @@
                                 </ul>
                             </b-col>
                         </b-row>
-                        <b-row>
+                        <b-row v-if="pub.readme">
                             <b-col cols="3">
-                                <b class="text-muted">Abstract</b>
+                                <b class="text-muted">Detail</b>
                             </b-col>
                             <b-col>
                                 <vue-markdown :source="pub.readme"></vue-markdown>
