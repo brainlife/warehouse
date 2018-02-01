@@ -14,7 +14,7 @@
                     <projectavatar :project="pub.project"/>
                 </div>
                 <div style="margin-left: 120px;">
-                    <div style="float: right; margin-left: 20px;" v-if="pub.doi">
+                    <div style="float: right; margin-left: 20px; margin-buttom: 20px;" v-if="pub.doi">
                         <center>
                             <div class='altmetric-embed' data-badge-type='donut' data-badge-details="left" :data-doi="pub.doi"></div>
                             <b style="opacity: 0.5">Altmetric</b>
