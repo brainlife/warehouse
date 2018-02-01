@@ -12,6 +12,7 @@ import select2 from '@/components/select2' //TODO - use vue-select instead
 var profiles = null;
 
 export default {
+    props: ['value'],
     components: { select2 },
     data () {
         return {
@@ -19,7 +20,6 @@ export default {
             profiles: null,
         }
     },
-    props: ['value'],
 
     watch: {
         value: function(values) {
@@ -34,7 +34,10 @@ export default {
         this.values = this.value; //init
 
         //TODO I should let ui-select/async and let it "search" users
-        if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profile', {params: {where: JSON.stringify({active: true})}});
+        if(!profiles) profiles = this.$http.get(Vue.config.auth_api+'/profile', {params: {
+            where: JSON.stringify({active: true}),
+            limit: 5000, 
+        }});
         profiles.then(res=>{
             this.profiles = [];
             res.body.profiles.forEach(profile=>{

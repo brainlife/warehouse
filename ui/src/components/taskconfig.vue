@@ -51,7 +51,6 @@ export default {
                 if(!this.taskid) return;
                 this.$http.get(Vue.config.wf_api+'/task/'+this.taskid).then(res=>{
                     this.load_config(res.body.config);
-                    //create key(input id)/dataset_id of _input
                 });
             }
         },

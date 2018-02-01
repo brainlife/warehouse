@@ -3,15 +3,34 @@
     <b-form-group label="Title *" horizontal>
         <b-form-input required v-model="pub.name" type="text" placeholder="Title of the paper"></b-form-input>
     </b-form-group>
-    <b-form-group label="Description" horizontal>
-        <b-form-textarea v-model="pub.desc" :rows="2" placeholder="A short summary of the abstract"></b-form-textarea>
+    <!--
+    <b-form-group label="Publisher *" horizontal>
+        <b-form-input required v-model="pub.publisher" type="text" placeholder="Name of the journal to publish this paper"></b-form-input>
+        <small class="text-muted">This property will be used to formulate the citation, so consider the prominence of the role.</small>
+    </b-form-group>
+    -->
+    <!--
+    <b-form-group label="Publication Date" horizontal>
+        <b-form-input required v-model="pub._publish_date" type="date" @change="change_pubdate"></b-form-input>
+        <small class="text-muted">If not published yet, please enter an estimated publication date. You can be updated this later.</small>
+    </b-form-group>
+    -->
+    <!--
+    <b-form-group label="Publication DOI" horizontal>
+        <b-form-input required v-model="pub.paper_doi" type="text" placeholder="10.123/123"></b-form-input>
+        <small class="text-muted">DOI of the paper that references this datasets</small>
+    </b-form-group>
+    -->
+
+    <b-form-group label="Description *" horizontal>
+        <b-form-textarea v-model="pub.desc" :rows="3" placeholder="A short summary of this dataset/app publication." required></b-form-textarea>
     </b-form-group>
     <b-form-group label="Tags" horizontal>
         <select2 :options="oldtags" v-model="pub.tags" :multiple="true" :tags="true"></select2>
     </b-form-group>
-    <b-form-group label="README *" horizontal>
-        <b-form-textarea required v-model="pub.readme" :rows="6" placeholder="Content from abstract, or any other details about this publications"></b-form-textarea>
-        <small class="text-muted">in markdown</small>
+    <b-form-group label="Detail" horizontal>
+        <b-form-textarea v-model="pub.readme" :rows="10" placeholder="Any detailed description for this publications. You can enter chars / tables / katex(math equations) etc.."></b-form-textarea>
+        <small class="text-muted">in <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/" target="_blank">markdown format</a></small>
     </b-form-group>
     <b-form-group label="License *" horizontal>
         <b-form-select :options="licenses" required v-model="pub.license"/>
@@ -27,20 +46,25 @@
     </b-form-group>
     -->
     <b-form-group label="Fundings" horizontal>
-        <b-input-group v-for="(funding, idx) in pub.fundings" :key="idx" style="margin-bottom: 5px;">
-            <b-input-group-addon>Funder</b-input-group-addon>
-            <!--https://www.grants.gov/web/grants/learn-grants/grant-making-agencies.html-->
-            <b-form-select :options="['NSF', 'NIH', 'DOE', 'DOD']" required v-model="funding.funder"/>
-            <b-input-group-addon>ID</b-input-group-addon>
-            <b-form-input type="text" required v-model="funding.id" placeholder=""/>
-            <b-input-group-button>
-                <b-button @click="remove_funder(idx)"><icon name="trash"/></b-button>
-            </b-input-group-button>
-        </b-input-group>
+        <b-row v-for="(funding, idx) in pub.fundings" :key="idx" style="margin-bottom: 3px;">
+            <b-col>
+                <b-input-group prepend="Funder">
+                    <b-form-select :options="['NSF', 'NIH', 'DOE', 'DOD']" required v-model="funding.funder"/>
+                </b-input-group>
+            </b-col>
+            <b-col>
+                <b-input-group prepend="ID">
+                    <b-form-input type="text" required v-model="funding.id" placeholder=""/>
+                </b-input-group>
+            </b-col>
+            <b-col cols="1">
+                <div class="button" @click="remove_funder(idx)"><icon name="trash"/></div>
+            </b-col>
+        </b-row>
         <b-button type="button" @click="pub.fundings.push({})" size="sm"><icon name="plus"/> Add Funder</b-button>
     </b-form-group>
-    <b-form-group label="Authors" horizontal>
-        <contactlist v-model="pub.authors"></contactlist>
+    <b-form-group label="Authors *" horizontal>
+        <contactlist v-model="pub.authors"/>
     </b-form-group>
     <b-form-group label="Contributors" horizontal>
         <contactlist v-model="pub.contributors"></contactlist>
@@ -89,23 +113,45 @@ export default {
             oldtags: null,
         }
     },
+    
+    /*
+    watch: {
+        pub: function() {
+            
+        }
+    }
+    */
 
     mounted() {
         //select2 needs option set to show existing tags.. so we copy my own tags and use it as options.. stupid select2
         this.oldtags = Object.assign(this.pub.tags);
+
+        /*
+        if(!this.pub.publish_date) this.pub.publish_date = new Date(); //backward compatibility
+        else this.pub.publish_date = new Date(this.pub.publish_date); //convert from iso string to javascript date
+        this.pub._publish_date = this.pub.publish_date.toISOString().split("T")[0];//TODO - better way?
+        */
     },
 
     methods: {
         submit: function(evt) {
             evt.preventDefault();
+            //this.pub.publish_date = new Date(this.pub._publish_date);
             this.$emit("submit", this.pub);
         },
-    
+
         remove_funder: function(idx) {
             console.log("removing", idx);
             this.pub.fundings.splice(idx, 1);            
             console.log(this.pub.fundings);
         },
+
+        /*
+        //vue bootstrap's date controller doesn't do 2way binding?
+        change_pubdate: function(d) {
+            this.pub._publish_date = new Date(d);
+        },
+        */
     }
 }
 </script>

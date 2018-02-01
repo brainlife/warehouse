@@ -33,6 +33,7 @@ import Vue from 'vue'
 import md5 from 'md5'
 
 export default {
+    components: { },
     data () {
         return {
             msg: 'Welcome to Your Vue.js App',

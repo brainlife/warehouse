@@ -1,4 +1,5 @@
 <template>
+<!--TODO replace with v-select-->
 <select2 v-if="options" style="width: 100%" v-model="selected" :options="options" :allownull="allownull" :placeholder="placeholder">
 </select2>
 </template>
@@ -11,28 +12,43 @@ import select2 from '@/components/select2'
 
 export default {
     components: { projectaccess, select2 },
-    props: [ 'value', 'allownull', 'placeholder' ],
+    props: [ 'value', 'allownull', 'placeholder', 'canwrite' ],
     data() {
         return {
             selected: null, 
             options: null, 
         }
     },
+
     watch: {
         selected: function() {
             if(this.selected) localStorage.setItem('last_projectid_used', this.selected);
             this.$emit('input', this.selected);
         }
     },
+
     mounted: function() {
-        this.$http.get('project', {params: {
-            find: JSON.stringify({
+
+        var find = null
+        if(this.canwrite) {
+            //only load project that user is member of
+            find = {
+                members: Vue.config.user.sub,
+                removed: false,
+            };
+        } else {
+            //load project that user is member, or public
+            find = {
                 $or: [
-                    { members: Vue.config.user.sub}, 
+                    { members: Vue.config.user.sub }, 
                     { access: "public" },
                 ],
                 removed: false,
-            }),
+            };
+        }
+        
+        this.$http.get('project', {params: {
+            find: JSON.stringify(find),
             sort: 'name',
         }}).then(res=>{
             var option_groups = {} 

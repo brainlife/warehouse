@@ -8,7 +8,7 @@
             <b v-else class="text-muted">(no subject)</b>
             <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"/>
             <small v-for="(tag,idx) in dataset.tags" :key="idx"> | {{tag}}</small>
-            <mute>(d.{{dataset.did}})</mute> 
+            <!--<mute>(d.{{dataset.did}})</mute> -->
             <time v-if="dataset.create_date">{{new Date(dataset.create_date).toLocaleString()}}</time>
             <mute>
                 <small v-if="dataset.task.status != 'finished'">
@@ -48,14 +48,14 @@
 
             <!--input-->
             <div slot="input" v-if="task.config._inputs">
-                <div v-for="input in task.config._inputs" :key="input.did" style="padding: 5px;">
+                <div v-for="(input, idx) in task.config._inputs" :key="idx" style="padding: 5px;">
                     <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <mute>t.{{findtask(input.task_id).config._tid}} <icon name="arrow-right" scale="0.8"></icon></mute>
                         <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <mute>
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                            (d.{{input.did}})
+                            <!--(d.{{input.did}})-->
                         </mute>
                         <mute v-if="findtask(input.task_id).status != 'finished'">
                             <statusicon :status="findtask(input.task_id).status"></statusicon> 
@@ -66,7 +66,7 @@
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <mute>
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                            (d.{{input.did}})
+                            <!--(d.{{input.did}})-->
                         </mute>
                         <b-badge variant="danger">Removed</b-badge>
                     </div>
@@ -82,7 +82,7 @@
                                 <icon name="eye"/>
                             </div>
                             <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                            <div class="button" :class="{'button-gray': archiving === output.did}" title="Archive" @click="archiving = output.did"><icon name="archive"/></div>
+                            <div class="button" :class="{'button-gray': archiving === output}" title="Archive" @click="archiving = output"><icon name="archive"/></div>
                         </div>
                     </div>
 
@@ -90,7 +90,7 @@
                     <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
                     <mute>
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
-                        (d.{{output.did}})
+                        <!--(d.{{output.did}})-->
                     </mute>
                     <b-badge v-if="output.archive" variant="primary">Auto Archive: {{projects[output.archive.project].name}}</b-badge>
                     <span @click="go('/project/'+output.project+'/dataset/'+output.dataset_id)" class="clickable">
@@ -113,7 +113,7 @@
                             </li>
                         </ul>
                     </div>
-                    <archiveform v-if="archiving === output.did" :task="task" :output="output" @done="done_archive"></archiveform>
+                    <archiveform v-if="archiving === output" :task="task" :output="output" @done="done_archive"></archiveform>
                 </div>
                 <div v-if="task.product">
                     <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
@@ -169,12 +169,12 @@
                             style="width: 100%;">
                             <el-option v-for="dataset in filter_datasets(input)" :key="dataset.idx"
                                     :value="dataset.idx" 
-                                    :label="dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject+' > '+dataset.datatype_tags+' | '+dataset.tags+' (d.'+dataset.did+')'">
+                                    :label="dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject+' > '+dataset.datatype_tags+' | '+dataset.tags">
                                 <span v-if="dataset.task.status != 'finished'">(Processing)</span>
                                 {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
                                 <b>{{dataset.meta.subject}}</b> 
                                 <small>{{dataset.datatype_tags.toString()}}</small>
-                                (d.{{dataset.did}})
+                                <!--(d.{{dataset.did}})-->
                             </el-option>
                         </el-select>
                     </b-form-group>
@@ -371,7 +371,7 @@ export default {
                     datasets.push({
                         task,
                         id: output.id,
-                        did: output.did, 
+                        //did: output.did, 
                         idx: datasets.length, //for filtered list to find the index (may not be the same as did if dataset is removed)
                         dataset_id: output.dataset_id, //only set if it's archived (or from stage in)
                         datatype: output.datatype,
@@ -525,6 +525,7 @@ export default {
                 });
             } //websocket onopen
         },
+
         findarchived: function(task, output) {
             return this.archived.filter(dataset=>{
                 return (dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
@@ -682,7 +683,7 @@ export default {
             console.log("received datasets", datasets);
             var download = [];
             var _outputs = [];
-            var did = this.next_did();
+            //var did = this.next_did();
             for(var dataset_id in datasets) {
                 //ignore already staged dataset
                 var found = false;
@@ -700,7 +701,7 @@ export default {
                 });
                 _outputs.push(Object.assign(datasets[dataset_id], {
                     id: dataset_id, 
-                    did: did++,
+                    //did: did++,
                     subdir: dataset_id, 
                     dataset_id,
                     prov: null,
@@ -725,6 +726,7 @@ export default {
             return next;
         },
 
+        /*
         next_did() {
             var next = 0;
             this._datasets.forEach(dataset=>{
@@ -732,6 +734,7 @@ export default {
             });
             return next;
         },
+        */
 
         submit_newprocess: function() {
             this.process_input_config(this.newtask.config);
@@ -759,11 +762,11 @@ export default {
             this.newtask.config._app = this.newtask.app._id;
             this.newtask.config._tid = this.next_tid();
             var _outputs = [];
-            var did = this.next_did();
+            //var did = this.next_did();
             this.newtask.app.outputs.forEach(output=>{
                 var output_req = {
                     id: output.id,
-                    did: did++,
+                    //did: did++,
                     datatype: output.datatype._id,
                     datatype_tags: output.datatype_tags,
                     desc: output.id+ " from "+this.newtask.app.name,

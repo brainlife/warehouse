@@ -10,31 +10,19 @@
                         https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24301
                         https://searchworks.stanford.edu/view/rt034xr8593
                 -->
-                <b-row>
-                    <b-col>
-                        <div style="float: left; margin-right: 40px; margin-bottom: 15px; height: 100%;">
-                            <projectavatar :project="pub.project"/>
-                        </div>
-                        <div>
-                            <h4 style="color: #666; margin-bottom: 10px;">
-                                {{pub.name}} 
-                            </h4>
-                            <p style="opacity: 0.8">{{pub.desc}}</p>
-                        </div>
-                        <p style="line-height: 180%;">
-                            <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
-                        </p>
-                    </b-col>
-                    <!--
-                    <b-col cols="3">
-                        <b-button-group style="float: right;">
-                            <b-button @click="remove()" v-if="pub._canedit" icon="delete">Remove</b-button>
-                            <b-button @click="go('/pub/'+app._id+'/edit')" v-if="app._canedit" icon="edit">Edit</b-button>
-                            <b-button variant="primary" @click="go('/app/'+app._id+'/submit')">Submit</b-button>
-                        </b-button-group>
-                    </b-col>
-                    -->
-                </b-row>
+                <div style="float: left; margin-bottom: 15px; height: 100%;">
+                    <projectavatar :project="pub.project"/>
+                </div>
+                <div style="margin-left: 120px;">
+                    <doibadge style="float: right;" :doi="pub.doi"/>
+                    <h4 style="color: #666; margin-bottom: 10px;">
+                        {{pub.name}} 
+                    </h4>
+                    <p style="opacity: 0.8">{{pub.desc}}</p>
+                    <p style="line-height: 180%;">
+                        <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
+                    </p>
+                </div>
                 <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Details"/>
@@ -53,39 +41,35 @@
                     <div v-if="tab_index == 0">
                         <b-row>
                             <b-col cols="3">
-                                <b class="text-muted">Publish Date</b>
+                                <b class="text-muted">Created on</b>
                             </b-col>
                             <b-col>
                                 <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
                             </b-col>
                         </b-row>                         
+                        <!--
                         <b-row>
                             <b-col cols="3">
-                                <b class="text-muted">DOI</b>
+                                <b class="text-muted">Publisher</b>
+                            </b-col>
+                            <b-col>
+                                <p>{{pub.publisher}}</p>
+                            </b-col>
+                        </b-row>
+                        -->
+                        <!--
+                        <b-row v-if="pub.doi">
+                            <b-col cols="3">
+                                <b class="text-muted">Citations</b>
                             </b-col>
                             <b-col>
                                 <p>
-                                    <a v-if="pub.doi" :href="'https://doi.org/'+pub.doi">{{pub.doi}}</a>
-                                    <span v-else style="opacity: 0.5">Not Issued</span>
+                                    <citation :doi="pub.doi"/>
+                                    <small style="opacity: 0.5">Citation to this dataset/app published on Brainlife</small>
                                 </p>
                             </b-col>
-                        </b-row>                         
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Abstract</b>
-                            </b-col>
-                            <b-col>
-                                <vue-markdown :source="pub.readme"></vue-markdown>
-                            </b-col>
                         </b-row>  
-                        <b-row v-if="pub.citation">
-                            <b-col cols="3">
-                                <b class="text-muted">Citation</b>
-                            </b-col>
-                            <b-col>
-                                <i>{{pub.citation}}</i>
-                            </b-col>
-                        </b-row>  
+                        -->
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Authors</b>
@@ -98,6 +82,14 @@
                                 </ul>
                             </b-col>
                         </b-row>
+                        <b-row v-if="pub.readme">
+                            <b-col cols="3">
+                                <b class="text-muted">Detail</b>
+                            </b-col>
+                            <b-col>
+                                <vue-markdown :source="pub.readme"></vue-markdown>
+                            </b-col>
+                        </b-row>  
                         <b-row v-if="pub.contributors.length > 0">
                             <b-col cols="3">
                                 <b class="text-muted">Contributors</b>
@@ -254,8 +246,6 @@
                     </div>
                 </b-col>
             </b-row>
-
-
         </b-container>
         <br>
         <br>
@@ -274,7 +264,9 @@ import VueMarkdown from 'vue-markdown'
 import license from '@/components/license'
 import datatypetag from '@/components/datatypetag'
 import tags from '@/components/tags'
+import citation from '@/components/citation'
 import app from '@/components/app'
+import doibadge from '@/components/doibadge'
 
 import VueDisqus from 'vue-disqus/VueDisqus.vue'
 
@@ -284,7 +276,8 @@ export default {
         pageheader, sidemenu, projectavatar, 
         contact, VueMarkdown, license, 
         projectcard, datatypetag, tags, 
-        app, VueDisqus,
+        app, VueDisqus, citation,
+        doibadge,
     },
 
     data () {

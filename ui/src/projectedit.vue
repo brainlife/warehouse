@@ -17,8 +17,10 @@
                 <b-form-group label="Description" horizontal>
                     <el-input type="textarea" autosize v-model="project.desc" placeholder="Enter description for this project."></el-input>
                 </b-form-group>
-                <b-form-group label="README.md" horizontal>
-                    <b-form-textarea :rows="4" :max-rows="20" v-model="project.readme" placeholder="Enter extended README content in markdown format."/>
+                <b-form-group label="README" horizontal>
+                    <b-form-textarea :rows="4" :max-rows="20" v-model="project.readme" placeholder="Enter extended README content"/>
+                    <small class="text-muted">in <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/" target="_blank">markdown format</a></small>
+                
                 </b-form-group>
 
                 <b-form-group label="Access" horizontal>
@@ -47,7 +49,7 @@
                     <p class="text-muted">For public project: Uers who can update datasets in this project. For private project: Users who read/update datasets in this project and use application registered on this project.</p>
                 </b-form-group>
                 <b-form-group label="Avatar" horizontal>
-                    <el-input type="text" v-model="project.avatar" placeholder="URL of project avatar (optional)"/>
+                    <el-input type="text" v-model="project.avatar" placeholder="Image URL for the project avatar (if not set, randomly generate)"/>
                 </b-form-group>
                 <b-form-group horizontal>
                     <b-form-checkbox v-if="project._id" v-model="project.removed">Removed</b-form-checkbox>
@@ -86,8 +88,8 @@ export default {
                 name: "New Project",
                 desc: "",
                 access: "private",
-                admins: [Vue.config.user.sub.toString()],
-                members: [Vue.config.user.sub.toString()],
+                admins: [Vue.config.user.sub],
+                members: [Vue.config.user.sub],
                 license: "ccby.40",
             },
 
@@ -132,20 +134,16 @@ export default {
                 //update
                 console.log("updating new project");
                 this.$http.put('project/'+this.project._id, this.project).then(res=>{
-                    //console.log('put /project/'+this.project._id);
+                    this.$root.$emit("refresh_jwt");
                     this.$router.push('/project/'+this.project._id);
-                }).catch(err=>{
-                    console.error(err);
-                });
+                }).catch(console.error);
             } else {
                 //create
                 console.log("creating new project");
                 this.$http.post('project', this.project).then(res=>{
-                    //console.log('post /project/'+res.body._id);
+                    this.$root.$emit("refresh_jwt");
                     this.$router.push('/project/'+res.body._id);
-                }).catch(err=>{
-                    console.error(err);
-                });
+                }).catch(console.error);
             }
         }
     },

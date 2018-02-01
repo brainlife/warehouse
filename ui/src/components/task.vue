@@ -5,11 +5,13 @@
     </slot>
 
     <!--status indicator-->
-    <b-card :class="task.status" style="clear: both; border: none;">
-        <statusicon :status="task.status" scale="1.5" style="float: left; padding: 2px 8px;" @click.native="poke"/>
-        <div style="padding-left: 45px;">
+    <div class="status-card" :class="task.status" style="border: none;">
+        <div style="float: left; padding: 6px 8px" @click="poke">
+            <statusicon :status="task.status" scale="1.5"/>
+        </div>
+        <div style="margin-left: 45px;">
             <div style="float: right;">
-                <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun()">
+                <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="repeat"/>
                 </div>
                 <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop()" title="Stop Task"><icon name="stop"/>
@@ -30,23 +32,27 @@
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
         </div>
-    </b-card>
+    </div>
 
+    <!--
     <div @click="toggle('config')" class="toggler">
         <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.config}"/> Configuration
     </div>
     <transition name="fadeHeight">
         <div v-if="activeSections.config">
-            <taskconfig :task="task" style="padding: 10px; background-color: #f6f6f6;"/>
+            <taskconfig :task="task" class="task-content"/>
         </div>
     </transition>
-
+    -->
+    <div v-if="task.service != 'soichih/sca-product-raw'">
+        <taskconfig :task="task" class="task-content"/>
+    </div>
     <div v-if="has_input_slot">
         <div @click="toggle('input')" class="toggler">
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.input" style="padding: 10px; background-color: #f6f6f6;">
+            <div v-if="activeSections.input" class="task-content">
                 <slot name="input"></slot>
             </div>
         </transition>
@@ -57,7 +63,7 @@
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.output" style="padding: 10px; background-color: #f6f6f6;">
+            <div v-if="activeSections.output" class="task-content">
                 <slot name="output"></slot>
             </div>
         </transition>
@@ -68,7 +74,7 @@
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.rawoutput" style="padding: 10px 0px; background-color: #f6f6f6;">
+            <div v-if="activeSections.rawoutput" class="task-content">
                 <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
                 <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
             </div>
@@ -127,16 +133,10 @@ export default {
                 Vue.set(this.activeSections, section, true);
             } else this.activeSections[section] = !this.activeSections[section];
         },
-
-        /*
-        formatTime(time) {
-            return new Date(time).toLocaleString();
-        },
-        */
         rerun() {
             this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.task._id)
             .then(res=>{
-                console.dir(res); 
+                this.$notify({ text: res.body.message, type: 'success'});
             })
             .catch(err=>{
                 console.error(err); 
@@ -145,7 +145,7 @@ export default {
         stop() {
             this.$http.put(Vue.config.wf_api+'/task/stop/'+this.task._id)
             .then(res=>{
-                console.dir(res); 
+                this.$notify({ text: res.body.message, type: 'success'});
             })
             .catch(err=>{
                 console.error(err); 
@@ -162,10 +162,9 @@ export default {
             });
         },
         poke() {
-            console.log("poking", this.task._id);
             this.$http.put(Vue.config.wf_api+'/task/poke/'+this.task._id)
             .then(res=>{
-                this.$notify({text: "poked", type: 'success'});
+                this.$notify({text: res.body.message, type: 'success'});
             })
             .catch(err=>{
                 console.error(err); 
@@ -176,38 +175,38 @@ export default {
 </script>
 
 <style scoped>
-.card-body {
-padding: 8px;
+.status-card {
+padding: 5px;
 }
-.card.finished {
+.status-card.finished {
 color: white;
-background-color: green;
+background-color: #28a745;
 }
-.card.failed {
+.status-card.failed {
 color: white;
 background-color: #c00;
 }
-.card.running_sync,
-.card.running {
+.status-card.running_sync,
+.status-card.running {
 color: white;
 /* background-color: #2693ff; */
 background-color: #007bff;
 }
-.card.waiting {
+.status-card.waiting {
 color: white;
 background-color: #50bfff;
 }
-.card.requested {
+.status-card.requested {
 color: white;
 background-color: #50bfff;
 }
-.card.removed,
-.card.stop_requested,
-.card.stopped {
+.status-card.removed,
+.status-card.stop_requested,
+.status-card.stopped {
 color: white;
 background-color: gray;
 }
-.card .button {
+.status-card .button {
 color: white;
 }
 time {
@@ -228,10 +227,12 @@ margin-bottom: 2px;
 padding: 10px;
 padding-left: 18px;
 color: #666;
-border-top: 1px solid #eee;
+border-top: 1px solid #f3f3f3;
+background-color: white;
+/*transition: background-color 0.5s;*/
 }
 .toggler:hover {
-background-color: #ddd;
+/*background-color: #f7f7f7;*/
 cursor: pointer;
 }
 .toggler .caret {
@@ -255,5 +256,9 @@ max-height: 230px;
 {
 opacity: 0;
 max-height: 0px;
+}
+.task-content {
+padding: 10px;
+background-color: #fafafa;
 }
 </style>

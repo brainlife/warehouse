@@ -52,7 +52,8 @@ export default {
     methods: {
         loadprofile: function() {
             if(profiles === null) {
-                profiles = this.$http.get(Vue.config.auth_api+'/profile');
+                //TODO -- do soemthing smarter..
+                profiles = this.$http.get(Vue.config.auth_api+'/profile?limit=3000');
             }
             profiles.then(res=>{
                 res.body.profiles.forEach((profile)=>{

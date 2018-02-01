@@ -18,6 +18,7 @@
         </div>
 
         <div id="process-list" :class="{'process-list-show': show_process_list}">
+            <b-alert show variant="danger">This page has been deprecated. Please use process tab under each project.</b-alert>
             <div class="process-list-header">
                 <div class="process-list-hider" @click="show_process_list = false;"><icon name="bars"/></div> Processes
             </div>
@@ -56,7 +57,7 @@
             <div v-if="!selected">
                 <h3 class="text-muted" style="padding-top: 30px; padding-left: 30px;">Please select or create a new process</h3>
             </div>
-            <process2 v-if="selected && selected.config.type == 'v2'" :instance="selected" :showDatasets="show_datasets"></process2>
+            <process2 v-if="selected" :instance="selected" :showDatasets="show_datasets"></process2>
         </div>
     </div>
 </div>

@@ -1,30 +1,43 @@
 <template>
 <b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit">
-    <el-form label-width="120px">
-    <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
-        <el-form-item label="Project">
+    <b-row>
+        <b-col>From Project</b-col>
+        <b-col cols="9">
             <projectselecter v-model="project"></projectselecter>
-        </el-form-item>
-    </div>
-    <div style="background-color: #eee; padding: 10px 10px 1px 10px; margin-bottom: 10px;">
-        <b>Filters</b>
-        <el-form-item label="Subject" v-if="subjects">
-            <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
-        </el-form-item>
-        <el-form-item label="Datatype" v-if="datatypes_s2">
-            <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
-        </el-form-item>
-    </div>
-    <div style="background-color: #fff; padding: 10px 10px 1px 10px;">
-        <el-form-item label="Datasets">
+        </b-col>
+    </b-row>
+    <br>
+
+    <b-card style="background-color: #eee; opacity; 0.7" title="Filters">
+        <b-row v-if="subjects">
+            <b-col>Subjects</b-col>
+            <b-col cols="9">
+                <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
+            </b-col>
+        </b-row>
+        <br>
+        <b-row v-if="datatypes_s2">
+            <b-col>Datatype</b-col>
+            <b-col cols="9">
+                <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
+            </b-col>
+        </b-row>
+    </b-card>
+    <br>
+
+    <b-row>
+        <b-col>Datasets</b-col>
+        <b-col cols="9">
             <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
-        </el-form-item>
-    </div>
-    </el-form>
+        </b-col>
+    </b-row>
+    <br>
+
 </b-modal>
 </template>
 
 <script>
+
 import Vue from 'vue'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
@@ -36,7 +49,7 @@ var debounce = {};
 
 export default {
     components: { metadata, tags, projectselecter, select2, datatypetag },
-    props: [ 'visible' ],
+    //props: [ 'visible' ],
     data() {
         return {
             //datasets selected via datasets page
@@ -62,6 +75,12 @@ export default {
         }
     },
 
+    mounted() {
+        this.$root.$on("datasetselecter.open", ()=>{
+            this.$refs.modal.show()
+        });
+    },
+
     methods: {
         close: function() {
             console.log("resetting datasetselecter");
@@ -70,9 +89,11 @@ export default {
             this.datasets = [];
         },
 
+        /*
         hide: function() {
             this.$emit('update:visible', false);
         },
+        */
 
         submit: function() {
             if(this.datasets.length) {
@@ -204,11 +225,13 @@ export default {
     },
 
     watch: {
+        /*
         visible: function(v) {
             console.log("visibility changed", v);
             if(v) this.$refs.modal.show() 
             else this.$refs.modal.hide() 
         },
+        */
 
         project: function(project) {
             this.$http.get('dataset/distinct', { params: {

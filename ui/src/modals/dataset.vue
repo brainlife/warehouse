@@ -1,53 +1,52 @@
 <template>
 <transition name="fade">
-<div v-if="dataset" class="dataset-overlay">
-    <b-container class="dataset-modal">
-        <div class="dataset-header">
-            <div style="float: right;">
-                <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
-                    <icon name="trash" scale="1.25"/>
-                </div>
-                <div class="button" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)" v-if="dataset.storage" title="View Dataset">
-                    <icon name="eye" scale="1.25"/>
-                </div>
-                <div class="button" @click="download" v-if="dataset.storage" title="Downlnoad Dataset">
-                    <icon name="download" scale="1.25"/>
-                </div>
-                <div class="button" @click="process" v-if="dataset.storage" title="Process">
-                    <icon name="paper-plane" scale="1.25"/> 
-                </div>
-                <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
-                    <icon name="close" scale="1.5"/>
-                </div>
+<div v-if="dataset" class="brainlife-modal-overlay">
+<b-container class="brainlife-modal">
+    <div class="brainlife-modal-header">
+        <div style="float: right;">
+            <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
+                <icon name="trash" scale="1.25"/>
             </div>
-            <h4>
-                <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
-                    <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
-                </div>
-            </h4>
-        </div><!--header-->
-        <b-tabs class="brainlife-tab" v-model="tab_index">
-            <b-tab title="Details">
-                <div class="dataset-detail">
-                    <b-alert :show="dataset.removed" variant="warning">This dataset has been removed</b-alert>
-                    <!-- detail -->
-                    <div class="margin20">
-                        <b-row>
-                            <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
-                            <b-col>
-                                <div v-if="dataset._canedit">
-                                    <b-row>
-                                        <b-col v-for="(m, id) in dataset.meta" :key="id">
-                                            <b-input-group :left="id.toUpperCase()">
-                                                <b-form-input v-model="dataset.meta[id]" @keyup.native="update_dataset('meta')"/>
-                                            </b-input-group>
-                                        </b-col>
-                                    </b-row>
-                                </div>
-                                <metadata v-else :metadata="dataset.meta"></metadata>
-                                <br>
-                            </b-col>
-                        </b-row>
+            <div class="button" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)" v-if="dataset.storage" title="View Dataset">
+                <icon name="eye" scale="1.25"/>
+            </div>
+            <div class="button" @click="download" v-if="dataset.storage" title="Downlnoad Dataset">
+                <icon name="download" scale="1.25"/>
+            </div>
+            <div class="button" @click="process" v-if="dataset.storage" title="Process">
+                <icon name="paper-plane" scale="1.25"/> 
+            </div>
+            <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
+                <icon name="close" scale="1.5"/>
+            </div>
+        </div>
+        <h4>
+            <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
+                <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+            </div>
+        </h4>
+    </div><!--header-->
+    <b-tabs class="brainlife-tab" v-model="tab_index">
+        <b-tab title="Details">
+            <div class="dataset-detail">
+                <b-alert :show="dataset.removed" variant="warning">This dataset has been removed</b-alert>
+                <!-- detail -->
+                <div class="margin20">
+                    <b-row>
+                        <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
+                        <b-col>
+                            <b-row v-if="dataset._canedit">
+                                <!-- TODO - I should display in json?-->
+                                <b-col :cols="6" v-for="(m, id) in dataset.meta" :key="id" style="margin-bottom: 3px;">
+                                    <b-input-group :prepend="id.toUpperCase()">
+                                        <b-form-input v-model="dataset.meta[id]" @keyup.native="update_dataset('meta')"/>
+                                    </b-input-group>
+                                </b-col>
+                            </b-row>
+                            <metadata v-else :metadata="dataset.meta"></metadata>
+                            <br>
+                        </b-col>
+                    </b-row>
 
                         <b-row>
                             <b-col cols="3">
@@ -85,10 +84,10 @@
                                 <p>
                                     <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
                                         <icon name="cog" :spin="true"/> <b>Storing ... </b> 
-                                        Please wait before you download / process this dataset.
+                                        <!--Please wait before you download / process this dataset.-->
                                     </span> 
                                     <span v-if="dataset.status == 'stored'">
-                                        <b>{{dataset.storage|uppercase}}</b> 
+                                        {{dataset.storage}}
                                         <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                     </span> 
                                     <span v-if="dataset.status == 'failed'" style="color: red;">
@@ -125,16 +124,15 @@
 
                         <b-row v-if="task && task.product">
                             <b-col cols="3"><b class="text-muted">Task Result <small>(product.json)</small></b></b-col>
-                            <b-col>
+                            <b-col cols="9">
                                 <p>
                                     <pre v-highlightjs><code class="json">{{task.product}}</code></pre>
                                 </p>
                             </b-col>
                         </b-row>
 
-
                         <b-row>
-                            <b-col cols="3"><b class="text-muted">Archived by</b></b-col>
+                            <b-col cols="3"><b class="text-muted"><icon name="archive"/> Archived by</b></b-col>
                             <b-col>
                                 <p>
                                     <contact :id="dataset.user_id"/> 
@@ -143,11 +141,19 @@
                             </b-col>
                         </b-row>
 
-
                         <b-row v-if="dataset.download_count > 0">
                             <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
                             <b-col>
                                 <p>{{dataset.download_count}}</p>
+                            </b-col>
+                        </b-row>
+
+                        <b-row v-if="dataset.publications && dataset.publications.length > 0">
+                            <b-col cols="3"><b class="text-muted"><icon name="book"/> Publications</b></b-col>
+                            <b-col cols="9">
+                                <small class="text-muted">This dataset has been published on following publications.</small>
+                                <b-table small hover :items="dataset.publications" :fields="['name', 'desc', 'doi']" @row-clicked="openpub" style="background-color: white;">
+                                </b-table>
                             </b-col>
                         </b-row>
 
@@ -169,7 +175,7 @@
                     <b-alert show variant="info" v-if="apps.length == 0">There are currently no applications that use the datatype from this dataset.</b-alert>
                     <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
                         <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)">
-                            <app :app="app" descheight="80px" :clickable="false"></app>
+                            <app :app="app" descheight="80px" devsheight="75px" :clickable="false"></app>
                         </div>
                     </div>
                 </div>
@@ -212,6 +218,7 @@ export default {
         datatypetag, task, pubcard, 
         tageditor, taskconfig,
     },
+
     data () {
         return {
             dataset: null,
@@ -225,20 +232,13 @@ export default {
 
             selfurl: document.location.href,
             
-            /*
-            dirty: {
-                desc: false,
-                meta: false,
-                tags: false
-            },
-            */
-
             alltags: null,
             config: Vue.config,
         } 
     },
 
-    mounted() {
+    created() {
+        console.log("momdal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", id=>{
             console.log("requested to view", id);
             this.load(id);
@@ -250,6 +250,10 @@ export default {
                 this.close();
             }
         });
+    },
+
+    destroyed() {
+        this.$root.$off("dataset.view");
     },
     
     watch: {
@@ -332,8 +336,7 @@ export default {
     
         close: function() {
             if(!this.dataset) return;
-            console.log("going back to dataset tab");
-            this.$router.replace("/project/"+this.dataset.project._id+"/dataset"); 
+            this.$router.push("/project/"+this.dataset.project._id+"/dataset"); 
             this.dataset = null;
         },
 
@@ -349,47 +352,60 @@ export default {
         },
 
         process: function() {
-            this.$http.post(Vue.config.wf_api+'/instance', {
-                config: {
-                    brainlife: true,
-                    type: "v2",
+            this.$root.$emit('instanceselecter.open', opt=>{
+                if(opt.instance) {
+                    //using existing instance.. just submit staging task
+                    this.submit_process(opt.project_id, opt.instance);
+                } else {
+                    //need to create a new instance
+                    this.$http.post(Vue.config.wf_api+'/instance', {
+                        desc: opt.desc,
+                        config: {
+                            brainlife: true,
+                        },
+                        group_id: opt.group_id,
+                    }).then(res=>{
+                        this.submit_process(opt.project_id, res.body);
+                    }).catch(err=>{
+                        console.error(err);
+                        this.$notify({type: 'error', text: err.body.message});
+                    })
+                }
+            });
+        },
+
+        submit_process: function(project_id, instance) {
+            console.log("submitting staging task", this.dataset);
+            this.$http.post(Vue.config.wf_api+'/task', {
+                instance_id: instance._id,
+                name: "Staged Datasets - "+this.dataset.datatype.name,
+                service: "soichih/sca-product-raw",
+                config: { 
+                    _tid: 0 ,
+                    download: [
+                        {
+                            url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
+                            untar: "auto",
+                            dir: this.dataset._id,
+                        }
+                    ], 
+                    _outputs: [
+                        Object.assign({}, this.dataset, {
+                            id: this.dataset._id, 
+                            did: 0,
+                            subdir: this.dataset._id, 
+                            dataset_id: this.dataset._id,
+                            prov: null,
+
+                            //unpopulate
+                            project: this.dataset.project._id,
+                            datatype: this.dataset.datatype._id,
+                        })
+                    ], 
                 },
             }).then(res=>{
-                var instance = res.body;
-                console.log("submitting staging task", this.dataset);
-                this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: instance._id,
-                    name: "Staged Datasets - "+this.dataset.datatype.name,
-                    service: "soichih/sca-product-raw",
-                    config: { 
-                        _tid: 0 ,
-                        download: [
-                            {
-                                url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
-                                untar: "auto",
-                                dir: this.dataset._id,
-                            }
-                        ], 
-                        _outputs: [
-                            Object.assign({}, this.dataset, {
-                                id: this.dataset._id, 
-                                did: 0,
-                                subdir: this.dataset._id, 
-                                dataset_id: this.dataset._id,
-                                prov: null,
-
-                                //unpopulate
-                                project: this.dataset.project._id,
-                                datatype: this.dataset.datatype._id,
-                            })
-                        ], 
-                    },
-                }).then(res=>{
-                    //then jump! (TODO - should move to /project soon)
-                    this.close();
-                    console.log("jumping to processes page");
-                    this.$router.push("/processes/"+instance._id);
-                });
+                this.$router.push("/project/"+project_id+"/process/"+instance._id);
+                this.dataset = null;
             });
         },
 
@@ -445,10 +461,9 @@ export default {
 
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {
-                    this.$http.get(Vue.config.wf_api+'/task', {params: {
-                        find: JSON.stringify({"_id": this.dataset.prov.task_id}),
-                    }}).then(res=>{
-                        this.task = res.body.tasks[0];
+                    this.$http.get(Vue.config.wf_api+'/task/'+this.dataset.prov.task_id).then(res=>{
+                        console.log("loading prov task", res.body);
+                        this.task = res.body;
                     });
                 }
 
@@ -472,6 +487,8 @@ export default {
                     if(!this.derivatives[task_id]) this.derivatives[task_id] = [];
                     this.derivatives[task_id].push(dataset);
                 });
+
+                console.log("done loading dataset details");
 
              }).catch(err=>{
                 console.error(err);
@@ -497,7 +514,6 @@ export default {
                 subdir: "output",
             });
         },
-
 
         create_view_task: function(cb) {
             //first, query for the viewing task to see if it already exist
@@ -541,37 +557,16 @@ export default {
                 }
             });
         },
+
+        openpub: function(pub) {
+            document.location = '/pub/'+pub._id;
+        },
     }
 }
 
 </script>
-<style scoped>
-.dataset-overlay {
-position: fixed;
-top: 0px;
-left: 0px;
-bottom: 0px;
-right: 0px;
-background-color: rgba(0,0,0,0.3);
-z-index: 10;
-padding: 30px;
-}
-.dataset-header {
-background-color: white;
-padding: 10px 20px;
-box-shadow: 0 0 3px rgba(0,0,0,0.5);
-z-index: 20;
-height: 60px;
-position: relative;
-}
-.dataset-modal {
-background-color: #fff;
-height: 100%;
-padding: 0px;
-box-shadow: 0 0 20px #000;
-position: relative;
-}
 
+<style scoped>
 .dataset-detail,
 .dataset-apps,
 .dataset-provenance {
@@ -582,7 +577,6 @@ left: 0;
 right: 0;
 bottom: 0px;
 }
-
 .dataset-detail {
 overflow: auto;
 }
@@ -592,9 +586,11 @@ padding: 20px;
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .3s
+    transition: opacity .3s
 }
-.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0
+.fade-enter, .fade-leave-to {
+    opacity: 0
 }
 </style>
+
+

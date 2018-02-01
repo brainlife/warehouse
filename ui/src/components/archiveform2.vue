@@ -1,56 +1,41 @@
 <template>
-<!-- this is going to take a while..
-<b-form @submit="submit">
-    <b-container>
-        <b-row>
-            <b-col><label>Dataset Description</label></b-col>
-            <b-col>
-                <b-form-textarea v-model="desc" placeholder="Enter Description"/>
-            </b-col>
-        </b-row>
-    </b-container>
-</b-form>
--->
-
 <div class="archiveform">
-    <el-form label-width="150px">
-        <el-form-item label="Dataset Desc">
-            <el-input type="textarea" v-model="desc" placeholder="Dataset Desc"></el-input>
-        </el-form-item>
-        <br>
+    <b-form>
+        <b-form-group label="Dataset Desc">
+            <b-form-textarea v-model="desc" placeholder="Dataset Desc" :rows="3" style="width: 100%;"></b-form-textarea>
+        </b-form-group>
 
-        <el-form-item label="Project">
-            <projectselecter v-model="project"/>
-            <p class="text-muted" style="margin-bottom: 0px;">Project where you'd like to store this datasets</p>
-        </el-form-item>
-        <br>
+        <b-form-group label="Project">
+            <projectselecter canwrite="true" v-model="project" placeholder="Project to archive this dataset to"/>
+        </b-form-group>
 
-        <el-form-item label="User Tags (optional)">
+        <b-form-group label="User Tags (optional)">
+            <!--
             <el-select v-model="tags" 
                 style="width: 100%"
                 multiple filterable allow-create placeholder="Enter tags">
                 <el-option v-for="tag in tags" key="tag" :label="tag" :value="tag"></el-option>
             </el-select>
             <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
-        </el-form-item>
-        <br>
+            -->
+            <tageditor v-model="tags"/>
+        </b-form-group>
 
-        <el-form-item label="Metadata">
+        <b-form-group label="Metadata">
             <div v-for="(v,k) in output.meta">
                 <el-input placeholder="Please Edit meta" v-model="output.meta[k]">
                     <template slot="prepend">{{k|uppercase}}</template>
                 </el-input>
             </div>
             <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
-        </el-form-item>
-        <br>
+        </b-form-group>
 
-        <el-form-item label=" ">
-            <el-button @click="cancel()">Cancel</el-button>
-            <el-button type="primary" icon="check" @click="submit()">Archive</el-button>
-        </el-form-item>
-        <br>
-    </el-form>
+        <div style="float: right">
+            <b-button variant="primary" icon="check" @click="submit">Archive</b-button>
+            <b-button @click="cancel">Cancel</b-button>
+        </div>
+        <br clear="both">
+    </b-form>
 </div>
 </template>
 
@@ -59,6 +44,7 @@ import Vue from 'vue'
 
 import projectaccess from '@/components/projectaccess'
 import projectselecter from '@/components/projectselecter'
+import tageditor from '@/components/tageditor'
 
 export default {
     props: {
@@ -66,7 +52,8 @@ export default {
         output: {required: true},
     },
 
-    components: { projectaccess, projectselecter },
+    components: { projectaccess, projectselecter, tageditor },
+
     data() {
         return {
             desc: this.output.desc,
@@ -83,6 +70,7 @@ export default {
 
     methods: {
         submit: function() {
+            console.debug("sending archvie request ...");
             this.$http.post('dataset', {
                 project: this.project,                 
                 app_id: this.task.config._app,
@@ -97,6 +85,8 @@ export default {
                 tags: this.tags, 
             }).then(res=>{
                 this.$emit('done', res.body);
+            }).catch(err=>{
+                console.error(err);
             });
         },
         cancel: function() {
@@ -108,8 +98,7 @@ export default {
 <style scoped>
 .archiveform {
 margin-top: 10px;
-margin-bottom: 5px;
 padding: 7px;
-background-color: #f8f8f8;
+background-color: #fff;
 }
 </style>

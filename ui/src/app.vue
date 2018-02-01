@@ -5,34 +5,28 @@
     <div class="page-content">
         <div class="header">
             <b-container>
-                <b-row>
-                    <b-col>
-                        <div style="float: left; margin-right: 40px; margin-bottom: 15px; height: 100%;">
-                            <appavatar :app="app"/>
-                        </div>
-                        <div>
-                            <h3 style="color: #666; margin-bottom: 10px;">{{app.name}}</h3>
-                            <h6>
-                                <a :href="'http://github.com/'+app.github"><icon name="github"/> {{app.github}}</a>
-                                <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
-                            </h6>
-                            <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
-                        </div>
-                        <p>
-                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                        </p>
-                    </b-col>
-                    <b-col cols="3">
-                        <div style="float: right;">
-                            <span class="button button-danger" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
-                            <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
-                            <!--
-                            <span class="button" @click="go('/app/'+app._id+'/submit')" title="Process"><icon name="paper-plane" scale="1.25"/></span>
-                            -->
-                        </div>
-                    </b-col>
-                </b-row>
+                <div style="float: left; margin-bottom: 15px; height: 100%;">
+                    <appavatar :app="app"/>
+                </div>
+                <div style="margin-left: 120px;">
+                    <div style="float: right;">
+                        <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
+                        <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
+                        <!--
+                        <span class="button" @click="go('/app/'+app._id+'/submit')" title="Process"><icon name="paper-plane" scale="1.25"/></span>
+                        -->
+                    </div>
 
+                    <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
+                    <h6>
+                        <a :href="'http://github.com/'+app.github"><icon name="github" scale="0.9"/> {{app.github}}</a>
+                        <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                    </h6>
+                    <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
+                    <p>
+                        <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                    </p>
+                </div>
                 <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
@@ -63,6 +57,9 @@
                                 </ul>
                             </b-col>
                         </b-row>
+                        <br>
+
+
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Contributors</b>
@@ -75,16 +72,48 @@
                                 </ul>
                             </b-col>
                         </b-row>
+
+                        <!--input/output header-->
                         <b-row>
+                            <b-col cols="3">
+                            </b-col>
+                            <b-col>
+                                <b-row style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 90%;">
+                                    <b-col :cols="4">Datatype</b-col>
+                                    <b-col :cols="3">config.json key</b-col>
+                                    <b-col>File Mapping</b-col>
+                                </b-row>
+                                <hr>
+                            </b-col>
+                        </b-row>
+                       <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Input</b>
                             </b-col>
                             <b-col>
+                                <!--<p class="text-muted">This app uses above input datasets</p>-->
+                                <!--
                                 <div class="item" v-for="input in app.inputs">
                                     <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags"/>
+                                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/> 
+                                </div>
+                                -->
+ 
+                                <div v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'" style="margin-bottom: 5px;">
+                                    <b-row>
+                                        <b-col :cols="4">
+                                            <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
+                                        </b-col>
+                                        <b-col :cols="3">
+                                            <b><pre style="background-color: white;">"{{key}}"</pre></b>
+                                        </b-col>
+                                        <b-col>
+                                            <small style="opacity: 0.3; float: right; margin-right: 10px">{{con.input_id}}</small><!--internal input id-->
+                                            <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
+                                        </b-col>
+                                    </b-row>
                                 </div>
                                 <br>
-                                <p class="text-muted">This app uses above input datasets</p>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -92,16 +121,29 @@
                                 <b class="text-muted">Output</b>
                             </b-col>
                             <b-col>
-                                <div class="item" v-for="output in app.outputs">
-                                    <datatype :id="output.id" :datatype="output.datatype" :datatype_tags="output.datatype_tags">
-                                        <div v-if="output.files">
-                                            <small>Output mapping</small>
-                                            <pre v-highlightjs><code class="json hljs">{{output.files}}</code></pre>
-                                        </div>
-                                    </datatype>
+                                <!--<p class="text-muted">This app produces above output datasets</p>-->
+                                <!--
+                                <b-row style="color: #999; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
+                                    <b-col :cols="7"> Datatype </b-col>
+                                    <b-col> Filemapping</b-col>
+                                </b-row>
+                                -->
+                                <div class="item" v-for="output in app.outputs" style="margin-bottom: 5px;">
+                                    <b-row>
+                                        <b-col :cols="7">
+                                            <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
+                                        </b-col>
+                                        <b-col>
+                                            <div style="position: relative"> 
+                                                <small style="opacity: 0.3; right: 10px; position: absolute;">{{output.id}}</small><!--internal output id-->
+                                                <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
+                                                <!--<small class="text-muted" v-else>No Mapping</small>-->
+                                            </div>
+                                        </b-col>
+                                    </b-row>
                                 </div>
+                                <b-alert show variant="warning" v-if="app.outputs.length == 0">No Outputs</b-alert>
                                 <br>
-                                <p class="text-muted">This app produces above output datasets</p>
                             </b-col>
                         </b-row>
                         <b-row v-if="app.projects && app.projects.length > 0">
@@ -109,7 +151,7 @@
                                 <b class="text-muted">Projects</b>
                             </b-col>
                             <b-col>
-                                <p class="alert alert-danger"><icon name="lock" /> Only the members of following project(s) can see / submit this app.</p>
+                                <p class="alert alert-success"><icon name="lock" /> Only the members of following project(s) can see / submit this app.</p>
                                 <b-card no-body>
                                     <b-list-group flush>
                                         <b-list-group-item v-for="project in app.projects" :key="project._id">
@@ -137,6 +179,7 @@
                             <b-col>
                                 <b-table style="font-size: 90%;" :items="resource_table" :fields="['resource','status','score', 'detail']">
                                     <template slot="resource" slot-scope="data">
+                                        <icon class="preferred-icon" v-if="data.item.preferred" name="thumbs-up"/>
                                         <b>{{data.value}}</b>
                                     </template>
                                     <template slot="status" slot-scope="data">
@@ -149,7 +192,7 @@
                                 <b-alert show variant="danger" v-if="!preferred_resource">
                                     This app currently can not run on any resource that you have access to.
                                 </b-alert>
-                                <p class="text-muted" v-else>This app could run on above resource(s)</p>
+                                <!--<small class="text-muted" v-else>This app could run on one of above resource(s)</small>-->
                             </b-col>
                         </b-row>
 
@@ -158,6 +201,7 @@
                                 <b class="text-muted">UI Configuration</b>
                             </b-col>
                             <b-col cols="9">
+                                <b-alert show variant="info">TODO .. show this in more user friendly way</b-alert>
                                 <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
                             </b-col>
                         </b-row>
@@ -223,6 +267,18 @@
                                 <el-rate v-model="app._rate" @change="ratechange()"></el-rate>
                             </center>
                         </b-card>
+                        <br>
+
+                        <b-card>
+                            <center>
+                                <span class="text-muted">Badges</span>
+                                <br>
+                                <br>
+                                <img :src="'https://img.shields.io/badge/brainlife.io-app-green.svg'" @click="show_badge_url()"><br>
+                            </center>
+                        </b-card>
+                        <br>
+
                     </b-col>
                 </b-row>
 
@@ -288,6 +344,8 @@ import contact from '@/components/contact'
 import project from '@/components/project'
 import tags from '@/components/tags'
 import datatype from '@/components/datatype'
+import datatypefile from '@/components/datatypefile'
+import datatypetag from '@/components/datatypetag'
 import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
@@ -300,7 +358,7 @@ export default {
         sidemenu, pageheader, contact, 
         project, tags, datatype, appavatar,
         VueMarkdown, statustag, VueDisqus,
-        appsubmit,
+        appsubmit, datatypetag, datatypefile,
      },
 
     data () {
@@ -333,7 +391,8 @@ export default {
 
                     //b-table shows _rowVariant as column..
                     if(this.preferred_resource && resource.id == this.preferred_resource._id) {
-                        item._rowVariant = 'success';
+                        //item._rowVariant = 'success';
+                        item.preferred = true;
                     }
                     items.push(item);
                 });
@@ -394,7 +453,7 @@ export default {
         
         find_resources: function(service) {
             this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
-                service
+                service,
             }})
             .then(res => {
                 if(res.body.resource) this.preferred_resource = res.body.resource;
@@ -408,6 +467,10 @@ export default {
             .catch(err => {
                 console.error(err);
             });
+        },
+
+        show_badge_url() {
+            prompt("The Badge Markdown", "[![brainlife.io/app](https://img.shields.io/badge/brainlife.io-app-green.svg)]("+this.selfurl+")");
         },
 
         remove: function() {
@@ -429,6 +492,10 @@ export default {
         bibtex: function() {
             document.location = '/api/warehouse/app/bibtex/'+this.app._id;
         },
+
+        find_by_id: function(list, id) {
+            return list.find(it=>it.id == id);
+        }
     },
 }
 </script>
@@ -447,5 +514,11 @@ text-transform: uppercase;
 color: #999;
 border-radius: 0px;
 margin-right: 5px;
+}
+.preferred-icon {
+color: green;
+position: absolute;
+left: 0px;
+font-weight: bold;
 }
 </style>
