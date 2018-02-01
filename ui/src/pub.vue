@@ -14,7 +14,6 @@
                     <projectavatar :project="pub.project"/>
                 </div>
                 <div style="margin-left: 120px;">
-                    <doibadge style="float: right;" :doi="pub.doi"/>
                     <h4 style="color: #666; margin-bottom: 10px;">
                         {{pub.name}} 
                     </h4>
@@ -57,18 +56,15 @@
                             </b-col>
                         </b-row>
                         -->
-                        <!--
-                        <b-row v-if="pub.doi">
+                        <!--altmetric todo
+                        <b-row>
                             <b-col cols="3">
-                                <b class="text-muted">Citations</b>
+                                <b class="text-muted">Altmetric</b>
                             </b-col>
                             <b-col>
-                                <p>
-                                    <citation :doi="pub.doi"/>
-                                    <small style="opacity: 0.5">Citation to this dataset/app published on Brainlife</small>
-                                </p>
+                                <div class='altmetric-embed' data-badge-type='donut' data-doi="10.1038/nature.2012.9872"></div>
                             </b-col>
-                        </b-row>  
+                        </b-row>    
                         -->
                         <b-row>
                             <b-col cols="3">
@@ -127,7 +123,32 @@
                                 <br>
                             </b-col>
                         </b-row>                      
-                        <b-row v-if="pub.fundings.length > 0">
+                        <b-row v-if="pub.doi">
+                            <b-col cols="3">
+                                <b class="text-muted">Citation</b>
+                            </b-col>
+                            <b-col cols="9">
+                                <p>
+                                    <doibadge style="float: right;" :doi="pub.doi"/>
+                                    <small class="text-muted">Citation to this dataset/app published on Brainlife</small>
+                                </p>
+                                <b-card no-body>
+                                    <b-tabs pills card>
+                                        <b-tab title="Text">
+                                            <p>
+                                                <citation :doi="pub.doi"/>
+                                            </p> 
+                                            <small class="text-muted">in harvard3 format. <a href="https://citation.crosscite.org" target="_blank">Use other format</a></small>
+                                        </b-tab>
+                                        <b-tab title="bibtex">
+                                            <citation :doi="pub.doi" accept="application/x-bibtex"/>
+                                        </b-tab>
+                                    </b-tabs>
+                                </b-card>
+                                <br>
+                            </b-col>
+                        </b-row>  
+                       <b-row v-if="pub.fundings.length > 0">
                             <b-col cols="3">
                                 <b class="text-muted">Funded by</b>
                             </b-col>

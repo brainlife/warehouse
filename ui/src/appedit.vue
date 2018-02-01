@@ -31,10 +31,10 @@
                 </b-form-group>
                 <b-form-group horizontal label="Admins">
                     <contactlist v-model="app.admins"></contactlist>
-                    <p class="text-muted">Users who can update this application registration</p>
+                    <small class="text-muted">Users who can update this application registration</small>
                 </b-form-group>
                 <b-form-group horizontal label="Avatar">
-                    <el-input type="text" v-model="app.avatar" placeholder="URL of application avatar"/>
+                    <el-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
                 </b-form-group>
                 <b-form-group horizontal label="Projects">
                     <projectsselecter 
@@ -47,13 +47,13 @@
 
                 <b-form-group horizontal label="Source Code">
                     <b-row>
-                        <b-col>
+                        <b-col :cols="7">
                             <b-input-group prepend="Github Repository Name *">
-                                <b-form-input type="text" v-model="app.github" placeholder="brain-life/app-name" required/>
+                                <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
                             </b-input-group>
                         </b-col>
                         <b-col>
-                            <b-input-group prepend="Branch (optional)">
+                            <b-input-group prepend="Branch/Tag (optional)">
                                 <b-form-input type="text" v-model="app.github_branch" placeholder="master"/>
                             </b-input-group>
                         </b-col>
@@ -61,8 +61,8 @@
                 </b-form-group>
                 <br>
                 <b-form-group horizontal label="Max Retry">
-                    <el-input type="text" v-model="app.retry" placeholder="0"/>
-                    <p class="text-muted">If a task fails, it will rerun up to this count (0 means no retry)</p>
+                    <el-input type="text" v-model="app.retry" placeholder="(no retry)"/>
+                    <small class="text-muted">If a task fails, it will rerun up to this count</small>
                 </b-form-group>
             </div>
 

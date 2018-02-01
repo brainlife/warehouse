@@ -12,6 +12,7 @@
     <datasetselecter/>
     <uploader/>
     <instanceselecter/>
+    
 </div>
 </template>
 
@@ -58,13 +59,11 @@ color: #444;
 font-size: 14px;
 }
 
-/*
-h1,h2,h3 {
-font-family: 'Cabin', sans-serif;
-}
-*/
 
 /*adjust bootstrap font sizes*/
+.input-group-text {
+font-size: 14px;
+}
 .form-control {
 font-size: inherit;
 }
