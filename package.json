@@ -43,7 +43,8 @@
     "ssh2": "^0.5.5",
     "tar": "^4.2.0",
     "tmp": "0.0.33",
-    "winston": "^2.4.0"
+    "winston": "^2.4.0",
+    "xml-escape": "^1.1.0"
   },
   "devDependencies": {
     "chai": "^4.0.1",

@@ -44,7 +44,7 @@ function run(cb) {
             }, (err, _res, body)=>{
                 if(err) return next(err);
                 logger.debug("done creating new group", body);
-                project.group_id = body.group.id;
+                project.group_id = parseInt(body.group.id);
                 project.save(next_project);
             });
         }, cb);
