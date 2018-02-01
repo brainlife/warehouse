@@ -14,6 +14,12 @@
                     <projectavatar :project="pub.project"/>
                 </div>
                 <div style="margin-left: 120px;">
+                    <div style="float: right; margin-left: 20px;" v-if="pub.doi">
+                        <center>
+                            <div class='altmetric-embed' data-badge-type='donut' data-badge-details="left" :data-doi="pub.doi"></div>
+                            <b style="opacity: 0.5">Altmetric</b>
+                        </center>
+                    </div>
                     <h4 style="color: #666; margin-bottom: 10px;">
                         {{pub.name}} 
                     </h4>
@@ -38,6 +44,7 @@
                     <el-alert v-if="pub.removed" title="This publication has been removed" type="warning" show-icon :closable="false"></el-alert>
                     <!-- detail -->
                     <div v-if="tab_index == 0">
+
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Created on</b>
@@ -46,26 +53,6 @@
                                 <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
                             </b-col>
                         </b-row>                         
-                        <!--
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Publisher</b>
-                            </b-col>
-                            <b-col>
-                                <p>{{pub.publisher}}</p>
-                            </b-col>
-                        </b-row>
-                        -->
-                        <!--altmetric todo
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Altmetric</b>
-                            </b-col>
-                            <b-col>
-                                <div class='altmetric-embed' data-badge-type='donut' data-doi="10.1038/nature.2012.9872"></div>
-                            </b-col>
-                        </b-row>    
-                        -->
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Authors</b>
@@ -112,7 +99,8 @@
                                 <b class="text-muted">Project</b>
                             </b-col>
                             <b-col>
-                                <!--<projectcard :project="pub.project"/>-->
+                                <projectcard :project="pub.project"/>
+                                <!--
                                 <b-card>
                                     <h6>{{pub.project.name}}</h6>
                                     <p>
@@ -120,9 +108,11 @@
                                         <router-link :to="'/project/'+pub.project._id">More..</router-link>
                                     </p>
                                 </b-card>
+                                -->
                                 <br>
                             </b-col>
                         </b-row>                      
+
                         <b-row v-if="pub.doi">
                             <b-col cols="3">
                                 <b class="text-muted">Citation</b>
@@ -132,19 +122,21 @@
                                     <doibadge style="float: right;" :doi="pub.doi"/>
                                     <small class="text-muted">Citation to this dataset/app published on Brainlife</small>
                                 </p>
-                                <b-card no-body>
-                                    <b-tabs pills card>
-                                        <b-tab title="Text">
-                                            <p>
-                                                <citation :doi="pub.doi"/>
-                                            </p> 
-                                            <small class="text-muted">in harvard3 format. <a href="https://citation.crosscite.org" target="_blank">Use other format</a></small>
-                                        </b-tab>
-                                        <b-tab title="bibtex">
-                                            <citation :doi="pub.doi" accept="application/x-bibtex"/>
-                                        </b-tab>
-                                    </b-tabs>
-                                </b-card>
+                                <b-row>
+                                    <b-card no-body>
+                                        <b-tabs pills card>
+                                            <b-tab title="Text">
+                                                <p>
+                                                    <citation :doi="pub.doi"/>
+                                                </p> 
+                                                <small class="text-muted">in harvard3 format. <a href="https://citation.crosscite.org" target="_blank">Use other format</a></small>
+                                            </b-tab>
+                                            <b-tab title="bibtex">
+                                                <citation :doi="pub.doi" accept="application/x-bibtex"/>
+                                            </b-tab>
+                                        </b-tabs>
+                                    </b-card>
+                                </b-row>
                                 <br>
                             </b-col>
                         </b-row>  
@@ -380,6 +372,13 @@ export default {
         })
         .then(res=>{
             this.apps = res.body;
+
+            Vue.nextTick(()=>{
+                //re-initialize altmetric badge - now that we have badge <div> placed
+                //window._altmetric.embed_init(); 
+                _altmetric_embed_init();
+            });
+
         }).catch(console.error);
     },
     

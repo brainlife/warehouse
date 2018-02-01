@@ -29,7 +29,7 @@
                     <br>
                     <el-alert v-if="error" type="error" title="Failed" :description="error" show-icon :closable="false"></el-alert> 
                     <div v-if="active == 3">
-                        <el-button type="primary" class="animated bounceIn" size="large" @click="download()" icon="document">Download (bids.tar.gz)</el-button>    
+                        <el-button type="primary" class="animated bounceIn" size="large" @click="download" icon="document">Download</el-button>    
                     </div>
                 </div>
 
@@ -94,15 +94,14 @@ export default {
         //load instance first
         this.$http.get(Vue.config.wf_api+'/instance', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
-            //populate: 'config.project datatype instance.config.prov.deps.dataset',
         }})
         .then(res=>{
-          this.instance = res.body.instances[0];
+            this.instance = res.body.instances[0];
 
-          //load tasks under this instance
-          return this.$http.get(Vue.config.wf_api+'/task', {params: {
-              find: JSON.stringify({instance_id: this.instance._id})
-          }})
+            //load tasks under this instance
+            return this.$http.get(Vue.config.wf_api+'/task', {params: {
+                find: JSON.stringify({instance_id: this.instance._id})
+            }})
         })
         .then(res=>{
             this.tasks = res.body.tasks;
@@ -115,14 +114,12 @@ export default {
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
-                        //key: Vue.config.user.sub+"."+this.instance._id+".#",
                         key: this.instance._id+".#",
                     }
                 }));
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
-                        //key: Vue.config.user.sub+"."+this.instance._id,
                         key: "*."+this.instance._id, //any group, but specific instance
                     }
                 }));
@@ -185,7 +182,6 @@ export default {
 
         download: function() {
             var url = Vue.config.wf_api+"/task/download/"+this.task_bids._id+"?p=download&at="+Vue.config.jwt;
-            console.log(url);
             document.location = url;
         },
     },

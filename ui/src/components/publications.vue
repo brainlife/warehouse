@@ -39,14 +39,15 @@
                         <small><tags :tags="pub.tags"/></small>
                     </p>
                 </b-col>
-                <b-col :cols="1">
+                <b-col :cols="3">
                     <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
                     <!--<doibadge :doi="pub.doi"/>-->
                     <div class="pub-action" style="display: inline-block; float: right; margin-right: 10px;" v-if="ismember()">
-                        <div class="button" @click.stop="open_pub(pub)">
+                        <div class="button" @click.stop="open_pub(pub)" title="See in published page">
                             <icon name="eye"/>
                         </div>
                     </div>
+                    <div class="text-muted" style="float: right; margin: 5px;">{{pub.doi}}</div>
                 </b-col>
                 </b-row>
             </div>
