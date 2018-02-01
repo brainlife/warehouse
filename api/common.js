@@ -257,6 +257,7 @@ exports.load_github_detail = function(service_name, cb) {
     });
 }
 
+//https://schema.datacite.org/meta/kernel-4.1/doc/DataCite-MetadataKernel_v4.1.pdf
 function compose_datacite_metadata(pub) {
 
     //publication year
@@ -268,22 +269,46 @@ function compose_datacite_metadata(pub) {
 
     //creators
     //let creators = cached_contacts[pub.user_id];
-    let creators = [];
 
     //in case author is empty.. let's use submitter as author..
     //TODO - we need to make author required field
     if(pub.authors.length == 0) pub.authors.push(pub.user_id);
-
     logger.debug(pub.authors);
+
+    let creators = [];
     pub.authors.forEach(sub=>{
         let contact = cached_contacts[sub];
         if(!contact) {
             logger.debug("missing contact", sub);
             return;
         }
+        //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
         creators.push(`<creator> 
             <creatorName>${xmlescape(contact.fullname)}</creatorName>
             </creator>`);
+
+    });
+
+    let contributors = [];
+    pub.contributors.forEach(sub=>{
+        let contact = cached_contacts[sub];
+        if(!contact) {
+            logger.debug("missing contact", sub);
+            return;
+        }
+        //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
+        
+        //contributorType can be ..
+        //Value \'Contributor\' is not facet-valid with respect to enumeration \'[ContactPerson, DataCollector, DataCurator, DataManager, Distributor, Editor, HostingInstitution, Other, Producer, ProjectLeader, ProjectManager, ProjectMember, RegistrationAgency, RegistrationAuthority, RelatedPerson, ResearchGroup, RightsHolder, Researcher, Sponsor, Supervisor, WorkPackageLeader]\'. It must be a value from the enumeration.'
+        contributors.push(`<contributor contributorType="Other"> 
+            <contributorName>${xmlescape(contact.fullname)}</contributorName>
+            </contributor>`);
+        
+    });
+
+    let subjects = []; //aka "keyword"
+    pub.tags.forEach(tag=>{
+        subjects.push(`<subject>${xmlescape(tag)}</subject>`);
     });
 
     let metadata = `<?xml version="1.0" encoding="UTF-8"?>
@@ -292,13 +317,21 @@ function compose_datacite_metadata(pub) {
       <creators>
         ${creators.join("\n")}
       </creators>
+      <contributors>
+        ${contributors.join("\n")}
+      </contributors>
+      <subjects>
+        ${subjects.join("\n")}
+      </subjects>
       <titles>
         <title>${xmlescape(pub.name)}</title>
       </titles>
       <publisher>brainlife.io</publisher>
       ${publication_year}
       <resourceType resourceTypeGeneral="Software">XML</resourceType>
-      <dates/>
+      <descriptions>
+          <description descriptionType="Other">${xmlescape(pub.desc)}</description>
+      </descriptions>
     </resource>`;
 
     logger.debug(metadata);

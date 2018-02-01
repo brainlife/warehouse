@@ -116,7 +116,9 @@ var publicationSchema = mongoose.Schema({
     //citation: String, //preferred citation
     license: String, //cc0, ccby.40, etc.
 
-    doi: String, 
+    doi: String, //doi for this dataset (we generate this)
+    paper_doi: String, //doi for the paper (journal should publish this)
+
     fundings: [ new mongoose.Schema({funder: 'string', id: 'string'}) ], 
     
     //project that this data belongs to
@@ -139,7 +141,7 @@ var publicationSchema = mongoose.Schema({
     readme: String, //markdown (abstract in https://purl.stanford.edu/rt034xr8593)
 
     create_date: { type: Date, default: Date.now },
-    publish_date: { type: Date, default: Date.now }, //used for publication date
+    //publish_date: { type: Date, default: Date.now }, //used for publication date
 
     removed: { type: Boolean, default: false },
 });

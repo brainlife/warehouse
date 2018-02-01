@@ -106,6 +106,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
     delete req.body._id; //shouldn't be set
     req.body.user_id = req.user.sub;//override
 
+    //TODO - I should make sure req.user.sub is listed in admin?
     //TODO - should I validate admins/members? how?
 
 	//create a new group
@@ -190,39 +191,6 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 res.json(project);
             });
         });
-
-        /*
-        if(project.group_id) {
-            logger.debug("update existing group on auth service");
-            request.put({ url: config.auth.api+"/group/"+project.group_id, headers: { authorization: req.headers.authorization }, json: true,
-                body: {
-                    name: req.body.name,
-                    desc: "For project "+project._id,
-                    admins: req.body.admins,
-                    members: req.body.members,
-                }
-            }, (err, _res, group)=>{
-                if(err) return next(err);
-                logger.debug("done updating group");
-                post_process();
-            });
-        } else {
-            logger.debug("creating new group (for old project - for backward compatibility)");
-            request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,
-                body: {
-                    name: req.body.name,
-                    desc: "For project "+project._id,
-                    admins: req.body.admins,
-                    members: req.body.members,
-                }
-            }, (err, _res, body)=>{
-                if(err) return next(err);
-                logger.debug("done creating new group");
-                project.group_id = body.group.id;
-                post_process();
-            });
-        }
-        */
     });
 });
 
@@ -240,7 +208,6 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
     db.Projects.findById(req.params.id, function(err, project) {
         if(err) return next(err);
         if(!project) return next(new Error("can't find the project with id:"+req.params.id));
-        //only superadmin or admin of this test spec can update
         if(isadmin(req.user, project)) {
             project.removed = true;
             project.save(function(err) {
