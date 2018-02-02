@@ -8,6 +8,7 @@
                          unchecked-value="not_accepted">
           I accept the terms and use
         </b-form-checkbox>
+        <div class='altmetric-embed' data-badge-type='donut' data-doi="10.1038/nature.2012.9872"></div>
     </b-form>
 </div>
 </template>

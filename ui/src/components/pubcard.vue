@@ -41,7 +41,7 @@ export default {
         click: function() {
             document.location = '/pub/'+this.pub._id;
         },
-    }
+    },
 }
 </script>
 
