@@ -58,6 +58,7 @@ exports.event = {
 //for rule handler
 exports.rule = {
     max_task_per_rule: 30, //limit number of concurrently running tasks submission
+    nice: 10, //default nice value for stage/process tasks 
 }
 
 exports.express = {

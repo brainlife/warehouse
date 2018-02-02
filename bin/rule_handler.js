@@ -169,7 +169,7 @@ function handle_rule(rule, cb) {
     });
 
     function handle_subject(subject, next_subject) {
-        if(running >= config.max_task_per_rule) {
+        if(running >= config.rule.max_task_per_rule) {
             logger.info("reached max running task.. skipping the rest of subjects", subject, running);
             return next_subject();
         }
@@ -297,13 +297,14 @@ function handle_rule(rule, cb) {
         var deps = [];
         var tasks = {};
 
-        var instance_name = "brainlife.rule project:"+rule.project._id+" subject:"+subject;
-        var instance_desc = "rule:"+rule.name+" for project:"+rule.project.name+" subject:"+subject;
+        //var instance_name = "brainlife.rule project:"+rule.project._id+" subject:"+subject;
+        var instance_name = "brainlife.rule subject:"+subject;
+        //var instance_desc = "rule:"+rule.name+" for project:"+rule.project.name+" subject:"+subject;
+        var instance_desc = "rule:"+rule.name+" subject:"+subject;
         running++;
 
         //prepare for stage / app / archive
         async.series([
-
             //look for instance that we can use
             next=>{
                 request.get({
@@ -312,6 +313,7 @@ function handle_rule(rule, cb) {
                     qs: {
                         find: JSON.stringify({
                             name: instance_name,
+                            group_id: rule.project.group_id, 
                             "config.removing": {$exists: false},
                             "config.status": {$ne: "removed"},
                         }),
@@ -479,6 +481,7 @@ function handle_rule(rule, cb) {
                             _tid: next_tid++,
                         },
                         deps: [],
+                        nice: config.rule.nice,
                     },
                 }, (err, res, _body)=>{
                     if(err) return next(err);
@@ -553,6 +556,7 @@ function handle_rule(rule, cb) {
                         service: rule.app.github,
                         service_branch: rule.app.github_branch,
                         retry: rule.app.retry,
+                        nice: config.rule.nice,
 
                         config: _config,
                         deps,
