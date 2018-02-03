@@ -135,11 +135,11 @@ export default {
 
     methods: {
         load: function() {
+            this.instances = null; 
             this.load_instances(err=>{
                 if(err) return this.notify_error(err);
                 this.subscribe_instance_update(err=>{
                     if(err) return this.notify_error(err);
-                    //console.log("loaded");
                 });
             });
         },
@@ -240,7 +240,6 @@ export default {
         },
 
         load_instances: function(cb) {
-            this.instances = [];
             if(!this.project.group_id) return; //can't load for non-group project..
 
             console.log("loading instances for group", this.project.group_id);
@@ -278,7 +277,7 @@ export default {
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
-                console.log("instance update----------------", event);
+                //console.log("instance update----------------", event);
                 if(event.dinfo && event.dinfo.exchange == "wf.instance") {
                     var instance = this.instances.find(i=>i._id == event.msg._id);
                     if(instance) {

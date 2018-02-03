@@ -19,7 +19,7 @@
 
                     <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
                     <h6>
-                        <a :href="'http://github.com/'+app.github"><icon name="github" scale="0.9"/> {{app.github}}</a>
+                        <a :href="'https://github.com/'+app.github"><icon name="github" scale="0.9"/> {{app.github}}</a>
                         <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
                     </h6>
                     <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
@@ -113,7 +113,7 @@
                                         </b-col>
                                     </b-row>
                                 </div>
-                                <br>
+                                <icon name="arrow-down"/>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -207,26 +207,6 @@
                         </b-row>
 
                         <!--
-                        <b-row>
-                            <b-col cols="3">
-                                <b>Citation</b>
-                            </b-col>
-                            <b-col>
-                                <i>Hayashi, S. (2017). Brain-Life {{selfurl}}</i>
-                                
-                                <pre>
-        @Misc{ bl.app.{{app._id}},
-        author =   {Hayashi, S.},
-        title =    { {{app.name}} },
-        howpublished = {\url{http://github.com/{{app.github}} } },
-        year = {2017}
-        }
-                                </pre> 
-                            </b-col>
-                        </b-row>
-                        -->
-
-                        <!--
                         <tr>
                             <th>Test Status</th>
                             <td><el-tag>Unknown</el-tag></td>
@@ -243,41 +223,38 @@
                     </b-col>
 
                     <b-col>
-                        <b-card v-if="service_stats">
+                        <div v-if="service_stats" class="side-card">
                             <center>
                                 <p class="text-muted">Total Runs</p>
                                 <h5>{{service_stats.tasks}}</h5>
                                 <br>
 
-                                <p class="text-muted">Users Used By</p>
+                                <p class="text-muted">Users</p>
                                 <h5>{{service_stats.users}}</h5>
                                 <br>
 
                                 <p class="text-muted">Success Rate</p>
                                 <h5>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}%</h5>
                             </center>
-                        </b-card>
-                        <br>
+                        </div>
 
-                        <b-card>
+                        <div class="side-card">
                             <center>
                                 <span class="text-muted">Average User Rating</span>
                                 <br>
                                 <br>
                                 <el-rate v-model="app._rate" @change="ratechange()"></el-rate>
                             </center>
-                        </b-card>
-                        <br>
+                        </div>
 
-                        <b-card>
+                        <div class="side-card">
                             <center>
                                 <span class="text-muted">Badges</span>
                                 <br>
                                 <br>
                                 <img :src="'https://img.shields.io/badge/brainlife.io-app-green.svg'" @click="show_badge_url()"><br>
                             </center>
-                        </b-card>
-                        <br>
+                        </div>
 
                     </b-col>
                 </b-row>
@@ -506,6 +483,8 @@ background-color: white;
 margin-bottom: 30px;
 padding: 30px 0px 0px 0px;
 border-bottom: 1px solid #ccc;
+/*position: sticky; top: -190px;  //don't know the exact height of the area..*/
+z-index: 2;
 }
 .topic {
 padding: 8px; 
@@ -520,5 +499,11 @@ color: green;
 position: absolute;
 left: 0px;
 font-weight: bold;
+}
+.side-card {
+background-color: white;
+box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+padding: 15px 0px;
+margin: 15px 0px;
 }
 </style>

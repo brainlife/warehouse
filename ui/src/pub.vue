@@ -14,19 +14,21 @@
                     <projectavatar :project="pub.project"/>
                 </div>
                 <div style="margin-left: 120px;">
-                    <div style="float: right; margin-left: 20px; margin-buttom: 20px;" v-if="pub.doi">
+                    <div style="float: right; margin-left: 20px; margin-buttom: 20px; z-index: 10;" v-if="pub.doi">
                         <center>
-                            <div class='altmetric-embed' data-badge-type='donut' data-badge-details="left" :data-doi="pub.doi"></div>
-                            <b style="opacity: 0.5">Altmetric</b>
+                            <div class='altmetric-embed' data-badge-type='donut' data-badge-popover="left" data-hide-no-mentions="true" :data-doi="pub.doi"></div>
+                            <!--<b style="opacity: 0.5">Altmetric</b>-->
                         </center>
                     </div>
-                    <h4 style="color: #666; margin-bottom: 10px;">
-                        {{pub.name}} 
-                    </h4>
-                    <p style="opacity: 0.8">{{pub.desc}}</p>
-                    <p style="line-height: 180%;">
-                        <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
-                    </p>
+                    <div style="margin-right: 70px"><!--margin to not overwrap the altmetric badge-->
+                        <h4 style="color: #666; margin-bottom: 10px;">
+                            {{pub.name}} 
+                        </h4>
+                        <p style="opacity: 0.8;">{{pub.desc}}</p>
+                        <p style="line-height: 180%;">
+                            <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
+                        </p>
+                    </div>
                 </div>
                 <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
@@ -46,7 +48,7 @@
                     <div v-if="tab_index == 0">
 
                         <b-row>
-                            <b-col cols="3">
+                            <b-col cols="2">
                                 <b class="text-muted">Created on</b>
                             </b-col>
                             <b-col>
@@ -54,7 +56,7 @@
                             </b-col>
                         </b-row>                         
                         <b-row>
-                            <b-col cols="3">
+                            <b-col cols="2">
                                 <b class="text-muted">Authors</b>
                             </b-col>
                             <b-col>
@@ -66,7 +68,7 @@
                             </b-col>
                         </b-row>
                         <b-row v-if="pub.readme">
-                            <b-col cols="3">
+                            <b-col cols="2">
                                 <b class="text-muted">Detail</b>
                             </b-col>
                             <b-col>
@@ -74,7 +76,7 @@
                             </b-col>
                         </b-row>  
                         <b-row v-if="pub.contributors.length > 0">
-                            <b-col cols="3">
+                            <b-col cols="2">
                                 <b class="text-muted">Contributors</b>
                             </b-col>
                             <b-col>
@@ -86,7 +88,7 @@
                             </b-col>
                         </b-row>
                         <b-row>
-                            <b-col cols="3">
+                            <b-col cols="2">
                                 <b class="text-muted">License</b>
                             </b-col>
                             <b-col>
@@ -95,7 +97,7 @@
                             </b-col>
                         </b-row> 
                         <b-row>
-                            <b-col cols="3">
+                            <b-col cols="2">
                                 <b class="text-muted">Project</b>
                             </b-col>
                             <b-col>
@@ -114,34 +116,32 @@
                         </b-row>                      
 
                         <b-row v-if="pub.doi">
-                            <b-col cols="3">
+                            <b-col cols="2">
                                 <b class="text-muted">Citation</b>
                             </b-col>
-                            <b-col cols="9">
+                            <b-col cols="10">
                                 <p>
                                     <doibadge style="float: right;" :doi="pub.doi"/>
                                     <small class="text-muted">Citation to this dataset/app published on Brainlife</small>
                                 </p>
-                                <b-row>
-                                    <b-card no-body>
-                                        <b-tabs pills card>
-                                            <b-tab title="Text">
-                                                <p>
-                                                    <citation :doi="pub.doi"/>
-                                                </p> 
-                                                <small class="text-muted">in harvard3 format. <a href="https://citation.crosscite.org" target="_blank">Use other format</a></small>
-                                            </b-tab>
-                                            <b-tab title="bibtex">
-                                                <citation :doi="pub.doi" accept="application/x-bibtex"/>
-                                            </b-tab>
-                                        </b-tabs>
-                                    </b-card>
-                                </b-row>
+                                <b-card no-body>
+                                    <b-tabs pills card>
+                                        <b-tab title="Text">
+                                            <p>
+                                                <citation :doi="pub.doi"/>
+                                            </p> 
+                                            <small class="text-muted">in harvard3 format. <a href="https://citation.crosscite.org" target="_blank">Use other format</a></small>
+                                        </b-tab>
+                                        <b-tab title="bibtex">
+                                            <citation :doi="pub.doi" accept="application/x-bibtex"/>
+                                        </b-tab>
+                                    </b-tabs>
+                                </b-card>
                                 <br>
                             </b-col>
                         </b-row>  
                        <b-row v-if="pub.fundings.length > 0">
-                            <b-col cols="3">
+                            <b-col cols="2">
                                 <b class="text-muted">Funded by</b>
                             </b-col>
                             <b-col>
@@ -156,7 +156,7 @@
                             </b-col>
                         </b-row>
                         <b-row>
-                            <b-col cols="3">
+                            <b-col cols="2">
                                 <b class="text-muted">Comments</b>
                             </b-col>
                             <b-col>
@@ -205,7 +205,7 @@
                         <b-list-group>
                             <b-list-group-item v-for="(group, subject) in dataset_groups" :key="subject">
                                 <b-row>
-                                    <b-col cols="3">
+                                    <b-col cols="2">
                                         <b>{{subject}}</b>
                                         <small class="text-muted">
                                             <br v-if="group.count > 1">
@@ -329,6 +329,8 @@ export default {
         .then(res=>{
             this.pub = res.body.pubs[0];
 
+            if(Vue.config.debug) this.pub.doi = "10.1038/nature.2014.14583";
+
             //load all datatypes
             return this.$http.get('datatype');
         })
@@ -375,8 +377,7 @@ export default {
 
             Vue.nextTick(()=>{
                 //re-initialize altmetric badge - now that we have badge <div> placed
-                //window._altmetric.embed_init(); 
-                _altmetric_embed_init();
+                _altmetric_embed_init(this.$el);
             });
 
         }).catch(console.error);

@@ -105,6 +105,7 @@ box-shadow: none;
 background-color: inherit;
 }
 .header {
+margin-right: 10px;
 height: 90px;
 overflow: hidden;
 }
