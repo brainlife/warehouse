@@ -560,3 +560,5 @@
     margin-bottom: 12px; }
   .el-popover__reference:focus:not(.focusing), .el-popover__reference:focus:hover {
     outline-width: 0; }
+  .el-popover:focus:active, .el-popover:focus {
+    outline-width: 0; }

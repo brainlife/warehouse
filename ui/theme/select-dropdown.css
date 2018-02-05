@@ -564,12 +564,6 @@
       -moz-osx-font-smoothing: grayscale; }
   .el-select-dropdown .el-scrollbar.is-empty .el-select-dropdown__list {
     padding: 0; }
-  .el-select-dropdown .popper__arrow {
-    -webkit-transform: translateX(-400%);
-    transform: translateX(-400%); }
-  .el-select-dropdown.is-arrow-fixed .popper__arrow {
-    -webkit-transform: translateX(-200%);
-    transform: translateX(-200%); }
 
 .el-select-dropdown__empty {
   padding: 10px 0;

@@ -84,7 +84,8 @@
         </div>
 
         <div v-if="tabs[tab].id == 'process'">
-            <processes :project="selected"/> 
+            <b-alert :show="!ismember()">Only the member of this project can access processes.</b-alert>
+            <processes :project="selected" v-if="ismember()"/> 
         </div>
 
         <div v-if="tabs[tab].id == 'pipeline'">
@@ -276,7 +277,7 @@ export default {
             this.tabs = [];
             this.tabs.push({id: "detail", label: "Detail"});
             this.tabs.push({id: "dataset", label: "Datasets"});
-            if(this.ismember()) this.tabs.push({id: "process", label: "Processes"});
+            this.tabs.push({id: "process", label: "Processes"});
             this.tabs.push({id: "pipeline", label: "Pipelines"});
             this.tabs.push({id: "pub", label: "Publications"});
 

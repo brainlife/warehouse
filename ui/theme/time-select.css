@@ -1100,9 +1100,6 @@
         cursor: not-allowed; }
   .el-picker-panel__link-btn {
     vertical-align: middle; }
-  .el-picker-panel .popper__arrow {
-    -webkit-transform: translateX(-400%);
-    transform: translateX(-400%); }
 
 .el-picker-panel *[slot=sidebar],
 .el-picker-panel__sidebar {

@@ -323,14 +323,11 @@
     box-sizing: border-box; }
   .el-dialog--center {
     text-align: center; }
-    .el-dialog--center .el-dialog__header {
-      padding-top: 30px; }
     .el-dialog--center .el-dialog__body {
       text-align: initial;
-      padding: 25px 27px 30px; }
+      padding: 25px 20px 30px; }
     .el-dialog--center .el-dialog__footer {
-      text-align: inherit;
-      padding-bottom: 30px; }
+      text-align: inherit; }
 
 .dialog-fade-enter-active {
   -webkit-animation: dialog-fade-in .3s;

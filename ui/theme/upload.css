@@ -823,6 +823,7 @@
         top: 50%; }
   .el-upload-list--picture .el-upload-list__item {
     overflow: hidden;
+    z-index: 0;
     background-color: #fff;
     border: 1px solid #c0ccda;
     border-radius: 6px;

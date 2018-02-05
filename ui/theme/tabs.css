@@ -324,6 +324,10 @@
   position: relative; }
   .el-tabs__item:focus, .el-tabs__item:focus:active {
     outline: none; }
+  .el-tabs__item:focus.is-active.is-focus:not(:active) {
+    -webkit-box-shadow: 0 0 2px 2px #409eff inset;
+    box-shadow: 0 0 2px 2px #409eff inset;
+    border-radius: 3px; }
   .el-tabs__item .el-icon-close {
     border-radius: 50%;
     text-align: center;

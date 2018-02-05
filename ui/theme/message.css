@@ -258,6 +258,8 @@
     -webkit-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center; }
+  .el-message.is-closable .el-message__content {
+    padding-right: 16px; }
   .el-message p {
     margin: 0; }
   .el-message--info .el-message__content {
