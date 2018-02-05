@@ -179,7 +179,7 @@ export default {
                             Vue.set(file, 'content', "");
                             function addline() {
                                 file.content += lines.shift()+"\n";
-                                if(lines.length) setTimeout(addline, 10);
+                                if(lines.length && file.content) setTimeout(addline, 10);
                             }
                             setTimeout(addline, 10);
                         });

@@ -1,7 +1,5 @@
 <template>
 <b-form @submit="submit">
-    <h3 style="opacity: 0.7">{{pub.doi||pub._id+' (no doi)'}}</h3>
-    <p style="opacity: 0.7">Only the publication metadata can be edited at this time. To update published datasets, please contact administrator.</p>
     <b-form-group label="Title *" horizontal>
         <b-form-input required v-model="pub.name" type="text" placeholder="Title of the paper"></b-form-input>
     </b-form-group>
@@ -24,15 +22,15 @@
     </b-form-group>
     -->
 
-    <b-form-group label="Description" horizontal>
-        <b-form-textarea v-model="pub.desc" :rows="5" placeholder="A short summary of the abstract"></b-form-textarea>
+    <b-form-group label="Description *" horizontal>
+        <b-form-textarea v-model="pub.desc" :rows="3" placeholder="A short summary of this dataset/app publication." required></b-form-textarea>
     </b-form-group>
     <b-form-group label="Tags" horizontal>
         <select2 :options="oldtags" v-model="pub.tags" :multiple="true" :tags="true"></select2>
     </b-form-group>
-    <b-form-group label="Abstract *" horizontal>
-        <b-form-textarea required v-model="pub.readme" :rows="10" placeholder="Content from abstract, or any other details about this publications"></b-form-textarea>
-        <small class="text-muted">in markdown</small>
+    <b-form-group label="Detail" horizontal>
+        <b-form-textarea v-model="pub.readme" :rows="10" placeholder="Any detailed description for this publications. You can enter chars / tables / katex(math equations) etc.."></b-form-textarea>
+        <small class="text-muted">in <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/" target="_blank">markdown format</a></small>
     </b-form-group>
     <b-form-group label="License *" horizontal>
         <b-form-select :options="licenses" required v-model="pub.license"/>
@@ -50,24 +48,22 @@
     <b-form-group label="Fundings" horizontal>
         <b-row v-for="(funding, idx) in pub.fundings" :key="idx" style="margin-bottom: 3px;">
             <b-col>
-                <b-input-group prepent="Funder">
+                <b-input-group prepend="Funder">
                     <b-form-select :options="['NSF', 'NIH', 'DOE', 'DOD']" required v-model="funding.funder"/>
                 </b-input-group>
             </b-col>
             <b-col>
-                <b-input-group prepent="ID">
+                <b-input-group prepend="ID">
                     <b-form-input type="text" required v-model="funding.id" placeholder=""/>
                 </b-input-group>
             </b-col>
             <b-col cols="1">
-                <b-input-group-button>
-                    <div class="button" @click="remove_funder(idx)"><icon name="trash"/></div>
-                </b-input-group-button>
+                <div class="button" @click="remove_funder(idx)"><icon name="trash"/></div>
             </b-col>
         </b-row>
         <b-button type="button" @click="pub.fundings.push({})" size="sm"><icon name="plus"/> Add Funder</b-button>
     </b-form-group>
-    <b-form-group label="Authors" horizontal>
+    <b-form-group label="Authors *" horizontal>
         <contactlist v-model="pub.authors"/>
     </b-form-group>
     <b-form-group label="Contributors" horizontal>

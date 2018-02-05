@@ -11,9 +11,19 @@
             <publisher :project="project" @close="publishing = false" @submit="publish"/>
         </div>
         <div v-else-if="pub_editing">
-            <pubform :pub="pub_editing" @submit="save_pub">
-                <button type="button" class="btn btn-secondary" @click="cancel_pub">Cancel</button>
-            </pubform>
+            <h3 style="opacity: 0.7">{{pub_editing.doi||pub_editing._id+' (no doi)'}}</h3>
+            <b-tabs class="brainlife-tab">
+                <br>
+                <b-tab title="Details">
+                    <pubform :pub="pub_editing" @submit="save_pub">
+                        <button type="button" class="btn btn-secondary" @click="cancel_pub">Cancel</button>
+                    </pubform>
+                </b-tab>
+                <b-tab title="Datasets">
+                    <b-alert show variant="warning">Only the publication detail can be edited at this time. To update published datasets, please contact the administrator.</b-alert>
+                     
+                </b-tab>
+            </b-tabs>
         </div>
         <div v-else>
             <!--list view-->
@@ -29,22 +39,15 @@
                         <small><tags :tags="pub.tags"/></small>
                     </p>
                 </b-col>
-                <b-col :cols="1">
+                <b-col :cols="3">
                     <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
                     <!--<doibadge :doi="pub.doi"/>-->
                     <div class="pub-action" style="display: inline-block; float: right; margin-right: 10px;" v-if="ismember()">
-                        <div class="button" @click.stop="open_pub(pub)">
+                        <div class="button" @click.stop="open_pub(pub)" title="See in published page">
                             <icon name="eye"/>
                         </div>
                     </div>
-                    <!--
-                    <div class="button" style="float: right;" @click.stop="edit_pub(pub)">
-                        <icon name="pencil"/>
-                    </div>
-                    -->
-                    <!--
-                    <contact :id="pub.user_id"/>     
-                    -->
+                    <div class="text-muted" style="float: right; margin: 5px;">{{pub.doi}}</div>
                 </b-col>
                 </b-row>
             </div>

@@ -10,7 +10,7 @@
         <div v-if="datatype_id">
             <div v-if="tasks.upload && !tasks.upload.resource_id">
                 <b-form-group horizontal>
-                    <p cass="text-muted">Waiting for resource where we can upload files becomes available..  <icon name="cog" spin/></p>
+                    <p cass="text-muted">Preparing for file upload...  <icon name="cog" spin/></p>
                     <pre v-if="config.debug">{{tasks.upload}}</pre>
                 </b-form-group>
             </div>

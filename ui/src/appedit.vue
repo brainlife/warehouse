@@ -5,8 +5,8 @@
     <div class="fixed-top">
         <div class="container" style="height: 50px;">
             <div style="color: white; margin: 20px 0px;">
-                <h2 v-if="$route.params.id == '_'">New App</h2>
-                <h2 v-else><icon name="pencil" scale="2" style="opacity: 0.5"/> {{app.name}}</h2>
+                <h3 v-if="$route.params.id == '_'">New App</h3>
+                <h3 v-else><icon name="pencil" scale="1.5" style="opacity: 0.5"/> {{app.name}}</h3>
             </div>
         </div>
         <!--
@@ -31,10 +31,10 @@
                 </b-form-group>
                 <b-form-group horizontal label="Admins">
                     <contactlist v-model="app.admins"></contactlist>
-                    <p class="text-muted">Users who can update this application registration</p>
+                    <small class="text-muted">Users who can update this application registration</small>
                 </b-form-group>
                 <b-form-group horizontal label="Avatar">
-                    <el-input type="text" v-model="app.avatar" placeholder="URL of application avatar"/>
+                    <el-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
                 </b-form-group>
                 <b-form-group horizontal label="Projects">
                     <projectsselecter 
@@ -47,13 +47,13 @@
 
                 <b-form-group horizontal label="Source Code">
                     <b-row>
-                        <b-col>
+                        <b-col :cols="7">
                             <b-input-group prepend="Github Repository Name *">
-                                <b-form-input type="text" v-model="app.github" placeholder="brain-life/app-name" required/>
+                                <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
                             </b-input-group>
                         </b-col>
                         <b-col>
-                            <b-input-group prepend="Branch (optional)">
+                            <b-input-group prepend="Branch/Tag (optional)">
                                 <b-form-input type="text" v-model="app.github_branch" placeholder="master"/>
                             </b-input-group>
                         </b-col>
@@ -61,8 +61,8 @@
                 </b-form-group>
                 <br>
                 <b-form-group horizontal label="Max Retry">
-                    <el-input type="text" v-model="app.retry" placeholder="0"/>
-                    <p class="text-muted">If a task fails, it will rerun up to this count (0 means no retry)</p>
+                    <el-input type="text" v-model="app.retry" placeholder="(no retry)"/>
+                    <small class="text-muted">If a task fails, it will rerun up to this count</small>
                 </b-form-group>
             </div>
 
@@ -188,12 +188,13 @@
                                     <b-form-group>
                                         <div class="text-muted">Default Value <small>optional</small></div>
                                         <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default"></b-form-input><!--deprecated-->
-                                        <b-form-input v-if="config.type == 'number'" type="number" v-model.number="config.default"></b-form-input>
+                                        <b-form-input v-if="config.type == 'number'" type="number" step="0.01" v-model.number="config.default"></b-form-input>
                                         <b-form-input v-if="config.type == 'string'" type="text" v-model="config.default"></b-form-input>
                                     </b-form-group>
 
                                     <b-form-group v-if="config.default">
-                                        <b-form-checkbox v-model="config.readonly">Read Only <small class="text-muted">value will be fixed to default value and user can not change it</small></b-form-checkbox>
+                                        <b-form-checkbox v-model="config.readonly">Read Only<br>
+                                        <small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                     </b-form-group>
                                 </b-col>
                                 <b-col sm="7">
@@ -223,7 +224,8 @@
                                         <trueorfalse v-model="config.default"/>
                                     </b-form-group>
                                     <b-form-group>
-                                        <b-form-checkbox v-model="config.readonly">Read Only <small class="text-muted">value will be fixed to default value and user can not change it</small></b-form-checkbox>
+                                        <b-form-checkbox v-model="config.readonly">Read Only 
+                                        <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                     </b-form-group>
                                 </b-col>
                                 <b-col sm="7">
@@ -247,7 +249,8 @@
                                         <b-form-select :options="config.options.map(o => o.value)" v-model="config.default"></b-form-select>
                                     </b-form-group>
                                     <b-form-group v-if="config.default">
-                                        <b-form-checkbox v-model="config.readonly">Read Only <small class="text-muted">value will be fixed to default value and user can not change it</small></b-form-checkbox>
+                                        <b-form-checkbox v-model="config.readonly">Read Only 
+                                        <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                     </b-form-group>
                                 </b-col>
                                 <b-col sm="7">
@@ -261,7 +264,7 @@
                                     <icon name="trash"/>
                                 </div>
                                 <b-row>
-                                    <b-col>
+                                    <b-col cols="2">
                                         <div class="text-muted">Value</div>
                                         <b-form-input type="text" v-model="option.value"></b-form-input>
                                     </b-col>
@@ -269,7 +272,7 @@
                                         <div class="text-muted">Label</div>
                                         <b-form-input type="text" v-model="option.label"></b-form-input>
                                     </b-col>
-                                    <b-col sm="7">
+                                    <b-col>
                                         <div class="text-muted">Description</div>
                                         <b-form-input type="text" v-model="option.desc"></b-form-input>
                                     </b-col>

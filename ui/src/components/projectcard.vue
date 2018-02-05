@@ -7,7 +7,7 @@
             <el-tag v-if="project.removed" type="warning">Removed</el-tag>
             {{project.desc||'no desc..'}}
         </div>
-        <div class="devs">
+        <div class="devs" v-if="config.user">
             <contact v-for="id in project.admins" :key="id" :id="id"></contact>
         </div>
     </div>
@@ -23,6 +23,11 @@ import projectavatar from '@/components/projectavatar'
 export default {
     components: { contact, projectavatar },
     props: ['project'],
+    data() {
+        return {
+            config: Vue.config, 
+        }
+    },
 
     methods: {
         click: function() {
@@ -59,7 +64,6 @@ padding: 0px;
 padding-top: 10px;
 }
 .desc {
-height: 130px;
 font-size: 13px;
 color: #333;
 line-height: 140%;
@@ -71,9 +75,9 @@ margin: 10px;
 opacity: 0.5;
 }
 .devs {
+clear: left;
 background-color:#eee;
 padding:10px;
-height: 75px;
 overflow-y: auto;
 overflow-x: hidden;
 }

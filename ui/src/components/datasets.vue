@@ -15,6 +15,7 @@
 
             <b-row class="list-header">
                 <b-col cols="2"><h4>Subject</h4></b-col>
+                <!--everything under subject is grouped, thus a odd layout-->
                 <b-col>
                     <b-row>
                         <b-col><h4>Datatype</h4></b-col>
@@ -47,6 +48,10 @@
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
                                         <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
+                                        <span class="text-primary" v-if="dataset.publications && dataset.publications.length > 0">
+                                            <icon name="book" scale="0.8"/>
+                                            <small v-if="dataset.publications.length > 1">{{dataset.publications.length}}</small>
+                                        </span>
                                     </div>
                                     <div class="col-md-3 truncate">
                                         {{dataset.desc||'&nbsp;'}}
@@ -98,8 +103,16 @@
         </div>
 
         <div class="select-action">
-                <div class="button" @click="download" title="Organize selected datasets into BIDS data structure and download."><icon name="download"/></div>
-                <div class="button" @click="process" title="Run applications on selected datasets by creating a new process."><icon name="paper-plane"/></div>
+            <p>
+                <b-button size="sm" @click="download"><icon name="download" scale="0.8"/> Download 
+                    <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
+                </b-button>
+                <!--<div class="button" @click="download" title="Organize selected datasets into BIDS data structure and download."><icon name="download"/></div>-->
+            </p>
+            <p>
+                <b-button size="sm" @click="process"><icon name="paper-plane" scale="0.8"/> Process</b-button>
+                <!--<div class="button" @click="process" title="Run applications on selected datasets by creating a new process."><icon name="paper-plane"/></div>-->
+            </p>
         </div>
         <br clear="both">
     </div>
@@ -157,6 +170,18 @@ export default {
     computed: {
         selected_count: function() {
             return Object.keys(this.selected).length;
+        },
+        selected_size: function() {
+            var size = 0;
+            for(var did in this.selected) {
+                console.dir(this.selected[did].size);
+                if(this.selected[did].size) {
+                    size += this.selected[did].size;
+                } else {
+                    console.error("size not set for dataset", did);
+                }
+            }
+            return size;
         },
 
         selected_datatype_names: function() {
@@ -746,8 +771,9 @@ right: 250px;
     cursor: pointer;
 }
 .selected-view .select-action {
-    float: right;
-    margin-right: 10px;
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+    padding: 10px;
 }
 .select-group {
     margin-bottom: 10px;

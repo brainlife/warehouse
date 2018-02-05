@@ -1,7 +1,8 @@
 <template>
 <div class="citation">
-    <p v-if="!citation">Loading..</p>
-    {{citation}}
+    <p v-if="!citation" class="text-muted">Loading.. <icon name="cog" spin/></p>
+    <pre v-if="accept == 'application/x-bibtex'">{{citation}}</pre>
+    <i v-else>{{citation}}</i>
 </div>
 </template>
 
@@ -12,6 +13,7 @@ export default {
     components: { },
     props: {
         doi: String,
+        accept: { type: String, default: "text/x-bibliography; style=harvard3" },
     },
     data() {
         return {
@@ -19,11 +21,14 @@ export default {
         }
     },
     mounted: function() {
-        this.$http.get('pub/doi', {params: {
+        if(Vue.config.debug) {
+            console.log("running in debug mode - using test doi");
+            this.doi = "10.25663/bl.p.3"; //for test
+        }
 
+        this.$http.get('pub/doi', {params: {
             doi: this.doi,
-            //doi: "10.25663/bl.p.3", //for test
-            accept: "text/x-bibliography; style=harvard3",
+            accept: this.accept,
 
         }}).then(res=>{
             this.citation = res.body;

@@ -22,7 +22,7 @@ app.use(cors());
 app.use(compression());
 
 //parse application/json
-app.use(bodyParser.json()); 
+app.use(bodyParser.json({limit: '2mb'}));  //default is 100kb
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(expressWinston.logger(config.logger.winston));
 app.use('/', require('./controllers'));

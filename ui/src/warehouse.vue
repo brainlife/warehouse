@@ -12,6 +12,7 @@
     <datasetselecter/>
     <uploader/>
     <instanceselecter/>
+    
 </div>
 </template>
 
@@ -51,20 +52,26 @@ font-family: 'Nunito', sans-serif;
 font-family: 'Nunito Sans', sans-serif;
 */
 
+
+
 #warehouse {
 height: 100%;
 background-color: #f9f9f9;
 color: #444;
 font-size: 14px;
 }
-
 /*
-h1,h2,h3 {
-font-family: 'Cabin', sans-serif;
+@import url('//fonts.googleapis.com/css?family=Montserrat');
+h1,h2,h3,h4,h5,h6,h7 {
+font-family: 'Montserrat', sans-serif;
 }
 */
 
+
 /*adjust bootstrap font sizes*/
+.input-group-text {
+font-size: 14px;
+}
 .form-control {
 font-size: inherit;
 }

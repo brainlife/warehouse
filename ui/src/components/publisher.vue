@@ -50,7 +50,7 @@
     <transition name="slide-fade">
         <div v-if="page == 2">
             <!--<h4>Publication Details</h4>-->
-            <p class="text-muted">Please enter details for your publications (you can update this information anytime later).</p>
+            <p class="text-muted">Please enter details for your publications (you can update this information later).</p>
             <pubform :pub="pub" @submit.once="publish">
                 <button type="button" class="btn btn-secondary" @click="page--">Back</button>
             </pubform>
