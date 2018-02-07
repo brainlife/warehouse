@@ -35,8 +35,7 @@
                         placeholder="Please select input dataset" 
                         style="width: 100%;">
                         <el-option v-for="dataset in filter_datasets(input)" :key="dataset.idx"
-                                :value="dataset.idx" 
-                                :label="dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject+' > '+dataset.datatype_tags+' | '+dataset.tags">
+                                :value="dataset.idx" :label="compose_label(dataset)">
                             <span v-if="dataset.task.status != 'finished'">(Processing)</span>
                             {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
                             <b>{{dataset.meta.subject}}</b> 
@@ -378,6 +377,15 @@ export default {
             };
             this.$root.$emit("newtask.submit", task);
             this.$refs.modal.hide();
+        },
+
+        compose_label: function(dataset) {
+            var label = "";
+            if(dataset.task.status != 'finished') label += "(Processing) ";
+            label += dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject;
+            if(dataset.datatype_tags.length > 0) label += ' > '+dataset.datatype_tags;
+            //if(dataset.tags.length > 0) label +=' | '+dataset.tags; //I am not sure if we need to show tag..
+            return label;
         },
     },
 } 
