@@ -50,7 +50,7 @@
                     </div>
                 </li>
             </ul>
-            <b-button class="button-fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></b-button>
+            <!--<b-button class="button-fixed" @click="newprocess()" title="Create New Process"><icon name="plus" scale="2"/></b-button>-->
         </div>
 
         <div class="page-content" id="scrolled-area">

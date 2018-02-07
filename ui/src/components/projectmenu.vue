@@ -1,5 +1,5 @@
 <template>
-<vue-scrollbar class="projectmenu" ref="scrollbar" speed="53" v-if="projects">
+<vue-scrollbar class="projectmenu" ref="scrollbar" v-if="projects">
 <!--vue-scrollbar requires a single child <div> element to scroll-->
 <div>
     <p class="header">Projects</p>

@@ -91,17 +91,9 @@
                                 <b class="text-muted">Input</b>
                             </b-col>
                             <b-col>
-                                <!--<p class="text-muted">This app uses above input datasets</p>-->
-                                <!--
-                                <div class="item" v-for="input in app.inputs">
-                                    <datatype :id="input.id" :datatype="input.datatype" :datatype_tags="input.datatype_tags"/>
-                                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/> 
-                                </div>
-                                -->
- 
                                 <div v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'" style="margin-bottom: 5px;">
                                     <b-row>
-                                        <b-col :cols="4">
+                                        <b-col :cols="4" v-if="app.inputs">
                                             <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
                                         </b-col>
                                         <b-col :cols="3">
@@ -121,13 +113,6 @@
                                 <b class="text-muted">Output</b>
                             </b-col>
                             <b-col>
-                                <!--<p class="text-muted">This app produces above output datasets</p>-->
-                                <!--
-                                <b-row style="color: #999; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
-                                    <b-col :cols="7"> Datatype </b-col>
-                                    <b-col> Filemapping</b-col>
-                                </b-row>
-                                -->
                                 <div class="item" v-for="output in app.outputs" style="margin-bottom: 5px;">
                                     <b-row>
                                         <b-col :cols="7">
@@ -471,6 +456,7 @@ export default {
         },
 
         find_by_id: function(list, id) {
+            //console.log("looking for", id, "in", list);
             return list.find(it=>it.id == id);
         }
     },

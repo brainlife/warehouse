@@ -70,9 +70,6 @@
 <script>
 import Vue from 'vue'
 
-import statusicon from '@/components/statusicon'
-import contact from '@/components/contact'
-import process from '@/components/process'
 import pubform from '@/components/pubform'
 import publisher from '@/components/publisher'
 import tags from '@/components/tags'
@@ -85,7 +82,6 @@ var debounce = null;
 export default {
     props: [ 'project' ], 
     components: { 
-        statusicon, contact, process,
         pubform, publisher, tags,
         doibadge,
     },

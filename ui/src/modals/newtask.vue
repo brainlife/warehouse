@@ -134,8 +134,8 @@ export default {
             app: null, //selected
 
             desc: null,
-            config: {},
-            inputs: {},
+            config: null,
+            inputs: null,
 
             archive: {
                 enable: false,
@@ -145,7 +145,7 @@ export default {
 
             datasets: null,
 
-            deps: [],
+            deps: null,
 
             valid: false, //form is ready to submit or not
         }
@@ -236,7 +236,7 @@ export default {
             this.config = Object.assign({}, app.config);
 
             this.set_default(this.config);
-
+            this.inputs = {}; //reset first
             this.app.inputs.forEach(input=>{
                 var input_copy = Object.assign({dataset_idx: ''}, input);
                 Vue.set(this.inputs, input.id, input_copy);
@@ -288,9 +288,6 @@ export default {
                             var input = this.inputs[node.input_id];
                             var dataset = this.datasets[input.dataset_idx];
 
-                            //console.log("input dataset");
-                            ///console.log(dataset);
-
                             var base = "../"+dataset.task._id;
                             if(dataset.subdir) base+="/"+dataset.subdir;
                             if(!~this.deps.indexOf(dataset.task._id)) this.deps.push(dataset.task._id);
@@ -323,6 +320,7 @@ export default {
 
         submit: function() {
             //now construct the task objeect
+            this.deps = [];
             this.process_input_config(this.config);
             var meta = {};
             var _inputs = [];

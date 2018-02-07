@@ -125,7 +125,7 @@ export default {
 
         cancel: function() {
             if(this.project._id) this.$router.push('/project/'+this.project._id);
-            else this.$router.push('/projects');
+            else this.$router.push('/project');
         },
 
         submit: function(evt) {

@@ -180,21 +180,6 @@ export default {
 
     data() {
         return {
-            //things for newprocess
-            /*
-            apps: null, //application user can run with selected data
-            newtask: {
-                app: null,
-                desc: null,
-                submit: true,
-                config: {},
-                inputs: {},
-                deps: [],
-                valid: false, //form is ready to submit or not
-            },
-            */
-
-            //cache
             tasks: null,
             datatypes: {}, 
             archived: [], //archived datasets from this processj

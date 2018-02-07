@@ -89,13 +89,16 @@
         </div>
 
         <div v-if="tabs[tab].id == 'pipeline'">
-            <b-alert show><b>Coming Soon!</b> You will be able to view / register new pipeline rules.</b-alert>
+            <!-- <b-alert show><b>Coming Soon!</b> You will be able to view / register new pipeline rules.</b-alert>-->
+            <pipelines :project="selected"/>
+            <!--
             <div class="margin20">
                 <p class="text-muted" v-if="!rules || rules.length == 0">No pipline registered</p>
                 <div v-for="rule in rules" :key="rule._id">
                     <pre v-highlightjs><code class="json hljs">{{rule}}</code></pre>
                 </div>
             </div>
+            -->
         </div>
 
         <div v-if="tabs[tab].id == 'pub'">
@@ -127,6 +130,7 @@ import pubcard from '@/components/pubcard'
 import datasets from '@/components/datasets'
 import processes from '@/components/processes'
 import publications from '@/components/publications'
+import pipelines from '@/components/pipelines'
 
 import VueDisqus from 'vue-disqus/VueDisqus.vue'
 
@@ -140,7 +144,7 @@ export default {
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
         VueDisqus,
-        processes, publications,
+        processes, publications, pipelines,
 
         newtaskModal,
     },
@@ -148,9 +152,14 @@ export default {
     data () {
         return {
             selected: null, 
-            rules: null, 
 
-            tabs: [],
+            tabs: [
+                {id: "detail", label: "Detail"},
+                {id: "dataset", label: "Datasets"},
+                {id: "process", label: "Processes"},
+                {id: "pipeline", label: "Pipelines"},
+                {id: "pub", label: "Publications"},
+            ],
             tab: 0, //current tab
 
             projects: null, //all projects that user has access to
@@ -272,30 +281,6 @@ export default {
             if(this.selected == project) return; //no point of opening project if it's already opened
             this.selected = project;
             localStorage.setItem("last_projectid_used", project._id);
-
-            //populate tabs
-            this.tabs = [];
-            this.tabs.push({id: "detail", label: "Detail"});
-            this.tabs.push({id: "dataset", label: "Datasets"});
-            this.tabs.push({id: "process", label: "Processes"});
-            this.tabs.push({id: "pipeline", label: "Pipelines"});
-            this.tabs.push({id: "pub", label: "Publications"});
-
-            //TODO tab might be pointing to the tab that user doesn't have access to.. 
-            //I should either jump to detail, or maybe always display all tabs with warning sign inside if user doesn't have access?
-
-            //TODO - move this to rules component eventually..
-            return this.$http.get('rule', {params: {
-                find: JSON.stringify({
-                    project: this.selected._id, 
-                }),
-            }})
-            .then(res=>{
-                this.rules = res.body.rules; 
-                console.log("loaded project");
-            }).catch(res=>{
-                this.$notify({type: 'error', text: res.body});
-            });
         },
 
         start_publish: function() {
