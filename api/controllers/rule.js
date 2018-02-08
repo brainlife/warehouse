@@ -12,6 +12,7 @@ const db = require('../models');
 const common = require('../common');
 const mongoose = require('mongoose');
 
+    
 /**
  * @apiGroup Pipeline Rules
  * @api {get} /rule             Query pipeline rules
@@ -25,10 +26,13 @@ const mongoose = require('mongoose');
  *
  * @apiSuccess {Object}         List of rules (maybe limited / skipped) and total count
  */
-router.get('/', (req, res, next)=>{
+router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     let find = {};
 	let skip = req.query.skip || 0;
 	let limit = req.query.limit || 100;
+
+    //TODO - should I only allow querying rules for public or accessible private project?
+
     if(req.query.find) find = JSON.parse(req.query.find);
     db.Rules.find(find)
     .populate(req.query.populate || '') //all by default
@@ -39,8 +43,6 @@ router.get('/', (req, res, next)=>{
     .lean()
     .exec((err, rules)=>{
         if(err) return next(err);
-        //logger.debug("rule returned");
-        //logger.debug(rules);
         db.Datatypes.count(find).exec((err, count)=>{
             if(err) return next(err);
 
@@ -52,6 +54,37 @@ router.get('/', (req, res, next)=>{
             });
             */
             res.json({rules, count});
+        });
+    });
+});
+
+/**
+ * @apiGroup Pipeline Rules
+ * @api {delete} /rule/:id
+ *                              Set rule's removed flag to true
+ * @apiDescription              Logically remove dataset by setting "removed" to true
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ */
+router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
+    const id = req.params.id;
+    db.Rules.findById(id, function(err, rule) {
+        if(err) return next(err);
+        if(!rule) return next(new Error("can't find the rule with id:"+id));
+        
+        //check user has access to the project
+        common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+            if(err) return next(err);
+            //console.dir(rule.project);
+            let found = canwrite_project_ids.find(id=>id.equals(rule.project));
+            if(!found) return next("you are not allowed to edit this rule");
+            //rule.remove_date = new Date();
+            rule.removed = true;
+            rule.save(function(err) {
+                if(err) return next(err);
+                res.json({status: "ok"});
+            }); 
         });
     });
 });

@@ -141,6 +141,7 @@ router.get('/datasets/:pubid', (req, res, next)=>{
 
 //check if user can publish this project
 function can_publish(req, project_id, cb) {
+    //TODO - why does this exist?
     if(typeof project_id === 'string') project_id = mongoose.Types.ObjectId(project_id);
     
     //check user has access to the project

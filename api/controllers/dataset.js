@@ -795,11 +795,11 @@ router.get('/download/:id', jwt({
  *                              A valid JWT token "Bearer: xxxxx"
  */
 router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
-    var id = req.params.id;
+    const id = req.params.id;
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
-        db.Datasets.findById(req.params.id, function(err, dataset) {
+        db.Datasets.findById(id, function(err, dataset) {
             if(err) return next(err);
-            if(!dataset) return next(new Error("can't find the dataset with id:"+req.params.id));
+            if(!dataset) return next(new Error("can't find the dataset with id:"+id));
             if(canedit(req.user, dataset, canwrite_project_ids)) {
                 dataset.remove_date = new Date();
                 dataset.removed = true;
