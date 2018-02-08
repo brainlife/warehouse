@@ -21,10 +21,12 @@ export default {
         }
     },
     mounted: function() {
+        /*
         if(Vue.config.debug) {
             console.log("running in debug mode - using test doi");
             this.doi = "10.25663/bl.p.3"; //for test
         }
+        */
 
         this.$http.get('pub/doi', {params: {
             doi: this.doi,

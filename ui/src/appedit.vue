@@ -330,10 +330,6 @@
 <script>
 import Vue from 'vue'
 
-import editor from 'vue2-ace'
-import 'brace/mode/json'
-import 'brace/theme/chrome'
-
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
@@ -343,7 +339,7 @@ import tageditor from '@/components/tageditor'
 
 export default {
     components: { 
-        sidemenu, editor, contactlist, 
+        sidemenu, contactlist, 
         pageheader, projectsselecter,
         trueorfalse, tageditor,
     },

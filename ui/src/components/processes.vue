@@ -15,17 +15,6 @@
     <div class="instances" id="scrolled-area">
         <br>
         <div v-if="instances.length > 0">
-            <!--
-            <thead>
-                <tr class="table-header">
-                    <th width="20px"></th>
-                    <th>Description</th>
-                    <th width="175px">Creator</th>
-                    <th width="175px">Date</th>
-                </tr>
-            </thead>
-            -->
-
             <div v-for="instance in instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <!--instance header-->
                 <div :class="instance_class(instance)" @click="toggle_instance(instance)">
@@ -58,6 +47,7 @@
     </div><!--instances-->
     <b-button class="button-fixed" @click="newinstance" title="Create New Process"><icon name="plus" scale="2"/></b-button>
 </div>
+<p v-else class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>
 </template>
 
 <script>
@@ -85,15 +75,6 @@ export default {
             query: "",
             apps: null, //keyed by _id
             ws: null, //websocket
-            
-            /* todo..
-            process_filter_tab: 0,
-            process_filter_tabs: [ 
-                {id: "all", label: "All"},
-                {id: "running", label: "Running"},
-                {id: "finished", label: "Finished"},
-            ],
-            */
 
             config: Vue.config,
         }
@@ -296,6 +277,12 @@ export default {
 
 <style scoped>
 
+.loading {
+margin: 50px;
+opacity: 0.5;
+font-size: 170%;
+}
+
 .page-header {
 position: fixed;
 top: 100px;
@@ -333,16 +320,7 @@ z-index: 1; /*app desc/github name shows up on top without it*/
 transition: margin 0.3s, background-color 0.3s;
 }
 
-/*
-@media screen and (min-width: 1100px) {
-    .instance-header {
-        margin-right: 20%;
-    }
-}
-*/
-
 .instance-header:hover {
-/*background-color: #eee;*/
 cursor: pointer;
 }
 .instance-active {
@@ -427,16 +405,5 @@ background-color: #007bff;
 background-color: #ddd;
 */
 }
-
-/*
-.height-enter-active, .height-leave-active {
-transition: max-height .5s ease;
-max-height: 200px;
-}
-.height-enter, .height-leave-to {
-max-height: 0px;
-}
-*/
-
 </style>
 

@@ -89,18 +89,10 @@
                         </b-row>
                         <b-row>
                             <b-col cols="2">
-                                <b class="text-muted">License</b>
-                            </b-col>
-                            <b-col>
-                                <b-card><license :id="pub.license"/></b-card>
-                                <br>
-                            </b-col>
-                        </b-row> 
-                        <b-row>
-                            <b-col cols="2">
                                 <b class="text-muted">Project</b>
                             </b-col>
                             <b-col>
+                                <p><small class="text-muted">This publication was created from the following project.</small></p>
                                 <projectcard :project="pub.project"/>
                                 <!--
                                 <b-card>
@@ -138,6 +130,7 @@
                                     </b-tabs>
                                 </b-card>
                                 <br>
+
                             </b-col>
                         </b-row>  
                        <b-row v-if="pub.fundings.length > 0">
@@ -153,6 +146,53 @@
                                         {{funding.id}}
                                     </li>
                                 </ul>
+                            </b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col cols="2">
+                                <b class="text-muted">License</b>
+                            </b-col>
+                            <b-col>
+                                <b-card><license :id="pub.license"/></b-card>
+                                <br>
+                            </b-col>
+                        </b-row> 
+                        <b-row>
+                            <b-col cols="2">
+                                <b class="text-muted">Social</b>
+                            </b-col>
+                            <b-col>
+                                <p><small class="text-muted">You can share this publication via ..</small></p>
+                                <social-sharing :url="social_url" :title="pub.name" :description="pub.desc"
+                                      hashtags="brainlife,reproducibility,openscience,opendata"
+                                      twitter-user="brainlifeio" inline-template>
+                                    <b-row class="social-buttons">
+                                        <b-col> 
+                                            <network network="email"> <icon name="envelope"/> Email </network> <br>
+                                            <network network="twitter"> <icon name="twitter"/> Twitter </network><br>
+                                            <network network="facebook"> <icon name="facebook"/> Facebook </network><br>
+                                            <network network="googleplus"> <icon name="google-plus"/> Google + </network> <br>
+                                        </b-col>
+                                        <b-col> 
+                                            <network network="linkedin"> <icon name="linkedin"/> LinkedIn </network><br>
+                                            <network network="pinterest"> <icon name="pinterest"/> Pinterest </network><br>
+                                            <network network="sms"> <icon name="commenting-o"/> SMS </network><br>
+                                            <network network="line"> <icon name="line"/> Line </network> <br>
+                                        </b-col>
+                                        <b-col>
+                                            <network network="reddit"> <icon name="reddit"/> Reddit </network><br>
+                                            <network network="skype"> <icon name="skype"/> Skype </network><br>
+                                            <network network="whatsapp"> <icon name="whatsapp"/> Whatsapp </network><br>
+                                            <network network="telegram"> <icon name="telegram"/> Telegram </network><br>
+                                        </b-col>
+                                        <b-col>
+                                            <network network="vk"> <icon name="vk"/> VKontakte </network><br>
+                                            <network network="odnoklassniki"> <icon name="odnoklassniki"/> Odnoklassniki </network><br>
+                                            <network network="weibo"> <icon name="weibo"/> Weibo </network> <br>
+                                        </b-col>
+                                    </b-row>
+                                </social-sharing>
+                                <br>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -290,7 +330,7 @@ export default {
         contact, VueMarkdown, license, 
         projectcard, datatypetag, tags, 
         app, VueDisqus, citation,
-        doibadge,
+        doibadge, 
     },
 
     data () {
@@ -308,6 +348,11 @@ export default {
     },
 
     computed: {
+        social_url: function() {
+            if(this.pub.doi) return "http://doi.org/"+this.pub.doi;
+            return document.location;
+        },
+
         ds: function() {
             let stats = {subjects: 0, count: 0, size: 0};
             for(var subject in this.dataset_groups) {
@@ -486,3 +531,31 @@ max-height: 0px;
 </style>
 
 
+<style>
+.social-buttons span[data-link] {
+background-color: white;
+border-radius: 10px;
+padding: 10px;
+margin: 5px;
+display: inline-block;
+width: 140px;
+transition: 0.5s background-color, 0.5s color;
+}
+.social-buttons span[data-link]:hover {
+background-color: #007bff;
+color: white;
+cursor: pointer;
+}
+.social-buttons svg {
+position: relative;
+top: 2px;
+height: 15px;
+width: 15px;
+margin: 0 5px;
+color: #999;
+transition: 0.5s color;
+}
+.social-buttons span[data-link]:hover svg {
+color: white;
+}
+</style>
