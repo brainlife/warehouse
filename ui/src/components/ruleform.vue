@@ -15,6 +15,16 @@
         </v-select>
     </b-form-group>
     <div v-if="rule.app">
+        <b-form-group label="Configuration" horizontal>
+            <!--
+            <b-form-textarea id="needed" v-model="config" :rows="3" placeholder="Application configuration"></b-form-textarea>
+            <small class="text-muted">Configuration to use to submit this application (in json)</small>
+            -->
+            <!--<p class="text-muted">Configuration used to submit the app</p>-->
+            <b-card>
+                <configform :spec="rule.app.config" v-model="rule.config"/>
+            </b-card>
+        </b-form-group>
         <b-form-group label="Inputs" horizontal>
             <p class="text-muted">Look for subjects that has the following input datasets.</p>
             <b-card v-for="input in rule.app.inputs" :key="input._id" class="card">
@@ -59,10 +69,6 @@
         <b-form-input v-model="rule.subject_match" type="text" placeholder="regex to match subject name"></b-form-input>
         <small class="text-muted">For example, "^100" will make this rule to only process subjects that starts with 100.</small>
     </b-form-group>
-    <b-form-group label="Configuration" horizontal>
-        <b-form-textarea id="needed" v-model="config" :rows="3" placeholder="Application configuration"></b-form-textarea>
-        <small class="text-muted">Configuration to use to submit this application (in json)</small>
-    </b-form-group>
 
     <hr>
     <div style="float: right">
@@ -84,6 +90,7 @@ import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 import tageditor from '@/components/tageditor'
 import projectselecter from '@/components/projectselecter'
+import configform from '@/components/configform'
 
 export default {
     props: {
@@ -92,7 +99,7 @@ export default {
 
     components: { 
         projectselecter, vSelect, datatypetag,
-        app, tageditor, 
+        app, tageditor, configform,
     },
 
     watch: {
@@ -107,7 +114,6 @@ export default {
 
     data() {
         return {
-            config: null,
             rule: {},
 
             apps: [],
@@ -130,7 +136,6 @@ export default {
                 input_project_override: {},
             }, this.value);
             this.ensure_ids_exists();
-            this.config = JSON.stringify(this.rule.config, null, 4);
         },
 
         ensure_ids_exists: function() {
@@ -152,13 +157,6 @@ export default {
 
         submit: function(evt) {
             evt.preventDefault();
-
-            try {
-                this.rule.config = JSON.parse(this.config);
-            } catch(err) {
-                this.$notify({type: "error", text: "Failed to parse configuration: "+err.toString()});
-                return;
-            }
 
             //clean up _tags, and input_project_override that shouldn't exist
             var input_ids = this.rule.app.inputs.map(it=>it.id);

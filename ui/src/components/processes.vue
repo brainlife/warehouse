@@ -1,13 +1,6 @@
 <template>
 <div v-if="instances">
     <div class="page-header">
-        <!--TODO.. show this in dropdown menu
-        <div>
-            <b-tabs class="brainlife-tab-dark" v-model="process_filter_tab">
-                <b-tab v-for="tabinfo in process_filter_tabs" :key="tabinfo.id" :title="tabinfo.label"/>
-            </b-tabs>
-        </div>
-        -->
         <div style="margin-top: 2px; margin-left: 10px;">
             <b>{{instances.length}}</b> Processes
         </div>
@@ -16,7 +9,6 @@
         <br>
         <div v-if="instances.length > 0">
             <div v-for="instance in instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
-                <!--instance header-->
                 <div :class="instance_class(instance)" @click="toggle_instance(instance)">
                     <div style="float: left;" class="instance-status" :class="'instance-status-'+instance.status">
                         <statusicon :status="instance.status"/>
@@ -44,7 +36,7 @@
             </div>
         </div>
         <br>
-    </div><!--instances-->
+    </div>
     <b-button class="button-fixed" @click="newinstance" title="Create New Process"><icon name="plus" scale="2"/></b-button>
 </div>
 <p v-else class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>

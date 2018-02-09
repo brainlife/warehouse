@@ -1,8 +1,18 @@
 <template>
-<b-modal title="Submit New Task" ref="modal" id="newtaskModal" size="lg" @ok="submit">
+<transition name="fade">
+<div v-if="open" class="brainlife-modal-overlay">
+<b-container class="brainlife-modal">
+    <div class="brainlife-modal-header">
+        <div style="float: right;">
+            <div class="button" @click="open = false" style="margin-left: 20px; opacity: 0.8;">
+                <icon name="close" scale="1.5"/>
+            </div>
+        </div>
+        <h4 style="margin-top: 8px;">Submit New Task</h4>
+    </div><!--header-->
+
     <!--app selection page--> 
-    <transition name="fade">
-    <div v-if="!app">
+    <div v-if="!app" class="app-selecter">
         <div v-if="apps && apps.length == 0" style="margin: 20px;">
             <p class="text-muted">You have no application that you can submit with currently staged datasets.<br><br>Please try staging more datasets.</p>
         </div>
@@ -15,20 +25,18 @@
         </div>
         <br clear="both">
     </div>
-    </transition>
 
     <!--app configuration page--> 
-    <transition name="fade">
-    <div v-if="app">
+    <b-form v-if="app" class="submit-form" @submit="submit">
         <app :app="app" :compact="false"/>
         <br>
 
         <!--input-->
         <b-row v-for="(input, input_id) in inputs" :key="input_id" style="margin-bottom: 5px;">
-            <b-col cols="4">
+            <b-col>
                 <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
             </b-col>
-            <b-col>
+            <b-col cols="8">
                 <b-form-group>
                     <el-select @change="validate()" v-model="input.dataset_idx" 
                         no-data-text="No dataset available for this datatype / tags"
@@ -47,12 +55,12 @@
             </b-col>
         </b-row>
 
-        <!--config-->
+        <configform :spec="app.config" v-model="config"/>
+        <!--
         <b-row v-for="(v,k) in app.config" :key="k" v-if="v.type && v.type != 'input'">
             <b-col cols="4">{{k}}</b-col>
             <b-col>
                 <b-form-group>
-                    <!--integer is deprecated-->
                     <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" :readonly="v.readonly" v-model.number="config[k]" :placeholder="v.placeholder"/>
                     <b-form-input type="text" v-if="v.type == 'string'" :readonly="v.readonly" v-model="config[k]" :placeholder="v.placeholder"/>
                     <div v-if="v.type == 'boolean'">
@@ -68,7 +76,7 @@
                 </b-form-group>
             </b-col>
         </b-row>
-
+        -->
 
         <!-- people don't really use this to set meaningful description..
         <hr>
@@ -85,13 +93,13 @@
             <b-col cols="4"><!--archive--></b-col>
             <b-col>
                 <div v-if="!archive.enable">
-                    <el-checkbox v-model="archive.enable"></el-checkbox> Archive all output datasets when finished
+                    <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
                 </div>
                 <b-card v-if="archive.enable">
-                    <el-checkbox v-model="archive.enable"></el-checkbox> Archive all output datasets when finished
+                    <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
                     <p>
                         <b>Dataset Description</b>
-                        <el-input type="textarea" placeholder="Optional" v-model="archive.desc" :autosize="{minRows: 2, maxRows: 5}"></el-input>
+                        <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="3"/>
                     </p>
                     <!--
                     <p>
@@ -102,16 +110,22 @@
                 </b-card>
             </b-col>
         </b-row>
-    </div><!--v-if="app"-->
-    </transition>
-    <br>
 
-    <div slot="modal-footer">
-        <b-button variant="primary" v-if="valid" @click="submit">Submit</b-button>
-        <b-button @click="cancel" v-if="!app">Cancel</b-button>
-        <b-button @click="back" v-if="app">Back</b-button>
-    </div>
-</b-modal>
+        <hr>
+        <b-row>
+            <b-col cols="4"></b-col>
+            <b-col>
+                <div style="float: right">
+                    <b-button variant="primary" v-if="valid" type="submit">Submit</b-button>
+                    <b-button @click="back">Back</b-button>
+                </div>
+            </b-col>
+        </b-row>
+
+    </b-form>
+</b-container>
+</div>
+</transition>
 </template>
 
 <script>
@@ -119,16 +133,19 @@ import Vue from 'vue'
 
 import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
+import configform from '@/components/configform'
 
 const lib = require('../lib');
 
 export default {
     components: { 
-        app, datatypetag, 
+        app, datatypetag, configform,
     },
 
     data() {
         return {
+            open: false,
+
             apps: null, //applications user can run with selected data
             app: null, //selected
 
@@ -150,19 +167,13 @@ export default {
         }
     },
 
-    destroyed() {
-        this.$root.$off("newtask.open");
-    },
-
-    mounted() {
-        console.log("listening to newtask.open");
+    created() {
         this.$root.$on("newtask.open", info=>{
             //receive info from client
             this.datasets = info.datasets;
 
             console.log("requested to open newtask modal");
-            if(!this.$refs.modal) alert('modal not set');
-            this.$refs.modal.show()
+            this.open = true;
 
             this.app = null;
             this.valid = false;
@@ -210,14 +221,16 @@ export default {
             });
         });
 
-        /*
         //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
         document.addEventListener("keydown", e => {
             if (e.keyCode == 27) {
-                this.close();
+                this.open = false;
             }
         });
-        */
+    },
+
+    destroyed() {
+        this.$root.$off("newtask.open");
     },
 
     methods: {
@@ -244,12 +257,9 @@ export default {
             this.validate(); //for preselect
         },
 
-        cancel: function() {
-            this.$refs.modal.hide();
-        },
         back: function() {
             this.app = null;
-            this.validate();
+            //this.validate();
         },
 
         preselect_single_items: function(input) {
@@ -317,7 +327,9 @@ export default {
             return lib.filter_datasets(this.datasets, input);
         },
 
-        submit: function() {
+        submit: function(evt) {
+            evt.preventDefault();
+
             //now construct the task objeect
             this.deps = [];
             this.process_input_config(this.config);
@@ -376,7 +388,7 @@ export default {
                 retry: this.app.retry,
             };
             this.$root.$emit("newtask.submit", task);
-            this.$refs.modal.hide();
+            this.open = false;
         },
 
         compose_label: function(dataset) {
@@ -390,5 +402,16 @@ export default {
     },
 } 
 </script>
+
 <style scoped>
+.app-selecter,
+.submit-form {
+position: absolute;
+left: 0px;
+right: 0px;
+top: 60px;
+padding: 20px;
+bottom: 0px;
+overflow: auto;
+}
 </style>

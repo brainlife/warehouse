@@ -8,8 +8,8 @@
 export default {
     props: {
         app: { type: Object },
-        width: { type: Number, default: 80 },
-        height: { type: Number, default: 80 },
+        width: { type: Number, default: 120 },
+        height: { type: Number, default: 120 },
     }
 }
 </script>

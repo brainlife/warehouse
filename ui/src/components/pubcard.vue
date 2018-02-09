@@ -2,17 +2,22 @@
 <b-card no-body class="pubcard clickable" :class="{'pub-removed': pub.removed}">
     <div @click="click()">
         <div style="float: left; margin-right: 15px;">
-            <projectavatar :project="pub.project"/>
+            <projectavatar :project="pub.project" width="80" height="80"/>
         </div>
         <div style="margin: 0px 10px 5px 100px;">
-            <doibadge :doi="pub.doi" style="float: right; margin-top: 10px;"/>
-            <h5 class="name"><small>{{pub.project.name}} <icon name="arrow-right"/></small> {{pub.name}}</h5>
-            <p style="opacity: 0.8;">{{pub.desc}}</p>
-            <div style="line-height: 200%;">
-                <b-badge v-for="tag in pub.tags" :key="tag" class="topic">{{tag}}</b-badge>
+            <div v-if="pub.doi" style="float: right; margin: 10px;">
+                <div class='altmetric-embed' data-badge-type='donut' data-badge-popover="left" data-hide-no-mentions="true" :data-doi="pub.doi"></div>
+            </div>
+            <!--<doibadge :doi="pub.doi" style="float: right; margin-top: 10px;"/>-->
+            <div style="margin-right: 110px;">
+                <h5 class="name"><small>{{pub.project.name}} <icon name="arrow-right"/></small> {{pub.name}}</h5>
+                <p style="opacity: 0.8;">{{pub.desc}}</p>
+                <div style="line-height: 220%;">
+                    <b-badge v-for="tag in pub.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                </div>
             </div>
         </div>
-        <div v-if="!compact">
+        <div v-if="!compact" style="clear: both;">
             <hr>
             <div style="margin: 0px 10px 5px 100px;">
                 <p>
@@ -42,6 +47,10 @@ export default {
             document.location = '/pub/'+this.pub._id;
         },
     },
+
+    mounted: function() {
+        _altmetric_embed_init(this.$el);
+    },
 }
 </script>
 
@@ -58,8 +67,7 @@ background-color: white;
 }
 .pubcard.clickable:hover {
 cursor: pointer;
-box-shadow: 2px 2px 4px #999;
-background-color: #f3f3f3;
+box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 .name {
 color: #666;

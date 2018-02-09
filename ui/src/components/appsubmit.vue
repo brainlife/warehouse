@@ -1,19 +1,17 @@
 <template>
-<div v-if="app && projects">
+<b-form v-if="app && projects" @submit="submit">
     <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available.</b-alert>
 
 
     <!--<h4>Input Datasets</h4>-->
-    
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
-        <b-col>
+        <b-col cols="4">
             <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
         </b-col>
         <b-col cols="4">
-            <projectselecter 
-                v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
+            <projectselecter v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
         </b-col>
-        <b-col cols="5">
+        <b-col cols="4">
             <select2 style="width: 100%; max-width: 100%;" 
                 v-model="form.inputs[input.id]" 
                 :dataAdapter="debounce_grab_items(input)" 
@@ -24,31 +22,11 @@
         </b-col>
     </b-row>
     
-    <!--<h4>Configuration</h4>-->
-    <b-row v-for="(v,k) in app.config" :key="k" v-if="v.type && v.type != 'input'">
-        <b-col>{{k}}</b-col>
-        <b-col cols="9">
-            <b-form-group>
-                <!--integer is deprecated-->
-                <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" :readonly="v.readonly"  v-model.number="form.config[k]" :placeholder="v.placeholder"/>
-                <b-form-input type="text" v-if="v.type == 'string'" :readonly="v.readonly" v-model="form.config[k]" :placeholder="v.placeholder"></b-form-input>
-                <div v-if="v.type == 'boolean'">
-                    <b-form-checkbox :disabled="v.readonly" v-if="v.type == 'boolean'" v-model="form.config[k]">{{v.desc}}</b-form-checkbox>
-                </div>
-                <b-form-select v-if="v.type == 'enum'" v-model="form.config[k]" :placeholder="v.placeholder" :disabled="v.readonly">
-                    <option v-for="(option, idx) in v.options" :key="idx" :value="option.value">
-                        {{option.label}} <small>({{option.value}})</small>
-                        <span v-if="option.desc"> - {{option.desc}}</span>
-                    </option>
-                </b-form-select>
-                <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
-            </b-form-group>
-        </b-col>
-    </b-row>
+    <configform :spec="app.config" v-model="form.config"/>
 
     <b-row>
         <b-col>Project *</b-col>
-        <b-col cols="9">
+        <b-col cols="8">
             <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in"/> 
             <small class="text-muted">Project where you want to stage and execute this application.</small>
         </b-col>
@@ -57,7 +35,7 @@
 
     <b-row>
         <b-col>Description</b-col>
-        <b-col cols="9">
+        <b-col cols="8">
             <b-form-textarea v-model="form.desc"
                  placeholder="Optional description for this processing"
                  :rows="3"
@@ -69,11 +47,11 @@
     <br>
     <b-row>
         <b-col></b-col>
-        <b-col cols="9">
-            <b-button variant="primary" @click="submit()">Submit</b-button>
+        <b-col cols="8">
+            <b-button variant="primary" type="submit">Submit</b-button>
         </b-col>
     </b-row>
-</div>
+</b-form>
 </template>
 
 <script>
@@ -90,6 +68,7 @@ import select2 from '@/components/select2'
 import projectselecter from '@/components/projectselecter'
 import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
+import configform from '@/components/configform'
 
 const lib = require('../lib');
 
@@ -98,7 +77,7 @@ export default {
         sidemenu, contact, project, 
         tags, metadata, pageheader, 
         appavatar, select2, projectselecter, 
-        app, datatypetag, 
+        app, datatypetag, configform,
     },
 
     props: [ "id" ], //appid
@@ -314,7 +293,9 @@ export default {
             return config;
         },
 
-        submit: function() {
+        submit: function(evt) {
+            evt.preventDefault();
+
             //make sure all inputs are selected
             var validated = true;
             for(var k in this.form.inputs) {

@@ -2,7 +2,7 @@
 <div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click">
         <div v-if="compact">
-            <appavatar :app="app_" style="float: left;margin-right: 15px;"/>
+            <appavatar :app="app_" style="float: left;margin-right: 15px;" :width="80" :height="80"/>
             <div style="max-height: 73px; overflow: hidden;">
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
@@ -12,7 +12,7 @@
             <slot/>
         </div>
         <div v-else>
-            <appavatar :app="app_" style="float: left;margin-right: 15px;"></appavatar>
+            <appavatar :app="app_" style="float: left;margin-right: 15px;" :width="80" :height="80"/>
             <div class="header">
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
