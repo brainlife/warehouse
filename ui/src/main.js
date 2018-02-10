@@ -33,6 +33,8 @@ import router from './router.js'
 import warehouse from './warehouse'
 import VueTimeago from 'vue-timeago'
 
+import SocialSharing from 'vue-social-sharing';
+
 Vue.config.productionTip = false
 
 Vue.component('icon', Icon)
@@ -44,6 +46,7 @@ Vue.use(Notifications);
 Vue.use(VueLazyload)
 Vue.use(BootstrapVue);
 Vue.use(Vue2Filters)
+Vue.use(SocialSharing);
 
 Vue.use(VueTimeago, {
     name: 'timeago',

@@ -10,26 +10,22 @@
                         https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24301
                         https://searchworks.stanford.edu/view/rt034xr8593
                 -->
-                <div style="float: left; margin-bottom: 15px; height: 100%;">
-                    <projectavatar :project="pub.project"/>
-                </div>
-                <div style="margin-left: 120px;">
-                    <div style="float: right; margin-left: 20px; margin-buttom: 20px; z-index: 10;" v-if="pub.doi">
-                        <center>
-                            <div class='altmetric-embed' data-badge-type='donut' data-badge-popover="left" data-hide-no-mentions="true" :data-doi="pub.doi"></div>
-                            <!--<b style="opacity: 0.5">Altmetric</b>-->
-                        </center>
-                    </div>
-                    <div style="margin-right: 70px"><!--margin to not overwrap the altmetric badge-->
+                <b-row>
+                    <b-col cols="2">
+                        <div style="float: left; margin-bottom: 15px; height: 100%;">
+                            <projectavatar :project="pub.project"/>
+                        </div>
+                    </b-col>
+                    <b-col>
                         <h4 style="color: #666; margin-bottom: 10px;">
                             {{pub.name}} 
                         </h4>
                         <p style="opacity: 0.8;">{{pub.desc}}</p>
-                        <p style="line-height: 180%;">
+                        <p style="line-height: 220%;">
                             <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
                         </p>
-                    </div>
-                </div>
+                    </b-col>
+                </b-row>
                 <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Details"/>
@@ -89,27 +85,15 @@
                         </b-row>
                         <b-row>
                             <b-col cols="2">
-                                <b class="text-muted">License</b>
+                                <b class="text-muted">Brainlife Project</b>
                             </b-col>
                             <b-col>
-                                <b-card><license :id="pub.license"/></b-card>
-                                <br>
-                            </b-col>
-                        </b-row> 
-                        <b-row>
-                            <b-col cols="2">
-                                <b class="text-muted">Project</b>
-                            </b-col>
-                            <b-col>
-                                <projectcard :project="pub.project"/>
+                                <p>
+                                    <a :href="'/project/'+pub.project._id">{{pub.project.name}}</a>
+                                </p>
                                 <!--
-                                <b-card>
-                                    <h6>{{pub.project.name}}</h6>
-                                    <p>
-                                        {{pub.project.desc}}
-                                        <router-link :to="'/project/'+pub.project._id">More..</router-link>
-                                    </p>
-                                </b-card>
+                                <p><small class="text-muted">This publication was created from the following project.</small></p>
+                                <projectcard :project="pub.project"/>
                                 -->
                                 <br>
                             </b-col>
@@ -138,8 +122,11 @@
                                     </b-tabs>
                                 </b-card>
                                 <br>
+
                             </b-col>
-                        </b-row>  
+                       </b-row>  
+
+
                        <b-row v-if="pub.fundings.length > 0">
                             <b-col cols="2">
                                 <b class="text-muted">Funded by</b>
@@ -153,6 +140,61 @@
                                         {{funding.id}}
                                     </li>
                                 </ul>
+                            </b-col>
+                        </b-row>
+                        <b-row>
+                            <b-col cols="2">
+                                <b class="text-muted">License</b>
+                            </b-col>
+                            <b-col>
+                                <p><small class="text-muted">Datasets are published with the following license.</small></p>
+                                <license :id="pub.license"/>
+                                <br>
+                            </b-col>
+                        </b-row> 
+                        <b-row>
+                            <b-col cols="2">
+                                <b class="text-muted">Social</b>
+                            </b-col>
+                            <b-col>
+                                <p><small class="text-muted">You can share this publication via ..</small></p>
+                                <social-sharing :url="social_url" :title="pub.name" :description="pub.desc"
+                                      hashtags="brainlife,openscience"
+                                      twitter-user="brainlifeio" inline-template>
+                                    <b-row class="social-buttons">
+                                        <b-col> 
+                                            <network network="email"> <icon name="envelope"/> Email </network> <br>
+                                            <network network="twitter"> <icon name="twitter"/> Twitter </network><br>
+                                            <network network="facebook"> <icon name="facebook"/> Facebook </network><br>
+                                        </b-col>
+                                        <b-col> 
+                                            <network network="googleplus"> <icon name="google-plus"/> Google + </network> <br>
+                                            <network network="linkedin"> <icon name="linkedin"/> LinkedIn </network><br>
+                                            <network network="pinterest"> <icon name="pinterest"/> Pinterest </network><br>
+                                            <!--<network network="sms"> <icon name="commenting-o"/> SMS </network><br>-->
+                                            <!--<network network="line"> <icon name="line"/> Line </network> <br>-->
+                                        </b-col>
+                                        <b-col>
+                                            <network network="reddit"> <icon name="reddit"/> Reddit </network><br>
+                                            <network network="skype"> <icon name="skype"/> Skype </network><br>
+                                            <network network="weibo"> <icon name="weibo"/> Weibo </network> <br>
+                                            <!-- <network network="whatsapp"> <icon name="whatsapp"/> Whatsapp </network><br>-->
+                                            <!-- <network network="telegram"> <icon name="telegram"/> Telegram </network><br>-->
+                                        </b-col>
+                                        <!--
+                                        <b-col>
+                                            <network network="vk"> <icon name="vk"/> VKontakte </network><br>
+                                            <network network="odnoklassniki"> <icon name="odnoklassniki"/> Odnoklassniki </network><br>
+                                        </b-col>
+                                        -->
+                                    </b-row>
+                                </social-sharing>
+                                <br>
+                            </b-col>
+                            <b-col cols="3">
+                                <b-card>
+                                    <div class='altmetric-embed' data-badge-type='medium-donut' data-badge-details="right" data-hide-no-mentions="false" :data-doi="pub.doi"></div>
+                                </b-card>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -290,7 +332,7 @@ export default {
         contact, VueMarkdown, license, 
         projectcard, datatypetag, tags, 
         app, VueDisqus, citation,
-        doibadge,
+        doibadge, 
     },
 
     data () {
@@ -308,6 +350,11 @@ export default {
     },
 
     computed: {
+        social_url: function() {
+            if(this.pub.doi) return "http://doi.org/"+this.pub.doi;
+            return document.location;
+        },
+
         ds: function() {
             let stats = {subjects: 0, count: 0, size: 0};
             for(var subject in this.dataset_groups) {
@@ -435,7 +482,7 @@ padding: 30px 0px 0px 0px;
 border-bottom: 1px solid #ccc;
 }
 .topic {
-padding: 6px 8px; 
+padding: 8px; 
 background-color: #eee;
 text-transform: uppercase;
 color: #999;
@@ -486,3 +533,31 @@ max-height: 0px;
 </style>
 
 
+<style>
+.social-buttons span[data-link] {
+background-color: white;
+border-radius: 10px;
+padding: 10px;
+margin: 5px;
+display: inline-block;
+width: 140px;
+transition: 0.5s background-color, 0.5s color;
+}
+.social-buttons span[data-link]:hover {
+background-color: #007bff;
+color: white;
+cursor: pointer;
+}
+.social-buttons svg {
+position: relative;
+top: 2px;
+height: 15px;
+width: 15px;
+margin: 0 5px;
+color: #999;
+transition: 0.5s color;
+}
+.social-buttons span[data-link]:hover svg {
+color: white;
+}
+</style>

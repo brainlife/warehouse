@@ -1,24 +1,35 @@
 <template>
-<span>
-    <!--task status-->
-    <icon v-if="status == 'finished'" :scale="scale" name="check"/>
-    <icon v-if="status == 'waiting'" :scale="scale" name="hourglass-start"/>
-    <icon v-if="status == 'running'" :scale="scale" name="cog" spin/>
-    <icon v-if="status == 'running_sync'" :scale="scale" name="cog" spin/>
-    <icon v-if="status == 'requested'" :scale="scale" name="hourglass-half"/>
-    <icon v-if="status == 'failed'" :scale="scale" name="exclamation-circle"/>
-    <icon v-if="status == 'removed'" :scale="scale" name="trash"/>
-    <icon v-if="status == 'stop_requested'" :scale="scale" name="hand-paper-o"/>
-    <icon v-if="status == 'stopped'" :scale="scale" name="hand-paper-o"/>
-    <icon v-if="status == null" :scale="scale" name="question"/>
-
-    <!--resource status-->
-    <icon v-if="status == 'ok'" :scale="scale" name="check"/>
-</span>
+<!--adding spin causes cpu usage to go way up https://github.com/Justineo/vue-awesome/issues/90-->
+<icon :scale="scale" :name="name" :spin="name == 'cog'"/>
 </template>
 
 <script>
 export default {
     props: [ 'status', 'scale' ],
+    computed: {
+        name: function() {
+            switch(this.status) {
+            case "ok":
+            case "finished":
+                return "check";
+            case "waiting":
+                return "hourglass-start";
+            case "running":
+            case "running_sync":
+                return "cog";
+            case "requested":
+                return "hourglass-half";
+            case "failed":
+                return "exclamation-circle";
+            case "removed":
+                return "trash";
+            case "stop_requested":
+            case "stopped":
+                return "hand-paper-o";
+            default:
+                return "question";
+            }
+        }
+    }
 }
 </script>

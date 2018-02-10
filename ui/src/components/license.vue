@@ -9,7 +9,7 @@
             <a target="license" href="//creativecommons.org/licenses/by/4.0/">More ..</a>
         </p>
     </div>
-    <div v-if="id == 'ccbysa.30'">
+    <div v-else-if="id == 'ccbysa.30'">
         <img src="//i.creativecommons.org/l/by-sa/3.0/88x31.png" style="float: right;"/>
         <h6>CC BY-SA 3.0 - Creative Commons  / Attribution-ShareAlike 3.0 Unported</h6>
         <p>

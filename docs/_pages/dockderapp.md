@@ -21,7 +21,6 @@ This documentation assumes you already have your Brainlife app hosted on Github.
 
 To run your application through a container, all Matlab scripts need to be compiled to a binary format using the [`mcc` MatLab command](https://www.mathworks.com/help/compiler/mcc.html). You can create a script that runs something like following.
 
-
 ```
 #!/bin/bash
 module load matlab/2017a
@@ -57,6 +56,8 @@ mcc -m -R -nodisplay -a /N/u/hayashis/BigRed2/git/encode/mexfiles -d compiled my
 * mcc compiled application can't run certain Matlab statements; like addpath(). You might need to create a stripped down version of the main function that does not include those statements (or wrap them inside `if not isdeployed` statement that gets executed only when you run it directly on Matlab) . 
 
 If you don't have MatLab installed on your local machine, then you can do the compliation on the machine that has Matlab installed, the build the docker container on your own machine.
+
+> NOTE. If you are loading any custom paths via startup.m, those paths may influence how your binary is compiled. At the moment, I don't know a good way to prevent it from loaded when you run build.m. The only workaround might be temporarly edit your startup.m to not include any addpath (or rename startup.m to startup.m.disabled) then run your compile script. 
 
 ## Loading an ENCODE fe structure from an mcc application
 

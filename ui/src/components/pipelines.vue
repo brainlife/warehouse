@@ -1,55 +1,30 @@
 <template>
-<div v-if="rules && datatypes && projects">
+<div v-if="ready">
     <div class="page-header">
         <div style="margin-top: 2px; margin-left: 10px;">
             <b>{{rules.length}}</b> Pipeline Rules
         </div>
     </div>
     <div class="page-content" ref="scrolled">
-        <!--
-        <div v-if="publishing">
-            <h3 style="opacity: 0.7">New Publication</h3>
-            <publisher :project="project" @close="publishing = false" @submit="publish"/>
-        </div>
-        <div v-else-if="pub_editing">
-            <h3 style="opacity: 0.7">{{pub_editing.doi||pub_editing._id+' (no doi)'}}</h3>
-            <b-tabs class="brainlife-tab">
-                <br>
-                <b-tab title="Details">
-                    <pubform :pub="pub_editing" @submit="save_pub">
-                        <button type="button" class="btn btn-secondary" @click="cancel_pub">Cancel</button>
-                    </pubform>
-                </b-tab>
-                <b-tab title="Datasets">
-                    <b-alert show variant="warning">Only the publication detail can be edited at this time. To update published datasets, please contact the administrator.</b-alert>
-                     
-                </b-tab>
-            </b-tabs>
-        </div>
-        -->
-        <ruleform :rule="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
+        <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
         <div v-else>
             <!--list view-->
+            <p class="text-muted">Pipeline rules allow you to bulk process your data and automate data processing when you upload new datasets in the future.</p>
             <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule">
 
                 <div style="padding: 10px;">
-                    <b-row>
-                        <b-col cols="6">
-                            <h5>
-                                <span style="float: right">
-                                    <b-badge variant="success" v-if="rule.active">ON</b-badge>
-                                    <b-badge variant="danger" v-else>OFF</b-badge>
-                                </span>
-                                {{rule.name}} 
-                            </h5>
-                            <b-badge v-if="rule.removed" variant="danger">Removed</b-badge>
-                        </b-col>
-                        <b-col>
-                            <time>{{rule.create_date}}</time>
-                            <div class="button" style="float: right;" @click="edit(rule)" v-if="ismember()"><icon name="pencil"/></div>
-                            <contact :id="rule.user_id"/>
-                        </b-col>
-                    </b-row>
+                    <div style="float: right">
+                        <time>{{rule.create_date}}</time>
+                        <div class="button" @click="edit(rule)" v-if="ismember()"><icon name="pencil"/></div>
+                        <div class="button" @click="remove(rule)" v-if="ismember()"><icon name="trash"/></div>
+                        <!--<contact :id="rule.user_id"/>-->
+                    </div>
+                    <h5>
+                        <b-badge v-if="rule.removed" variant="danger">Removed</b-badge>
+                        <b-badge variant="success" v-if="rule.active">ON</b-badge>
+                        <b-badge variant="danger" v-else>OFF</b-badge>
+                        {{rule.name}} 
+                    </h5>
                 </div>
 
                 <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Submit the following app and archive output datasets to this project</p>
@@ -79,10 +54,10 @@
                     </b-row>
                 </div>
 
-                <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">On subjects with the following set of archived datasets ...</p>
+                <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">On subjects with the following set of archived datasets</p>
                 <div style="padding-left: 30px;">
                     <p v-if="rule.subject_match">
-                        Only process subjects that matches regex "{{rule.subject_match}}"
+                        <span class="text-muted">Only process subjects that matches regex</span> <b>{{rule.subject_match}}</b>
                     </p>       
                     <p v-for="input in rule.app.inputs" :key="input.id">
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
@@ -95,7 +70,7 @@
                     </p>
                 </div>
 
-                <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Only if the following output datasets aren't archived for the subject yet ...</p>
+                <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Only if the following output datasets aren't archived for the subject yet</p>
                 <div style="margin-left: 30px;">
                     <p v-for="output in rule.app.outputs" :key="output.id">
                         <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
@@ -144,6 +119,8 @@ export default {
         return {
             editing: null,
 
+            ready: false,
+
             rules: null, 
             datatypes: null,
             projects: null,
@@ -157,7 +134,8 @@ export default {
 
     watch: {
         project: function() {
-            console.log("project changed.. need to reload");
+            //console.log("project changed.. need to reload");
+            this.ready = false;
             this.load();
         },
 
@@ -227,6 +205,7 @@ export default {
                 res.body.projects.forEach(project=>{
                     this.projects[project._id] = project;
                 });
+                this.ready = true;
             });
         },
 
@@ -251,11 +230,16 @@ export default {
             //set to default
             this.editing = {
                 name: "edit me",
+                config: {},
+                active: false,
+                removed: false,
             };
+            this.$refs.scrolled.scrollTop = 0;
         },
 
         edit: function(rule) {
             this.$router.push("/project/"+this.project._id+"/pipeline/"+rule._id);
+            this.$refs.scrolled.scrollTop = 0;
             this.editing = rule;
         },
 
@@ -264,38 +248,20 @@ export default {
             this.$refs.scrolled.scrollTop = 0; //TODO - should I scroll to the rule that was being edited before?
         },
 
-        submit: function() {
-            alert('todo');
+        submit: function(rule) {
+            console.dir(rule);
         },
 
-        /*
-        start_publish: function() {
-            this.publishing = true;
+        remove: function(rule) {
+            if(confirm("Do you really want to remove this rule?")) {
+                this.$http.delete('rule/'+rule._id)
+                .then(res=>{
+                    rule.removed = true;
+                    this.$notify({text: "Removed!", type: "success"});
+                });
+            }
         },
 
-        save_pub: function(pub) {
-            this.$http.put('pub/'+pub._id, pub)
-            .then(res=>{
-                this.$notify("Successfully updated!");
-                for(var k in res.body) {
-                    this.pub_editing[k] = res.body[k];
-                }
-                this.$router.push('/project/'+this.project._id+'/pub');
-            }).catch(res=>{
-                this.$notify({type: 'error', text: res.body});
-            });
-        },
-
-        open_pub: function(pub) {
-            document.location = "/pub/"+pub._id;
-        },
-
-        publish: function(pub) {
-            this.publishing = false;
-            pub.project = this.project; //pubcard needs project populated
-            this.pubs.push(pub);
-        }
-        */
     },
 }
 

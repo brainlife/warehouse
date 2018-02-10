@@ -10,8 +10,8 @@
     </div><!--header-->
     <div class="page-content">
         <!--detail-->
-        <div v-if="tabs[tab].id == 'detail'" class="margin20">
-            <b-row>
+        <div v-if="tabs[tab].id == 'detail'">
+            <b-row style="padding: 20px; background-color: #eee;">
                 <b-col cols="2">
                     <projectavatar :project="selected"/>
                 </b-col>
@@ -34,49 +34,50 @@
                 </b-col>
             </b-row>
 
-            <b-row>
-                <b-col cols="2">
-                    <b class="text-muted">Admins</b>
-                </b-col>
-                <b-col>
-                    <small class="text-muted">Users who can update name / desc / project members, and create publications.</small>
-                    <p v-for="c in selected.admins" :key="c._id">
-                        <contact :id="c"/>
-                    </p>
-                </b-col>
-            </b-row>
-            
-            <b-row>
-                <b-col cols="2"> 
-                    <b class="text-muted">Members</b>
-                </b-col>
-                <b-col>
-                    <small class="text-muted">Users who can archive and update datasets on this project, and create publications.</small>
-                    <p v-for="c in selected.members" :key="c._id">
-                        <contact :id="c"/>
-                    </p>
-                </b-col>
-            </b-row>
-            <br>
-            <b-row>
-                <b-col cols="2"> 
-                    <b class="text-muted">README</b>
-                </b-col>
-                <b-col cols="10">
-                    <p class="text-muted" v-if="!selected.readme">Please edit README content</p>
-                    <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
-                </b-col>
-            </b-row>
+            <div class="margin20">
+                <b-row>
+                    <b-col cols="2">
+                        <b class="text-muted">Admins</b>
+                    </b-col>
+                    <b-col>
+                        <small class="text-muted">Users who can update name / desc / project members, and create publications.</small>
+                        <p v-for="c in selected.admins" :key="c._id">
+                            <contact :id="c"/>
+                        </p>
+                    </b-col>
+                </b-row>
+                
+                <b-row>
+                    <b-col cols="2"> 
+                        <b class="text-muted">Members</b>
+                    </b-col>
+                    <b-col>
+                        <small class="text-muted">Users who can archive and update datasets on this project, and create publications.</small>
+                        <p v-for="c in selected.members" :key="c._id">
+                            <contact :id="c"/>
+                        </p>
+                    </b-col>
+                </b-row>
+                <br>
+                <b-row>
+                    <b-col cols="2"> 
+                        <b class="text-muted">README</b>
+                    </b-col>
+                    <b-col cols="10">
+                        <p class="text-muted" v-if="!selected.readme">Please edit README content</p>
+                        <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
+                    </b-col>
+                </b-row>
 
-            <b-row>
-                <b-col cols="2">
-                    <b class="text-muted">Comments</b>
-                </b-col>
-                <b-col>
-                    <vue-disqus shortname="brain-life" :identifier="selected._id"/>
-                </b-col>
-            </b-row>
-
+                <b-row>
+                    <b-col cols="2">
+                        <b class="text-muted">Comments</b>
+                    </b-col>
+                    <b-col>
+                        <vue-disqus shortname="brain-life" :identifier="selected._id"/>
+                    </b-col>
+                </b-row>
+            </div>
         </div>
 
         <div v-if="tabs[tab].id == 'dataset'">
@@ -85,7 +86,7 @@
 
         <div v-if="tabs[tab].id == 'process'">
             <b-alert :show="!ismember()">Only the member of this project can access processes.</b-alert>
-            <processes :project="selected" v-if="ismember()"/> 
+            <processes :project="selected" v-if="ismember()"/>
         </div>
 
         <div v-if="tabs[tab].id == 'pipeline'">
@@ -169,7 +170,7 @@ export default {
 
     watch: {
         '$route': function() {
-            console.log("route changed");
+            //console.log("route changed");
             var project_id = this.$route.params.id;
             if(project_id && this.selected && project_id != this.selected._id) {
                 this.open_project(this.projects[project_id]);
@@ -283,6 +284,7 @@ export default {
             localStorage.setItem("last_projectid_used", project._id);
         },
 
+        /*
         start_publish: function() {
             this.publishing = true;
         },
@@ -292,6 +294,7 @@ export default {
             pub.project = this.selected; //pubcard needs project populated
             this.pubs.push(pub);
         }
+        */
     },
 }
 </script>

@@ -181,21 +181,32 @@
                             <b-row>
                                 <b-col>
                                     <b-form-group>
-                                        <div class="text-muted">Key</div>
-                                        <b-form-input type="text" v-model="config._id"></b-form-input>
+                                        <b-input-group prepend="Key">
+                                            <b-form-input type="text" v-model="config._id" required placeholder="A key to use in config.json"/>
+                                        </b-input-group>
                                     </b-form-group>
 
                                     <b-form-group>
-                                        <div class="text-muted">Default Value <small>optional</small></div>
-                                        <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default"></b-form-input><!--deprecated-->
-                                        <b-form-input v-if="config.type == 'number'" type="number" step="0.01" v-model.number="config.default"></b-form-input>
-                                        <b-form-input v-if="config.type == 'string'" type="text" v-model="config.default"></b-form-input>
+                                        <b-input-group prepend="Default Value">
+                                            <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default" placeholder="(no default)"/><!--deprecated-->
+                                            <b-form-input v-if="config.type == 'number'" type="number" step="0.01" v-model.number="config.default" placeholder="(no default)"/>
+                                            <b-form-input v-if="config.type == 'string'" type="text" v-model="config.default" placeholder="(no default)"/>
+                                        </b-input-group>
                                     </b-form-group>
 
                                     <b-form-group v-if="config.default">
                                         <b-form-checkbox v-model="config.readonly">Read Only<br>
                                         <small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                     </b-form-group>
+
+                                    <div v-if="!config.readonly && (config.type == 'number' || config.type == 'integer')">
+                                        <b-input-group prepend="Min">
+                                            <b-form-input type="number" step="0.01" v-model.number="config.min" placeholder="(No min)"/>
+                                        </b-input-group>
+                                        <b-input-group prepend="Max">
+                                            <b-form-input type="number" step="0.01" v-model.number="config.max" placeholder="(No max)"/>
+                                        </b-input-group>
+                                    </div>
                                 </b-col>
                                 <b-col sm="7">
                                     <b-form-group>
@@ -330,10 +341,6 @@
 <script>
 import Vue from 'vue'
 
-import editor from 'vue2-ace'
-import 'brace/mode/json'
-import 'brace/theme/chrome'
-
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
@@ -343,7 +350,7 @@ import tageditor from '@/components/tageditor'
 
 export default {
     components: { 
-        sidemenu, editor, contactlist, 
+        sidemenu, contactlist, 
         pageheader, projectsselecter,
         trueorfalse, tageditor,
     },

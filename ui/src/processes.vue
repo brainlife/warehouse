@@ -240,7 +240,7 @@ export default {
     },
     watch: {
         '$route': function() {
-            console.log("route changed");
+            //console.log("route changed");
             var selected_id = this.$route.params.id;
             this.selected = this.instances.find(i=>i._id == selected_id);
         }

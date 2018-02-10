@@ -28,28 +28,23 @@
         <div v-else>
             <!--list view-->
             <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed}" class="pub" @click="edit(pub)">
-                <b-row>
-                <b-col>
-                    <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
-                    <h5 style="margin-top: 10px;">
-                        {{pub.name}}
-                    </h5>
-                    <p style="opacity: 0.7;">
-                        {{pub.desc}}
-                        <small><tags :tags="pub.tags"/></small>
-                    </p>
-                </b-col>
-                <b-col :cols="3">
-                    <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
-                    <!--<doibadge :doi="pub.doi"/>-->
-                    <div class="pub-action" style="display: inline-block; float: right; margin-right: 10px;" v-if="ismember()">
-                        <div class="button" @click.stop="open_pub(pub)" title="See in published page">
-                            <icon name="eye"/>
-                        </div>
+                <doibadge :doi="pub.doi" style="float: right;"/>
+                <div class="pub-action" v-if="ismember()">
+                    <div class="button" @click.stop="open_pub(pub)" title="See in published page">
+                        <icon name="eye"/>
                     </div>
-                    <div class="text-muted" style="float: right; margin: 5px;">{{pub.doi}}</div>
-                </b-col>
-                </b-row>
+                </div>
+                <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>
+                <h5 style="margin-top: 10px;">
+                    {{pub.name}}
+                </h5>
+                <p style="opacity: 0.7;">
+                    {{pub.desc}}
+                </p>
+                <p style="line-height: 180%;">
+                    <small><tags :tags="pub.tags"/></small>
+                </p>
+                <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
             </div>
             <p class="text-muted" style="margin: 20px;" v-if="!pubs || pubs.length == 0">No publication registered for this project</p>
 
@@ -226,8 +221,10 @@ box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 cursor: pointer;
 }
 .pub-action {
+margin-right: 10px;
 opacity: 0;
 transition: 0.3s opacity;
+float: right;
 }
 .pub:hover .pub-action {
 opacity: 1;

@@ -65,6 +65,10 @@ export default {
             if(!this.project) return;
             if(!this.projects) return;
             var project = this.projects[this.project];
+            if(!project) {
+                console.error("can't find", this.project, "in project list", this.projects);
+                return;
+            }
             this.$http.get(Vue.config.wf_api+'/instance', {params: {
                 find: JSON.stringify({
                     "config.brainlife": true,
