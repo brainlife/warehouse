@@ -15,6 +15,7 @@
         <p v-if="files.length == 0" class="text-muted" :style="{marginLeft: offset}">Empty Directory</p>
 
         <div v-for="file in files">
+            <!--file/dir label-->
             <div class="fileitem" @click="click(file)">
                 <span class="text-muted" :style="{marginLeft: offset}">
                     <icon name="file-o" v-if="!file.directory"></icon>
@@ -27,15 +28,23 @@
                 </span>
                 <mute style="float: right; margin-right: 20px;">{{file.attrs.size|filesize}}</mute>
             </div>
+
+            <!-- recursively show sub directory-->
             <div class="content" v-if="file.open">
                 <filebrowser :task="task" :path="subpath(file)" :depth="depth+1"></filebrowser>
             </div>
-            <div v-if="file.content" :style="{marginLeft: offset}" class="file-content">
+
+            <!-- inline file view-->
+            <div v-if="file.view" :style="{marginLeft: offset}" class="file-content">
+                <!-- controls -->
                 <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
                     <div class="button" @click="download_file(file)"><icon name="download"/></div>
                     <div class="button" @click="refresh_file(file)"><icon name="refresh"/></div>
                 </div>
-                <pre v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
+                <div v-if="file.content">
+                    <pre v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
+                </div>
+                <img style="max-width: 100%;" v-if="file.image_src" :src="file.image_src"/>
             </div>
         </div>
     </div>
@@ -80,11 +89,6 @@ export default {
     },
     
     methods: {
-        /*
-        formatTime(time) {
-            return new Date(time).toLocaleString();
-        },
-        */
         subpath: function(file) {
             let subpath = "";
             if(this.path) subpath += this.path;
@@ -121,74 +125,105 @@ export default {
                 this.files = [];
             })
         },
+
         download_file: function(file) {
             document.location = this.get_download_url(file);
         },
+
         refresh_file: function(file) {
-            file.content = "";
+            file.view = false;
             this.click(file);
         },
+
+        //subordiante of click method.. this and click methods are ugly..
+        open_text: function(res, file, type) {
+            res.text().then(c=>{
+
+                //reformat json content
+                if(type == "json") {
+                    var j = JSON.parse(c);
+                    c = JSON.stringify(j, null, 4);
+                }
+
+                if(c == "") c = "(empty)";
+                Vue.set(file, 'type', type);
+
+                //TODO - can't get slideDown to work via css.. last ditch attempt to animte height
+                var lines = c.trim().split("\n");
+                Vue.set(file, 'content', "");
+                Vue.set(file, 'view', true);
+                function addline() {
+                    file.content += lines.shift()+"\n";
+                    if(lines.length && file.content) setTimeout(addline, 10);
+                }
+                setTimeout(addline, 10);
+            });
+        },
+
         click: function(file){
             //just close file view if it's open
-            if(file.content) {
-                file.content = "";
+            if(file.view) {
+                file.view = false;
+                return;
+            }
+
+            //for directory, just open       
+            if(file.directory) {
+                Vue.set(file, 'open', !file.open); 
                 return;
             }
 
             var url = this.get_download_url(file);
 
-            if(file.directory) Vue.set(file, 'open', !file.open); //for directory, just open
-            else if(file.attrs.size > 1024*1024) document.location = url; //for large file, download
-            else {
-                //for small files, download content and display
-                this.$http.get(url).then(res=>{
-                    //set file type (TODO - can't highlight.js do this?)
-                    var mime = res.headers.get("Content-Type");
-                    if(!mime) mime = "unknown";
-                    let type = null;
-                    switch(mime) {
-                    case "application/json": type = "json"; break;
-                    case "application/x-sh": type = "bash"; break;
-                    case "text/plain": type = "text"; break;
-                    case "text/csv": type = "csv"; break;
-                    case "unknown":
-                        //for unknown content type, guess file type from extension
-                        var tokens = file.filename.split(".");
-                        var ext = tokens[tokens.length-1];
-                        switch(ext) {
-                        case "bvals": 
-                        case "bvecs": 
-                        case "err": 
-                            type = "text"; break;
-                        }
-                    }
-                    if(type) {
-                        res.text().then(c=>{
-
-                            //reformat json content
-                            if(type == "json") {
-                                var j = JSON.parse(c);
-                                c = JSON.stringify(j, null, 4);
-                            }
-
-                            if(c == "") c = "(empty)";
-                            Vue.set(file, 'type', type);
-
-                            //TODO - can't get slideDown to work via css.. last ditch attempt to animte height
-                            var lines = c.trim().split("\n");
-                            Vue.set(file, 'content', "");
-                            function addline() {
-                                file.content += lines.shift()+"\n";
-                                if(lines.length && file.content) setTimeout(addline, 10);
-                            }
-                            setTimeout(addline, 10);
-                        });
-                    } else {
-                        console.log("opening new window - unknown file type", mime);
-                        document.location = url;
-                    } 
-                });
+            //for large file, just download
+            if(file.attrs.size > 1024*1024*5) {
+                document.location = url;
+                return;
             }
+
+            //start downloading file to see what the file type is
+            this.$http.get(url).then(res=>{
+                var mime = res.headers.get("Content-Type");
+
+                switch(mime) {
+                case "application/json": 
+                        this.open_text(res, file, "json");
+                        return;
+                case "application/x-sh": 
+                        this.open_text(res, file, "bash");
+                        return;
+                case "text/plain":
+                        this.open_text(res, file, "text"); 
+                        return;
+                case "text/csv": 
+                        this.open_text(res, file, "csv");
+                        return;
+                case null:
+                    //for unknown content type, guess file type from extension
+                    var tokens = file.filename.split(".");
+                    var ext = tokens[tokens.length-1];
+                    switch(ext) {
+                    case "bvals": 
+                    case "bvecs": 
+                    case "err": 
+                    case "jobid": 
+                        this.open_text(res, file, "text");
+                        return;
+                    }
+                }
+
+                //open images inline
+                if(mime && mime.indexOf("image/") === 0) {
+                    console.log("opening as image", url);
+                    Vue.set(file, 'image_src', url);
+                    Vue.set(file, 'view', true);
+                    return;
+                }
+
+                //don't know how to open it..
+                console.log("opening new window - unknown file type", mime);
+                document.location = url;
+            });
         }
     }
 }
