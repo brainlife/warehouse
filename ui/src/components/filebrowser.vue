@@ -18,15 +18,16 @@
             <!--file/dir label-->
             <div class="fileitem" @click="click(file)">
                 <span class="text-muted" :style="{marginLeft: offset}">
-                    <icon name="file-o" v-if="!file.directory"></icon>
-                    <icon name="folder-open" v-if="file.directory && file.open" style="color: #2693ff"></icon>
-                    <icon name="folder" v-if="file.directory && !file.open" style="color: #2693ff"></icon>
+                    <icon name="link" v-if="!file.directory && file.link" class="text-warning"></icon>
+                    <icon name="file-o" v-if="!file.directory && !file.link"></icon>
+                    <icon name="folder-open" v-if="file.directory && file.open" class="text-primary"></icon>
+                    <icon name="folder" v-if="file.directory && !file.open" class="text-primary"></icon>
                 </span>
                 {{file.filename}}
                 <span style="float: right; width: 150px;">
                     <timeago :since="file.attrs.mtime*1000"/>
                 </span>
-                <mute style="float: right; margin-right: 20px;">{{file.attrs.size|filesize}}</mute>
+                <mute style="float: right; margin-right: 20px;" v-if="!file.link">{{file.attrs.size|filesize}}</mute>
             </div>
 
             <!-- recursively show sub directory-->
@@ -179,6 +180,7 @@ export default {
 
             //for large file, just download
             if(file.attrs.size > 1024*1024*5) {
+                console.log("loading file", url);
                 document.location = url;
                 return;
             }

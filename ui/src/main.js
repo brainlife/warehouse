@@ -167,6 +167,9 @@ new Vue({
             this.refresh_jwt();
         }, 1000*3600); //every 1hour?
 
+        //refresh immediately (on page reload)
+        this.refresh_jwt();
+
         this.$on("refresh_jwt", ()=>{
             this.refresh_jwt();
         });
@@ -191,6 +194,7 @@ new Vue({
                 }
             }).catch(err=>{
                 console.error(err); 
+                localStorage.removeItem("jwt");
                 document.location = "/auth#!/signin";
             });
         }
