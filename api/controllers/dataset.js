@@ -751,11 +751,6 @@ router.get('/download/:id', jwt({
                 logger.debug("obtaining download stream", dataset.storage);
                 system.download(dataset, (err, readstream, filename)=>{
                     if(err) return next(err);
-                    logger.debug("updating download_count");
-                    if(!dataset.download_count) dataset.download_count = 1;
-                    else dataset.download_count++;
-                    dataset.save();
-
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+filename);
                     if(stats) res.setHeader('Content-Length', stats.size);
@@ -765,20 +760,15 @@ router.get('/download/:id', jwt({
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);
                     });
-                    readstream.on('close', ()=>{
-                        logger.error("close event");
-                    });
-                    
-                    /* close event seems to be stream dependent.. can't rely on..
-                    readstream.on('close', err=>{
-                        //close won't fire if user cancel download mid-way
-                        logger.debug("incrementing download_count");
+
+                    //TODO - "end" seems to work on both jetstream and ssh(dcwan), but is it truely universal? 
+                    //or do we need to switch to use Promise like upload?
+                    readstream.on('end', ()=>{
+                        logger.debug("updating download_count");
                         if(!dataset.download_count) dataset.download_count = 1;
                         else dataset.download_count++;
                         dataset.save();
-                        //logger.debug("incremented download_count", dataset.download_count);
                     });
-                    */
                 });
             });
         });

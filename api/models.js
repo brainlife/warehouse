@@ -314,6 +314,7 @@ var appSchema = mongoose.Schema({
 
     create_date: { type: Date, default: Date.now },
 }, {minimize: false}); //to keep empty config{} from disappearing
+appSchema.index({'$**': 'text'}) //make all text fields searchable
 exports.Apps = mongoose.model('Apps', appSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

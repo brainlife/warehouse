@@ -12,7 +12,21 @@ const db = require('../models');
 const common = require('../common');
 const mongoose = require('mongoose');
 
+/*
+//check if user can publish this project
+function can_publish(req, project_id, cb) {
+    //TODO - why does this exist?
+    if(typeof project_id === 'string') project_id = mongoose.Types.ObjectId(project_id);
     
+    //check user has access to the project
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return cb(err);
+        let found = canwrite_project_ids.find(id=>id.equals(project_id));
+        cb(null, found);
+    });
+}
+*/
+
 /**
  * @apiGroup Pipeline Rules
  * @api {get} /rule             Query pipeline rules
@@ -45,15 +59,114 @@ router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         if(err) return next(err);
         db.Datatypes.count(find).exec((err, count)=>{
             if(err) return next(err);
-
-            //dereference user ID to name/email
-            /*
-            rules.forEach(pub=>{
-                pub.authors = pub.authors.map(common.deref_contact);
-                pub.contributors = pub.contributors.map(common.deref_contact);
-            });
-            */
             res.json({rules, count});
+        });
+    });
+});
+
+function check_access(req, rule, cb) {
+    //TODO - make sure user has access to req.body.app?
+    
+    //check user has access to the project
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return cb(err);
+        let project_id = mongoose.Types.ObjectId(rule.project);
+        let found = canwrite_project_ids.find(id=>id.equals(rule.project));
+        if(!found) return cb("can't create rule under this project");
+
+        //check to see if user has read accesses to all input_project_override 
+        if(rule.input_project_override) for(let id in rule.input_project_override) {
+            let o_project_id = mongoose.Types.ObjectId(rule.input_project_override[id]);
+            let found = canread_project_ids.find(id=>id.equals(o_project_id));
+            if(!found) return cb("can't use project selected in override:"+o_project_id);
+        }
+
+        cb(); //a-ok
+    });
+}
+
+/**
+ * @apiGroup Pipeline Rules
+ * @api {post} /rule/:pubid         Register new rule
+ *                              
+ * @apiDescription                  Register a new pipeline rule.
+ *
+ * @apiParam {String} name          Rule name
+ * @apiParam {String} desc          Rule description
+ * @apiParam {String} project       Project ID
+ * @apiParam {Object} input_tags    Input Tags
+ * @apiParam {Object} output_tags   Output Tags
+ * @apiParam {Object} input_project_override 
+ *                                  Input project override
+ * @apiParam {String} app           Application ID
+ * @apiParam {String} subject_match Subject Match
+ * @apiParam {Object} config        Application configuration
+ *
+ * @apiParam {Boolean} active       Activation flag
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ *
+ * @apiSuccess {Object}             Created rule object
+ */
+router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    if(!req.body.project) return next("project id not set");
+    if(!req.body.app) return next("app id not set");
+    check_access(req, req.body, err=>{
+        if(err) return next(err);
+        let override = {
+            user_id: req.user.sub,
+        }
+        new db.Rules(Object.assign(req.body, override)).save((err, rule)=>{
+            if(err) return next(err);
+            res.json(rule); 
+        });
+    });
+});
+
+/**
+ * @apiGroup Pipeline Rules
+ * @api {put} /rule/:pubid          Update Rule
+ *                              
+ * @apiDescription                  Update pipeline rule
+ *
+ * @apiParam {String} name          Rule name
+ * @apiParam {String} desc          Rule description
+ * @apiParam {String} project       Project ID
+ * @apiParam {Object} input_tags    Input Tags
+ * @apiParam {Object} output_tags   Output Tags
+ * @apiParam {Object} input_project_override 
+ *                                  Input project override
+ * @apiParam {String} app           Application ID
+ * @apiParam {String} subject_match Subject Match
+ * @apiParam {Object} config        Application configuration
+ *
+ * @apiParam {Boolean} removed      If this is a removed publication
+ * @apiParam {Boolean} active       Activation flag
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ *
+ * @apiSuccess {Object}             Updated Rule
+ */
+router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    var id = req.params.id;
+    db.Rules.findById(id, (err, rule)=>{
+        if(err) return next(err);
+        if(!rule) return res.status(404).end();
+        check_access(req, req.body, err=>{
+            if(err) next(err);
+            //disallow user from making changes to protected fields
+            delete req.body.user_id;
+            delete req.body.project;
+            delete req.body.create_date;
+
+            //update rule record
+            for(let k in req.body) rule[k] = req.body[k];
+            rule.save((err, _rule)=>{
+                if(err) return next(err);
+                res.json(_rule); 
+            });
         });
     });
 });
