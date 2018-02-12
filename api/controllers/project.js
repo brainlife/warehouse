@@ -70,14 +70,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         if(err) return next(err);
         db.Projects.count(find).exec((err, count)=>{
             if(err) return next(err);
-            /*
-            //adding some derivatives
-            recs.forEach(function(rec) {
-                rec._canedit = isadmin(req.user, rec);//deprecated
-                rec._isadmin = isadmin(req.user, rec);
-                rec._ismember = ismember(req.user, rec);
-            });
-            */
             res.json({projects: recs, count: count});
         });
     });
@@ -126,11 +118,6 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 		project.save(err=>{
 			if (err) return next(err); 
 			project = JSON.parse(JSON.stringify(project));
-            /*
-			project._canedit = isadmin(req.user, project); //deprecated
-			project._isadmin = isadmin(req.user, project);
-			project._ismember = ismember(req.user, project);
-            */
 			res.json(project);
 		});
 	});

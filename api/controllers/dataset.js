@@ -751,11 +751,6 @@ router.get('/download/:id', jwt({
                 logger.debug("obtaining download stream", dataset.storage);
                 system.download(dataset, (err, readstream, filename)=>{
                     if(err) return next(err);
-                    logger.debug("updating download_count");
-                    if(!dataset.download_count) dataset.download_count = 1;
-                    else dataset.download_count++;
-                    dataset.save();
-
                     //without attachment, the file will replace the current page
                     res.setHeader('Content-disposition', 'attachment; filename='+filename);
                     if(stats) res.setHeader('Content-Length', stats.size);
@@ -765,20 +760,15 @@ router.get('/download/:id', jwt({
                     readstream.on('error', err=>{
                         logger.error("failed to pipe", err);
                     });
-                    readstream.on('close', ()=>{
-                        logger.error("close event");
-                    });
-                    
-                    /* close event seems to be stream dependent.. can't rely on..
-                    readstream.on('close', err=>{
-                        //close won't fire if user cancel download mid-way
-                        logger.debug("incrementing download_count");
+
+                    //TODO - "end" seems to work on both jetstream and ssh(dcwan), but is it truely universal? 
+                    //or do we need to switch to use Promise like upload?
+                    readstream.on('end', ()=>{
+                        logger.debug("updating download_count");
                         if(!dataset.download_count) dataset.download_count = 1;
                         else dataset.download_count++;
                         dataset.save();
-                        //logger.debug("incremented download_count", dataset.download_count);
                     });
-                    */
                 });
             });
         });
@@ -795,11 +785,11 @@ router.get('/download/:id', jwt({
  *                              A valid JWT token "Bearer: xxxxx"
  */
 router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
-    var id = req.params.id;
+    const id = req.params.id;
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
-        db.Datasets.findById(req.params.id, function(err, dataset) {
+        db.Datasets.findById(id, function(err, dataset) {
             if(err) return next(err);
-            if(!dataset) return next(new Error("can't find the dataset with id:"+req.params.id));
+            if(!dataset) return next(new Error("can't find the dataset with id:"+id));
             if(canedit(req.user, dataset, canwrite_project_ids)) {
                 dataset.remove_date = new Date();
                 dataset.removed = true;
