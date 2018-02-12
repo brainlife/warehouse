@@ -21,7 +21,7 @@
                             {{pub.name}} 
                         </h4>
                         <p style="opacity: 0.8;">{{pub.desc}}</p>
-                        <p style="line-height: 220%;">
+                        <p style="line-height: 200%;">
                             <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
                         </p>
                     </b-col>
@@ -482,7 +482,7 @@ padding: 30px 0px 0px 0px;
 border-bottom: 1px solid #ccc;
 }
 .topic {
-padding: 8px; 
+padding: 6px; 
 background-color: #eee;
 text-transform: uppercase;
 color: #999;

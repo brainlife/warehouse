@@ -30,9 +30,24 @@
 <script>
 import Vue from 'vue'
 export default {
-    components: { 
-    },
     props: [ 'spec', 'value' ],
+    /*
+    watch: {
+        value: function() {
+            console.log("spec changed"); 
+        },
+    },
+    */
+    mounted: function() {
+        console.log("setting defaults");
+        for(var k in this.spec) {
+            var v = this.spec[k];
+            if(v.type && v.type != "input" && this.value[k] === undefined) {
+                console.log(k, v.default);
+                Vue.set(this.value, k, v.default);
+            }
+        }
+    },
 }
 </script>
 

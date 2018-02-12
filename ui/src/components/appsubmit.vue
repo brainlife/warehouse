@@ -138,13 +138,15 @@ export default {
         .then(res=>{
             this.app = res.body.apps[0];
 
-            //TODO - update to handle nested parameters
+            /*configform takes care of this now
+            //set to default values
             for(var k in this.app.config) {
                 var v = this.app.config[k];
                 if(v.type && v.type != "input") {
                     Vue.set(this.form.config, k, v.default);
                 }
             }
+            */
             return this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
                 service: this.app.github
             }});

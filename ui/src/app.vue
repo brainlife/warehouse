@@ -11,7 +11,7 @@
                             <b-col cols="3">
                                 <appavatar :app="app" :width="150" :height="150"/>
                             </b-col>
-                            <b-col>
+                            <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
                                 <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
                                 <h6>
                                     <a :href="'https://github.com/'+app.github"><icon name="github" scale="0.9"/> {{app.github}}</a>

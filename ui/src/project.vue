@@ -11,7 +11,8 @@
     <div class="page-content">
         <!--detail-->
         <div v-if="tabs[tab].id == 'detail'">
-            <b-row style="padding: 20px; background-color: #eee;">
+            <div style="padding: 20px; background-color: #f0f0f0;">
+            <b-row>
                 <b-col cols="2">
                     <projectavatar :project="selected"/>
                 </b-col>
@@ -33,6 +34,7 @@
                     <p style="opacity: 0.8;">{{selected.desc}}</p>
                 </b-col>
             </b-row>
+            </div>
 
             <div class="margin20">
                 <b-row>

@@ -4,11 +4,9 @@
     <b-form-group label="Name *" horizontal>
         <b-form-input required v-model="rule.name" type="text" placeholder="Title of the paper"></b-form-input>
     </b-form-group>
-    <b-form-group horizontal>
-        <b-form-checkbox v-model="rule.active">Active</b-form-checkbox>
-    </b-form-group>
     <b-form-group label="App *" horizontal>
         <v-select required v-model="rule.app" label="name" :options="apps" @search="search_app">
+            <span slot="no-options">Please enter app name / desc to search</span>
             <template slot="option" slot-scope="app">
                 <app :app="app" :compact="true" :clickable="false"/>
             </template>
@@ -69,6 +67,9 @@
         <b-form-input v-model="rule.subject_match" type="text" placeholder="regex to match subject name"></b-form-input>
         <small class="text-muted">For example, "^100" will make this rule to only process subjects that starts with 100.</small>
     </b-form-group>
+    <b-form-group horizontal>
+        <b-form-checkbox v-model="rule.active">Active</b-form-checkbox>
+    </b-form-group>
 
     <hr>
     <div style="float: right">
@@ -91,6 +92,8 @@ import app from '@/components/app'
 import tageditor from '@/components/tageditor'
 import projectselecter from '@/components/projectselecter'
 import configform from '@/components/configform'
+
+let debounce = null;
 
 export default {
     props: {
@@ -165,11 +168,15 @@ export default {
             var output_tags = {};
             var input_project_override = {};
             input_ids.forEach(id=>{
-                input_tags[id] = this.rule.input_tags[id];
+                if(this.rule.input_tags[id].length > 0) input_tags[id] = this.rule.input_tags[id];
                 input_project_override[id] = this.rule.input_project_override[id];
             });
+            //remove null values for project override
+            for(var id in input_project_override) {
+                if(!input_project_override[id]) delete input_project_override[id];
+            }
             output_ids.forEach(id=>{
-                output_tags[id] = this.rule.output_tags[id];
+                if(this.rule.output_tags[id].length > 0) output_tags[id] = this.rule.output_tags[id];
             });
             //override with cleaned up objects
             var rule = Object.assign(this.rule, {
@@ -177,6 +184,7 @@ export default {
                 output_tags,
                 input_project_override,
             });
+            console.dir(rule);
 
             this.$emit("submit", rule);
         },
@@ -184,20 +192,28 @@ export default {
 
         search_app: function(search, loading) {
             loading = true;
-            this.$http.get('app', {params: {
-                find: JSON.stringify({
-                    $or: [
-                        { name: {$regex: search, $options: 'i' }},
-                        { service: {$regex: search, $options:  'i' }},
-                    ],
-                    removed: false,
-                }),
-                populate: 'inputs.datatype outputs.datatype contributors', //to display app detail
-            }})
-            .then(res=>{
-                //organize apps into various tags
-                this.apps = res.body.apps;
-            });
+            this.apps = [];
+            clearTimeout(debounce);
+            debounce = setTimeout(()=>{
+                this.$http.get('app', {params: {
+                    find: JSON.stringify({
+                        /*
+                        $or: [
+                            { name: {'$regex': search, '$options': 'i' }},
+                            { desc: {'$regex': search, '$options': 'i' }},
+                            { service: {'$regex': search, '$options':  'i' }},
+                        ],
+                        */
+                        $text: {$search: search},
+                        removed: false,
+                    }),
+                    populate: 'inputs.datatype outputs.datatype contributors', //to display app detail
+                }})
+                .then(res=>{
+                    //organize apps into various tags
+                    this.apps = res.body.apps;
+                });
+            }, 300);
         } 
     }
 }

@@ -12,7 +12,7 @@
             <div style="margin-right: 110px;">
                 <h5 class="name"><small>{{pub.project.name}} <icon name="arrow-right"/></small> {{pub.name}}</h5>
                 <p style="opacity: 0.8;">{{pub.desc}}</p>
-                <div style="line-height: 220%;">
+                <div style="line-height: 200%;">
                     <b-badge v-for="tag in pub.tags" :key="tag" class="topic">{{tag}}</b-badge>
                 </div>
             </div>
@@ -78,7 +78,7 @@ padding-top: 10px;
 opacity: 0.5;
 }
 .topic {
-padding: 8px; 
+padding: 6px; 
 background-color: #eee;
 text-transform: uppercase;
 color: #999;

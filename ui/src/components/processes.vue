@@ -6,6 +6,7 @@
         </div>
     </div>
     <div class="instances" id="scrolled-area">
+        <p class="text-muted margin20" v-if="instances.length == 0">Process is where you submit series of apps that shared input and output datasets. Output datasets will be removed within 25 days unless you archive them by clicking on <icon name="archive"/> icon.</p>
         <br>
         <div v-if="instances.length > 0">
             <div v-for="instance in instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">

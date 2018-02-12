@@ -52,7 +52,7 @@
                         <span style="opacity: 0.5;">
                             <icon style="margin: 0 5px" name="arrow-left" scale="0.8"/> 
                             <b>t.{{findtask(input.task_id).config._tid}}</b>
-                            {{findtask(input.task_id).service}}
+                            {{findtask(input.task_id).name}}
                         </span>
                     </div>
                     <div v-else>

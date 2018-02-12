@@ -27,9 +27,9 @@
         </div>
         <div v-else>
             <!--list view-->
-            <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed}" class="pub" @click="edit(pub)">
+            <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': ismember()}" class="pub" @click="edit(pub)">
                 <doibadge :doi="pub.doi" style="float: right;"/>
-                <div class="pub-action" v-if="ismember()">
+                <div class="pub-action">
                     <div class="button" @click.stop="open_pub(pub)" title="See in published page">
                         <icon name="eye"/>
                     </div>
@@ -168,10 +168,7 @@ export default {
             if(this.ismember()) {
                 this.$router.push("/project/"+this.project._id+"/pub/"+pub._id);
                 this.pub_editing = pub;
-            } else {
-                //non member can't edit, but jump to publication page
-                this.open_pub(pub);
-            }
+            } 
         },
 
         cancel_pub: function() {
@@ -218,6 +215,8 @@ background-color: white;
 padding: 5px 15px;
 background-color: white;
 box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+.pub.pub-editable {
 cursor: pointer;
 }
 .pub-action {

@@ -71,12 +71,12 @@
 
     <div slot="modal-footer">
         <b-form-group v-if="mode == 'upload'">
-            <b-button variant="primary" @click="validate()" :disabled="!is_valid()">Next</b-button>
             <b-button @click="cancel">Cancel</b-button>
+            <b-button variant="primary" @click="validate()" :disabled="!is_valid()">Next</b-button>
         </b-form-group>
         <b-form-group v-if="mode == 'validate'">
-            <b-button variant="primary" @click="finalize()" :disabled="!(tasks.validation && tasks.validation.product && tasks.validation.product.errors.length == 0)">Archive</b-button>
             <b-button @click="mode = 'upload'">Back</b-button>
+            <b-button variant="primary" @click="finalize()" :disabled="!(tasks.validation && tasks.validation.product && tasks.validation.product.errors.length == 0)">Archive</b-button>
         </b-form-group>
     </div>
 </b-modal>

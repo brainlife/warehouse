@@ -44,7 +44,7 @@
                         style="width: 100%;">
                         <el-option v-for="dataset in filter_datasets(input)" :key="dataset.idx"
                                 :value="dataset.idx" :label="compose_label(dataset)">
-                            <span v-if="dataset.task.status != 'finished'">(Processing)</span>
+                            <span v-if="dataset.task.status != 'finished'">({{dataset.task.status}})</span>
                             {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
                             <b>{{dataset.meta.subject}}</b> 
                             <small>{{dataset.datatype_tags.toString()}}</small>
@@ -56,38 +56,6 @@
         </b-row>
 
         <configform :spec="app.config" v-model="config"/>
-        <!--
-        <b-row v-for="(v,k) in app.config" :key="k" v-if="v.type && v.type != 'input'">
-            <b-col cols="4">{{k}}</b-col>
-            <b-col>
-                <b-form-group>
-                    <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" :readonly="v.readonly" v-model.number="config[k]" :placeholder="v.placeholder"/>
-                    <b-form-input type="text" v-if="v.type == 'string'" :readonly="v.readonly" v-model="config[k]" :placeholder="v.placeholder"/>
-                    <div v-if="v.type == 'boolean'">
-                        <b-form-checkbox :disabled="v.readonly" v-model="config[k]">{{v.desc}}</b-form-checkbox>
-                    </div>
-                    <b-form-select v-if="v.type == 'enum'" v-model="config[k]" :placeholder="v.placeholder" :disabled="v.readonly">
-                        <option v-for="(option, idx) in v.options" :key="idx" :value="option.value">
-                            {{option.label}} <small>({{option.value}})</small>
-                            <span v-if="option.desc"> - {{option.desc}}</span>
-                        </option>
-                    </b-form-select>
-                    <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
-                </b-form-group>
-            </b-col>
-        </b-row>
-        -->
-
-        <!-- people don't really use this to set meaningful description..
-        <hr>
-        <b-row>
-            <b-col cols="4">Task Description</b-col>
-            <b-col>
-                <b-form-textarea placeholder="Optional description for this task submission" v-model="desc" :rows="2" :max-rows="6"></b-form-textarea>
-            </b-col>
-        </b-row>
-        <br>
-        -->
 
         <b-row>
             <b-col cols="4"><!--archive--></b-col>
@@ -116,8 +84,8 @@
             <b-col cols="4"></b-col>
             <b-col>
                 <div style="float: right">
-                    <b-button variant="primary" v-if="valid" type="submit">Submit</b-button>
                     <b-button @click="back">Back</b-button>
+                    <b-button variant="primary" v-if="valid" type="submit">Submit</b-button>
                 </div>
             </b-col>
         </b-row>
@@ -235,6 +203,7 @@ export default {
 
     methods: {
 
+        /*
         set_default: function(config) {
             for(var k in config) {
                 var v = config[k];
@@ -242,12 +211,16 @@ export default {
                 else if(v.type != "input") Vue.set(config, k, v.default);
             }
         },
+        */
         
         selectapp: function(app) {
             this.app = app;
-            this.config = Object.assign({}, app.config);
 
-            this.set_default(this.config);
+            //this.config = Object.assign({}, app.config);
+            //this.set_default(this.config);
+            console.log("resetting this.config");
+            this.config = {};
+
             this.inputs = {}; //reset first
             this.app.inputs.forEach(input=>{
                 var input_copy = Object.assign({dataset_idx: ''}, input);
@@ -284,10 +257,11 @@ export default {
             this.valid = valid;
         },
 
+        /*
         //recursively update configuration with given newtask
         process_input_config: function(config) {
-            for(var k in config) { 
-                var node = config[k];
+            for(var k in this.app.config) { 
+                var node = this.app.config[k];
                 if(node instanceof Array) {
                     console.log("todo.. array!");
                 } else if(typeof node === 'object') {
@@ -314,10 +288,37 @@ export default {
                                 config[k] = base+"/"+dataset.files[node.file_id];
                             }
                             break;
-                        default:
-                            config[k] = "unknown_template_type";
+                        //jdefault:
+                        //    config[k] = "unknown_template_type";
                         }
                     } else this.process_input_config(node); //recurse to child node
+                }
+            }
+        },
+        */
+        process_input_config: function(config) {
+            for(var k in this.app.config) { 
+                var node = this.app.config[k];
+                if(node.type && node.type == "input") {
+                    var input = this.inputs[node.input_id];
+                    var dataset = this.datasets[input.dataset_idx];
+
+                    var base = "../"+dataset.task._id;
+                    if(dataset.subdir) base+="/"+dataset.subdir;
+                    if(!~this.deps.indexOf(dataset.task._id)) this.deps.push(dataset.task._id);
+
+                    //use file path specified in datatype..
+                    var file = input.datatype.files.find(file=>file.id == node.file_id);
+                    if(!file) {
+                        console.error("failed to find file id", node.file_id);
+                        config[k] = "no such file_id:"+node.file_id;
+                        break;
+                    }
+                    config[k] = base+"/"+(file.filename||file.dirname);
+                    //but override it if filemapping from the input dataset is provided
+                    if(dataset.files && dataset.files[node.input_id]) {
+                        config[k] = base+"/"+dataset.files[node.file_id];
+                    }
                 }
             }
         },
@@ -354,13 +355,10 @@ export default {
             }
             this.config._inputs = _inputs;
             this.config._app = this.app._id;
-            //this.config._tid = this.next_tid(); //added by the client
             var _outputs = [];
-            //var did = this.next_did();
             this.app.outputs.forEach(output=>{
                 var output_req = {
                     id: output.id,
-                    //did: did++,
                     datatype: output.datatype._id,
                     datatype_tags: output.datatype_tags,
                     desc: output.id+ " from "+this.app.name,
@@ -393,7 +391,7 @@ export default {
 
         compose_label: function(dataset) {
             var label = "";
-            if(dataset.task.status != 'finished') label += "(Processing) ";
+            if(dataset.task.status != 'finished') label += "("+dataset.task.status+") ";
             label += dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject;
             if(dataset.datatype_tags.length > 0) label += ' > '+dataset.datatype_tags;
             //if(dataset.tags.length > 0) label +=' | '+dataset.tags; //I am not sure if we need to show tag..

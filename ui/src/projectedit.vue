@@ -132,14 +132,12 @@ export default {
             evt.preventDefault();
             if(this.project._id) {
                 //update
-                console.log("updating new project");
                 this.$http.put('project/'+this.project._id, this.project).then(res=>{
                     this.$root.$emit("refresh_jwt");
                     this.$router.push('/project/'+this.project._id);
                 }).catch(console.error);
             } else {
                 //create
-                console.log("creating new project");
                 this.$http.post('project', this.project).then(res=>{
                     this.$root.$emit("refresh_jwt");
                     this.$router.push('/project/'+res.body._id);

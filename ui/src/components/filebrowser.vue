@@ -37,14 +37,16 @@
             <!-- inline file view-->
             <div v-if="file.view" :style="{marginLeft: offset}" class="file-content">
                 <!-- controls -->
-                <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
-                    <div class="button" @click="download_file(file)"><icon name="download"/></div>
-                    <div class="button" @click="refresh_file(file)"><icon name="refresh"/></div>
-                </div>
-                <div v-if="file.content">
+                <div v-if="file.content" style="margin-right: 20px;"> <!--right margin to prevent scroll bar collision-->
+                    <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
+                        <div class="button" @click="download_file(file)"><icon name="download"/></div>
+                        <div class="button" @click="refresh_file(file)"><icon name="refresh"/></div>
+                    </div>
                     <pre v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
                 </div>
-                <img style="max-width: 100%;" v-if="file.image_src" :src="file.image_src"/>
+                <div v-if="file.image_src" style="margin-bottom: 20px;">
+                    <a :href="file.image_src"><img style="max-width: 100%;" :src="file.image_src"/></a>
+                </div>
             </div>
         </div>
     </div>
@@ -198,6 +200,12 @@ export default {
                 case "text/csv": 
                         this.open_text(res, file, "csv");
                         return;
+                case "image/png":
+                case "image/jpeg":
+                case "image/gif":
+                        Vue.set(file, 'image_src', url);
+                        Vue.set(file, 'view', true);
+                        return;
                 case null:
                     //for unknown content type, guess file type from extension
                     var tokens = file.filename.split(".");
@@ -210,14 +218,6 @@ export default {
                         this.open_text(res, file, "text");
                         return;
                     }
-                }
-
-                //open images inline
-                if(mime && mime.indexOf("image/") === 0) {
-                    console.log("opening as image", url);
-                    Vue.set(file, 'image_src', url);
-                    Vue.set(file, 'view', true);
-                    return;
                 }
 
                 //don't know how to open it..
@@ -257,12 +257,11 @@ background-color: #d7d7d7;
 }
 .file-content {
 position: relative;
-margin-right: 20px;
 }
 .file-content-buttons {
 position: absolute; 
 top: 5px; 
-right: 15px; 
+right: 35px; 
 opacity: 0;
 transition: opacity 0.5s;
 }

@@ -9,8 +9,8 @@
         <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
         <div v-else>
             <!--list view-->
-            <p class="text-muted">Pipeline rules allow you to bulk process your data and automate data processing when you upload new datasets in the future.</p>
-            <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule">
+            <p class="text-muted" v-if="rules.length == 0">Pipeline rule allows you to automate bulk processing of your datasets by automatically submitting processes babsed on defined criterias.</p>
+            <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule" v-if="rule.removed == false">
 
                 <div style="padding: 10px;">
                     <div style="float: right">
@@ -84,7 +84,9 @@
                 
             </div><!--rule-->
 
+            <!--
             <p class="text-muted" style="margin: 20px;" v-if="!rules || rules.length == 0">No pipeline rules registered for this project</p>
+            -->
 
             <p style="padding-top: 100px;">&nbsp;</p>
             <b-button v-if="isadmin() || ismember()" @click="newrule" class="button-fixed" title="Create new rule">
@@ -223,7 +225,8 @@ export default {
 
         notify_error: function(err) {
             console.error(err);
-            this.$notify({type: 'error', text: err.body.message});
+            console.error(err.status);
+            this.$notify({type: 'error', text: err.body.message||err.status});
         },
 
         newrule: function() {
@@ -245,11 +248,40 @@ export default {
 
         cancel_edit: function() {
             this.editing = null;
+            this.$router.push("/project/"+this.project._id+"/pipeline/");
             this.$refs.scrolled.scrollTop = 0; //TODO - should I scroll to the rule that was being edited before?
         },
 
         submit: function(rule) {
-            console.dir(rule);
+            rule.project = this.project._id;
+
+            if(rule._id) {
+                /*
+                //update
+                this.rules.forEach(r=>{
+                    if(r._id == rule._id) {
+                        for(var k in rule) {
+                            r[k] = rule[k]; 
+                        }
+                    }
+                });
+                */
+                this.$http.put('rule/'+rule._id, rule).then(res=>{
+                    this.load(); //need to reload all new datatypes, etc.. used by the updated rule
+
+                    this.$notify({text: "Successfully updated a rule", type: "success"});
+                    this.cancel_edit();
+                }).catch(this.notify_error);
+            } else {
+                //create
+                this.$http.post('rule', rule).then(res=>{
+                    //this.rules.push(res.body);
+                    this.load(); //need to reload all new datatypes, etc.. used by the new rule
+
+                    this.$notify({text: "Successfully created a new rule", type: "success"});
+                    this.cancel_edit();
+                }).catch(this.notify_error);
+            }
         },
 
         remove: function(rule) {
