@@ -3,25 +3,6 @@
     <b-form-group label="Title *" horizontal>
         <b-form-input required v-model="pub.name" type="text" placeholder="Title of the paper"></b-form-input>
     </b-form-group>
-    <!--
-    <b-form-group label="Publisher *" horizontal>
-        <b-form-input required v-model="pub.publisher" type="text" placeholder="Name of the journal to publish this paper"></b-form-input>
-        <small class="text-muted">This property will be used to formulate the citation, so consider the prominence of the role.</small>
-    </b-form-group>
-    -->
-    <!--
-    <b-form-group label="Publication Date" horizontal>
-        <b-form-input required v-model="pub._publish_date" type="date" @change="change_pubdate"></b-form-input>
-        <small class="text-muted">If not published yet, please enter an estimated publication date. You can be updated this later.</small>
-    </b-form-group>
-    -->
-    <!--
-    <b-form-group label="Publication DOI" horizontal>
-        <b-form-input required v-model="pub.paper_doi" type="text" placeholder="10.123/123"></b-form-input>
-        <small class="text-muted">DOI of the paper that references this datasets</small>
-    </b-form-group>
-    -->
-
     <b-form-group label="Description *" horizontal>
         <b-form-textarea v-model="pub.desc" :rows="3" placeholder="A short summary of this dataset/app publication." required></b-form-textarea>
     </b-form-group>
@@ -40,11 +21,6 @@
             </small>
         </div>
     </b-form-group>
-    <!--
-    <b-form-group label="DOI" horizontal>
-        <b-form-input v-model="pub.doi" type="text" placeholder="Not issued yet"></b-form-input>
-    </b-form-group>
-    -->
     <b-form-group label="Fundings" horizontal>
         <b-row v-for="(funding, idx) in pub.fundings" :key="idx" style="margin-bottom: 3px;">
             <b-col>
@@ -69,21 +45,13 @@
     <b-form-group label="Contributors" horizontal>
         <contactlist v-model="pub.contributors"></contactlist>
     </b-form-group>
-
-    <!-- we should never remove publication
-    <b-form-group label="" horizontal>
-        <b-form-checkbox v-model="pub.removed">Removed</b-form-checkbox>
-    </b-form-group>
-    -->
-
-    <hr>
-    <div style="float: right">
-        <slot/>
+    <br>
+    <br>
+    <br>
+    <div class="form-action">
+        <b-button type="button" @click="cancel">Cancel</b-button>
         <b-button type="submit" variant="primary">Submit</b-button>
     </div>
-    <br>
-    <br>
-    <br>
 </b-form>
 </template>
 
@@ -114,26 +82,18 @@ export default {
         }
     },
     
-    /*
-    watch: {
-        pub: function() {
-            
-        }
-    }
-    */
 
     mounted() {
         //select2 needs option set to show existing tags.. so we copy my own tags and use it as options.. stupid select2
         this.oldtags = Object.assign(this.pub.tags);
-
-        /*
-        if(!this.pub.publish_date) this.pub.publish_date = new Date(); //backward compatibility
-        else this.pub.publish_date = new Date(this.pub.publish_date); //convert from iso string to javascript date
-        this.pub._publish_date = this.pub.publish_date.toISOString().split("T")[0];//TODO - better way?
-        */
     },
 
+
     methods: {
+        cancel: function() {
+            console.log("cancel pubform");
+            this.$emit("cancel");
+        },
         submit: function(evt) {
             evt.preventDefault();
             //this.pub.publish_date = new Date(this.pub._publish_date);
@@ -155,3 +115,16 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.form-action {
+text-align: right; 
+position: fixed; 
+right: 0px; 
+left: 350px; 
+bottom: 0px; 
+padding: 10px 30px;
+background-color: rgba(100,100,100,0.4);
+}
+</style>
+

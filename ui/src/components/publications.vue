@@ -15,9 +15,7 @@
             <b-tabs class="brainlife-tab">
                 <br>
                 <b-tab title="Details">
-                    <pubform :pub="pub_editing" @submit="save_pub">
-                        <button type="button" class="btn btn-secondary" @click="cancel_pub">Cancel</button>
-                    </pubform>
+                    <pubform :pub="pub_editing" @submit="save_pub" @cancel="cancel_pub"/>
                 </b-tab>
                 <b-tab title="Datasets">
                     <b-alert show variant="warning">Only the publication detail can be edited at this time. To update published datasets, please contact the administrator.</b-alert>

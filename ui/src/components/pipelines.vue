@@ -11,7 +11,6 @@
             <!--list view-->
             <p class="text-muted" v-if="rules.length == 0">Pipeline rule allows you to automate bulk processing of your datasets by automatically submitting processes babsed on defined criterias.</p>
             <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule" v-if="rule.removed == false">
-
                 <div style="padding: 10px;">
                     <div style="float: right">
                         <time>{{rule.create_date}}</time>
@@ -28,31 +27,24 @@
                 </div>
 
                 <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Submit the following app and archive output datasets to this project</p>
-                <div style="margin-left: 30px; padding-bottom: 20px;">
-                    <b-row>
-                        <b-col :cols="7">
-                            <app :app="rule.app" :compact="true" :clickable="false"/>
-                        </b-col>
-                        <b-col>
-                            <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
-                            <!--
-                            <thead>
-                                <tr><th colspan="2">Configuration</th></tr>
-                            </thead>
-                            -->
-                            <tbody>
-                                <tr v-for="(v,k) in rule.config" :key="k">
-                                    <th :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
-                                    <th v-if="typeof v == 'object'">
-                                        <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
-                                    </th>
-                                    <th v-else>{{v}}</th>
-                                </tr>
-                            </tbody>
-                            </table>
-                        </b-col>
-                    </b-row>
-                </div>
+                <b-row>
+                    <b-col>
+                        <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 30px;"/>
+                    </b-col>
+                    <b-col>
+                        <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
+                        <tbody>
+                            <tr v-for="(v,k) in rule.config" :key="k">
+                                <th :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
+                                <th v-if="typeof v == 'object'">
+                                    <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
+                                </th>
+                                <th v-else>{{v}}</th>
+                            </tr>
+                        </tbody>
+                        </table>
+                    </b-col>
+                </b-row>
 
                 <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">On subjects with the following set of archived datasets</p>
                 <div style="padding-left: 30px;">
@@ -301,7 +293,7 @@ export default {
 
 <style scoped>
 .rule {
-margin-bottom: 10px;
+margin-bottom: 20px;
 box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 }
 
@@ -323,7 +315,7 @@ left: 350px;
 bottom: 0px;
 right: 0px;
 overflow: auto;
-padding: 20px;
+overflow-x: hidden;
 margin-top: 45px;
 background-color: white;
 }

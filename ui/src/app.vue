@@ -56,6 +56,7 @@
                                 <b class="text-muted">Administrators</b>
                             </b-col>
                             <b-col>
+                                <p><small class="text-muted" v-if="preferred_resource">Following users can administer this application registration.</small></p>
                                 <ul style="list-style: none; padding: 0px;">
                                     <li v-for="c in app.admins" :key="c._id">
                                         <contact :id="c"/>
@@ -71,6 +72,7 @@
                                 <b class="text-muted">Contributors</b>
                             </b-col>
                             <b-col>
+                                <p><small class="text-muted" v-if="preferred_resource">Following people have contributed to the github repo ({{app.github}}).</small></p>
                                 <ul style="list-style: none; padding: 0px;">
                                     <li v-for="dev in app.contributors" :key="dev._id">
                                         <contact :fullname="dev.name" :email="dev.email"/>
@@ -168,6 +170,7 @@
                                 <b class="text-muted">Computing Resources</b>
                             </b-col>
                             <b-col>
+                                <small class="text-muted" v-if="preferred_resource">This application can run on following resources</small>
                                 <b-table style="font-size: 90%;" :items="resource_table" :fields="['resource','status','score', 'detail']">
                                     <template slot="resource" slot-scope="data">
                                         <icon class="preferred-icon" v-if="data.item.preferred" name="thumbs-up"/>
@@ -187,6 +190,7 @@
                             </b-col>
                         </b-row>
 
+                        <!-- Execute tab shows how the UI looks like, and app developer can see all the detail under appedit
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">UI Configuration</b>
@@ -196,6 +200,7 @@
                                 <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
                             </b-col>
                         </b-row>
+                        -->
 
                         <!--
                         <tr>
