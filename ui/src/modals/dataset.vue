@@ -166,7 +166,6 @@
                         <b-alert show variance="info">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
                     </div>
                     <div ref="vis" v-else style="height: 100%;"/>
-                    <br>
                 </div>
             </b-tab>
             <b-tab title="Apps">
@@ -285,6 +284,23 @@ export default {
             this.$http.get('dataset/prov/'+this.dataset._id).then(res=>{
                 this.prov = res.body;
                 console.log("loaded provenance", this.prov);
+
+                //apply styles
+                this.prov.nodes.forEach(node=>{
+                    node.shape = "box"; //all box..
+                    if(node.id == "dataset."+this.dataset._id) {
+                        node.label = "This Dataset";
+                        node.color = "#2693ff";
+                        node.y = 1500;
+                        node.margin = 10;
+                        node.font = {color: "#fff"};
+                    }
+                    if(node.id.indexOf("task.") === 0) {
+                        node.color = "#fff";
+                        //node.color = "rgba(h55,255,255,0.5)";
+                        node.font = {size: 11};
+                    }
+                });
 
                 if(this.prov.edges.length) {
                     Vue.nextTick(()=>{

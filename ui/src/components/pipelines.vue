@@ -9,7 +9,7 @@
         <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
         <div v-else>
             <!--list view-->
-            <p class="text-muted" v-if="rules.length == 0">Pipeline rule allows you to automate bulk processing of your datasets by automatically submitting processes babsed on defined criterias.</p>
+            <p class="text-muted margin20" v-if="rules.length == 0">Pipeline rule allows you to automate bulk processing of your datasets by automatically submitting processes babsed on defined criterias.</p>
             <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule" v-if="rule.removed == false">
                 <div style="padding: 10px;">
                     <div style="float: right">
@@ -224,7 +224,7 @@ export default {
         newrule: function() {
             //set to default
             this.editing = {
-                name: "edit me",
+                name: "",
                 config: {},
                 active: false,
                 removed: false,

@@ -2,10 +2,10 @@
 <b-form @submit="submit" v-if="ready">
     <div class="margin20">
         <!--{{rule._id||'new rule'}}-->
-        <b-form-group label="name *" horizontal>
+        <b-form-group label="Name *" horizontal>
             <b-form-input required v-model="rule.name" type="text" placeholder="title of the paper"></b-form-input>
         </b-form-group>
-        <b-form-group label="app *" horizontal>
+        <b-form-group label="App *" horizontal>
             <v-select required v-model="rule.app" label="name" :options="apps" @search="search_app">
                 <span slot="no-options">please enter app name / desc to search</span>
                 <template slot="option" slot-scope="app">
@@ -14,7 +14,7 @@
             </v-select>
         </b-form-group>
         <div v-if="rule.app">
-            <b-form-group label="configuration" horizontal>
+            <b-form-group label="Configuration" horizontal>
                 <!--
                 <b-form-textarea id="needed" v-model="config" :rows="3" placeholder="application configuration"></b-form-textarea>
                 <small class="text-muted">configuration to use to submit this application (in json)</small>
@@ -24,7 +24,7 @@
                     <configform :spec="rule.app.config" v-model="rule.config"/>
                 </b-card>
             </b-form-group>
-            <b-form-group label="inputs" horizontal>
+            <b-form-group label="Inputs" horizontal>
                 <p class="text-muted">look for subjects that has the following input datasets.</p>
                 <b-card v-for="input in rule.app.inputs" :key="input._id" class="card">
                     <div slot="header">
@@ -49,7 +49,7 @@
                 </b-card>
             </b-form-group>
 
-            <b-form-group label="outputs" horizontal>
+            <b-form-group label="Outputs" horizontal>
                 <p class="text-muted">submit app if following dataset <b>does not</b> exist.</p>
                 <b-card v-for="output in rule.app.outputs" :key="output._id" class="card">
                     <div slot="header">
@@ -63,7 +63,7 @@
                 </b-card>
             </b-form-group>
         </div>
-        <b-form-group label="subject filtering" horizontal>
+        <b-form-group label="Subject Filtering" horizontal>
             <p class="text-muted">only process subjects that match following regex</p>
             <b-form-input v-model="rule.subject_match" type="text" placeholder="regex to match subject name"></b-form-input>
             <small class="text-muted">for example, "^100" will make this rule to only process subjects that starts with 100.</small>
@@ -209,6 +209,7 @@ export default {
             this.apps = [];
             clearTimeout(debounce);
             debounce = setTimeout(()=>{
+                console.log("searchign app", search);
                 this.$http.get('app', {params: {
                     find: JSON.stringify({
                         /*

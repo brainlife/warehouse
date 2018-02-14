@@ -80,11 +80,6 @@ margin: 2px 0px;
 line-height: 22px;
 box-shadow: 1px 1px 2px rgba(0,0,0,0.15);
 margin-right: 5px;
-
-/*
-text-overflow: ellipsis;
-overflow: hidden;
-*/
 }
 .contact img {
 float: left;

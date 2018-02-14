@@ -11,15 +11,17 @@
         </div>
         <div style="margin-left: 45px;">
             <div style="float: right;">
+                <contact :id="task.user_id" :short="true" style="position: relative; top: -3px; opacity: 0.9"/>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="repeat"/>
                 </div>
-                <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop()" title="Stop Task"><icon name="stop"/>
+                <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop" title="Stop Task"><icon name="stop"/>
                 </div>
-                <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove()" title="Remove Task"><icon name="trash"/>
+                <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove" title="Remove Task"><icon name="trash"/>
                 </div>
             </div>
-            <h4><strong style="text-transform: uppercase;">{{task.status}}</strong>
+            <h4>
+                <strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
                     <time v-if="task.status == 'requested'"><timeago :since="task.create_date"/></time>
                     <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date"/></time>
@@ -34,16 +36,6 @@
         </div>
     </div>
 
-    <!--
-    <div @click="toggle('config')" class="toggler">
-        <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.config}"/> Configuration
-    </div>
-    <transition name="fadeHeight">
-        <div v-if="activeSections.config">
-            <taskconfig :task="task" class="task-content"/>
-        </div>
-    </transition>
-    -->
     <div v-if="task.service != 'soichih/sca-product-raw'">
         <taskconfig :task="task" class="task-content"/>
     </div>
@@ -92,11 +84,11 @@ import statusicon from '@/components/statusicon'
 import mute from '@/components/mute'
 import tags from '@/components/tags'
 import taskconfig from '@/components/taskconfig'
+import contact from '@/components/contact'
 
 export default {
     props: ['task'],
-    components: { filebrowser, statusicon, mute, tags, taskconfig },
-    name: "contact",
+    components: { filebrowser, statusicon, mute, tags, taskconfig, contact },
     data () {
         return {
             activeSections: {

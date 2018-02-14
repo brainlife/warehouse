@@ -1,6 +1,5 @@
 <template>
 <div v-if="instance">
-
     <div class="task-tabs">
         <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
             <div class="task-tab-title">
@@ -15,7 +14,7 @@
 
     <div class="tasks" v-if="tasks" v-for="task in tasks" :key="task._id">
         <!--task-id and toggler-->
-        <div style="float: right; padding-top: 7px;" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
+        <div style="float: right;" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
             <icon name="caret-down" v-if="task.show"/><icon name="caret-right" v-else/> 
             t.{{task.config._tid}}
         </div>
@@ -26,7 +25,9 @@
             <div slot="header" class="task-header">
                 <div v-if="task.config._app && task.show" style="margin-right: 30px;">
                     <app :appid="task.config._app" :compact="true">
-                        <div v-if="task.desc" class="task-desc">{{task.desc}}</div>
+                        <div v-if="task.desc" class="task-desc">
+                            {{task.desc}}
+                        </div>
                     </app>
                 </div>
                 <div v-else>
@@ -145,7 +146,6 @@
 import Vue from 'vue'
 
 import sidemenu from '@/components/sidemenu'
-import contact from '@/components/contact'
 import message from '@/components/message'
 import task from '@/components/task'
 import filebrowser from '@/components/filebrowser'
@@ -170,7 +170,7 @@ export default {
     props: [ 'project', 'instance' ],
 
     components: { 
-        sidemenu, contact, task, 
+        sidemenu, task, 
         message, tags, 
         filebrowser, pageheader, 
         appavatar, app, archiveform, 
@@ -269,7 +269,6 @@ export default {
     },
 
     methods: {
-
         findtask: function(id) {
             var found = null;
             this.tasks.forEach(task=>{
@@ -277,23 +276,19 @@ export default {
             });
             return found;
         },
-
         scrollto: function(id) {
             var header = document.getElementsByClassName("instance-active")[0];
             var elem = document.getElementById(id);
             var top = elem.offsetTop-header.clientHeight;
             document.getElementById("scrolled-area").scrollTop = top;
         },
-
         open_dataset: function(id) {
             //TODO - user could be opening dataset that doesn't belong on the current project..
             //this.$root.$emit('dataset.view', id);
             this.$router.push("/project/"+this.project._id+"/dataset/"+id);
         },
-
         bind_ws() {
         },
-
         load() {
             console.log("loading process");
             this.archiving = null;
