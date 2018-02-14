@@ -283,9 +283,6 @@ router.get('/prov/:id', (req, res, next)=>{
                 } else {
                     add_node({
                         id: "task."+task._id, 
-                        color: "#fff",
-                        shape: "box",
-                        font: {size: 11},
                         label: compose_label(task),
                     });
                     logger.debug("debug------------------------------------------");
@@ -302,9 +299,6 @@ router.get('/prov/:id', (req, res, next)=>{
             } else {
                 add_node({
                     id: "task."+task._id, 
-                    color: "#fff",
-                    shape: "box",
-                    font: {size: 11},
                     label: compose_label(task),
                 });
                 //dataset created by another *app*
@@ -318,8 +312,6 @@ router.get('/prov/:id', (req, res, next)=>{
                     from: "task."+task._id,
                     to,
                     arrows: "to",
-                    //dashes: true,
-                    //font: {size: 11, strokeColor: "rgba(0,0,0,0)", color: "rgb(50, 50, 50)"},
                     label,
                 });
                 load_task_prov(task, cb);
@@ -353,9 +345,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 node: {
                     id: "dataset."+dataset_id, 
                     color: "#159957",
-                    shape: "box",
                     font: {size: 12, color: "#fff"},
-                    //label: dataset.meta.subject+" / "+datatypes[dataset.datatype].name+"\n"+dataset.desc,
                     label:dataset.project.name+" / "+ dataset.meta.subject + "\n" +datatypes[dataset.datatype].name,
                 },
                 edge: {
@@ -363,7 +353,6 @@ router.get('/prov/:id', (req, res, next)=>{
                     to,
                     arrows: "to",
                     color: "#ccc",
-                    //label: datatypes[dataset.datatype].name, //+"\n"+(dataset.desc||''),
                 },
                 to,
             };
@@ -396,17 +385,12 @@ router.get('/prov/:id', (req, res, next)=>{
                     //task2task
                     add_node({
                         id: "task."+input.task_id,
-                        color: "#fff",
-                        shape: "box",
-                        //font: {size: 12},
                         label: compose_label(dep_task),
                     });
                     edges.push({
                         from: "task."+input.task_id,
                         to: "task."+task._id,
                         arrows: "to",
-                        //color: "#ff0",
-                        //label: datatype.name, // || input.id || input.input_id,
                         label: datatypes[input.datatype].name, //+"\n"+(dataset.desc||''),
                     });
                     load_task_prov(dep_task, next_dep); //recurse to its deps
@@ -436,112 +420,14 @@ router.get('/prov/:id', (req, res, next)=>{
             if(err) return cb(err);
             if(!dataset) return res.status(404).end();
             nodes.push({
+                //"this dataset"
                 id: "dataset."+dataset._id, 
-                color: "#2693ff",
-                font: {/*size: 20,*/ color: "#fff"},
-                shape: "box",
-                margin: 10,
-                //fixed: {x: true, y: true},
-
-                //push it toward right bottom
-                //x: 1000,
-                y: 1500,
-                label: "This Dataset"
             });
             load_dataset_prov(dataset, null, err=>{
                 if(err) return next(err);
                 res.json({nodes, edges});
             });
         })
-    });
-});
-
-router.get('/prov-old/:id', (req, res, next)=>{
-    db.Datasets.findById(req.params.id, function(err, dataset) {
-        if(err) return next(err);
-        if(!dataset) return res.status(404).end();
-        prov.query(dataset, (err, _prov)=>{
-            if(err) return next(err);
-            //organize into node/edge list that visjs can digest
-            //console.log(JSON.stringify(_prov, null, 4));
-
-            let nodes = {};
-            let edges = [];
-            function ensure_node(n) {
-                if(!nodes[n._id]) {
-                    let label = "";
-                    let color = "";
-                    switch(n.labels[0]) {
-                    case "Task":
-                        //label = "Task\n"+n.properties.task_id;
-                        label = "Task\n"+n._id;
-                        color = "#ffcfcf";
-                        break;
-                    case "Dataset":
-                        //label = "Dataset\n"+n.properties.dataset_id;
-                        if(req.params.id == n.properties.dataset_id) {
-                            label = "This";
-                            color = "#ffffff";
-                        } else {
-                            label = "Dataset\n"+n._id;
-                            color = "#cfcfff";
-                        }
-                        break;
-                    }
-                    nodes[n] = {
-                        id: n._id,
-                        //size: 1000,
-                        label,
-                        color,
-                        shape: "box",
-                        //font: {'face': 'monospace', 'align': 'left'},
-                    };
-                }
-            }
-
-            //nodes
-            _prov.forEach(rec=>{
-                ensure_node(rec.s);
-                ensure_node(rec.n);
-            });
-            //dedupe r
-            let rs = {};
-            _prov.forEach(rec=>{
-                rs[rec.r._id] = rec.r;
-            });
-
-            //create edges
-            for(var rid in rs) {
-                let r = rs[rid];
-                if(r.type == "FROM") {
-                    edges.push({
-                        from: r._fromId,
-                        to: r._toId,
-                        arrows: "from",
-                        //physics: true,
-                        //smooth: {type: 'cubicBezier'},
-                        //something: rec.r.
-                    })
-                }
-                if(r.type == "INPUT") {
-                    edges.push({
-                        from: r._fromId,
-                        to: r._toId,
-                        arrows: "from",
-                        label: r.properties.input_id,
-                        //physics: true,
-                        //smooth: {type: 'cubicBezier'},
-                        //something: rec.r.
-                    })
-                }
-            }
-
-            //Object.values(nodes)
-            nodes = Object.keys(nodes).map(key=>{
-                return nodes[key];
-            });
-            res.json({nodes, edges});
-        });
     });
 });
 
@@ -758,6 +644,7 @@ router.get('/download/:id', jwt({
                     logger.debug("sent headers.. commencing download");
                     readstream.pipe(res);   
                     readstream.on('error', err=>{
+                        //is this getting called at all?
                         logger.error("failed to pipe", err);
                     });
 

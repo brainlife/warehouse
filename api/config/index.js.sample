@@ -239,7 +239,6 @@ exports.storage_systems["dcwan/hcp"] = {
     download: (dataset, cb)=>{
         connect_dc((err, conn)=>{
             if(err) return cb(err);
-
             if(dataset.storage_config.files) {
                  conn.sftp((err, sftp)=>{
                     if (err) {
@@ -250,14 +249,20 @@ exports.storage_systems["dcwan/hcp"] = {
                     dataset.storage_config.files.forEach(file=>{
                         var stream = sftp.createReadStream(file.filepath);
                         stream.on('error', err=>{
-                            console.error("stream failed but train has already left the station", err);
+                            console.error("stream failed but train has already left the station", file.filepath, err);
                         });
-                        console.log("downloading", file.filepath, file.local);
+                        console.log("archiver downloading", file.filepath, file.local);
                         archive.append(stream, {name: file.local});
                     });
                     archive.on('finish', ()=>{
+                        console.log("archive finished.. closing connection");
                         conn.end();
                     });
+                    archive.on('error', err=>{
+                        cosole.log("archive error.......................");
+                        console.error(err);
+                    });
+                    console.log("archive finalized");
                     archive.finalize();
                     cb(null, archive, dataset._id+".tar");
                 });

@@ -261,10 +261,7 @@ exports.load_github_detail = function(service_name, cb) {
 function compose_datacite_metadata(pub) {
 
     //publication year
-    let year = "2018"; //backward compatibility
-    if(pub.publish_date) { 
-        year = pub.publish_date.getFullYear();
-    }
+    let year = pub.create_date.getFullYear();
     let publication_year = "<publicationYear>"+year+"</publicationYear>";
 
     //creators
