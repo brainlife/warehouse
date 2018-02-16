@@ -29,6 +29,8 @@ docs:
         url: /dockerapp
       - title: "Customizing Lifecycle Hooks"
         url: /customhooks
+      - title: "Github Branch Tips"
+        url: /git
 
   - title: Resource Adminstration
     children:
