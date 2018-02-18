@@ -19,7 +19,7 @@ git pull
 
 You should git pull as often as you can to reduce possible merge issues down the road. When you are done testing your changes, git push to origin master.
 
-* By the way, see [git rebase](https://www.atlassian.com/git/tutorials/merging-vs-rebasing) if you are not familiar with rebasing. It could help our commit log clean, as long as we only use it on master.
+* By the way, see [git rebase](https://www.atlassian.com/git/tutorials/merging-vs-rebasing) if you are not familiar with rebasing. It helps our commit log to be clean.
 
 ## 2. Always work on master branch
 

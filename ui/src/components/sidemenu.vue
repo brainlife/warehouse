@@ -29,10 +29,12 @@
             <icon name="cubes" scale="2"></icon><br>Dataset
         </li>
         -->
+        <!--deprecated
         <li v-if="config.user" @click="go('/processes')"
             :class="{active: active == '/processes'}">
             <icon name="paper-plane" scale="2"></icon><br>Process
         </li>
+        -->
         <li v-if="config.user && config.debug" @click="go('/datatypes')"
             :class="{active: active == '/datatypes'}">
             <icon name="cube" scale="2"></icon><br>Datatype

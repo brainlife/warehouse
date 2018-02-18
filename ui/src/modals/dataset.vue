@@ -114,7 +114,7 @@
                         <b-row v-if="dataset.prov && dataset.prov.app">
                             <b-col cols="3"><b class="text-muted">Produced by</b></b-col>
                             <b-col>
-                                <app slot="header" :appid="dataset.prov.app" :clickable="false" @click.native="openapp(dataset.prov.app)">
+                                <app slot="header" :appid="dataset.prov.app" :branch="task.service_branch||'master'" :clickable="false" @click.native="openapp(dataset.prov.app)">
                                     <!--TODO I should allow just passing this.task-->
                                     <taskconfig style="margin: 10px;" :taskid="dataset.prov.task_id"/>
                                 </app>

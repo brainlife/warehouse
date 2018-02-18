@@ -59,7 +59,7 @@ export default new Router({
 
         {path: '/project', component: project},
         {path: '/project/:id', component: project},
-        {path: '/project/:id/upload', component: projectedit},
+        //{path: '/project/:id/upload', component: projectedit},
         {path: '/project/:id/edit', component: projectedit},
         {path: '/project/:id/:tab?/:subid?', component: project},
 

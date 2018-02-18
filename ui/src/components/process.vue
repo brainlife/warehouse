@@ -24,7 +24,7 @@
             <!--header-->
             <div slot="header" class="task-header">
                 <div v-if="task.config._app && task.show" style="margin-right: 30px;">
-                    <app :appid="task.config._app" :compact="true">
+                    <app :appid="task.config._app" :branch="task.service_branch||'master'" :compact="true">
                         <div v-if="task.desc" class="task-desc">
                             {{task.desc}}
                         </div>
