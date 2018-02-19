@@ -328,7 +328,14 @@ router.get('/prov/:id', (req, res, next)=>{
             return cb();
         }
         */
-        if(~datasets_analyzed.indexOf(dataset_id.toString())) return cb();
+        if(~datasets_analyzed.indexOf(dataset_id.toString())) {
+            //dataset already analyzed.. just add edge
+            var found = false;
+            var from = "dataset."+dataset_id;
+            var found = edges.find(e=>(e.from == from && e.to == to));
+            if(!found) edges.push({ from, to, arrows: "to", });
+            return cb();
+        }
         datasets_analyzed.push(dataset_id.toString());
         
         //load all datasets that sca-product-raw has loaded
@@ -344,7 +351,7 @@ router.get('/prov/:id', (req, res, next)=>{
             let defer = {
                 node: {
                     id: "dataset."+dataset_id, 
-                    color: "#159957",
+                    //color: "#159957",
                     font: {size: 12, color: "#fff"},
                     label:dataset.project.name+" / "+ dataset.meta.subject + "\n" +datatypes[dataset.datatype].name,
                 },
@@ -352,7 +359,7 @@ router.get('/prov/:id', (req, res, next)=>{
                     from: "dataset."+dataset_id,
                     to,
                     arrows: "to",
-                    color: "#ccc",
+                    //color: "#ccc",
                 },
                 to,
             };
