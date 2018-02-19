@@ -66,7 +66,6 @@
                         </b-row>
                         <br>
 
-
                         <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Contributors</b>
@@ -103,6 +102,7 @@
                                     <b-row>
                                         <b-col :cols="4" v-if="app.inputs">
                                             <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
+                                            <span v-if="find_by_id(app.inputs, con.input_id).optional" class="text-muted">(optional)</span>
                                         </b-col>
                                         <b-col :cols="3">
                                             <b><pre style="background-color: white;">"{{key}}"</pre></b>

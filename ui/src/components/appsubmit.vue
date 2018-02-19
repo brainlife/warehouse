@@ -7,6 +7,7 @@
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col cols="4">
             <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+            <span class="text-muted" v-if="input.optional">(optional)</span>
         </b-col>
         <b-col cols="4">
             <projectselecter v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
@@ -15,6 +16,7 @@
             <select2 style="width: 100%; max-width: 100%;" 
                 v-model="form.inputs[input.id]" 
                 :dataAdapter="debounce_grab_items(input)" 
+                :allowClear="input.optional"
                 :multiple="false" 
                 :placeholder="'Input Dataset'" 
                 :options="form.options[input.id]"/>
@@ -274,9 +276,15 @@ export default {
                                 app.inputs.forEach(input=>{
                                     if(input.id == node.input_id) {
                                         //find the file
+                                        var dataset_id = form.inputs[input.id];
+                                        if(!dataset_id) {
+                                            //optional config that's not set?
+                                            delete obj[k];
+                                            return; 
+                                        }
                                         input.datatype.files.forEach(file=>{
                                             if(file.id == node.file_id) {
-                                                obj[k] = "../"+download_task_id+"/"+form.inputs[input.id]+"/"+(file.filename||file.dirname)
+                                                obj[k] = "../"+download_task_id+"/"+dataset_id+"/"+(file.filename||file.dirname)
                                             }
                                         });
                                     } 
@@ -298,11 +306,14 @@ export default {
         submit: function(evt) {
             evt.preventDefault();
 
-            //make sure all inputs are selected
+            //make sure all required inputs are selected
             var validated = true;
-            for(var k in this.form.inputs) {
-                if(!this.form.inputs[k]) validated = false;
-            }
+            console.dir(this.form.inputs);
+            this.app.inputs.forEach(input=>{
+                if(input.optional !== undefined && input.optional) return;
+                console.log(input.id,"should be set");
+                if(!this.form.inputs[input.id]) validated = false;
+            });
             if(!this.project) validated = false;
             if(!validated) {
                 this.$notify({ text: 'Please select all required field', type: 'error' });
@@ -346,6 +357,7 @@ export default {
                 //create config to download all input data from archive
                 for(var input_id in this.form.inputs) {
                     var dataset_id = this.form.inputs[input_id];
+                    if(!dataset_id) continue; //probably optional field that's not set
                     download.push({
                         url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
                         untar: "auto",
@@ -374,13 +386,11 @@ export default {
             }).then(res=>{
                 var download_task = res.body.task;
                 console.log("download task submitted", download_task);
-
-                //TODO - now submit intermediate tasks necessary to prep the input data so that we can run requested app
-
                 app_inputs.forEach(input=>{
                     input.task_id = download_task._id
                 });
-                //submit the app task
+
+                //now submit the main task
                 var config = Object.assign(this.generate_config(download_task._id), {
                     _app: this.app._id,
                     _tid: 1,

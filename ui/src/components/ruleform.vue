@@ -137,6 +137,7 @@ export default {
                 input_tags: {},
                 output_tags: {}, 
                 input_project_override: {},
+                config: {},
             }, this.value);
             this.ensure_ids_exists();
         },
@@ -199,10 +200,10 @@ export default {
                 output_tags,
                 input_project_override,
             });
+            console.log("submit-----------------------");
             console.dir(rule);
             this.$emit("submit", rule);
         },
-
 
         search_app: function(search, loading) {
             loading = true;

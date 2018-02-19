@@ -1,6 +1,6 @@
 <template>
     <!--TODO replace with v-select-->
-    <select2 v-if="options" style="width: 100%" v-model="selected" :options="options" :allownull="allownull" :placeholder="placeholder"/>
+    <select2 v-if="options" style="width: 100%" v-model="selected" :options="options" :allowClear="allownull" :placeholder="placeholder"/>
 </template>
 
 <script>

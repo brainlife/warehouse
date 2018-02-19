@@ -77,17 +77,21 @@
                             </div>
                             <b-row>
                                 <b-col>
-                                    <div class="text-muted">Datatype</div>
-                                    <el-select v-model="input.datatype" style="width: 100%;">
-                                        <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                                    </el-select>
+                                    <b-input-group prepend="Datataype">
+                                        <b-form-select v-model="input.datatype">
+                                            <option v-for="datatype in datatypes" :key="datatype._id" :value="datatype._id">{{datatype.name}}</option>
+                                        </b-form-select>
+                                    </b-input-group>
                                 </b-col>
                                 <b-col>
-                                    <div class="text-muted">Datatype Tags <small>optional</small></div>
-                                    <tageditor v-if="input.datatype" v-model="input.datatype_tags"/>
-                                    <!--
-                                    <select2 v-if="input.datatype" :options="(datatypes[input.datatype]||{_tags:[]})._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
-                                    -->
+                                    <span style="float: left; width:100px">Tags <small>(optional)</small></span>
+                                    <div style="padding-left: 100px;">
+                                        <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags"/>
+                                        <small class="text-muted">You can prefix tags with ! for negative tags</small>
+                                    </div>
+                                </b-col>
+                                <b-col :cols="2">
+                                    <b-form-checkbox v-model="input.optional">Optional</b-form-checkbox>
                                 </b-col>
                             </b-row>
                             <br><b>File Mapping</b><br>
@@ -526,7 +530,6 @@ export default {
             }); 
 
             //make sure there are no duplicate config key used in input
-            
             var keys = [];
             for(var id in this.app.config) {
                 var key = this.app.config[id]._id;
@@ -564,7 +567,6 @@ export default {
                 delete c._id; //why?
             }
             keyed_app.config = keyed_config;
-
             //now ready to submit
             if(this.$route.params.id !== '_') {
                 //update
