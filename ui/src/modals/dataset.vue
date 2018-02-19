@@ -265,8 +265,11 @@ export default {
             if(this.tab_index == 2 && this.apps == null) {
                 this.load_apps();
             }
-        }
+        },
 
+        '$route': function() {
+            //console.log(".........modal route------------");
+        },
     },
 
     methods: {
@@ -288,17 +291,20 @@ export default {
                 //apply styles
                 this.prov.nodes.forEach(node=>{
                     node.shape = "box"; //all box..
+                    if(node.id.indexOf("task.") === 0) {
+                        node.color = "#fff";
+                        //node.color = "rgba(h55,255,255,0.5)";
+                        node.font = {size: 11};
+                    }
+                    if(node.id.indexOf("dataset.") === 0) {
+                        node.color = "#159957";
+                    }
                     if(node.id == "dataset."+this.dataset._id) {
                         node.label = "This Dataset";
                         node.color = "#2693ff";
                         node.y = 1500;
                         node.margin = 10;
                         node.font = {color: "#fff"};
-                    }
-                    if(node.id.indexOf("task.") === 0) {
-                        node.color = "#fff";
-                        //node.color = "rgba(h55,255,255,0.5)";
-                        node.font = {size: 11};
                     }
                 });
 
@@ -352,7 +358,8 @@ export default {
     
         close: function() {
             if(!this.dataset) return;
-            this.$router.push("/project/"+this.dataset.project._id+"/dataset"); 
+            //this.$router.push("/project/"+this.dataset.project._id+"/dataset"); 
+            this.$router.push("./"); 
             this.dataset = null;
         },
 
@@ -461,6 +468,8 @@ export default {
             this.prov = null;
             this.apps = null;
             this.tab_index = 0;
+
+            if(!id) return;
 
             console.log("modal/dataset.vue loading");
             this.$http.get('dataset', {params: {

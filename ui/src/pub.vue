@@ -335,6 +335,26 @@ export default {
         doibadge, 
     },
 
+    //https://help.altmetric.com/support/solutions/articles/6000141419-what-metadata-is-required-to-track-our-content-
+    metaInfo() {
+        var meta = [];
+        if(this.pub) {
+            meta.push({name: 'DC.DOI', content: this.pub.doi});
+            meta.push({name: 'DC.title', content: this.pub.name});
+            meta.push({name: 'DC.description', content: this.pub.desc});
+            this.pub.authors.forEach(author=>{
+                meta.push({name: 'DC.creator', content: author.fullname});
+            });
+            this.pub.tags.forEach(tag=>{
+                meta.push({name: 'DC.subject', content: tag});
+            });
+        }
+        return {
+            //title: "hi", 
+            meta,
+        } 
+    },
+
     data () {
         return {
             pub: null, //publication detail

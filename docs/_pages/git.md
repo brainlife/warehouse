@@ -31,7 +31,7 @@ When we are done with making all changes, tested it, and ready to release it, we
 
 Once you create a branch, you should update the BL app to point users to use that new branch.
 
-You could use tags instead of branches, but tags does not allow you make modifications like you can with branches. Tags are great to point to any particular commit point, but you can do that with just a plane commit ID.
+You could use tags instead of branches, but tags does not allow you make modifications like you can with branches. Tags are great to point to any particular commit point, but you can do that with just a plain commit ID also.
 
 ## 4. Bug fix on master, then on branch.
 
