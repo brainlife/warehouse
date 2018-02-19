@@ -112,6 +112,8 @@ function check_access(req, rule, cb) {
 router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.project) return next("project id not set");
     if(!req.body.app) return next("app id not set");
+    console.log("config dump........................");
+    console.log(JSON.stringify(req.body.config, null, 4));
     check_access(req, req.body, err=>{
         if(err) return next(err);
         let override = {
@@ -151,6 +153,8 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  */
 router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var id = req.params.id;
+    console.log("config dump........................");
+    console.log(JSON.stringify(req.body.config, null, 4));
     db.Rules.findById(id, (err, rule)=>{
         if(err) return next(err);
         if(!rule) return res.status(404).end();
