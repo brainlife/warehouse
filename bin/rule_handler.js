@@ -599,6 +599,7 @@ function process_input_config(config, inputs, datasets, task_stage) {
         case "input":
             var input = inputs[v.input_id];
             var dataset = datasets.find(d=>d.id == v.input_id);
+            if(!dataset) continue; //optional input that's ignored?
             var base = "../"+dataset.task_id;
             if(dataset.subdir) base+="/"+dataset.subdir;
 

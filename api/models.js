@@ -360,6 +360,12 @@ var ruleSchema = mongoose.Schema({
     //if user wants to override where the input data comes from, specify projects IDs keyed by input id
     input_project_override: mongoose.Schema.Types.Mixed,
 
+    //EXPERIMENTAL .. specify input selection strategy
+    //options are..
+    //          (default) looks for the *latest* datasets that it finds
+    //          ignore: submit without this dataset (used for optional input dataset)
+    input_selection: mongoose.Schema.Types.Mixed,
+
     //app to submit
     app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
     //scalar configs (input configs are used to detect new datasets)
