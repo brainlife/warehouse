@@ -9,7 +9,10 @@
         <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
         <div v-else>
             <!--list view-->
-            <p class="text-muted margin20" v-if="rules.length == 0">Pipeline rule allows you to automate bulk processing of your datasets by automatically submitting processes babsed on defined criterias.</p>
+            <div class="margin20" v-if="rules.length == 0">
+                <p class="text-muted">Pipeline rule allows you to automate bulk processing of your datasets by automatically submitting processes babsed on defined criterias.</p>
+                <p class="text-muted">This feature could potentially launch large number of processes. If you are not sure how this feature works, please consult with Brainlife administrator.</p>
+            </div>
             <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule" v-if="rule.removed == false">
                 <div style="padding: 10px;">
                     <div style="float: right">
@@ -59,6 +62,8 @@
                         <span v-if="rule.input_project_override && rule.input_project_override[input.id]" class="text-muted">
                             From <icon name="shield"/> {{projects[rule.input_project_override[input.id]].name}}
                         </span>
+                        <!--<span class="text-muted" v-if="input.optional">(optional)</span>-->
+                        <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
                     </p>
                 </div>
 

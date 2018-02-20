@@ -233,6 +233,9 @@ function handle_rule(rule, cb) {
         var missing = false;
         var inputs = {};
         async.eachSeries(rule.app.inputs, (input, next_input)=>{
+
+            //defaults
+            var sort = "create_date";
             var query = {
                 project: rule.project._id,
                 datatype: input.datatype,
@@ -240,6 +243,19 @@ function handle_rule(rule, cb) {
                 storage: { $exists: true },
                 removed: false,
             }
+
+            //see which selection method to usee
+            var selection_method = "latest";
+            if(rule.input_selection[input.id]) selection_method = rule.input_selection[input.id];
+            switch(selection_method) {
+            case "latest":
+                sort = "create_date"; //find the latest
+                break;
+            case "ignore": 
+                //don't need to look for this input
+                return next_input();
+            }
+            
             //allow user to override which project to load input datasets from
             if(rule.input_project_override && rule.input_project_override[input.id]) {
                 query.project = rule.input_project_override[input.id];
@@ -250,7 +266,7 @@ function handle_rule(rule, cb) {
 
             db.Datasets.find(query)
             .populate('datatype')
-            .sort('create_date') //find the latest one
+            .sort(sort)
             .lean()
             .exec((err, datasets)=>{
                 if(err) return next_input(err);

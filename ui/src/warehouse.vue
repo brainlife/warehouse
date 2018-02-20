@@ -32,7 +32,9 @@ export default {
     components: {
         //modals
         viewselecter, dataset, datatype, 
-        uploader, datasetselecter, instanceselecter
+        uploader, datasetselecter, instanceselecter, 
+
+        //loadingBar,
     },
 }
 
@@ -51,8 +53,6 @@ font-family: 'VT323', monospace;
 font-family: 'Nunito', sans-serif;
 font-family: 'Nunito Sans', sans-serif;
 */
-
-
 
 #warehouse {
 height: 100%;

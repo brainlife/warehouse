@@ -19,7 +19,7 @@ git pull
 
 You should git pull as often as you can to reduce possible merge issues down the road. When you are done testing your changes, git push to origin master.
 
-* By the way, see [git rebase](https://www.atlassian.com/git/tutorials/merging-vs-rebasing) if you are not familiar with rebasing. It could help our commit log clean, as long as we only use it on master.
+* By the way, see [git rebase](https://www.atlassian.com/git/tutorials/merging-vs-rebasing) if you are not familiar with rebasing. It helps our commit log to be clean.
 
 ## 2. Always work on master branch
 
@@ -31,7 +31,7 @@ When we are done with making all changes, tested it, and ready to release it, we
 
 Once you create a branch, you should update the BL app to point users to use that new branch.
 
-You could use tags instead of branches, but tags does not allow you make modifications like you can with branches. Tags are great to point to any particular commit point, but you can do that with just a plane commit ID.
+You could use tags instead of branches, but tags does not allow you make modifications like you can with branches. Tags are great to point to any particular commit point, but you can do that with just a plain commit ID also.
 
 ## 4. Bug fix on master, then on branch.
 

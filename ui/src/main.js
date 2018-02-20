@@ -35,6 +35,7 @@ import VueTimeago from 'vue-timeago'
 
 import SocialSharing from 'vue-social-sharing';
 
+
 Vue.config.productionTip = false
 
 Vue.component('icon', Icon)
@@ -47,6 +48,24 @@ Vue.use(VueLazyload)
 Vue.use(BootstrapVue);
 Vue.use(Vue2Filters)
 Vue.use(SocialSharing);
+
+/* I don't really get accurate progress report from vue-http
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+Vue.http.interceptors.push((request, next) => {
+    NProgress.start();
+    request.progress = function(r) {
+        if(r.type == "progress") {
+            NProgress.set(r.loaded/r.total);
+            console.log("progress", r.loaded, r.total);
+            console.log(r);
+        }
+    }
+    next(res=>{
+        NProgress.done();
+    });
+});
+*/
 
 Vue.use(VueTimeago, {
     name: 'timeago',

@@ -22,7 +22,7 @@ export default {
         'templateResult',
         'templateSelection',
         
-        'allownull',
+        'allowClear',
     ],
 
     data() {
@@ -62,7 +62,7 @@ export default {
             templateSelection: this.templateSelection || default_format,
             placeholder: this.placeholder,
             //theme: 'classic',
-            allowClear: this.allownull,
+            allowClear: this.allowClear,
         };
         
         // escape a string to ascii codes

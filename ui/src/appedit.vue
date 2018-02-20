@@ -76,24 +76,22 @@
                                 <icon name="trash"/>
                             </div>
                             <b-row>
-                                <!-- we probably don't need to expose this to user
                                 <b-col>
-                                    <div class="text-muted">ID</div>
-                                    <el-input v-model="input.id"></el-input>
-                                </b-col>
-                                -->
-                                <b-col>
-                                    <div class="text-muted">Datatype</div>
-                                    <el-select v-model="input.datatype" style="width: 100%;">
-                                        <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                                    </el-select>
+                                    <b-input-group prepend="Datataype">
+                                        <b-form-select v-model="input.datatype">
+                                            <option v-for="datatype in datatypes" :key="datatype._id" :value="datatype._id">{{datatype.name}}</option>
+                                        </b-form-select>
+                                    </b-input-group>
                                 </b-col>
                                 <b-col>
-                                    <div class="text-muted">Datatype Tags <small>optional</small></div>
-                                    <tageditor v-if="input.datatype" v-model="input.datatype_tags"/>
-                                    <!--
-                                    <select2 v-if="input.datatype" :options="(datatypes[input.datatype]||{_tags:[]})._tags" v-model="input.datatype_tags" :multiple="true" :tags="true"></select2>
-                                    -->
+                                    <span style="float: left; width:100px">Tags <small>(optional)</small></span>
+                                    <div style="padding-left: 100px;">
+                                        <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags"/>
+                                        <small class="text-muted">You can prefix tags with ! for negative tags</small>
+                                    </div>
+                                </b-col>
+                                <b-col :cols="2">
+                                    <b-form-checkbox v-model="input.optional">Optional</b-form-checkbox>
                                 </b-col>
                             </b-row>
                             <br><b>File Mapping</b><br>
@@ -105,13 +103,15 @@
                                     </div>
                                     <b-row>
                                         <b-col>
-                                            <div class="text-muted">Key</div>
-                                            <b-form-input type="text" v-model="config._id" placeholder="key to reference in your config.json" required/>
+                                            <b-input-group prepend="Key">
+                                                <b-form-input type="text" v-model="config._id" placeholder="key to reference in your config.json" required/>
+                                            </b-input-group>
                                         </b-col>
                                         
                                         <b-col v-if="input.datatype">
-                                            <div class="text-muted">File/Directory</div>
-                                            <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id" required/>
+                                            <b-input-group prepend="File/Dir">
+                                                <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id" required/>
+                                            </b-input-group>
                                         </b-col>
                                     </b-row>
                                 </b-card>
@@ -143,10 +143,6 @@
                                 <b-col>
                                     <div class="text-muted">Datatype Tags <small>optional</small></div>
                                     <tageditor v-if="output.datatype" v-model="output.datatype_tags"/>
-                                    <!--
-                                    <select2 v-if="output.datatype" :options="datatypes[output.datatype]._tags" 
-                                        v-model="output.datatype_tags" :multiple="true" :tags="true"></select2>
-                                    -->
                                 </b-col>
                                 <b-col>
                                     <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
@@ -227,12 +223,14 @@
                             <b-row>
                                 <b-col>
                                     <b-form-group>
-                                        <div class="text-muted">Key</div>
-                                        <b-form-input type="text" v-model="config._id"></b-form-input>
+                                        <b-input-group prepend="Key">
+                                            <b-form-input type="text" v-model="config._id"></b-form-input>
+                                        </b-input-group>
                                     </b-form-group>
                                     <b-form-group>
-                                        <div class="text-muted">Default Value</div>
-                                        <trueorfalse v-model="config.default"/>
+                                        <b-input-group prepend="Default Value">
+                                            <trueorfalse v-model="config.default"/>
+                                        </b-input-group>
                                     </b-form-group>
                                     <b-form-group>
                                         <b-form-checkbox v-model="config.readonly">Read Only 
@@ -252,12 +250,14 @@
                             <b-row>
                                 <b-col>
                                     <b-form-group>
-                                        <div class="text-muted">Key</div>
-                                        <b-form-input type="text" v-model="config._id"></b-form-input>
+                                        <b-input-group prepend="Key">
+                                            <b-form-input type="text" v-model="config._id"></b-form-input>
+                                        </b-input-group>
                                     </b-form-group>
                                     <b-form-group v-if="config.options.length">
-                                        <div class="text-muted">Default Value</div>
-                                        <b-form-select :options="config.options.map(o => o.value)" v-model="config.default"></b-form-select>
+                                        <b-input-group prepend="Default Value">
+                                            <b-form-select :options="config.options.map(o => o.value)" v-model="config.default"></b-form-select>
+                                        </b-input-group>
                                     </b-form-group>
                                     <b-form-group v-if="config.default">
                                         <b-form-checkbox v-model="config.readonly">Read Only 
@@ -324,7 +324,6 @@
 
         </b-form>
 
-        <!--
         <b-card v-if="config.debug">
             <br>
             <br>
@@ -333,7 +332,6 @@
             <h3>app</h3>
             <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
         </b-card>
-        -->
     </div>
 </div>
 </template>
@@ -516,16 +514,11 @@ export default {
         submit: function(evt) {
             evt.preventDefault();
             console.log("clicked submit");
-            /*
-            if (this.app.outputs.length == 0) {
-                this.$notify({text: "At least one output is required", type: 'error' });
-                return;
-            }
-            */
         
             var valid = true;
+
+            //make sure all inputs has file mapping
             this.app.inputs.forEach(input=>{
-                //find the input mapping
                 var found = null;
                 for (var k in this.app.config) {
                     if (this.app.config[k].input_id == input.id) found = this.app.config;
@@ -535,6 +528,19 @@ export default {
                     this.$notify({text: "Please enter at least one file mapping per each input", type: 'error' });
                 }
             }); 
+
+            //make sure there are no duplicate config key used in input
+            var keys = [];
+            for(var id in this.app.config) {
+                var key = this.app.config[id]._id;
+                if(~keys.indexOf(key)) {
+                    this.$notify({text: "Configuration key:"+key+" is also used in input. Please use a different key", type: 'error' });
+                    valid = false;
+                } else {
+                    keys.push(key); 
+                }
+            }
+
             if(!valid) {
                 console.error("invalid form");
                 return; 
@@ -561,7 +567,6 @@ export default {
                 delete c._id; //why?
             }
             keyed_app.config = keyed_config;
-
             //now ready to submit
             if(this.$route.params.id !== '_') {
                 //update

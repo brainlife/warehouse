@@ -2733,6 +2733,8 @@
         display: block;
         -webkit-transform: translate(0, 0.5px);
         transform: translate(0, 0.5px); }
+  .el-select .el-select-dropdown__wrap {
+    margin-bottom: 0 !important; }
 
 .el-pagination {
   white-space: nowrap;

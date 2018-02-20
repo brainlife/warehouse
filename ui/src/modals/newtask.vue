@@ -35,9 +35,11 @@
         <b-row v-for="(input, input_id) in inputs" :key="input_id" style="margin-bottom: 5px;">
             <b-col>
                 <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                <span v-if="input.optional" class="text-muted">(optional)</span>
             </b-col>
             <b-col cols="8">
                 <b-form-group>
+                    <!--
                     <el-select @change="validate()" v-model="input.dataset_idx" 
                         no-data-text="No dataset available for this datatype / tags"
                         placeholder="Please select input dataset" 
@@ -48,9 +50,18 @@
                             {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
                             <b>{{dataset.meta.subject}}</b> 
                             <small>{{dataset.datatype_tags.toString()}}</small>
-                            <!--(d.{{dataset.did}})-->
                         </el-option>
                     </el-select>
+                    -->
+                    <v-select :onChange="validate()" v-model="input.selected" :options="vsel(filter_datasets(input))">
+                        <span slot="no-options">No dataset available for this datatype / tags</span>
+                        <template slot="option" slot-scope="option">
+                            <span v-if="option.dataset.task.status != 'finished'">({{option.dataset.task.status}})</span>
+                            {{option.dataset.task.name}} (t.{{option.dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
+                            <b>{{option.dataset.meta.subject}}</b> 
+                            <small>{{option.dataset.datatype_tags.toString()}}</small>
+                        </template>
+                    </v-select>
                 </b-form-group>
             </b-col>
         </b-row>
@@ -102,12 +113,13 @@ import Vue from 'vue'
 import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
 import configform from '@/components/configform'
+import vSelect from 'vue-select'
 
 const lib = require('../lib');
 
 export default {
     components: { 
-        app, datatypetag, configform,
+        app, datatypetag, configform, vSelect,
     },
 
     data() {
@@ -223,26 +235,30 @@ export default {
 
             this.inputs = {}; //reset first
             this.app.inputs.forEach(input=>{
-                var input_copy = Object.assign({dataset_idx: ''}, input);
+                var input_copy = Object.assign({
+                    selected: null, 
+                    options: this.vsel(this.filter_datasets(input)),
+                }, input);
                 Vue.set(this.inputs, input.id, input_copy);
-                this.preselect_single_items(input);
+                this.preselect_single_items(input_copy);
             });
+
             this.validate(); //for preselect
         },
 
         back: function() {
             this.app = null;
-            //this.validate();
         },
 
         preselect_single_items: function(input) {
-            var datasets = this.filter_datasets(input);
-            if (datasets.length == 1) {
-                Vue.set(this.inputs[input.id], 'dataset_idx', datasets[0].idx);
+            //var datasets = this.filter_datasets(input);
+            if (input.options.length == 1) {
+                //Vue.set(this.inputs[input.id], 'selected', datasets[0].idx);
+                this.inputs[input.id].selected = input.options[0];
             }
         },
 
-        validate: function(val) {
+        validate: function() {
             var valid = true; //innocent until proven guilty
 
             if(!this.app) {
@@ -251,57 +267,21 @@ export default {
                 //make sure all inputs are selected
                 for(var input_id in this.inputs) {
                     var input = this.inputs[input_id];
-                    if(input.dataset_idx === '') valid = false;
+                    if(!input.optional && !input.selected) {
+                        valid = false;
+                    }
                 }
             }
             this.valid = valid;
         },
 
-        /*
-        //recursively update configuration with given newtask
-        process_input_config: function(config) {
-            for(var k in this.app.config) { 
-                var node = this.app.config[k];
-                if(node instanceof Array) {
-                    console.log("todo.. array!");
-                } else if(typeof node === 'object') {
-                    if(node.type) {
-                        switch(node.type) {
-                        case "input":
-                            var input = this.inputs[node.input_id];
-                            var dataset = this.datasets[input.dataset_idx];
-
-                            var base = "../"+dataset.task._id;
-                            if(dataset.subdir) base+="/"+dataset.subdir;
-                            if(!~this.deps.indexOf(dataset.task._id)) this.deps.push(dataset.task._id);
-
-                            //use file path specified in datatype..
-                            var file = input.datatype.files.find(file=>file.id == node.file_id);
-                            if(!file) {
-                                console.error("failed to find file id", node.file_id);
-                                config[k] = "no such file_id:"+node.file_id;
-                                break;
-                            }
-                            config[k] = base+"/"+(file.filename||file.dirname);
-                            //but override it if filemapping from the input dataset is provided
-                            if(dataset.files && dataset.files[node.input_id]) {
-                                config[k] = base+"/"+dataset.files[node.file_id];
-                            }
-                            break;
-                        //jdefault:
-                        //    config[k] = "unknown_template_type";
-                        }
-                    } else this.process_input_config(node); //recurse to child node
-                }
-            }
-        },
-        */
         process_input_config: function(config) {
             for(var k in this.app.config) { 
                 var node = this.app.config[k];
                 if(node.type && node.type == "input") {
                     var input = this.inputs[node.input_id];
-                    var dataset = this.datasets[input.dataset_idx];
+                    if(!input.selected) continue; //optional input not selected?
+                    var dataset = input.selected.dataset;
 
                     var base = "../"+dataset.task._id;
                     if(dataset.subdir) base+="/"+dataset.subdir;
@@ -328,6 +308,12 @@ export default {
             return lib.filter_datasets(this.datasets, input);
         },
 
+        vsel: function(datasets) {
+            return datasets.map(dataset=>{
+                return { label: this.compose_label(dataset), dataset };
+            });
+        },
+
         submit: function(evt) {
             evt.preventDefault();
 
@@ -338,7 +324,8 @@ export default {
             var _inputs = [];
             for(var input_id in this.inputs) {
                 var input = this.inputs[input_id];
-                var dataset = this.datasets[input.dataset_idx];
+                if(!input.selected) continue; //optional input not selected?
+                var dataset = input.selected.dataset; 
 
                 var copy_dataset = Object.assign({}, dataset);
                 copy_dataset.task_id = dataset.task._id;

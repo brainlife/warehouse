@@ -79,6 +79,7 @@ export default {
                 limit: 1000,
                 sort: '-create_date',
             }}).then(res=>{
+                console.dir(res.body.instances);
                 res.body.instances.forEach(instance=>{
                     instance._label = instance.desc||'('+instance._id+')';
                     this.instances.push(instance);

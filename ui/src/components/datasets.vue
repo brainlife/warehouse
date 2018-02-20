@@ -238,6 +238,15 @@ export default {
             if(this.loading) this.loading.abort();
             this.reload();
         },
+        '$route': function() {
+            let subid = this.$route.params.subid;
+            console.log("route change", subid);
+            this.$root.$emit('dataset.view', subid);
+        },
+    },
+
+    destroyed() {
+        this.$root.$emit('dataset.view', null);
     },
 
 	methods: {
