@@ -12,6 +12,7 @@
         </div>
     </div>
 
+    <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
     <div class="tasks" v-if="tasks" v-for="task in tasks" :key="task._id">
         <!--task-id and toggler-->
         <div style="float: right;" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
@@ -89,9 +90,11 @@
                     <span @click="open_dataset(output.dataset_id)" class="clickable text-muted" v-if="output.dataset_id">
                         <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/> <icon name="shield"/> <b>{{projects[output.project].name}}</b>
                     </span>
+                    <!--
                     <span v-if="task.status == 'running'" class="text-muted">
                         <icon name="cog" :spin="true"/>
                     </span>
+                    -->
                     <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
                         <div class="archived-datasets-title">Archived Datasets</div>
                         <ul class="archived">
@@ -187,6 +190,8 @@ export default {
             
             archiving: null, //currently open archiving form (_output_tasks[task._id]._id+'/'+output_id)
             ws: null, //websocket
+
+            loading: false,
             
             config: Vue.config,
         }
@@ -287,9 +292,10 @@ export default {
             //this.$root.$emit('dataset.view', id);
             this.$router.push("/project/"+this.project._id+"/dataset/"+id);
         },
-        bind_ws() {
-        },
+
         load() {
+            this.loading = true;
+
             console.log("loading process");
             this.archiving = null;
 
@@ -373,7 +379,7 @@ export default {
                     limit: 300,
                 }}).then(res=>{
                     this.archived = res.body.datasets;
-
+                    this.loading = false;
                 });
             });
         },
@@ -680,5 +686,12 @@ border-left: 2px solid #007bff;
 .task-tab-stop_requested,
 .task-tab-stopped {
 border-left: 2px solid gray;
+}
+.loading {
+bottom: 100px;
+padding: 10px 20px;
+font-size: 125%;
+color: #999;
+background-color: white;
 }
 </style>

@@ -105,7 +105,8 @@ export default {
     left: 0px;
     right: 0px;
     box-shadow: 0px 1px 1px rgba(0,0,0,0.5);
-    background-image: linear-gradient(120deg, #2693ff, #159957);
+    background-image: linear-gradient(90deg, #2693ff, #159957);
+    /*background-color: purple;*/
     color: white;
     z-index: 10;
 }
