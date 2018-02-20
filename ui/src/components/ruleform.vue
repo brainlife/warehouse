@@ -3,8 +3,13 @@
     <div class="margin20">
         <!--{{rule._id||'new rule'}}-->
         <b-form-group label="Name *" horizontal>
-            <b-form-input required v-model="rule.name" type="text" placeholder="title of the paper"></b-form-input>
+            <b-form-input required v-model="rule.name" type="text" placeholder="Please enter name for this rule (used for output dataset description)"></b-form-input>
         </b-form-group>
+        <b-form-group horizontal>
+            <b-form-checkbox v-model="rule.active">Active</b-form-checkbox>
+            <small class="text-muted">Only the active rules are processed by the rule handler</small>
+        </b-form-group>
+
         <b-form-group label="App *" horizontal>
             <v-select required v-model="rule.app" label="name" :options="apps" @search="search_app">
                 <span slot="no-options">please enter app name / desc to search</span>
@@ -25,32 +30,47 @@
                 </b-card>
             </b-form-group>
             <b-form-group label="Inputs" horizontal>
-                <p class="text-muted">look for subjects that has the following input datasets.</p>
+                <p class="text-muted">Look for subjects that has the following input datasets.</p>
                 <b-card v-for="input in rule.app.inputs" :key="input._id" class="card">
                     <div slot="header">
                         <small class="text-muted" style="float: right">{{input.id}}</small>
                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                        <span class="text-muted" v-if="input.optional">(optional)</span>
                     </div>
-                    <b-row>
-                        <b-col>tags</b-col>
+                    <b-row v-if="input.optional">
+                        <b-col></b-col>
                         <b-col :cols="9">
-                            <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)"/>
-                            <small class="text-muted">look for datasets with specific tags</small>
+                            <p>
+                                <b-form-checkbox v-model="rule.input_selection[input.id]" value="ignore">Don't use this input</b-form-checkbox>
+                                <small class="text-muted">This is an optional field. You can submit without this input</small>
+                            </p>
                         </b-col>
                     </b-row> 
-                    <br>
-                    <b-row>
-                        <b-col>project</b-col>
-                        <b-col :cols="9">
-                            <projectselecter v-model="rule.input_project_override[input.id]" :allownull="true" placeholder="(from this project)"/>
-                            <small class="text-muted">look for datasets in this project</small>
-                        </b-col>
-                    </b-row> 
+                    <div v-if="rule.input_selection[input.id] != 'ignore'">
+                        <b-row>
+                            <b-col>tags</b-col>
+                            <b-col :cols="9">
+                                <p>
+                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)"/>
+                                    <small class="text-muted">look for datasets with specific tags</small>
+                                </p>
+                            </b-col>
+                        </b-row> 
+                        <b-row>
+                            <b-col>project</b-col>
+                            <b-col :cols="9">
+                                <p>
+                                <projectselecter v-model="rule.input_project_override[input.id]" :allownull="true" placeholder="(from this project)"/>
+                                <small class="text-muted">look for datasets in this project</small>
+                                </p>
+                            </b-col>
+                        </b-row> 
+                    </div>
                 </b-card>
             </b-form-group>
 
             <b-form-group label="Outputs" horizontal>
-                <p class="text-muted">submit app if following dataset <b>does not</b> exist.</p>
+                <p class="text-muted">Submit the app if the following dataset <b>does not</b> exist.</p>
                 <b-card v-for="output in rule.app.outputs" :key="output._id" class="card">
                     <div slot="header">
                         <small class="text-muted" style="float: right">{{output.id}}</small>
@@ -64,12 +84,9 @@
             </b-form-group>
         </div>
         <b-form-group label="Subject Filtering" horizontal>
-            <p class="text-muted">only process subjects that match following regex</p>
+            <p class="text-muted">Only process subjects that match following regex</p>
             <b-form-input v-model="rule.subject_match" type="text" placeholder="regex to match subject name"></b-form-input>
-            <small class="text-muted">for example, "^100" will make this rule to only process subjects that starts with 100.</small>
-        </b-form-group>
-        <b-form-group horizontal>
-            <b-form-checkbox v-model="rule.active">active</b-form-checkbox>
+            <small class="text-muted">For example, <b>^100</b> will make this rule to only process subjects that starts with 100.</small>
         </b-form-group>
     </div>
     <br>
@@ -137,6 +154,7 @@ export default {
                 input_tags: {},
                 output_tags: {}, 
                 input_project_override: {},
+                input_selection: {},
                 config: {},
             }, this.value);
             this.ensure_ids_exists();
@@ -189,9 +207,10 @@ export default {
                 if(this.rule.output_tags[id].length > 0) output_tags[id] = this.rule.output_tags[id];
             });
 
-            //remove config that doesn't belong to specified app
+            //remove config that doesn't belong to specified app (or input)
             for(var k in this.rule.config) {
-                if(this.rule.app.config[k] === undefined) delete this.rule.config[k];
+                var spec = this.rule.app.config[k];
+                if(spec === undefined || spec.type == "input") delete this.rule.config[k];
             }
 
             //construct the final rule and submit

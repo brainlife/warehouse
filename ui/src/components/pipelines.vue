@@ -62,6 +62,8 @@
                         <span v-if="rule.input_project_override && rule.input_project_override[input.id]" class="text-muted">
                             From <icon name="shield"/> {{projects[rule.input_project_override[input.id]].name}}
                         </span>
+                        <!--<span class="text-muted" v-if="input.optional">(optional)</span>-->
+                        <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
                     </p>
                 </div>
 
