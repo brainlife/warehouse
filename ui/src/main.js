@@ -35,7 +35,6 @@ import VueTimeago from 'vue-timeago'
 
 import SocialSharing from 'vue-social-sharing';
 
-
 Vue.config.productionTip = false
 
 Vue.component('icon', Icon)

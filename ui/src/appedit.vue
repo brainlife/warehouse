@@ -90,10 +90,10 @@
                                         <small class="text-muted">You can prefix tags with ! for negative tags</small>
                                     </div>
                                 </b-col>
-                                <b-col :cols="2">
-                                    <b-form-checkbox v-model="input.optional">Optional</b-form-checkbox>
-                                </b-col>
                             </b-row>
+                            <p>
+                                <b-form-checkbox v-model="input.optional">Optional Input</b-form-checkbox>
+                            </p>
                             <br><b>File Mapping</b><br>
                             <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
                             <transition-group name="height">

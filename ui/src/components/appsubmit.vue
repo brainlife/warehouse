@@ -6,21 +6,27 @@
     <!--<h4>Input Datasets</h4>-->
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col cols="4">
-            <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
-            <span class="text-muted" v-if="input.optional">(optional)</span>
+            <span>{{input.id}}</span>
         </b-col>
-        <b-col cols="4">
-            <projectselecter v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
-        </b-col>
-        <b-col cols="4">
-            <select2 style="width: 100%; max-width: 100%;" 
-                v-model="form.inputs[input.id]" 
-                :dataAdapter="debounce_grab_items(input)" 
-                :allowClear="input.optional"
-                :multiple="false" 
-                :placeholder="'Input Dataset'" 
-                :options="form.options[input.id]"/>
-            <br>
+        <b-col cols="8">
+            <b-row>
+                <b-col cols="5">
+                    <span class="text-muted">Project</span>
+                    <projectselecter v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
+                </b-col>
+                <b-col cols="7">
+                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                    <span class="text-muted" v-if="input.optional">(optional)</span>
+                    <select2 style="width: 100%; max-width: 100%;" 
+                        v-model="form.inputs[input.id]" 
+                        :dataAdapter="debounce_grab_items(input)" 
+                        :allowClear="input.optional"
+                        :multiple="false" 
+                        :placeholder="'Input Dataset'" 
+                        :options="form.options[input.id]"/>
+                </b-col>
+            </b-row>
+            <p v-if="input.desc">input.desc</p>
         </b-col>
     </b-row>
     
@@ -221,7 +227,8 @@ export default {
                         text: subject,
                         date: dataset.create_date,
                         datatype: dataset.datatype,
-                        tags: dataset.datatype_tags
+                        datatype_tags: dataset.datatype_tags,
+                        tags: dataset.tags,
                     });
                 });
 

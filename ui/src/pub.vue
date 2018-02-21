@@ -336,6 +336,7 @@ export default {
     },
 
     //https://help.altmetric.com/support/solutions/articles/6000141419-what-metadata-is-required-to-track-our-content-
+    //https://github.com/declandewet/vue-meta
     metaInfo() {
         var meta = [];
         if(this.pub) {

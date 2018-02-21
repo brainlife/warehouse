@@ -40,10 +40,22 @@ export default {
 
             if (data.header) result.classList.add('header');
             if (data.text) result.innerHTML += ascii_escape(data.text);
+
+            //TODO - makes no sense that these formatter exists here
             if (data.datatype && data.tags) {
-                result.innerHTML += " <span class='datatype'>"+data.datatype.name+"</span>";
-                data.tags.forEach(tag => {
+                var datatype_name = data.datatype.name;
+                if(datatype_name.indexOf("neuro/") == 0) datatype_name = datatype_name.substring(6);
+                result.innerHTML += " <span class='datatype'>"+datatype_name+"</span> ";
+                /*
+                data.datatype_tags.forEach(tag => {
                     result.innerHTML += " <span class='tag'>"+ascii_escape(tag)+"</span>";
+                });
+                */
+                var firsttag = true;
+                data.tags.forEach(tag => {
+                    if(!firsttag) result.innerHTML += " | ";
+                    firsttag = false;
+                    result.innerHTML += ascii_escape(tag);
                 });
             }
             
