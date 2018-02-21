@@ -291,6 +291,7 @@ var appSchema = mongoose.Schema({
     //input files for this application
     inputs: [ new mongoose.Schema({
         id: String,
+        desc: String, //any description to show for this input (experimental)
         datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
         datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
 
