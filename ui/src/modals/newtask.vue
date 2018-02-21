@@ -62,6 +62,7 @@
                             <small>{{option.dataset.datatype_tags.toString()}}</small>
                         </template>
                     </v-select>
+                    <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
                 </b-form-group>
             </b-col>
         </b-row>

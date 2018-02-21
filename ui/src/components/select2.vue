@@ -60,7 +60,7 @@ export default {
             }
             
             // if there's a date, add it
-            if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleDateString()+"</time>";
+            if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
             
             return result;
         }

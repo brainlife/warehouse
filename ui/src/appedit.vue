@@ -47,7 +47,7 @@
 
                 <b-form-group horizontal label="Source Code">
                     <b-row>
-                        <b-col :cols="7">
+                        <b-col cols="7">
                             <b-input-group prepend="Github Repository Name *">
                                 <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
                             </b-input-group>
@@ -71,29 +71,36 @@
                 <b-form-group horizontal label="Input Datatype">
                     <transition-group name="height">
                     <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
-                        <b-card>
-                            <div class="button button-danger" @click="remove_input(idx)" style="float: right;">
-                                <icon name="trash"/>
+                        <b-card style="position: relative;">
+                            <div class="button button-danger" @click="remove_input(idx)" style="position: absolute; right: 0px; top: 3px">
+                                <icon name="trash" scale="1.25"/>
                             </div>
                             <b-row>
                                 <b-col>
-                                    <b-input-group prepend="Datataype">
-                                        <b-form-select v-model="input.datatype">
-                                            <option v-for="datatype in datatypes" :key="datatype._id" :value="datatype._id">{{datatype.name}}</option>
-                                        </b-form-select>
-                                    </b-input-group>
+                                    <span class="text-muted">Datatype</span>
+                                    <b-form-select v-model="input.datatype">
+                                        <option v-for="datatype in datatypes" :key="datatype._id" :value="datatype._id">{{datatype.name}}</option>
+                                    </b-form-select>
                                 </b-col>
-                                <b-col>
-                                    <span style="float: left; width:100px">Tags <small>(optional)</small></span>
-                                    <div style="padding-left: 100px;">
-                                        <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags"/>
-                                        <small class="text-muted">You can prefix tags with ! for negative tags</small>
-                                    </div>
+                                <b-col cols="7">
+                                    <span class="text-muted">Datatype Tags <small>(optional)</small></span><br>
+                                    <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags"/>
+                                    <small class="text-muted">You can prefix tags with ! for negative tags</small>
                                 </b-col>
                             </b-row>
-                            <p>
-                                <b-form-checkbox v-model="input.optional">Optional Input</b-form-checkbox>
+
+                            <br>
+                            <b-row>
+                                <b-col>
+                                    <b-form-checkbox v-model="input.optional">Optional Input</b-form-checkbox>
+                                </b-col>
+                                <b-col cols="7">
+                                    <span class="text-muted">Description (optional)</span>
+                                    <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"></b-form-textarea>
+                                </b-col>
                             </p>
+                            </b-row>
+
                             <br><b>File Mapping</b><br>
                             <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
                             <transition-group name="height">
