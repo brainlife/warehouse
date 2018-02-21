@@ -87,8 +87,8 @@
                                         <!--Please wait before you download / process this dataset.-->
                                     </span> 
                                     <span v-if="dataset.status == 'stored'">
-                                        {{dataset.storage}}
-                                        <span class="test-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
+                                        <b>{{dataset.storage}}</b>
+                                        <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                     </span> 
                                     <span v-if="dataset.status == 'failed'" style="color: red;">
                                         <icon name="exclamation-triangle"/> Failed to store on warehouse
@@ -111,12 +111,12 @@
                             </b-col>
                         </b-row>
 
-                        <b-row v-if="dataset.prov && dataset.prov.app">
+                        <b-row v-if="dataset.prov && dataset.prov.app && task">
                             <b-col cols="3"><b class="text-muted">Produced by</b></b-col>
                             <b-col>
                                 <app slot="header" :appid="dataset.prov.app" :branch="task.service_branch||'master'" :clickable="false" @click.native="openapp(dataset.prov.app)">
                                     <!--TODO I should allow just passing this.task-->
-                                    <taskconfig style="margin: 10px;" :taskid="dataset.prov.task_id"/>
+                                    <taskconfig style="margin: 10px;" :task="task"/>
                                 </app>
                                 <br>
                             </b-col>
@@ -230,6 +230,8 @@ export default {
             tab_index: 0,
 
             selfurl: document.location.href,
+
+            back: null, //route to push to when user close it
             
             alltags: null,
             config: Vue.config,
@@ -237,10 +239,11 @@ export default {
     },
 
     created() {
-        console.log("momdal/dataset listening to dataset.view event");
-        this.$root.$on("dataset.view", id=>{
-            console.log("requested to view", id);
-            this.load(id);
+        console.log("modal/dataset listening to dataset.view event");
+        this.$root.$on("dataset.view", opt=>{
+            console.log("requested to view", opt);
+            this.back = opt.back;
+            this.load(opt.id);
         });
 
         //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
@@ -252,6 +255,7 @@ export default {
     },
 
     destroyed() {
+        //to prevent wierd things from happening during debugging?
         this.$root.$off("dataset.view");
     },
     
@@ -265,10 +269,6 @@ export default {
             if(this.tab_index == 2 && this.apps == null) {
                 this.load_apps();
             }
-        },
-
-        '$route': function() {
-            //console.log(".........modal route------------");
         },
     },
 
@@ -358,8 +358,7 @@ export default {
     
         close: function() {
             if(!this.dataset) return;
-            //this.$router.push("/project/"+this.dataset.project._id+"/dataset"); 
-            this.$router.push("./"); 
+            if(this.back) this.$router.push(this.back);
             this.dataset = null;
         },
 
@@ -436,7 +435,6 @@ export default {
             if(confirm("Do you really want to remove this dataset?")) {
                 this.$http.delete('dataset/'+this.dataset._id)
                 .then(res=>{
-                    //this.$root.$emit("dataset.remove", this.dataset);
                     this.close();
                 });
             }

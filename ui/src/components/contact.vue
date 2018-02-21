@@ -1,5 +1,5 @@
 <template>
-<div class="contact" :class="{'text-muted': !profile.active}" :title="profile.email">
+<div class="contact" :class="{'text-muted': !profile.active}" :title="profile.email" @click="click">
     <img :src="gurl">
     <div class="name" v-if="profile.fullname">
         {{profile.fullname||'No Name'}}
@@ -62,6 +62,10 @@ export default {
             }, res=>{
                 console.error(res);
             });
+        },
+
+        click: function() {
+            if(this.profile.email) document.location = 'mailto:'+this.profile.email;
         }
     },
 }
@@ -80,6 +84,7 @@ margin: 2px 0px;
 line-height: 22px;
 box-shadow: 1px 1px 2px rgba(0,0,0,0.15);
 margin-right: 5px;
+cursor: pointer;
 }
 .contact img {
 float: left;

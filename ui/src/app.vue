@@ -56,7 +56,7 @@
                                 <b class="text-muted">Administrators</b>
                             </b-col>
                             <b-col>
-                                <p><small class="text-muted" v-if="preferred_resource">Following users can administer this application registration.</small></p>
+                                <small class="text-muted">Following users can administer this application registration.</small>
                                 <ul style="list-style: none; padding: 0px;">
                                     <li v-for="c in app.admins" :key="c._id">
                                         <contact :id="c"/>
@@ -71,7 +71,7 @@
                                 <b class="text-muted">Contributors</b>
                             </b-col>
                             <b-col>
-                                <p><small class="text-muted" v-if="preferred_resource">Following people have contributed to the github repo ({{app.github}}).</small></p>
+                                <small class="text-muted">Following people have contributed to the github repo ({{app.github}}).</small>
                                 <ul style="list-style: none; padding: 0px;">
                                     <li v-for="dev in app.contributors" :key="dev._id">
                                         <contact :fullname="dev.name" :email="dev.email"/>
@@ -81,6 +81,7 @@
                         </b-row>
 
                         <!--input/output header-->
+                        <br>
                         <b-row>
                             <b-col cols="3">
                             </b-col>
@@ -105,7 +106,7 @@
                                             <span v-if="find_by_id(app.inputs, con.input_id).optional" class="text-muted">(optional)</span>
                                         </b-col>
                                         <b-col :cols="3">
-                                            <b><pre style="background-color: white;">"{{key}}"</pre></b>
+                                            <b>{{key}}</b>
                                         </b-col>
                                         <b-col>
                                             <small style="opacity: 0.3; float: right; margin-right: 10px">{{con.input_id}}</small><!--internal input id-->
@@ -113,7 +114,8 @@
                                         </b-col>
                                     </b-row>
                                 </div>
-                                <icon name="arrow-down"/>
+                                <!--<icon name="arrow-down"/>-->
+                                <hr>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -260,7 +262,8 @@
                 <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
             </div>
             <div v-if="tab_index == 2">
-                <appsubmit :id="app._id"/>
+                <appsubmit v-if="config.user" :id="app._id"/>
+                <p v-else class="text-muted">Please login first to execute application.</p>
             </div>
             <div v-if="tab_index == 3">
                 <p class="text-muted">No test status available yet</p>

@@ -104,14 +104,16 @@
 
         <div class="select-action">
             <p>
-                <b-button size="sm" @click="download"><icon name="download" scale="0.8"/> Download 
+                <b-button size="sm" @click="download">
+                    <icon name="download" scale="0.8"/> Download 
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
                 </b-button>
-                <!--<div class="button" @click="download" title="Organize selected datasets into BIDS data structure and download."><icon name="download"/></div>-->
             </p>
             <p>
                 <b-button size="sm" @click="process"><icon name="paper-plane" scale="0.8"/> Process</b-button>
-                <!--<div class="button" @click="process" title="Run applications on selected datasets by creating a new process."><icon name="paper-plane"/></div>-->
+            </p>
+            <p>
+                <b-button size="sm" @click="remove" variant="danger"><icon name="trash" scale="0.8"/> Remove</b-button>
             </p>
         </div>
         <br clear="both">
@@ -228,7 +230,7 @@ export default {
 		area.addEventListener("scroll", this.page_scrolled);
 
         let subid = this.$route.params.subid;
-        if(subid) this.$root.$emit('dataset.view', subid);
+        if(subid) this.$root.$emit('dataset.view', {id: subid, back: './'});
     },
 
     watch: {
@@ -241,15 +243,12 @@ export default {
         '$route': function() {
             let subid = this.$route.params.subid;
             console.log("route change", subid);
-            this.$root.$emit('dataset.view', subid);
+            this.$root.$emit('dataset.view', {id: subid, back: './'});
         },
     },
 
-    destroyed() {
-        this.$root.$emit('dataset.view', null);
-    },
-
 	methods: {
+
         ismember: function() {
             if(!this.project) return false;
             if(~this.project.members.indexOf(Vue.config.user.sub)) return true;
@@ -307,6 +306,7 @@ export default {
                             old_dataset.tags = dataset.tags;
                             old_dataset.meta = dataset.meta;
                             old_dataset.removed = dataset.removed;
+                            if(dataset.removed) this.remove_selected(dataset);
                             this.$forceUpdate(); //need this because I am not inside vue hook?
                         } else {
                             //this causes whole page to get reloaded when user update dataset.. why does this exist anyway?
@@ -447,7 +447,7 @@ export default {
 
         open: function(dataset_id) {
             this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
-            this.$root.$emit('dataset.view', dataset_id);
+            this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
         },
 
         check: function(dataset) {
@@ -630,6 +630,24 @@ export default {
                     })
                 }
             });
+        },
+
+        remove: function() {
+            if(confirm("Do you really want to remove all selected datasets?")) {
+                async.forEach(this.selected, (dataset, next)=>{
+                    console.log("delete", dataset);
+                    this.$http.delete('dataset/'+dataset._id).then(res=>{
+                        next();
+                    }).catch(next);
+                }, err=>{
+                    if(err) {
+                        console.dir(err);
+                        this.$notify({type: "error", text: err.body.message});
+                    } else {
+                        this.$notify({type: "success", text: this.selected.length+" dataset successfully removed"});
+                    }
+                });
+            }
         },
 
         submit_process: function(project_id, instance) {

@@ -288,9 +288,7 @@ export default {
             document.getElementById("scrolled-area").scrollTop = top;
         },
         open_dataset: function(id) {
-            //TODO - user could be opening dataset that doesn't belong on the current project..
-            //this.$root.$emit('dataset.view', id);
-            this.$router.push("/project/"+this.project._id+"/dataset/"+id);
+            this.$root.$emit('dataset.view', {id});
         },
 
         load() {

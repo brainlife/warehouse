@@ -62,6 +62,7 @@
                             <small>{{option.dataset.datatype_tags.toString()}}</small>
                         </template>
                     </v-select>
+                    <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
                 </b-form-group>
             </b-col>
         </b-row>
@@ -178,7 +179,7 @@ export default {
                 res.body.apps.forEach(app=>{
                     var match = true;
                     app.inputs.forEach(input=>{
-                        //if(!~datatype_ids.indexOf(input.datatype._id)) match = false;
+                        if(input.optional) return; //optional 
                         var matching_dataset = this.datasets.find(dataset=>{
                             if(dataset.datatype != input.datatype._id) return false;
                             var match_tag = true;
