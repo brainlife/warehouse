@@ -530,7 +530,7 @@ function handle_rule(rule, cb) {
             next=>{
                 //var did = next_tid*10;
                 var _config = Object.assign(
-                    rule.config, 
+                    rule.config||{}, 
                     process_input_config(rule.app.config, inputs, _app_inputs, task_stage), 
                     {
                         _app: rule.app._id,
@@ -599,6 +599,7 @@ function process_input_config(config, inputs, datasets, task_stage) {
         case "input":
             var input = inputs[v.input_id];
             var dataset = datasets.find(d=>d.id == v.input_id);
+            if(!dataset) continue; //optional input that's ignored?
             var base = "../"+dataset.task_id;
             if(dataset.subdir) base+="/"+dataset.subdir;
 

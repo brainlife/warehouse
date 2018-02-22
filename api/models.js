@@ -89,9 +89,6 @@ var projectSchema = mongoose.Schema({
 
     avatar: String, //url for avatar
 
-    //project details
-    //config: mongoose.Schema.Types.Mixed, 
-
     //access control 
     //* private - only the project member can access
     //* public - accessible by anyone
@@ -294,8 +291,12 @@ var appSchema = mongoose.Schema({
     //input files for this application
     inputs: [ new mongoose.Schema({
         id: String,
+        desc: String, //any description to show for this input (experimental)
         datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
         datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
+
+        optional: { type: Boolean, default: false}, //input is optional (false for arra means requires at least one)
+        multi: { type: Boolean, default: false}, //array input
     })],
 
     //output files for this application
@@ -360,6 +361,12 @@ var ruleSchema = mongoose.Schema({
     //if user wants to override where the input data comes from, specify projects IDs keyed by input id
     input_project_override: mongoose.Schema.Types.Mixed,
 
+    //EXPERIMENTAL .. specify input selection strategy
+    //options are..
+    //          (default) looks for the *latest* datasets that it finds
+    //          ignore: submit without this dataset (used for optional input dataset)
+    input_selection: mongoose.Schema.Types.Mixed,
+
     //app to submit
     app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
     //scalar configs (input configs are used to detect new datasets)
@@ -376,7 +383,7 @@ var ruleSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false} ,
     active: { type: Boolean, default: true} ,
-});
+}, {minimize: false}); //to keep empty config{} from disappearing
 exports.Rules = mongoose.model('Rules', ruleSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
