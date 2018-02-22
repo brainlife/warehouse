@@ -123,14 +123,11 @@ export default {
             this.$notify({type: 'error', text: err.body.message});
         },
 
-        /*
-        scrollto: function(id) {
-            var elem = document.getElementById(id);
+        scrollto: function(instance) {
+            var elem = document.getElementById(instance._id);
             var top = elem.offsetTop;
-            console.dir(elem);
             document.getElementById("scrolled-area").scrollTop = top;
         },
-        */
 
         toggle_instance: function(instance) {
             //if(instance.edit) return;
@@ -230,6 +227,11 @@ export default {
             }}).then(res=>{
                 this.instances = res.body.instances;
                 this.selected = this.instances.find(it=>it._id == this.$route.params.subid);
+                if(this.selected) {
+                    this.$nextTick(()=>{
+                        this.scrollto(this.selected);
+                    });
+                }
                 if(cb) cb();
             }).catch(cb);
         },
