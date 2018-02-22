@@ -395,7 +395,7 @@ export default {
             //then load task stats
             return this.$http.get(Vue.config.wf_api+'/task/stats', {params: {
                 service: this.app.github, 
-                service_branch: this.app.github_branch,
+                //service_branch: this.app.github_branch, //group by branch to pull *recent* info
             }});
         }).then(res=>{
             this.service_stats = res.body;

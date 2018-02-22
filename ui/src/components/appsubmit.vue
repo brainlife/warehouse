@@ -2,12 +2,12 @@
 <b-form v-if="app && projects" @submit="submit">
     <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available.</b-alert>
 
-
     <!--<h4>Input Datasets</h4>-->
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col cols="4">
-            <span>{{input.id}}</span>
+            <small style="float: right;" class="text-muted">{{input.id}}</small>
             <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+            <span v-if="!input.optional">*</span>
         </b-col>
         <b-col cols="8">
             <b-row>

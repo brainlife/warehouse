@@ -3,7 +3,9 @@
     <span class="text-muted" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
     <b-row v-for="(v,k) in taskconfig" :key="k">
         <b-col :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</b-col>
-        <b-col v-if="typeof v == 'object'">
+
+        <b-col v-if="v === null"><span class="text-muted">null</span></b-col>
+        <b-col v-else-if="typeof v == 'object'">
             <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
         </b-col>
         <b-col v-else>{{v}}</b-col>
@@ -61,8 +63,12 @@ export default {
             for(let id in config) {
                 if(id[0] == "_") continue;
                 let v = config[id];
-                let vs = v.toString();
-                if(vs.indexOf("..") != 0) this.taskconfig[id] = v;
+                if(v === null) {
+                    this.taskconfig[id] = null;
+                } else {
+                    let vs = v.toString();
+                    if(vs.indexOf("..") != 0) this.taskconfig[id] = v;
+                }
             }
 
         }

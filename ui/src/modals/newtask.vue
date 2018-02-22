@@ -36,6 +36,7 @@
             <b-col>
                 <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                 <span v-if="input.optional" class="text-muted">(optional)</span>
+                <span v-else>*</span>
             </b-col>
             <b-col cols="8">
                 <b-form-group>

@@ -184,9 +184,8 @@
                             <b-row>
                                 <b-col>
                                     <b-form-group>
-                                        <b-input-group prepend="Key">
-                                            <b-form-input type="text" v-model="config._id" required placeholder="A key to use in config.json"/>
-                                        </b-input-group>
+                                        <span class="text-muted">Key <small>in config.json</small></span>
+                                        <b-form-input type="text" v-model="config._id" required placeholder="A key to use in config.json"/>
                                     </b-form-group>
 
                                     <b-form-group>
@@ -200,6 +199,11 @@
                                     <b-form-group v-if="config.default">
                                         <b-form-checkbox v-model="config.readonly">Read Only<br>
                                         <small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
+                                    </b-form-group>
+
+                                    <b-form-group>
+                                        <b-form-checkbox v-model="config.optional">Optional Configuration<br>
+                                        <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
                                     </b-form-group>
 
                                     <div v-if="!config.readonly && (config.type == 'number' || config.type == 'integer')">
@@ -218,7 +222,7 @@
                                     </b-form-group>
                                     <b-form-group>
                                         <div class="text-muted">Description <small>optional</small></div>
-                                        <b-form-textarea v-model="config.desc" placeholder="Enter description to add for this field" :rows="3" :max-rows="6"></b-form-textarea>
+                                        <b-form-textarea v-model="config.desc" placeholder="Enter description to add for this field" :rows="5" :max-rows="8"></b-form-textarea>
                                     </b-form-group>
                                 </b-col>
                             </b-row>
@@ -243,6 +247,13 @@
                                         <b-form-checkbox v-model="config.readonly">Read Only 
                                         <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                     </b-form-group>
+
+                                    <!-- doesn't make sense that boolean field can be optional
+                                    <b-form-group>
+                                        <b-form-checkbox v-model="config.optional">Optional Configuration<br>
+                                        <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
+                                    </b-form-group>
+                                    -->
                                 </b-col>
                                 <b-col sm="7">
                                     <div class="text-muted">Description</div>
@@ -269,6 +280,10 @@
                                     <b-form-group v-if="config.default">
                                         <b-form-checkbox v-model="config.readonly">Read Only 
                                         <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
+                                    </b-form-group>
+                                    <b-form-group>
+                                        <b-form-checkbox v-model="config.optional">Optional Configuration<br>
+                                        <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
                                     </b-form-group>
                                 </b-col>
                                 <b-col sm="7">
