@@ -30,7 +30,7 @@ To register your resource, go to [Brainlife Settings](https://brainlife.io/wf/#!
 * *Hostname* The hostname of your compute resource (usually a login/submit host)
 * *Username* Username used to ssh to this resource
 * *Workdir* Directory used to stage and store generated datasets by apps. *You should not share the same directory with other resources*. Please make sure that the specified directory exits (mkdir if not).
-* SSH Public Key: Copy the content of this key to your resource's ~/.ssh/authorized_keys. Please read (authorized_keys)[https://www.ssh.com/ssh/authorized_keys/] for more detail.
+* SSH Public Key: Copy the content of this key to your resource's ~/.ssh/authorized_keys. Please read [authorized_keys](https://www.ssh.com/ssh/authorized_keys/) for more detail.
 
 You can leave the rest of the fields empty for now.
 
@@ -42,7 +42,7 @@ Once you register your resource, you will need to do a few things to prepare you
 
 ### ABCD Default Hooks
 
-Some app provides its own (ABCD Hooks)[https://github.com/brain-life/abcd-spec], however, many of them relies on default hooks that are installed on each resource. As a resource provider, you will need to provide these default hooks ("start", "stop", and "status" scripts) and make them available to all app by adding them to `$PATH`. If you are not sure how to write these scripts, you can install and use the our default ABCD hooks by doing following.
+Some app provides its own [ABCD Hooks](https://github.com/brain-life/abcd-spec), however, many of them relies on default hooks that are installed on each resource. As a resource provider, you will need to provide these default hooks ("start", "stop", and "status" scripts) and make them available to all app by adding them to `$PATH`. If you are not sure how to write these scripts, you can install and use the our default ABCD hooks by doing following.
 
 ```
 cd ~
