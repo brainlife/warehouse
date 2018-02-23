@@ -414,7 +414,6 @@ export default {
             console.log("received datasets", datasets);
             var download = [];
             var _outputs = [];
-            //var did = this.next_did();
             for(var dataset_id in datasets) {
                 //ignore already staged dataset
                 var found = false;
@@ -422,7 +421,7 @@ export default {
                     if(dataset.dataset_id == dataset_id) found = true;
                 });
                 if(found) {
-                    this.$notify('Dataset(s) specified is already staged. Skipping.');
+                    this.$notify({type: 'warning', text:'Dataset(s) specified is already staged. Skipping.'});
                     return;
                 }
                 download.push({
@@ -432,7 +431,6 @@ export default {
                 });
                 _outputs.push(Object.assign(datasets[dataset_id], {
                     id: dataset_id, 
-                    //did: did++,
                     subdir: dataset_id, 
                     dataset_id,
                     prov: null,

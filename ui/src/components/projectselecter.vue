@@ -1,6 +1,6 @@
 <template>
     <!--TODO replace with v-select-->
-    <select2 v-if="options" style="width: 100%" v-model="selected" :options="options" :allowClear="allownull" :placeholder="placeholder"/>
+    <select2 v-if="options" style="width: 100%" v-model="selected" :options="options" :allowClear="allownull" :placeholder="placeholder" :required="required"/>
 </template>
 
 <script>
@@ -11,7 +11,7 @@ import select2 from '@/components/select2'
 
 export default {
     components: { projectaccess, select2 },
-    props: [ 'value', 'allownull', 'placeholder', 'canwrite' ],
+    props: [ 'value', 'allownull', 'placeholder', 'canwrite', 'required' ],
     data() {
         return {
             selected: null, 

@@ -35,7 +35,7 @@
     <b-row>
         <b-col>Project *</b-col>
         <b-col cols="8">
-            <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in"/> 
+            <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in" :required="true"/> 
             <small class="text-muted">Project where you want to stage and execute this application.</small>
         </b-col>
     </b-row>
