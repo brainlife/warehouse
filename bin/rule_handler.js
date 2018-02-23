@@ -246,7 +246,7 @@ function handle_rule(rule, cb) {
 
             //see which selection method to usee
             var selection_method = "latest";
-            if(rule.input_selection[input.id]) selection_method = rule.input_selection[input.id];
+            if(rule.input_selection && rule.input_selection[input.id]) selection_method = rule.input_selection[input.id];
             switch(selection_method) {
             case "latest":
                 sort = "create_date"; //find the latest

@@ -32,7 +32,8 @@ exports.wf = {
 
 exports.auth = {
     api: "https://dev1.soichi.us/api/auth",
-    
+
+   
     //jwt used to request auth service to issue new user jwt to be used to submit tasks onbehalf of the user
     jwt: fs.readFileSync(__dirname+'/auth.jwt', 'ascii').trim(),
 }
@@ -40,7 +41,11 @@ exports.auth = {
 exports.warehouse = {
     //used by rule handler to submit dataset download request
     api: "https://dev1.soichi.us/api/warehouse",
-}
+
+    //used to issue warehouse token to allow dataset download
+    public_key: fs.readFileSync(__dirname+'/warehouse.pub'),
+    private_key: fs.readFileSync(__dirname+'/warehouse.key'),
+ }
 
 //for archive service
 exports.archive = {

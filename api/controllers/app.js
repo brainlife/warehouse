@@ -292,6 +292,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
  * @api {get} /app/bibtex/:id   Download BibTex JSON for BrainLife Application
  * @apiDescription              Output BibTex JSON content for specified application ID
  */
+/*
 router.get('/bibtex/:id', (req, res, next)=>{
     db.Apps.findById(req.params.id, function(err, app) {
         if(err) return next(err);
@@ -307,6 +308,7 @@ router.get('/bibtex/:id', (req, res, next)=>{
         res.end();
     });
 });
+*/
 
 module.exports = router;
 

@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router();
 const winston = require('winston');
 const jwt = require('express-jwt');
+const jsonwebtoken = require('jsonwebtoken');
 const async = require('async');
 const request = require('request');
 
@@ -178,6 +179,7 @@ router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired
  * @apiDescription              Output BibTex JSON content for specified dataset ID
  *
  */
+/*
 router.get('/bibtex/:id', (req, res, next)=>{
     db.Datasets.findById(req.params.id, function(err, dataset) {
         if(err) return next(err);
@@ -195,6 +197,7 @@ router.get('/bibtex/:id', (req, res, next)=>{
         res.end();
     });
 });
+*/
 
 /**
  * @apiGroup Dataset
@@ -519,7 +522,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                     //always set
                     instance_id: task.instance_id,
                     task_id: task._id,
-                    //app: req.body.app_id, //deprecated
 
                     //optional
                     output_id: req.body.output_id,
@@ -583,6 +585,96 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     });
 });
 
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/token    Generate dataset access token
+ * @apiDescription              Issues warehouse jwt token that grants access to specified dataset IDs that user has access to
+ *
+ * @apiParam {String[]} ids     List of dataset IDs to grant access
+ * 
+ * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
+ *
+ * @apiSuccess {Object}         {jwt: <string>}
+ */
+router.get('/token', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return next(err);
+        /*
+        let ids = req.query.ids.map(id=>{
+            return new mongoose.ObjectId(id);
+        });
+        */
+        let ids = JSON.parse(req.query.ids);
+        db.Datasets.find({_id: {$in: ids}}).exec(function(err, datasets) {
+            if(err) return next(err);
+            logger.debug("------------------");
+            logger.debug(req.query.ids);
+
+            //find dataset ids that user have access to
+            var valid_ids = [];
+            datasets.forEach(dataset=>{
+                if(!dataset) return;
+                if(!dataset.storage) return;
+
+                canread_project_ids = canread_project_ids.map(id=>id.toString());
+                if(!~canread_project_ids.indexOf(dataset.project.toString())) {
+                    //user doesn't have read access to this project
+                    return;
+                } 
+
+                //all good with this one
+                valid_ids.push(dataset._id);
+            });
+
+            logger.debug("signing jwt", valid_ids);
+            let jwt = jsonwebtoken.sign({
+                sub: req.user.sub,
+                iss: "warehouse",
+                exp: (Date.now() + 1000*3600*24*30)/1000, //30 days should be enough..
+                scopes: {
+                    datasets: valid_ids,
+                },
+            }, config.warehouse.private_key, {algorithm: 'RS256'});
+            res.json({jwt});
+        });
+    });
+});
+
+function stream_dataset(dataset, res, next) {
+    var system = config.storage_systems[dataset.storage];
+    var stat_timer = setTimeout(function() {
+        logger.debug("timeout while calling stat on "+dataset.storage);
+        next("stat timeout - filesystem maybe offline today:"+dataset.storage);
+    }, 1000*15);
+    system.stat(dataset, (err, stats)=>{
+        clearTimeout(stat_timer);
+        if(err) return next(err);
+        logger.debug("obtaining download stream", dataset.storage);
+        system.download(dataset, (err, readstream, filename)=>{
+            if(err) return next(err);
+            //without attachment, the file will replace the current page
+            res.setHeader('Content-disposition', 'attachment; filename='+filename);
+            if(stats) res.setHeader('Content-Length', stats.size);
+            else if(dataset.size) res.setHeader('Content-Length', dataset.size);
+            logger.debug("sent headers.. commencing download");
+            readstream.pipe(res);   
+            readstream.on('error', err=>{
+                //is this getting called at all?
+                logger.error("failed to pipe", err);
+            });
+
+            //TODO - "end" seems to work on both jetstream and ssh(dcwan), but is it truely universal? 
+            //or do we need to switch to use Promise like upload?
+            readstream.on('end', ()=>{
+                logger.debug("updating download_count");
+                if(!dataset.download_count) dataset.download_count = 1;
+                else dataset.download_count++;
+                dataset.save();
+            });
+        });
+    });
+}
+
 //this API allows user to download any files under user's workflow directory
 //TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
 //doing so increases the chance of user misusing the token, but unless I use HTML5 File API
@@ -613,7 +705,7 @@ router.get('/download/:id', jwt({
     }
 }), function(req, res, next) {
     var id = req.params.id;
-    //logger.debug("requested to download dataset "+id);
+    logger.debug("streaming dataset "+id);
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
         db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
@@ -632,40 +724,50 @@ router.get('/download/:id', jwt({
                 } 
             }
             
-            //open stream
-            var system = config.storage_systems[dataset.storage];
-            var stat_timer = setTimeout(function() {
-                logger.debug("timeout while calling stat on "+dataset.storage);
-                next("stat timeout - filesystem maybe offline today:"+dataset.storage);
-            }, 1000*15);
-            system.stat(dataset, (err, stats)=>{
-                clearTimeout(stat_timer);
-                if(err) return next(err);
-                logger.debug("obtaining download stream", dataset.storage);
-                system.download(dataset, (err, readstream, filename)=>{
-                    if(err) return next(err);
-                    //without attachment, the file will replace the current page
-                    res.setHeader('Content-disposition', 'attachment; filename='+filename);
-                    if(stats) res.setHeader('Content-Length', stats.size);
-                    else if(dataset.size) res.setHeader('Content-Length', dataset.size);
-                    logger.debug("sent headers.. commencing download");
-                    readstream.pipe(res);   
-                    readstream.on('error', err=>{
-                        //is this getting called at all?
-                        logger.error("failed to pipe", err);
-                    });
-
-                    //TODO - "end" seems to work on both jetstream and ssh(dcwan), but is it truely universal? 
-                    //or do we need to switch to use Promise like upload?
-                    readstream.on('end', ()=>{
-                        logger.debug("updating download_count");
-                        if(!dataset.download_count) dataset.download_count = 1;
-                        else dataset.download_count++;
-                        dataset.save();
-                    });
-                });
-            });
+            stream_dataset(dataset, res, next);
         });
+    });
+});
+
+//this API allows user to download any files under user's workflow directory
+//TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
+//doing so increases the chance of user misusing the token, but unless I use HTML5 File API
+//there isn't a good way to let user download files..
+//getToken() below allows me to check jwt token via "at" query.
+//Another way to mitigate this is to issue a temporary jwt token used to do file download (or permanent token that's tied to the URL?)
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/download/safe/:id Download .tar.gz from dataset archive 
+ * @apiDescription              Allows user to download any files from user's resource
+ *
+ * @apiParam {String} [at]      Token generated by this service via /dataset/token with scopes with list of dataset IDs
+ *
+ * @apiHeader {String} [authorization] A valid JWT token "Bearer: xxxxx"
+ *
+ */
+router.get('/download/safe/:id', jwt({
+    secret: config.warehouse.public_key,
+    credentialsRequired: false,
+    getToken: function(req) { 
+        //load token from req.headers as well as query.at
+        if(req.query.at) return req.query.at; 
+        if(req.headers.authorization) {
+            var auth_head = req.headers.authorization;
+            if(auth_head.indexOf("Bearer") === 0) return auth_head.substr(7);
+        }
+        return null;
+    }
+}), function(req, res, next) {
+    var id = req.params.id;
+    //console.dir(req.user);
+    if(!req.user || !req.user.scopes || !req.user.scopes.datasets) return res.status(404).json({message: "no datasets scope"});
+    if(!~req.user.scopes.datasets.indexOf(id)) return res.status(404).json({message: "not authorized"});
+    logger.debug("token check ok.. loading dataset info");
+    db.Datasets.findById(id).populate('datatype').exec((err, dataset)=>{
+        if(err) return next(err);
+        if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
+        if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
+        stream_dataset(dataset, res, next);
     });
 });
 
@@ -681,6 +783,7 @@ router.get('/download/:id', jwt({
 router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
     const id = req.params.id;
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return next(err);
         db.Datasets.findById(id, function(err, dataset) {
             if(err) return next(err);
             if(!dataset) return next(new Error("can't find the dataset with id:"+id));
