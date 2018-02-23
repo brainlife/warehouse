@@ -6,20 +6,9 @@
         <div class="page-content">
         <div class="margin20" v-if="instance && tasks">
 
-            <!--
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item :to="{ path: '/datasets' }">Datasets</el-breadcrumb-item>
-                <el-breadcrumb-item>Download {{instance._id}}</el-breadcrumb-item>
-            </el-breadcrumb>
-            <br>
-            -->
-
             <h1><icon name="download" scale="2"></icon> Download</h1>
             <b-card>
                 <div slot="header" style="padding: 15px;">
-                    <!--
-                    <p style="float: right;"><span class="text-muted">Requested at</span> <b><time>{{new Date(instance.create_date).toLocaleString()}}</time></b></p>
-                    -->
                     <el-steps :space="200" :active="active">
                         <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
                         <el-step title="Organize" description="Organizing data in BIDS format"></el-step>
@@ -117,12 +106,14 @@ export default {
                         key: this.instance._id+".#",
                     }
                 }));
+                /*
                 ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
-                        key: "*."+this.instance._id, //any group, but specific instance
+                        key: "na."+this.instance._id, //any group, but specific instance
                     }
                 }));
+                */
             }
               
             ws.onmessage = (json)=>{
@@ -142,9 +133,11 @@ export default {
                       }
                     });
                     break;
+                /*
                 case "wf.instance":
                     this.instance = msg;    
                     break;
+                */
                 default:
                     console.error("unknown exchange", event.dinfo.exchange);
                 }

@@ -84,14 +84,17 @@ export default {
             this.load();
         },
         '$route': function() {
+            console.log("route change");
             var subid = this.$route.params.subid;
             if(subid) {
+                var selected = this.instances.find(it=>it._id == subid);
                 if(this.selected && this.selected._id != subid) {
                     //update
-                    console.log("need to open process", subid);
-                    var selected = this.instances.find(it=>it._id == subid);
+                    console.log("need to open different process", subid);
                     this.toggle_instance(selected);
                 } else {
+                    if(!this.selected) this.toggle_instance(selected);
+
                     //newly opened via router.. scroll to it
                     //TODO - I want to scroll to the instance that user open via router change, but since 
                     //route change happens whenever user clicks on the instance (not when it get redirected..) 
@@ -124,30 +127,41 @@ export default {
         },
 
         scrollto: function(instance) {
+            console.log("scrolling to", instance);
             var elem = document.getElementById(instance._id);
             var top = elem.offsetTop;
             document.getElementById("scrolled-area").scrollTop = top;
         },
 
         toggle_instance: function(instance) {
-            //if(instance.edit) return;
+            console.log("toggled", instance);
             if(this.selected != instance) {
-
                 //if jumping to instance below currently selected, I should adjust current scroll position
+                /*
                 if(this.selected) {
                     //var elem = document.getElementsByClassName("process")[0];
                     var olditem = document.getElementById(this.selected._id);
                     var newitem = document.getElementById(instance._id);
                     if(olditem.offsetTop < newitem.offsetTop) {
                         //console.log("click below .. need to adjust scroll position", olditem.clientHeight);
-                        document.getElementById("scrolled-area").scrollTop -= olditem.clientHeight;
+                        //document.getElementById("scrolled-area").scrollTop -= olditem.clientHeight;
                     }
                 }
-
+                */
                 this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
                 this.selected = instance;
+                this.$nextTick(()=>{
+                    this.scrollto(instance);
+                });
             } else {
                 this.$router.push("/project/"+this.project._id+"/process");
+                this.$nextTick(()=>{
+                    //if process header is outside or view, scroll back to it
+                    var elem = document.getElementById(instance._id);
+                    var top = elem.offsetTop;
+                    var area = document.getElementById("scrolled-area");
+                    if(elem.offsetTop < area.scrollTop) area.scrollTop = top;
+                });
                 this.selected = null;
             }
         },

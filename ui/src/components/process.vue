@@ -46,7 +46,6 @@
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <mute>
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                            <!--(d.{{input.did}})-->
                         </mute>
                         <mute v-if="findtask(input.task_id).status != 'finished'">
                             <statusicon :status="findtask(input.task_id).status"></statusicon> 
@@ -62,7 +61,6 @@
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <mute>
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                            <!--(d.{{input.did}})-->
                         </mute>
                         <b-badge variant="danger">Removed</b-badge>
                     </div>
@@ -84,7 +82,6 @@
                     <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
                     <mute>
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
-                        <!--(d.{{output.did}})-->
                     </mute>
                     <b-badge v-if="output.archive" variant="primary">Auto Archive: {{projects[output.archive.project].name}}</b-badge>
                     <span @click="open_dataset(output.dataset_id)" class="clickable text-muted" v-if="output.dataset_id">
@@ -245,7 +242,6 @@ export default {
                     datasets.push({
                         task,
                         id: output.id,
-                        //did: output.did, 
                         idx: datasets.length, //for filtered list to find the index (may not be the same as did if dataset is removed)
                         dataset_id: output.dataset_id, //only set if it's archived (or from stage in)
                         datatype: output.datatype,
@@ -412,39 +408,51 @@ export default {
 
         submit_stage: function(datasets) {
             console.log("received datasets", datasets);
-            var download = [];
-            var _outputs = [];
-            for(var dataset_id in datasets) {
-                //ignore already staged dataset
-                var found = false;
-                this._datasets.forEach(dataset=>{
-                    if(dataset.dataset_id == dataset_id) found = true;
-                });
-                if(found) {
-                    this.$notify({type: 'warning', text:'Dataset(s) specified is already staged. Skipping.'});
-                    return;
-                }
-                download.push({
-                    url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
-                    untar: "auto",
-                    dir: dataset_id,
-                });
-                _outputs.push(Object.assign(datasets[dataset_id], {
-                    id: dataset_id, 
-                    subdir: dataset_id, 
-                    dataset_id,
-                    prov: null,
-                }));
-            }
-            this.$http.post(Vue.config.wf_api+'/task', {
-                instance_id: this.instance._id,
-                name: "Staging Datasets",
-                service: "soichih/sca-product-raw",
-                config: { download, _outputs, _tid: this.next_tid() },
+
+            //issue jwt to allow access
+            this.$http.get('dataset/token', {
+                params: {
+                    ids: JSON.stringify(Object.keys(datasets))
+                },
             }).then(res=>{
-                console.log("submitted download", res.body.task);
-                var task = res.body.task;
+                var jwt = res.body.jwt;
+                var download = [];
+                var _outputs = [];
+                for(var dataset_id in datasets) {
+                    //ignore already staged dataset
+                    var found = false;
+                    this._datasets.forEach(dataset=>{
+                        if(dataset.dataset_id == dataset_id) found = true;
+                    });
+                    if(found) {
+                        this.$notify({type: 'warning', text:'Dataset(s) specified is already staged. Skipping.'});
+                        return;
+                    }
+                    download.push({
+                        url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
+                        untar: "auto",
+                        dir: dataset_id,
+                    });
+                    _outputs.push(Object.assign(datasets[dataset_id], {
+                        id: dataset_id, 
+                        subdir: dataset_id, 
+                        dataset_id,
+                        prov: null,
+                    }));
+                }
+
+                //now submit request
+                this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: this.instance._id,
+                    name: "Staging Datasets",
+                    service: "soichih/sca-product-raw",
+                    config: { download, _outputs, _tid: this.next_tid() },
+                }).then(res=>{
+                    console.log("submitted download", res.body.task);
+                    var task = res.body.task;
+                });
             });
+
         },
 
         submit_task: function(task) {
@@ -459,7 +467,6 @@ export default {
             this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
                 this.app = null;
                 var task = res.body.task;
-                //this.update_apps();
             }).catch(this.notify_error);
         },
 
@@ -471,18 +478,7 @@ export default {
             return next;
         },
 
-        /*
-        next_did() {
-            var next = 0;
-            this._datasets.forEach(dataset=>{
-                if(dataset.did >= next) next = dataset.did+1;
-            });
-            return next;
-        },
-        */
-
         toggle_task: function(task) {
-            //Vue.set(task, 'show', !task.show);
             task.show = !task.show;
             localStorage.setItem("task.show."+task._id, task.show);
         },
@@ -506,7 +502,6 @@ export default {
         get_tasktab_class(task) {
             let c = ["task-tab"];
             if(task.service == 'soichih/sca-product-raw') c.push("task-tab-stage");
-            //if(task.status == "finished") c.push("bg-success");
             c.push("task-tab-"+task.status);
             return c;
         },
@@ -664,7 +659,9 @@ position: relative;
 top: -2px;
 }
 .task-tab-stage {
-background-color: #eee;
+background-color: #159957;
+color: white;
+opacity: 0.7;
 }
 .task-tab-failed {
 border-left: 2px solid #c00;

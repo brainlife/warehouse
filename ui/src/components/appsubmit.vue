@@ -7,7 +7,9 @@
         <b-col cols="4">
             <small style="float: right;" class="text-muted">{{input.id}}</small>
             <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+
             <span v-if="!input.optional">*</span>
+            <span class="text-muted" v-else>(optional)</span>
         </b-col>
         <b-col cols="8">
             <b-row>
@@ -16,7 +18,6 @@
                     <projectselecter v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
                 </b-col>
                 <b-col cols="7">
-                    <span class="text-muted" v-if="input.optional">(optional)</span>
                     <select2 style="width: 100%; max-width: 100%;" 
                         v-model="form.inputs[input.id]" 
                         :dataAdapter="debounce_grab_items(input)" 
@@ -335,6 +336,9 @@ export default {
 
             //first create an instance to run everything
             var instance = null;
+            var download = [];
+            var _outputs = [];
+            var datasets = {};
             this.$http.post(Vue.config.wf_api+'/instance', {
                 group_id: project.group_id,
                 desc: this.form.desc||this.app.name,
@@ -351,22 +355,28 @@ export default {
                     find: JSON.stringify({_id: {$in: Object.values(this.form.inputs)}}),
                 }})
             }).then(res=>{
-                var download = [];
-                var _outputs = [];
-                var datasets = {};
                 res.body.datasets.forEach(d=>{
                     datasets[d._id] = d;
 
                     //aggregate metas
                     for(var k in d.meta) meta[k] = d.meta[k];
                 });
+
+                //issue token to download datasets 
+                return this.$http.get('dataset/token', {
+                    params: {
+                        ids: JSON.stringify(Object.values(this.form.inputs))
+                    },
+                });
+            }).then(res=>{
+                var jwt = res.body.jwt;
                 
                 //create config to download all input data from archive
                 for(var input_id in this.form.inputs) {
                     var dataset_id = this.form.inputs[input_id];
                     if(!dataset_id) continue; //probably optional field that's not set
                     download.push({
-                        url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
+                        url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
                         untar: "auto",
                         dir: dataset_id,
                     });
@@ -382,6 +392,7 @@ export default {
                     //turn output into input for the app
                     app_inputs.push(Object.assign({output_id: output.id}, output));
                 }
+
                 //now submit task to download data from archive
                 console.log("submitting download task", download, _outputs);
                 return this.$http.post(Vue.config.wf_api+'/task', {
