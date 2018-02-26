@@ -503,33 +503,40 @@ export default {
             //create config to download all selected data from archive
             var download = [];
             var datatypes = {};
-            for(var dataset_id in this.selected) {
-                download.push({
-                    url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
-                    untar: "auto",
-                    dir: dataset_id, 
+
+            return this.$http.get('dataset/token', {
+                params: {
+                    ids: JSON.stringify(Object.keys(this.selected))
+                },
+            }).then(res=>{
+                var jwt = res.body.jwt;
+                for(var dataset_id in this.selected) {
+                    download.push({
+                        url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
+                        untar: "auto",
+                        dir: dataset_id, 
+                    });
+                    var dataset = this.selected[dataset_id];
+                    var datatype = this.datatypes[dataset.datatype];
+                    datatypes[dataset_id] = datatype;
+                }
+
+                //remove in 48 hours (abcd-novnc should terminate in 24 hours)
+                var remove_date = new Date();
+                remove_date.setDate(remove_date.getDate()+2);
+
+                //now submit
+                return this.$http.post(Vue.config.wf_api+'/task', {
+                    instance_id: instance._id,
+                    name: "brainlife.download.stage",
+                    service: "soichih/sca-product-raw",
+                    config: { download },
+                    remove_date: remove_date,
                 });
-
-                var dataset = this.selected[dataset_id];
-                var datatype = this.datatypes[dataset.datatype];
-                datatypes[dataset_id] = datatype;
-            }
-
-            //remove in 48 hours (abcd-novnc should terminate in 24 hours)
-            var remove_date = new Date();
-            remove_date.setDate(remove_date.getDate()+2);
-
-            return this.$http.post(Vue.config.wf_api+'/task', {
-                instance_id: instance._id,
-                name: "brainlife.download.stage",
-                service: "soichih/sca-product-raw",
-                //preferred_resource_id: resource,
-                //config: { download, _datatypes : datatypes },
-                config: { download },
-                remove_date: remove_date,
             }).then(res=>res.body.task);
         },
 
+        /*
         set_viewsel_options: function() {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
             this.$root.$emit("viewselecter.option", {
@@ -537,6 +544,7 @@ export default {
                 task_cb: this.create_view_task, 
             });
         },
+        */
 
         set_uploader_options: function() {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
@@ -545,6 +553,7 @@ export default {
             });
         },
 
+        /*
         create_view_task: function(cb) {
             var download_instance = null;
             this.get_instance().then(instance=>{
@@ -555,6 +564,7 @@ export default {
                 cb(task);
             });
         },
+        */
 
         download: function() {
             var download_instance = null;
@@ -576,8 +586,7 @@ export default {
 
                     var download_path = "../"+download_task._id+"/"+dataset_id;
 
-                    //TODO - figure out process name from dataset.prov
-                    var process_name = "someprocess";
+                    var process_name = "bl.download"; //TODO - not sure if I should a better name?
 
                     //TODO - this is neuroscience specific, and I need to do a lot more thinking on this
                     var dataname = datatype.name.split("/")[1];
@@ -653,29 +662,36 @@ export default {
         submit_process: function(project_id, instance) {
             //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject)
             var tid = 0;
-            var did = 0;
+            //var did = 0;
             async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
                 var download = [];
                 var _outputs = [];
-                for(var dataset_id in datasets) {
-                    download.push({
-                        url: Vue.config.api+"/dataset/download/"+dataset_id+"?at="+Vue.config.jwt,
-                        untar: "auto",
-                        dir: dataset_id,
+                this.$http.get('dataset/token', {
+                    params: {
+                        ids: JSON.stringify(Object.keys(datasets))
+                    },
+                }).then(res=>{
+                    var jwt = res.body.jwt;
+                    for(var dataset_id in datasets) {
+                        download.push({
+                            url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
+                            untar: "auto",
+                            dir: dataset_id,
+                        });
+                        _outputs.push(Object.assign(datasets[dataset_id], {
+                            id: dataset_id, 
+                            //did: did++,
+                            subdir: dataset_id, 
+                            dataset_id,
+                            prov: null,
+                        }));
+                    }
+                    return this.$http.post(Vue.config.wf_api+'/task', {
+                        instance_id: instance._id,
+                        name: "Staging Datasets - "+this.datatypes[datatype_id].name,
+                        service: "soichih/sca-product-raw",
+                        config: { download, _outputs, _tid: tid++ },
                     });
-                    _outputs.push(Object.assign(datasets[dataset_id], {
-                        id: dataset_id, 
-                        did: did++,
-                        subdir: dataset_id, 
-                        dataset_id,
-                        prov: null,
-                    }));
-                }
-                this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: instance._id,
-                    name: "Staging Datasets - "+this.datatypes[datatype_id].name,
-                    service: "soichih/sca-product-raw",
-                    config: { download, _outputs, _tid: tid++ },
                 }).then(res=>{
                     console.log("submitted download task", res.body.task);
                     next_group();
