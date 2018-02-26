@@ -5,6 +5,7 @@ const async = require('async');
 const request = require('request');
 const fs = require('fs');
 const redis = require('redis');
+const jsonwebtoken = require('jsonwebtoken');
 
 const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
@@ -308,6 +309,7 @@ function handle_rule(rule, cb) {
         var task_out = null;
 		var meta = {}; //metadata to store for archived dataset
         var next_tid = null;
+        var safe_jwt = null;
 
         var _app_inputs = []; 
         var deps = [];
@@ -388,6 +390,24 @@ function handle_rule(rule, cb) {
                 });
             },
 
+            //create safe dataset download jwt (I can do this synchrnously.. but)
+            next=>{
+				let ids = [];
+				for(var input_id in inputs) {
+                    var input = inputs[input_id];
+					ids.push(input._id);	
+				}
+				safe_jwt = jsonwebtoken.sign({
+					sub: rule.user_id,
+					iss: "warehouse",
+					exp: (Date.now() + 1000*3600*24*30)/1000, //30 days should be enough..
+					scopes: {
+						datasets: ids,
+					},
+				}, config.warehouse.private_key, {algorithm: 'RS256'});
+                next();
+            },
+
             //submit input staging task for datasets that aren't staged yet
             next=>{
                 //var did = next_tid*10;
@@ -400,7 +420,7 @@ function handle_rule(rule, cb) {
                     function canuse_source() {
                         var task = null;
                         if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
-                        if(task && task.status != 'removed'/* && task.instance_id == instance._id*/) {
+                        if(task && task.status != 'removed') {
                             logger.debug("found the task generated the input dataset");
 
                             //find output from task
@@ -458,7 +478,7 @@ function handle_rule(rule, cb) {
                         //we don't have it.. we need to stage from warehouse
                         logger.debug("couldn't find staged dataset.. need to load from warehouse");
                         downloads.push({
-                            url: config.warehouse.api+"/dataset/download/"+input._id+"?at="+jwt,
+                            url: config.warehouse.api+"/dataset/download/safe/"+input._id+"?at="+safe_jwt,
                             untar: "auto",
                             dir: input._id,
                         });
