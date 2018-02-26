@@ -5,7 +5,7 @@
     </slot>
 
     <!--status indicator-->
-    <div class="status-card" :class="task.status" style="border: none;">
+    <div class="status-card" :class="task.status" style="border: none;" v-b-popover.hover.bottom.d500="popover_content">
         <div style="float: left; padding: 6px 8px" @click="poke">
             <statusicon :status="task.status" scale="1.5"/>
         </div>
@@ -91,12 +91,29 @@ export default {
     components: { filebrowser, statusicon, mute, tags, taskconfig, contact },
     data () {
         return {
+            popover_content: "",
+
             activeSections: {
                 output: true, 
                 input: true,
             },
             show_masked_config: false,
+
+            resource: null,
         }
+    },
+
+    watch: {
+        'task': {
+            deep: true,
+            handler: function() {
+                this.load_resource_info();
+            }
+        }
+    },
+
+    mounted() {
+        this.load_resource_info();
     },
 
     computed: {
@@ -120,6 +137,19 @@ export default {
     },
 
     methods: {
+        load_resource_info() {
+            if(!this.task.resource_id) return; //no resource assigned yet?
+
+            //load which resource it's loading
+            this.$http.get(Vue.config.wf_api+'/resource/', {params: {
+                find: JSON.stringify({_id: this.task.resource_id}) //load everything
+            }}).then(res=>{
+                this.resource = res.body.resources[0];
+                console.log("resource", this.resource);
+                this.popover_content = "Resource: "+this.resource.name;
+            });
+        },
+
         toggle(section) {
             if(this.activeSections[section] === undefined) {
                 Vue.set(this.activeSections, section, true);
