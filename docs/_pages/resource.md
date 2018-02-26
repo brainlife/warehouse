@@ -9,7 +9,8 @@ comments: true
 
 ## Background
 
-Brainlife provides various shared compute resources to all users by default. Users can submit registered apps without having to register their own resources.
+Brainlife provides a mechanism to make a computing resource, such as a Cloud compute system or a high-performance computing cluster, available to specific projects or to the entire community of users. This mechanism is supported via [Amaretti](https://github.com/brain-life/amaretti). By default, a compute resource shared via Amaretti is available to all users, but this can be changed. Apps must be registered to run on the resource. Once an App is registered on a resoruce users can submit a process running the Apps.
+
 As shared resources are shared by all users, often users have to wait on the queue for requested tasks to get executed. Due to potential access control violation, we do not recommend any sensitive data to be processed using shared resources.
 
 Brainlife allows you to register your own compute resources for the following use cases.
