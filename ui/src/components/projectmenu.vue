@@ -1,7 +1,5 @@
 <template>
-<vue-scrollbar class="projectmenu" ref="scrollbar" v-if="projects">
-<!--vue-scrollbar requires a single child <div> element to scroll-->
-<div>
+<div class="projectmenu">
     <p class="header">Projects</p>
     <p class="group-header">
         <icon name="caret-down" scale="1"></icon>&nbsp;
@@ -33,23 +31,23 @@
         <icon name="plus" scale="2"/>
     </b-button>
 </div>
-</vue-scrollbar>
 </template>
 
 <script>
 
 import Vue from 'vue'
 
-//vue2-scrollbar
-import 'vue2-scrollbar/dist/style/vue2-scrollbar.css'
-import VueScrollbar from 'vue2-scrollbar'
+import 'perfect-scrollbar/css/perfect-scrollbar.css'
+import PerfectScrollbar from 'perfect-scrollbar'
+
 import projectavatar from '@/components/projectavatar'
 
 export default {
-    components: { VueScrollbar, projectavatar },
+    components: { projectavatar },
 	props: [ 'active', 'projects' ],
     data () {
         return {
+            ps: null,
             config: Vue.config,
         }
     },
@@ -61,7 +59,12 @@ export default {
     },
 
     mounted () {
+        this.ps = new PerfectScrollbar(this.$el);
         this.scroll_to_active();
+    },
+
+    destroyed() {
+        this.ps.destroy();
     },
 
     methods: {
@@ -71,14 +74,13 @@ export default {
             if(!active_elem) return;
             var area = this.$el;
             if(area.clientHeight + area.scrollTop < active_elem.offsetTop) {
-                //area.scrollTop = active_elem.offsetTop - area.clientHeight/2;
-                this.$refs.scrollbar.scrollToY(active_elem.offsetTop - area.clientHeight/2);
+                //this.$refs.scrollbar.scrollToY(active_elem.offsetTop - area.clientHeight/2);
+                this.$el.scrollTop = active_elem.offsetTop - area.clientHeight/2;
             }
 
             //I also need to scroll back to top if area is above..
             if(active_elem.offsetTop < area.scrollTop) {
-                //area.scrollTop = elem.offsetTop - 300;
-                this.$refs.scrollbar.scrollToY(active_elem.offsetTop - 300);
+                this.$el.scrollTop = active_elem.offsetTop - 300;
             }
         },
         change: function(project) {
@@ -138,7 +140,7 @@ export default {
 }
 .button-fixed {
 opacity: 0;
-left: 250px;
+left: 260px;
 }
 .projectmenu:hover .button-fixed {
 opacity: 0.8;
@@ -154,8 +156,3 @@ left: -3px;
 }
 </style>
 
-<style>
-.projectmenu .vue-scrollbar__scrollbar-vertical {
-opacity: 0;
-}
-</style>

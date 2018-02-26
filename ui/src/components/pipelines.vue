@@ -16,10 +16,11 @@
             <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule" v-if="rule.removed == false">
                 <div style="padding: 10px;">
                     <div style="float: right">
-                        <time>{{rule.create_date}}</time>
+                        
                         <div class="button" @click="edit(rule)" v-if="ismember()"><icon name="pencil"/></div>
                         <div class="button" @click="remove(rule)" v-if="ismember()"><icon name="trash"/></div>
-                        <!--<contact :id="rule.user_id"/>-->
+                        <contact :id="rule.user_id" short="true"/>
+                        <timeago :since="rule.create_date" :auto-update="10"/>
                     </div>
                     <h5>
                         <b-badge v-if="rule.removed" variant="danger">Removed</b-badge>
