@@ -83,7 +83,7 @@
                                     </b-form-select>
                                 </b-col>
                                 <b-col cols="7">
-                                    <span class="text-muted">Datatype Tags <small>(optional)</small></span><br>
+                                    <div class="text-muted">Datatype Tags</div>
                                     <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags"/>
                                     <small class="text-muted">You can prefix tags with ! for negative tags</small>
                                 </b-col>
@@ -148,7 +148,7 @@
                                     </el-select>
                                 </b-col>
                                 <b-col>
-                                    <div class="text-muted">Datatype Tags <small>optional</small></div>
+                                    <div class="text-muted">Datatype Tags</div>
                                     <tageditor v-if="output.datatype" v-model="output.datatype_tags"/>
                                 </b-col>
                                 <b-col>
@@ -562,6 +562,23 @@ export default {
                     keys.push(key); 
                 }
             }
+
+            //make sure all raw input/output has at least 1 datatype tags
+            this.app.inputs.forEach(input=>{
+                var datatype = this.datatypes[input.datatype];
+                if(datatype.name  == "raw" && input.datatype_tags.length == 0) {
+                    this.$notify({text: "All raw input should have at least 1 datatype tag", type: 'error' });
+                    valid = false;
+                }
+            });
+
+            this.app.outputs.forEach(output=>{
+                var datatype = this.datatypes[output.datatype];
+                if(datatype.name  == "raw" && output.datatype_tags.length == 0) {
+                    this.$notify({text: "All raw output should have at least 1 datatype tag", type: 'error' });
+                    valid = false;
+                }
+            });
 
             if(!valid) {
                 console.error("invalid form");
