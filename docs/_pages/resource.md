@@ -21,7 +21,7 @@ Brainlife allows you to register your own compute resources for the following us
 
 Currently, Brainlife does not allow non-admin users to share your personal resources with other members. 
 
-Resource owner decides which apps are allowed to run on their resource. If you register a resource and enable some apps on it, only you can run those apps on your resources. If you are going to publish your app, and you want all users to be able to execute your app, please ask Brainlife's resource administrator (for now, it's just [Brainlife admin](brlife@iu.edu) ) to enable your app.
+Resource owner decides which apps are allowed to run on their resource. If you register a resource and enable some apps on it, only you can run those apps on your resources. If you are going to publish your app, and you want all users to be able to execute your app, please ask Brainlife's resource administrator (for now, it's just [Brainlife admin](mailto:brlife@iu.edu) ) to enable your app.
 
 ## Registering Resources
 
@@ -75,7 +75,8 @@ export PATH=~/abcd-spec/hooks/direct:$PATH
 Brainlife expects certain binaries to be installed on all resources. Please make sure following commands are installed.
 
 * jq (command line json parser commonly used by Brainlife apps to parse config.json)
-* singularity (userlevel container execution engine)
+* git (used to clone / update apps installed)
+* singularity (user level container execution engine)
 
 For IU HPC resource, please feel free to use following ~/bin directory which contains jq
 
@@ -91,10 +92,10 @@ For singularity, you can either install it on the system, or for HPC systems you
 module load singularity
 ```
 
-By default, singularity uses user's home directory to caches docker images (and /tmp to create a merged container image to run). If you have limited amount of home directory, you should override these directories by setting something like the following in your .bashrc
+By default, singularity uses user's home directory to cache docker images (and /tmp to create a merged container image to run). If you have limited amount of home directory, you should override these directories by setting something like the following in your .bashrc
 
 ```
-export SINGULARITY_CACHEDIR=/N/dc2/scratch/<username>/singularity-cache-br2
+export SINGULARITY_CACHEDIR=/N/dc2/scratch/<username>/singularity-cachedir
 ```
 
 Please replace <username> with your username, and make sure specified directories exists.
