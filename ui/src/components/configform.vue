@@ -6,7 +6,7 @@
             <b-form-group>
                 <!--integer will be deprecated (still used..)-->
                 <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" 
-                    :min="v.min" :max="v.max" :readonly="v.readonly" :required="!v.optional"
+                    :min="v.min" :max="v.max" :step="0.001" :readonly="v.readonly" :required="!v.optional"
                     v-model.number="value[k]" :placeholder="v.placeholder"/>
 
                 <!--string-->
