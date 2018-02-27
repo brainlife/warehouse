@@ -130,8 +130,10 @@ export default {
             content += `<tr><th>Created</th><td>${new Date(this.task.create_date).toLocaleString()}</td></tr>`;
             if(this.task.start_date) content += `<tr><th>Started</th><td>${new Date(this.task.start_date).toLocaleString()}</td></tr>`;
             if(this.task.finish_date) content += `<tr><th>Finished</th><td>${new Date(this.task.finish_date).toLocaleString()}</td></tr>`;
-            if(this.task.fail_date) content += `<tr><th>Failed</th><td>${new Date(this.task.failed_date).toLocaleString()}</td></tr>`;
+            if(this.task.fail_date) content += `<tr><th>Failed</th><td>${new Date(this.task.fail_date).toLocaleString()}</td></tr>`;
             if(this.task.remove_date) content += `<tr><th>Removed</th><td>${new Date(this.task.removed_date).toLocaleString()}</td></tr>`;
+            content += `<tr><th>Next</th><td>${new Date(this.task.next_date).toLocaleString()}</td></tr>`;
+
             if(this.resource) content += `<tr><th>Task ID</th><td>${this.task._id}</td></tr>`;
             if(this.resource) content += `<tr><th>Resource</th><td>${this.resource.name}</td></tr>`;
             content += `</table>`;

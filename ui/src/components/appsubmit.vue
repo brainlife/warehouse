@@ -358,8 +358,6 @@ export default {
                 res.body.datasets.forEach(d=>{
                     datasets[d._id] = d;
 
-                    //aggregate metas
-                    for(var k in d.meta) meta[k] = d.meta[k];
                 });
 
                 //issue token to download datasets 
@@ -393,6 +391,9 @@ export default {
                         project: dataset.project,
                     }
                     _outputs.push(output);
+
+                    //aggregate metas
+                    for(var k in dataset.meta) if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
 
                     //turn output into input for the main app
                     var keys = [];
