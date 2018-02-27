@@ -182,10 +182,10 @@ export default {
         return {
             tasks: null,
             datatypes: {}, 
-            archived: [], //archived datasets from this processj
+            archived: [], //archived datasets from this process
             projects: null,
             
-            archiving: null, //currently open archiving form (_output_tasks[task._id]._id+'/'+output_id)
+            archiving: null, 
             ws: null, //websocket
 
             loading: false,
