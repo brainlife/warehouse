@@ -148,6 +148,7 @@ background-color: gray;
 border: none;
 box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
 transition: background-color 0.3s, transform 0.5s, box-shadow 0.5s, left 0.5s, right 0.5s, opacity 0.5s;
+z-index: 2;
 }
 .button-fixed:hover {
 opacity: 1;

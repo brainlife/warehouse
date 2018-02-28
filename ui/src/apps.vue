@@ -2,12 +2,20 @@
 <div>
     <pageheader>
         <!--pageheader slot-->
+        <!--
         <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
+        -->
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
+    <div class="group-list">
+        <h4>Apps</h4>
+        <p v-for="(apps, tag) in app_groups" :key="tag" class="item" @click="jump(tag)">
+            {{tag}}
+        </p>
+    </div>
     <div class="page-content">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
-        <div v-for="(apps, tag) in app_groups" :key="tag" class="margin20">
+        <div v-for="(apps, tag) in app_groups" :key="tag" :id="tag">
             <h4 class="group-title">{{tag}}</h4> 
             <div v-for="app in apps" :key="app._id" class="app">
                 <app :app="app" descheight="130px" devsheight="75px"></app>
@@ -64,27 +72,61 @@ export default {
     methods: {
         go: function(path) {
             this.$router.push(path);
-        }
+        },
+        jump: function(tag) {
+            document.location="#"+tag;
+        },
     },
 }
 </script>
 
 <style scoped>
-.el-card {
-border: none;
-box-shadow: 0 0 3px #aaa;
-}
 .group-title {
 color: #999;
 text-transform: uppercase;
-padding-bottom: 10px;
-border-bottom: 1px solid #ddd;
+padding: 15px 20px;
+border-bottom: solid 1px #eee;
+margin-bottom: 10px;
+background-color: white;
+position: sticky;
+top: 0px;
+z-index: 1;
 }
 .app {
 margin-right: 10px;
 margin-bottom: 10px;
 width: 350px;
 float: left;
+}
+.page-content {
+margin-left: 250px;
+}
+.group-list {
+position: fixed;
+top: 50px;
+bottom: 0px;
+left: 90px;
+width: 250px;
+background-color: #444;
+}
+.group-list h4 {
+font-size: 18px;
+padding: 20px 10px;
+text-transform: uppercase;
+margin-bottom: 0px;
+color: #999;
+}
+.group-list .item {
+text-transform: uppercase;
+padding: 5px 10px;
+margin-bottom: 0px;
+font-size: 85%;
+color: white;
+transition: background-color 1s;
+}
+.group-list .item:hover {
+cursor: pointer;
+background-color: black;
 }
 </style>
 
