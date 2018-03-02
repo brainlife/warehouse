@@ -5,20 +5,19 @@
     </slot>
 
     <!--status indicator-->
-    <div class="status-card" :class="task.status" style="border: none;" v-b-popover.hover.bottom.d500="popover_content">
+    <div class="status-card" :class="task.status" style="border: none;">
         <div style="float: left; padding: 6px 8px" @click="poke">
             <statusicon :status="task.status" scale="1.5"/>
         </div>
         <div style="margin-left: 45px;">
             <div style="float: right;">
                 <contact :id="task.user_id" :short="true" style="position: relative; top: -3px; opacity: 0.9"/>
+                <div class="button" style="opacity: 0.3" :title="task._id" v-b-popover.bottom="popover_content"><icon name="info"/></div>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="repeat"/>
                 </div>
-                <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop" title="Stop Task"><icon name="stop"/>
-                </div>
-                <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove" title="Remove Task"><icon name="trash"/>
-                </div>
+                <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop" title="Stop Task"><icon name="stop"/></div>
+                <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove" title="Remove Task"><icon name="trash"/></div>
             </div>
             <h4>
                 <strong style="text-transform: uppercase;">{{task.status}}</strong>

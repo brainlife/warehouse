@@ -165,7 +165,7 @@ display: inline-block;
 margin-bottom: 0px;
 }
 .devs {
-background-color: #eee;
+background-color: #f4f4f4;
 padding: 10px;
 overflow-y: auto;
 overflow-x: hidden;

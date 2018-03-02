@@ -41,7 +41,7 @@
                 </div>
             </div>
             <hr>
-            <div style="float: right">
+            <div class="form-action">
                 <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
                 <button type="button" class="btn btn-primary" @click="page++">Next</button>
             </div>
@@ -51,9 +51,7 @@
         <div v-if="page == 2">
             <!--<h4>Publication Details</h4>-->
             <p class="text-muted">Please enter details for your publications (you can update this information later).</p>
-            <pubform :pub="pub" @submit.once="publish">
-                <button type="button" class="btn btn-secondary" @click="page--">Back</button>
-            </pubform>
+            <pubform :pub="pub" @submit.once="publish" @cancel="page--"/>
         </div>
     </transition>
     <br>
@@ -227,6 +225,15 @@ color: white;
 }
 h4 {
 opacity: 0.8;
+}
+.form-action {
+text-align: right; 
+position: fixed; 
+right: 0px; 
+left: 350px; 
+bottom: 0px; 
+padding: 10px 30px;
+background-color: rgba(100,100,100,0.4);
 }
 </style>
 

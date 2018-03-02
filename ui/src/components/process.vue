@@ -71,6 +71,9 @@
             <div slot="output" v-if="task.config._outputs.length > 0">
                 <div v-for="output in task.config._outputs" :key="output.id" style="padding: 5px;">
                     <div class="float-right" style="position: relative; top: -5px;" v-if="task.status == 'finished'">
+                        <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
+                            <icon name="cubes"/>
+                        </div>
                         <div class="button" v-b-modal.viewSelecter title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
                             <icon name="eye"/>
                         </div>
@@ -84,31 +87,35 @@
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                     </mute>
                     <b-badge v-if="output.archive" variant="primary">Auto Archive: {{projects[output.archive.project].name}}</b-badge>
-                    <span @click="open_dataset(output.dataset_id)" class="clickable text-muted" v-if="output.dataset_id">
-                        <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/> <icon name="shield"/> <b>{{projects[output.project].name}}</b>
+
+                    <!--foreign project-->
+                    <span class="text-muted" v-if="output.dataset_id && output.project != project._id">
+                        <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield"/> <b>{{projects[output.project].name}}</b>
                     </span>
-                    <!--
-                    <span v-if="task.status == 'running'" class="text-muted">
-                        <icon name="cog" :spin="true"/>
-                    </span>
-                    -->
+
                     <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
                         <div class="archived-datasets-title">Archived Datasets</div>
                         <ul class="archived">
                             <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
-                                <icon name="cubes"></icon>
-                                <b>{{projects[dataset.project].name}}</b>
-                                <mute>{{dataset.desc}}</mute>
-                                <tags :tags="dataset.tags"/>
+                                <timeago class="text-muted" style="float: right" :since="dataset.create_date" :auto-update="10"/>
 
+                                <icon name="cubes"></icon>
+                                <mute>{{dataset.desc||dataset._id}}</mute>
+                                <tags :tags="dataset.tags"/>
+                                <span class="text-muted" v-if="dataset.project != project._id">
+                                    <small>on</small> <icon name="shield"/> <b>{{projects[dataset.project].name}}</b>
+                                </span>
+
+                                <!--show dataset status if it's not stored-->
                                 <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
                                     <icon name="cog" :spin="true"/> Storing ...
                                 </span> 
+                                <span v-else-if="dataset.status == 'stored'"></span>
                                 <span v-else>{{dataset.status}}</span>
                             </li>
                         </ul>
                     </div>
-                    <archiveform v-if="archiving === output" :task="task" :output="output" @done="done_archive"></archiveform>
+                    <archiveform v-if="archiving === output" :task="task" :output="output" @done="archive_submitted"></archiveform>
                 </div>
                 <div v-if="task.product">
                     <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
@@ -306,37 +313,53 @@ export default {
                         key: this.instance._id+".#",
                     }
                 }));
+                this.ws.send(JSON.stringify({
+                    bind: {
+                        ex: "warehouse.dataset",
+                        key: this.project._id+".#",
+                    }
+                }));
 
                 this.ws.onmessage = (json)=>{
                     var event = JSON.parse(json.data);
-                    if(event.error) {
-                        console.error(event.error);
-                        return;
-                    }
-                    var msg = event.msg;
-                    if(!msg || !msg._id) return; //odd..
-                    var t = this.tasks.find(t=>t._id == msg._id);
-                    if(!t) {
-                        //new task?
-                        this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
-                        msg.show = true;
-                        this.tasks.push(msg); 
-                    } else {
-                        //update
-                        if(t.status != msg.status) {
-                            var text = "t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg;
-                            var type = null;
-                            switch(msg.status) {
-                            case "failed": type = "error"; break;
-                            case "finished": type = "success"; break;
-                            case "stopped": type = "warn"; break;
+                    if(event.error) return console.error(event.error);
+                    switch(event.dinfo.exchange) {
+                    case "wf.task":
+                        var msg = event.msg;
+                        //if(!msg || !msg._id) return; //odd..
+                        var t = this.tasks.find(t=>t._id == msg._id);
+                        if(!t) {
+                            //new task?
+                            this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
+                            msg.show = true;
+                            this.tasks.push(msg); 
+                        } else {
+                            //update
+                            if(t.status != msg.status) {
+                                var text = "t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg;
+                                var type = null;
+                                switch(msg.status) {
+                                case "failed": type = "error"; break;
+                                case "finished": type = "success"; break;
+                                case "stopped": type = "warn"; break;
+                                }
+                                console.log("notification type", type, msg.status);
+                                this.$notify({type, text});
                             }
-                            console.log("notification type", type, msg.status);
-                            this.$notify({type, text});
+                            for(var k in msg) {
+                                t[k] = msg[k];
+                            }
                         }
-                        for(var k in msg) {
-                            t[k] = msg[k];
-                        }
+                        break;
+                    case "warehouse.dataset":
+                        //see if we care..
+                        console.log("dataset event", event.msg);
+                        this.archived.forEach(dataset=>{
+                            if(dataset._id == event.msg._id) {
+                                for(var k in event.msg) dataset[k] = event.msg[k]; //update 
+                            }
+                        });
+                        break;
                     }
                 };
             };
@@ -379,6 +402,7 @@ export default {
         },
 
         findarchived: function(task, output) {
+            console.log("looking for archvied datasets", output);
             return this.archived.filter(dataset=>{
                 return (dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
             });
@@ -400,8 +424,7 @@ export default {
             this.$notify({type: 'error', text: err.body.message});
         },
 
-        done_archive: function(dataset) {
-            console.log("done archive");
+        archive_submitted: function(dataset) {
             this.archiving = null;
             if(dataset) this.archived.push(dataset);
         },
@@ -574,6 +597,7 @@ margin: 3px;
 .archived-datasets-title {
 color: #aaa;
 font-weight: bold;
+font-size: 95%;
 }
 ul.archived {
 list-style: none;
@@ -582,6 +606,10 @@ padding: 0px;
 }
 ul.archived li {
 padding: 5px;
+}
+ul.archived li:hover {
+cursor: pointer;
+background-color: #ddd;
 }
 .sidebar .statusicon-failed {
 color: #c00;

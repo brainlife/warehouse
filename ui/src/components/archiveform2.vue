@@ -10,29 +10,19 @@
         </b-form-group>
 
         <b-form-group label="User Tags (optional)">
-            <!--
-            <el-select v-model="tags" 
-                style="width: 100%"
-                multiple filterable allow-create placeholder="Enter tags">
-                <el-option v-for="tag in tags" key="tag" :label="tag" :value="tag"></el-option>
-            </el-select>
-            <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
-            -->
             <tageditor v-model="tags"/>
         </b-form-group>
 
         <b-form-group label="Metadata">
-            <div v-for="(v,k) in output.meta">
-                <el-input placeholder="Please Edit meta" v-model="output.meta[k]">
-                    <template slot="prepend">{{k|uppercase}}</template>
-                </el-input>
-            </div>
-            <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
+            <b-input-group :prepend="k.toUpperCase()" v-for="(v,k) in output.meta">
+                <b-form-input type="text" v-model="output.meta[k]"/>
+            </b-input-group>
+            <small class="text-muted">Datatype specific key/value pairs to describes hierarchy for this dataset</small>
         </b-form-group>
 
         <div style="float: right">
-            <b-button variant="primary" icon="check" @click="submit">Archive</b-button>
             <b-button @click="cancel">Cancel</b-button>
+            <b-button variant="primary" icon="check" @click="submit">Archive</b-button>
         </div>
         <br clear="both">
     </b-form>

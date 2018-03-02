@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit">
+<b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit" ok-only>
     <b-row>
         <b-col>From Project</b-col>
         <b-col cols="9">

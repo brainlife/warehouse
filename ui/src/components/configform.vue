@@ -1,7 +1,7 @@
 <template>
 <div>
     <b-row v-for="(v,k) in spec" :key="k" v-if="v.type && v.type != 'input'">
-        <b-col>{{k}} <span v-if="!v.optional">*</span></b-col>
+        <b-col class="text-muted">{{k}} <span v-if="!v.optional">*</span></b-col>
         <b-col cols="8">
             <b-form-group>
                 <!--integer will be deprecated (still used..)-->

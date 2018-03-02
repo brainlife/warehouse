@@ -64,6 +64,10 @@ export default {
                     this.app_groups[tag].push(app);
                 });
             });
+
+            if(document.location.hash) this.$nextTick(()=>{
+                this.jump(document.location.hash.substring(1));
+            });
         }, res=>{
             console.error(res);
         });
@@ -85,7 +89,6 @@ export default {
 color: #999;
 text-transform: uppercase;
 padding: 15px 20px;
-border-bottom: solid 1px #eee;
 margin-bottom: 10px;
 background-color: white;
 position: sticky;
@@ -100,6 +103,7 @@ float: left;
 }
 .page-content {
 margin-left: 250px;
+background-color: #f0f0f0;
 }
 .group-list {
 position: fixed;

@@ -131,7 +131,7 @@ export default {
             apps: null, //applications user can run with selected data
             app: null, //selected
 
-            desc: null,
+            //desc: null,
             config: null,
             inputs: null,
 
@@ -157,8 +157,11 @@ export default {
             console.log("requested to open newtask modal");
             this.open = true;
 
+            //reset form
             this.app = null;
             this.valid = false;
+            this.archive.desc = "";
+            this.archive.enable = false;
 
             //create list of all datatypes that user has staged / generated
             var datatype_ids = [];

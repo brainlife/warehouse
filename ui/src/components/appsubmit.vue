@@ -32,9 +32,10 @@
     </b-row>
     
     <configform :spec="app.config" v-model="form.config"/>
+    <hr>
 
     <b-row>
-        <b-col>Project *</b-col>
+        <b-col class="text-muted">Project *</b-col>
         <b-col cols="8">
             <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in" :required="true"/> 
             <small class="text-muted">Project where you want to stage and execute this application.</small>
@@ -43,7 +44,7 @@
     <br>
 
     <b-row>
-        <b-col>Description</b-col>
+        <b-col class="text-muted">Description</b-col>
         <b-col cols="8">
             <b-form-textarea v-model="form.desc"
                  placeholder="Optional description for this processing"
