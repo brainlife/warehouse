@@ -1,6 +1,6 @@
 <template>
 <b-form v-if="app && projects" @submit="submit">
-    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available.</b-alert>
+    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource becomes available.</b-alert>
 
     <!--<h4>Input Datasets</h4>-->
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
@@ -359,8 +359,6 @@ export default {
                 res.body.datasets.forEach(d=>{
                     datasets[d._id] = d;
 
-                    //aggregate metas
-                    for(var k in d.meta) meta[k] = d.meta[k];
                 });
 
                 //issue token to download datasets 
@@ -381,17 +379,32 @@ export default {
                         untar: "auto",
                         dir: dataset_id,
                     });
-                    var output = Object.assign(datasets[dataset_id], {
-                        //did: did++,
+
+                    var dataset = datasets[dataset_id];
+                    var output = {
                         subdir: dataset_id, 
                         dataset_id,
-                        prov: null, //not needed
-                        id: input_id,
-                    });
+                        task_id: dataset.task_id,
+                        datatype: dataset.datatype,
+                        datatype_tags: dataset.datatype_tags,
+                        tags: dataset.tags,
+                        meta: dataset.meta,
+                        project: dataset.project,
+                    }
                     _outputs.push(output);
 
-                    //turn output into input for the app
-                    app_inputs.push(Object.assign({output_id: output.id}, output));
+                    //aggregate metas
+                    for(var k in dataset.meta) if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
+
+                    //turn output into input for the main app
+                    var keys = [];
+                    for(var key in this.app.config) {
+                        if(this.app.config[key].input_id == input_id) keys.push(key); 
+                    }
+                    app_inputs.push(Object.assign({
+                        //output_id: output.id, 
+                        keys,
+                    }, output));
                 }
 
                 //now submit task to download data from archive
@@ -418,8 +431,7 @@ export default {
                 });
                 this.app.outputs.forEach(output=>{
                     var output_req = {
-                        id: output.id,
-                        //did: did++,
+                        //id: output.id,
                         datatype: output.datatype._id,
                         datatype_tags: output.datatype_tags,
                         desc: output.id+ " from "+this.app.name,

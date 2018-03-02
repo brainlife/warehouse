@@ -85,12 +85,13 @@ import tags from '@/components/tags'
 import taskconfig from '@/components/taskconfig'
 import contact from '@/components/contact'
 
+let resource_cache = {};
+
 export default {
     props: ['task'],
     components: { filebrowser, statusicon, mute, tags, taskconfig, contact },
     data () {
         return {
-            popover_content: "",
 
             activeSections: {
                 output: true, 
@@ -106,13 +107,13 @@ export default {
         'task': {
             deep: true,
             handler: function() {
-                this.load_resource_info();
+                this.load_resource_info(this.task.resource_id);
             }
         }
     },
 
     mounted() {
-        this.load_resource_info();
+        this.load_resource_info(this.task.resource_id);
     },
 
     computed: {
@@ -121,6 +122,21 @@ export default {
         },
         has_output_slot() {
             return !!this.$slots.output;
+        },
+        popover_content() {
+            var content = "";
+            content += `<table class="table table-sm">`;
+            content += `<tr><th>Created</th><td>${new Date(this.task.create_date).toLocaleString()}</td></tr>`;
+            if(this.task.start_date) content += `<tr><th>Started</th><td>${new Date(this.task.start_date).toLocaleString()}</td></tr>`;
+            if(this.task.finish_date) content += `<tr><th>Finished</th><td>${new Date(this.task.finish_date).toLocaleString()}</td></tr>`;
+            if(this.task.fail_date) content += `<tr><th>Failed</th><td>${new Date(this.task.fail_date).toLocaleString()}</td></tr>`;
+            if(this.task.remove_date) content += `<tr><th>Removed</th><td>${new Date(this.task.removed_date).toLocaleString()}</td></tr>`;
+            content += `<tr><th>Next</th><td>${new Date(this.task.next_date).toLocaleString()}</td></tr>`;
+
+            if(this.resource) content += `<tr><th>Task ID</th><td>${this.task._id}</td></tr>`;
+            if(this.resource) content += `<tr><th>Resource</th><td>${this.resource.name}</td></tr>`;
+            content += `</table>`;
+            return content;
         },
     },
 
@@ -136,17 +152,19 @@ export default {
     },
 
     methods: {
-        load_resource_info() {
-            if(!this.task.resource_id) return; //no resource assigned yet?
+        load_resource_info(id) {
+            if(!id) return; //no resource assigned yet?
 
-            //load which resource it's loading
-            this.$http.get(Vue.config.wf_api+'/resource/', {params: {
-                find: JSON.stringify({_id: this.task.resource_id}) //load everything
-            }}).then(res=>{
-                this.resource = res.body.resources[0];
-                console.log("resource", this.resource);
-                this.popover_content = "Resource: "+this.resource.name;
-            });
+            this.resource = resource_cache[id];
+            if(!this.resource) {
+                this.$http.get(Vue.config.wf_api+'/resource/', {params: {
+                    find: JSON.stringify({_id: id})
+                }}).then(res=>{
+                    this.resource = res.body.resources[0];
+                    resource_cache[id] = this.resource;
+                    console.log("loaded resource", this.resource);
+                });
+            }
         },
 
         toggle(section) {

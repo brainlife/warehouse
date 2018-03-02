@@ -428,7 +428,6 @@ function handle_rule(rule, cb) {
                             deps.push(task._id); 
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                                //did: did++,
                                 task_id: task._id,
                                 app_id: input.prov.app, //dataset stored app_id under "app" because it's meant to be populated (task_id is from other service)
                                 subdir: input.prov.subdir,
@@ -462,7 +461,6 @@ function handle_rule(rule, cb) {
                             deps.push(task._id); 
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                                //did: did++,
                                 task_id: task._id,
                                 subdir: output.subdir, 
                                 dataset_id: output.dataset_id,
@@ -484,7 +482,6 @@ function handle_rule(rule, cb) {
                         });
                         var output = Object.assign({}, input, {
                             datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                            //did: did++,
                             subdir: input._id,
                             dataset_id: input._id, 
                             prov: null, //remove dataset prov
@@ -567,7 +564,6 @@ function handle_rule(rule, cb) {
 				rule.app.outputs.forEach(output=>{
                     _config._outputs.push({
                         id: output.id,
-                        //did: did++,
                         datatype: output.datatype,
                         datatype_tags: output.datatype_tags,
                         desc: output.desc,
