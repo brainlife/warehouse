@@ -160,7 +160,6 @@ export default {
                 }}).then(res=>{
                     this.resource = res.body.resources[0];
                     resource_cache[id] = this.resource;
-                    console.log("loaded resource", this.resource);
                 });
             }
         },

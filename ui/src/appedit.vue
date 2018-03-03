@@ -98,36 +98,38 @@
                                 <b-col cols="7">
                                     <div class="text-muted">Datatype Tags</div>
                                     <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags"/>
-                                    <small class="text-muted">You can prefix tags with ! for negative tags</small>
+                                    <small class="text-muted">Only allow user to select datasets with these tags. You can prefix tags with ! for negative tags</small>
                                 </b-col>
                             </b-row>
 
                             <span class="text-muted">Description (optional)</span>
                             <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"/>
 
-                            <br><b>File Mapping</b><br>
-                            <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
-                            <transition-group name="height">
-                                <b-card v-for="(config, name) in app.config" :key="name" v-if="config.type == 'input' && config.input_id == input.id">
-                                    <div class="button" @click="remove_config(name)" style="float: right">
-                                        <icon name="trash"/>
-                                    </div>
-                                    <b-row>
-                                        <b-col>
-                                            <b-input-group prepend="config.json key">
-                                                <b-form-input type="text" v-model="config._id" placeholder="key to reference in your config.json" required/>
-                                            </b-input-group>
-                                        </b-col>
-                                        <b-col v-if="input.datatype" cols="7">
-                                            <b-input-group prepend="file/dir">
-                                                <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id" required/>
-                                            </b-input-group>
-                                        </b-col>
-                                    </b-row>
-                                </b-card>
-                            </transition-group>
-                            <br>
-                            <b-button @click="add_config('input', input)" v-if="input.datatype" size="sm"><icon name="plus"/> Add File Mapping</b-button>
+                            <div v-if="input.datatype">
+                                <br><b>File Mapping</b><br>
+                                <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
+                                <transition-group name="height">
+                                    <b-card v-for="(config, name) in app.config" :key="name" v-if="config.type == 'input' && config.input_id == input.id">
+                                        <div class="button" @click="remove_config(name)" style="float: right">
+                                            <icon name="trash"/>
+                                        </div>
+                                        <b-row>
+                                            <b-col>
+                                                <b-input-group prepend="config.json key">
+                                                    <b-form-input type="text" v-model="config._id" required/>
+                                                </b-input-group>
+                                            </b-col>
+                                            <b-col v-if="input.datatype" cols="7">
+                                                <b-input-group prepend="file/dir">
+                                                    <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id" required/>
+                                                </b-input-group>
+                                            </b-col>
+                                        </b-row>
+                                    </b-card>
+                                </transition-group>
+                                <br>
+                                <b-button @click="add_config('input', input)" size="sm"><icon name="plus"/> Add File Mapping</b-button>
+                            </div>
                         </b-card>
                     </div>
                     <p>
@@ -161,6 +163,7 @@
                                 <b-col cols="7">
                                     <div class="text-muted">Datatype Tags</div>
                                     <tageditor v-if="output.datatype" v-model="output.datatype_tags"/>
+                                    <small class="text-muted">Set these datatype tags on this output dataset</small>
                                 </b-col>
                             </b-row>
                             <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
@@ -422,16 +425,14 @@ export default {
     mounted: function() {
 
         //load datatypes for form
-        this.$http.get('datatype', {params: {
-            //service: "_upload",
-        }})
-        .then(res=>{
+        this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach((type)=>{
                 this.datatypes[type._id] = type;
                 type._tags = [];
             });
 
+            //TODO - this is super inefficient!
             //load datatype_tags from all apps
             this.$http.get('app', {params: {
                 select: 'inputs outputs',
@@ -441,10 +442,17 @@ export default {
                     if(!dataset.datatype_tags) return;
                     dataset.datatype_tags.forEach(tag=>{
                         var dt = v.datatypes[dataset.datatype];
+                        /*
+                        if(!dt) {
+                            console.error("couldn't find datatype", dataset.datatype);
+                            return;
+                        }
+                        */
                         if(!~dt._tags.indexOf(tag)) dt._tags.push(tag);
                     });
                 }
                 res.body.apps.forEach(app=>{
+                    //console.log("aggregating ",app);
                     app.inputs.forEach(aggregate_tags);
                     app.outputs.forEach(aggregate_tags);
                 });
@@ -513,7 +521,8 @@ export default {
         
         add_dataset: function(it) {
             it.push({
-                id: it.length,
+                //id: it.length,
+                id: "",
                 datatype: null,
                 datatype_tags: [],
             });

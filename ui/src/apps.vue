@@ -8,16 +8,16 @@
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="group-list">
-        <h4>Apps</h4>
-        <p v-for="(apps, tag) in app_groups" :key="tag" class="item" @click="jump(tag)">
+        <h4>Categories</h4>
+        <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)">
             {{tag}}
         </p>
     </div>
-    <div class="page-content">
+    <div class="page-content" v-on:scroll="update_active" ref="scrolled">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
-        <div v-for="(apps, tag) in app_groups" :key="tag" :id="tag">
+        <div v-for="tag in sorted_tags" :id="tag">
             <h4 class="group-title">{{tag}}</h4> 
-            <div v-for="app in apps" :key="app._id" class="app">
+            <div v-for="app in app_groups[tag]" :key="app._id" class="app">
                 <app :app="app" descheight="130px" devsheight="75px"></app>
             </div>
             <br clear="both">
@@ -37,6 +37,8 @@ export default {
     components: { sidemenu, pageheader, app },
     data () {
         return {
+            active: null,
+            sorted_tags: [], 
             app_groups: null,
             query: "",
             config: Vue.config,
@@ -61,12 +63,17 @@ export default {
                 if(app.tags && app.tags.length > 0) tags = app.tags;
                 tags.forEach(tag=>{
                     if(!this.app_groups[tag]) this.app_groups[tag] = [];
+                    if(!~this.sorted_tags.indexOf(tag)) this.sorted_tags.push(tag);
                     this.app_groups[tag].push(app);
                 });
             });
+            this.sorted_tags.sort();
 
-            if(document.location.hash) this.$nextTick(()=>{
-                this.jump(document.location.hash.substring(1));
+            this.$nextTick(()=>{
+                if(document.location.hash) {
+                    this.jump(document.location.hash.substring(1));
+                }
+                this.update_active();
             });
         }, res=>{
             console.error(res);
@@ -79,6 +86,15 @@ export default {
         },
         jump: function(tag) {
             document.location="#"+tag;
+        },
+        update_active: function() {
+            //this.active = "test";
+            var scrolltop = this.$refs.scrolled.scrollTop;
+            this.active = false;
+            this.sorted_tags.forEach(tag=>{
+                var e = document.getElementById(tag);
+                if(e.offsetTop <= scrolltop) this.active = tag;
+            });     
         },
     },
 }
@@ -103,7 +119,6 @@ float: left;
 }
 .page-content {
 margin-left: 250px;
-background-color: #f0f0f0;
 }
 .group-list {
 position: fixed;
@@ -126,11 +141,14 @@ padding: 5px 10px;
 margin-bottom: 0px;
 font-size: 85%;
 color: white;
-transition: background-color 1s;
+transition: background-color 0.5s;
 }
 .group-list .item:hover {
 cursor: pointer;
 background-color: black;
+}
+.group-list .item.active {
+background-color: #007bff;
 }
 </style>
 

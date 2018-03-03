@@ -325,29 +325,31 @@ export default {
                     if(event.error) return console.error(event.error);
                     switch(event.dinfo.exchange) {
                     case "wf.task":
-                        var msg = event.msg;
-                        //if(!msg || !msg._id) return; //odd..
-                        var t = this.tasks.find(t=>t._id == msg._id);
+                        var task = event.msg;
+                        var t = this.tasks.find(t=>t._id == task._id);
                         if(!t) {
                             //new task?
-                            this.$notify("new t."+msg.config._tid+"("+msg.name+") "+msg.status_msg);
-                            msg.show = true;
-                            this.tasks.push(msg); 
+                            this.$notify("new t."+task.config._tid+"("+task.name+") "+task.status_msg);
+                            task.show = true;
+                            this.tasks.push(task); 
+                            Vue.nextTick(()=>{
+                                this.scrollto(task._id);
+                            });
                         } else {
                             //update
-                            if(t.status != msg.status) {
-                                var text = "t."+msg.config._tid+"("+msg.name+") "+msg.status+" "+msg.status_msg;
+                            if(t.status != task.status) {
+                                var text = "t."+task.config._tid+"("+task.name+") "+task.status+" "+task.status_msg;
                                 var type = null;
-                                switch(msg.status) {
+                                switch(task.status) {
                                 case "failed": type = "error"; break;
                                 case "finished": type = "success"; break;
                                 case "stopped": type = "warn"; break;
                                 }
-                                console.log("notification type", type, msg.status);
+                                console.log("notification type", type, task.status);
                                 this.$notify({type, text});
                             }
-                            for(var k in msg) {
-                                t[k] = msg[k];
+                            for(var k in task) {
+                                t[k] = task[k];
                             }
                         }
                         break;
@@ -487,11 +489,19 @@ export default {
 
             this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
                 var _task = res.body.task;
-                _task.show = true;
-                this.tasks.push(_task);
+
+                /*
+                //surprisingly, we could receive task event before we get back from the rest!
+                //so we need to check to see if we haven't received it yet.
+                var t = this.tasks.find(t=>t._id == task._id);
+                if(!t) {
+                    _task.show = true;
+                    this.tasks.push(_task);
+                }
                 Vue.nextTick(()=>{
                     this.scrollto(_task._id);
                 });
+                */
             }).catch(this.notify_error);
         },
 

@@ -382,6 +382,7 @@ export default {
 
                     var dataset = datasets[dataset_id];
                     var output = {
+                        id: input_id,
                         subdir: dataset_id, 
                         dataset_id,
                         task_id: dataset.task_id,
@@ -402,7 +403,6 @@ export default {
                         if(this.app.config[key].input_id == input_id) keys.push(key); 
                     }
                     app_inputs.push(Object.assign({
-                        //output_id: output.id, 
                         keys,
                     }, output));
                 }
@@ -419,7 +419,7 @@ export default {
                 var download_task = res.body.task;
                 console.log("download task submitted", download_task);
                 app_inputs.forEach(input=>{
-                    input.task_id = download_task._id
+                    input.task_id = download_task._id;
                 });
 
                 //now submit the main task
@@ -431,7 +431,7 @@ export default {
                 });
                 this.app.outputs.forEach(output=>{
                     var output_req = {
-                        //id: output.id,
+                        id: output.id,
                         datatype: output.datatype._id,
                         datatype_tags: output.datatype_tags,
                         desc: output.id+ " from "+this.app.name,
