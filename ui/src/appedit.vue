@@ -34,7 +34,7 @@
                     <small class="text-muted">Users who can update this application registration</small>
                 </b-form-group>
                 <b-form-group horizontal label="Avatar">
-                    <el-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
+                    <b-form-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
                 </b-form-group>
                 <b-form-group horizontal label="Projects">
                     <projectsselecter 
@@ -61,7 +61,7 @@
                 </b-form-group>
                 <br>
                 <b-form-group horizontal label="Max Retry">
-                    <el-input type="text" v-model="app.retry" placeholder="(no retry)"/>
+                    <b-form-input type="text" v-model="app.retry" placeholder="(no retry)"/>
                     <small class="text-muted">If a task fails, it will rerun up to this count</small>
                 </b-form-group>
             </div>
@@ -69,12 +69,25 @@
             <div>
                 <h4>Input / Output</h4>
                 <b-form-group horizontal label="Input Datatype">
-                    <transition-group name="height">
                     <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
                         <b-card style="position: relative;">
                             <div class="button button-danger" @click="remove_input(idx)" style="position: absolute; right: 0px; top: 3px">
                                 <icon name="trash" scale="1.25"/>
                             </div>
+                            <b-row>
+                                <b-col>
+                                    <b-input-group prepend="ID">
+                                        <b-form-input type="text" v-model="input.id"required/>
+                                    </b-input-group>
+                                    <small class="text-muted">Internal ID used to identify this input (not for config.json)</small>
+                                </b-col>
+                                <b-col cols="7">
+                                    <b-form-checkbox v-model="input.optional">
+                                        Optional 
+                                        <small class="text-muted">user can submit this app without this input specified</small>
+                                    </b-form-checkbox>
+                                </b-col>
+                            </b-row>
                             <b-row>
                                 <b-col>
                                     <span class="text-muted">Datatype</span>
@@ -89,17 +102,8 @@
                                 </b-col>
                             </b-row>
 
-                            <br>
-                            <b-row>
-                                <b-col>
-                                    <b-form-checkbox v-model="input.optional">Optional Input</b-form-checkbox>
-                                </b-col>
-                                <b-col cols="7">
-                                    <span class="text-muted">Description (optional)</span>
-                                    <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"></b-form-textarea>
-                                </b-col>
-                            </p>
-                            </b-row>
+                            <span class="text-muted">Description (optional)</span>
+                            <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"/>
 
                             <br><b>File Mapping</b><br>
                             <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
@@ -110,13 +114,12 @@
                                     </div>
                                     <b-row>
                                         <b-col>
-                                            <b-input-group prepend="Key">
+                                            <b-input-group prepend="config.json key">
                                                 <b-form-input type="text" v-model="config._id" placeholder="key to reference in your config.json" required/>
                                             </b-input-group>
                                         </b-col>
-                                        
-                                        <b-col v-if="input.datatype">
-                                            <b-input-group prepend="File/Dir">
+                                        <b-col v-if="input.datatype" cols="7">
+                                            <b-input-group prepend="file/dir">
                                                 <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id" required/>
                                             </b-input-group>
                                         </b-col>
@@ -127,14 +130,12 @@
                             <b-button @click="add_config('input', input)" v-if="input.datatype" size="sm"><icon name="plus"/> Add File Mapping</b-button>
                         </b-card>
                     </div>
-                    </transition-group>
                     <p>
                         <b-button size="sm" @click="add_dataset(app.inputs)" variant="success"><icon name="plus"/> Add Input Dataset</b-button>
                     </p>
                 </b-form-group>
 
                 <b-form-group horizontal label="Output Datatype">
-                    <transition-group name="height">
                     <div v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
                         <b-card>
                             <div class="button button-danger" @click="app.outputs.splice(idx, 1)" style="float: right">
@@ -142,23 +143,30 @@
                             </div>
                             <b-row>
                                 <b-col>
+                                    <b-input-group prepend="ID">
+                                        <b-form-input type="text" v-model="output.id"required/>
+                                    </b-input-group>
+                                    <small class="text-muted">Internal ID used to identify this output</small>
+                                </b-col>
+                                <b-col cols="7">
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col>
                                     <div class="text-muted">Datatype</div>
                                     <el-select v-model="output.datatype" style="width: 100%">
                                         <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
                                     </el-select>
                                 </b-col>
-                                <b-col>
+                                <b-col cols="7">
                                     <div class="text-muted">Datatype Tags</div>
                                     <tageditor v-if="output.datatype" v-model="output.datatype_tags"/>
                                 </b-col>
-                                <b-col>
-                                    <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
-                                    <el-input type="textarea" v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
-                                </b-col>
                             </b-row>
+                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
+                            <b-form-textarea v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
                         </b-card>
                     </div>
-                    </transition-group>
                     <p>
                         <b-button size="sm" @click="add_dataset(app.outputs)" variant="success"><icon name="plus"/> Add Output Dataset</b-button>
                     </p>

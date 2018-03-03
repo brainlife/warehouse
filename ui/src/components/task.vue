@@ -12,7 +12,7 @@
         <div style="margin-left: 45px;">
             <div style="float: right;">
                 <contact :id="task.user_id" :short="true" style="position: relative; top: -3px; opacity: 0.9"/>
-                <div class="button" style="opacity: 0.3" :title="task._id" v-b-popover.bottom="popover_content"><icon name="info"/></div>
+                <div class="button" style="opacity: 0.7" :title="task._id" v-b-popover.bottom.html="popover_content"><icon name="info"/></div>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="repeat"/>
                 </div>
@@ -131,9 +131,7 @@ export default {
             if(this.task.finish_date) content += `<tr><th>Finished</th><td>${new Date(this.task.finish_date).toLocaleString()}</td></tr>`;
             if(this.task.fail_date) content += `<tr><th>Failed</th><td>${new Date(this.task.fail_date).toLocaleString()}</td></tr>`;
             if(this.task.remove_date) content += `<tr><th>Removed</th><td>${new Date(this.task.removed_date).toLocaleString()}</td></tr>`;
-            content += `<tr><th>Next</th><td>${new Date(this.task.next_date).toLocaleString()}</td></tr>`;
-
-            if(this.resource) content += `<tr><th>Task ID</th><td>${this.task._id}</td></tr>`;
+            if(this.task.next_date) content += `<tr><th>Next Chk</th><td>${new Date(this.task.next_date).toLocaleString()}</td></tr>`;
             if(this.resource) content += `<tr><th>Resource</th><td>${this.resource.name}</td></tr>`;
             content += `</table>`;
             return content;

@@ -402,7 +402,6 @@ export default {
         },
 
         findarchived: function(task, output) {
-            console.log("looking for archvied datasets", output);
             return this.archived.filter(dataset=>{
                 return (dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
             });
@@ -486,10 +485,13 @@ export default {
                 if(output.archive) output.archive.project = this.project._id;
             });
 
-            console.dir(task);
             this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
-                this.app = null;
-                var task = res.body.task;
+                var _task = res.body.task;
+                _task.show = true;
+                this.tasks.push(_task);
+                Vue.nextTick(()=>{
+                    this.scrollto(_task._id);
+                });
             }).catch(this.notify_error);
         },
 

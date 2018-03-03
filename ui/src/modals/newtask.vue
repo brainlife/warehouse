@@ -347,6 +347,7 @@ export default {
                     if(this.app.config[key].input_id == input_id) keys.push(key); 
                 }
                 _inputs.push({
+                    id: input_id, 
                     task_id: dataset.task._id, //unpopulate
                     subdir: dataset.subdir, //is this right? (should come from prov?)
                     meta: dataset.meta,
@@ -371,12 +372,11 @@ export default {
             var _outputs = [];
             this.app.outputs.forEach(output=>{
                 var output_req = {
-                    //id: output.id, //I don't think we need this
+                    id: output.id,
                     datatype: output.datatype._id,
                     datatype_tags: output.datatype_tags,
                     desc: output.id+ " from "+this.app.name,
                     meta,
-                    //tags: ["sometags"], //TODO?
                     files: output.files,
                 };
                 if(this.archive.enable) output_req.archive = {

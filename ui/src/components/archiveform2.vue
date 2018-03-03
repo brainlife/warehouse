@@ -60,15 +60,16 @@ export default {
 
     methods: {
         submit: function() {
-            console.debug("sending archvie request ...");
+            console.log("output", this.output);
             this.$http.post('dataset', {
                 project: this.project,                 
-                app_id: this.task.config._app,
+                //app_id: this.task.config._app,
                 task_id: this.task._id,
-                output_id: this.output.id,
+                output_id: this.output.id, 
+                subdir: this.output.subdir, //subdir that contains the actual content under the task
+
                 datatype: this.output.datatype,
                 datatype_tags: this.output.datatype_tags,
-                subdir: this.output.subdir, //subdir that contains the actual content under the task
                 files: this.output.files,
                 meta: this.output.meta,
                 desc: this.desc,
