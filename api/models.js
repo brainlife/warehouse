@@ -177,15 +177,10 @@ var datasetSchema = mongoose.Schema({
 
     //not set if user uploaded it. 
     prov: {
-        instance_id: String, //output task's instance_id
-        task_id: String, //output task id
-        //app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //deprecated?
-
-        //optiona
-        output_id: String, //output task's output id
-        subdir: String, //subdir that contained the actual output. often output_id == subdir
-
-        //config: mongoose.Schema.Types.Mixed, 
+        instance_id: String, 
+        task_id: String, 
+        output_id: String, 
+        subdir: String, //(optional) subdir that contained the actual output. often output_id == subdir
     },
 
     //storing (default)

@@ -16,7 +16,7 @@ const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
-const prov = require('../prov');
+//const prov = require('../prov');
 
 function canedit(user, rec, canwrite_project_ids) {
     if(!rec.user_id) return false; //get doesn't require jwt
@@ -206,31 +206,22 @@ router.get('/bibtex/:id', (req, res, next)=>{
  *
  */
 router.get('/prov/:id', (req, res, next)=>{
-
-    //test view ... 
-    //http://localhost:8080/warehouse/dataset/59dfc38205925425a3a08928
-    //http://localhost:8080/warehouse/dataset/5a125376378e992ee16390f7
-
-    //broken - need to fix
-    //http://localhost:8080/warehouse/dataset/59970202b36ae423d9fecf03
-
     let datatypes = {};
     let nodes = [];
     let edges = [];
 
+    //starting from the dataset ID specified, walk back through dataset prov & task deps all the way to the 
+    //original input datasets
+
     function load_task(id, cb) {
         request.get({
             url: config.wf.api+"/task/"+id,
-            //qs: { find: JSON.stringify({"_id": id, user_id: null}) },
             json: true,
             headers: {
-                //authorization: "Bearer "+config.wf.jwt, //pass admin jwt to query all tasks
                 authorization: req.headers.authorization, 
             }
         }, (err, _res, task)=>{
             if(err) return cb(err);
-            //if(ret.tasks.length != 1) return cb("couldn't find task:"+id);
-            //let task = ret.tasks[0];
             cb(null, task);
         });
     }
@@ -251,59 +242,54 @@ router.get('/prov/:id', (req, res, next)=>{
 
     let datasets_analyzed = [];
     function load_dataset_prov(dataset, defer, cb) {
+
         let to = "dataset."+dataset._id;
+        if(defer) to = defer.to;
+        
         if(!dataset.prov.task_id) {
-            logger.debug("no dataset.prov.task_id", to);
+            //leaf dataset.. we are done!
             if(defer) {
+                //but we have defer.. so add it for the last time
                 add_node(defer.node);
                 edges.push(defer.edge);
             }
             return cb();
         } 
-        
-        if(defer) {
-            logger.debug("has defer", defer.to);
-            to = defer.to;
-        }
 
-        logger.debug("on dataset", dataset._id.toString());
-        logger.debug("loading task", dataset.prov.task_id);
         load_task(dataset.prov.task_id, (err, task)=>{
             if(err) return cb(err);
-            if(!dataset.prov || !dataset.prov.app) { //TODO - do I really need to check for prov.app?
-                if(task.service == "soichih/sca-product-raw") { //TODO might change in the future
-                    if(defer) {
-                        add_node(defer.node);
-                        edges.push(defer.edge);
-                    }
-                    load_product_raw(to, dataset._id, cb);
-                } else if(task.service.indexOf("brain-life/validator-") === 0) { 
-                    if(defer) {
-                        add_node(defer.node);
-                        edges.push(defer.edge);
-                    }
-                    cb(); //ignore validator
-                } else {
-                    add_node({
-                        id: "task."+task._id, 
-                        label: compose_label(task),
-                    });
-                    logger.debug("debug------------------------------------------");
-                    //logger.debug(JSON.stringify(task, null, 4));
-                    //logger.debug(JSON.stringify(dataset, null, 4));
-                    edges.push({
-                        from: "task."+task._id,
-                        to,
-                        arrows: "to",
-                        label: datatypes[dataset.datatype].name,
-                    });
-                    load_task_prov(task, cb);
+            if(task.service == "soichih/sca-product-raw") { //TODO might change in the future
+                if(defer) {
+                    add_node(defer.node);
+                    edges.push(defer.edge);
                 }
+                load_product_raw(to, dataset._id, cb);
+            } else if(task.service.indexOf("brain-life/validator-") === 0) { 
+                if(defer) {
+                    add_node(defer.node);
+                    edges.push(defer.edge);
+                }
+                cb(); //ignore validator
             } else {
                 add_node({
                     id: "task."+task._id, 
                     label: compose_label(task),
                 });
+                edges.push({
+                    from: "task."+task._id,
+                    to,
+                    arrows: "to",
+                    label: datatypes[dataset.datatype].name,
+                });
+                load_task_prov(task, cb);
+            }
+            /*
+            } else {
+                add_node({
+                    id: "task."+task._id, 
+                    label: compose_label(task),
+                });
+                
                 //dataset created by another *app*
                 let output = dataset.prov.app.outputs.find(output=>{ return output.id == dataset.prov.output_id });
                 let label = dataset.prov.output_id+"?";
@@ -319,18 +305,12 @@ router.get('/prov/:id', (req, res, next)=>{
                 });
                 load_task_prov(task, cb);
             }
-            //load_task_prov(task, cb);
+            */
         });
     }
 
     function load_product_raw(to, dataset_id, cb) {
         //staging task should be shown as dataset input.. 
-        /*
-        if(!dep_task.config._outputs) {
-            logger.debug("load_product_raw - missing _outputs");
-            return cb();
-        }
-        */
         if(~datasets_analyzed.indexOf(dataset_id.toString())) {
             //dataset already analyzed.. just add edge
             var found = false;
@@ -354,7 +334,6 @@ router.get('/prov/:id', (req, res, next)=>{
             let defer = {
                 node: {
                     id: "dataset."+dataset_id, 
-                    //color: "#159957",
                     font: {size: 12, color: "#fff"},
                     label:dataset.project.name+" / "+ dataset.meta.subject + "\n" +datatypes[dataset.datatype].name,
                 },
@@ -362,7 +341,6 @@ router.get('/prov/:id', (req, res, next)=>{
                     from: "dataset."+dataset_id,
                     to,
                     arrows: "to",
-                    //color: "#ccc",
                 },
                 to,
             };
@@ -379,8 +357,6 @@ router.get('/prov/:id', (req, res, next)=>{
         if(!task.deps) return cb(); //just in case?
         if(!task.config) return cb(); 
         async.eachSeries(task.config._inputs, (input, next_dep)=>{
-            //logger.debug("loading input");
-            //logger.debug(JSON.stringify(input, null, 4));
             if(!input.task_id) return next_dep(); //old task didn't have this set?
             load_task(input.task_id, (err, dep_task)=>{
                 if(err) return next_dep(err);
@@ -401,7 +377,7 @@ router.get('/prov/:id', (req, res, next)=>{
                         from: "task."+input.task_id,
                         to: "task."+task._id,
                         arrows: "to",
-                        label: datatypes[input.datatype].name, //+"\n"+(dataset.desc||''),
+                        label: datatypes[input.datatype].name, 
                     });
                     load_task_prov(dep_task, next_dep); //recurse to its deps
                 }
@@ -422,7 +398,7 @@ router.get('/prov/:id', (req, res, next)=>{
             datatypes[_datatype._id] = _datatype;
         });
         
-        //start by loading dest datasource
+        //start by loading *this dataset*
         db.Datasets
         .findOne({ _id: req.params.id })
         .populate('prov.app')
@@ -430,7 +406,6 @@ router.get('/prov/:id', (req, res, next)=>{
             if(err) return cb(err);
             if(!dataset) return res.status(404).end();
             nodes.push({
-                //"this dataset"
                 id: "dataset."+dataset._id, 
             });
             load_dataset_prov(dataset, null, err=>{
@@ -448,8 +423,7 @@ router.get('/prov/:id', (req, res, next)=>{
  *
  * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} task_id           WF service Task ID (of output task)
- * @apiParam {Object} [app_id]          Application used to generate this dataset (don't set if it's uploaded)
- * @apiParam {String} [output_id]       Output ID of the app_id (not set if uploaded)
+ * @apiParam {String} output_id         App's output_id that generated this dataset
  * @apiParam {String} [subdir]          Subdirectory where all files are actually stored under the task output
  *
  * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
@@ -468,9 +442,10 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     if(!req.body.project) return cb("project id not set");
     if(!req.body.datatype) return cb("datatype id not set");
     if(!req.body.task_id) return cb("task_id not set");
+    if(!req.body.output_id) return cb("output_id not set");
 	if(!req.body.files) req.body.files = {};
     
-	//TODO - files (especially file.dirname) must be well validated.
+	//TODO - files (especially file.dirname) should be validated.
 
     var task = null;
     var datatype = null;
@@ -515,16 +490,13 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 desc: req.body.desc,
                 tags: req.body.tags||[],
 
-                //should be deprecate with neo4j, but still used by UI
-                //also used by event_handler to see if the task output is archived already or not
-                //actually, I might keep this as source of truth and neo4j as tool to query similar information
                 prov: {
                     //always set
                     instance_id: task.instance_id,
                     task_id: task._id,
+                    output_id: req.body.output_id,
 
                     //optional
-                    output_id: req.body.output_id,
                     subdir: req.body.subdir,
                 },
                 meta: req.body.meta||{},

@@ -410,12 +410,21 @@ function handle_rule(rule, cb) {
 
             //submit input staging task for datasets that aren't staged yet
             next=>{
-                //var did = next_tid*10;
                 var _outputs = [];
                 var downloads = [];
                 for(var input_id in inputs) {
                     var input = inputs[input_id];
+
+                    //although we need to construct _outputs for product_raw, we are reusing most of the info
+                    //for the main app's input. since product-raw doesn't really have id anyway, so let's just use
+                    //app's input id as product_raw's id
                     input.id = input_id;
+                    
+                    //enumerate json keys for this input
+                    let keys = [];
+                    for(var key in rule.app.config) {
+                        if(rule.app.config[key].input_id == input_id) keys.push(key);
+                    }
 
                     function canuse_source() {
                         var task = null;
@@ -426,15 +435,16 @@ function handle_rule(rule, cb) {
                             //find output from task
                             let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
                             deps.push(task._id); 
+
+                            //TODO I should only put stuff that I need output input..
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                                //did: did++,
                                 task_id: task._id,
-                                app_id: input.prov.app, //dataset stored app_id under "app" because it's meant to be populated (task_id is from other service)
+                                //output_id: input.prov.output_id,
                                 subdir: input.prov.subdir,
-                                output_id: input.prov.output_id,
-                                files: output_detail.files,
+                                dataset_id: input._id, //TODO not sure if this is right?
                                 prov: null, //remove dataset prov
+                                keys,
                             }));
                             return true;
                         }
@@ -445,7 +455,6 @@ function handle_rule(rule, cb) {
                         //see if there are input task that has the dataset already staged
                         var task = null;
                         var output = null;
-                        //logger.debug("looking for sca-product-raw tasks", tasks);
                         for(var task_id in tasks) {
                             task = tasks[task_id];
                             if(task.service == "soichih/sca-product-raw" && task.status != 'removed') {
@@ -460,14 +469,15 @@ function handle_rule(rule, cb) {
                         if(output) {
                             logger.debug("found the input dataset already staged previously");
                             deps.push(task._id); 
+                            //TODO I should only put stuff that I need output input..
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                                //did: did++,
                                 task_id: task._id,
                                 subdir: output.subdir, 
                                 dataset_id: output.dataset_id,
-                                output_id: output.id, 
+                                //output_id: output.id, 
                                 prov: null, //remove dataset prov
+                                keys,
                             }));
                             return true;
                         }
@@ -482,15 +492,16 @@ function handle_rule(rule, cb) {
                             untar: "auto",
                             dir: input._id,
                         });
+                        
+                        //TODO I should only put stuff that I need output input..
                         var output = Object.assign({}, input, {
                             datatype: input.datatype._id, //unpopulate datatype to keep it clean
-                            //did: did++,
                             subdir: input._id,
                             dataset_id: input._id, 
                             prov: null, //remove dataset prov
                         });
                         _outputs.push(output);
-                        _app_inputs.push(Object.assign({output_id: input.id}, output)); 
+                        _app_inputs.push(Object.assign({/*output_id: input.id,*/ keys}, output)); 
                     }
                 }
 
@@ -540,7 +551,7 @@ function handle_rule(rule, cb) {
 				for(var input_id in inputs) {
 					var input = inputs[input_id];
 					for(var k in input.meta) {
-						meta[k] = input.meta[k];
+						if(!meta[k]) meta[k] = input.meta[k]; //use first encounter
 					}
 				}
                 next();
@@ -567,7 +578,6 @@ function handle_rule(rule, cb) {
 				rule.app.outputs.forEach(output=>{
                     _config._outputs.push({
                         id: output.id,
-                        //did: did++,
                         datatype: output.datatype,
                         datatype_tags: output.datatype_tags,
                         desc: output.desc,
