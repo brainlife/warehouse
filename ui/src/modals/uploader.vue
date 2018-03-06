@@ -181,7 +181,6 @@ export default {
                     ws.send(JSON.stringify({
                       bind: {
                         ex: "wf.task",
-                        //key: Vue.config.user.sub+"."+this.instance._id+".#",
                         key: this.instance._id+".#",
                       }
                     }));
@@ -322,6 +321,7 @@ export default {
             this.$http.post('dataset', {
                 project: this.project._id,
                 task_id: this.tasks.validation._id, 
+                output_id: "output", //validation service isn't realy BL app, so I just have to come up with something
 
                 datatype: this.datatype_id,
                 datatype_tags: validation_product.datatype_tags, 

@@ -161,6 +161,7 @@ font-size: 14px;
 .compact .desc {
 margin: 0px;
 height: inherit;
+padding: inherit;
 }
 .compact .github {
 display: inline-block;

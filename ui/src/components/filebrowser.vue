@@ -151,13 +151,18 @@ export default {
                 if(c == "") c = "(empty)";
                 Vue.set(file, 'type', type);
 
-                //TODO - can't get slideDown to work via css.. last ditch attempt to animte height
+                //TODO - can't get slideDown to work via css.. hack to animate height
+                //can't just transition with max-height?
                 var lines = c.trim().split("\n");
                 Vue.set(file, 'content', "");
                 Vue.set(file, 'view', true);
                 function addline() {
                     file.content += lines.shift()+"\n";
-                    if(lines.length && file.content) setTimeout(addline, 10);
+                    if(lines.length && file.content) {
+                        if(file.content.length < 2000) setTimeout(addline, 10);
+                        else file.content += lines.join("\n"); //add the rest all at once
+
+                    } 
                 }
                 setTimeout(addline, 10);
             });

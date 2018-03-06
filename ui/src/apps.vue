@@ -112,7 +112,7 @@ top: 0px;
 z-index: 1;
 }
 .app {
-margin-right: 10px;
+margin-left: 10px;
 margin-bottom: 10px;
 width: 350px;
 float: left;
