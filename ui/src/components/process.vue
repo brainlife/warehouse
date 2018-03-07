@@ -70,15 +70,17 @@
             <!--output-->
             <div slot="output" v-if="task.config._outputs.length > 0">
                 <div v-for="output in task.config._outputs" :key="output.id" style="padding: 5px;">
-                    <div class="float-right" style="position: relative; top: -5px;" v-if="task.status == 'finished'">
+                    <div class="float-right" style="position: relative; top: -5px;">
                         <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
                             <icon name="cubes"/>
                         </div>
-                        <div class="button" v-b-modal.viewSelecter title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
-                            <icon name="eye"/>
+                        <div v-if="task.status == 'finished'" style="display: inline-block;">
+                            <div class="button" v-b-modal.viewSelecter title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
+                                <icon name="eye"/>
+                            </div>
+                            <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
+                            <div class="button" :class="{'button-gray': archiving === output}" title="Archive" @click="archiving = output"><icon name="archive"/></div>
                         </div>
-                        <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                        <div class="button" :class="{'button-gray': archiving === output}" title="Archive" @click="archiving = output"><icon name="archive"/></div>
                     </div>
 
                     <b v-if="output.meta.subject">{{output.meta.subject}}</b>

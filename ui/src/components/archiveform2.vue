@@ -14,7 +14,7 @@
         </b-form-group>
 
         <b-form-group label="Metadata">
-            <b-input-group :prepend="k.toUpperCase()" v-for="(v,k) in output.meta">
+            <b-input-group :prepend="k.toUpperCase()" v-for="(v,k) in output.meta" :key="k">
                 <b-form-input type="text" v-model="output.meta[k]"/>
             </b-input-group>
             <small class="text-muted">Datatype specific key/value pairs to describes hierarchy for this dataset</small>

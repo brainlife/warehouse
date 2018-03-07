@@ -46,7 +46,7 @@ Vue.use(Meta, /*{
 
 export default new Router({
     mode: 'history',
-    base: '/warehouse',
+    //base: '/warehouse',
     routes: [
         {path: '/', redirect: '/project'},
         {path: '/dashboard', component: dashboard},

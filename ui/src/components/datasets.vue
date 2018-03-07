@@ -176,11 +176,10 @@ export default {
         selected_size: function() {
             var size = 0;
             for(var did in this.selected) {
-                console.dir(this.selected[did].size);
                 if(this.selected[did].size) {
                     size += this.selected[did].size;
                 } else {
-                    console.error("size not set for dataset", did);
+                    console.log("size not set for dataset", did);
                 }
             }
             return size;
@@ -644,16 +643,15 @@ export default {
         remove: function() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 async.forEach(this.selected, (dataset, next)=>{
-                    console.log("delete", dataset);
+                    console.log("deleting", dataset);
                     this.$http.delete('dataset/'+dataset._id).then(res=>{
                         next();
                     }).catch(next);
                 }, err=>{
                     if(err) {
-                        console.dir(err);
                         this.$notify({type: "error", text: err.body.message});
                     } else {
-                        this.$notify({type: "success", text: this.selected.length+" dataset successfully removed"});
+                        this.$notify({type: "success", text: "dataset(s) successfully removed"});
                     }
                 });
             }

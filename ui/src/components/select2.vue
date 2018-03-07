@@ -33,85 +33,35 @@ export default {
     },
 
     mounted: function() {
-        var vm = this;
-        function default_format(data) {
-            var result = document.createElement('div');
-            result.classList.add('menu-item');
-
-            if (data.header) result.classList.add('header');
-            if (data.text) result.innerHTML += ascii_escape(data.text);
-
-            //TODO - makes no sense that these formatter exists here
-            if (data.datatype && data.tags) {
-                var datatype_name = data.datatype.name;
-                if(datatype_name.indexOf("neuro/") == 0) datatype_name = datatype_name.substring(6);
-                result.innerHTML += " <span class='datatype'>"+datatype_name+"</span> ";
-                /*
-                data.datatype_tags.forEach(tag => {
-                    result.innerHTML += " <span class='tag'>"+ascii_escape(tag)+"</span>";
-                });
-                */
-                var firsttag = true;
-                data.tags.forEach(tag => {
-                    if(!firsttag) result.innerHTML += " | ";
-                    firsttag = false;
-                    result.innerHTML += ascii_escape(tag);
-                });
-            }
-            
-            // if there's a date, add it
-            if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
-            
-            return result;
-        }
         
         this.opts = {
-            data: this.options, // <option>
+            data: this.options, 
             matcher: this.matcher,
             tags: this.tags,
             multiple: this.multiple,
-            templateResult: this.templateResult || default_format,
-            templateSelection: this.templateSelection || default_format,
+            templateResult: this.templateResult || this.default_result_format,
+            templateSelection: this.templateSelection || this.default_selection_format,
             placeholder: this.placeholder,
-            //theme: 'classic',
             allowClear: this.allowClear,
         };
         
-        // escape a string to ascii codes
-        function ascii_escape(string) {
-            var escaped = "";
-            for (var char of string) escaped += "&#"+char.charCodeAt(0)+";";
-            return escaped;
-        }
-        
-        function init() {
-            $(vm.$el)
-                .select2(vm.opts)
-                .val(vm.value)
-                .trigger('change')
-                .on('change',function() {
-                    //vm.$emit('input', this.value); //doesn't work
-                    vm.$emit('input', $(this).val()); //val() returns array for multiselect
-                    //console.log("select2 changed");
-                })
-        }
-        
-        if (!this.dataAdapter) init();
+        if (!this.dataAdapter) this.init();
         else {
             //ugly.. wtf select2 v4 !
             $.fn.select2.amd.require([
                 'select2/data/array',
                 'select2/utils'
-            ], function(ArrayData, Utils) {
-                var Adapter = function($element, options) {
+            ], (ArrayData, Utils)=>{
+                function Adapter($element, options) {
                     Adapter.__super__.constructor.call(this, $element, options);
-                };
+                }
                 Utils.Extend(Adapter, ArrayData);
-                Adapter.prototype.query = vm.dataAdapter;
-                vm.opts.ajax = {};
-                vm.opts.dataAdapter = Adapter;
+                Adapter.prototype.query = this.dataAdapter;
+                this.opts.dataAdapter = Adapter;
 
-                init();
+                this.opts.ajax = {};
+
+                this.init();
             });
         }
     },
@@ -130,17 +80,86 @@ export default {
             }
         },
         options: function (options) {
-            //console.log("select2: parent options changed to", options);
-
+            console.log("select2: parent options changed to", options);
             this.opts.data = options;
-            
-            //TODO - why do we need to update val here? (will break without it)
-            $(this.$el).select2(this.opts).val(this.value).trigger('change');
+            //we need to update val also here.. or it will break.. (really?)
+            $(this.$el).empty().select2(this.opts).val(this.value).trigger('change');
         },
     },
 
     destroy: function () {
         $(this.$el).off().select2('destroy');
+    },
+
+    methods: {
+        init: function() {
+            $(this.$el).select2(this.opts).val(this.value).trigger('change')
+            .on('change', ()=>{
+                this.$emit('input', $(this.$el).val()); //val() returns array for multiselect
+            })
+        },
+
+        //search result
+        default_result_format: function(data) {
+            var result = document.createElement('div');
+            result.classList.add('menu-item');
+
+            if (data.header) result.classList.add('header');
+            if (data.text) result.innerHTML += this.ascii_escape(data.text);
+
+            //TODO - makes no sense that these formatter exists here
+            if (data.datatype && data.tags) {
+                var datatype_name = data.datatype.name;
+                if(datatype_name.indexOf("neuro/") == 0) datatype_name = datatype_name.substring(6);
+                result.innerHTML += " <span class='datatype'>"+datatype_name+"</span> ";
+                var firsttag = true;
+                data.tags.forEach(tag => {
+                    if(!firsttag) result.innerHTML += " | ";
+                    firsttag = false;
+                    result.innerHTML += this.ascii_escape(tag);
+                });
+            }
+            
+            // if there's a date, add it
+            if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
+            
+            return result;
+        },
+
+        //selected item
+        default_selection_format: function(data) {
+            var result = document.createElement('div');
+            result.classList.add('menu-item');
+
+            if (data.header) result.classList.add('header');
+            if (data.text) result.innerHTML += this.ascii_escape(data.text);
+
+            //TODO - makes no sense that these formatter exists here
+            if (data.datatype && data.tags) {
+                var datatype_name = data.datatype.name;
+                if(datatype_name.indexOf("neuro/") == 0) datatype_name = datatype_name.substring(6);
+                result.innerHTML += " <b class='subject'>"+data.meta.subject+"</b> ";
+                result.innerHTML += " <span class='datatype'>"+datatype_name+"</span> ";
+                var firsttag = true;
+                data.tags.forEach(tag => {
+                    if(!firsttag) result.innerHTML += " | ";
+                    firsttag = false;
+                    result.innerHTML += this.ascii_escape(tag);
+                });
+            }
+            
+            // if there's a date, add it
+            if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
+            
+            return result;
+        },
+
+        // escape a string to ascii codes
+        ascii_escape: function(string) {
+            var escaped = "";
+            for (var char of string) escaped += "&#"+char.charCodeAt(0)+";";
+            return escaped;
+        },
     },
 }
 </script>

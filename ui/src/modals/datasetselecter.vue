@@ -161,7 +161,6 @@ export default {
                 limit: this.limit,
                 skip: (params.page - 1) * this.limit,
                 sort: 'meta.subject -create_date',
-                //populate: 'datatype', 
             };
             
             // list of dropdown menu items to return
@@ -187,7 +186,8 @@ export default {
                         //text: subject,
                         date: dataset.create_date,
                         datatype: this.datatypes[dataset.datatype],
-                        tags: dataset.datatype_tags
+                        tags: dataset.datatype_tags,
+                        meta: dataset.meta,
                     };
 
                     if (!this.datasets_groups[subject]) {

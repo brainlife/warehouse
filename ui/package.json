@@ -8,7 +8,7 @@
     "dev": "node build/dev-server.js",
     "build": "node build/build.js",
     "deploy": "ssh root@brain-life.org \"cp -r /usr/local/ui/warehouse /usr/local/ui/warehouse.`date +%F.%T` \" && rsync --delete -avz -e ssh dist/ root@brain-life.org:/usr/local/ui/warehouse",
-    "deploy-test": "rsync --delete -avz -e ssh dist/ dev1.soichi.us:/usr/local/ui/warehouse"
+    "deploy-test": "rsync --delete -avz -e ssh dist/ root@test.brainlife.io:/root/docker/nginx/static/warehouse"
   },
   "dependencies": {
     "animate.css": "^3.6.1",
