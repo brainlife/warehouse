@@ -39,7 +39,7 @@ exports.health_check = function() {
 				report.storages[system_id] = "ok";
 			}
             next();
-        }, system.timeout||8000)); //5 seconds is often not enough... let's use 8. also system can have timeout override to set it to even longer value
+        }, 10*000)); //8 not enough for js often
     }, err=>{
 		common.redis.set("health.warehouse.api."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
     });

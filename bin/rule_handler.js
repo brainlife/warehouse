@@ -56,6 +56,11 @@ function run() {
         removed: false,
     })
     .populate('app project')
+    
+    //handle new ones first (doesn't solve anything.. each loop has to go through all active rules)
+    //I need to set deactivation date for each rule, or make rule handling much more efficient
+    //.sort('-create_date') 
+
     .exec((err, rules)=>{
 		if(err) throw err;
         async.eachSeries(rules, (rule, next_rule)=>{

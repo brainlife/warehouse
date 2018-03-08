@@ -16,7 +16,6 @@ const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
-//const prov = require('../prov');
 
 function canedit(user, rec, canwrite_project_ids) {
     if(!rec.user_id) return false; //get doesn't require jwt
@@ -27,7 +26,6 @@ function canedit(user, rec, canwrite_project_ids) {
         let project_id = rec.project._id || rec.project; //could be populated
         if(~canwrite_project_ids_str.indexOf(project_id.toString())) return true;
     }
-    console.log("can't edit");
     return false;
 }
 
