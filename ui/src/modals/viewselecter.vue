@@ -38,7 +38,6 @@ if(![].chunk_inefficient) {
 }
 
 export default {
-    //props: [ 'datatype_name', 'datatype_names' ],
     data () {
         return {
             //set by viewselecter.option
@@ -54,7 +53,6 @@ export default {
         } 
     },
     mounted() {
-        //document.body.appendChild(this.$refs.modal.$el); //move to root
         this.$root.$on("viewselecter.option", (opt)=>{
             this.datatype_name = opt.datatype_name;
             this.datatype_names = opt.datatype_names;
@@ -69,56 +67,56 @@ export default {
                 ui: "raw",
                 name: "File Viewer",
                 desc: "Browse / download files via Brain-Life's File Browser",
-                avatar: "http://www.brainlife.io/images/ui-logos/raw.png",
+                avatar: "/images/ui-logos/raw.png",
                 datatypes: [], //supported by all
             },
             {   
                 ui: "lifeview",
                 name: "Life Tract View",
                 desc: "Show non-0 weight tracts with varying colors based on weight.",
-                avatar: "http://www.brainlife.io/images/ui-logos/ui-lifeview.png",
+                avatar: "/images/ui-logos/ui-lifeview.png",
                 datatypes: [ "neuro/life" ],
             },
             {
                 ui: "lifestats",
                 name: "Life Stats",
                 desc: "Display basic statistics from the LiFE output.",
-                avatar: "http://www.brainlife.io/images/ui-logos/lifestat.png",
+                avatar: "/images/ui-logos/lifestat.png",
                 datatypes: [ "neuro/life" ],
             },
             {
                 ui: "t1pdd",
                 name: "dtiInit T1PDD",
                 desc: "Show T1 background and the principal diffusion directions as an RGB overlay",
-                avatar: "http://www.brainlife.io/images/ui-logos/dtiinit.png",
+                avatar: "/images/ui-logos/dtiinit.png",
                 datatypes: [ "neuro/dtiinit" ],
             },
             {
                 ui: "tractview",
                 name: "WMC Tract View",
                 desc: "to-be-written.",
-                avatar: "http://www.brainlife.io/images/ui-logos/tractview.png",
+                avatar: "/images/ui-logos/tractview.png",
                 datatypes: [ "neuro/wmc" ],
             },
             {
                 ui: "images",
                 name: "Image Tile",
                 desc: "to-be-written.",
-                avatar: "http://www.brainlife.io/images/ui-logos/images.png",
+                avatar: "/images/ui-logos/images.png",
                 datatypes: ["generic/images"],
             },
             {
                 ui: "volumeviewer",
                 name: "Volume Viewer",
                 desc: "to-be-written.",
-                avatar: "http://www.brainlife.io/images/ui-logos/ui-volumeviewer.png",
+                avatar: "/images/ui-logos/ui-volumeviewer.png",
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/mask" ],
             },
             {
                 ui: "fslview",
                 name: "FSLView",
                 desc: "to-be-written.",
-                avatar: "http://www.brainlife.io/images/ui-logos/fslview.png",
+                avatar: "/images/ui-logos/fslview.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
             },
@@ -126,7 +124,7 @@ export default {
                 ui: "mrview",
                 name: "mrView",
                 desc: "to-be-written.",
-                avatar: "http://www.brainlife.io/images/ui-logos/mrview.png",
+                avatar: "/images/ui-logos/mrview.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
             },
@@ -134,7 +132,7 @@ export default {
                 ui: "fibernavigator",
                 name: "fiberNavigator",
                 desc: "to-be-written.",
-                avatar: "http://www.brainlife.io/images/ui-logos/fibernavigator.png",
+                avatar: "/images/ui-logos/fibernavigator.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
             },
@@ -142,7 +140,7 @@ export default {
                 ui: "freeview-gpu",
                 name: "FreeView",
                 desc: "to-be-written.",
-                avatar: "http://www.brainlife.io/images/ui-logos/freeview.png",
+                avatar: "/images/ui-logos/freeview.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/freesurfer" ],
             },
@@ -151,7 +149,7 @@ export default {
                 ui: "conneval",
                 name: "Connectome Evaluator",
                 desc: "Display results from connectome evaluator showing the quality of your connectome data determined by LiFE",
-                avatar: "http://www.brainlife.io/images/ui-logos/conneval.png",
+                avatar: "/images/ui-logos/conneval.png",
                 datatypes: [ "neuro/conneval" ],
             },
 
@@ -159,7 +157,7 @@ export default {
                 ui: "conn",
                 name: "CONN",
                 desc: "Experimental",
-                avatar: "http://www.brainlife.io/images/ui-logos/conn.png",
+                avatar: "/images/ui-logos/conn.png",
                 docker: true,
                 datatypes: [ "raw" ], 
             },
@@ -233,13 +231,11 @@ export default {
 
         openview: function(view, task, subdir) {
             console.log("openview", view, task);
-
-            //let view = view.split('/').join('.'); //replace all / with .
             let path;
             if(view.docker) {
-                path = "/warehouse/novnc/"+task.instance_id+"/"+task._id+'/'+view.ui;
+                path = "/novnc/"+task.instance_id+"/"+task._id+'/'+view.ui;
             } else {
-                path = "/warehouse/view/"+task.instance_id+"/"+task._id+'/'+view.ui;
+                path = "/view/"+task.instance_id+"/"+task._id+'/'+view.ui;
             }
             if(subdir) path += '/'+subdir;
             window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 

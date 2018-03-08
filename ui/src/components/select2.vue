@@ -103,7 +103,6 @@ export default {
         default_result_format: function(data) {
             var result = document.createElement('div');
             result.classList.add('menu-item');
-
             if (data.header) result.classList.add('header');
             if (data.text) result.innerHTML += this.ascii_escape(data.text);
 
@@ -138,7 +137,7 @@ export default {
             if (data.datatype && data.tags) {
                 var datatype_name = data.datatype.name;
                 if(datatype_name.indexOf("neuro/") == 0) datatype_name = datatype_name.substring(6);
-                result.innerHTML += " <b class='subject'>"+data.meta.subject+"</b> ";
+                //result.innerHTML += " <b class='subject'>"+data.meta.subject+"</b> ";
                 result.innerHTML += " <span class='datatype'>"+datatype_name+"</span> ";
                 var firsttag = true;
                 data.tags.forEach(tag => {

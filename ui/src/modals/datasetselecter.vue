@@ -183,11 +183,11 @@ export default {
                     // dropdown menu item to add
                     var item = {
                         id: dataset._id,
-                        //text: subject,
+                        text: subject,
                         date: dataset.create_date,
                         datatype: this.datatypes[dataset.datatype],
                         tags: dataset.datatype_tags,
-                        meta: dataset.meta,
+                        //meta: dataset.meta,
                     };
 
                     if (!this.datasets_groups[subject]) {

@@ -18,7 +18,7 @@
                     <projectselecter v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
                 </b-col>
                 <b-col cols="7">
-                    <select2 style="width: 100%; max-width: 100%;" 
+                    <select2 
                         v-model="form.inputs[input.id]" 
                         :dataAdapter="debounce_grab_items(input)" 
                         :allowClear="input.optional"
