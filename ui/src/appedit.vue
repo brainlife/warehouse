@@ -71,7 +71,7 @@
                 <b-form-group horizontal label="Input Datatype">
                     <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
                         <b-card style="position: relative;">
-                            <div class="button button-danger" @click="remove_input(idx)" style="position: absolute; right: 0px; top: 3px">
+                            <div class="button button-danger" @click="remove_input(idx)" style="float: right">
                                 <icon name="trash" scale="1.25"/>
                             </div>
                             <b-row>
@@ -79,7 +79,6 @@
                                     <b-input-group prepend="ID">
                                         <b-form-input type="text" v-model="input.id"required/>
                                     </b-input-group>
-                                    <small class="text-muted">Internal ID used to identify this input (not for config.json)</small>
                                 </b-col>
                                 <b-col cols="7">
                                     <b-form-checkbox v-model="input.optional">
@@ -88,6 +87,7 @@
                                     </b-form-checkbox>
                                 </b-col>
                             </b-row>
+                            <hr>
                             <b-row>
                                 <b-col>
                                     <span class="text-muted">Datatype</span>
@@ -195,8 +195,13 @@
                             <b-row>
                                 <b-col>
                                     <b-form-group>
+                                        <!--
                                         <span class="text-muted">Key <small>in config.json</small></span>
                                         <b-form-input type="text" v-model="config._id" required placeholder="A key to use in config.json"/>
+                                        -->
+                                        <b-input-group prepend="config.json key">
+                                            <b-form-input type="text" v-model="config._id" required/>
+                                        </b-input-group>
                                     </b-form-group>
 
                                     <b-form-group>
@@ -553,6 +558,20 @@ export default {
         submit: function(evt) {
             evt.preventDefault();
             console.log("clicked submit");
+
+            //remove orphaned config entries (input that points to non-existing app.input)
+            for(var id in this.app.config) {
+                var config = this.app.config[id];
+                if(config.type == "input") {
+
+                    //find the app.input with the same input_id
+                    var found = this.app.inputs.find(it=>(it.id == config.input_id));
+                    if(!found) {
+                        console.log("app.config with input_id:",id,"no longer has app.inputs "+config.input_id+".. removing");
+                        delete this.app.config[id];
+                    }
+                }
+            }
         
             var valid = true;
 
@@ -564,7 +583,7 @@ export default {
                 }
                 if(!found) {
                     valid = false;
-                    this.$notify({text: "Please enter at least one file mapping per each input", type: 'error' });
+                    this.$notify({text: "Please enter at least one file mapping per each input:"+input.id, type: 'error' });
                 }
             }); 
 
