@@ -12,7 +12,6 @@ const xmlescape = require('xml-escape');
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
-//const prov = require('./prov');
 
 //connect to redis - used to store various shared caches
 exports.redis = redis.createClient(config.redis.port, config.redis.server);
@@ -400,10 +399,12 @@ function cache_contact() {
         headers: { authorization: "Bearer "+config.auth.jwt },
     }, (err, res, body)=>{
         if(err) return logger.error(err);
-        if(res.statusCode != 200) logger.error("couldn't obtain user jwt code:"+res.statusCode);
-        body.profiles.forEach(profile=>{
-            cached_contacts[profile.id.toString()] = profile;
-        });
+        if(res.statusCode != 200) logger.error("couldn't cache auth profiles. code:"+res.statusCode);
+        else {
+            body.profiles.forEach(profile=>{
+                cached_contacts[profile.id.toString()] = profile;
+            });
+        }
     });
 }
 cache_contact();

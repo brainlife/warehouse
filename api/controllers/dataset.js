@@ -8,6 +8,7 @@ const jwt = require('express-jwt');
 const jsonwebtoken = require('jsonwebtoken');
 const async = require('async');
 const request = require('request');
+const meter = require('stream-meter');
 
 const mongoose = require('mongoose');
 
@@ -511,7 +512,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
         },
 
     ], err=>{
-        if(err) logger.error(err);
+        if(err) return cb(err);
         else logger.debug("all done archiving");    
 	});
 });
@@ -622,23 +623,39 @@ function stream_dataset(dataset, res, next) {
         logger.debug("obtaining download stream", dataset.storage);
         system.download(dataset, (err, readstream, filename)=>{
             if(err) return next(err);
-            //without attachment, the file will replace the current page
+            //without attachment, the file will replace the current page (why?)
             res.setHeader('Content-disposition', 'attachment; filename='+filename);
             if(stats) res.setHeader('Content-Length', stats.size);
             else if(dataset.size) res.setHeader('Content-Length', dataset.size);
             logger.debug("sent headers.. commencing download");
-            readstream.pipe(res);   
+            let m = meter();
+            readstream.pipe(m).pipe(res);   
             readstream.on('error', err=>{
-                //is this getting called at all?
+                //like.. when sftp failed to find a file
                 logger.error("failed to pipe", err);
+                //this seems to terminate the pipe, but I still can't tell the client that
+                //transfer went wrong.. especially if dataset.size is not set..
+                readstream.end(); 
             });
 
             //TODO - "end" seems to work on both jetstream and ssh(dcwan), but is it truely universal? 
             //or do we need to switch to use Promise like upload?
             readstream.on('end', ()=>{
-                logger.debug("updating download_count");
+                logger.debug("meter count", m.bytes);
+                logger.debug("dataset.size", dataset.size);
+                if(!dataset.size) {
+                    /* this is not good idea.. as .tar file size might change if versionn of tar get updates
+                    logger.debug("updating dataset size based on m.bytes");
+                    dataset.size = m.bytes;
+                    */
+                } else { 
+                    if(dataset.size != m.bytes) logger.warn("dataset.size doesn't match bytes transferred..");
+                }
+
                 if(!dataset.download_count) dataset.download_count = 1;
                 else dataset.download_count++;
+                logger.debug("download_count", dataset.download_count);
+
                 dataset.save();
             });
         });

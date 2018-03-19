@@ -57,9 +57,10 @@ exports.start = function(cb) {
     var host = process.env.HOST || config.express.host || 'localhost';
     db.init(function(err) {
         if(err) return cb(err);
-        app.listen(port, host, function() {
+        var server = app.listen(port, host, function() {
             logger.info("warehouse api service running on %s:%d in %s mode", host, port, app.settings.env);
         });
+        //server.timeout = 300*1000; //increase timeout for dataset download .. (default 120s)
     });
 }
 

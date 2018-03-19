@@ -13,7 +13,7 @@ const logger = new winston.Logger(config.logger.winston);
 const db = require('../models');
 const health = require('../health');
 
-router.get('/health', (req, res)=>{
+router.get('/health', (req, res, next)=>{
     health.get_reports((err, reports)=>{
         if(err) return next(err);
         var status = "ok";
