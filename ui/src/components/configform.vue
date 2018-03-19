@@ -1,12 +1,12 @@
 <template>
 <div>
     <b-row v-for="(v,k) in spec" :key="k" v-if="v.type && v.type != 'input'">
-        <b-col>{{k}} <span v-if="!v.optional">*</span></b-col>
+        <b-col class="text-muted">{{k}} <span v-if="!v.optional">*</span></b-col>
         <b-col cols="8">
             <b-form-group>
                 <!--integer will be deprecated (still used..)-->
                 <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" 
-                    :min="v.min" :max="v.max" :readonly="v.readonly" :required="!v.optional"
+                    :min="v.min" :max="v.max" :step="0.001" :readonly="v.readonly" :required="!v.optional"
                     v-model.number="value[k]" :placeholder="v.placeholder"/>
 
                 <!--string-->

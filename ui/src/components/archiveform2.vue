@@ -10,29 +10,19 @@
         </b-form-group>
 
         <b-form-group label="User Tags (optional)">
-            <!--
-            <el-select v-model="tags" 
-                style="width: 100%"
-                multiple filterable allow-create placeholder="Enter tags">
-                <el-option v-for="tag in tags" key="tag" :label="tag" :value="tag"></el-option>
-            </el-select>
-            <p class="text-muted" style="margin-bottom: 0px;">Any tags you'd like to add to this dataset to make it easier to search / organize</p>
-            -->
             <tageditor v-model="tags"/>
         </b-form-group>
 
         <b-form-group label="Metadata">
-            <div v-for="(v,k) in output.meta">
-                <el-input placeholder="Please Edit meta" v-model="output.meta[k]">
-                    <template slot="prepend">{{k|uppercase}}</template>
-                </el-input>
-            </div>
-            <p class="text-muted" style="margin-bottom: 0px;">Datatype specific Key/value pairs to describes hierarchy for this dataset</p>
+            <b-input-group :prepend="k.toUpperCase()" v-for="(v,k) in output.meta" :key="k">
+                <b-form-input type="text" v-model="output.meta[k]"/>
+            </b-input-group>
+            <small class="text-muted">Datatype specific key/value pairs to describes hierarchy for this dataset</small>
         </b-form-group>
 
         <div style="float: right">
-            <b-button variant="primary" icon="check" @click="submit">Archive</b-button>
             <b-button @click="cancel">Cancel</b-button>
+            <b-button variant="primary" icon="check" @click="submit">Archive</b-button>
         </div>
         <br clear="both">
     </b-form>
@@ -70,15 +60,16 @@ export default {
 
     methods: {
         submit: function() {
-            console.debug("sending archvie request ...");
+            console.log("output", this.output);
             this.$http.post('dataset', {
                 project: this.project,                 
-                app_id: this.task.config._app,
+                //app_id: this.task.config._app,
                 task_id: this.task._id,
-                output_id: this.output.id,
+                output_id: this.output.id, 
+                subdir: this.output.subdir, //subdir that contains the actual content under the task
+
                 datatype: this.output.datatype,
                 datatype_tags: this.output.datatype_tags,
-                subdir: this.output.subdir, //subdir that contains the actual content under the task
                 files: this.output.files,
                 meta: this.output.meta,
                 desc: this.desc,

@@ -137,17 +137,6 @@ export default {
             console.log("toggled", instance);
             if(this.selected != instance) {
                 //if jumping to instance below currently selected, I should adjust current scroll position
-                /*
-                if(this.selected) {
-                    //var elem = document.getElementsByClassName("process")[0];
-                    var olditem = document.getElementById(this.selected._id);
-                    var newitem = document.getElementById(instance._id);
-                    if(olditem.offsetTop < newitem.offsetTop) {
-                        //console.log("click below .. need to adjust scroll position", olditem.clientHeight);
-                        //document.getElementById("scrolled-area").scrollTop -= olditem.clientHeight;
-                    }
-                }
-                */
                 this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
                 this.selected = instance;
                 this.$nextTick(()=>{
@@ -158,9 +147,11 @@ export default {
                 this.$nextTick(()=>{
                     //if process header is outside or view, scroll back to it
                     var elem = document.getElementById(instance._id);
-                    var top = elem.offsetTop;
-                    var area = document.getElementById("scrolled-area");
-                    if(elem.offsetTop < area.scrollTop) area.scrollTop = top;
+                    if(elem) { //could go missing
+                        var top = elem.offsetTop;
+                        var area = document.getElementById("scrolled-area");
+                        if(elem.offsetTop < area.scrollTop) area.scrollTop = top;
+                    }
                 });
                 this.selected = null;
             }
@@ -277,6 +268,10 @@ export default {
                         this.instances.unshift(event.msg);
                     }
                 } 
+                if(event.error) {   
+                    console.error("failed to subscribe to instance event:", event.error);
+                    this.$notify({type: 'error', text: event.error});
+                }
             }
         },
     },

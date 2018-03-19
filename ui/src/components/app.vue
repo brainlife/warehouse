@@ -32,6 +32,7 @@
             <div class="desc" :style="{height: descheight}">{{app_.desc_override||app_.desc||'no description..'}}</div>
             <slot/>
             <div class="devs" :style="{height: devsheight}">
+                <div class="devs-fade"/>
                 <contact v-for="c in app_.contributors" short="true" :key="c._id" :fullname="c.name" :email="c.email"></contact>
             </div>
         </div>
@@ -126,10 +127,11 @@ margin-bottom: 2px;
 .desc {
 opacity: 0.8;
 overflow: hidden;
-margin: 10px;
+padding: 0px 10px;
 margin-top: 0px;
 transition: color 0.5s;
 font-size: 90%;
+/*background-color: #ddd;*/
 }
 .rate {
 height: 20px;
@@ -159,16 +161,23 @@ font-size: 14px;
 .compact .desc {
 margin: 0px;
 height: inherit;
+padding: inherit;
 }
 .compact .github {
 display: inline-block;
 margin-bottom: 0px;
 }
 .devs {
-background-color: #eee;
-padding: 10px;
-overflow-y: auto;
-overflow-x: hidden;
+padding: 4px 10px;
+overflow: hidden;
+/*border-top: 1px solid #f0f0f0;*/
+position: relative;
+}
+.devs .devs-fade {
+position: absolute;
+width: 100%;
+height: 100%;
+box-shadow: inset -5px -10px 10px white;
 }
 .datatypes {
 font-size: 80%;

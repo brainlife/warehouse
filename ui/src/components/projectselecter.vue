@@ -36,16 +36,19 @@ export default {
                 removed: false,
             };
         } else {
-            //load project that user is member, or public
+            //load project that user is admin/member, or public (who can read from datasets)
             find = {
                 $or: [
+                    { admins: Vue.config.user.sub }, 
                     { members: Vue.config.user.sub }, 
                     { access: "public" },
                 ],
                 removed: false,
             };
         }
-        
+
+        console.log("lpoading project");
+        console.dir(find);        
         this.$http.get('project', {params: {
             find: JSON.stringify(find),
             sort: 'name',

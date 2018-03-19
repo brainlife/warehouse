@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit">
+<b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit" ok-only>
     <b-row>
         <b-col>From Project</b-col>
         <b-col cols="9">
@@ -161,7 +161,6 @@ export default {
                 limit: this.limit,
                 skip: (params.page - 1) * this.limit,
                 sort: 'meta.subject -create_date',
-                //populate: 'datatype', 
             };
             
             // list of dropdown menu items to return
@@ -184,10 +183,11 @@ export default {
                     // dropdown menu item to add
                     var item = {
                         id: dataset._id,
-                        //text: subject,
+                        text: subject,
                         date: dataset.create_date,
                         datatype: this.datatypes[dataset.datatype],
-                        tags: dataset.datatype_tags
+                        tags: dataset.datatype_tags,
+                        //meta: dataset.meta,
                     };
 
                     if (!this.datasets_groups[subject]) {

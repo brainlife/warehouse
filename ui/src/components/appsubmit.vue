@@ -1,6 +1,6 @@
 <template>
 <b-form v-if="app && projects" @submit="submit">
-    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource has become available.</b-alert>
+    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource becomes available.</b-alert>
 
     <!--<h4>Input Datasets</h4>-->
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
@@ -18,7 +18,7 @@
                     <projectselecter v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
                 </b-col>
                 <b-col cols="7">
-                    <select2 style="width: 100%; max-width: 100%;" 
+                    <select2 
                         v-model="form.inputs[input.id]" 
                         :dataAdapter="debounce_grab_items(input)" 
                         :allowClear="input.optional"
@@ -32,9 +32,10 @@
     </b-row>
     
     <configform :spec="app.config" v-model="form.config"/>
+    <hr>
 
     <b-row>
-        <b-col>Project *</b-col>
+        <b-col class="text-muted">Project *</b-col>
         <b-col cols="8">
             <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in" :required="true"/> 
             <small class="text-muted">Project where you want to stage and execute this application.</small>
@@ -43,7 +44,7 @@
     <br>
 
     <b-row>
-        <b-col>Description</b-col>
+        <b-col class="text-muted">Description</b-col>
         <b-col cols="8">
             <b-form-textarea v-model="form.desc"
                  placeholder="Optional description for this processing"
@@ -358,8 +359,6 @@ export default {
                 res.body.datasets.forEach(d=>{
                     datasets[d._id] = d;
 
-                    //aggregate metas
-                    for(var k in d.meta) meta[k] = d.meta[k];
                 });
 
                 //issue token to download datasets 
@@ -380,17 +379,32 @@ export default {
                         untar: "auto",
                         dir: dataset_id,
                     });
-                    var output = Object.assign(datasets[dataset_id], {
-                        //did: did++,
+
+                    var dataset = datasets[dataset_id];
+                    var output = {
+                        id: input_id,
                         subdir: dataset_id, 
                         dataset_id,
-                        prov: null, //not needed
-                        id: input_id,
-                    });
+                        task_id: dataset.task_id,
+                        datatype: dataset.datatype,
+                        datatype_tags: dataset.datatype_tags,
+                        tags: dataset.tags,
+                        meta: dataset.meta,
+                        project: dataset.project,
+                    }
                     _outputs.push(output);
 
-                    //turn output into input for the app
-                    app_inputs.push(Object.assign({output_id: output.id}, output));
+                    //aggregate metas
+                    for(var k in dataset.meta) if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
+
+                    //turn output into input for the main app
+                    var keys = [];
+                    for(var key in this.app.config) {
+                        if(this.app.config[key].input_id == input_id) keys.push(key); 
+                    }
+                    app_inputs.push(Object.assign({
+                        keys,
+                    }, output));
                 }
 
                 //now submit task to download data from archive
@@ -405,7 +419,7 @@ export default {
                 var download_task = res.body.task;
                 console.log("download task submitted", download_task);
                 app_inputs.forEach(input=>{
-                    input.task_id = download_task._id
+                    input.task_id = download_task._id;
                 });
 
                 //now submit the main task
@@ -418,7 +432,6 @@ export default {
                 this.app.outputs.forEach(output=>{
                     var output_req = {
                         id: output.id,
-                        //did: did++,
                         datatype: output.datatype._id,
                         datatype_tags: output.datatype_tags,
                         desc: output.id+ " from "+this.app.name,

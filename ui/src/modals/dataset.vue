@@ -7,7 +7,7 @@
             <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                 <icon name="trash" scale="1.25"/>
             </div>
-            <div class="button" v-b-modal.viewSelecter @click="set_viewsel_options(dataset.datatype.name)" v-if="dataset.storage" title="View Dataset">
+            <div class="button" v-b-modal.viewSelecter @click="start_viewer(dataset.datatype.name)" v-if="dataset.storage" title="View Dataset">
                 <icon name="eye" scale="1.25"/>
             </div>
             <div class="button" @click="download" v-if="dataset.storage" title="Downlnoad Dataset">
@@ -528,9 +528,8 @@ export default {
             }).then(res=>res.body);
         },
 
-        set_viewsel_options: function(datatype_name) {
+        start_viewer: function(datatype_name) {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
-            //this.vsel.datatype_name = datatype_name;
             this.$root.$emit("viewselecter.option", {
                 datatype_name,
                 task_cb: this.create_view_task, 

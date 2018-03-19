@@ -433,7 +433,8 @@ router.get('/prov/:id', (req, res, next)=>{
  * @apiParam {String} [desc]            Description for this crate
  * @apiParam {String[]} [tags]          List of tags associated with this dataset
  *
- * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
+ * @apiHeader {String} authorization 
+ *                                      A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}                 Dataset created
  *                              
  */
@@ -562,10 +563,10 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiDescription              Issues warehouse jwt token that grants access to specified dataset IDs that user has access to
  *
  * @apiParam {String[]} ids     List of dataset IDs to grant access
- * 
- * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
  *
- * @apiSuccess {Object}         {jwt: <string>}
+ * @apiSuccess {Object}         Object containing jwt: key
  */
 router.get('/token', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {

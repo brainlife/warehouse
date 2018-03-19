@@ -2,14 +2,22 @@
 <div>
     <pageheader>
         <!--pageheader slot-->
+        <!--
         <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
+        -->
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
-    <div class="page-content">
+    <div class="group-list">
+        <h4>Categories</h4>
+        <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)">
+            {{tag}}
+        </p>
+    </div>
+    <div class="page-content" v-on:scroll="update_active" ref="scrolled">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
-        <div v-for="(apps, tag) in app_groups" :key="tag" class="margin20">
+        <div v-for="tag in sorted_tags" :id="tag">
             <h4 class="group-title">{{tag}}</h4> 
-            <div v-for="app in apps" :key="app._id" class="app">
+            <div v-for="app in app_groups[tag]" :key="app._id" class="app">
                 <app :app="app" descheight="130px" devsheight="75px"></app>
             </div>
             <br clear="both">
@@ -29,6 +37,8 @@ export default {
     components: { sidemenu, pageheader, app },
     data () {
         return {
+            active: null,
+            sorted_tags: [], 
             app_groups: null,
             query: "",
             config: Vue.config,
@@ -53,8 +63,17 @@ export default {
                 if(app.tags && app.tags.length > 0) tags = app.tags;
                 tags.forEach(tag=>{
                     if(!this.app_groups[tag]) this.app_groups[tag] = [];
+                    if(!~this.sorted_tags.indexOf(tag)) this.sorted_tags.push(tag);
                     this.app_groups[tag].push(app);
                 });
+            });
+            this.sorted_tags.sort();
+
+            this.$nextTick(()=>{
+                if(document.location.hash) {
+                    this.jump(document.location.hash.substring(1));
+                }
+                this.update_active();
             });
         }, res=>{
             console.error(res);
@@ -64,27 +83,72 @@ export default {
     methods: {
         go: function(path) {
             this.$router.push(path);
-        }
+        },
+        jump: function(tag) {
+            document.location="#"+tag;
+        },
+        update_active: function() {
+            //this.active = "test";
+            var scrolltop = this.$refs.scrolled.scrollTop;
+            this.active = false;
+            this.sorted_tags.forEach(tag=>{
+                var e = document.getElementById(tag);
+                if(e.offsetTop <= scrolltop) this.active = tag;
+            });     
+        },
     },
 }
 </script>
 
 <style scoped>
-.el-card {
-border: none;
-box-shadow: 0 0 3px #aaa;
-}
 .group-title {
 color: #999;
 text-transform: uppercase;
-padding-bottom: 10px;
-border-bottom: 1px solid #ddd;
+padding: 15px 20px;
+margin-bottom: 10px;
+background-color: white;
+position: sticky;
+top: 0px;
+z-index: 1;
 }
 .app {
-margin-right: 10px;
+margin-left: 10px;
 margin-bottom: 10px;
 width: 350px;
 float: left;
+}
+.page-content {
+margin-left: 250px;
+}
+.group-list {
+position: fixed;
+top: 50px;
+bottom: 0px;
+left: 90px;
+width: 250px;
+background-color: #444;
+}
+.group-list h4 {
+font-size: 18px;
+padding: 20px 10px;
+text-transform: uppercase;
+margin-bottom: 0px;
+color: #999;
+}
+.group-list .item {
+text-transform: uppercase;
+padding: 5px 10px;
+margin-bottom: 0px;
+font-size: 85%;
+color: white;
+transition: background-color 0.5s;
+}
+.group-list .item:hover {
+cursor: pointer;
+background-color: black;
+}
+.group-list .item.active {
+background-color: #007bff;
 }
 </style>
 

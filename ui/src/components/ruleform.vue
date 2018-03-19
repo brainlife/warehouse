@@ -11,13 +11,18 @@
         </b-form-group>
 
         <b-form-group label="App *" horizontal>
-            <v-select required v-model="rule.app" label="name" :options="apps" @search="search_app">
-                <span slot="no-options">please enter app name / desc to search</span>
+            <v-select required v-model="rule.app" label="name" :filterable="false" :options="apps" @search="search_app">
+                <template slot="no-options">please enter app name / desc to search</template>
                 <template slot="option" slot-scope="app">
                     <app :app="app" :compact="true" :clickable="false"/>
                 </template>
+                <template slot="selected-option" scope="app">
+                    <!--<app :app="app" :compact="true" :clickable="false"/>-->
+                    {{app.name}}
+                </template>
             </v-select>
         </b-form-group>
+
         <div v-if="rule.app">
             <b-form-group label="Configuration" horizontal>
                 <!--
@@ -135,7 +140,6 @@ export default {
     data() {
         return {
             rule: {},
-
             apps: [],
             ready: false,
         }
@@ -174,9 +178,11 @@ export default {
         },
 
         ensure_config_exists: function() {
-            for(var k in this.rule.app.config) {
-                if(this.rule.config[k] === undefined) {
-                    Vue.set(this.rule.config, k ,this.rule.app.config[k].default);
+            if(this.rule.app) {
+                for(var k in this.rule.app.config) {
+                    if(this.rule.config[k] === undefined) {
+                        Vue.set(this.rule.config, k ,this.rule.app.config[k].default);
+                    }
                 }
             }
         },
@@ -225,11 +231,10 @@ export default {
         },
 
         search_app: function(search, loading) {
-            loading = true;
-            this.apps = [];
+            loading(true);
+            //this.apps = [];
             clearTimeout(debounce);
             debounce = setTimeout(()=>{
-                console.log("searchign app", search);
                 this.$http.get('app', {params: {
                     find: JSON.stringify({
                         /*
@@ -245,11 +250,12 @@ export default {
                     populate: 'inputs.datatype outputs.datatype contributors', //to display app detail
                 }})
                 .then(res=>{
-                    //organize apps into various tags
                     this.apps = res.body.apps;
+                    console.log("search result:", search, this.apps);
+                    loading(false);
                 });
             }, 300);
-        } 
+        },
     }
 }
 </script>

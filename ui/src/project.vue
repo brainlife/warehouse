@@ -219,10 +219,12 @@ export default {
 
             //decide which project to open
             let project_id = this.$route.params.id
+            if(!this.projects[project_id]) project_id = null; //invalid project id specified?
             if(!project_id) {
-                //if no project is specified, jumpt to the first project.
+                //if no project id is specified, use last_projectid_used
                 let ids = Object.keys(this.projects); 
-                project_id = localStorage.getItem("last_projectid_used") || ids[0];
+                project_id = localStorage.getItem("last_projectid_used");
+                if(!this.projects[project_id]) project_id = ids[0];
                 this.$router.replace("/project/"+project_id);
             }
             this.open_project(this.projects[project_id]);

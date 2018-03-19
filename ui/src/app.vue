@@ -470,8 +470,12 @@ export default {
         },
 
         find_by_id: function(list, id) {
-            //console.log("looking for", id, "in", list);
-            return list.find(it=>it.id == id);
+            var item = list.find(it=>it.id == id);
+            if(!item) {
+                console.error("failed to find_by_id", id);
+                console.dir(list);
+            }
+            return item;
         }
     },
 }

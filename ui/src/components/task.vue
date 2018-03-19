@@ -12,13 +12,12 @@
         <div style="margin-left: 45px;">
             <div style="float: right;">
                 <contact :id="task.user_id" :short="true" style="position: relative; top: -3px; opacity: 0.9"/>
+                <div class="button" style="opacity: 0.7" :title="task._id" v-b-popover.hover.html="popover_content"><icon name="info"/></div>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="repeat"/>
                 </div>
-                <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop" title="Stop Task"><icon name="stop"/>
-                </div>
-                <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove" title="Remove Task"><icon name="trash"/>
-                </div>
+                <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop" title="Stop Task"><icon name="stop"/></div>
+                <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove" title="Remove Task"><icon name="trash"/></div>
             </div>
             <h4>
                 <strong style="text-transform: uppercase;">{{task.status}}</strong>
@@ -86,17 +85,35 @@ import tags from '@/components/tags'
 import taskconfig from '@/components/taskconfig'
 import contact from '@/components/contact'
 
+let resource_cache = {};
+
 export default {
     props: ['task'],
     components: { filebrowser, statusicon, mute, tags, taskconfig, contact },
     data () {
         return {
+
             activeSections: {
                 output: true, 
                 input: true,
             },
             show_masked_config: false,
+
+            resource: null,
         }
+    },
+
+    watch: {
+        'task': {
+            deep: true,
+            handler: function() {
+                this.load_resource_info(this.task.resource_id);
+            }
+        }
+    },
+
+    mounted() {
+        this.load_resource_info(this.task.resource_id);
     },
 
     computed: {
@@ -105,6 +122,19 @@ export default {
         },
         has_output_slot() {
             return !!this.$slots.output;
+        },
+        popover_content() {
+            var content = "";
+            content += `<table class="table table-sm">`;
+            content += `<tr><th>Created</th><td>${new Date(this.task.create_date).toLocaleString()}</td></tr>`;
+            if(this.task.start_date) content += `<tr><th>Started</th><td>${new Date(this.task.start_date).toLocaleString()}</td></tr>`;
+            if(this.task.finish_date) content += `<tr><th>Finished</th><td>${new Date(this.task.finish_date).toLocaleString()}</td></tr>`;
+            if(this.task.fail_date) content += `<tr><th>Failed</th><td>${new Date(this.task.fail_date).toLocaleString()}</td></tr>`;
+            if(this.task.remove_date) content += `<tr><th>Removed</th><td>${new Date(this.task.removed_date).toLocaleString()}</td></tr>`;
+            if(this.task.next_date) content += `<tr><th>Next Chk</th><td>${new Date(this.task.next_date).toLocaleString()}</td></tr>`;
+            if(this.resource) content += `<tr><th>Resource</th><td>${this.resource.name}</td></tr>`;
+            content += `</table>`;
+            return content;
         },
     },
 
@@ -120,6 +150,20 @@ export default {
     },
 
     methods: {
+        load_resource_info(id) {
+            if(!id) return; //no resource assigned yet?
+
+            this.resource = resource_cache[id];
+            if(!this.resource) {
+                this.$http.get(Vue.config.wf_api+'/resource/', {params: {
+                    find: JSON.stringify({_id: id})
+                }}).then(res=>{
+                    this.resource = res.body.resources[0];
+                    resource_cache[id] = this.resource;
+                });
+            }
+        },
+
         toggle(section) {
             if(this.activeSections[section] === undefined) {
                 Vue.set(this.activeSections, section, true);

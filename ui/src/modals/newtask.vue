@@ -131,7 +131,7 @@ export default {
             apps: null, //applications user can run with selected data
             app: null, //selected
 
-            desc: null,
+            //desc: null,
             config: null,
             inputs: null,
 
@@ -157,8 +157,11 @@ export default {
             console.log("requested to open newtask modal");
             this.open = true;
 
+            //reset form
             this.app = null;
             this.valid = false;
+            this.archive.desc = "";
+            this.archive.enable = false;
 
             //create list of all datatypes that user has staged / generated
             var datatype_ids = [];
@@ -329,19 +332,41 @@ export default {
                 if(!input.selected) continue; //optional input not selected?
                 var dataset = input.selected.dataset; 
 
+                /*
                 var copy_dataset = Object.assign({}, dataset);
                 copy_dataset.task_id = dataset.task._id;
-                copy_dataset.app_id = dataset.task.config._app; //testing..
-                copy_dataset.output_id = copy_dataset.id; //this becomes output_id
-                copy_dataset.id = input_id;
-                delete copy_dataset.task;
-                _inputs.push(copy_dataset);
+                //copy_dataset.app_id = dataset.task.config._app; //testing..
+                //copy_dataset.output_id = copy_dataset.id; //this becomes output_id
+                //copy_dataset.id = input_id; //I believe this is not needed
 
-                //aggregating meta
+                //aggregate file mappings (keys) from this input (used to help app discover which input is for which config key)
+                */
+
+                var keys = [];
+                for(var key in this.app.config) {
+                    if(this.app.config[key].input_id == input_id) keys.push(key); 
+                }
+                _inputs.push({
+                    id: input_id, 
+                    task_id: dataset.task._id, //unpopulate
+                    subdir: dataset.subdir, //is this right? (should come from prov?)
+                    meta: dataset.meta,
+                    tags: dataset.tags,
+                    datatype: dataset.datatype,
+                    dataset_id: dataset._id,
+                    datatype_tags: dataset.datatype_tags,
+                    project: dataset.project,
+                    keys,
+                });
+
+                //aggregating meta from all inputs
                 //TODO - I need a better way to discover meta (like letting app to decide?)
                 //TODO - if 2 inputs has different value for the same meta (like subject) the latterr wins.. bad!
-                for(var k in dataset.meta) meta[k] = dataset.meta[k];
+                for(var k in dataset.meta) {
+                    if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
+                }
             }
+
             this.config._inputs = _inputs;
             this.config._app = this.app._id;
             var _outputs = [];
@@ -352,7 +377,6 @@ export default {
                     datatype_tags: output.datatype_tags,
                     desc: output.id+ " from "+this.app.name,
                     meta,
-                    //tags: ["sometags"], //TODO?
                     files: output.files,
                 };
                 if(this.archive.enable) output_req.archive = {

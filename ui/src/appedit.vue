@@ -34,7 +34,7 @@
                     <small class="text-muted">Users who can update this application registration</small>
                 </b-form-group>
                 <b-form-group horizontal label="Avatar">
-                    <el-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
+                    <b-form-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
                 </b-form-group>
                 <b-form-group horizontal label="Projects">
                     <projectsselecter 
@@ -61,7 +61,7 @@
                 </b-form-group>
                 <br>
                 <b-form-group horizontal label="Max Retry">
-                    <el-input type="text" v-model="app.retry" placeholder="(no retry)"/>
+                    <b-form-input type="text" v-model="app.retry" placeholder="(no retry)"/>
                     <small class="text-muted">If a task fails, it will rerun up to this count</small>
                 </b-form-group>
             </div>
@@ -69,12 +69,25 @@
             <div>
                 <h4>Input / Output</h4>
                 <b-form-group horizontal label="Input Datatype">
-                    <transition-group name="height">
                     <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
                         <b-card style="position: relative;">
-                            <div class="button button-danger" @click="remove_input(idx)" style="position: absolute; right: 0px; top: 3px">
+                            <div class="button button-danger" @click="remove_input(idx)" style="float: right">
                                 <icon name="trash" scale="1.25"/>
                             </div>
+                            <b-row>
+                                <b-col>
+                                    <b-input-group prepend="ID">
+                                        <b-form-input type="text" v-model="input.id"required/>
+                                    </b-input-group>
+                                </b-col>
+                                <b-col cols="7">
+                                    <b-form-checkbox v-model="input.optional">
+                                        Optional 
+                                        <small class="text-muted">user can submit this app without this input specified</small>
+                                    </b-form-checkbox>
+                                </b-col>
+                            </b-row>
+                            <hr>
                             <b-row>
                                 <b-col>
                                     <span class="text-muted">Datatype</span>
@@ -83,58 +96,48 @@
                                     </b-form-select>
                                 </b-col>
                                 <b-col cols="7">
-                                    <span class="text-muted">Datatype Tags <small>(optional)</small></span><br>
+                                    <div class="text-muted">Datatype Tags</div>
                                     <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags"/>
-                                    <small class="text-muted">You can prefix tags with ! for negative tags</small>
+                                    <small class="text-muted">Only allow user to select datasets with these tags. You can prefix tags with ! for negative tags</small>
                                 </b-col>
                             </b-row>
 
-                            <br>
-                            <b-row>
-                                <b-col>
-                                    <b-form-checkbox v-model="input.optional">Optional Input</b-form-checkbox>
-                                </b-col>
-                                <b-col cols="7">
-                                    <span class="text-muted">Description (optional)</span>
-                                    <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"></b-form-textarea>
-                                </b-col>
-                            </p>
-                            </b-row>
+                            <span class="text-muted">Description (optional)</span>
+                            <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"/>
 
-                            <br><b>File Mapping</b><br>
-                            <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
-                            <transition-group name="height">
-                                <b-card v-for="(config, name) in app.config" :key="name" v-if="config.type == 'input' && config.input_id == input.id">
-                                    <div class="button" @click="remove_config(name)" style="float: right">
-                                        <icon name="trash"/>
-                                    </div>
-                                    <b-row>
-                                        <b-col>
-                                            <b-input-group prepend="Key">
-                                                <b-form-input type="text" v-model="config._id" placeholder="key to reference in your config.json" required/>
-                                            </b-input-group>
-                                        </b-col>
-                                        
-                                        <b-col v-if="input.datatype">
-                                            <b-input-group prepend="File/Dir">
-                                                <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id" required/>
-                                            </b-input-group>
-                                        </b-col>
-                                    </b-row>
-                                </b-card>
-                            </transition-group>
-                            <br>
-                            <b-button @click="add_config('input', input)" v-if="input.datatype" size="sm"><icon name="plus"/> Add File Mapping</b-button>
+                            <div v-if="input.datatype">
+                                <br><b>File Mapping</b><br>
+                                <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
+                                <transition-group name="height">
+                                    <b-card v-for="(config, name) in app.config" :key="name" v-if="config.type == 'input' && config.input_id == input.id">
+                                        <div class="button" @click="remove_config(name)" style="float: right">
+                                            <icon name="trash"/>
+                                        </div>
+                                        <b-row>
+                                            <b-col>
+                                                <b-input-group prepend="config.json key">
+                                                    <b-form-input type="text" v-model="config._id" required/>
+                                                </b-input-group>
+                                            </b-col>
+                                            <b-col v-if="input.datatype" cols="7">
+                                                <b-input-group prepend="file/dir">
+                                                    <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="config.file_id" required/>
+                                                </b-input-group>
+                                            </b-col>
+                                        </b-row>
+                                    </b-card>
+                                </transition-group>
+                                <br>
+                                <b-button @click="add_config('input', input)" size="sm"><icon name="plus"/> Add File Mapping</b-button>
+                            </div>
                         </b-card>
                     </div>
-                    </transition-group>
                     <p>
                         <b-button size="sm" @click="add_dataset(app.inputs)" variant="success"><icon name="plus"/> Add Input Dataset</b-button>
                     </p>
                 </b-form-group>
 
                 <b-form-group horizontal label="Output Datatype">
-                    <transition-group name="height">
                     <div v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
                         <b-card>
                             <div class="button button-danger" @click="app.outputs.splice(idx, 1)" style="float: right">
@@ -142,23 +145,31 @@
                             </div>
                             <b-row>
                                 <b-col>
+                                    <b-input-group prepend="ID">
+                                        <b-form-input type="text" v-model="output.id"required/>
+                                    </b-input-group>
+                                    <small class="text-muted">Internal ID used to identify this output</small>
+                                </b-col>
+                                <b-col cols="7">
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col>
                                     <div class="text-muted">Datatype</div>
                                     <el-select v-model="output.datatype" style="width: 100%">
                                         <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
                                     </el-select>
                                 </b-col>
-                                <b-col>
-                                    <div class="text-muted">Datatype Tags <small>optional</small></div>
+                                <b-col cols="7">
+                                    <div class="text-muted">Datatype Tags</div>
                                     <tageditor v-if="output.datatype" v-model="output.datatype_tags"/>
-                                </b-col>
-                                <b-col>
-                                    <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
-                                    <el-input type="textarea" v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
+                                    <small class="text-muted">Set these datatype tags on this output dataset</small>
                                 </b-col>
                             </b-row>
+                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
+                            <b-form-textarea v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
                         </b-card>
                     </div>
-                    </transition-group>
                     <p>
                         <b-button size="sm" @click="add_dataset(app.outputs)" variant="success"><icon name="plus"/> Add Output Dataset</b-button>
                     </p>
@@ -184,8 +195,13 @@
                             <b-row>
                                 <b-col>
                                     <b-form-group>
+                                        <!--
                                         <span class="text-muted">Key <small>in config.json</small></span>
                                         <b-form-input type="text" v-model="config._id" required placeholder="A key to use in config.json"/>
+                                        -->
+                                        <b-input-group prepend="config.json key">
+                                            <b-form-input type="text" v-model="config._id" required/>
+                                        </b-input-group>
                                     </b-form-group>
 
                                     <b-form-group>
@@ -414,16 +430,14 @@ export default {
     mounted: function() {
 
         //load datatypes for form
-        this.$http.get('datatype', {params: {
-            //service: "_upload",
-        }})
-        .then(res=>{
+        this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach((type)=>{
                 this.datatypes[type._id] = type;
                 type._tags = [];
             });
 
+            //TODO - this is super inefficient!
             //load datatype_tags from all apps
             this.$http.get('app', {params: {
                 select: 'inputs outputs',
@@ -433,10 +447,17 @@ export default {
                     if(!dataset.datatype_tags) return;
                     dataset.datatype_tags.forEach(tag=>{
                         var dt = v.datatypes[dataset.datatype];
+                        /*
+                        if(!dt) {
+                            console.error("couldn't find datatype", dataset.datatype);
+                            return;
+                        }
+                        */
                         if(!~dt._tags.indexOf(tag)) dt._tags.push(tag);
                     });
                 }
                 res.body.apps.forEach(app=>{
+                    //console.log("aggregating ",app);
                     app.inputs.forEach(aggregate_tags);
                     app.outputs.forEach(aggregate_tags);
                 });
@@ -505,7 +526,8 @@ export default {
         
         add_dataset: function(it) {
             it.push({
-                id: it.length,
+                //id: it.length,
+                id: "",
                 datatype: null,
                 datatype_tags: [],
             });
@@ -536,6 +558,20 @@ export default {
         submit: function(evt) {
             evt.preventDefault();
             console.log("clicked submit");
+
+            //remove orphaned config entries (input that points to non-existing app.input)
+            for(var id in this.app.config) {
+                var config = this.app.config[id];
+                if(config.type == "input") {
+
+                    //find the app.input with the same input_id
+                    var found = this.app.inputs.find(it=>(it.id == config.input_id));
+                    if(!found) {
+                        console.log("app.config with input_id:",id,"no longer has app.inputs "+config.input_id+".. removing");
+                        delete this.app.config[id];
+                    }
+                }
+            }
         
             var valid = true;
 
@@ -547,7 +583,7 @@ export default {
                 }
                 if(!found) {
                     valid = false;
-                    this.$notify({text: "Please enter at least one file mapping per each input", type: 'error' });
+                    this.$notify({text: "Please enter at least one file mapping per each input:"+input.id, type: 'error' });
                 }
             }); 
 
@@ -562,6 +598,23 @@ export default {
                     keys.push(key); 
                 }
             }
+
+            //make sure all raw input/output has at least 1 datatype tags
+            this.app.inputs.forEach(input=>{
+                var datatype = this.datatypes[input.datatype];
+                if(datatype.name  == "raw" && input.datatype_tags.length == 0) {
+                    this.$notify({text: "All raw input should have at least 1 datatype tag", type: 'error' });
+                    valid = false;
+                }
+            });
+
+            this.app.outputs.forEach(output=>{
+                var datatype = this.datatypes[output.datatype];
+                if(datatype.name  == "raw" && output.datatype_tags.length == 0) {
+                    this.$notify({text: "All raw output should have at least 1 datatype tag", type: 'error' });
+                    valid = false;
+                }
+            });
 
             if(!valid) {
                 console.error("invalid form");

@@ -52,21 +52,20 @@ font-family: 'Cabin', sans-serif;
 font-family: 'VT323', monospace;
 font-family: 'Nunito', sans-serif;
 font-family: 'Nunito Sans', sans-serif;
+
+@import url('//fonts.googleapis.com/css?family=Muli');
+font-size: 11pt; font-family: muli;
+
+@import url('//fonts.googleapis.com/css?family=Montserrat');
+font-family: 'Montserrat', sans-serif;
 */
 
 #warehouse {
 height: 100%;
 background-color: #f9f9f9;
 color: #444;
-font-size: 14px;
+font-size: 11pt;
 }
-/*
-@import url('//fonts.googleapis.com/css?family=Montserrat');
-h1,h2,h3,h4,h5,h6,h7 {
-font-family: 'Montserrat', sans-serif;
-}
-*/
-
 
 /*adjust bootstrap font sizes*/
 .input-group-text {
@@ -148,6 +147,7 @@ background-color: gray;
 border: none;
 box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
 transition: background-color 0.3s, transform 0.5s, box-shadow 0.5s, left 0.5s, right 0.5s, opacity 0.5s;
+z-index: 2;
 }
 .button-fixed:hover {
 opacity: 1;
@@ -270,6 +270,9 @@ position: relative;
 .readme pre {
 background-color: white;
 padding: 10px;
+}
+small {
+font-size: 85%;
 }
 </style>
 

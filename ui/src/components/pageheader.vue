@@ -1,14 +1,16 @@
 <template>
 <div class="pageheader">
     <b-nav class="nav">
+        <b-nav-item @click="doc">Documentation</b-nav-item>
+        <!--
         <b-nav-item-dropdown text="Support">
             <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
             <b-dropdown-item @click="reportbug">Report Issues / Feature Requests</b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown v-if="config.user" text="Register">
-            <b-dropdown-item @click="go('/app/_/edit')">New App</b-dropdown-item>
-            <!--<b-dropdown-item @click="go('/upload')">Upload Dataset</b-dropdown-item>-->
-            <b-dropdown-item @click="go('/project/_/edit')">New Project</b-dropdown-item>
+        -->
+        <b-nav-item-dropdown v-if="config.user" text="New">
+            <b-dropdown-item @click="go('/app/_/edit')">Register New App</b-dropdown-item>
+            <b-dropdown-item @click="go('/project/_/edit')">Register New Project</b-dropdown-item>
         </b-nav-item-dropdown>
         <b-nav-item-dropdown v-if="config.user">
             <span slot="button-content">
@@ -55,7 +57,7 @@ export default {
             document.location = "/auth#!/signout";
         },
         doc() {
-            window.open("http://www.brainlife.io/warehouse", "brainlife doc");
+            window.open("https://brain-life.github.io/docs/", "brainlife doc");
         },
         reportbug() {
             window.open("https://github.com/brain-life/warehouse/issues", "github");
@@ -72,25 +74,6 @@ export default {
         signup() {
             document.location = "/auth/#!/signup";
         },
-        /*
-        newprocess() {
-            this.$http.post(Vue.config.wf_api+'/instance', {
-                config: {
-                    brainlife: true,
-                    type: "v2",
-                },
-                //desc: "",
-            }).then(res=>{
-                this.$router.push("/processes/"+res.body._id);
-            });
-
-        },
-        */
-        /*
-        gotog(email) {
-            document.location = "https://gravatar.com/"+md5(email);
-        },
-        */
         md5, 
     }
 }

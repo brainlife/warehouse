@@ -108,9 +108,20 @@ Vue.filter('filesize', function (num) {
 // config
 // TODO - find a way to put these somewhere under /config
 //
+/*
 var apihost = "https://"+process.env.HOSTNAME;
 var apihost_ws = "wss://"+process.env.HOSTNAME;
+*/
+var apihost = "https://"+window.location.hostname;
+var apihost_ws = "wss://"+window.location.hostname;
 
+//override api hostname (from config/*.env.js)
+if(process.env.HOSTNAME) {
+    apihost = "https://"+process.env.HOSTNAME;
+    apihost_ws = "wss://"+process.env.HOSTNAME;
+}
+
+/*
 switch(process.env.NODE_ENV) {
 case "development": 
     Vue.config.debug = true;
@@ -119,9 +130,11 @@ case "production":
     console.log("running in production mode");
     break;
 }
+*/
 
+Vue.config.debug = (process.env.NODE_ENV == "development");
 Vue.config.api = apihost+"/api/warehouse";
-Vue.config.wf_api = apihost+"/api/wf";
+Vue.config.wf_api = apihost+"/api/amaretti";
 Vue.config.auth_api = apihost+"/api/auth";
 Vue.config.event_api = apihost+"/api/event";
 Vue.config.event_ws = apihost_ws+"/api/event";

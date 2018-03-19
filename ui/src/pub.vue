@@ -249,11 +249,13 @@
                                 <b-row>
                                     <b-col cols="2">
                                         <b>{{subject}}</b>
+                                        <!--
                                         <small class="text-muted">
                                             <br v-if="group.count > 1">
                                             <span><b>{{group.count}}</b> datasets</span>
                                             <span><b>{{group.size | filesize}}</b></span>
                                         </small>
+                                        -->
                                     </b-col>
                                     <b-col>
                                         <div v-for="(datatype, datatype_id) in group.datatypes" :key="datatype_id">
