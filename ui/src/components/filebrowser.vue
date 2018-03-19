@@ -108,6 +108,7 @@ export default {
             return url;
         },
         download: function() {
+            this.$notify({text: "Downloading Requested.. Please wait."});
             var url = this.get_download_url();
             document.location = url;
         },

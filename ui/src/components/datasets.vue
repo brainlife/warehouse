@@ -105,7 +105,7 @@
         <div class="select-action">
             <p>
                 <b-button size="sm" @click="download">
-                    <icon name="download" scale="0.8"/> Download 
+                    <icon name="download" scale="0.8"/> BIDS
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
                 </b-button>
             </p>

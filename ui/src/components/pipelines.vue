@@ -33,7 +33,7 @@
                 <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Submit the following app and archive output datasets to this project</p>
                 <b-row>
                     <b-col>
-                        <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 30px;"/>
+                        <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 30px; margin-bottom: 10px;"/>
                     </b-col>
                     <b-col>
                         <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">

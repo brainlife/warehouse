@@ -249,6 +249,10 @@ exports.storage_systems["dcwan/hcp"] = {
                         conn.end();
                         return cb(err);
                     }
+
+                    //TODO - archiver seems to leak memory really bad.. 
+                    //I can't really recreate the problem, but I think it happens if more data is fed to archiver
+                    //than archiver can stream it out - using some kind of an internal buffer that never gets released
                     var archive = archiver('tar');
                     dataset.storage_config.files.forEach(file=>{
                         var stream = sftp.createReadStream(file.filepath);

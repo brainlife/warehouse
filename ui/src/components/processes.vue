@@ -268,6 +268,10 @@ export default {
                         this.instances.unshift(event.msg);
                     }
                 } 
+                if(event.error) {   
+                    console.error("failed to subscribe to instance event:", event.error);
+                    this.$notify({type: 'error', text: event.error});
+                }
             }
         },
     },

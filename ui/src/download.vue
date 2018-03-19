@@ -6,7 +6,7 @@
         <div class="page-content">
         <div class="margin20" v-if="instance && tasks">
 
-            <h1><icon name="download" scale="2"></icon> Download</h1>
+            <h1><icon name="download" scale="2"></icon> BIDS Download</h1>
             <b-card>
                 <div slot="header" style="padding: 15px;">
                     <el-steps :space="200" :active="active">

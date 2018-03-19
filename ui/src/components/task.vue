@@ -12,7 +12,7 @@
         <div style="margin-left: 45px;">
             <div style="float: right;">
                 <contact :id="task.user_id" :short="true" style="position: relative; top: -3px; opacity: 0.9"/>
-                <div class="button" style="opacity: 0.7" :title="task._id" v-b-popover.bottom.html="popover_content"><icon name="info"/></div>
+                <div class="button" style="opacity: 0.7" :title="task._id" v-b-popover.hover.html="popover_content"><icon name="info"/></div>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="repeat"/>
                 </div>
