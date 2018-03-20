@@ -55,7 +55,7 @@ exports.archive = {
 //for event handler
 exports.event = {
     amqp: {
-        url: "amqp://warehouse:gowarehouse123@localhost:5672/brainlife"
+        url: "amqp://warehouse:gobrain@localhost:5672/brainlife"
     },
 }
 
@@ -259,15 +259,21 @@ exports.storage_systems["dcwan/hcp"] = {
                         stream.on('error', err=>{
                             console.error("stream failed but train has already left the station", file.filepath, err);
                         });
+                        stream.on('end', ()=>{
+                            console.log("stream ended", file.filepath);
+                        });
                         console.log("archiver downloading", file.filepath, file.local);
                         archive.append(stream, {name: file.local});
                     });
                     archive.on('finish', ()=>{
-                        console.log("archive finished.. closing connection");
+                        console.log("archive finished");
+                    });
+                    archive.on('end', ()=>{
+                        console.log("archive ended.. conn.end()");
                         conn.end();
                     });
                     archive.on('error', err=>{
-                        cosole.log("archive error.......................");
+                        console.log("archive error.......................");
                         console.error(err);
                     });
                     console.log("archive finalized");

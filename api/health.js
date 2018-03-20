@@ -1,4 +1,3 @@
-
 const winston = require('winston');
 const timeout = require('callback-timeout');
 const async = require('async');
@@ -8,12 +7,8 @@ const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
 const common = require('./common');
 
-/*
-var redis_client = redis.createClient(config.redis.port, config.redis.server);
-redis_client.on('error', err=>{throw err});
-*/
 common.redis.on('ready', ()=>{
-    logger.info("connected to redis");
+    logger.info("health api");
     exports.health_check();
     setInterval(exports.health_check, 1000*60); //post health status every minutes
 });
@@ -39,7 +34,7 @@ exports.health_check = function() {
 				report.storages[system_id] = "ok";
 			}
             next();
-        }, system.timeout||8000)); //5 seconds is often not enough... let's use 8. also system can have timeout override to set it to even longer value
+        }, 10*000)); //8 not enough for js often
     }, err=>{
 		common.redis.set("health.warehouse.api."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
     });

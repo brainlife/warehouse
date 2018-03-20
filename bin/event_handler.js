@@ -11,7 +11,7 @@ const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
-const prov = require('../api/prov');
+//const prov = require('../api/prov');
 
 // TODO  Look for failed tasks and report to the user/dev?
 
@@ -114,9 +114,11 @@ function health_check() {
 function handle_task(task, cb) {
     _counts.tasks++;
 
+    /*
     prov.register_task(task, err=>{
         if(err) return logger.error(err);
     });
+    */
 
     if(task.status == "finished" && task.config && task.config._outputs) {
         logger.info("handling task", task._id, task.status, task.name);
@@ -183,10 +185,8 @@ function archive_dataset(task, output, cb) {
                 prov: {
                     instance_id: task.instance_id,
                     task_id: task._id,
-                    app: task.config._app, //deprecated
-                    //app_id: task.config._app, //deprecated
-                    output_id: output.id,
-                    subdir: output.subdir,
+                    output_id: output.id, 
+                    subdir: output.subdir, //optional
                 },
                 meta: output.meta||{},
             }).save((err, _dataset)=>{

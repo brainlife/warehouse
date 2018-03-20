@@ -12,7 +12,6 @@ const xmlescape = require('xml-escape');
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
-const prov = require('./prov');
 
 //connect to redis - used to store various shared caches
 exports.redis = redis.createClient(config.redis.port, config.redis.server);
@@ -182,10 +181,12 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         dataset.size = file.size;
                         dataset.save(cb);
                             
+                        /*
                         //also register to neo4j.. I might deprecate
                         prov.register_dataset(dataset, err=>{
                             if(err) logger.error(err); //fall through
                         });
+                        */
                     }).catch(err=>{
                         logger.error("streaming failed", err);
                         dataset.desc = "Failed to archive "+err.toString();
@@ -398,10 +399,12 @@ function cache_contact() {
         headers: { authorization: "Bearer "+config.auth.jwt },
     }, (err, res, body)=>{
         if(err) return logger.error(err);
-        if(res.statusCode != 200) logger.error("couldn't obtain user jwt code:"+res.statusCode);
-        body.profiles.forEach(profile=>{
-            cached_contacts[profile.id.toString()] = profile;
-        });
+        if(res.statusCode != 200) logger.error("couldn't cache auth profiles. code:"+res.statusCode);
+        else {
+            body.profiles.forEach(profile=>{
+                cached_contacts[profile.id.toString()] = profile;
+            });
+        }
     });
 }
 cache_contact();
