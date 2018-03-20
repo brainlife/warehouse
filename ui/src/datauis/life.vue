@@ -1,26 +1,13 @@
 <template>
-<div style="padding: 10px;">
-    <div v-if="stats">
-        <b-row>
-            <b-col cols="6">
-                Fibers with non-0 evidence <b>{{stats.non0_tracks.toLocaleString()}}</b> 
-                out of <b>{{stats.input_tracks.toLocaleString()}}</b> total tracks
-            </b-col>
-            <b-col>
-                <b-progress :value="Math.round(stats.non0_tracks/stats.input_tracks*10000)/100" show-progress></b-progress>
-                <p class="help-block">* Should be around 20-30% range.</p>
-            </b-col>
-        </b-row>
+<div>
+    <div v-if="stats" style="padding:10px">
+        Fibers with non-0 evidence <b>{{stats.non0_tracks.toLocaleString()}}</b> 
+        out of <b>{{stats.input_tracks.toLocaleString()}}</b> total tracks
+        <b-progress :value="Math.round(stats.non0_tracks/stats.input_tracks*10000)/100" show-progress></b-progress>
+        <p class="help-block">* Should be around 20-30% range.</p>
     </div>
-    <br>
-    <b-row>
-        <b-col>
-            <div ref="plot"/>
-        </b-col>
-        <b-col>
-            <div ref="w"/>
-        </b-col>
-    </b-row>
+    <div style="width: 50%; float: left;" ref="plot"/>
+    <div style="width: 50%; float: right;" ref="w"/>
 </div>
 </template>
 
@@ -55,6 +42,20 @@ export default {
                 x: rmse.x.vals,
                 y: rmse.y.vals,
             }], {
+                //show "good" area
+                shapes: [
+                    {
+                      "fillcolor": "rgba(63, 181, 81, 0.1)", 
+                      "line": {"width": 0}, 
+                      "type": "rect", 
+                      "x0": 50,
+                      "x1": 200,
+                      "xref": "x", 
+                      "y0": 0, 
+                      "y1": 1, 
+                      "yref": "paper"
+                    }, 
+                ],
                 xaxis: {title: rmse.x.label},
                 yaxis: {title: rmse.y.label},
                 //margin: {t: 0, b: 35, r: 0},
@@ -76,8 +77,8 @@ export default {
 
     methods: {
         resize: function() {
-            Plotly.relayout(this.$refs.plot, {width: this.$refs.plot.clientWidth-30});
-            Plotly.relayout(this.$refs.w, {width: this.$refs.w.clientWidth-30});
+            Plotly.relayout(this.$refs.plot, {width: this.$refs.plot.clientWidth});
+            Plotly.relayout(this.$refs.w, {width: this.$refs.w.clientWidth});
         }    
     }
 }

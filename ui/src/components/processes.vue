@@ -6,7 +6,12 @@
         </div>
     </div>
     <div class="instances" id="scrolled-area">
-        <p class="text-muted margin20" v-if="instances.length == 0">Process is where you submit series of apps that shared input and output datasets. Output datasets will be removed within 25 days unless you archive them by clicking on <icon name="archive"/> icon.</p>
+        <div class="text-muted margin20" v-if="instances.length == 0">
+            <p>Process is where you submit series of apps with shared input and output datasets.</p>
+            <p>Output datasets will be removed within 25 days unless you archive them by clicking on <icon name="archive"/> icon.</p>
+            <b-alert variant="warning" show>You should avoid mixing datasets from different subject on a process. Create separate process for each subject.</b-alert>
+        </div>
+
         <br>
         <div v-if="instances.length > 0">
             <div v-for="instance in instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
