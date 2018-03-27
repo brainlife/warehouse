@@ -77,6 +77,9 @@ font-size: inherit;
 legend {
 font-size: 1.1rem;
 }
+.dropdown-menu {
+font-size: inherit;
+}
 
 /*needed to keep iframe 100% with for view*/
 html,body {

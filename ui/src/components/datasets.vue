@@ -105,12 +105,12 @@
         <div class="select-action">
             <p>
                 <b-button size="sm" @click="download">
-                    <icon name="download" scale="0.8"/> BIDS
+                    <icon name="download" scale="0.8"/> Dowload (BIDS)
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
                 </b-button>
             </p>
             <p>
-                <b-button size="sm" @click="process"><icon name="paper-plane" scale="0.8"/> Process</b-button>
+                <b-button size="sm" @click="process"><icon name="paper-plane" scale="0.8"/> Stage For Processing</b-button>
             </p>
             <p>
                 <b-button size="sm" @click="remove" variant="danger"><icon name="trash" scale="0.8"/> Remove</b-button>
