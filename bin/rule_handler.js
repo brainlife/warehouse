@@ -323,7 +323,8 @@ function handle_rule(rule, cb) {
         //var instance_name = "brainlife.rule project:"+rule.project._id+" subject:"+subject;
         var instance_name = "brainlife.rule subject:"+subject;
         //var instance_desc = "rule:"+rule.name+" for project:"+rule.project.name+" subject:"+subject;
-        var instance_desc = "rule:"+rule.name+" subject:"+subject;
+        //var instance_desc = "rule:"+rule.name+" subject:"+subject;
+        var instance_desc = "rule submission for subject "+subject;
         running++;
 
         //prepare for stage / app / archive

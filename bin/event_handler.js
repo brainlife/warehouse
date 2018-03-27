@@ -149,14 +149,16 @@ function archive_dataset(task, output, cb) {
                 //ignore failed and removed ones
                 //TODO - very strange query indeed.. but it should work
                 $or: [
-                    { removed: true, status: {$ne: "failed"} }, //if removed and not failed, user must have a good reason to remove it.. keep it (not reachive)
-                    { removed: false }, //if not removed, then good!
+                    { removed: false }, //already archived!
+                    
+                    //or.. if archived but removed and not failed, user must have a good reason to remove it.. 
+                    { removed: true, status: {$ne: "failed"} }, 
                 ]
                 
             }).exec((err,_dataset)=>{
                 if(err) return cb(err);
                 if(_dataset) {
-                    logger.info("already archived");
+                    logger.info("already archived", _dataset._id.toString());
                     return cb();
                 }
                 logger.debug("not yet archived.. proceeding", task._id, output.id);
