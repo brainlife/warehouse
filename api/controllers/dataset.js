@@ -174,32 +174,6 @@ router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired
 
 /**
  * @apiGroup Dataset
- * @api {get} /dataset/bibtex/:id   Download BibTex JSON
- * @apiDescription              Output BibTex JSON content for specified dataset ID
- *
- */
-/*
-router.get('/bibtex/:id', (req, res, next)=>{
-    db.Datasets.findById(req.params.id, function(err, dataset) {
-        if(err) return next(err);
-        if(!dataset) return res.status(404).end();
-
-        res.set('Content-Type', 'application/x-bibtex');
-        res.write("@misc{https://brainlife.io/warehouse/#/dataset/"+dataset._id+",\n")
-        //res.write(" doi = {11.1111/b.ds."+dataset._id+"},\n");
-        res.write(" author = {Hayashi, Soichi},\n");
-        res.write(" keywords = {},\n");
-        res.write(" title = {brainlife dataset "+dataset._id+"},\n");
-        res.write(" publisher = {BrainLife},\n");
-        res.write(" year = {"+(dataset.create_date.getYear()+1900)+"},\n");
-        res.write("}");
-        res.end();
-    });
-});
-*/
-
-/**
- * @apiGroup Dataset
  * @api {get} /dataset/prov/:id     Get provenance
  * @apiDescription                  Get provenance graph info
  *
@@ -282,29 +256,6 @@ router.get('/prov/:id', (req, res, next)=>{
                 });
                 load_task_prov(task, cb);
             }
-            /*
-            } else {
-                add_node({
-                    id: "task."+task._id, 
-                    label: compose_label(task),
-                });
-                
-                //dataset created by another *app*
-                let output = dataset.prov.app.outputs.find(output=>{ return output.id == dataset.prov.output_id });
-                let label = dataset.prov.output_id+"?";
-                if(output) {
-                    label = datatypes[output.datatype].name;
-                    if(output.datatype_tags && output.datatype_tags.length>0) label += "\n"+output.datatype_tags.toString();
-                }
-                edges.push({
-                    from: "task."+task._id,
-                    to,
-                    arrows: "to",
-                    label,
-                });
-                load_task_prov(task, cb);
-            }
-            */
         });
     }
 
@@ -368,6 +319,8 @@ router.get('/prov/:id', (req, res, next)=>{
                     load_product_raw("task."+task._id, input.dataset_id||input._id||input.subdir, next_dep);
                 } else {
                     //task2task
+                    let datatype = datatypes[input.datatype];
+                    if(!datatype) datatype = {name: "unknown "+input.datatype};
                     add_node({
                         id: "task."+input.task_id,
                         label: compose_label(dep_task),
@@ -376,7 +329,7 @@ router.get('/prov/:id', (req, res, next)=>{
                         from: "task."+input.task_id,
                         to: "task."+task._id,
                         arrows: "to",
-                        label: datatypes[input.datatype].name, 
+                        label: datatype.name, 
                     });
                     load_task_prov(dep_task, next_dep); //recurse to its deps
                 }
@@ -460,10 +413,8 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 url: config.wf.api+"/task/"+req.body.task_id, json: true,
                 headers: { authorization: req.headers.authorization, }
             }, (err, _res, _task)=>{
-                //if(ret.tasks.length != 1) return next("couldn't find task");
-                //var _task = ret.tasks[0];
-                console.dir(_task);
-                if(_task.user_id != req.user.sub) return next("you don't own this task");
+                const gids = req.user.gids||[];
+                if(_task.user_id != req.user.sub && !~gids.indexOf(_task._group_id)) return next("you don't own this task");
                 if(!_task.resource_id) return next("resource_id not set");
                 if(_task.status != "finished") return next("task not in finished state");
                 
