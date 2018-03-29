@@ -1,8 +1,34 @@
 <template>
 <div v-if="instances">
     <div class="page-header">
-        <div style="margin-top: 2px; margin-left: 10px;">
+        <div style="margin-top: 2px; margin-left: 10px; display: inline-block;">
             <b>{{instances.length}}</b> Processes
+        </div>
+
+        <div v-if="instances.length > 1" style="float: right; position: relative; top: -3px;"> 
+            <div style="display: inline-block;">
+                <small>Show</small>
+                <b-dropdown :text="show?show:'all'" size="sm" :variant="showvariant()">
+                    <!--<b-dropdown-header>Show</b-dropdown-header>-->
+                    <b-dropdown-item @click="show = 'running'">Running</b-dropdown-item>
+                    <b-dropdown-item @click="show = 'failed'">Failed</b-dropdown-item>
+                    <b-dropdown-item @click="show = 'finished'">Finished</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item @click="show = null">All</b-dropdown-item>
+                </b-dropdown>
+            </div>
+
+            <div style="display: inline-block;">
+                <small>Order by</small>
+                <b-dropdown :text="order" size="sm" :variant="order=='date'?'light':'secondary'">
+                    <!--<b-dropdown-header>Order By</b-dropdown-header>-->
+                    <b-dropdown-item @click="order = 'date'">Date (new first)</b-dropdown-item>
+                    <b-dropdown-item @click="order = '-date'">Date (old first)</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
+                    <b-dropdown-item @click="order = 'desc'">Description (a-z)</b-dropdown-item>
+                </b-dropdown>
+            </div>
         </div>
     </div>
     <div class="instances" id="scrolled-area">
@@ -14,7 +40,7 @@
 
         <br>
         <div v-if="instances.length > 0">
-            <div v-for="instance in instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
+            <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div :class="instance_class(instance)" @click="toggle_instance(instance)">
                     <div style="float: left;" class="instance-status" :class="'instance-status-'+instance.status">
                         <statusicon :status="instance.status"/>
@@ -67,6 +93,8 @@ export default {
     data () {
         return {
             instances: null,
+            order: 'date', //default (new > old)
+            show: null, //null == all
 
             selected: null,
 
@@ -76,6 +104,43 @@ export default {
 
             config: Vue.config,
         }
+    },
+
+    computed: {
+        sorted_and_filtered_instances: function() {
+
+            //apply filter
+            let filtered = this.instances.filter(i=>{
+                if(!this.show) return true; //show all
+                if(i.status == this.show) return true;
+                return false;
+            });
+    
+            //then sort
+            let order = 1;
+            let field = this.order;
+            if(field[0] == "-") {
+                order = -1;
+                field = field.substring(1); 
+            } 
+            return filtered.sort((a,b)=>{
+                switch(field) {
+                case "desc":
+                    a = a.desc?a.desc.toUpperCase():"";
+                    b = b.desc?b.desc.toUpperCase():"";
+                    break;
+                case "date": 
+                    a = a.create_date?new Date(a.create_date):null;
+                    b = b.create_date?new Date(b.create_date):null;
+                    break;
+                default: 
+                    throw("no such field");
+                }
+                if(a < b) return order;
+                if(a > b) return -(order);
+                return 0;
+            });
+        },
     },
 
     mounted: function() {
@@ -88,6 +153,16 @@ export default {
             console.log("project changed.. need to reload");
             this.load();
         },
+        order: function() {
+            let group_id = this.project.group_id;
+            window.localStorage.setItem("processes.order."+group_id, this.order);
+        },
+        show: function() {
+            let group_id = this.project.group_id;
+            if(this.show) window.localStorage.setItem("processes.show."+group_id, this.show);
+            else window.localStorage.removeItem("processes.show."+group_id);
+        },
+
         '$route': function() {
             console.log("route change");
             var subid = this.$route.params.subid;
@@ -117,13 +192,41 @@ export default {
 
     methods: {
         load: function() {
-            this.instances = null; 
+            let group_id = this.project.group_id;
+            this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
+            this.show = window.localStorage.getItem("processes.show."+group_id)||null;
+
             this.load_instances(err=>{
                 if(err) return this.notify_error(err);
                 this.subscribe_instance_update(err=>{
                     if(err) return this.notify_error(err);
                 });
             });
+        },
+
+        /*
+        order: function(order) {
+            this.order = order;
+            this.load_instances(err=>{
+                if(err) return this.notify_error(err);
+            });
+        },
+        */
+
+        /*
+        capitalize: function(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        },
+        */
+
+        showvariant: function() {
+            switch(this.show) {
+            case "failed": return "danger";
+            case "finished": return "success";
+            case "running": return "primary";
+            case null: return "light";
+            default: return "warning";
+            }
         },
 
         notify_error: function(err) {
@@ -221,8 +324,8 @@ export default {
         },
 
         load_instances: function(cb) {
+            this.instances = null; 
             if(!this.project.group_id) return; //can't load for non-group project..
-
             console.log("loading instances for group", this.project.group_id);
             this.$http.get(Vue.config.wf_api+'/instance', {params: {
                 find: JSON.stringify({
@@ -232,8 +335,8 @@ export default {
                     group_id: this.project.group_id,
                     "config.removing": {$exists: false},
                 }),
-                limit: 2000,
-                sort: '-create_date',
+                limit: 3000,
+                //sort: '-create_date',
             }}).then(res=>{
                 this.instances = res.body.instances;
                 this.selected = this.instances.find(it=>it._id == this.$route.params.subid);
@@ -297,7 +400,7 @@ position: fixed;
 top: 100px;
 left: 350px;
 padding: 10px;
-width: 300px;
+right: 10px;
 height: 45px;
 color: #999;
 z-index: 1;
