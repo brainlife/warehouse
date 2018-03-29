@@ -8,7 +8,7 @@
                 <icon name="close" scale="1.5"/>
             </div>
         </div>
-        <h4 style="margin-top: 8px;">Submit New Task</h4>
+        <h4 style="margin-top: 8px;">Submit New App</h4>
     </div><!--header-->
 
     <!--app selection page--> 

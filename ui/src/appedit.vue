@@ -166,8 +166,8 @@
                                     <small class="text-muted">Set these datatype tags on this output dataset</small>
                                 </b-col>
                             </b-row>
-                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
-                            <b-form-textarea v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
+                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>(Optional JSON)</small></div>
+                            <b-form-textarea v-model="output._files" :rows="3"></b-form-textarea>
                         </b-card>
                     </div>
                     <p>
@@ -447,17 +447,10 @@ export default {
                     if(!dataset.datatype_tags) return;
                     dataset.datatype_tags.forEach(tag=>{
                         var dt = v.datatypes[dataset.datatype];
-                        /*
-                        if(!dt) {
-                            console.error("couldn't find datatype", dataset.datatype);
-                            return;
-                        }
-                        */
                         if(!~dt._tags.indexOf(tag)) dt._tags.push(tag);
                     });
                 }
                 res.body.apps.forEach(app=>{
-                    //console.log("aggregating ",app);
                     app.inputs.forEach(aggregate_tags);
                     app.outputs.forEach(aggregate_tags);
                 });
@@ -480,7 +473,7 @@ export default {
 
                             //convert output.files to JSON string - for now, we let user enter key/value where key is file_id and value is file/dir path 
                             this.app.outputs.forEach(output=>{
-                                if(output.files) output._files = JSON.stringify(output.files, null, 4);
+                                if(output.files) Vue.set(output, '_files', JSON.stringify(output.files, null, 4));
                             });
 
                             this.ready = true;
