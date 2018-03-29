@@ -14,7 +14,7 @@
                             <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
                                 <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
                                 <h6>
-                                    <a :href="'https://github.com/'+app.github"><icon name="github" scale="0.9"/> {{app.github}}</a>
+                                    <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')"><icon name="github" scale="0.9"/> {{app.github}}</a>
                                     <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
                                 </h6>
                                 <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>

@@ -32,8 +32,6 @@ export default {
         }
         if(this.app) this.app_ = this.app;
     },
-    methods: {
-    },
 }
 </script>
 

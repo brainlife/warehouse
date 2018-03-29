@@ -111,10 +111,10 @@
                             </b-col>
                         </b-row>
 
-                        <b-row v-if="dataset.prov && dataset.prov.app && task">
+                        <b-row v-if="task && task.config && task.config._app">
                             <b-col cols="3"><b class="text-muted">Produced by</b></b-col>
                             <b-col>
-                                <app slot="header" :appid="dataset.prov.app" :branch="task.service_branch||'master'" :clickable="false" @click.native="openapp(dataset.prov.app)">
+                                <app slot="header" :appid="task.config._app" :branch="task.service_branch||'master'" :clickable="false" @click.native="openapp(task.config._app)">
                                     <!--TODO I should allow just passing this.task-->
                                     <taskconfig style="margin: 10px;" :task="task"/>
                                 </app>

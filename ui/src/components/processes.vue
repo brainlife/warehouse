@@ -6,27 +6,27 @@
         </div>
 
         <div v-if="instances.length > 1" style="float: right; position: relative; top: -3px;"> 
-            <div style="display: inline-block;">
+            <div style="display: inline-block; margin-right: 10px;">
                 <small>Show</small>
                 <b-dropdown :text="show?show:'all'" size="sm" :variant="showvariant()">
                     <!--<b-dropdown-header>Show</b-dropdown-header>-->
+                    <b-dropdown-item @click="show = null">All</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-header>Status</b-dropdown-header>
                     <b-dropdown-item @click="show = 'running'">Running</b-dropdown-item>
                     <b-dropdown-item @click="show = 'failed'">Failed</b-dropdown-item>
                     <b-dropdown-item @click="show = 'finished'">Finished</b-dropdown-item>
-                    <b-dropdown-divider></b-dropdown-divider>
-                    <b-dropdown-item @click="show = null">All</b-dropdown-item>
                 </b-dropdown>
             </div>
 
             <div style="display: inline-block;">
                 <small>Order by</small>
-                <b-dropdown :text="order" size="sm" :variant="order=='date'?'light':'secondary'">
-                    <!--<b-dropdown-header>Order By</b-dropdown-header>-->
+                <b-dropdown :text="order" size="sm" :variant="'light'">
                     <b-dropdown-item @click="order = 'date'">Date (new first)</b-dropdown-item>
                     <b-dropdown-item @click="order = '-date'">Date (old first)</b-dropdown-item>
                     <b-dropdown-divider></b-dropdown-divider>
                     <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
-                    <b-dropdown-item @click="order = 'desc'">Description (a-z)</b-dropdown-item>
+                    <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
                 </b-dropdown>
             </div>
         </div>
@@ -112,6 +112,7 @@ export default {
             //apply filter
             let filtered = this.instances.filter(i=>{
                 if(!this.show) return true; //show all
+                if(this.selected == i) return true; //always show selected one
                 if(i.status == this.show) return true;
                 return false;
             });
