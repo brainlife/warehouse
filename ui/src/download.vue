@@ -7,7 +7,9 @@
         <div class="margin20" v-if="instance && tasks">
 
             <h1><icon name="download" scale="2"></icon> BIDS Download</h1>
+            <p>We are staging requested datasets and organizing them in BIDS structure. Download should begin automatically once it's ready. </p>
             <b-card>
+                <!--
                 <div slot="header" style="padding: 15px;">
                     <el-steps :space="200" :active="active">
                         <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
@@ -16,22 +18,26 @@
                     </el-steps>
                     
                     <br>
-                    <el-alert v-if="error" type="error" title="Failed" :description="error" show-icon :closable="false"></el-alert> 
+                    <b-alert show v-if="error" type="error" title="Failed" :description="error" show-icon :closable="false"/>
+
                     <div v-if="active == 3">
                         <el-button type="primary" class="animated bounceIn" size="large" @click="download" icon="document">Download</el-button>    
                     </div>
                 </div>
-
+                -->
                 <h3>Task Status</h3>
                 <div v-for="task in tasks" :key="task._id">
                     <task :task="task"></task>
                     <br>
                 </div>
+                <div v-if="active == 3">
+                    <hr>
+                    <b-button variant="primary" class="animated bounceIn" size="lg" @click="download"><icon name="download"/> Download</b-button>    
+                </div>
             </b-card>
 
             <br>
-            <el-card v-if="config.debug">
-                <div slot="header">Debug</div>
+            <div v-if="config.debug">
                 <div v-if="instance">
                     <h3>instance</h3>
                     <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
@@ -42,7 +48,7 @@
                         <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
                     </div>
                 </div>
-            </el-card>
+            </div>
 
         </div><!--margin20-->
         </div><!--page-content-->
@@ -106,14 +112,6 @@ export default {
                         key: this.instance._id+".#",
                     }
                 }));
-                /*
-                ws.send(JSON.stringify({
-                    bind: {
-                        ex: "wf.instance",
-                        key: "na."+this.instance._id, //any group, but specific instance
-                    }
-                }));
-                */
             }
               
             ws.onmessage = (json)=>{
@@ -124,20 +122,19 @@ export default {
                 }
                 var msg = event.msg;
                 if(!msg || !msg._id) return; //odd..
+                var bids_status_before = this.task_bids.status;
                 switch(event.dinfo.exchange) {
                 case "wf.task":
                     //look for the task to update
                     this.tasks.forEach(function(t) {
-                      if(t._id == msg._id) {
-                          for(var k in msg) t[k] = msg[k];
-                      }
+                        if(t._id == msg._id) {
+                            for(var k in msg) t[k] = msg[k];
+                        }
                     });
+                    if(bids_status_before != this.task_bids.status && this.task_bids.status == "finished") {
+                        this.download();
+                    }
                     break;
-                /*
-                case "wf.instance":
-                    this.instance = msg;    
-                    break;
-                */
                 default:
                     console.error("unknown exchange", event.dinfo.exchange);
                 }

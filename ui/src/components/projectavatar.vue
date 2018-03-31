@@ -1,6 +1,7 @@
 <template>
 <!--<img v-lazy="project.avatar || '//eightbitavatar.herokuapp.com/?id='+project._id+'@3&s=male&size='+width" :width="width" :height="height"></img>-->
-<img v-lazy="project.avatar || '//www.gravatar.com/avatar/'+project._id+'?d=wavatar&s='+width" :width="width" :height="height"></img>
+<!--<img v-lazy="project.avatar || '//www.gravatar.com/avatar/'+project._id+'?d=wavatar&s='+width" :width="width" :height="height"></img>-->
+<img v-lazy="project.avatar || 'https://api.adorable.io/avatars/'+width+'/'+project._id+'.png'" :width="width" :height="height"></img>
 </template>
 
 <script>
