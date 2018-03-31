@@ -50,38 +50,8 @@
             <div v-if="tab_index == 0">
                 <b-row>
                     <b-col cols="9">
-                        <!--detail table-->
-                        <b-row v-if="config.user">
-                            <b-col cols="3">
-                                <b class="text-muted">Administrators</b>
-                            </b-col>
-                            <b-col>
-                                <small class="text-muted">Following users can administer this application registration.</small>
-                                <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="c in app.admins" :key="c._id">
-                                        <contact :id="c"/>
-                                    </li>
-                                </ul>
-                            </b-col>
-                        </b-row>
-                        <br>
-
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Contributors</b>
-                            </b-col>
-                            <b-col>
-                                <small class="text-muted">Following people have contributed to the github repo ({{app.github}}).</small>
-                                <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="dev in app.contributors" :key="dev._id">
-                                        <contact :fullname="dev.name" :email="dev.email"/>
-                                    </li>
-                                </ul>
-                            </b-col>
-                        </b-row>
 
                         <!--input/output header-->
-                        <br>
                         <b-row>
                             <b-col cols="3">
                             </b-col>
@@ -94,7 +64,7 @@
                                 <hr>
                             </b-col>
                         </b-row>
-                       <b-row>
+                        <b-row>
                             <b-col cols="3">
                                 <b class="text-muted">Input</b>
                             </b-col>
@@ -172,7 +142,7 @@
                                 <b class="text-muted">Computing Resources</b>
                             </b-col>
                             <b-col>
-                                <small class="text-muted" v-if="preferred_resource">This application can run on following resources</small>
+                                <p><small class="text-muted" v-if="preferred_resource">This application can run on following resources</small></p>
                                 <b-table style="font-size: 90%;" :items="resource_table" :fields="['resource','status','score', 'detail']">
                                     <template slot="resource" slot-scope="data">
                                         <icon class="preferred-icon" v-if="data.item.preferred" name="thumbs-up"/>
@@ -192,6 +162,35 @@
                             </b-col>
                         </b-row>
 
+                        <!--detail table-->
+                        <b-row v-if="config.user">
+                            <b-col cols="3">
+                                <b class="text-muted">Administrators</b>
+                            </b-col>
+                            <b-col>
+                                <p><small class="text-muted">Following users can administer this application registration.</small></p>
+                                <ul style="list-style: none; padding: 0px;">
+                                    <li v-for="c in app.admins" :key="c._id">
+                                        <contact :id="c"/>
+                                    </li>
+                                </ul>
+                            </b-col>
+                        </b-row>
+                        <br>
+
+                        <b-row>
+                            <b-col cols="3">
+                                <b class="text-muted">Contributors</b>
+                            </b-col>
+                            <b-col>
+                                <p><small class="text-muted">Following people have contributed to the github repo ({{app.github}}).</small></p>
+                                <ul style="list-style: none; padding: 0px;">
+                                    <li v-for="dev in app.contributors" :key="dev._id">
+                                        <contact :fullname="dev.name" :email="dev.email"/>
+                                    </li>
+                                </ul>
+                            </b-col>
+                        </b-row>
                         <!-- Execute tab shows how the UI looks like, and app developer can see all the detail under appedit
                         <b-row>
                             <b-col cols="3">
