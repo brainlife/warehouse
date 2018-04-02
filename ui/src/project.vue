@@ -16,7 +16,7 @@
                 <b-col cols="2">
                     <projectavatar :project="selected"/>
                 </b-col>
-                <b-col>
+                <b-col style="background-color: rgb(240, 240, 240);"><!--hide avatar when screen is narrow-->
                     <div style="float: right;" v-if="isadmin()">
                         <div @click="edit()" class="button">
                             <icon name="pencil" scale="1.25"/>
@@ -39,10 +39,12 @@
             <div class="margin20">
                 <b-row>
                     <b-col cols="2">
-                        <b class="text-muted">Admins</b>
+                        <span class="form-header">Admins</span>
                     </b-col>
                     <b-col>
-                        <small class="text-muted">Users who can update name / desc / project members, and create publications.</small>
+                        <p>
+                            <small class="text-muted">Users who can update name / desc / project members, and create publications.</small>
+                        </p>
                         <p v-for="c in selected.admins" :key="c._id">
                             <contact :id="c"/>
                         </p>
@@ -51,10 +53,12 @@
                 
                 <b-row>
                     <b-col cols="2"> 
-                        <b class="text-muted">Members</b>
+                        <span class="form-header">Members</span>
                     </b-col>
                     <b-col>
-                        <small class="text-muted">Users who can archive and update datasets on this project, and create publications.</small>
+                        <p>
+                            <small class="text-muted">Users who can archive and update datasets on this project, and create publications.</small>
+                        </p>
                         <p v-for="c in selected.members" :key="c._id">
                             <contact :id="c"/>
                         </p>
@@ -63,17 +67,17 @@
                 <br>
                 <b-row>
                     <b-col cols="2"> 
-                        <b class="text-muted">README</b>
+                        <span class="form-header">Readme</span>
                     </b-col>
                     <b-col cols="10">
-                        <p class="text-muted" v-if="!selected.readme">Please edit README content</p>
+                        <p class="text-muted" v-if="!selected.readme">Please edit README.md content</p>
                         <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
                     </b-col>
                 </b-row>
 
+                <hr>
                 <b-row>
                     <b-col cols="2">
-                        <b class="text-muted">Comments</b>
                     </b-col>
                     <b-col>
                         <vue-disqus shortname="brain-life" :identifier="selected._id"/>

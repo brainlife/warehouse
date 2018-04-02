@@ -11,8 +11,46 @@
         </div>
         <div style="margin-left: 45px;">
             <div style="float: right;">
+                <!--
                 <contact :id="task.user_id" :short="true" style="position: relative; top: -3px; opacity: 0.9"/>
-                <div class="button" style="opacity: 0.7" :title="task._id" v-b-popover.hover.html="popover_content"><icon name="info"/></div>
+                -->
+                <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid"><icon name="info"/></div>
+                <b-popover :target="'popover'+task.config._tid" triggers="hover click focus">
+                    <template slot="title"><span class="text-muted">ID {{task._id}}</span></template>
+                    <p>
+                        <contact :id="task.user_id" :short="true"/>
+                    </p>
+                    <table class="table table-sm">
+                    <tr>
+                        <th>Created</th>
+                        <td>{{new Date(this.task.create_date).toLocaleString()}}</td>
+                    </tr>
+                    <tr v-if="task.start_date">
+                        <th>Started</th>
+                        <td>{{new Date(this.task.start_date).toLocaleString()}}</td>
+                    </tr>
+                    <tr v-if="task.finish_date">
+                        <th>Finished</th>
+                        <td>{{new Date(this.task.finish_date).toLocaleString()}}</td>
+                    </tr>
+                    <tr v-if="task.fail_date">
+                        <th>Failed</th>
+                        <td>{{new Date(this.task.fail_date).toLocaleString()}}</td>
+                    </tr>
+                    <tr v-if="task.remove_date">
+                        <th>Remove At</th>
+                        <td>{{new Date(this.task.removed_date).toLocaleString()}}</td>
+                    </tr>
+                    <tr v-if="task.next_date">
+                        <th>Next Chk</th>
+                        <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
+                    </tr>
+                    <tr v-if="resource">
+                        <th>Resource</th>
+                        <td>{{this.resource.name}}</td>
+                    </tr>
+                    </table>
+                </b-popover>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="repeat"/>
                 </div>
@@ -123,6 +161,7 @@ export default {
         has_output_slot() {
             return !!this.$slots.output;
         },
+        /*
         popover_content() {
             var content = "";
             content += `<table class="table table-sm">`;
@@ -136,6 +175,7 @@ export default {
             content += `</table>`;
             return content;
         },
+        */
     },
 
     filters: {

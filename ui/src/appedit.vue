@@ -22,6 +22,9 @@
         <b-form @submit="submit" class="container">
             <!--detail-->
             <div>
+                <p style="float: right">
+                    <a href="https://brain-life.github.io/docs/apps/register/" target="doc">Help</a>
+                </p>
                 <h4>Detail</h4>
                 <b-form-group horizontal label="Name *">
                     <b-form-input type="text" v-model="app.name" placeholder="Name of application" required/>
@@ -509,9 +512,10 @@ export default {
             case "enum":
                 config.options = [];
                 break;
-            case "string":
             case "number":
             case "integer":
+                config.default = null;
+            case "string":
                 break;
             }
             Vue.set(this.app.config, tempid, config);
@@ -600,7 +604,6 @@ export default {
                     valid = false;
                 }
             });
-
             this.app.outputs.forEach(output=>{
                 var datatype = this.datatypes[output.datatype];
                 if(datatype.name  == "raw" && output.datatype_tags.length == 0) {
@@ -609,11 +612,7 @@ export default {
                 }
             });
 
-            if(!valid) {
-                console.error("invalid form");
-                return; 
-            }
-            
+            //parse output mapping json
             try {
                 this.app.outputs.forEach(output=>{
                     output.files = null;
@@ -622,6 +621,11 @@ export default {
             } catch(err) {
                 this.$notify({ test: 'Failed to parse output mapping', type: 'error' });
                 return;
+            }
+
+            if(!valid) {
+                console.error("invalid form");
+                return; 
             }
 
             console.log("form good");
@@ -635,6 +639,7 @@ export default {
                 delete c._id; //why?
             }
             keyed_app.config = keyed_config;
+
             //now ready to submit
             if(this.$route.params.id !== '_') {
                 //update

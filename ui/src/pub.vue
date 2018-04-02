@@ -12,11 +12,14 @@
                 -->
                 <b-row>
                     <b-col cols="2">
-                        <div style="float: left; margin-bottom: 15px; height: 100%;">
-                            <projectavatar :project="pub.project"/>
-                        </div>
+                        <projectavatar :project="pub.project"/>
                     </b-col>
-                    <b-col>
+                    <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
+                        <!-- (get)/pub API isn't authenticated so we don't know if user has edit access or now..
+                        <div style="float: right;">
+                            <span class="button" @click="go('/pub/'+app._id+'/edit')" v-if="pub._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
+                        </div>
+                        -->
                         <h4 style="color: #666; margin-bottom: 10px;">
                             {{pub.name}} 
                         </h4>
@@ -45,7 +48,7 @@
 
                         <b-row>
                             <b-col cols="2">
-                                <b class="text-muted">Created on</b>
+                                <span class="form-header">Created On</span>
                             </b-col>
                             <b-col>
                                 <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
@@ -53,7 +56,7 @@
                         </b-row>                         
                         <b-row>
                             <b-col cols="2">
-                                <b class="text-muted">Authors</b>
+                                <span class="form-header">Authors</span>
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
@@ -65,7 +68,7 @@
                         </b-row>
                         <b-row v-if="pub.readme">
                             <b-col cols="2">
-                                <b class="text-muted">Detail</b>
+                                <span class="form-header">Detail</span>
                             </b-col>
                             <b-col>
                                 <vue-markdown :source="pub.readme"></vue-markdown>
@@ -73,7 +76,7 @@
                         </b-row>  
                         <b-row v-if="pub.contributors.length > 0">
                             <b-col cols="2">
-                                <b class="text-muted">Contributors</b>
+                                <span class="form-header">Contributors</span>
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
@@ -85,7 +88,7 @@
                         </b-row>
                         <b-row>
                             <b-col cols="2">
-                                <b class="text-muted">Brainlife Project</b>
+                                <span class="form-header">Project</span>
                             </b-col>
                             <b-col>
                                 <p>
@@ -101,7 +104,7 @@
 
                         <b-row v-if="pub.doi">
                             <b-col cols="2">
-                                <b class="text-muted">Citation</b>
+                                <span class="form-header">Citation</span>
                             </b-col>
                             <b-col cols="10">
                                 <p>
@@ -129,7 +132,7 @@
 
                        <b-row v-if="pub.fundings.length > 0">
                             <b-col cols="2">
-                                <b class="text-muted">Funded by</b>
+                                <span class="form-header">Funded By</span>
                             </b-col>
                             <b-col>
                                 <ul style="list-style: none; padding: 0px;">
@@ -144,7 +147,7 @@
                         </b-row>
                         <b-row>
                             <b-col cols="2">
-                                <b class="text-muted">License</b>
+                                <span class="form-header">License</span>
                             </b-col>
                             <b-col>
                                 <p><small class="text-muted">Datasets are published with the following license.</small></p>
@@ -154,7 +157,7 @@
                         </b-row> 
                         <b-row>
                             <b-col cols="2">
-                                <b class="text-muted">Social</b>
+                                <span class="form-header">Social</span>
                             </b-col>
                             <b-col>
                                 <p><small class="text-muted">You can share this publication via ..</small></p>
@@ -197,9 +200,10 @@
                                 </b-card>
                             </b-col>
                         </b-row>
+
+                        <hr>
                         <b-row>
                             <b-col cols="2">
-                                <b class="text-muted">Comments</b>
                             </b-col>
                             <b-col>
                                 <vue-disqus shortname="brain-life" :identifier="pub._id"/>

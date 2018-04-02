@@ -4,7 +4,7 @@
     <b-row v-for="(v,k) in taskconfig" :key="k">
         <b-col :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</b-col>
 
-        <b-col v-if="v === null"><span class="text-muted">null</span></b-col>
+        <b-col v-if="v === null"><pre class="text-muted" style="margin-bottom: 0">null</pre></b-col>
         <b-col v-else-if="typeof v == 'object'">
             <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
         </b-col>

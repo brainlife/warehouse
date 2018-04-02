@@ -6,258 +6,207 @@
         <div class="header">
             <b-container>
                 <b-row>
-                    <b-col cols="9">
-                        <b-row>
-                            <b-col cols="3">
-                                <appavatar :app="app" :width="150" :height="150"/>
-                            </b-col>
-                            <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
-                                <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
-                                <h6>
-                                    <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')"><icon name="github" scale="0.9"/> {{app.github}}</a>
-                                    <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
-                                </h6>
-                                <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
-                                <p style="line-height: 220%;">
-                                    <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                                </p>
-                            </b-col>
-                        </b-row>
+                    <b-col cols="3">
+                        <appavatar :app="app" style="margin-bottom: 10px;"/>
                     </b-col>
-
-                    <b-col>
+                    <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right;">
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                         </div>
+                        <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
+                        <h5>
+                            <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')"><icon name="github"/> {{app.github}}</a>
+                            <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                        </h5>
+                        <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
+                        <p style="line-height: 220%;">
+                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                        </p>
+                        <appstats :app="app"/>
                     </b-col>
                 </b-row>
 
-                <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
-                    <b-tab title="README"/>
+                    <b-tab title="Readme"/>
                     <b-tab title="Execute"/>
-                    <b-tab title="Test Status"/>
+                    <!--<b-tab title="Test Status"/>-->
                     <!--<b-tab title="Citation / References"/>-->
                 </b-tabs>
             </b-container>
         </div><!--header-->
 
         <b-container>
-            <el-alert v-if="app.removed" title="This app has been removed" type="warning" show-icon :closable="false"></el-alert>
+            <b-alert :show="app.removed" variant="warning">This app has been removed.</b-alert>
+
             <!-- detail -->
             <div v-if="tab_index == 0">
+                <!--input/output header-->
                 <b-row>
-                    <b-col cols="9">
-
-                        <!--input/output header-->
-                        <b-row>
-                            <b-col cols="3">
-                            </b-col>
-                            <b-col>
-                                <b-row style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 90%;">
-                                    <b-col :cols="4">Datatype</b-col>
-                                    <b-col :cols="3">config.json key</b-col>
-                                    <b-col>File Mapping</b-col>
-                                </b-row>
-                                <hr>
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Input</b>
-                            </b-col>
-                            <b-col>
-                                <div v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'" style="margin-bottom: 5px;">
-                                    <b-row>
-                                        <b-col :cols="4" v-if="app.inputs">
-                                            <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
-                                            <span v-if="find_by_id(app.inputs, con.input_id).optional" class="text-muted">(optional)</span>
-                                        </b-col>
-                                        <b-col :cols="3">
-                                            <b>{{key}}</b>
-                                        </b-col>
-                                        <b-col>
-                                            <small style="opacity: 0.3; float: right; margin-right: 10px">{{con.input_id}}</small><!--internal input id-->
-                                            <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
-                                        </b-col>
-                                    </b-row>
-                                </div>
-                                <!--<icon name="arrow-down"/>-->
-                                <hr>
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Output</b>
-                            </b-col>
-                            <b-col>
-                                <div class="item" v-for="output in app.outputs" style="margin-bottom: 5px;">
-                                    <b-row>
-                                        <b-col :cols="7">
-                                            <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
-                                        </b-col>
-                                        <b-col>
-                                            <div style="position: relative"> 
-                                                <small style="opacity: 0.3; right: 10px; position: absolute;">{{output.id}}</small><!--internal output id-->
-                                                <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
-                                                <!--<small class="text-muted" v-else>No Mapping</small>-->
-                                            </div>
-                                        </b-col>
-                                    </b-row>
-                                </div>
-                                <b-alert show variant="warning" v-if="app.outputs.length == 0">No Outputs</b-alert>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row v-if="app.projects && app.projects.length > 0">
-                            <b-col cols="3">
-                                <b class="text-muted">Projects</b>
-                            </b-col>
-                            <b-col>
-                                <p class="alert alert-success"><icon name="lock" /> Only the members of following project(s) can see / submit this app.</p>
-                                <b-card no-body>
-                                    <b-list-group flush>
-                                        <b-list-group-item v-for="project in app.projects" :key="project._id">
-                                            <project :project="project" :key="project._id"/>
-                                        </b-list-group-item>
-                                    </b-list-group>
-                                </b-card>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <!--
-                        <b-row v-if="app.retry">
-                            <b-col cols="3">
-                                <b>Retry</b>
-                            </b-col>
-                            <b-col>
-                                <p>If this app fails, it will automatically retry up to <b>{{app.retry}}</b> times</p>
-                            </b-col>
-                        </b-row>
-                        -->
-                        <b-row v-if="resources">
-                            <b-col cols="3">
-                                <b class="text-muted">Computing Resources</b>
-                            </b-col>
-                            <b-col>
-                                <p><small class="text-muted" v-if="preferred_resource">This application can run on following resources</small></p>
-                                <b-table style="font-size: 90%;" :items="resource_table" :fields="['resource','status','score', 'detail']">
-                                    <template slot="resource" slot-scope="data">
-                                        <icon class="preferred-icon" v-if="data.item.preferred" name="thumbs-up"/>
-                                        <b>{{data.value}}</b>
-                                    </template>
-                                    <template slot="status" slot-scope="data">
-                                        <statustag :status="data.value"/>
-                                    </template>
-                                    <template slot="detail" slot-scope="data">
-                                        <p class="text-muted">{{data.value}}</p>
-                                    </template>
-                                </b-table>
-                                <b-alert show variant="danger" v-if="!preferred_resource">
-                                    This app currently can not run on any resource that you have access to.
-                                </b-alert>
-                                <!--<small class="text-muted" v-else>This app could run on one of above resource(s)</small>-->
-                            </b-col>
-                        </b-row>
-
-                        <!--detail table-->
-                        <b-row v-if="config.user">
-                            <b-col cols="3">
-                                <b class="text-muted">Administrators</b>
-                            </b-col>
-                            <b-col>
-                                <p><small class="text-muted">Following users can administer this application registration.</small></p>
-                                <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="c in app.admins" :key="c._id">
-                                        <contact :id="c"/>
-                                    </li>
-                                </ul>
-                            </b-col>
-                        </b-row>
-                        <br>
-
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Contributors</b>
-                            </b-col>
-                            <b-col>
-                                <p><small class="text-muted">Following people have contributed to the github repo ({{app.github}}).</small></p>
-                                <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="dev in app.contributors" :key="dev._id">
-                                        <contact :fullname="dev.name" :email="dev.email"/>
-                                    </li>
-                                </ul>
-                            </b-col>
-                        </b-row>
-                        <!-- Execute tab shows how the UI looks like, and app developer can see all the detail under appedit
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">UI Configuration</b>
-                            </b-col>
-                            <b-col cols="9">
-                                <b-alert show variant="info">TODO .. show this in more user friendly way</b-alert>
-                                <pre v-highlightjs><code class="json hljs">{{app.config}}</code></pre>
-                            </b-col>
-                        </b-row>
-                        -->
-
-                        <!--
-                        <tr>
-                            <th>Test Status</th>
-                            <td><el-tag>Unknown</el-tag></td>
-                        </tr>
-                        -->
-                        <b-row>
-                            <b-col cols="3">
-                                <b class="text-muted">Comments</b>
-                            </b-col>
-                            <b-col>
-                                <vue-disqus shortname="brain-life" :identifier="app._id"/>
-                            </b-col>
-                        </b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Input</span>
                     </b-col>
-
                     <b-col>
-                        <div v-if="service_stats" class="side-card">
-                            <center>
-                                <p class="text-muted">Total Runs</p>
-                                <h5>{{service_stats.tasks}}</h5>
-                                <br>
-
-                                <p class="text-muted">Users</p>
-                                <h5>{{service_stats.users}}</h5>
-                                <br>
-
-                                <p class="text-muted">Success Rate</p>
-                                <h5>{{((service_stats.counts.finished||0)*100 / (service_stats.counts.requested||1)).toFixed(1)}}%</h5>
-                            </center>
+                        <b-row style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 90%; margin-bottom: 10px;">
+                            <b-col :cols="4">Datatype</b-col>
+                            <b-col :cols="3">config.json key</b-col>
+                            <b-col>File Mapping</b-col>
+                        </b-row>
+                        <b-alert show variant="secondary" v-if="app.inputs.length == 0">No Inputs</b-alert>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col cols="3">
+                    </b-col>
+                    <b-col>
+                        <div v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'" style="margin-bottom: 5px;">
+                            <b-row>
+                                <b-col :cols="4" v-if="app.inputs">
+                                    <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
+                                    <span v-if="find_by_id(app.inputs, con.input_id).optional" class="text-muted">(optional)</span>
+                                </b-col>
+                                <b-col :cols="3">
+                                    <b>{{key}}</b>
+                                </b-col>
+                                <b-col>
+                                    <small style="opacity: 0.3; float: right; margin-right: 10px">{{con.input_id}}</small><!--internal input id-->
+                                    <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
+                                </b-col>
+                            </b-row>
                         </div>
-
-                        <div class="side-card">
-                            <center>
-                                <span class="text-muted">Average User Rating</span>
-                                <br>
-                                <br>
-                                <el-rate v-model="app._rate" @change="ratechange()"></el-rate>
-                            </center>
+                        <!--<icon name="arrow-down"/>-->
+                        <hr>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Output</span>
+                    </b-col>
+                    <b-col>
+                        <div class="item" v-for="output in app.outputs" style="margin-bottom: 5px;">
+                            <b-row>
+                                <b-col :cols="7">
+                                    <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
+                                </b-col>
+                                <b-col>
+                                    <div style="position: relative"> 
+                                        <small style="opacity: 0.3; right: 10px; position: absolute;">{{output.id}}</small><!--internal output id-->
+                                        <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
+                                        <!--<small class="text-muted" v-else>No Mapping</small>-->
+                                    </div>
+                                </b-col>
+                            </b-row>
                         </div>
-
-                        <div class="side-card">
-                            <center>
-                                <span class="text-muted">Badges</span>
-                                <br>
-                                <br>
-                                <img :src="'https://img.shields.io/badge/brainlife.io-app-green.svg'" @click="show_badge_url()"><br>
-                            </center>
-                        </div>
-
+                        <b-alert show variant="secondary" v-if="app.outputs.length == 0">No Outputs</b-alert>
+                        <br>
+                        <br>
                     </b-col>
                 </b-row>
 
+                <b-row v-if="app.projects && app.projects.length > 0">
+                    <b-col cols="3">
+                        <span class="form-header">Projects</span>
+                    </b-col>
+                    <b-col>
+                        <p class="alert alert-success"><icon name="lock" /> Only the members of following project(s) can see / submit this app.</p>
+                        <b-card no-body>
+                            <b-list-group flush>
+                                <b-list-group-item v-for="project in app.projects" :key="project._id">
+                                    <project :project="project" :key="project._id"/>
+                                </b-list-group-item>
+                            </b-list-group>
+                        </b-card>
+                        <br>
+                    </b-col>
+                </b-row>
+                <!--
+                <b-row v-if="app.retry">
+                    <b-col cols="3">
+                        <b>Retry</b>
+                    </b-col>
+                    <b-col>
+                        <p>If this app fails, it will automatically retry up to <b>{{app.retry}}</b> times</p>
+                    </b-col>
+                </b-row>
+                -->
+                <b-row v-if="resources">
+                    <b-col cols="3">
+                        <span class="form-header">Computing Resources</span>
+                    </b-col>
+                    <b-col>
+                        <p v-if="preferred_resource"><small class="text-muted">This application can currently run on following resources</small></p>
+                        <b-alert show variant="warning" v-if="!preferred_resource">
+                            This app currently can not run on any resource that you have access to.
+                        </b-alert>
+                        <b-table style="font-size: 90%;" :items="resource_table" :fields="['resource','status','score', 'detail']">
+                            <template slot="resource" slot-scope="data">
+                                <icon class="preferred-icon" v-if="data.item.preferred" name="thumbs-up"/>
+                                <b>{{data.value}}</b>
+                            </template>
+                            <template slot="status" slot-scope="data">
+                                <statustag :status="data.value"/>
+                            </template>
+                            <template slot="detail" slot-scope="data">
+                                <p class="text-muted">{{data.value}}</p>
+                            </template>
+                        </b-table>
+                        <!--<small class="text-muted" v-else>This app could run on one of above resource(s)</small>-->
+                    </b-col>
+                </b-row>
+
+                <!--detail table-->
+                <b-row v-if="config.user">
+                    <b-col cols="3">
+                        <span class="form-header">Administrators</span>
+                    </b-col>
+                    <b-col>
+                        <p><small class="text-muted">Following users can administer this application registration.</small></p>
+                        <ul style="list-style: none; padding: 0px;">
+                            <li v-for="c in app.admins" :key="c._id">
+                                <contact :id="c"/>
+                            </li>
+                        </ul>
+                    </b-col>
+                </b-row>
+                <br>
+
+                <b-row>
+                    <b-col cols="3">
+                        <span class="form-header">Contributors</span>
+                    </b-col>
+                    <b-col>
+                        <p><small class="text-muted">Following people have contributed to the source code ({{app.github}}).</small></p>
+                        <ul style="list-style: none; padding: 0px;">
+                            <li v-for="dev in app.contributors" :key="dev._id">
+                                <contact :fullname="dev.name" :email="dev.email"/>
+                            </li>
+                        </ul>
+                    </b-col>
+                </b-row>
+
+                <hr>
+                <b-row>
+                    <b-col cols="3">
+                    </b-col>
+                    <b-col>
+                        <vue-disqus shortname="brain-life" :identifier="app._id"/>
+                    </b-col>
+                </b-row>
+                <!--
+                <div class="side-card">
+                    <center>
+                        <span class="text-muted">Badges</span>
+                        <br>
+                        <br>
+                        <img :src="'https://img.shields.io/badge/brainlife.io-app-green.svg'" @click="show_badge_url()"><br>
+                    </center>
+                </div>
+                -->
             </div>
+
             <div v-if="tab_index == 1">
+                <p><small class="text-muted">From github repo / README.md</small></p>
                 <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
             </div>
             <div v-if="tab_index == 2">
@@ -267,34 +216,6 @@
             <div v-if="tab_index == 3">
                 <p class="text-muted">No test status available yet</p>
             </div>
-
-            <!--
-            <div v-if="tab_index == 3">
-                <b-row>
-                    <b-col cols="3">
-                        <b class="text-muted">Preferred Citation</b>
-                    </b-col>
-                    <b-col>
-                        {{app.citation}}
-                        <span class="text-muted" v-if="!app.citation">No preferred citation specified</span>
-                    </b-col>
-                </b-row>
-                <br>
-                <b-row>
-                    <b-col cols="3">
-                        <b class="text-muted">References</b>
-                    </b-col>
-                    <b-col>
-                        <span class="text-muted" v-if="!app.references || app.references.length == 0">No reference</span>
-                        <ul>
-                            <li v-for="(reference, idx) in app.references" :key="idx">{{reference.text}}</li>
-                        </ul>
-                    </b-col>
-                </b-row>
-                <br>
-            </div>
-            -->
-
             <br>
         </b-container>
 
@@ -325,6 +246,7 @@ import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
 import appsubmit from '@/components/appsubmit'
+import appstats from '@/components/appstats'
 
 import VueDisqus from 'vue-disqus/VueDisqus.vue'
 
@@ -334,6 +256,7 @@ export default {
         project, tags, datatype, appavatar,
         VueMarkdown, statustag, VueDisqus,
         appsubmit, datatypetag, datatypefile,
+        appstats,
      },
 
     data () {
@@ -341,7 +264,6 @@ export default {
             app: null,
             preferred_resource: null,
             resources: null,
-            service_stats: null, 
             readme: null,
 
             selfurl: document.location.href,
@@ -390,14 +312,6 @@ export default {
             this.app = res.body.apps[0];
             if(this.config.user) this.find_resources(this.app.github);
             if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
-
-            //then load task stats
-            return this.$http.get(Vue.config.wf_api+'/task/stats', {params: {
-                service: this.app.github, 
-                //service_branch: this.app.github_branch, //group by branch to pull *recent* info
-            }});
-        }).then(res=>{
-            this.service_stats = res.body;
 
             //then load github README
             var branch = this.app.github_branch||"master";
@@ -503,10 +417,12 @@ position: absolute;
 left: 0px;
 font-weight: bold;
 }
+/*
 .side-card {
 background-color: white;
 box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 padding: 15px 0px;
 margin: 15px 0px;
 }
+*/
 </style>

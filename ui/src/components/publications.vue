@@ -44,7 +44,10 @@
                 </p>
                 <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
             </div>
-            <p class="text-muted" style="margin: 20px;" v-if="!pubs || pubs.length == 0">No publication registered for this project</p>
+            <div class="text-muted" v-if="!pubs || pubs.length == 0">
+                <p>No publication registered for this project.</p>
+                <p>To learn about how to submit publications, please refer to our <a href="https://brain-life.github.io/docs/user/publication/" target="doc">Documentation</a>.</p>
+            </div>
 
             <!--space to make sure add button won't overwrap the pub list-->
             <p style="padding-top: 100px;">&nbsp;</p>
