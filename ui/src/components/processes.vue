@@ -3,19 +3,22 @@
     <div class="page-header">
         <div style="margin-top: 2px; margin-left: 10px; display: inline-block;">
             <b>{{instances.length}}</b> Processes
+            <!--
+            <small> - Showing {{sorted_and_filtered_instances.length}} Processes</small>
+            -->
         </div>
 
         <div v-if="instances.length > 1" style="float: right; position: relative; top: -3px;"> 
             <div style="display: inline-block; margin-right: 10px;">
                 <small>Show</small>
-                <b-dropdown :text="show?show:'all'" size="sm" :variant="showvariant()">
+                <b-dropdown :text="instance_filter_label" size="sm" :variant="showvariant()">
                     <!--<b-dropdown-header>Show</b-dropdown-header>-->
-                    <b-dropdown-item @click="show = null">All</b-dropdown-item>
+                    <b-dropdown-item @click="show = null">All <span class="text-muted">({{instances.length}})</span></b-dropdown-item>
                     <b-dropdown-divider></b-dropdown-divider>
                     <b-dropdown-header>Status</b-dropdown-header>
-                    <b-dropdown-item @click="show = 'running'">Running</b-dropdown-item>
-                    <b-dropdown-item @click="show = 'failed'">Failed</b-dropdown-item>
-                    <b-dropdown-item @click="show = 'finished'">Finished</b-dropdown-item>
+                    <b-dropdown-item @click="show = 'running'">Running <span class="text-muted">({{instance_counts.running||0}})</span></b-dropdown-item>
+                    <b-dropdown-item @click="show = 'failed'">Failed <span class="text-muted">({{instance_counts.failed||0}})</span></b-dropdown-item>
+                    <b-dropdown-item @click="show = 'finished'">Finished <span class="text-muted">({{instance_counts.finished||0}})</span></b-dropdown-item>
                 </b-dropdown>
             </div>
 
@@ -142,6 +145,25 @@ export default {
                 return 0;
             });
         },
+        instance_counts: function() {
+            /*
+            return this.instances.reduce((count, it)=>{
+                if(it.status == status) return count+1;
+                return count; 
+            });
+            */
+            let counts = {};
+            this.instances.forEach(i=>{
+                if(!counts[i.status]) counts[i.status] = 1;
+                else counts[i.status]+=1;
+            });
+            return counts;
+        },
+
+        instance_filter_label: function() {
+            if(!this.show) return "All ("+this.instances.length+")";
+            return this.capitalize(this.show)+" ("+(this.instance_counts[this.show]||0)+")";
+        },
     },
 
     mounted: function() {
@@ -214,11 +236,9 @@ export default {
         },
         */
 
-        /*
         capitalize: function(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         },
-        */
 
         showvariant: function() {
             switch(this.show) {
