@@ -1,6 +1,6 @@
 <template>
 <b-modal title="Select Project / Process" ref="modal" size="lg" @ok="submit">
-    <p class="text-muted">Please select project/process wheree you want to stage your datasets</p>
+    <p class="text-muted">Please select project / process where you want to stage your datasets to</p>
     <br>
     <b-row>
         <b-col :cols="3">Project</b-col>

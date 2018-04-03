@@ -3,39 +3,45 @@
     <div class="page-header">
         <div style="margin-top: 2px; margin-left: 10px; display: inline-block;">
             <b>{{instances.length}}</b> Processes
+            <!--
+            <small> - Showing {{sorted_and_filtered_instances.length}} Processes</small>
+            -->
         </div>
 
         <div v-if="instances.length > 1" style="float: right; position: relative; top: -3px;"> 
-            <div style="display: inline-block;">
+            <div style="display: inline-block; margin-right: 10px;">
                 <small>Show</small>
-                <b-dropdown :text="show?show:'all'" size="sm" :variant="showvariant()">
+                <b-dropdown :text="instance_filter_label" size="sm" :variant="showvariant()">
                     <!--<b-dropdown-header>Show</b-dropdown-header>-->
-                    <b-dropdown-item @click="show = 'running'">Running</b-dropdown-item>
-                    <b-dropdown-item @click="show = 'failed'">Failed</b-dropdown-item>
-                    <b-dropdown-item @click="show = 'finished'">Finished</b-dropdown-item>
+                    <b-dropdown-item @click="show = null">All <span class="text-muted">({{instances.length}})</span></b-dropdown-item>
                     <b-dropdown-divider></b-dropdown-divider>
-                    <b-dropdown-item @click="show = null">All</b-dropdown-item>
+                    <b-dropdown-header>Status</b-dropdown-header>
+                    <b-dropdown-item @click="show = 'running'">Running <span class="text-muted">({{instance_counts.running||0}})</span></b-dropdown-item>
+                    <b-dropdown-item @click="show = 'failed'">Failed <span class="text-muted">({{instance_counts.failed||0}})</span></b-dropdown-item>
+                    <b-dropdown-item @click="show = 'finished'">Finished <span class="text-muted">({{instance_counts.finished||0}})</span></b-dropdown-item>
                 </b-dropdown>
             </div>
 
             <div style="display: inline-block;">
                 <small>Order by</small>
-                <b-dropdown :text="order" size="sm" :variant="order=='date'?'light':'secondary'">
-                    <!--<b-dropdown-header>Order By</b-dropdown-header>-->
+                <b-dropdown :text="order" size="sm" :variant="'light'">
                     <b-dropdown-item @click="order = 'date'">Date (new first)</b-dropdown-item>
                     <b-dropdown-item @click="order = '-date'">Date (old first)</b-dropdown-item>
                     <b-dropdown-divider></b-dropdown-divider>
                     <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
-                    <b-dropdown-item @click="order = 'desc'">Description (a-z)</b-dropdown-item>
+                    <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
                 </b-dropdown>
             </div>
         </div>
     </div>
     <div class="instances" id="scrolled-area">
         <div class="text-muted margin20" v-if="instances.length == 0">
-            <p>Process is where you submit series of apps with shared input and output datasets.</p>
-            <p>Output datasets will be removed within 25 days unless you archive them by clicking on <icon name="archive"/> icon.</p>
+            <p>Here, you can submit series of apps with shared input and output datasets.</p>
+            <p>Output datasets will be removed within 25 days. Please archive any output dataset you'd like to keep.</p>
+            <p>To learn about how to submit processes, please refer to our <a href="https://brain-life.github.io/docs/user/process/" target="doc">Documentation</a>.</p>
+            <!--
             <b-alert variant="warning" show>You should avoid mixing datasets from different subject on a process. Create separate process for each subject.</b-alert>
+            -->
         </div>
 
         <br>
@@ -112,6 +118,7 @@ export default {
             //apply filter
             let filtered = this.instances.filter(i=>{
                 if(!this.show) return true; //show all
+                if(this.selected == i) return true; //always show selected one
                 if(i.status == this.show) return true;
                 return false;
             });
@@ -140,6 +147,25 @@ export default {
                 if(a > b) return -(order);
                 return 0;
             });
+        },
+        instance_counts: function() {
+            /*
+            return this.instances.reduce((count, it)=>{
+                if(it.status == status) return count+1;
+                return count; 
+            });
+            */
+            let counts = {};
+            this.instances.forEach(i=>{
+                if(!counts[i.status]) counts[i.status] = 1;
+                else counts[i.status]+=1;
+            });
+            return counts;
+        },
+
+        instance_filter_label: function() {
+            if(!this.show) return "All ("+this.instances.length+")";
+            return this.capitalize(this.show)+" ("+(this.instance_counts[this.show]||0)+")";
         },
     },
 
@@ -213,11 +239,9 @@ export default {
         },
         */
 
-        /*
         capitalize: function(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         },
-        */
 
         showvariant: function() {
             switch(this.show) {

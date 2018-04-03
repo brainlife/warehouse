@@ -277,5 +277,11 @@ padding: 10px;
 small {
 font-size: 85%;
 }
+.form-header {
+text-transform: uppercase;
+opacity: 0.4;
+font-weight: bold;
+font-size: 90%;
+}
 </style>
 

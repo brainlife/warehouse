@@ -34,6 +34,7 @@
 import Vue from 'vue'
 import md5 from 'md5'
 
+
 export default {
     components: { },
     data () {
@@ -80,6 +81,8 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:700');
+
 .pageheader {
     position: fixed;
     background-color: white;
@@ -87,9 +90,8 @@ export default {
     top: 0px;
     left: 0px;
     right: 0px;
-    box-shadow: 0px 1px 1px rgba(0,0,0,0.5);
+    box-shadow: 0px 1px 1px rgba(0,0,0,0.3);
     background-image: linear-gradient(90deg, #2693ff, #159957);
-    /*background-color: purple;*/
     color: white;
     z-index: 10;
 }
@@ -108,8 +110,8 @@ svg.cloud {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 20pt;
     position: relative;
-    top: 4px;
-    margin-left: 15px;
+    top: 5px;
+    margin-left: 23px;
     margin-right: 20px;
     font-weight: bold;
 }

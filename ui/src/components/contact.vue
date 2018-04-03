@@ -32,7 +32,11 @@ export default {
                 return "//www.gravatar.com/avatar/"+md5(this.profile.email)+"?s=22";  
             } else {
                 //generate avatar for user who doesn't have email set..
-                return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=22";
+                //return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=22";
+                //return "//www.gravatar.com/avatar/"+md5(this.fullname)+"?d=robohash&s=22";
+                //return "https://api.adorable.io/avatars/22/"+this.fullname.replace(" ", "")+".png";
+                var key = (this.fullname||this.email||this.id);
+                return "https://api.adorable.io/avatars/22/"+key+".png";
             }
         } 
     },

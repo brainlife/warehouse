@@ -4,14 +4,14 @@
 
     <!--<h4>Input Datasets</h4>-->
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
-        <b-col cols="4">
+        <b-col cols="3">
             <small style="float: right;" class="text-muted">{{input.id}}</small>
             <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
 
             <span v-if="!input.optional">*</span>
             <span class="text-muted" v-else>(optional)</span>
         </b-col>
-        <b-col cols="8">
+        <b-col>
             <b-row>
                 <b-col cols="5">
                     <!--<span class="text-muted">Project</span>-->
@@ -35,8 +35,8 @@
     <hr>
 
     <b-row>
-        <b-col class="text-muted">Project *</b-col>
-        <b-col cols="8">
+        <b-col class="text-muted" cols="3">Project *</b-col>
+        <b-col>
             <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in" :required="true"/> 
             <small class="text-muted">Project where you want to stage and execute this application.</small>
         </b-col>
@@ -44,8 +44,8 @@
     <br>
 
     <b-row>
-        <b-col class="text-muted">Description</b-col>
-        <b-col cols="8">
+        <b-col cols="3" class="text-muted">Description</b-col>
+        <b-col>
             <b-form-textarea v-model="form.desc"
                  placeholder="Optional description for this processing"
                  :rows="3"
@@ -56,8 +56,8 @@
 
     <br>
     <b-row>
-        <b-col></b-col>
-        <b-col cols="8">
+        <b-col cols="3"></b-col>
+        <b-col>
             <b-button variant="primary" type="submit">Submit</b-button>
         </b-col>
     </b-row>

@@ -22,6 +22,9 @@
         <b-form @submit="submit" class="container">
             <!--detail-->
             <div>
+                <p style="float: right">
+                    <a href="https://brain-life.github.io/docs/apps/register/" target="doc">Help</a>
+                </p>
                 <h4>Detail</h4>
                 <b-form-group horizontal label="Name *">
                     <b-form-input type="text" v-model="app.name" placeholder="Name of application" required/>
@@ -166,8 +169,11 @@
                                     <small class="text-muted">Set these datatype tags on this output dataset</small>
                                 </b-col>
                             </b-row>
-                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping</div>
-                            <b-form-textarea v-model="output._files" placeholder="Optional (JSON)" autosize style="margin-top: 3px;" />
+                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>(Optional JSON)</small></div>
+                            <b-form-textarea v-model="output._files" :rows="3"></b-form-textarea>
+                            <!-- not synced?
+                            <editor v-model="output._files" @init="editorInit" lang="json" height="200"></editor>
+                            -->
                         </b-card>
                     </div>
                     <p>
@@ -389,6 +395,8 @@ export default {
         sidemenu, contactlist, 
         pageheader, projectsselecter,
         trueorfalse, tageditor,
+
+        editor: require('vue2-ace-editor'),
     },
     data () {
         return {
@@ -447,17 +455,10 @@ export default {
                     if(!dataset.datatype_tags) return;
                     dataset.datatype_tags.forEach(tag=>{
                         var dt = v.datatypes[dataset.datatype];
-                        /*
-                        if(!dt) {
-                            console.error("couldn't find datatype", dataset.datatype);
-                            return;
-                        }
-                        */
                         if(!~dt._tags.indexOf(tag)) dt._tags.push(tag);
                     });
                 }
                 res.body.apps.forEach(app=>{
-                    //console.log("aggregating ",app);
                     app.inputs.forEach(aggregate_tags);
                     app.outputs.forEach(aggregate_tags);
                 });
@@ -480,7 +481,7 @@ export default {
 
                             //convert output.files to JSON string - for now, we let user enter key/value where key is file_id and value is file/dir path 
                             this.app.outputs.forEach(output=>{
-                                if(output.files) output._files = JSON.stringify(output.files, null, 4);
+                                if(output.files) Vue.set(output, '_files', JSON.stringify(output.files, null, 4));
                             });
 
                             this.ready = true;
@@ -516,9 +517,10 @@ export default {
             case "enum":
                 config.options = [];
                 break;
-            case "string":
             case "number":
             case "integer":
+                config.default = null;
+            case "string":
                 break;
             }
             Vue.set(this.app.config, tempid, config);
@@ -607,7 +609,6 @@ export default {
                     valid = false;
                 }
             });
-
             this.app.outputs.forEach(output=>{
                 var datatype = this.datatypes[output.datatype];
                 if(datatype.name  == "raw" && output.datatype_tags.length == 0) {
@@ -616,19 +617,20 @@ export default {
                 }
             });
 
-            if(!valid) {
-                console.error("invalid form");
-                return; 
-            }
-            
+            //parse output mapping json
             try {
                 this.app.outputs.forEach(output=>{
                     output.files = null;
                     if(output._files) output.files = JSON.parse(output._files);
                 });
             } catch(err) {
-                this.$notify({ test: 'Failed to parse output mapping', type: 'error' });
+                this.$notify({ text: 'Failed to parse output mapping. Please check JSON syntax', type: 'error' });
                 return;
+            }
+
+            if(!valid) {
+                console.error("invalid form");
+                return; 
             }
 
             console.log("form good");
@@ -642,6 +644,7 @@ export default {
                 delete c._id; //why?
             }
             keyed_app.config = keyed_config;
+
             //now ready to submit
             if(this.$route.params.id !== '_') {
                 //update
@@ -677,7 +680,11 @@ export default {
                     resolve(alltags);
                 }, reject);
             });
-        }
+        },
+        editorInit: function() {
+            require('brace/mode/json')
+            //require('brace/theme/twilight')
+        },
     }
 }
 </script>

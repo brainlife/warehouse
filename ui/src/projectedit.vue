@@ -10,6 +10,11 @@
 
     <div class="main-section">
         <b-container>
+            <p style="float: right">
+                <a href="https://brain-life.github.io/docs/user/project/">Help</a>
+            </p>
+            <br clear="both">
+
             <b-form @submit="submit">
                 <b-form-group label="Name" horizontal>
                     <el-input type="text" v-model="project.name" placeholder="Project Name"></el-input>

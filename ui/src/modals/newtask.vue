@@ -8,7 +8,7 @@
                 <icon name="close" scale="1.5"/>
             </div>
         </div>
-        <h4 style="margin-top: 8px;">Submit New Task</h4>
+        <h4 style="margin-top: 8px;">Submit New App</h4>
     </div><!--header-->
 
     <!--app selection page--> 
@@ -33,12 +33,12 @@
 
         <!--input-->
         <b-row v-for="(input, input_id) in inputs" :key="input_id" style="margin-bottom: 5px;">
-            <b-col>
+            <b-col cols="3">
                 <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                 <span v-if="input.optional" class="text-muted">(optional)</span>
                 <span v-else>*</span>
             </b-col>
-            <b-col cols="8">
+            <b-col>
                 <b-form-group>
                     <!--
                     <el-select @change="validate()" v-model="input.dataset_idx" 
@@ -71,7 +71,7 @@
         <configform :spec="app.config" v-model="config"/>
 
         <b-row>
-            <b-col cols="4"><!--archive--></b-col>
+            <b-col cols="3"><!--archive--></b-col>
             <b-col>
                 <div v-if="!archive.enable">
                     <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
@@ -94,7 +94,7 @@
 
         <hr>
         <b-row>
-            <b-col cols="4"></b-col>
+            <b-col cols="3"></b-col>
             <b-col>
                 <div style="float: right">
                     <b-button @click="back">Back</b-button>

@@ -1,5 +1,5 @@
 <template>
-<b-card no-body class="pubcard clickable" :class="{'pub-removed': pub.removed}">
+<div class="pubcard clickable" :class="{'pub-removed': pub.removed}">
     <div @click="click()">
         <div style="float: left; margin-right: 15px;">
             <projectavatar :project="pub.project" width="80" height="80"/>
@@ -28,7 +28,7 @@
             </div>
         </div>
     </div>
-</b-card>
+</div>
 </template>
 
 <script>
@@ -57,6 +57,8 @@ export default {
 <style scoped>
 .pubcard {
 transition: box-shadow 0.5s, background-color 0.5s;
+box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+padding-bottom: 5px;
 }
 h4 {
 font-size: 15px;

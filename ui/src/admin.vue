@@ -75,7 +75,7 @@ export default {
             if(!person) return;
             this.$http.get(Vue.config.auth_api+'/jwt/'+person.id).then(res=>{
                 localStorage.setItem("jwt", res.body.jwt);
-                document.location.reload();
+                document.location = "/project";
             });
         }
     },

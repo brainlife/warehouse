@@ -140,7 +140,7 @@
     <div class="new-action">
         <b-row no-gutters>
             <b-col>
-                <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="paper-plane"/> Submit New Task</div>
+                <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="paper-plane"/> Submit New App</div>
             </b-col>
             <b-col>
                 <div class="new-action-button new-action-button-newdataset" @click="newdataset"><icon name="cube"/> Stage New Dataset</div>

@@ -10,8 +10,8 @@
         <div v-else>
             <!--list view-->
             <div class="margin20" v-if="rules.length == 0">
-                <p class="text-muted">Pipeline rule allows you to automate bulk processing of your datasets by automatically submitting processes babsed on defined criterias.</p>
-                <p class="text-muted">This feature could potentially launch large number of processes. If you are not sure how this feature works, please consult with Brainlife administrator.</p>
+                <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
+                <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brain-life.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
             </div>
             <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule" v-if="rule.removed == false">
                 <div style="padding: 10px;">
