@@ -171,6 +171,9 @@
                             </b-row>
                             <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>(Optional JSON)</small></div>
                             <b-form-textarea v-model="output._files" :rows="3"></b-form-textarea>
+                            <!-- not synced?
+                            <editor v-model="output._files" @init="editorInit" lang="json" height="200"></editor>
+                            -->
                         </b-card>
                     </div>
                     <p>
@@ -392,6 +395,8 @@ export default {
         sidemenu, contactlist, 
         pageheader, projectsselecter,
         trueorfalse, tageditor,
+
+        editor: require('vue2-ace-editor'),
     },
     data () {
         return {
@@ -619,7 +624,7 @@ export default {
                     if(output._files) output.files = JSON.parse(output._files);
                 });
             } catch(err) {
-                this.$notify({ test: 'Failed to parse output mapping', type: 'error' });
+                this.$notify({ text: 'Failed to parse output mapping. Please check JSON syntax', type: 'error' });
                 return;
             }
 
@@ -675,7 +680,11 @@ export default {
                     resolve(alltags);
                 }, reject);
             });
-        }
+        },
+        editorInit: function() {
+            require('brace/mode/json')
+            //require('brace/theme/twilight')
+        },
     }
 }
 </script>

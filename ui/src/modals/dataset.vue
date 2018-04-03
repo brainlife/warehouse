@@ -1,56 +1,40 @@
 <template>
 <transition name="fade">
 <div v-if="dataset" class="brainlife-modal-overlay">
-<b-container class="brainlife-modal">
-    <div class="brainlife-modal-header">
-        <div style="float: right;">
-            <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
-                <icon name="trash" scale="1.25"/>
+    <b-container class="brainlife-modal">
+        <div class="brainlife-modal-header">
+            <div style="float: right;">
+                <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
+                    <icon name="trash" scale="1.25"/>
+                </div>
+                <div class="button" v-b-modal.viewSelecter @click="start_viewer(dataset.datatype.name)" v-if="dataset.storage" title="View Dataset">
+                    <icon name="eye" scale="1.25"/>
+                </div>
+                <div class="button" @click="download" v-if="dataset.storage" title="Downlnoad Dataset">
+                    <icon name="download" scale="1.25"/>
+                </div>
+                <div class="button" @click="process" v-if="dataset.storage" title="Process">
+                    <icon name="paper-plane" scale="1.25"/> 
+                </div>
+                <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
+                    <icon name="close" scale="1.5"/>
+                </div>
             </div>
-            <div class="button" v-b-modal.viewSelecter @click="start_viewer(dataset.datatype.name)" v-if="dataset.storage" title="View Dataset">
-                <icon name="eye" scale="1.25"/>
-            </div>
-            <div class="button" @click="download" v-if="dataset.storage" title="Downlnoad Dataset">
-                <icon name="download" scale="1.25"/>
-            </div>
-            <div class="button" @click="process" v-if="dataset.storage" title="Process">
-                <icon name="paper-plane" scale="1.25"/> 
-            </div>
-            <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
-                <icon name="close" scale="1.5"/>
-            </div>
-        </div>
-        <h4>
-            <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
-                <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
-            </div>
-        </h4>
-    </div><!--header-->
-    <b-tabs class="brainlife-tab" v-model="tab_index">
-        <b-tab title="Details">
-            <div class="dataset-detail">
-                <b-alert :show="dataset.removed" variant="warning">This dataset has been removed</b-alert>
-                <!-- detail -->
-                <div class="margin20">
-                    <b-row>
-                        <b-col cols="3"><b class="text-muted">Metadata</b></b-col>
-                        <b-col>
-                            <b-row v-if="dataset._canedit">
-                                <!-- TODO - I should display in json?-->
-                                <b-col :cols="6" v-for="(m, id) in dataset.meta" :key="id" style="margin-bottom: 3px;">
-                                    <b-input-group :prepend="id.toUpperCase()">
-                                        <b-form-input v-model="dataset.meta[id]" @keyup.native="update_dataset('meta')"/>
-                                    </b-input-group>
-                                </b-col>
-                            </b-row>
-                            <metadata v-else :metadata="dataset.meta"></metadata>
-                            <br>
-                        </b-col>
-                    </b-row>
-
+            <h4>
+                <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
+                    <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+                </div>
+            </h4>
+        </div><!--header-->
+        <b-tabs class="brainlife-tab" v-model="tab_index">
+            <b-tab title="Details">
+                <div class="dataset-detail">
+                    <b-alert :show="dataset.removed" variant="warning">This dataset has been removed</b-alert>
+                    <!-- detail -->
+                    <div class="margin20">
                         <b-row>
                             <b-col cols="3">
-                                <b class="text-muted">Description</b>
+                                <span class="form-header">Description</span>
                             </b-col>
                             <b-col>
                                 <div v-if="dataset._canedit">
@@ -62,9 +46,8 @@
                                 <br>
                             </b-col>
                         </b-row>
-
                         <b-row>
-                            <b-col cols="3"><b class="text-muted">User Tags</b></b-col>
+                            <b-col cols="3"><span class="form-header">User Tags</span></b-col>
                             <b-col cols="9">
                                 <div v-if="dataset._canedit && alltags">
                                     <tageditor v-model="dataset.tags" @input="update_dataset('tags')"/>
@@ -76,10 +59,8 @@
                                 <br>
                             </b-col>
                         </b-row>
-
-
                         <b-row>
-                            <b-col cols="3"><b class="text-muted">Stored in</b></b-col>
+                            <b-col cols="3"><span class="form-header">Stored in</span></b-col>
                             <b-col>
                                 <p>
                                     <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
@@ -102,17 +83,15 @@
                                 </p>
                             </b-col>
                         </b-row>
-
                         <b-row>
-                            <b-col cols="3"><b class="text-muted">Datatype</b></b-col>
+                            <b-col cols="3"><span class="form-header">Datatype</span></b-col>
                             <b-col>
                                 <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
                                 <br>
                             </b-col>
                         </b-row>
-
                         <b-row v-if="task && task.config && task.config._app">
-                            <b-col cols="3"><b class="text-muted">Produced by</b></b-col>
+                            <b-col cols="3"><span class="form-header">Produced by</span></b-col>
                             <b-col>
                                 <app slot="header" :appid="task.config._app" :branch="task.service_branch||'master'" :clickable="false" @click.native="openapp(task.config._app)">
                                     <!--TODO I should allow just passing this.task-->
@@ -121,18 +100,16 @@
                                 <br>
                             </b-col>
                         </b-row>
-
                         <b-row v-if="task && task.product">
-                            <b-col cols="3"><b class="text-muted">Task Result <small>(product.json)</small></b></b-col>
+                            <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
                             <b-col cols="9">
                                 <p>
                                     <pre v-highlightjs><code class="json">{{task.product}}</code></pre>
                                 </p>
                             </b-col>
                         </b-row>
-
                         <b-row>
-                            <b-col cols="3"><b class="text-muted"><icon name="archive"/> Archived by</b></b-col>
+                            <b-col cols="3"><span class="form-header">Archived by</span></b-col>
                             <b-col>
                                 <p>
                                     <contact :id="dataset.user_id"/> 
@@ -142,21 +119,51 @@
                         </b-row>
 
                         <b-row v-if="dataset.download_count > 0">
-                            <b-col cols="3"><b class="text-muted">Download Count</b></b-col>
+                            <b-col cols="3"><span class="form-header">Download Count</span></b-col>
                             <b-col>
-                                <p>{{dataset.download_count}}</p>
+                                <p><b>{{dataset.download_count}}</b> times</p>
                             </b-col>
                         </b-row>
 
                         <b-row v-if="dataset.publications && dataset.publications.length > 0">
-                            <b-col cols="3"><b class="text-muted"><icon name="book"/> Publications</b></b-col>
+                            <b-col cols="3"><span class="form-header">Publications</span></b-col>
                             <b-col cols="9">
                                 <small class="text-muted">This dataset has been published on following publications.</small>
                                 <b-table small hover :items="dataset.publications" :fields="['name', 'desc', 'doi']" @row-clicked="openpub" style="background-color: white;">
                                 </b-table>
                             </b-col>
                         </b-row>
-
+                        <b-row>
+                            <b-col cols="3"><span class="form-header">Metadata</span></b-col>
+                            <b-col style="position: relative;">
+                                <!--
+                                <span class="button" style="position: absolute; right: 40px; top: 10px;" @click="start_edit_meta()" v-if="dataset._canedit && !dataset._meta" title="Edit"><icon name="pencil" scale="1.25"/></span>
+                                -->
+                                <div v-if="dataset._meta">
+                                    <!--<b-form-textarea v-model="dataset._meta" :rows="3"></b-form-textarea>-->
+                                    <editor v-model="dataset._meta" @init="editorInit" @input="dataset._meta_dirty = true" lang="json" height="200"></editor>
+                                    <br>
+                                    <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
+                                </div>
+                                <div v-else>
+                                    <!--readonly-->
+                                    <p style="font-size: 85%; background-color: #ddd; padding: 10px; max-height: 250px; overflow: auto;"><pre>{{dataset.meta}}</pre></p>
+                                </div>
+                                
+                                <!--
+                                <b-row v-if="dataset._canedit">
+                                    <b-col :cols="6" v-for="(m, id) in dataset.meta" :key="id" style="margin-bottom: 3px;">
+                                        <b-input-group :prepend="id.toUpperCase()">
+                                            <b-form-input v-model="dataset.meta[id]" @keyup.native="update_dataset('meta')"/>
+                                        </b-input-group>
+                                    </b-col>
+                                </b-row>
+                                <metadata v-else :metadata="dataset.meta"></metadata>
+                                -->
+                                <br>
+                            </b-col>
+                        </b-row>
+                        
                     </div>
                 </div><!--dataset-detail-->
             </b-tab>
@@ -216,6 +223,9 @@ export default {
         metadata, pageheader, appavatar,
         datatypetag, task, pubcard, 
         tageditor, taskconfig,
+
+        editor: require('vue2-ace-editor'),
+
     },
 
     data () {
@@ -482,6 +492,11 @@ export default {
                 this.dataset = res.body.datasets[0];
                 if(this.dataset.status == "storing") this.load_status(id);
 
+                if(this.dataset._canedit) {
+                    Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
+                    Vue.set(this.dataset, '_meta_dirty',  false);
+                }
+
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {
                     this.$http.get(Vue.config.wf_api+'/task/'+this.dataset.prov.task_id).then(res=>{
@@ -582,6 +597,29 @@ export default {
 
         openpub: function(pub) {
             document.location = '/pub/'+pub._id;
+        },
+
+        /*
+        start_edit_meta: function() {
+            console.log("stringify", this.dataset.meta);
+            Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
+        },
+        */
+
+        save_meta: function() {
+            try {
+                this.dataset.meta = JSON.parse(this.dataset._meta);
+                this.update_dataset('meta');
+                this.dataset._meta_dirty = false;
+            } catch(err) {
+                this.$notify({ text: 'Failed to parse JSON', type: 'error' });
+                return;
+            }
+        },
+
+        editorInit: function() {
+            require('brace/mode/json')
+            //require('brace/theme/twilight')
         },
     }
 }
