@@ -73,9 +73,9 @@ var projectSchema = mongoose.Schema({
     //user who created this project 
     user_id: {type: String, index: true}, 
 
-    //TODO - should I deprecate now that they are also stored on auth service?
     admins: [ String ], //list of users who can administer this project (co-PIs?)
-    members: [ String ], //list of users who can access things under this project
+    members: [ String ], //list of users who can read/write things under this project
+    guests: [ String ], //(for private project) list of users who has read access to datasets
 
     group_id: Number, //group id from auth service to host admins/members
 
@@ -91,6 +91,7 @@ var projectSchema = mongoose.Schema({
 
     //access control 
     //* private - only the project member can access
+    //* protected - only the project member can access (but anyone can see detail about the project)
     //* public - accessible by anyone
     access: {type: String, default: "private" },
 

@@ -17,26 +17,31 @@ const db = require('./models');
 exports.redis = redis.createClient(config.redis.port, config.redis.server);
 exports.redis.on('error', err=>{throw err});
 
-//TODO - should be called something like "get_my_projects"?
+//TODO - should be called something like "get_project_accessiblity"?
 exports.getprojects = function(user, cb) {
     if(!user) return cb(null, [], []);
-    //firt, find all public projects
+    
+    //everyone has read access to public project
     let project_query = {access: "public"};
-    //if user is logged in, look for private ones also
+    
+    //logged in user may have acess to more projects
     if(user) {
         project_query = {
             $or: [
                 project_query,
                 {"members": user.sub.toString()},
-                {"admins": user.sub.toString()}, //I think it makes sense to give admin read/write access
+                {"admins": user.sub.toString()}, 
+                {"guests": user.sub.toString()},
             ],
         };
     }
 
-    db.Projects.find(project_query).select('_id admins members').lean().exec((err, projects)=>{
+    db.Projects.find(project_query).select('_id admins members guests').lean().exec((err, projects)=>{
         if(err) return cb(err);
-        ///TODO I really don't like cannwrite / canread.. it should be isadmin / ismember
+        //user can read from all matching projects
         let canread_ids = projects.map(p=>p._id);
+
+        //user has write access if they are listed in members/admins
         let canwrite_projects = projects.filter(p=>{
             if(p.members.includes(user.sub.toString())) return true;
             if(p.admins.includes(user.sub.toString())) return true;

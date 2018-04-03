@@ -157,6 +157,7 @@ function handle_rule(rule, cb) {
                 project: { $in: projects }, 
                 removed: false,
             })
+            //.sort("meta.subject") //sort can't be used with distinct
             .distinct("meta.subject", (err, _subjects)=>{
                 if(err) return next(err);
                 subjects = _subjects;        
@@ -166,6 +167,7 @@ function handle_rule(rule, cb) {
 
         //handle all subjects
         next=>{
+            subjects.sort();
             async.eachSeries(subjects, handle_subject, next);
         },
     ], err=>{
