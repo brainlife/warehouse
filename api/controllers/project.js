@@ -55,17 +55,19 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     ]};
     */
     if(req.user) {
-        //user can see all public, protected, or any project that they are member of
+        //user can see all public, private-listed or any project that they are member of
         let access_control = {$or: [
+            { guests: req.user.sub },
             { members: req.user.sub },
             { admins: req.user.sub },
             { access: "public" },
-            { access: "protected" },
+            { listed: true }, //private project can be viewed if it's listed
         ]}
         find = {$and: [ find, access_control]};
     } else {
         find.access = "public"; //guest can only see public projects
     }
+    console.log(JSON.stringify(find, null, 4));
 
     db.Projects.find(find)
     .select(select)

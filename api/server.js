@@ -60,7 +60,10 @@ exports.start = function(cb) {
         var server = app.listen(port, host, function() {
             logger.info("warehouse api service running on %s:%d in %s mode", host, port, app.settings.env);
         });
-        //server.timeout = 300*1000; //increase timeout for dataset download .. (default 120s)
+        
+        //increase timeout for dataset download .. (default 120s)
+        //without this, places like nki/s3 will timeout
+        server.timeout = 300*1000; 
     });
 }
 

@@ -91,9 +91,11 @@ var projectSchema = mongoose.Schema({
 
     //access control 
     //* private - only the project member can access
-    //* protected - only the project member can access (but anyone can see detail about the project)
     //* public - accessible by anyone
     access: {type: String, default: "private" },
+
+    //for a private project, list it for everyone to see the summary
+    listed: { type: Boolean, default: false},
 
     //deprecated
     license: String, //cc0, ccby.40, etc.
@@ -137,6 +139,16 @@ var publicationSchema = mongoose.Schema({
     desc: String, 
     tags: [String], //software, eeg, mri, etc..
     readme: String, //markdown (abstract in https://purl.stanford.edu/rt034xr8593)
+
+    /*
+    //list of app used to generated datasets
+    apps: [ new mongoose.Schema({
+        app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+        service: String,
+        service_branch: String,
+        }) 
+    ], 
+    */
 
     create_date: { type: Date, default: Date.now },
     //publish_date: { type: Date, default: Date.now }, //used for publication date
