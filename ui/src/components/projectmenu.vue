@@ -27,6 +27,27 @@
         <div class="desc">{{project.desc}}</div>
     </div>
 
+    <p class="group-header">
+        <icon name="caret-down" scale="1"></icon>&nbsp;
+        Protected
+    </p>
+    <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id" 
+        v-if="project.access == 'protected' && project.removed == false" @click="change(project)" :class="{active: project_id == active}">
+        <p class="name">
+            <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
+            {{project.name}}</p>
+        <div class="desc">{{project.desc}}</div>
+    </div>
+
+
+    <!--raising bottom of the list -->
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
     <b-button class="button-fixed" @click="go('/project/_/edit')" title="New Project">
         <icon name="plus" scale="2"/>
     </b-button>
@@ -61,6 +82,8 @@ export default {
     mounted () {
         this.ps = new PerfectScrollbar(this.$el);
         this.scroll_to_active();
+
+        console.dir(this.projects);
     },
 
     destroyed() {

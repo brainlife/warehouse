@@ -10,21 +10,25 @@
             </div>
             <!--<doibadge :doi="pub.doi" style="float: right; margin-top: 10px;"/>-->
             <div style="margin-right: 110px;">
-                <h5 class="name"><small>{{pub.project.name}} <icon name="arrow-right"/></small> {{pub.name}}</h5>
+                <h5 class="name">
+                    <b-badge  v-if="!pub.removed" variant="danger">Removed</b-badge>
+                    <small>{{pub.project.name}} <icon name="arrow-right"/></small> {{pub.name}}
+                </h5>
                 <p style="opacity: 0.8;">{{pub.desc}}</p>
                 <div style="line-height: 200%;">
                     <b-badge v-for="tag in pub.tags" :key="tag" class="topic">{{tag}}</b-badge>
                 </div>
             </div>
         </div>
-        <div v-if="!compact" style="clear: both;">
+        <div v-if="!compact" style="clear: both; background-color: #f0f0f0; opacity: 0.8;">
             <hr>
-            <div style="margin: 0px 10px 5px 100px;">
+            <div style="margin-left: 100px; padding-bottom: 15px;">
+                <b class="text-muted">Authors</b> <contact v-for="contact in pub.authors" :key="contact.id" :fullname="contact.fullname" :email="contact.email"></contact>
+                <!--
                 <p>
-                    <b class="text-muted">Authors</b> <contact v-for="contact in pub.authors" :key="contact.id" :fullname="contact.fullname" :email="contact.email"></contact>
                     <b class="text-muted">Published On </b> {{new Date(pub.create_date).toLocaleDateString()}}
                 </p>
-                <el-tag v-if="pub.removed" type="warning">Removed</el-tag>
+                -->
             </div>
         </div>
     </div>
@@ -58,7 +62,6 @@ export default {
 .pubcard {
 transition: box-shadow 0.5s, background-color 0.5s;
 box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-padding-bottom: 5px;
 }
 h4 {
 font-size: 15px;

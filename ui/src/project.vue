@@ -48,9 +48,9 @@
                         <p v-for="c in selected.admins" :key="c._id">
                             <contact :id="c"/>
                         </p>
+                        <br>
                     </b-col>
                 </b-row>
-                
                 <b-row>
                     <b-col cols="2"> 
                         <span class="form-header">Members</span>
@@ -62,9 +62,24 @@
                         <p v-for="c in selected.members" :key="c._id">
                             <contact :id="c"/>
                         </p>
+                        <br>
                     </b-col>
                 </b-row>
-                <br>
+                <b-row v-if="selected.access == 'private'">
+                    <b-col cols="2"> 
+                        <span class="form-header">Guests</span>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <small class="text-muted">Users who has read access to a private project</small>
+                        </p>
+                        <p v-for="c in selected.guests" :key="c._id">
+                            <contact :id="c"/>
+                        </p>
+                        <br>
+                    </b-col>
+                </b-row>
+
                 <b-row>
                     <b-col cols="2"> 
                         <span class="form-header">Readme</span>
@@ -208,12 +223,14 @@ export default {
     mounted: function() {
         //load all projects that user has read access
         this.$http.get('project', {params: {
+            /*
             find: JSON.stringify({
             $or: [
                 { members: Vue.config.user.sub }, 
                 { admins: Vue.config.user.sub }, 
                 { access: "public" },
             ]})
+            */
         }})
         .then(res=>{
             this.projects = {};

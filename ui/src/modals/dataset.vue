@@ -7,13 +7,13 @@
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.25"/>
                 </div>
-                <div class="button" v-b-modal.viewSelecter @click="start_viewer(dataset.datatype.name)" v-if="dataset.storage" title="View Dataset">
+                <div class="button" v-b-modal.viewSelecter @click="start_viewer(dataset.datatype.name)" v-if="config.user && dataset.storage" title="View Dataset">
                     <icon name="eye" scale="1.25"/>
                 </div>
                 <div class="button" @click="download" v-if="dataset.storage" title="Downlnoad Dataset">
                     <icon name="download" scale="1.25"/>
                 </div>
-                <div class="button" @click="process" v-if="dataset.storage" title="Process">
+                <div class="button" @click="process" v-if="config.user && dataset.storage" title="Process">
                     <icon name="paper-plane" scale="1.25"/> 
                 </div>
                 <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
@@ -108,7 +108,7 @@
                                 </p>
                             </b-col>
                         </b-row>
-                        <b-row>
+                        <b-row v-if="config.user">
                             <b-col cols="3"><span class="form-header">Archived by</span></b-col>
                             <b-col>
                                 <p>
@@ -379,7 +379,8 @@ export default {
         },
 
         download: function() {
-            var url = Vue.config.api+'/dataset/download/'+this.dataset._id+'?at='+Vue.config.jwt;
+            var url = Vue.config.api+'/dataset/download/'+this.dataset._id;
+            if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
             document.location = url;
         },
 
