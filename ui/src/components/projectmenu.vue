@@ -5,9 +5,8 @@
         <icon name="caret-down" scale="1"></icon>&nbsp;
         Private <icon name="lock"></icon> 
     </p>
-    <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id"
-        v-if="project.access == 'private' && project.removed == false" @click="change(project)" :class="{active: project_id == active}">
-
+    <div class="project" v-for="project in sorted_projects('private')" :id="project._id"
+        @click="change(project)" :class="{listonly: islistonly(project), active: project._id == active}">
         <p class="name">
             <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
             {{project.name}}
@@ -19,26 +18,13 @@
         <icon name="caret-down" scale="1"></icon>&nbsp;
         Public
     </p>
-    <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id" 
-        v-if="project.access == 'public' && project.removed == false" @click="change(project)" :class="{active: project_id == active}">
+    <div class="project" v-for="project in sorted_projects('public')" :id="project._id"
+        @click="change(project)" :class="{active: project._id == active}">
         <p class="name">
             <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
             {{project.name}}</p>
         <div class="desc">{{project.desc}}</div>
     </div>
-
-    <p class="group-header">
-        <icon name="caret-down" scale="1"></icon>&nbsp;
-        Protected
-    </p>
-    <div class="project" v-for="(project, project_id) in projects" :id="project_id" :key="project_id" 
-        v-if="project.access == 'protected' && project.removed == false" @click="change(project)" :class="{active: project_id == active}">
-        <p class="name">
-            <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
-            {{project.name}}</p>
-        <div class="desc">{{project.desc}}</div>
-    </div>
-
 
     <!--raising bottom of the list -->
     <br>
@@ -60,7 +46,6 @@ import Vue from 'vue'
 
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import PerfectScrollbar from 'perfect-scrollbar'
-
 import projectavatar from '@/components/projectavatar'
 
 export default {
@@ -112,6 +97,30 @@ export default {
         go(path) {
             this.$router.push(path);
         },
+        sorted_projects: function(access) {
+            //grab project we care about
+            var ps = [];
+            for(var id in this.projects) {
+                var p = this.projects[id];
+                if(!p.removed && p.access == access) ps.push(p);
+            }
+
+            //sort by name
+            ps.sort((a,b)=>{
+                if(a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                if(a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                return 0;
+            }); 
+            return ps;
+        },
+        
+        islistonly(p) {
+            if(~p.admins.indexOf(Vue.config.user.sub)) return false;
+            if(~p.members.indexOf(Vue.config.user.sub)) return false;
+            if(!p.listed) return false; //shouldn't need to check this... but just in case
+            return true;
+        },
+
     },
 }
 </script>
@@ -153,8 +162,13 @@ export default {
     cursor: pointer;
     background-color: black;
 }
+.project.listonly {
+    background-color: #111;
+    opacity: 0.4;
+}
 .project.active {
     background-color: #007bff;
+    opacity: 1;
 }
 .project .desc {
     opacity: 0.6;

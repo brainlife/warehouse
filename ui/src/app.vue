@@ -241,7 +241,6 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
-import project from '@/components/project'
 import tags from '@/components/tags'
 import datatype from '@/components/datatype'
 import datatypefile from '@/components/datatypefile'
@@ -257,7 +256,7 @@ import VueDisqus from 'vue-disqus/VueDisqus.vue'
 export default {
     components: { 
         sidemenu, pageheader, contact, 
-        project, tags, datatype, appavatar,
+        tags, datatype, appavatar,
         VueMarkdown, statustag, VueDisqus,
         appsubmit, datatypetag, datatypefile,
         appstats,

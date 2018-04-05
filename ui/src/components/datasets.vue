@@ -643,6 +643,10 @@ export default {
         remove: function() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 async.forEach(this.selected, (dataset, next)=>{
+                    if(!dataset._canedit) {
+                        this.$notify({type: "error", text: "You don't have permission to remove this dataset: "+dataset._id});
+                        return next();
+                    }
                     console.log("deleting", dataset);
                     this.$http.delete('dataset/'+dataset._id).then(res=>{
                         next();

@@ -1,12 +1,8 @@
 <template>
-<div style="display: inline-block;">
-    <div v-if="access == 'public'" title="Datasets are accessible to any users but only project member can update them.">
-        <h4><b-badge variant="success">Public</b-badge></h4>
-    </div>
-    <div v-if="access == 'private'" title="Only the members of project can access datasets">
-        <h4><b-badge variant="danger"><icon name="lock"/> Private</b-badge></h4>
-    </div>
-</div>
+<span>
+    <b-badge v-if="access == 'public'" variant="success" title="Datasets are accessible to any users but only project member can update them.">Public</b-badge>
+    <b-badge v-if="access == 'private'" variant="danger" title="Only the members of project can access datasets"><icon name="lock"/> Private</b-badge>
+</span>
 </template>
 
 <script>

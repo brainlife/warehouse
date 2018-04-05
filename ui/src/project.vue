@@ -27,15 +27,17 @@
                     </div>
 
                     <h3 style="color: #666; margin-bottom: 10px;">
-                        <projectaccess :access="selected.access"/>
+                        <projectaccess :access="selected.access"/> 
+                        <!--<b-badge variant="secondary" v-if="selected.listed">Listed</b-badge>-->
                         {{selected.name}}
                     </h3>
-                    <el-alert v-if="selected.removed" style="border-radius: 0px" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
                     <p style="opacity: 0.8;">{{selected.desc}}</p>
                 </b-col>
             </b-row>
             </div>
 
+            <b-alert :show="selected.removed" style="border-radius: 0px" variant="warning">This project has been removed.</b-alert>
+            <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px" variant="secondary">This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.</b-alert>
             <div class="margin20">
                 <b-row>
                     <b-col cols="2">
@@ -62,8 +64,8 @@
                         <p v-for="c in selected.members" :key="c._id">
                             <contact :id="c"/>
                         </p>
-<<<<<<< HEAD
-                        <p class="text-muted" v-if="selected.members.length == 0">(No Members)</p>
+                        <p class="text-muted" v-if="selected.members.length == 0"><small>(No Members)</small></p>
+                        <br>
                     </b-col>
                 </b-row>
 
@@ -78,21 +80,7 @@
                         <p v-for="c in selected.guests" :key="c._id">
                             <contact :id="c"/>
                         </p>
-                        <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0">(No Guests)</p>
-                        <br>
-                    </b-col>
-                </b-row>
-                <b-row v-if="selected.access == 'private'">
-                    <b-col cols="2"> 
-                        <span class="form-header">Guests</span>
-                    </b-col>
-                    <b-col>
-                        <p>
-                            <small class="text-muted">Users who has read access to a private project</small>
-                        </p>
-                        <p v-for="c in selected.guests" :key="c._id">
-                            <contact :id="c"/>
-                        </p>
+                        <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>(No Guests)</small></p>
                         <br>
                     </b-col>
                 </b-row>
@@ -119,25 +107,18 @@
         </div>
 
         <div v-if="tabs[tab].id == 'dataset'">
-            <datasets :project="selected" :projects="projects"/>
+            <b-alert show v-if="selected.access != 'public' && !(ismember()||isadmin()||isguest())">For non public project, only the admin/members/guests of this project can access processes.</b-alert>
+            <datasets :project="selected" :projects="projects" v-else/>
         </div>
 
         <div v-if="tabs[tab].id == 'process'">
-            <b-alert :show="!ismember()">Only the member of this project can access processes.</b-alert>
-            <processes :project="selected" v-if="ismember()"/>
+            <b-alert show v-if="!ismember()">Only the members of this project can access processes.</b-alert>
+            <processes :project="selected" v-else/>
         </div>
 
         <div v-if="tabs[tab].id == 'pipeline'">
-            <!-- <b-alert show><b>Coming Soon!</b> You will be able to view / register new pipeline rules.</b-alert>-->
-            <pipelines :project="selected"/>
-            <!--
-            <div class="margin20">
-                <p class="text-muted" v-if="!rules || rules.length == 0">No pipline registered</p>
-                <div v-for="rule in rules" :key="rule._id">
-                    <pre v-highlightjs><code class="json hljs">{{rule}}</code></pre>
-                </div>
-            </div>
-            -->
+            <b-alert show v-if="!(ismember()||isadmin())">Only the admin or members of this project can access pipelines.</b-alert>
+            <pipelines :project="selected" v-else/>
         </div>
 
         <div v-if="tabs[tab].id == 'pub'">
@@ -158,7 +139,6 @@ import VueMarkdown from 'vue-markdown'
 
 import sidemenu from '@/components/sidemenu'
 import contactlist from '@/components/contactlist'
-import project from '@/components/project'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
@@ -178,7 +158,7 @@ import newtaskModal from '@/modals/newtask'
 
 export default {
     components: { 
-        sidemenu, contactlist, project, 
+        sidemenu, contactlist, 
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
@@ -201,7 +181,7 @@ export default {
             ],
             tab: 0, //current tab
 
-            projects: null, //all projects that user has access to
+            projects: null, //all projects that user can see summary of
             config: Vue.config,
         }
     },
@@ -238,15 +218,16 @@ export default {
     },
 
     mounted: function() {
-        //load all projects that user has read access
+        //load all projects that user has summary access (including removed ones so we can open it)
         this.$http.get('project', {params: {
             /*
             find: JSON.stringify({
-            $or: [
-                { members: Vue.config.user.sub }, 
-                { admins: Vue.config.user.sub }, 
-                { access: "public" },
-            ]})
+                $or: [
+                    { members: Vue.config.user.sub }, 
+                    { admins: Vue.config.user.sub }, 
+                    { access: "public" },
+                ]
+            })
             */
         }})
         .then(res=>{
@@ -291,6 +272,12 @@ export default {
     methods: {
         edit: function() {
             this.$router.push('/project/'+this.selected._id+'/edit');
+        },
+
+        isguest() {
+            if(!this.selected) return false;
+            if(~this.selected.guests.indexOf(Vue.config.user.sub)) return true;
+            return false;
         },
 
         isadmin() {

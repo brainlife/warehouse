@@ -69,7 +69,6 @@ import Vue from 'vue'
 
 import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
-import project from '@/components/project'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
 import pageheader from '@/components/pageheader'
@@ -84,7 +83,7 @@ const lib = require('../lib');
 
 export default {
     components: { 
-        sidemenu, contact, project, 
+        sidemenu, contact, 
         tags, metadata, pageheader, 
         appavatar, select2, projectselecter, 
         app, datatypetag, configform,

@@ -139,15 +139,15 @@
                                 <!--
                                 <span class="button" style="position: absolute; right: 40px; top: 10px;" @click="start_edit_meta()" v-if="dataset._canedit && !dataset._meta" title="Edit"><icon name="pencil" scale="1.25"/></span>
                                 -->
-                                <div v-if="dataset._meta">
-                                    <!--<b-form-textarea v-model="dataset._meta" :rows="3"></b-form-textarea>-->
+                                <div v-if="dataset._canedit">
                                     <editor v-model="dataset._meta" @init="editorInit" @input="dataset._meta_dirty = true" lang="json" height="200"></editor>
                                     <br>
                                     <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
                                 </div>
                                 <div v-else>
-                                    <!--readonly-->
                                     <p style="font-size: 85%; background-color: #ddd; padding: 10px; max-height: 250px; overflow: auto;"><pre>{{dataset.meta}}</pre></p>
+                                    <!-- currently disabled is not supported https://github.com/chairuosen/vue2-ace-editor/issues/25 -->
+                                    <!--<editor v-model="dataset._meta" @init="editorInit" lang="json" height="200"></editor>-->
                                 </div>
                                 
                                 <!--
@@ -196,7 +196,6 @@ import Vue from 'vue'
 
 import sidemenu from '@/components/sidemenu'
 import contact from '@/components/contact'
-import project from '@/components/project'
 import tags from '@/components/tags'
 import app from '@/components/app'
 import datatype from '@/components/datatype'
@@ -218,7 +217,7 @@ let debounce;
 
 export default {
     components: { 
-        sidemenu, contact, project, 
+        sidemenu, contact, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
         datatypetag, task, pubcard, 
@@ -493,10 +492,8 @@ export default {
                 this.dataset = res.body.datasets[0];
                 if(this.dataset.status == "storing") this.load_status(id);
 
-                if(this.dataset._canedit) {
-                    Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
-                    Vue.set(this.dataset, '_meta_dirty',  false);
-                }
+                Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
+                Vue.set(this.dataset, '_meta_dirty',  false);
 
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {
