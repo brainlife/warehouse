@@ -94,6 +94,7 @@ router.get('/datasets-inventory/:pubid', (req, res, next)=>{
     });
 });
 
+//we no longer set prov.app. this API no longer works
 /**
  * @apiGroup Publications
  * @api {get} /pub/apps/:pubid
@@ -102,6 +103,7 @@ router.get('/datasets-inventory/:pubid', (req, res, next)=>{
  * @apiSuccess {Object[]}       Application objects
  * 
  */
+/*
 router.get('/apps/:pubid', (req, res, next)=>{
     db.Datasets.find({
         publications: mongoose.Types.ObjectId(req.params.pubid) 
@@ -120,6 +122,7 @@ router.get('/apps/:pubid', (req, res, next)=>{
         });
     });
 });
+*/
 
 /**
  * @apiGroup Publications

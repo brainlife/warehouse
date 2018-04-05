@@ -9,7 +9,6 @@ const jsonwebtoken = require('jsonwebtoken');
 const async = require('async');
 const request = require('request');
 const meter = require('stream-meter');
-
 const mongoose = require('mongoose');
 
 //mine
@@ -19,12 +18,13 @@ const db = require('../models');
 const common = require('../common');
 
 function canedit(user, rec, canwrite_project_ids) {
-    if(!rec.user_id) return false; //get doesn't require jwt
+    if(!rec.user_id) return false;  //TODO - can this really happen?
+    
     if(user) {
-        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
+        //if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
         if(rec.user_id == user.sub.toString()) return true;
         let canwrite_project_ids_str = canwrite_project_ids.map(id=>id.toString());
-        let project_id = rec.project._id || rec.project; //could be populated
+        let project_id = rec.project._id || rec.project; //could be populated.. 
         if(~canwrite_project_ids_str.indexOf(project_id.toString())) return true;
     }
     return false;
@@ -60,10 +60,13 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
             }
         });
     }
-
-   common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
+    
+    common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
-        ands.push({project: {$in: canread_project_ids}});
+        ands.push({$or: [
+            {project: {$in: canread_project_ids}},
+            {publications: {$gt:[]}}, //allow access for published dataset
+        ]});
 
         var skip = req.query.skip||0;
         let limit = req.query.limit||100;
@@ -237,7 +240,7 @@ router.get('/prov/:id', (req, res, next)=>{
                     edges.push(defer.edge);
                 }
                 load_product_raw(to, dataset._id, cb);
-            } else if(task.service.indexOf("brain-life/validator-") === 0) { 
+            } else if(task.service && task.service.indexOf("brain-life/validator-") === 0) { 
                 if(defer) {
                     add_node(defer.node);
                     edges.push(defer.edge);
