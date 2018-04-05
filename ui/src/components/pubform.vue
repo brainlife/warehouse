@@ -96,7 +96,6 @@ export default {
         },
         submit: function(evt) {
             evt.preventDefault();
-            //this.pub.publish_date = new Date(this.pub._publish_date);
             this.$emit("submit", this.pub);
         },
 
@@ -105,13 +104,6 @@ export default {
             this.pub.fundings.splice(idx, 1);            
             console.log(this.pub.fundings);
         },
-
-        /*
-        //vue bootstrap's date controller doesn't do 2way binding?
-        change_pubdate: function(d) {
-            this.pub._publish_date = new Date(d);
-        },
-        */
     }
 }
 </script>

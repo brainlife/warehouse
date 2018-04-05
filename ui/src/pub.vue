@@ -33,7 +33,7 @@
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Details"/>
                     <b-tab title="Datasets"/>
-                    <b-tab title="Apps"/>
+                    <!--<b-tab title="Apps"/>-->
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -212,35 +212,6 @@
                     </div>
                     <div v-if="tab_index == 1">
                         <!-- datasets -->
-                        <!--
-                        <b-pagination :total-rows="datasets_count" v-model="datasets_page" :per-page="datasets_perpage"/>
-                        <table class="table table-hover table-sm">
-                            <thead class="thead-light">
-                                <tr> 
-                                    <th>Subject</th>
-                                    <th>Datatype</th>
-                                    <th>Tags / Description</th>
-                                    <th>DL Count</th>
-                                    <th>Size</th>
-                                    <th width="180px;">ID</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="dataset in datasets" :key="dataset._id" @click="download(dataset._id)" class="dataset">
-                                    <td><span v-if="dataset.meta">{{dataset.meta.subject}}</span></td>
-                                    <td><datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags"></datatypetag></td>
-                                    <td>
-                                        <tags :tags="dataset.tags"></tags>
-                                        {{dataset.desc}}
-                                    </td>
-                                    <td><span class="text-muted">{{dataset.download_count}}</span></td>
-                                    <td><span v-if="dataset.size" class="text-muted">{{dataset.size|filesize}}</span></td>
-                                    <td><small><pre style="margin-bottom: 0px;" class="text-muted">{{dataset._id}}</pre></small></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <b-pagination :total-rows="datasets_count" v-model="datasets_page" :per-page="datasets_perpage"/>
-                        -->
                         <h6>
                             <b>{{ds.subjects}}</b> <span class="text-muted">Subjects</span> |
                             <b>{{ds.count}}</b> <span class="text-muted">Datasets</span>
@@ -253,13 +224,6 @@
                                 <b-row>
                                     <b-col cols="2">
                                         <b>{{subject}}</b>
-                                        <!--
-                                        <small class="text-muted">
-                                            <br v-if="group.count > 1">
-                                            <span><b>{{group.count}}</b> datasets</span>
-                                            <span><b>{{group.size | filesize}}</b></span>
-                                        </small>
-                                        -->
                                     </b-col>
                                     <b-col>
                                         <div v-for="(datatype, datatype_id) in group.datatypes" :key="datatype_id">
@@ -296,8 +260,9 @@
                         </b-list-group>
                             
                     </div>
+                    
+                    <!--
                     <div v-if="tab_index == 2">
-                        <!--apps-->
                         <p class="text-muted">Following applications are used to generate published datasets.</p>
                         <b-row>
                             <b-col cols="6" v-for="app in apps" :key="app._id" style="margin-bottom: 10px;">
@@ -305,6 +270,7 @@
                             </b-col>
                         </b-row>
                     </div>
+                    -->
                 </b-col>
             </b-row>
         </b-container>
@@ -441,6 +407,7 @@ export default {
             });
             this.dataset_groups = groups;
 
+/*
             //load apps
             return this.$http.get('pub/apps/'+this.$route.params.id, {params: {
                 //populate: 'inputs.datatype outputs.datatype contributors',
@@ -448,6 +415,7 @@ export default {
         })
         .then(res=>{
             this.apps = res.body;
+*/
 
             Vue.nextTick(()=>{
                 //re-initialize altmetric badge - now that we have badge <div> placed
@@ -459,7 +427,8 @@ export default {
     
     methods: {
         download: function(id) {
-            document.location = Vue.config.api+'/dataset/download/'+id;
+            //document.location = Vue.config.api+'/dataset/download/'+id;
+            this.$root.$emit('dataset.view', {id});
         },
 
         /*

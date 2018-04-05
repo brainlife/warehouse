@@ -18,16 +18,6 @@ function isadmin(user, rec) {
     return false;
 }
 
-/*
-function ismember(user, rec) {
-    if(user) {
-        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
-        if(~rec.members.indexOf(user.sub.toString())) return true;
-    }
-    return false;
-}
-*/
-    
 /**
  * @apiGroup Project
  * @api {get} /project          Query projects
@@ -51,15 +41,32 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     var select = null;
     if(req.query.select) {
         select = req.query.select;
-        /*
-        //needed for is...
-        if(!~select.indexOf("admins")) select+=" admins";
-        if(!~select.indexOf("members")) select+=" members";
-        */
     }
 
-    //TODO I should only allow querying for projects that user has access?
-    //right now, user can query for all project..
+    //only allow querying for public, or private project that user owns
+    /*
+    find = {$and: [
+        find,
+        {$or: [
+            { members: req.user.sub },
+            { admins: req.user.sub },
+            { access: "public" },
+        ]}
+    ]};
+    */
+    if(req.user) {
+        //user can see all public, protected, or any project that they are member of
+        let access_control = {$or: [
+            { members: req.user.sub },
+            { admins: req.user.sub },
+            { access: "public" },
+            { access: "protected" },
+        ]}
+        find = {$and: [ find, access_control]};
+    } else {
+        find.access = "public"; //guest can only see public projects
+    }
+
     db.Projects.find(find)
     .select(select)
     .limit(req.query.limit || 0)
@@ -87,6 +94,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  *
  * @apiParam {String[]} admins  Admin IDs
  * @apiParam {String[]} members Members
+ * @apiParam {String[]} guests  Guest Members
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -136,6 +144,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  *
  * @apiParam {String[]} [admins]  List of admins (auth sub)
  * @apiParam {String[]} [members] List of admins (auth sub)
+ * @apiParam {String[]} [guests]  List of guest users (auth sub)
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -162,6 +171,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 desc: "For project "+project._id,
                 admins: req.body.admins,
                 members: req.body.members,
+                guests: req.body.guests,
             }
         }, (err, _res, group)=>{
             if(err) return next(err);

@@ -4,15 +4,15 @@
     <notifications position="bottom right"/>
 
     <!--modal that can be called from any view -->
-    <viewselecter/>
     <dataset/>
+
+    <viewselecter v-if="config.user"/>
     <datatype/>
 
     <!--models only used by project page (TODO - move to project page eventually -->
-    <datasetselecter/>
-    <uploader/>
-    <instanceselecter/>
-    
+    <datasetselecter v-if="config.user"/>
+    <uploader v-if="config.user"/>
+    <instanceselecter v-if="config.user"/>
 </div>
 </template>
 
@@ -35,6 +35,11 @@ export default {
         uploader, datasetselecter, instanceselecter, 
 
         //loadingBar,
+    },
+    data() {
+        return {
+            config: Vue.config,
+        }
     },
 }
 

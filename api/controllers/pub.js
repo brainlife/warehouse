@@ -13,9 +13,22 @@ const db = require('../models');
 const common = require('../common');
 const mongoose = require('mongoose');
 
+//check if user can publish this project
+function can_publish(req, project_id, cb) {
+    //TODO - why does this exist?
+    if(typeof project_id === 'string') project_id = mongoose.Types.ObjectId(project_id);
+    
+    //check user has access to the project
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return cb(err);
+        let found = canwrite_project_ids.find(id=>id.equals(project_id));
+        cb(null, found);
+    });
+}
+
 /**
  * @apiGroup Publications
- * @api {get} /pub              Query registered publications
+ * @api {get} /pub              Query registered publications (public)
  *
  * @apiParam {Object} [find]    Optional Mongo find query - defaults to {}
  * @apiParam {Object} [sort]    Optional Mongo sort object - defaults to {}
@@ -50,6 +63,11 @@ router.get('/', (req, res, next)=>{
                 pub.authors = pub.authors.map(common.deref_contact);
                 pub.contributors = pub.contributors.map(common.deref_contact);
             });
+            /*
+            if(req.user) pubs.forEach(pub=>{
+                pub._canedit = ..
+            });
+            */
             res.json({pubs, count});
         });
     });
@@ -139,18 +157,6 @@ router.get('/datasets/:pubid', (req, res, next)=>{
     });
 });
 
-//check if user can publish this project
-function can_publish(req, project_id, cb) {
-    //TODO - why does this exist?
-    if(typeof project_id === 'string') project_id = mongoose.Types.ObjectId(project_id);
-    
-    //check user has access to the project
-    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
-        if(err) return cb(err);
-        let found = canwrite_project_ids.find(id=>id.equals(project_id));
-        cb(null, found);
-    });
-}
 
 /**
  * @apiGroup Publications

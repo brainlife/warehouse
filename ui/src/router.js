@@ -17,7 +17,7 @@ import apps from '@/apps'
 import app from '@/app'
 import appedit from '@/appedit'
 
-import projects from '@/projects'
+//import projects from '@/projects'
 import project from '@/project'
 import projectedit from '@/projectedit'
 
@@ -62,7 +62,7 @@ export default new Router({
         {path: '/view/:instanceid/:taskid/:type/:subdir?', component: view, props: true},
         {path: '/novnc/:instanceid/:taskid/:type/:subdir?', component: novnc, props: true},
 
-        {path: '/projects', component: projects, meta: {public: true}}, //deprecated by /project
+        //{path: '/projects', component: projects, meta: {public: true}}, //deprecated by /project
 
         {path: '/project', component: project},
         {path: '/project/:id', component: project},

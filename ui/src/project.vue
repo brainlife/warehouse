@@ -48,9 +48,9 @@
                         <p v-for="c in selected.admins" :key="c._id">
                             <contact :id="c"/>
                         </p>
+                        <br>
                     </b-col>
                 </b-row>
-                
                 <b-row>
                     <b-col cols="2"> 
                         <span class="form-header">Members</span>
@@ -62,6 +62,7 @@
                         <p v-for="c in selected.members" :key="c._id">
                             <contact :id="c"/>
                         </p>
+<<<<<<< HEAD
                         <p class="text-muted" v-if="selected.members.length == 0">(No Members)</p>
                     </b-col>
                 </b-row>
@@ -78,9 +79,24 @@
                             <contact :id="c"/>
                         </p>
                         <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0">(No Guests)</p>
+                        <br>
                     </b-col>
                 </b-row>
-                <br>
+                <b-row v-if="selected.access == 'private'">
+                    <b-col cols="2"> 
+                        <span class="form-header">Guests</span>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <small class="text-muted">Users who has read access to a private project</small>
+                        </p>
+                        <p v-for="c in selected.guests" :key="c._id">
+                            <contact :id="c"/>
+                        </p>
+                        <br>
+                    </b-col>
+                </b-row>
+
                 <b-row>
                     <b-col cols="2"> 
                         <span class="form-header">Readme</span>

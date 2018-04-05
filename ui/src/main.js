@@ -48,24 +48,6 @@ Vue.use(BootstrapVue);
 Vue.use(Vue2Filters)
 Vue.use(SocialSharing);
 
-/* I don't really get accurate progress report from vue-http
-import NProgress from 'nprogress'
-import 'nprogress/nprogress.css'
-Vue.http.interceptors.push((request, next) => {
-    NProgress.start();
-    request.progress = function(r) {
-        if(r.type == "progress") {
-            NProgress.set(r.loaded/r.total);
-            console.log("progress", r.loaded, r.total);
-            console.log(r);
-        }
-    }
-    next(res=>{
-        NProgress.done();
-    });
-});
-*/
-
 Vue.use(VueTimeago, {
     name: 'timeago',
     locale: 'en-US',
@@ -102,16 +84,12 @@ Vue.filter('filesize', function (num) {
 	return (neg ? '-' : '') + num + ' ' + unit;
 });
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // config
 // TODO - find a way to put these somewhere under /config
 //
-/*
-var apihost = "https://"+process.env.HOSTNAME;
-var apihost_ws = "wss://"+process.env.HOSTNAME;
-*/
+
 var apihost = "https://"+window.location.hostname;
 var apihost_ws = "wss://"+window.location.hostname;
 
@@ -121,25 +99,19 @@ if(process.env.HOSTNAME) {
     apihost_ws = "wss://"+process.env.HOSTNAME;
 }
 
-/*
-switch(process.env.NODE_ENV) {
-case "development": 
-    Vue.config.debug = true;
-    break;
-case "production":
-    console.log("running in production mode");
-    break;
-}
-*/
-
-Vue.config.debug = (process.env.NODE_ENV == "development");
+Vue.config.debug = false;
 Vue.config.api = apihost+"/api/warehouse";
 Vue.config.wf_api = apihost+"/api/amaretti";
 Vue.config.auth_api = apihost+"/api/auth";
 Vue.config.event_api = apihost+"/api/event";
 Vue.config.event_ws = apihost_ws+"/api/event";
+Vue.config.auth_signin = "/auth#!/signin";
 
 Vue.http.options.root = Vue.config.api; //default root for $http
+
+if(process.env.NODE_ENV == "development") {
+    Vue.config.debug = true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -178,7 +150,7 @@ router.beforeEach(function (to, from, next) {
         if(!Vue.config.jwt) {
             console.log("authentication required", document.location.href);
             sessionStorage.setItem('auth_redirect', document.location.href);
-            document.location = "/auth#!/signin";
+            document.location = Vue.config.auth_signin;
             return;
         }
     }
@@ -226,7 +198,7 @@ new Vue({
             }).catch(err=>{
                 console.error(err); 
                 localStorage.removeItem("jwt");
-                document.location = "/auth#!/signin";
+                document.location = Vue.config.auth_signin;
             });
         }
     },

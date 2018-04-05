@@ -61,7 +61,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         });
     }
 
-    common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
+   common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         ands.push({project: {$in: canread_project_ids}});
 
@@ -206,7 +206,7 @@ router.get('/prov/:id', (req, res, next)=>{
         for(let id in task.config) {
             if(id[0] == "_") continue;
             let v = task.config[id];
-            let vs = v.toString();
+            let vs = v?v.toString():'(null)';
             //TODO - better way to grab only the non-dataset inputs?
             if(vs.indexOf("..") != 0) label += id+":"+vs+"\n";
         }

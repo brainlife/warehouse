@@ -1,19 +1,5 @@
 <template>
 <div v-if="datatypes">
-    <!--
-    <transition name="slide-fade">
-        <div v-if="page == 0">
-            <br>
-            <p>This wizard will guide you through the process of publishing the currerntly available datasets on this project and applications used to generate those datasets.</p>
-            <br>
-            <hr>
-            <div style="float: right">
-                <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
-                <button type="button" class="btn btn-primary" @click="page++">Start</button>
-            </div>
-        </div>
-    </transition>
-    -->
     <transition name="slide-fade">
         <div v-if="page == 1">
             <!--<h4>Select Datasets</h4>-->
@@ -186,18 +172,7 @@ export default {
                     });
                 }, err=>{
                     if(err) return this.$notify(err);
-
                     console.log("done with publishing datasets");
-
-                    //TODO - register metadata automatically by POST /pub
-                    /*
-                    //lastly, register doi metadata
-                    var url = (new URL("/pub/"+pub._id, document.location)).href
-                    this.$http.put('pub/'+pub._id+'/doi', {url}).then(res=>{
-                        this.$notify("Successfully published!");
-                        this.$emit("submit", pub);
-                    }); 
-                    */
                     this.$notify("Successfully published!");
                     this.$emit("submit", pub);
                 })
