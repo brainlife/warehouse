@@ -9,10 +9,12 @@ export default {
     computed: {
         imgstyle: function() {
             let styles = {};
+            /*
             if(this.width>100) {
                 styles.border = "3px solid white";
                 styles.boxShadow = "1px 1px 5px rgba(0,0,0,0.4)";
             }
+            */
             return styles;
         }
     },

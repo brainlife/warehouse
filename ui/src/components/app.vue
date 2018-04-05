@@ -6,7 +6,8 @@
             <div style="max-height: 73px; overflow: hidden;">
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
-                    {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> <b-badge>{{app_.github_branch}}</b-badge></h4>
+                    {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
+                    <b-badge>{{branch||app_.github_branch}}</b-badge></h4>
                 <div class="desc">{{app_.desc_override||app_.desc||'no desc..'}}</div>
             </div>
             <slot/>
@@ -18,7 +19,7 @@
                     <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
                     {{app_.name}}
                 </h4>
-                <h5 class="github">{{app_.github}} <b-badge>{{app_.github_branch}}</b-badge></h5>
+                <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
                 <div class="datatypes" v-if="!compact">
                     <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id">
                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
@@ -55,6 +56,7 @@ export default {
         dataset: Object,
         compact: Boolean,
         appid: String,
+        branch: String, //branch to show instead of current app github_branch
         clickable: {type: Boolean, default: true},
         descheight: String,
         devsheight: String,

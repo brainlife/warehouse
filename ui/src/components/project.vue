@@ -1,3 +1,4 @@
+<!-- I believe this is deprecated-->
 <template>
 <div>
     <el-alert v-if="project.removed" title="This project has been removed" type="warning" show-icon :closable="false"></el-alert>
@@ -14,6 +15,12 @@
     </tr>
     <tr>
         <th>Members</th>
+        <td>
+        <contact v-for="id in project.members" key="id" :id="id"></contact>
+        </td>
+    </tr>
+    <tr>
+        <th>Guests</th>
         <td>
         <contact v-for="id in project.members" key="id" :id="id"></contact>
         </td>

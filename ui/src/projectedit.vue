@@ -28,12 +28,12 @@
                 
                 </b-form-group>
 
-                <b-form-group label="Access" horizontal>
+                <b-form-group label="Access Policy" horizontal>
                     <el-select v-model="project.access">
                         <el-option label="Private" value="private"></el-option>
+                        <el-option v-if="config.debug" label="Protected (experimental)" value="protected"></el-option>
                         <el-option label="Public" value="public"></el-option>
                     </el-select>
-                    <p class="text-muted">Decide if non project member can access datasets inside this project</p>
                 </b-form-group>
 
                 <!--
@@ -47,11 +47,15 @@
 
                 <b-form-group label="Administrators" horizontal>
                     <contactlist v-model="project.admins"></contactlist>
-                    <p class="text-muted">Users who can update the project members</p>
+                    <p class="text-muted"><small>Users who can update the project metadata, and groups</small></p>
                 </b-form-group>
                 <b-form-group label="Members" horizontal>
                     <contactlist v-model="project.members"></contactlist>
-                    <p class="text-muted">For public project: Uers who can update datasets in this project. For private project: Users who read/update datasets in this project and use application registered on this project.</p>
+                    <p class="text-muted"><small>For public project: Uers who can update datasets in this project. For private project: Users who read/update datasets in this project and use application registered on this project.</small></p>
+                </b-form-group>
+                <b-form-group label="Guests" horizontal v-if="project.access == 'private'">
+                    <contactlist v-model="project.guests"></contactlist>
+                    <p class="text-muted"><small>For Private project only: users who has read access to datasets.</small></p>
                 </b-form-group>
                 <b-form-group label="Avatar" horizontal>
                     <el-input type="text" v-model="project.avatar" placeholder="Image URL for the project avatar (if not set, randomly generate)"/>

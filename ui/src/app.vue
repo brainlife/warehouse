@@ -15,14 +15,18 @@
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                         </div>
                         <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
-                        <h5>
-                            <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')"><icon name="github"/> {{app.github}}</a>
+                        <h5 style="opacity: 0.8">
+                            <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')">{{app.github}}</a>
                             <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
                         </h5>
-                        <p style="opacity: 0.8">{{app.desc_override||app.desc}}</p>
+                        <p style="opacity: 0.8">{{app.desc_override||app.desc}}
+                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                        </p>
+                        <!--
                         <p style="line-height: 220%;">
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
+                        -->
                         <appstats :app="app"/>
                     </b-col>
                 </b-row>

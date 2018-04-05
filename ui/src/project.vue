@@ -43,7 +43,7 @@
                     </b-col>
                     <b-col>
                         <p>
-                            <small class="text-muted">Users who can update name / desc / project members, and create publications.</small>
+                            <small class="text-muted">Users who can update name / desc / project members, and create rules / publications.</small>
                         </p>
                         <p v-for="c in selected.admins" :key="c._id">
                             <contact :id="c"/>
@@ -57,11 +57,27 @@
                     </b-col>
                     <b-col>
                         <p>
-                            <small class="text-muted">Users who can archive and update datasets on this project, and create publications.</small>
+                            <small class="text-muted">Users who have read/write access to dataets on this project, and create rules / publications.</small>
                         </p>
                         <p v-for="c in selected.members" :key="c._id">
                             <contact :id="c"/>
                         </p>
+                        <p class="text-muted" v-if="selected.members.length == 0">(No Members)</p>
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="selected.access == 'private'">
+                    <b-col cols="2"> 
+                        <span class="form-header">Guests</span>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <small class="text-muted">Users who have read access to datasets on this project.</small>
+                        </p>
+                        <p v-for="c in selected.guests" :key="c._id">
+                            <contact :id="c"/>
+                        </p>
+                        <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0">(No Guests)</p>
                     </b-col>
                 </b-row>
                 <br>
@@ -208,12 +224,14 @@ export default {
     mounted: function() {
         //load all projects that user has read access
         this.$http.get('project', {params: {
+            /*
             find: JSON.stringify({
             $or: [
                 { members: Vue.config.user.sub }, 
                 { admins: Vue.config.user.sub }, 
                 { access: "public" },
             ]})
+            */
         }})
         .then(res=>{
             this.projects = {};
