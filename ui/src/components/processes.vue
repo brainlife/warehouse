@@ -302,6 +302,7 @@ export default {
 
         newinstance: function() {
             var desc = prompt("Please enter process description");
+            if(!desc) return;
             this.$http.post(Vue.config.wf_api+'/instance', {
                 desc,
                 config: {

@@ -129,7 +129,7 @@
                             <b-col cols="3"><span class="form-header">Publications</span></b-col>
                             <b-col cols="9">
                                 <small class="text-muted">This dataset has been published on following publications.</small>
-                                <b-table small hover :items="dataset.publications" :fields="['name', 'desc', 'doi']" @row-clicked="openpub" style="background-color: white;">
+                                <b-table small hover :items="dataset.publications" :fields="['name', 'desc', 'doi']" @row-clicked="openpub">
                                 </b-table>
                             </b-col>
                         </b-row>
@@ -177,7 +177,7 @@
             </b-tab>
             <b-tab title="Apps">
                 <div class="dataset-apps" v-if="apps">
-                    <p v-if="apps.length > 0">The following apps can be submitted with this dataset.</p>
+                    <p v-if="apps.length > 0" class="text-muted">The following apps can be submitted with this dataset.</p>
                     <b-alert show variant="info" v-if="apps.length == 0">There are currently no applications that use the datatype from this dataset.</b-alert>
                     <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
                         <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)">
