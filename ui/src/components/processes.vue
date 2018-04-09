@@ -1,5 +1,5 @@
 <template>
-<div v-if="instances">
+<div v-if="instances" class="processes">
     <div class="page-header">
         <div style="margin-top: 2px; margin-left: 10px; display: inline-block;">
             <b>{{instances.length}}</b> Processes
@@ -20,13 +20,13 @@
                     <b-dropdown-item @click="show = 'failed'">Failed <span class="text-muted">({{instance_counts.failed||0}})</span></b-dropdown-item>
                 </b-dropdown>
                 -->
-                <b-button-group size="sm">
-                    <b-button variant="outline-secondary" :pressed="show == null" @click="show = null">All ({{instances.length}})</b-button>
-                    <b-button v-for="state in ['running', 'finished', 'failed']" 
+                <div class="status-toggler">
+                    <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">All ({{instances.length}})</b-button>
+                    <b-button size="sm" v-for="state in ['running', 'finished', 'failed']" 
                             :pressed="show == state" :variant="state2variant(state)" @click="show = state">
                             {{state}} ({{instance_counts[state]||0}})
                     </b-button>
-                </b-button-group>
+                </div>
             </div>
 
             <div style="display: inline-block;">
@@ -574,5 +574,20 @@ background-color: #007bff;
 background-color: #ddd;
 */
 }
+
+.status-toggler {
+display: inline-block;
+}
 </style>
 
+<style>
+/*
+.processes .status-toggler .btn:not(.active) {
+opacity: 0.5;
+}
+*/
+.processes .status-toggler .btn {
+border: none;
+margin-left: 5px;
+}
+</style>
