@@ -12,16 +12,16 @@
         <!-- for everyone -->
         <li @click="go('/apps')"
             :class="{active: active == '/apps'}" >
-            <icon name="th-large" scale="2" ></icon><br>App
+            <icon name="th-large" scale="2" ></icon><br>Apps
         </li>
         <li @click="go('/pubs');"
             :class="{active: active == '/pubs'}">
-            <icon name="book" scale="2"></icon><br>Publication
+            <icon name="book" scale="2"></icon><br>Publications
 
         <!-- only for authenticated users -->
         <li v-if="config.user" @click="go('/project')"
             :class="{active: active == '/projects'}">
-            <icon name="shield" scale="2"></icon><br>Project
+            <icon name="shield" scale="2"></icon><br>Projects
         </li>
         <!--
         <li v-if="config.user" @click="go('/datasets')"
@@ -37,11 +37,11 @@
         -->
         <li v-if="config.user && config.debug" @click="go('/datatypes')"
             :class="{active: active == '/datatypes'}">
-            <icon name="cube" scale="2"></icon><br>Datatype
+            <icon name="cube" scale="2"></icon><br>Datatypes
         </li>
         
         <li v-if="config.user" @click="setting">
-            <icon name="cog" scale="2"></icon><br>Setting
+            <icon name="cog" scale="2"></icon><br>Settings
         </li>
     </ul>
 
