@@ -11,22 +11,32 @@
         <div v-if="instances.length > 1" style="float: right; position: relative; top: -3px;"> 
             <div style="display: inline-block; margin-right: 10px;">
                 <small>Show</small>
+                <!--
                 <b-dropdown :text="instance_filter_label" size="sm" :variant="showvariant()">
-                    <!--<b-dropdown-header>Show</b-dropdown-header>-->
                     <b-dropdown-item @click="show = null">All <span class="text-muted">({{instances.length}})</span></b-dropdown-item>
                     <b-dropdown-divider></b-dropdown-divider>
                     <b-dropdown-header>Status</b-dropdown-header>
                     <b-dropdown-item @click="show = 'running'">Running <span class="text-muted">({{instance_counts.running||0}})</span></b-dropdown-item>
                     <b-dropdown-item @click="show = 'failed'">Failed <span class="text-muted">({{instance_counts.failed||0}})</span></b-dropdown-item>
-                    <b-dropdown-item @click="show = 'finished'">Finished <span class="text-muted">({{instance_counts.finished||0}})</span></b-dropdown-item>
                 </b-dropdown>
+                -->
+                <b-button-group size="sm">
+                    <b-button variant="outline-secondary" :pressed="show == null" @click="show = null">All ({{instances.length}})</b-button>
+                    <b-button v-for="state in ['running', 'finished', 'failed']" 
+                            :pressed="show == state" :variant="state2variant(state)" @click="show = state">
+                            {{state}} ({{instance_counts[state]||0}})
+                    </b-button>
+                </b-button-group>
             </div>
 
             <div style="display: inline-block;">
                 <small>Order by</small>
                 <b-dropdown :text="order" size="sm" :variant="'light'">
-                    <b-dropdown-item @click="order = 'date'">Date (new first)</b-dropdown-item>
-                    <b-dropdown-item @click="order = '-date'">Date (old first)</b-dropdown-item>
+                    <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
+                    <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
+                    <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
                     <b-dropdown-divider></b-dropdown-divider>
                     <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
                     <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
@@ -99,7 +109,7 @@ export default {
     data () {
         return {
             instances: null,
-            order: 'date', //default (new > old)
+            order: 'create_date', //default (new > old)
             show: null, //null == all
 
             selected: null,
@@ -136,10 +146,23 @@ export default {
                     a = a.desc?a.desc.toUpperCase():"";
                     b = b.desc?b.desc.toUpperCase():"";
                     break;
+
+                //deprecated
                 case "date": 
                     a = a.create_date?new Date(a.create_date):null;
                     b = b.create_date?new Date(b.create_date):null;
                     break;
+
+                case "create_date": 
+                    a = a.create_date?new Date(a.create_date):null;
+                    b = b.create_date?new Date(b.create_date):null;
+                    break;
+
+                case "update_date": 
+                    a = a.update_date?new Date(a.update_date):null;
+                    b = b.update_date?new Date(b.update_date):null;
+                    break;
+
                 default: 
                     throw("no such field");
                 }
@@ -157,8 +180,18 @@ export default {
             */
             let counts = {};
             this.instances.forEach(i=>{
-                if(!counts[i.status]) counts[i.status] = 1;
-                else counts[i.status]+=1;
+                //convert odd status into "others"
+                let status = i.status;
+                switch(status) {
+                case "running":
+                case "finished":
+                case "failed":
+                    break;
+                default:
+                    status = "others";
+                }
+                if(!counts[status]) counts[status] = 1;
+                else counts[status]+=1;
             });
             return counts;
         },
@@ -243,13 +276,13 @@ export default {
             return string.charAt(0).toUpperCase() + string.slice(1);
         },
 
-        showvariant: function() {
-            switch(this.show) {
-            case "failed": return "danger";
-            case "finished": return "success";
-            case "running": return "primary";
-            case null: return "light";
-            default: return "warning";
+        state2variant: function(state) {
+            switch(state) {
+            case "failed": return "outline-danger";
+            case "finished": return "outline-success";
+            case "running": return "outline-primary";
+            case "others": return "outline-secondary";
+            default: return "outline-warning";
             }
         },
 
@@ -361,7 +394,6 @@ export default {
                     "config.removing": {$exists: false},
                 }),
                 limit: 3000,
-                //sort: '-create_date',
             }}).then(res=>{
                 this.instances = res.body.instances;
                 this.selected = this.instances.find(it=>it._id == this.$route.params.subid);
