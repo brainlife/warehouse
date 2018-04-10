@@ -1,5 +1,5 @@
 <template>
-<div class="pageheader">
+<div class="pageheader" :style="styles">
     <b-nav class="nav">
         <b-nav-item @click="doc">Documentation</b-nav-item>
         <!--
@@ -48,6 +48,22 @@ export default {
         gurl: function() {
             if(!this.config.user.profile.email) return null;
             return "//www.gravatar.com/avatar/"+md5(this.config.user.profile.email)+"?s=22";
+        },
+        styles: function() {
+            switch(window.location.hostname) {
+            case "localhost":
+                return {
+                    "backgroundImage": "inherit",
+                    "backgroundColor": "orange",
+                }
+            case "test.brainlife.io":
+                return {
+                    "backgroundImage": "inherit",
+                    "backgroundColor": "purple",
+                }
+            default: 
+                return {};
+            }
         }
     },
     methods: {
