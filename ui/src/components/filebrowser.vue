@@ -250,6 +250,7 @@ cursor: pointer;
 background-color: #ddd;
 }
 .hljs {
+background-color: #fff;
 }
 .file-content pre {
 overflow: auto;
@@ -262,7 +263,6 @@ max-height: 400px;
 }
 .file-content {
 position: relative;
-background-color: #fff;
 }
 .file-content-buttons {
 position: absolute; 
@@ -275,7 +275,7 @@ transition: opacity 0.5s;
 opacity: 0.7;
 }
 .buttons {
-margin-top: 5px;
+padding-top: 5px;
 opacity: 0.5;
 }
 </style>
