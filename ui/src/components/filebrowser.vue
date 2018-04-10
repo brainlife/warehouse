@@ -258,7 +258,7 @@ font-family: 'monospace';
 padding: 5px;
 margin-bottom: 5px;
 padding: 0px;
-/*padding-left: 10px;*/
+box-shadow: 1px 1px 4px #ccc;
 max-height: 400px;
 }
 .file-content {
