@@ -32,9 +32,31 @@
             </div>
             <div class="desc" :style="{height: descheight}">{{app_.desc_override||app_.desc||'no description..'}}</div>
             <slot/>
+            <!--
             <div class="devs" :style="{height: devsheight}">
                 <div class="devs-fade"/>
                 <contact v-for="c in app_.contributors" short="true" :key="c._id" :fullname="c.name" :email="c.email"></contact>
+            </div>
+            -->
+            <div class="stats" v-if="app_.stats">
+                <span class="stat" v-b-tooltip.hover title="number of time this App was requested">
+                    <icon name="play" scale="0.8"/> {{app_.stats.service.counts.requested}}
+                    &nbsp;
+                    &nbsp;
+                </span>
+                <span class="stat" v-b-tooltip.hover title="number of unique users who requested this App">
+                    <icon name="user" scale="0.8"/> {{app_.stats.service.users}}
+                    &nbsp;
+                    &nbsp;
+                </span>
+                <span class="stat" v-b-tooltip.hover title="github stars" v-if="app_.stats.stars">
+                    <icon name="star" scale="0.8"/> {{app_.stats.stars}}
+                    &nbsp;
+                    &nbsp;
+                </span>
+                <span class="stat" style="float: right;" v-b-tooltip.hover title="success rate finished/(failed+finished)">
+                    <icon name="check-circle" scale="0.8"/> {{app_.stats.success_rate.toFixed(1)}}%
+                </span>
             </div>
         </div>
     </div>
@@ -96,7 +118,6 @@ box-shadow: 1px 1px 2px rgba(0,0,0,0.10);
 transition: box-shadow 0.3s;
 }
 .appcard:hover {
-/*transform: scale(1.03, 1.03);*/
 box-shadow: 3px 3px 6px rgba(0,0,0,0.3);
 }
 
@@ -129,20 +150,12 @@ margin-bottom: 2px;
 .desc {
 opacity: 0.8;
 overflow: hidden;
-padding: 0px 10px;
 margin-top: 0px;
 transition: color 0.5s;
 font-size: 90%;
-/*background-color: #ddd;*/
+border: solid 7px white;
 }
-.rate {
-height: 20px;
-overflow: auto;
-font-size: 13px;
-color: #666;
-line-height: 140%;
-margin-bottom: 20px;
-}
+
 .image {
 width: 100%;
 display: block;
@@ -164,6 +177,7 @@ font-size: 14px;
 margin: 0px;
 height: inherit;
 padding: inherit;
+border: none;
 }
 .compact .github {
 display: inline-block;
@@ -172,7 +186,6 @@ margin-bottom: 0px;
 .devs {
 padding: 4px 10px;
 overflow: hidden;
-/*border-top: 1px solid #f0f0f0;*/
 position: relative;
 }
 .devs .devs-fade {
@@ -189,5 +202,14 @@ margin: 3px 0px;
 display: inline-block;
 margin-right: 2px;
 margin-top: 2px;
+}
+.stats {
+padding: 5px 10px;
+color: #bbb;
+height: 32px;
+border-top: 1px solid #f0f0f0;
+background-color: #f7f7f7;
+}
+.stat {
 }
 </style>
