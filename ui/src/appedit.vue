@@ -4,7 +4,10 @@
     <sidemenu active="/apps"></sidemenu>
     <div class="fixed-top">
         <div class="container" style="height: 50px;">
-            <div style="color: white; margin: 20px 0px;">
+            <div style="margin: 20px 0px;">
+                <p style="float: right">
+                    <a href="https://brain-life.github.io/docs/apps/register/" target="doc">Help</a>
+                </p>
                 <h3 v-if="$route.params.id == '_'">New App</h3>
                 <h3 v-else><icon name="pencil" scale="1.5" style="opacity: 0.5"/> {{app.name}}</h3>
             </div>
@@ -22,9 +25,6 @@
         <b-form @submit="submit" class="container">
             <!--detail-->
             <div>
-                <p style="float: right">
-                    <a href="https://brain-life.github.io/docs/apps/register/" target="doc">Help</a>
-                </p>
                 <h4>Detail</h4>
                 <b-form-group horizontal label="Name *">
                     <b-form-input type="text" v-model="app.name" placeholder="Name of application" required/>
@@ -360,12 +360,12 @@
             
             <br>
             <br>
-            <div style="float: right">
+            <br>
+            <br>
+            <div class="form-action">
                 <b-button @click="cancel">Cancel</b-button>
                 <b-button type="submit" variant="primary">Submit</b-button>
             </div>
-            <br clear="both">
-
         </b-form>
 
         <b-card v-if="config.debug">
@@ -697,8 +697,8 @@ left: 90px;
 right: 0px;
 height: 80px;
 z-index: 1;
-background-color: #666;
-border-bottom: 1px solid #ccc;
+background-color: white;
+border-bottom: 1px solid #eee;
 }
 h4 {
 color: #999;
@@ -726,5 +726,13 @@ padding: 20px;
   transform: translateX(10px);
   opacity: 0;
 }
-
+.form-action {
+text-align: right;
+position: fixed;
+right: 0px;
+left: 90px;
+bottom: 0px;
+padding: 10px 30px;
+background-color: rgba(100,100,100,0.4);
+}
 </style>

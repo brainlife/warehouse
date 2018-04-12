@@ -7,7 +7,7 @@
     </p>
     <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
     <div v-if="files">
-        <div :style="{marginLeft: offset, opacity: 0.5}">
+        <div :style="{marginLeft: offset}" class="buttons">
             <div class="button" @click="download()" title="Download"><icon name="download"/></div>
             <div class="button" @click="load()" title="Refresh"><icon name="refresh"/></div>
         </div>
@@ -36,9 +36,9 @@
             </div>
 
             <!-- inline file view-->
-            <div v-if="file.view" :style="{marginLeft: offset}" class="file-content">
+            <div v-if="file.view" :style="{paddingLeft: 0}" class="file-content">
                 <!-- controls -->
-                <div v-if="file.content" style="margin-right: 20px;"> <!--right margin to prevent scroll bar collision-->
+                <div v-if="file.content">
                     <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
                         <div class="button" @click="download_file(file)"><icon name="download"/></div>
                         <div class="button" @click="refresh_file(file)"><icon name="refresh"/></div>
@@ -250,18 +250,16 @@ cursor: pointer;
 background-color: #ddd;
 }
 .hljs {
-background: #f0f0f0;
+background-color: #fff;
 }
 .file-content pre {
 overflow: auto;
 font-family: 'monospace';
-margin: 0px;
-margin-left: 4px;
-margin-bottom: 15px;
+padding: 5px;
+margin-bottom: 5px;
 padding: 0px;
-padding-left: 10px;
+/*padding-left: 10px;*/
 max-height: 400px;
-background-color: #d7d7d7;
 }
 .file-content {
 position: relative;
@@ -275,5 +273,9 @@ transition: opacity 0.5s;
 }
 .file-content:hover .file-content-buttons {
 opacity: 0.7;
+}
+.buttons {
+padding-top: 5px;
+opacity: 0.5;
 }
 </style>

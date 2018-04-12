@@ -38,11 +38,13 @@ export default {
         } else {
             //load project that user is admin/member, or public (who can read from datasets)
             find = {
+                /*
                 $or: [
                     { admins: Vue.config.user.sub }, 
                     { members: Vue.config.user.sub }, 
                     { access: "public" },
                 ],
+                */
                 removed: false,
             };
         }

@@ -20,6 +20,7 @@
             t.{{task.config._tid}}
         </div>
 
+
         <!--full detail-->
         <task :task="task" class="task" v-if="task.show">
             <!--header-->

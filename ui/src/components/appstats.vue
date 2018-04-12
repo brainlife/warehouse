@@ -16,16 +16,16 @@
         </center>
     </b-col>
 
-    <b-col cols="2" v-if="app._rate">
+    <b-col cols="2">
         <center>
-            <span class="stat">{{app._rate}}</span>
+            <span class="stat">{{app._rate||'n/a'}}</span>
             <p class="header">User&nbsp;Rating</p>
         </center>
     </b-col>
 
     <!--service stats (TODO - I should cache this on each app so that I don't have to load this separately)-->
     <b-col cols="6" v-if="!service_stats"> 
-        <h5 class="text-muted" style="margin-top: 5px;">&nbsp;&nbsp;&nbsp;<icon name="cog" spin/> Loading..&nbsp;&nbsp;&nbsp;</h5>
+        <center style="opacity: 0.3; padding-top: 10px;"><b>&nbsp;&nbsp;&nbsp;<icon name="cog" spin/> Loading..&nbsp;&nbsp;&nbsp;</b></center>
     </b-col>
     <b-col cols="2" v-if="service_stats">
         <center>
@@ -45,7 +45,6 @@
             <p class="header">Success&nbsp;Rate</p>
         </center>
     </b-col>
-
 
     <!--
     <b-col cols="3">

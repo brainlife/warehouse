@@ -395,9 +395,9 @@ export default {
                 params: {
                     find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,
-                    limit: 200,
+                    limit: 200, 
                     select: '-prov',
-                    sort: 'meta.subject -create_date'
+                    sort: 'meta.subject meta.session -create_date'
                 }
             })
             .then(res=>{
@@ -409,6 +409,7 @@ export default {
                     dataset.checked = this.selected[dataset._id];
                     var subject = "nosub"; //not all datasets has subject tag
                     if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
+                    if(dataset.meta.session) subject += " session "+dataset.meta.session;
                     last_subject = subject;
                     if(!groups[subject]) groups[subject] = [];
                     groups[subject].push(dataset);
@@ -643,6 +644,10 @@ export default {
         remove: function() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 async.forEach(this.selected, (dataset, next)=>{
+                    if(!dataset._canedit) {
+                        this.$notify({type: "error", text: "You don't have permission to remove this dataset: "+dataset._id});
+                        return next();
+                    }
                     console.log("deleting", dataset);
                     this.$http.delete('dataset/'+dataset._id).then(res=>{
                         next();
