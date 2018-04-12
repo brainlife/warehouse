@@ -314,7 +314,7 @@ export default {
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.config.user) this.find_resources(this.app.github);
-            if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
+            //if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
 
             //then load github README
             var branch = this.app.github_branch||"master";
@@ -374,6 +374,7 @@ export default {
             }
         },
 
+        /*
         ratechange: function() {
             this.$http.post('app/'+this.app._id+'/rate', {
                 rate: this.app._rate,
@@ -381,6 +382,8 @@ export default {
                 //console.dir(res.body);
             });
         },
+        */
+
         bibtex: function() {
             document.location = '/api/warehouse/app/bibtex/'+this.app._id;
         },

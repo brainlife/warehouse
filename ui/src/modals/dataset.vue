@@ -455,14 +455,15 @@ export default {
             if(!this.dataset) return; //route changed before timeout was fired?
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                //select: "status storage size desc",
             }})
             .then(res=>{
                 var dataset = res.body.datasets[0];
+                //TODO - why not just set all fields?
                 this.dataset.size = dataset.size;
                 this.dataset.status = dataset.status;
                 this.dataset.storage = dataset.storage;
                 this.dataset.desc = dataset.desc;
+                this.dataset.stats = dataset.stats;
                 if(this.dataset.status == "storing") {
                     setTimeout(()=>{ this.load_status(id); }, 5000);
                 } else {

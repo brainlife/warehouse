@@ -1,6 +1,6 @@
 <template>
 <b-form v-if="app && projects" @submit="submit">
-    <b-alert :show="!this.resource_available" variant="warning" style="margin-bottom:14px;">There is currently no available resource to run this application on. If you submit your application right now, it will only run after a resource becomes available.</b-alert>
+    <b-alert :show="!this.resource_available">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
 
     <!--<h4>Input Datasets</h4>-->
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
@@ -38,7 +38,7 @@
         <b-col class="text-muted" cols="3">Project *</b-col>
         <b-col>
             <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in" :required="true"/> 
-            <small class="text-muted">Project where you want to stage and execute this application.</small>
+            <small class="text-muted">Project where you want to create a new process to execute this App.</small>
         </b-col>
     </b-row>
     <br>
