@@ -37,6 +37,7 @@ function validate_projects(user, projects_ids, cb) {
     });
 }
 
+/*
 function populate_github_fields(repo, app, cb) {
     //load github info
     common.load_github_detail(repo, (err, repo, con_details)=>{
@@ -51,6 +52,7 @@ function populate_github_fields(repo, app, cb) {
         cb();
     });
 }
+*/
 
 /**
  * @apiGroup App
@@ -119,6 +121,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
  *
  * @apiSuccess {Number}         Aggregated rating of the app after this update
  */
+/*
 router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res, next) {
     //first, find the app
     db.Apps.findById(req.params.id, function(err, app) {
@@ -153,6 +156,7 @@ router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res
         });
     });
 });   
+*/
 
 /**
  * @apiGroup App
@@ -192,7 +196,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
         let app = new db.Apps(req.body);
 
         //load github info
-        populate_github_fields(req.body.github, app, err=>{
+        common.populate_github_fields(req.body.github, app, err=>{
             if(err) return next(err);
             app.save(function(err, _app) {
                 if (err) return next(err); 
@@ -243,7 +247,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 delete req.body.user_id;
                 delete req.body.create_date;
                 for(var k in req.body) app[k] = req.body[k];
-                populate_github_fields(req.body.github, app, err=>{
+                common.populate_github_fields(req.body.github, app, err=>{
                     if(err) return next(err);
                     app.save((err)=>{
                         if(err) return next(err);

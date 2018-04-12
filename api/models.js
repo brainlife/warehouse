@@ -284,7 +284,7 @@ var appSchema = mongoose.Schema({
     desc: String,  //pulled from github
     desc_override: String, //if user wants to override the githut desc
 
-    tags: [String], //pulled fro github/repo topics
+    tags: [String], //pulled from github/repo topics
     contributors: [ new mongoose.Schema({name: 'string', email: 'string'}) ], //TODO - pull from github
     //
     //
@@ -318,7 +318,11 @@ var appSchema = mongoose.Schema({
         files: mongoose.Schema.Types.Mixed,
     })],
         
-    _rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
+    //_rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
+
+    //various stats for this app (aggregated by app.js)
+    stats: mongoose.Schema.Types.Mixed, 
+    
     removed: { type: Boolean, default: false} ,
 
     create_date: { type: Date, default: Date.now },

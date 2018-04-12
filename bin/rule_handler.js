@@ -63,9 +63,7 @@ function run() {
 
     .exec((err, rules)=>{
 		if(err) throw err;
-        async.eachSeries(rules, (rule, next_rule)=>{
-            handle_rule(rule, next_rule);
-        }, err=>{
+        async.eachSeries(rules, handle_rule, err=>{
             if(err) logger.error(err);
             logger.debug("done with all rules - sleeping for a while");
             setTimeout(run, 1000*30);
