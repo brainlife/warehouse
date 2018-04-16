@@ -1,6 +1,12 @@
 <template>
 <!--TODO replace with v-select-->
-<select2 v-if="options" style="width: 100%" v-model="selected" :options="options" :allowClear="allownull" :placeholder="placeholder" :required="required"/>
+<select2 v-if="options" 
+    style="width: 100%" 
+    v-model="selected" 
+    :options="options" 
+    :allowClear="allownull" 
+    :placeholder="placeholder" 
+    :required="required"/>
 </template>
 
 <script>
@@ -11,7 +17,17 @@ import select2 from '@/components/select2'
 
 export default {
     components: { projectaccess, select2 },
-    props: [ 'value', 'allownull', 'placeholder', 'canwrite', 'required' ],
+    props: [ 
+        'value', 
+        'allownull', 
+        'placeholder', 
+        'canwrite', 
+        'required', 
+
+        //set these to filter projects that only has datasets with these datatype/tags
+        'datatype',
+        'datatype_tags',
+    ],
     data() {
         return {
             selected: null, 
@@ -27,7 +43,7 @@ export default {
     },
 
     mounted: function() {
-
+        var that = this;
         var find = null
         if(this.canwrite) {
             //only load project that user is member of
@@ -49,30 +65,53 @@ export default {
             };
         }
 
-        console.log("lpoading project");
-        console.dir(find);        
-        this.$http.get('project', {params: {
-            find: JSON.stringify(find),
-            sort: 'name',
-        }}).then(res=>{
-            var option_groups = {} 
-            res.body.projects.forEach(project=>{
-                if(!option_groups[project.access]) option_groups[project.access] = [];
-                option_groups[project.access].push({ id: project._id, text: project.name, });
+        if(this.datatype) {
+            //only pull projects that has datasets with specified datatype
+            this.$http.get('dataset/distinct', {params: {
+                find: JSON.stringify({
+                    datatype: this.datatype,
+                    datatype_tags: this.datatype_tags,
+                    removed: false,
+                }),
+                distinct: 'project',
+            }}).then(res=>{
+                console.log('projects that has ', this.datatype);
+                var project_ids = res.body;
+                find._id = {$in: project_ids};
+                //TODO - if there are no project, not point of querying for datasets.
+                //we should warn user that they can't execue this app until data derivative is generated
+                query();
             });
-            this.options = [];
-            for(var access in option_groups) {
-                if(option_groups.length == 0) continue;
-                var group_header = access.charAt(0).toUpperCase() + access.slice(1) + " Project";
-                this.options.push({text: group_header, children: option_groups[access]});
-            }
+        } else {    
+            //no further query
+            query();
+        }
 
-            this.selected = this.value;
-            if(!this.allownull && !this.selected) {
-                //need to preselect some value
-                this.selected = localStorage.getItem('last_projectid_used') || this.options[0].id;
-            }
-        });
+        function query() {
+            console.log("lpoading project with query", find);
+            that.$http.get('project', {params: {
+                find: JSON.stringify(find),
+                sort: 'name',
+            }}).then(res=>{
+                var option_groups = {} 
+                res.body.projects.forEach(project=>{
+                    if(!option_groups[project.access]) option_groups[project.access] = [];
+                    option_groups[project.access].push({ id: project._id, text: project.name, });
+                });
+                that.options = [];
+                for(var access in option_groups) {
+                    if(option_groups.length == 0) continue;
+                    var group_header = access.charAt(0).toUpperCase() + access.slice(1) + " Project";
+                    that.options.push({text: group_header, children: option_groups[access]});
+                }
+
+                that.selected = that.value;
+                if(!that.allownull && !that.selected) {
+                    //need to preselect some value
+                    that.selected = localStorage.getItem('last_projectid_used') || that.options[0].id;
+                }
+            });
+        }
     }
 }
 </script>

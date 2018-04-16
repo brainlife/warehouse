@@ -5,7 +5,7 @@
             <icon name="cog" spin></icon> Loading..
         </span>
     </p>
-    <b-alert :show="error" :title="error" type="error" :closable="false"></b-alert>
+    <b-alert :show="error" variant="danger">{{error}}</b-alert>
     <div v-if="files && !error">
         <div :style="{marginLeft: offset}" class="buttons">
             <div class="button" @click="download()" title="Download"><icon name="download"/></div>
