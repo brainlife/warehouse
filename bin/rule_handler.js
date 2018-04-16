@@ -63,9 +63,7 @@ function run() {
 
     .exec((err, rules)=>{
 		if(err) throw err;
-        async.eachSeries(rules, (rule, next_rule)=>{
-            handle_rule(rule, next_rule);
-        }, err=>{
+        async.eachSeries(rules, handle_rule, err=>{
             if(err) logger.error(err);
             logger.debug("done with all rules - sleeping for a while");
             setTimeout(run, 1000*30);
@@ -196,6 +194,7 @@ function handle_rule(rule, cb) {
 
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var missing = false;
+        //console.time("find outputs");
         async.eachSeries(rule.app.outputs, (output, next_output)=>{
             var query = {
                 project: rule.project._id,
@@ -206,6 +205,7 @@ function handle_rule(rule, cb) {
             }
             if(output.datatype_tags.length > 0) query.datatype_tags = { $all: output.datatype_tags };
             if(rule.output_tags[output.id]) query.tags = { $all: rule.output_tags[output.id] }; 
+
             db.Datasets.findOne(query)
             .populate('datatype')
             .exec((err, dataset)=>{
@@ -218,6 +218,7 @@ function handle_rule(rule, cb) {
             });
         }, err=>{
             if(err) return next_subject(err);
+            //console.timeEnd("find outputs");
             if(!missing) {
                 logger.info("all datasets accounted for.. skipping to next subject");
                 return next_subject();
@@ -272,12 +273,15 @@ function handle_rule(rule, cb) {
                 query.tags = { $all: rule.input_tags[input.id] }; 
             }
 
+            //console.time("query1");
             db.Datasets.find(query)
             .populate('datatype')
             .sort(sort)
             .lean()
             .exec((err, datasets)=>{
                 if(err) return next_input(err);
+
+                //console.timeEnd("query1");
 
                 //find first dataset that matches all tags
                 var matching_dataset = null;

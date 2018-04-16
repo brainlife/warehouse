@@ -53,9 +53,10 @@
                     </b-col>
                     <b-col>
                         <b-row style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 90%; margin-bottom: 10px;">
-                            <b-col :cols="4">Datatype</b-col>
-                            <b-col :cols="3">config.json key</b-col>
-                            <b-col>File Mapping</b-col>
+                            <b-col cols="2">ID</b-col>
+                            <b-col cols="3">config.json key</b-col>
+                            <b-col cols="3">Datatype</b-col>
+                            <b-col cols="4">File Mapping</b-col>
                         </b-row>
                         <b-alert show variant="secondary" v-if="app.inputs.length == 0">No Inputs</b-alert>
                     </b-col>
@@ -66,15 +67,17 @@
                     <b-col>
                         <div v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'" style="margin-bottom: 5px;">
                             <b-row>
-                                <b-col :cols="4" v-if="app.inputs">
+                                <b-col cols="2">
+                                    <span style="opacity: 0.5;">{{con.input_id}}</span><!--internal input id-->
+                                </b-col>
+                                <b-col cols="3">
+                                    <b>{{key}}</b>
+                                </b-col>
+                                <b-col cols="3" v-if="app.inputs">
                                     <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
                                     <span v-if="find_by_id(app.inputs, con.input_id).optional" class="text-muted">(optional)</span>
                                 </b-col>
-                                <b-col :cols="3">
-                                    <b>{{key}}</b>
-                                </b-col>
-                                <b-col>
-                                    <small style="opacity: 0.3; float: right; margin-right: 10px">{{con.input_id}}</small><!--internal input id-->
+                                <b-col cols="4">
                                     <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
                                 </b-col>
                             </b-row>
@@ -90,12 +93,16 @@
                     <b-col>
                         <div class="item" v-for="output in app.outputs" style="margin-bottom: 5px;">
                             <b-row>
-                                <b-col :cols="7">
+                                <b-col cols="2">
+                                    <span style="opacity: 0.5;">{{output.id}}</span><!--internal output id-->
+                                </b-col>
+                                <b-col cols="3">
+                                </b-col>
+                                <b-col cols="3">
                                     <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                                 </b-col>
-                                <b-col>
+                                <b-col cols="4">
                                     <div style="position: relative"> 
-                                        <small style="opacity: 0.3; right: 10px; position: absolute;">{{output.id}}</small><!--internal output id-->
                                         <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
                                         <!--<small class="text-muted" v-else>No Mapping</small>-->
                                     </div>
@@ -314,7 +321,7 @@ export default {
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.config.user) this.find_resources(this.app.github);
-            if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
+            //if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
 
             //then load github README
             var branch = this.app.github_branch||"master";
@@ -374,6 +381,7 @@ export default {
             }
         },
 
+        /*
         ratechange: function() {
             this.$http.post('app/'+this.app._id+'/rate', {
                 rate: this.app._rate,
@@ -381,6 +389,8 @@ export default {
                 //console.dir(res.body);
             });
         },
+        */
+
         bibtex: function() {
             document.location = '/api/warehouse/app/bibtex/'+this.app._id;
         },

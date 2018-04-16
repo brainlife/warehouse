@@ -34,6 +34,7 @@
         <!--input-->
         <b-row v-for="(input, input_id) in inputs" :key="input_id" style="margin-bottom: 5px;">
             <b-col cols="3">
+                <span style="opacity: 0.8">{{input_id}}</span>
                 <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                 <span v-if="input.optional" class="text-muted">(optional)</span>
                 <span v-else>*</span>

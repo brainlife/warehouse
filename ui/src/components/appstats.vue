@@ -1,5 +1,5 @@
 <template>
-<div class="appstats">
+<div class="appstats" v-if="app.stats">
 <b-row>
     <b-col cols="2" style="border-right: 1px solid #ddd;">
         <center>
@@ -18,30 +18,32 @@
 
     <b-col cols="2">
         <center>
-            <span class="stat">{{app._rate||'n/a'}}</span>
-            <p class="header">User&nbsp;Rating</p>
+            <span class="stat">{{app.stats.stars}}</span>
+            <p class="header">Stars</p>
         </center>
     </b-col>
 
     <!--service stats (TODO - I should cache this on each app so that I don't have to load this separately)-->
-    <b-col cols="6" v-if="!service_stats"> 
+    <!--
+    <b-col cols="6">
         <center style="opacity: 0.3; padding-top: 10px;"><b>&nbsp;&nbsp;&nbsp;<icon name="cog" spin/> Loading..&nbsp;&nbsp;&nbsp;</b></center>
     </b-col>
-    <b-col cols="2" v-if="service_stats">
+    -->
+    <b-col cols="2">
         <center>
-            <span class="stat">{{service_stats.tasks}}</span>
+            <span class="stat">{{app.stats.service.counts.requested}}</span>
             <p class="header">Total&nbsp;Runs</p>
         </center>
     </b-col>
-    <b-col cols="2" v-if="service_stats">
+    <b-col cols="2">
         <center>
-            <span class="stat">{{service_stats.users}}</span>
+            <span class="stat">{{app.stats.service.users}}</span>
             <p class="header">Users</p>
         </center>
     </b-col>
-    <b-col cols="2" v-if="service_stats">
+    <b-col cols="2">
         <center>
-            <span class="stat" :class="success_rate_color">{{success_rate}}%</span>
+            <span class="stat" :class="success_rate_color">{{app.stats.success_rate.toFixed(1)}}%</span>
             <p class="header">Success&nbsp;Rate</p>
         </center>
     </b-col>
@@ -70,32 +72,37 @@ export default {
     components: { statustag },
     data() {
         return {
-            service_stats: null,
+            //stats: {},
         }
     },
 
     mounted: function() {
+        /*
         //then load task stats
         this.$http.get(Vue.config.wf_api+'/task/stats', {params: {
             service: this.app.github, 
             //service_branch: this.app.github_branch, //group by branch to pull *recent* info
         }}).then(res=>{
-            this.service_stats = res.body;  
-            
+            this.stats = res.body;  
+            conso.e.dir(res.body);
         });
+        */
     },
 
     computed: {
+        /*
         success_rate: function() {
-            if(!this.service_stats) return 0;
-            var finished = this.service_stats.counts.finished||0;
-            var requested = this.service_stats.counts.requested||1;
-            return ((finished / requested)*100).toFixed(1);
+            console.log("calculating success rate", this.app.stats)
+            if(!this.app.stats.service.counts) return 0;
+            var finished = this.app.stats.service.counts.finished||0;
+            var failed = this.app.stats.service.counts.failed||1;   
+            return ((finished / (failed+finished))*100).toFixed(1);
         },
+        */
         success_rate_color: function() {
-            if(this.success_rate < 50) return "text-danger"; 
-            if(this.success_rate < 80) return "text-warning"; 
-            if(this.success_rate < 95) return "text-secondary"; 
+            if(this.app.stats.success_rate < 50) return "text-danger"; 
+            if(this.app.stats.success_rate < 80) return "text-warning"; 
+            if(this.app.stats.success_rate < 95) return "text-secondary"; 
             return "text-success"; 
         },
     },

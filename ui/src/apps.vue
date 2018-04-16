@@ -118,14 +118,14 @@ width: 350px;
 float: left;
 }
 .page-content {
-margin-left: 250px;
+margin-left: 200px;
 }
 .group-list {
 position: fixed;
 top: 50px;
 bottom: 0px;
 left: 90px;
-width: 250px;
+width: 200px;
 background-color: #444;
 }
 .group-list h4 {
@@ -139,7 +139,7 @@ color: #999;
 text-transform: uppercase;
 padding: 5px 10px;
 margin-bottom: 0px;
-font-size: 85%;
+font-size: 80%;
 color: white;
 transition: background-color 0.5s;
 }

@@ -12,7 +12,7 @@ const logger = new winston.Logger(config.logger.winston);
 //use native promise for mongoose
 //without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated
 mongoose.Promise = global.Promise; 
-if(config.debug) mongoose.set('debug', true);
+if(config.mongoose_debug) mongoose.set('debug', true);
 
 let dataset_ex = null;
 let amqp_conn = null;
@@ -166,10 +166,10 @@ var datasetSchema = mongoose.Schema({
     user_id: {type: String, index: true},
     
     //project that this data belongs to
-    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects', index: true},
 
     //type of the data
-    datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
+    datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes', index: true},
     datatype_tags: [String], //add specificity to datatype (different from "tags" which is used for searching)
 
     //meta fields as specified in the datatype.meta
@@ -284,7 +284,7 @@ var appSchema = mongoose.Schema({
     desc: String,  //pulled from github
     desc_override: String, //if user wants to override the githut desc
 
-    tags: [String], //pulled fro github/repo topics
+    tags: [String], //pulled from github/repo topics
     contributors: [ new mongoose.Schema({name: 'string', email: 'string'}) ], //TODO - pull from github
     //
     //
@@ -318,7 +318,11 @@ var appSchema = mongoose.Schema({
         files: mongoose.Schema.Types.Mixed,
     })],
         
-    _rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
+    //_rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
+
+    //various stats for this app (aggregated by app.js)
+    stats: mongoose.Schema.Types.Mixed, 
+    
     removed: { type: Boolean, default: false} ,
 
     create_date: { type: Date, default: Date.now },
