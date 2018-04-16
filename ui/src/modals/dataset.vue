@@ -514,23 +514,7 @@ export default {
                 }});
             }).then(res=>{
                 this.alltags = res.body;
-                    
-                /*
-                //console.log("looking for derivatives", this.dataset);
-                return this.$http.get('dataset', {params: {
-                    find: JSON.stringify({"prov.deps.dataset": id}),
-                }});
-            }).then(res=>{
-                //group by task_id
-                res.body.datasets.forEach(dataset=>{
-                    var task_id = dataset.prov.task_id || Math.random(); //create random task id if it's missing (backwared compatibility)
-                    if(!this.derivatives[task_id]) this.derivatives[task_id] = [];
-                    this.derivatives[task_id].push(dataset);
-                });
-                */
-
                 console.log("done loading dataset details");
-
              }).catch(err=>{
                 console.error(err);
             });
@@ -602,13 +586,6 @@ export default {
             document.location = '/pub/'+pub._id;
         },
 
-        /*
-        start_edit_meta: function() {
-            console.log("stringify", this.dataset.meta);
-            Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
-        },
-        */
-
         save_meta: function() {
             try {
                 this.dataset.meta = JSON.parse(this.dataset._meta);
@@ -622,7 +599,7 @@ export default {
 
         editorInit: function() {
             require('brace/mode/json')
-            //require('brace/theme/twilight')
+            require('brace/theme/chrome')
         },
     }
 }
