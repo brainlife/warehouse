@@ -169,8 +169,8 @@
             </b-tab>
             <b-tab title="Provenance">
                 <div v-if="prov" class="dataset-provenance">
-                    <div v-if="prov.edges.length == 0" class="margin20">
-                        <b-alert show variance="info">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
+                    <div v-if="prov.edges.length == 0">
+                        <b-alert show variant="secondary">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
                     </div>
                     <div ref="vis" v-else style="height: 100%;"/>
                 </div>
@@ -181,7 +181,7 @@
                     <b-alert show variant="info" v-if="apps.length == 0">There are currently no applications that use the datatype from this dataset.</b-alert>
                     <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
                         <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)">
-                            <app :app="app" descheight="80px" devsheight="75px" :clickable="false"></app>
+                            <app :app="app" descheight="150px" :clickable="false"></app>
                         </div>
                     </div>
                 </div>
@@ -234,7 +234,7 @@ export default {
             task: null, //task that produced this dataset (optional)
             apps: null,
             prov: null, 
-            derivatives: {},
+            //derivatives: {},
 
             tab_index: 0,
 
@@ -477,6 +477,9 @@ export default {
             this.prov = null;
             this.apps = null;
             this.tab_index = 0;
+            this.task = null;
+            this.alltags = null;
+            //this.derivatives = {}; //reset
 
             if(!id) return;
 
@@ -512,18 +515,19 @@ export default {
             }).then(res=>{
                 this.alltags = res.body;
                     
+                /*
                 //console.log("looking for derivatives", this.dataset);
                 return this.$http.get('dataset', {params: {
                     find: JSON.stringify({"prov.deps.dataset": id}),
                 }});
             }).then(res=>{
                 //group by task_id
-                this.derivatives = {}; //reset
                 res.body.datasets.forEach(dataset=>{
                     var task_id = dataset.prov.task_id || Math.random(); //create random task id if it's missing (backwared compatibility)
                     if(!this.derivatives[task_id]) this.derivatives[task_id] = [];
                     this.derivatives[task_id].push(dataset);
                 });
+                */
 
                 console.log("done loading dataset details");
 

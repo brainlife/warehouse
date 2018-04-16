@@ -61,7 +61,7 @@
 
             <!--show info-->
             <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
-                <pre v-highlightjs="v" v-if="typeof v == 'string'"><code class="text hljs"></code></pre>
+                <pre v-highlightjs="v" v-if="typeof v == 'string'" style="max-height: 200px; overflow: auto;"><code class="text hljs"></code></pre>
                 <div v-else>
                     <pre>{{v}}</pre>
                 </div>

@@ -230,7 +230,7 @@ export default {
 
     destroyed() {
         if(this.ws) {
-            console.log("disconnecting from ws");
+            console.log("disconnecting from ws - process");
             this.ws.close();
         }
 

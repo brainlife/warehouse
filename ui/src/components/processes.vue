@@ -207,6 +207,13 @@ export default {
         this.load();
     },
 
+    destroyed() {
+        if(this.ws) {
+            console.log("disconnecting from ws - processes");
+            this.ws.close();
+        }
+    },
+
     watch: {
         project: function() {
             console.log("project changed.. need to reload");
@@ -491,6 +498,7 @@ transition: margin 0.3s, background-color 0.3s;
 
 .instance-header:hover {
 cursor: pointer;
+background-color: #eee;
 }
 .instance-active {
 padding: 15px;

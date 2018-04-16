@@ -96,7 +96,7 @@ export default {
                 var option_groups = {} 
                 res.body.projects.forEach(project=>{
                     if(!option_groups[project.access]) option_groups[project.access] = [];
-                    option_groups[project.access].push({ id: project._id, text: project.name, });
+                    option_groups[project.access].push({ id: project._id, text: project.name, desc: project.desc });
                 });
                 that.options = [];
                 for(var access in option_groups) {
