@@ -15,9 +15,8 @@ export default {
         }
     },
     mounted() {
+        //for multiple input .. I think it's deprecated now
         if(this.task.name == "brainlife.download.stage") {
-            //assume we have multiple dataset requests
-            //console.dir(this.task.config); 
 
             //find datatype from config
             var config = {};
@@ -146,11 +145,5 @@ iframe {
 border:none;
 width:100%;
 height:100%;
-}
-</style>
-
-<style>
-body, html {
-overflow: hidden;
 }
 </style>

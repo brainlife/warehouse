@@ -67,12 +67,13 @@ export default {
 
         if(this.datatype) {
             //only pull projects that has datasets with specified datatype
+            let project_query = {
+                datatype: this.datatype,
+                removed: false,
+            } 
+            if(this.datatype_tags && this.datatype_tags.length > 0) project_query.datatype_tags = { $all: this.datatype_tags };
             this.$http.get('dataset/distinct', {params: {
-                find: JSON.stringify({
-                    datatype: this.datatype,
-                    datatype_tags: this.datatype_tags,
-                    removed: false,
-                }),
+                find: JSON.stringify(project_query),
                 distinct: 'project',
             }}).then(res=>{
                 console.log('projects that has ', this.datatype);
