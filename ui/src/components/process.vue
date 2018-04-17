@@ -80,7 +80,10 @@
                                 <icon name="eye"/>
                             </div>
                             <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
+                            <!--
                             <div class="button" :class="{'button-gray': archiving === output}" title="Archive" @click="archiving = output"><icon name="archive"/></div>
+                            -->
+                            <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
                         </div>
                     </div>
 
@@ -118,7 +121,9 @@
                             </li>
                         </ul>
                     </div>
+                    <!--
                     <archiveform v-if="archiving === output" :task="task" :output="output" @done="archive_submitted"></archiveform>
+                    -->
                 </div>
                 <div v-if="task.product">
                     <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
@@ -164,7 +169,7 @@ import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import app from '@/components/app'
 import appname from '@/components/appname'
-import archiveform from '@/components/archiveform2'
+//import archiveform from '@/components/archiveform2'
 import projectselecter from '@/components/projectselecter'
 import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
@@ -183,7 +188,7 @@ export default {
         sidemenu, task, 
         message, tags, 
         filebrowser, pageheader, 
-        appavatar, app, archiveform, 
+        appavatar, app, 
         projectselecter, statusicon, mute,
         datatypetag, appname, statustag,
     },
@@ -195,7 +200,7 @@ export default {
             archived: [], //archived datasets from this process
             projects: null,
             
-            archiving: null, 
+            //archiving: null, 
             ws: null, //websocket
 
             loading: false,
@@ -208,6 +213,7 @@ export default {
         //don't forget to add remove listener on destroyed (debug loader won't destroy parent.. so you will end up with bunch of the same event firing)
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
+        this.$root.$on("archiver.submit", this.submit_archive);
 
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
@@ -226,16 +232,18 @@ export default {
 
             this.load();
         });
+
     },
 
     destroyed() {
+        this.$root.$off('datasetselecter.submit');
+        this.$root.$off('newtask.submit');
+        this.$root.$off('archiver.submit');
+
         if(this.ws) {
             console.log("disconnecting from ws - process");
             this.ws.close();
         }
-
-        this.$root.$off('datasetselecter.submit');
-        this.$root.$off('newtask.submit');
     },
 
     computed: {
@@ -297,11 +305,15 @@ export default {
             this.$root.$emit('dataset.view', {id});
         },
 
+        open_archiver: function(task, output) {
+            this.$root.$emit('archiver.show', {task, output});
+        },
+
         load() {
             this.loading = true;
 
             console.log("loading process");
-            this.archiving = null;
+            //this.archiving = null;
 
             console.log("(re)connecting to task updates");
             if(this.ws) this.ws.close();
@@ -364,6 +376,7 @@ export default {
                                 for(var k in event.msg) dataset[k] = event.msg[k]; //update 
                             }
                         });
+                        //vm.$forceUpdate();
                         break;
                     }
                 };
@@ -408,7 +421,7 @@ export default {
 
         findarchived: function(task, output) {
             return this.archived.filter(dataset=>{
-                return (dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
+                return (!dataset.removed && dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
             });
         },
 
@@ -428,9 +441,8 @@ export default {
             this.$notify({type: 'error', text: err.body.message});
         },
 
-        archive_submitted: function(dataset) {
-            this.archiving = null;
-            if(dataset) this.archived.push(dataset);
+        submit_archive: function(dataset) {
+            this.archived.push(dataset);
         },
 
         submit_stage: function(datasets) {

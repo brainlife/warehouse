@@ -1,6 +1,6 @@
 <template>
-<!--TODO replace with vue-select-->
-<select multiple="multiple" style="width: 100%;"></select>
+    <!--TODO replace with vue-select-->
+    <select multiple="multiple" style="width: 100%;"></select>
 </template>
 
 <script>
@@ -23,10 +23,18 @@ export default {
             this.$emit('input', $(this.$el).val());  
         });
     },
+    data: function() {
+        return {
+            old: null,
+        }
+    },
 
     watch: {
         value: function(value) {
-            $(this.$el).val(value);
+            console.log("tageditor value changed", value);
+            if(JSON.stringify(value) === JSON.stringify(this.old)) return; //don't update if it's same
+            $(this.$el).val(value).trigger('change');
+            this.old = value;
         },
         options: function(options) {
             $(this.$el).empty().select({data: options});

@@ -136,9 +136,6 @@
                         <b-row>
                             <b-col cols="3"><span class="form-header">Metadata</span></b-col>
                             <b-col style="position: relative;">
-                                <!--
-                                <span class="button" style="position: absolute; right: 40px; top: 10px;" @click="start_edit_meta()" v-if="dataset._canedit && !dataset._meta" title="Edit"><icon name="pencil" scale="1.25"/></span>
-                                -->
                                 <div v-if="dataset._canedit">
                                     <editor v-model="dataset._meta" @init="editorInit" @input="dataset._meta_dirty = true" lang="json" height="200"></editor>
                                     <br>
@@ -146,20 +143,7 @@
                                 </div>
                                 <div v-else>
                                     <p style="font-size: 85%; background-color: #ddd; padding: 10px; max-height: 250px; overflow: auto;"><pre>{{dataset.meta}}</pre></p>
-                                    <!-- currently disabled is not supported https://github.com/chairuosen/vue2-ace-editor/issues/25 -->
-                                    <!--<editor v-model="dataset._meta" @init="editorInit" lang="json" height="200"></editor>-->
                                 </div>
-                                
-                                <!--
-                                <b-row v-if="dataset._canedit">
-                                    <b-col :cols="6" v-for="(m, id) in dataset.meta" :key="id" style="margin-bottom: 3px;">
-                                        <b-input-group :prepend="id.toUpperCase()">
-                                            <b-form-input v-model="dataset.meta[id]" @keyup.native="update_dataset('meta')"/>
-                                        </b-input-group>
-                                    </b-col>
-                                </b-row>
-                                <metadata v-else :metadata="dataset.meta"></metadata>
-                                -->
                                 <br>
                             </b-col>
                         </b-row>

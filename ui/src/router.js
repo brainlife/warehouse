@@ -11,7 +11,7 @@ import download from '@/download'
 import view from '@/view'
 import novnc from '@/novnc'
 
-import processes from '@/processes'
+//import processes from '@/processes'
 
 import apps from '@/apps'
 import app from '@/app'
@@ -52,7 +52,7 @@ export default new Router({
         {path: '/dashboard', component: dashboard},
         //{path: '/upload', component: upload},
         {path: '/download/:id', component: download},
-        {path: '/processes/:id?', component: processes},
+        //{path: '/processes/:id?', component: processes},
         
         {path: '/apps', component: apps, meta: {public: true}},
         {path: '/app/:id', component: app, meta: {public: true}},
