@@ -73,7 +73,7 @@ export default {
             this.output = Object.assign({}, opt.output);
             this.tags = [];
             if(this.task.product && this.task.product.tags) {
-                this.tags = this.task.product.tags.slice(0);//clone
+                this.tags = this.task.product.tags;
             }
             this._meta = JSON.stringify(this.output.meta, null, 4);
             this.$refs.archiver.show();

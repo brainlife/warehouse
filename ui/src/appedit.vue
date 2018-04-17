@@ -71,19 +71,19 @@
 
             <div>
                 <h4>Input / Output</h4>
-                <b-form-group horizontal label="Input Datatype">
+                <b-form-group horizontal label="Input Datasets">
                     <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
                         <b-card style="position: relative;">
-                            <div class="button button-danger" @click="remove_input(idx)" style="float: right">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
                             <b-row>
-                                <b-col>
+                                <b-col cols="5">
                                     <b-input-group prepend="ID">
                                         <b-form-input type="text" v-model="input.id"required/>
                                     </b-input-group>
                                 </b-col>
                                 <b-col cols="7">
+                                    <div class="button button-danger" @click="remove_input(idx)" style="float: right">
+                                        <icon name="trash" scale="1.25"/>
+                                    </div>
                                     <b-form-checkbox v-model="input.optional">
                                         Optional 
                                         <small class="text-muted">user can submit this app without this input specified</small>
@@ -92,7 +92,7 @@
                             </b-row>
                             <hr>
                             <b-row>
-                                <b-col>
+                                <b-col cols="5">
                                     <span class="text-muted">Datatype</span>
                                     <b-form-select v-model="input.datatype">
                                         <option v-for="datatype in datatypes" :key="datatype._id" :value="datatype._id">{{datatype.name}}</option>
@@ -140,7 +140,7 @@
                     </p>
                 </b-form-group>
 
-                <b-form-group horizontal label="Output Datatype">
+                <b-form-group horizontal label="Output Datasets">
                     <div v-for="(output, idx) in app.outputs" :key="idx" style="margin-bottom: 10px;">
                         <b-card>
                             <div class="button button-danger" @click="app.outputs.splice(idx, 1)" style="float: right">
@@ -194,10 +194,11 @@
                     </b-dropdown>
                     <transition-group name="height">
                     <div v-for="(config, name) in app.config" :key="name" style="margin:5px;">
-                        <b-card v-if="config.type == 'integer' || config.type == 'number' || config.type == 'string'" :title="config.type | capitalize">
+                        <b-card v-if="config.type == 'integer' || config.type == 'number' || config.type == 'string'">
                             <div class="button button-danger" @click="remove_config(name)" style="float: right">
-                                <icon name="trash"/>
+                                <icon name="trash" scale="1.25"/>
                             </div>
+                            <h4>{{config.type|capitalize}}</h4>
                             <b-row>
                                 <b-col>
                                     <b-form-group>
