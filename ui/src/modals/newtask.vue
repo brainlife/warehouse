@@ -41,29 +41,24 @@
             </b-col>
             <b-col>
                 <b-form-group>
-                    <!--
-                    <el-select @change="validate()" v-model="input.dataset_idx" 
-                        no-data-text="No dataset available for this datatype / tags"
-                        placeholder="Please select input dataset" 
-                        style="width: 100%;">
-                        <el-option v-for="dataset in filter_datasets(input)" :key="dataset.idx"
-                                :value="dataset.idx" :label="compose_label(dataset)">
-                            <span v-if="dataset.task.status != 'finished'">({{dataset.task.status}})</span>
-                            {{dataset.task.name}} (t.{{dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
-                            <b>{{dataset.meta.subject}}</b> 
-                            <small>{{dataset.datatype_tags.toString()}}</small>
-                        </el-option>
-                    </el-select>
-                    -->
-                    <v-select :onChange="validate()" v-model="input.selected" :options="vsel(filter_datasets(input))">
-                        <span slot="no-options">No dataset available for this datatype / tags</span>
-                        <template slot="option" slot-scope="option">
-                            <span v-if="option.dataset.task.status != 'finished'">({{option.dataset.task.status}})</span>
-                            {{option.dataset.task.name}} (t.{{option.dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
-                            <b>{{option.dataset.meta.subject}}</b> 
-                            <small>{{option.dataset.datatype_tags.toString()}}</small>
-                        </template>
-                    </v-select>
+                    <b-row v-for="(it, idx) in input.selected" style="margin-bottom: 5px;" :key="idx">
+                        <b-col>
+                            <v-select :onChange="validate()" v-model="input.selected[idx]" :options="vsel(filter_datasets(input))">
+                                <span slot="no-options">No dataset available for this datatype / tags</span>
+
+                                <template slot="option" slot-scope="option">
+                                    <span v-if="option.dataset.task.status != 'finished'">({{option.dataset.task.status}})</span>
+                                    {{option.dataset.task.name}} (t.{{option.dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
+                                    <b>{{option.dataset.meta.subject}}</b> 
+                                    <small>{{option.dataset.datatype_tags.toString()}}</small>
+                                </template>
+                            </v-select>
+                        </b-col>
+                        <b-col cols="1">
+                            <div class="button button-danger" v-if="input.multi" @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
+                        </b-col>
+                    </b-row>
+                    <div class="button" @click="input.selected.push(null)" v-if="input.multi">Add Dataset</div>
                     <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
                 </b-form-group>
             </b-col>
@@ -83,12 +78,6 @@
                         <b>Dataset Description</b>
                         <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="3"/>
                     </p>
-                    <!--
-                    <p>
-                        <b>Project</b> <span class="text-muted">where you'd like to store this datasets</span>
-                        <projectselecter v-model="archive.project"/>
-                    </p>
-                    -->
                 </b-card>
             </b-col>
         </b-row>
@@ -99,7 +88,7 @@
             <b-col>
                 <div style="float: right">
                     <b-button @click="back">Back</b-button>
-                    <b-button variant="primary" v-if="valid" type="submit">Submit</b-button>
+                    <b-button variant="primary" :disabled="!valid" type="submit">Submit</b-button>
                 </div>
             </b-col>
         </b-row>
@@ -221,16 +210,6 @@ export default {
 
     methods: {
 
-        /*
-        set_default: function(config) {
-            for(var k in config) {
-                var v = config[k];
-                if(!v.type) this.set_default(v); //primitive should recurse
-                else if(v.type != "input") Vue.set(config, k, v.default);
-            }
-        },
-        */
-        
         selectapp: function(app) {
             this.app = app;
 
@@ -242,7 +221,7 @@ export default {
             this.inputs = {}; //reset first
             this.app.inputs.forEach(input=>{
                 var input_copy = Object.assign({
-                    selected: null, 
+                    selected: [null], 
                     options: this.vsel(this.filter_datasets(input)),
                 }, input);
                 Vue.set(this.inputs, input.id, input_copy);
@@ -257,10 +236,9 @@ export default {
         },
 
         preselect_single_items: function(input) {
-            //var datasets = this.filter_datasets(input);
             if (input.options.length == 1) {
-                //Vue.set(this.inputs[input.id], 'selected', datasets[0].idx);
-                this.inputs[input.id].selected = input.options[0];
+                //TODO - for multi inputs, what should I do?
+                this.inputs[input.id].selected[0] = input.options[0];
             }
         },
 
@@ -270,10 +248,10 @@ export default {
             if(!this.app) {
                 valid = false;
             } else {
-                //make sure all inputs are selected
+                //make sure all non-optinal inputs has at least one dataset selected
                 for(var input_id in this.inputs) {
                     var input = this.inputs[input_id];
-                    if(!input.optional && !input.selected) {
+                    if(!input.optional && input.selected.filter(id=>id!=null).length == 0) {
                         valid = false;
                     }
                 }
@@ -286,25 +264,31 @@ export default {
                 var node = this.app.config[k];
                 if(node.type && node.type == "input") {
                     var input = this.inputs[node.input_id];
-                    if(!input.selected) continue; //optional input not selected?
-                    var dataset = input.selected.dataset;
+                    if(input.multi) config[k] = [];
+                    input.selected.forEach(selected=>{
+                        if(!selected) return; //not set?
+                        var dataset = selected.dataset;
 
-                    var base = "../"+dataset.task._id;
-                    if(dataset.subdir) base+="/"+dataset.subdir;
-                    if(!~this.deps.indexOf(dataset.task._id)) this.deps.push(dataset.task._id);
+                        var base = "../"+dataset.task._id;
+                        if(dataset.subdir) base+="/"+dataset.subdir;
+                        if(!~this.deps.indexOf(dataset.task._id)) this.deps.push(dataset.task._id);
 
-                    //use file path specified in datatype..
-                    var file = input.datatype.files.find(file=>file.id == node.file_id);
-                    if(!file) {
-                        console.error("failed to find file id", node.file_id);
-                        config[k] = "no such file_id:"+node.file_id;
-                        break;
-                    }
-                    config[k] = base+"/"+(file.filename||file.dirname);
-                    //but override it if filemapping from the input dataset is provided
-                    if(dataset.files && dataset.files[node.input_id]) {
-                        config[k] = base+"/"+dataset.files[node.file_id];
-                    }
+                        //use file path specified in datatype..
+                        var file = input.datatype.files.find(file=>file.id == node.file_id);
+                        if(!file) {
+                            console.error("failed to find file id", node.file_id);
+                            config[k] = "no such file_id:"+node.file_id;
+                            return;
+                        }
+
+                        //use file.filename/dirname path, unless filemapping from the input dataset is provided
+                        var path = base+"/"+(file.filename||file.dirname);
+                        if(dataset.files && dataset.files[node.input_id]) {
+                            path = base+"/"+dataset.files[node.file_id];
+                        }
+                        if(input.multi) config[k].push(path);
+                        else config[k] = path;
+                    });
                 }
             }
         },
@@ -331,41 +315,33 @@ export default {
             for(var input_id in this.inputs) {
                 var input = this.inputs[input_id];
                 if(!input.selected) continue; //optional input not selected?
-                var dataset = input.selected.dataset; 
+                input.selected.forEach(selected=>{
+                    if(!selected) return; //not set?
+                    var dataset = selected.dataset; 
+                    var keys = [];
+                    for(var key in this.app.config) {
+                        if(this.app.config[key].input_id == input_id) keys.push(key); 
+                    }
+                    _inputs.push({
+                        id: input_id, 
+                        task_id: dataset.task._id, //unpopulate
+                        subdir: dataset.subdir, //is this right? (should come from prov?)
+                        meta: dataset.meta,
+                        tags: dataset.tags,
+                        datatype: dataset.datatype,
+                        dataset_id: dataset._id,
+                        datatype_tags: dataset.datatype_tags,
+                        project: dataset.project,
+                        keys,
+                    });
 
-                /*
-                var copy_dataset = Object.assign({}, dataset);
-                copy_dataset.task_id = dataset.task._id;
-                //copy_dataset.app_id = dataset.task.config._app; //testing..
-                //copy_dataset.output_id = copy_dataset.id; //this becomes output_id
-                //copy_dataset.id = input_id; //I believe this is not needed
-
-                //aggregate file mappings (keys) from this input (used to help app discover which input is for which config key)
-                */
-
-                var keys = [];
-                for(var key in this.app.config) {
-                    if(this.app.config[key].input_id == input_id) keys.push(key); 
-                }
-                _inputs.push({
-                    id: input_id, 
-                    task_id: dataset.task._id, //unpopulate
-                    subdir: dataset.subdir, //is this right? (should come from prov?)
-                    meta: dataset.meta,
-                    tags: dataset.tags,
-                    datatype: dataset.datatype,
-                    dataset_id: dataset._id,
-                    datatype_tags: dataset.datatype_tags,
-                    project: dataset.project,
-                    keys,
+                    //aggregating meta from all inputs
+                    //TODO - I need a better way to discover meta (like letting app to decide?)
+                    //TODO - if 2 inputs has different value for the same meta (like subject) the latterr wins.. bad!
+                    for(var k in dataset.meta) {
+                        if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
+                    }
                 });
-
-                //aggregating meta from all inputs
-                //TODO - I need a better way to discover meta (like letting app to decide?)
-                //TODO - if 2 inputs has different value for the same meta (like subject) the latterr wins.. bad!
-                for(var k in dataset.meta) {
-                    if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
-                }
             }
 
             this.config._inputs = _inputs;
