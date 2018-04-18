@@ -16,18 +16,18 @@
 
         <div v-for="file in files">
             <!--file/dir label-->
-            <div class="fileitem" @click="click(file)">
-                <span class="text-muted" :style="{marginLeft: offset}">
+            <div class="fileitem" @click="click(file)" :class="{'fileitem-viewing': file.view}">
+                <span :style="{marginLeft: offset, opacity: '0.7'}">
                     <icon name="link" v-if="!file.directory && file.link" class="text-warning"></icon>
                     <icon name="file-o" v-if="!file.directory && !file.link"></icon>
                     <icon name="folder-open" v-if="file.directory && file.open" class="text-primary"></icon>
                     <icon name="folder" v-if="file.directory && !file.open" class="text-primary"></icon>
                 </span>
                 {{file.filename}}
-                <span style="float: right; width: 150px;">
-                    <timeago :since="file.attrs.mtime*1000"/>
+                <span style="float: right; width: 150px; opacity: 0.7;">
+                    <timeago :since="file.attrs.mtime*1000" :title="new Date(file.attrs.mtime*1000).toLocaleString()"/>
                 </span>
-                <mute style="float: right; margin-right: 20px;" v-if="!file.link">{{file.attrs.size|filesize}}</mute>
+                <span style="float: right; margin-right: 20px;" v-if="!file.link">{{file.attrs.size|filesize}}</span>
             </div>
 
             <!-- recursively show sub directory-->
@@ -249,9 +249,12 @@ padding: 2px 4px;
 font-size: 13px;
 }
 .fileitem:hover {
-color: #2185D0;
+/*color: #2185D0;*/
 cursor: pointer;
-background-color: #ddd;
+background-color: #eee;
+}
+.fileitem.fileitem-viewing {
+color: #2185d0;
 }
 .hljs {
 background-color: #fff;
