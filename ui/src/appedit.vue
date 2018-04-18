@@ -219,7 +219,7 @@
                                         </b-input-group>
                                     </b-form-group>
 
-                                    <b-form-group v-if="config.default">
+                                    <b-form-group v-if="config.default !== ''">
                                         <b-form-checkbox v-model="config.readonly">Read Only<br>
                                         <small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                     </b-form-group>
@@ -300,7 +300,7 @@
                                             <b-form-select :options="config.options.map(o => o.value)" v-model="config.default"></b-form-select>
                                         </b-input-group>
                                     </b-form-group>
-                                    <b-form-group v-if="config.default">
+                                    <b-form-group v-if="config.default !== ''">
                                         <b-form-checkbox v-model="config.readonly">Read Only 
                                         <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                     </b-form-group>
