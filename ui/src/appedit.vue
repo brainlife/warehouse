@@ -88,6 +88,10 @@
                                         Optional 
                                         <small class="text-muted">user can submit this app without this input specified</small>
                                     </b-form-checkbox>
+                                    <b-form-checkbox v-model="input.multi">
+                                        Multi
+                                        <small class="text-muted">Allow user to select multiple datasets in an array</small>
+                                    </b-form-checkbox>
                                 </b-col>
                             </b-row>
                             <hr>
@@ -214,7 +218,7 @@
                                     <b-form-group>
                                         <b-input-group prepend="Default Value">
                                             <b-form-input v-if="config.type == 'integer'" type="number" v-model.number="config.default" placeholder="(no default)"/><!--deprecated-->
-                                            <b-form-input v-if="config.type == 'number'" type="number" step="0.01" v-model.number="config.default" placeholder="(no default)"/>
+                                            <b-form-input v-if="config.type == 'number'" type="number" :step="0.01" v-model.number="config.default" placeholder="(no default)"/>
                                             <b-form-input v-if="config.type == 'string'" type="text" v-model="config.default" placeholder="(no default)"/>
                                         </b-input-group>
                                     </b-form-group>
@@ -231,10 +235,10 @@
 
                                     <div v-if="!config.readonly && (config.type == 'number' || config.type == 'integer')">
                                         <b-input-group prepend="Min">
-                                            <b-form-input type="number" step="0.01" v-model.number="config.min" placeholder="(No min)"/>
+                                            <b-form-input type="number" :step="0.01" v-model.number="config.min" placeholder="(No min)"/>
                                         </b-input-group>
                                         <b-input-group prepend="Max">
-                                            <b-form-input type="number" step="0.01" v-model.number="config.max" placeholder="(No max)"/>
+                                            <b-form-input type="number" :step="0.01" v-model.number="config.max" placeholder="(No max)"/>
                                         </b-input-group>
                                     </div>
                                 </b-col>

@@ -285,7 +285,6 @@ import Vue from 'vue'
 import pageheader from '@/components/pageheader'
 import sidemenu from '@/components/sidemenu'
 import projectavatar from '@/components/projectavatar'
-import projectcard from '@/components/projectcard'
 import contact from '@/components/contact'
 import VueMarkdown from 'vue-markdown'
 import license from '@/components/license'
@@ -302,7 +301,7 @@ export default {
     components: { 
         pageheader, sidemenu, projectavatar, 
         contact, VueMarkdown, license, 
-        projectcard, datatypetag, tags, 
+        datatypetag, tags, 
         app, VueDisqus, citation,
         doibadge, 
     },
