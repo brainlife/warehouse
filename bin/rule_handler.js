@@ -326,10 +326,7 @@ function handle_rule(rule, cb) {
         var deps = [];
         var tasks = {};
 
-        //var instance_name = "brainlife.rule project:"+rule.project._id+" subject:"+subject;
         var instance_name = "brainlife.rule subject:"+subject;
-        //var instance_desc = "rule:"+rule.name+" for project:"+rule.project.name+" subject:"+subject;
-        //var instance_desc = "rule:"+rule.name+" subject:"+subject;
         var instance_desc = "rule submission for subject "+subject;
         running++;
 
@@ -571,10 +568,9 @@ function handle_rule(rule, cb) {
 
             //submit the app task!
             next=>{
-                //var did = next_tid*10;
                 var _config = Object.assign(
                     rule.config||{}, 
-                    process_input_config(rule.app.config, inputs, _app_inputs, task_stage), 
+                    process_input_config(rule.app, inputs, _app_inputs), 
                     {
                         _app: rule.app._id,
                         _rule: {
@@ -631,31 +627,35 @@ function handle_rule(rule, cb) {
     }
 }
 
-function process_input_config(config, inputs, datasets, task_stage) {
+//app - rule.app
+//inputs - input datasets that can be used for app (datatype populated)
+//datasets - ... similar to inputs.. selected to submit?
+function process_input_config(app, input_info, _app_inputs) {
     //logger.debug("process_input_config");
     //logger.debug(JSON.stringify(datasets, null, 4));
     var out = {};
-    for(var k in config) {
-        var v = config[k];
-        switch(v.type) {
-        case "input":
-            var input = inputs[v.input_id];
-            var dataset = datasets.find(d=>d.id == v.input_id);
+    for(var k in app.config) {
+        var node = app.config[k];
+        if(node.type && node.type == "input") {
+            var input = app.inputs.find(it=>it.id == node.input_id);
+            if(input.multi) out[k] = [];
+
+            var dataset = _app_inputs.find(d=>d.id == node.input_id);
             if(!dataset) continue; //optional input that's ignored?
+
             var base = "../"+dataset.task_id;
             if(dataset.subdir) base+="/"+dataset.subdir;
 
-            var file = input.datatype.files.find(file=>file.id == v.file_id);
-            out[k] = base+"/"+(file.filename||file.dirname);
-
-            //override if datasets.files exists.. which points to non-default input file location
-            if(dataset.files && dataset.files[v.file_id]) {
-                out[k] = base+"/"+dataset.files[v.file_id];
+            var info = input_info[node.input_id];
+            var file = info.datatype.files.find(file=>file.id == node.file_id);
+                
+            //use file.fillname unless datasets.files exists.. which points to non-default input file location
+            var path = base+"/"+(file.filename||file.dirname);
+            if(dataset.files && dataset.files[node.file_id]) {
+                path = base+"/"+dataset.files[node.file_id];
             }
-            break;
-        case "integer":
-        case "string":
-            //scalar configs are handled by the user
+            if(input.multi) out[k].push(path);
+            else out[k] = path;
         }
     }
     return out;
