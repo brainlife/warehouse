@@ -2,7 +2,6 @@
 <b-form v-if="app && projects" @submit="submit">
     <b-alert :show="!this.resource_available">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
 
-    <!--<h4>Input Datasets</h4>-->
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col cols="3">
             <small style="float: right;" class="text-muted">{{input.id}}</small>
@@ -14,8 +13,12 @@
         <b-col>
             <b-row>
                 <b-col cols="5">
-                    <!--<span class="text-muted">Project</span>-->
-                    <projectselecter v-model="form.projects[input.id]" placeholder="Project" @input="preselect_single_items(input)"/>
+                    <projectselecter 
+                        v-model="form.projects[input.id]" 
+                        :datatype="input.datatype"
+                        :datatype_tags="input.datatype_tags"
+                        placeholder="Project" 
+                        @input="preselect_single_items(input)"/>
                 </b-col>
                 <b-col cols="7">
                     <select2 

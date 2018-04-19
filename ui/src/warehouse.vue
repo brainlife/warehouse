@@ -5,14 +5,14 @@
 
     <!--modal that can be called from any view -->
     <dataset/>
-
-    <viewselecter v-if="config.user"/>
     <datatype/>
 
     <!--models only used by project page (TODO - move to project page eventually -->
+    <viewselecter v-if="config.user"/>
     <datasetselecter v-if="config.user"/>
     <uploader v-if="config.user"/>
     <instanceselecter v-if="config.user"/>
+    <archiver v-if="config.user"/>
 </div>
 </template>
 
@@ -27,12 +27,13 @@ import datatype from '@/modals/datatype'
 import datasetselecter from '@/modals/datasetselecter'
 import uploader from '@/modals/uploader'
 import instanceselecter from '@/modals/instanceselecter'
+import archiver from '@/modals/archiver'
 
 export default {
     components: {
-        //modals
         viewselecter, dataset, datatype, 
         uploader, datasetselecter, instanceselecter, 
+        archiver,
 
         //loadingBar,
     },
@@ -89,6 +90,7 @@ font-size: inherit;
 /*needed to keep iframe 100% with for view*/
 html,body {
 height:100%;
+overflow: hidden;
 }
 
 /*deprecate below eventually*/
@@ -250,6 +252,12 @@ border: none;
 border-radius: 0;
 }
 
+.modal-content {
+border-radius: 0;
+}
+.modal-dialog {
+box-shadow: 0 0 20px #000;
+}
 .brainlife-modal {
 background-color: #fff;
 height: 100%;
@@ -288,5 +296,6 @@ opacity: 0.4;
 font-weight: bold;
 font-size: 90%;
 }
+
 </style>
 

@@ -18,7 +18,7 @@
 
     <b-col cols="2">
         <center>
-            <span class="stat">{{app.stats.stars||'n/a'}}</span>
+            <span class="stat">{{app.stats.stars}}</span>
             <p class="header">Stars</p>
         </center>
     </b-col>

@@ -9,8 +9,8 @@
         </b-nav-item-dropdown>
         -->
         <b-nav-item-dropdown v-if="config.user" text="New">
-            <b-dropdown-item @click="go('/app/_/edit')">Register New App</b-dropdown-item>
-            <b-dropdown-item @click="go('/project/_/edit')">Register New Project</b-dropdown-item>
+            <b-dropdown-item @click="go('/app/_/edit')">App</b-dropdown-item>
+            <b-dropdown-item @click="go('/project/_/edit')">Project</b-dropdown-item>
         </b-nav-item-dropdown>
         <b-nav-item-dropdown v-if="config.user">
             <span slot="button-content">

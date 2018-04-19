@@ -6,6 +6,7 @@
 
         <dtiinit v-if="type == 't1pdd'" :task="task" :subdir="subdir"></dtiinit>
         <wmc v-else-if="type == 'tractview'" :task="task" :subdir="subdir"></wmc>
+        <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir"></surfaces>
         <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir"></lifeview>
         <life v-else-if="type == 'lifestats'" :task="task" :subdir="subdir"></life>
         <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir"></evaluator>
@@ -29,6 +30,7 @@ import Vue from 'vue'
 import dtiinit from '@/datauis/dtiinit'
 import freesurfer from '@/datauis/freesurfer'
 import wmc from '@/datauis/wmc'
+import surfaces from '@/datauis/surfaces'
 import lifeview from '@/datauis/lifeview'
 import life from '@/datauis/life'
 import evaluator from '@/datauis/evaluator'
@@ -45,7 +47,7 @@ export default {
         dtiinit, freesurfer, wmc, 
         life, evaluator, images, 
         volumeviewer, filebrowser, task,
-        lifeview,
+        lifeview, surfaces,
     },
 
     data () {

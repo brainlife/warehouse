@@ -136,9 +136,6 @@
                         <b-row>
                             <b-col cols="3"><span class="form-header">Metadata</span></b-col>
                             <b-col style="position: relative;">
-                                <!--
-                                <span class="button" style="position: absolute; right: 40px; top: 10px;" @click="start_edit_meta()" v-if="dataset._canedit && !dataset._meta" title="Edit"><icon name="pencil" scale="1.25"/></span>
-                                -->
                                 <div v-if="dataset._canedit">
                                     <editor v-model="dataset._meta" @init="editorInit" @input="dataset._meta_dirty = true" lang="json" height="200"></editor>
                                     <br>
@@ -146,20 +143,7 @@
                                 </div>
                                 <div v-else>
                                     <p style="font-size: 85%; background-color: #ddd; padding: 10px; max-height: 250px; overflow: auto;"><pre>{{dataset.meta}}</pre></p>
-                                    <!-- currently disabled is not supported https://github.com/chairuosen/vue2-ace-editor/issues/25 -->
-                                    <!--<editor v-model="dataset._meta" @init="editorInit" lang="json" height="200"></editor>-->
                                 </div>
-                                
-                                <!--
-                                <b-row v-if="dataset._canedit">
-                                    <b-col :cols="6" v-for="(m, id) in dataset.meta" :key="id" style="margin-bottom: 3px;">
-                                        <b-input-group :prepend="id.toUpperCase()">
-                                            <b-form-input v-model="dataset.meta[id]" @keyup.native="update_dataset('meta')"/>
-                                        </b-input-group>
-                                    </b-col>
-                                </b-row>
-                                <metadata v-else :metadata="dataset.meta"></metadata>
-                                -->
                                 <br>
                             </b-col>
                         </b-row>
@@ -169,8 +153,8 @@
             </b-tab>
             <b-tab title="Provenance">
                 <div v-if="prov" class="dataset-provenance">
-                    <div v-if="prov.edges.length == 0" class="margin20">
-                        <b-alert show variance="info">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
+                    <div v-if="prov.edges.length == 0">
+                        <b-alert show variant="secondary">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
                     </div>
                     <div ref="vis" v-else style="height: 100%;"/>
                 </div>
@@ -181,7 +165,7 @@
                     <b-alert show variant="info" v-if="apps.length == 0">There are currently no applications that use the datatype from this dataset.</b-alert>
                     <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
                         <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)">
-                            <app :app="app" descheight="80px" devsheight="75px" :clickable="false"></app>
+                            <app :app="app" descheight="150px" :clickable="false"></app>
                         </div>
                     </div>
                 </div>
@@ -234,7 +218,7 @@ export default {
             task: null, //task that produced this dataset (optional)
             apps: null,
             prov: null, 
-            derivatives: {},
+            //derivatives: {},
 
             tab_index: 0,
 
@@ -477,6 +461,9 @@ export default {
             this.prov = null;
             this.apps = null;
             this.tab_index = 0;
+            this.task = null;
+            this.alltags = null;
+            //this.derivatives = {}; //reset
 
             if(!id) return;
 
@@ -511,22 +498,7 @@ export default {
                 }});
             }).then(res=>{
                 this.alltags = res.body;
-                    
-                //console.log("looking for derivatives", this.dataset);
-                return this.$http.get('dataset', {params: {
-                    find: JSON.stringify({"prov.deps.dataset": id}),
-                }});
-            }).then(res=>{
-                //group by task_id
-                this.derivatives = {}; //reset
-                res.body.datasets.forEach(dataset=>{
-                    var task_id = dataset.prov.task_id || Math.random(); //create random task id if it's missing (backwared compatibility)
-                    if(!this.derivatives[task_id]) this.derivatives[task_id] = [];
-                    this.derivatives[task_id].push(dataset);
-                });
-
                 console.log("done loading dataset details");
-
              }).catch(err=>{
                 console.error(err);
             });
@@ -598,13 +570,6 @@ export default {
             document.location = '/pub/'+pub._id;
         },
 
-        /*
-        start_edit_meta: function() {
-            console.log("stringify", this.dataset.meta);
-            Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
-        },
-        */
-
         save_meta: function() {
             try {
                 this.dataset.meta = JSON.parse(this.dataset._meta);
@@ -618,7 +583,7 @@ export default {
 
         editorInit: function() {
             require('brace/mode/json')
-            //require('brace/theme/twilight')
+            require('brace/theme/chrome')
         },
     }
 }

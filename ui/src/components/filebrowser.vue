@@ -1,12 +1,12 @@
 <template>
 <div>
-    <p class="text-muted" style="margin: 5px;" v-if="!files">
+    <p class="text-muted" style="padding: 5px;" v-if="!files">
         <span :style="{marginLeft: offset}">
             <icon name="cog" spin></icon> Loading..
         </span>
     </p>
-    <el-alert v-if="error" :title="error" type="error" :closable="false"></el-alert>
-    <div v-if="files">
+    <b-alert :show="error" variant="danger">{{error}}</b-alert>
+    <div v-if="files && !error">
         <div :style="{marginLeft: offset}" class="buttons">
             <div class="button" @click="download()" title="Download"><icon name="download"/></div>
             <div class="button" @click="load()" title="Refresh"><icon name="refresh"/></div>
@@ -152,6 +152,9 @@ export default {
                 if(c == "") c = "(empty)";
                 Vue.set(file, 'type', type);
 
+                Vue.set(file, 'content', c);
+                Vue.set(file, 'view', true);
+                /*
                 //TODO - can't get slideDown to work via css.. hack to animate height
                 //can't just transition with max-height?
                 var lines = c.trim().split("\n");
@@ -166,6 +169,7 @@ export default {
                     } 
                 }
                 setTimeout(addline, 10);
+                */
             });
         },
 
@@ -255,11 +259,11 @@ background-color: #fff;
 .file-content pre {
 overflow: auto;
 font-family: 'monospace';
-padding: 5px;
 margin-bottom: 5px;
 padding: 0px;
-/*padding-left: 10px;*/
 max-height: 400px;
+box-shadow: 1px 1px 4px #aaa;
+border-left: 15px solid #ddd;
 }
 .file-content {
 position: relative;

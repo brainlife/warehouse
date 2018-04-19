@@ -105,6 +105,7 @@ export default {
             result.classList.add('menu-item');
             if (data.header) result.classList.add('header');
             if (data.text) result.innerHTML += this.ascii_escape(data.text);
+            if (data.desc) result.innerHTML += "<br><small style='opacity: 0.8'>"+this.ascii_escape(data.desc)+"</small>";
 
             //TODO - makes no sense that these formatter exists here
             if (data.datatype && data.tags) {
