@@ -120,7 +120,6 @@ export default {
                 });
             }
             
-            // if there's a date, add it
             if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
             
             return result;
@@ -148,8 +147,8 @@ export default {
                 });
             }
             
-            // if there's a date, add it
-            if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
+            // if there's a date, add it (too long for appsubmit)
+            //if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
             
             return result;
         },
