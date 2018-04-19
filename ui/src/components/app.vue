@@ -32,12 +32,6 @@
             </div>
             <div class="desc" :style="{height: descheight}">{{app_.desc_override||app_.desc||'no description..'}}</div>
             <slot/>
-            <!--
-            <div class="devs" :style="{height: devsheight}">
-                <div class="devs-fade"/>
-                <contact v-for="c in app_.contributors" short="true" :key="c._id" :fullname="c.name" :email="c.email"></contact>
-            </div>
-            -->
             <div class="stats" v-if="app_.stats && app_.stats.service">
                 <span class="stat" v-b-tooltip.hover title="number of time this App was requested">
                     <icon name="play" scale="0.8"/> {{app_.stats.service.counts.requested}}

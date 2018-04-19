@@ -70,7 +70,7 @@
 
             <!--output-->
             <div slot="output" v-if="task.config._outputs.length > 0">
-                <div v-for="output in task.config._outputs" :key="output.id" style="padding: 5px;">
+                <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 5px;">
                     <div class="float-right" style="position: relative; top: -5px;">
                         <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
                             <icon name="cubes"/>

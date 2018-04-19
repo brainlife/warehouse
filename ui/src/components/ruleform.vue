@@ -16,7 +16,7 @@
                 <template slot="option" slot-scope="app">
                     <app :app="app" :compact="true" :clickable="false"/>
                 </template>
-                <template slot="selected-option" scope="app">
+                <template slot="selected-option" slot-scope="app">
                     <!--<app :app="app" :compact="true" :clickable="false"/>-->
                     {{app.name}}
                 </template>

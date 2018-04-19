@@ -11,25 +11,29 @@
             <span class="text-muted" v-else>(optional)</span>
         </b-col>
         <b-col>
-            <b-row>
+            <b-row v-for="(item, idx) in form.inputs[input.id]" :key="idx" style="margin-bottom: 5px;">
                 <b-col cols="5">
                     <projectselecter 
                         v-model="form.projects[input.id]" 
                         :datatype="input.datatype"
                         :datatype_tags="input.datatype_tags"
                         placeholder="Project" 
-                        @input="preselect_single_items(input)"/>
+                        @input="form.inputs[input.id][idx] = null"/>
                 </b-col>
-                <b-col cols="7">
+                <b-col cols="6">
                     <select2 
-                        v-model="form.inputs[input.id]" 
-                        :dataAdapter="debounce_grab_items(input)" 
+                        v-model="form.inputs[input.id][idx]" 
+                        :dataAdapter="debounce_fetch_datasets(input)" 
                         :allowClear="input.optional"
                         :multiple="false" 
                         :placeholder="'Input Dataset'" 
                         :options="form.options[input.id]"/>
                 </b-col>
+                <b-col cols="1" v-if="input.multi">
+                    <div class="button button-danger" @click="form.inputs[input.id].splice(idx, 1)" size="sm"><icon name="trash"/></div>
+                </b-col>
             </b-row>
+            <div class="button" @click="form.inputs[input.id].push(null)" v-if="input.multi">Add Dataset</div>
             <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
         </b-col>
     </b-row>
@@ -64,6 +68,7 @@
             <b-button variant="primary" type="submit">Submit</b-button>
         </b-col>
     </b-row>
+
 </b-form>
 </template>
 
@@ -104,7 +109,7 @@ export default {
 
             form: {
                 desc: "",
-                inputs: {},
+                inputs: {}, //input_id as key, and array of dataset ids selected
                 options: {}, // explicit options to load (temporary)
                 
                 projects: {},
@@ -150,15 +155,12 @@ export default {
         .then(res=>{
             this.app = res.body.apps[0];
 
-            /*configform takes care of this now
-            //set to default values
-            for(var k in this.app.config) {
-                var v = this.app.config[k];
-                if(v.type && v.type != "input") {
-                    Vue.set(this.form.config, k, v.default);
-                }
+            //initialize input datasets array (with null as first item)
+            for(var idx in this.app.inputs) {
+                var input = this.app.inputs[idx];
+                Vue.set(this.form.inputs, input.id, [null]);
             }
-            */
+
             return this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
                 service: this.app.github
             }});
@@ -174,8 +176,10 @@ export default {
     methods: {
         
         // if there's only 1 applicable dataset for a given input, pre-select it
+        //TODO - update to make it work with array input
+        /*
         preselect_single_items: function(input) {
-            this.grab_items(input, {}, data => {
+            this.fetch_datasets(input, {}, data => {
                 //if there's only 1 applicable dataset...
                 if (data.results.length == 1) {
                     let result = data.results[0];
@@ -191,8 +195,9 @@ export default {
                 }
             });
         },
+        */
 
-        grab_items: function(input, params, cb) {
+        fetch_datasets: function(input, params, cb) {
             // essentially the same code from datasetselecter.vue
             if (!params.page) params.page = 1;
             var dropdown_items = [];
@@ -247,24 +252,21 @@ export default {
             });
         },
         
-        // wait a bit (unless interrupted by more keystrokes), then calls grab_items
-        debounce_grab_items: function(input) {
-            // 'global' variables
+        // wait a bit (unless interrupted by more keystrokes), then calls fetch_datasets
+        debounce_fetch_datasets: function(input) {
             let debounce;
             
-            // return a new grab_items event that can be called for each input datatype
+            // return a new fetch_datasets event that can be called for each input datatype
             // params + cb are input from select2
             return (params, cb) => {
-                let vm = this;
-                
                 // debounce handling without lodash
                 if (debounce) {
                     clearTimeout(debounce);
                     debounce = null;
                 }
-                debounce = setTimeout(function() {
+                debounce = setTimeout(()=>{
                     debounce = null;
-                    vm.grab_items.call(vm, input, params, cb);
+                    this.fetch_datasets(input, params, cb);
                 }, 200);
             }
         },
@@ -286,16 +288,28 @@ export default {
                                 //find the input 
                                 app.inputs.forEach(input=>{
                                     if(input.id == node.input_id) {
-                                        //find the file
-                                        var dataset_id = form.inputs[input.id];
-                                        if(!dataset_id) {
+                                        var dataset_ids = form.inputs[input.id];
+                                        var allnull = true;
+                                        dataset_ids.forEach(id=>{
+                                            if(id) allnull = false;
+                                        });
+                                        if(allnull) {
                                             //optional config that's not set?
                                             delete obj[k];
                                             return; 
                                         }
+                                        //find the file
                                         input.datatype.files.forEach(file=>{
                                             if(file.id == node.file_id) {
-                                                obj[k] = "../"+download_task_id+"/"+dataset_id+"/"+(file.filename||file.dirname)
+                                                if(input.multi) {
+                                                    obj[k] = [];
+                                                    dataset_ids.forEach(dataset_id=>{
+                                                        obj[k].push("../"+download_task_id+"/"+dataset_id+"/"+(file.filename||file.dirname));
+                                                    });
+                                                } else {
+                                                    //single
+                                                    obj[k] = "../"+download_task_id+"/"+dataset_ids[0]+"/"+(file.filename||file.dirname)
+                                                }
                                             }
                                         });
                                     } 
@@ -314,27 +328,40 @@ export default {
             return config;
         },
 
-        submit: function(evt) {
-            evt.preventDefault();
 
-            //make sure all required inputs are selected
+        validate: function() {
             var validated = true;
-            console.dir(this.form.inputs);
             this.app.inputs.forEach(input=>{
                 if(input.optional !== undefined && input.optional) return;
-                console.log(input.id,"should be set");
-                if(!this.form.inputs[input.id]) validated = false;
+                //count number of non nulls
+                if(this.form.inputs[input.id].filter(id=>id!=null).length == 0) {
+                    this.$notify({ text: 'Please select '+input.id, type: 'error' });
+                    validated = false;
+                }
             });
-            if(!this.project) validated = false;
-            if(!validated) {
-                this.$notify({ text: 'Please select all required field', type: 'error' });
-                return;
+            if(!this.project) {
+                this.$notify({ text: 'Please select project', type: 'error' });
+                validated = false;
+            }
+            return validated;
+        },
+
+        submit: function(evt) {
+            evt.preventDefault();
+            if(!this.validate()) return;
+
+            //remove null inputs 
+            this.app.inputs.forEach(input=>{
+                this.form.inputs[input.id] = this.form.inputs[input.id].filter(id=>id!=null);
+            });
+
+            var all_dataset_ids = [];
+            for(var input_id in this.form.inputs) {
+                all_dataset_ids = all_dataset_ids.concat(this.form.inputs[input_id]);
             }
 
-            //var did = 0;
             var app_inputs = [];
             var meta = {};
-
             var project = this.projects[this.project];
 
             //first create an instance to run everything
@@ -355,7 +382,7 @@ export default {
 
                 //pull datasets info that we are submitting with
                 return this.$http.get('dataset', {params: {
-                    find: JSON.stringify({_id: {$in: Object.values(this.form.inputs)}}),
+                    find: JSON.stringify({_id: {$in: all_dataset_ids}}),
                 }})
             }).then(res=>{
                 res.body.datasets.forEach(d=>{
@@ -366,7 +393,7 @@ export default {
                 //issue token to download datasets 
                 return this.$http.get('dataset/token', {
                     params: {
-                        ids: JSON.stringify(Object.values(this.form.inputs))
+                        ids: JSON.stringify(all_dataset_ids)
                     },
                 });
             }).then(res=>{
@@ -374,39 +401,39 @@ export default {
                 
                 //create config to download all input data from archive
                 for(var input_id in this.form.inputs) {
-                    var dataset_id = this.form.inputs[input_id];
-                    if(!dataset_id) continue; //probably optional field that's not set
-                    download.push({
-                        url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
-                        untar: "auto",
-                        dir: dataset_id,
+                    this.form.inputs[input_id].forEach(dataset_id=>{
+                        download.push({
+                            url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
+                            untar: "auto",
+                            dir: dataset_id,
+                        });
+
+                        var dataset = datasets[dataset_id];
+                        var output = {
+                            id: input_id,
+                            subdir: dataset_id, 
+                            dataset_id,
+                            task_id: dataset.task_id,
+                            datatype: dataset.datatype,
+                            datatype_tags: dataset.datatype_tags,
+                            tags: dataset.tags,
+                            meta: dataset.meta,
+                            project: dataset.project,
+                        }
+                        _outputs.push(output);
+
+                        //aggregate metas
+                        for(var k in dataset.meta) if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
+
+                        //turn output into input for the main app
+                        var keys = [];
+                        for(var key in this.app.config) {
+                            if(this.app.config[key].input_id == input_id) keys.push(key); 
+                        }
+                        app_inputs.push(Object.assign({
+                            keys,
+                        }, output));
                     });
-
-                    var dataset = datasets[dataset_id];
-                    var output = {
-                        id: input_id,
-                        subdir: dataset_id, 
-                        dataset_id,
-                        task_id: dataset.task_id,
-                        datatype: dataset.datatype,
-                        datatype_tags: dataset.datatype_tags,
-                        tags: dataset.tags,
-                        meta: dataset.meta,
-                        project: dataset.project,
-                    }
-                    _outputs.push(output);
-
-                    //aggregate metas
-                    for(var k in dataset.meta) if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
-
-                    //turn output into input for the main app
-                    var keys = [];
-                    for(var key in this.app.config) {
-                        if(this.app.config[key].input_id == input_id) keys.push(key); 
-                    }
-                    app_inputs.push(Object.assign({
-                        keys,
-                    }, output));
                 }
 
                 //now submit task to download data from archive

@@ -71,7 +71,7 @@
                                     <span style="opacity: 0.5;">{{con.input_id}}</span><!--internal input id-->
                                 </b-col>
                                 <b-col cols="3">
-                                    <b>{{key}}</b>
+                                    <b>{{key}} <span class="text-muted" v-if="find_by_id(app.inputs, con.input_id).multi">(multi)</span></b>
                                 </b-col>
                                 <b-col cols="3" v-if="app.inputs">
                                     <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
@@ -104,7 +104,6 @@
                                 <b-col cols="4">
                                     <div style="position: relative"> 
                                         <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
-                                        <!--<small class="text-muted" v-else>No Mapping</small>-->
                                     </div>
                                 </b-col>
                             </b-row>
@@ -120,14 +119,18 @@
                         <span class="form-header">Projects</span>
                     </b-col>
                     <b-col>
-                        <p class="alert alert-success"><icon name="lock" /> Only the members of following project(s) can see / submit this app.</p>
-                        <b-card no-body>
-                            <b-list-group flush>
-                                <b-list-group-item v-for="project in app.projects" :key="project._id">
-                                    <project :project="project" :key="project._id"/>
-                                </b-list-group-item>
-                            </b-list-group>
-                        </b-card>
+                        <p><small class="text-muted"><icon name="lock" /> Only the members of the following project(s) can view/execute this app.</small></p>
+                        <div v-for="project in app.projects" :key="project._id" class="project-card" @click="go('/project/'+project._id)">
+                            <b-row>
+                                <b-col cols="2">
+                                    <projectavatar :project="project" :height="50" :width="50"/>
+                                </b-col>
+                                <b-col>
+                                    <b>{{project.name}}</b>
+                                    <p style="margin-bottom: 0px; color: gray;">{{project.desc}}</p>
+                                </b-col>
+                            </b-row>
+                        </div>
                         <br>
                     </b-col>
                 </b-row>
@@ -146,7 +149,7 @@
                         <span class="form-header">Computing Resources</span>
                     </b-col>
                     <b-col>
-                        <p v-if="preferred_resource"><small class="text-muted">This application can currently run on following resources</small></p>
+                        <p v-if="preferred_resource"><small class="text-muted">This application can currently run on the following resources</small></p>
                         <b-alert show variant="warning" v-if="!preferred_resource">
                             This app currently can not run on any resource that you have access to.
                         </b-alert>
@@ -172,7 +175,7 @@
                         <span class="form-header">Administrators</span>
                     </b-col>
                     <b-col>
-                        <p><small class="text-muted">Following users can administer this application registration.</small></p>
+                        <p><small class="text-muted">The following users can administer this application registration.</small></p>
                         <ul style="list-style: none; padding: 0px;">
                             <li v-for="c in app.admins" :key="c._id">
                                 <contact :id="c"/>
@@ -187,7 +190,7 @@
                         <span class="form-header">Contributors</span>
                     </b-col>
                     <b-col>
-                        <p><small class="text-muted">Following people have contributed to the source code ({{app.github}}).</small></p>
+                        <p><small class="text-muted">The following people have contributed to the source code ({{app.github}}).</small></p>
                         <ul style="list-style: none; padding: 0px;">
                             <li v-for="dev in app.contributors" :key="dev._id">
                                 <contact :fullname="dev.name" :email="dev.email"/>
@@ -230,6 +233,7 @@
             <br>
         </b-container>
 
+        <!--
         <br>
         <b-card v-if="config.debug">
             <div slot="header">Debug</div>
@@ -238,6 +242,7 @@
             <h3>Preferred Resource</h3>
             <pre v-highlightjs="JSON.stringify(preferred_resource, null, 4)"><code class="json hljs"></code></pre>
         </b-card>
+        -->
     </div><!--page-content-->
 </div>
 </template>
@@ -257,6 +262,7 @@ import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
 import appsubmit from '@/components/appsubmit'
 import appstats from '@/components/appstats'
+import projectavatar from '@/components/projectavatar'
 
 import VueDisqus from 'vue-disqus/VueDisqus.vue'
 
@@ -266,7 +272,7 @@ export default {
         tags, datatype, appavatar,
         VueMarkdown, statustag, VueDisqus,
         appsubmit, datatypetag, datatypefile,
-        appstats,
+        appstats, projectavatar,
      },
 
     data () {
@@ -294,6 +300,7 @@ export default {
                         status: resource.status,
                         score: resource.score,
                         detail: resource.detail,
+                        //_rowVariant: "success",
                     };
 
                     //b-table shows _rowVariant as column..
@@ -438,4 +445,13 @@ padding: 15px 0px;
 margin: 15px 0px;
 }
 */
+.project-card {
+cursor: pointer;
+background-color: white;
+padding: 5px;
+margin-bottom: 5px;
+}
+.project-card:hover {
+background-color: #ddd;
+}
 </style>

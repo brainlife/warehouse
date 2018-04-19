@@ -103,9 +103,7 @@
                         <b-row v-if="task && task.product">
                             <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
                             <b-col cols="9">
-                                <p>
-                                    <pre v-highlightjs><code class="json">{{task.product}}</code></pre>
-                                </p>
+                                <pre v-highlightjs><code class="json">{{task.product}}</code></pre>
                             </b-col>
                         </b-row>
                         <b-row v-if="config.user">

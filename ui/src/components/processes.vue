@@ -22,7 +22,7 @@
                 -->
                 <div class="status-toggler">
                     <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">All ({{instances.length}})</b-button>
-                    <b-button size="sm" v-for="state in ['running', 'finished', 'failed']" 
+                    <b-button size="sm" v-for="state in ['running', 'finished', 'failed']"  :key="state"
                             :pressed="show == state" :variant="state2variant(state)" @click="show = state">
                             {{state}} ({{instance_counts[state]||0}})
                     </b-button>
