@@ -107,17 +107,29 @@ export default {
             if (data.text) result.innerHTML += this.ascii_escape(data.text);
             if (data.desc) result.innerHTML += "<br><small style='opacity: 0.8'>"+this.ascii_escape(data.desc)+"</small>";
 
-            //TODO - makes no sense that these formatter exists here
-            if (data.datatype && data.tags) {
+            //TODO - makes no sense that this exists here (move to the client)
+            if (data.datatype) {
                 var datatype_name = data.datatype.name;
                 if(datatype_name.indexOf("neuro/") == 0) datatype_name = datatype_name.substring(6);
-                result.innerHTML += " <span class='datatype'>"+datatype_name+"</span> ";
+                result.innerHTML += " <span style='background-color: #999; padding: 3px; color: black;'>"+datatype_name+"</span>";
+            }
+            if (data.datatype_tags) {
+                data.datatype_tags.forEach(tag=>{ 
+                    result.innerHTML += "<span style='background-color: #ddd; padding: 3px; color: black;'>"+tag+"</span>";
+                });
+                result.innerHTML += " ";
+            }
+            if(data.tags) {
+                result.innerHTML += "<br>";
+                /*
                 var firsttag = true;
                 data.tags.forEach(tag => {
                     if(!firsttag) result.innerHTML += " | ";
                     firsttag = false;
                     result.innerHTML += this.ascii_escape(tag);
                 });
+                */
+                result.innerHTML += data.tags.filter(this.ascii_escape).join(" | ");
             }
             
             if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
@@ -134,19 +146,20 @@ export default {
             if (data.text) result.innerHTML += this.ascii_escape(data.text);
 
             //TODO - makes no sense that these formatter exists here
-            if (data.datatype && data.tags) {
+            if (data.datatype) {
                 var datatype_name = data.datatype.name;
                 if(datatype_name.indexOf("neuro/") == 0) datatype_name = datatype_name.substring(6);
-                //result.innerHTML += " <b class='subject'>"+data.meta.subject+"</b> ";
-                result.innerHTML += " <span class='datatype'>"+datatype_name+"</span> ";
-                var firsttag = true;
-                data.tags.forEach(tag => {
-                    if(!firsttag) result.innerHTML += " | ";
-                    firsttag = false;
-                    result.innerHTML += this.ascii_escape(tag);
-                });
+                result.innerHTML += " <span style='background-color: #999; padding: 3px; color: black;'>"+datatype_name+"</span>";
             }
-            
+            if (data.datatype_tags) {
+                data.datatype_tags.forEach(tag=>{ 
+                    result.innerHTML += "<span style='background-color: #ddd; padding: 3px; color: black;'>"+tag+"</span>";
+                });
+                result.innerHTML += " ";
+            }
+            if(data.tags)  {
+                result.innerHTML += data.tags.filter(this.ascii_escape).join(" | ");
+            }
             // if there's a date, add it (too long for appsubmit)
             //if (data.date) result.innerHTML += "<time>"+new Date(data.date).toLocaleString()+"</time>";
             
@@ -172,15 +185,6 @@ export default {
     margin-left:10px;
     color:#999;
     float: right;
-}
-.menu-item .datatype {
-    padding: 2px 4px;
-    background-color: gray;
-    color: white;
-}
-.menu-item .tag {
-    padding:2px 4px;
-    color:#999;
 }
 .select2-results__option--highlighted .tag,
 .select2-results__option--highlighted time {
