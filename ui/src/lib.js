@@ -53,4 +53,13 @@ function filter_datasets(datasets, input) {
     });
 }
 
-export { filter_apps, filter_datasets };
+//dedupe an array
+//https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
+function uniq(a) {
+    var seen = {};
+    return a.filter(function(item) {
+        return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+    });
+}
+
+export { filter_apps, filter_datasets, uniq };

@@ -13,7 +13,7 @@
         <images v-else-if="type == 'images'" :task="task" :subdir="subdir"></images>
         <volumeviewer v-else-if="type == 'volumeviewer'" :task="task" :subdir="subdir"></volumeviewer>
         <div v-else-if="type == 'raw'" style="padding: 10px 0px; background-color: white; height: 100%; overflow: auto;">
-            <filebrowser :task="task" :path="(subdir||'')"></filebrowser>
+            <filebrowser :task="task" :path="(subdir||'')" style="margin-right: 50px;"></filebrowser>
         </div>
     </div>
     <div v-else style="padding: 20px; height: 100%; overflow: auto;">

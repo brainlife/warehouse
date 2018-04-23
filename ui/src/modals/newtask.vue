@@ -314,7 +314,7 @@ export default {
             var _inputs = [];
             for(var input_id in this.inputs) {
                 var input = this.inputs[input_id];
-                if(!input.selected) continue; //optional input not selected?
+                //if(!input.selected) continue; //optional input not selected?
                 input.selected.forEach(selected=>{
                     if(!selected) return; //not set?
                     var dataset = selected.dataset; 
@@ -351,7 +351,7 @@ export default {
                 var output_req = {
                     id: output.id,
                     datatype: output.datatype._id,
-                    datatype_tags: output.datatype_tags,
+                    //datatype_tags: output.datatype_tags,
                     desc: output.id+ " from "+this.app.name,
                     meta,
                     files: output.files,
@@ -360,6 +360,19 @@ export default {
                     //project: this.project,  //should be set by the client
                     desc: this.archive.desc,
                 }
+
+                //handle tag passthrough
+                var tags = [];
+                if(output.datatype_tags_pass) {
+                    this.inputs[output.datatype_tags_pass].selected.forEach(selected=>{
+                        if(!selected) return; //not set?
+                        tags = tags.concat(tags, selected.dataset.datatype_tags);
+                    }); 
+                }
+                //.. and add app specified output tags at the end
+                tags = tags.concat(tags, output.datatype_tags); 
+                output_req.datatype_tags = lib.uniq(tags);
+
                 _outputs.push(output_req);
             });
             this.config._outputs = _outputs;

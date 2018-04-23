@@ -462,18 +462,23 @@ export default {
                     var output_req = {
                         id: output.id,
                         datatype: output.datatype._id,
-                        datatype_tags: output.datatype_tags,
+                        //datatype_tags: output.datatype_tags,
                         desc: output.id+ " from "+this.app.name,
                         meta,
                         files: output.files,
                     };
-                    /* TODO..
-                    if(this.newtask.archive.enable) output_req.archive = {
-                        project: this.newtask.archive.project,
-                        desc: this.newtask.archive.desc,
-                        //tags: this.newtask.archive.tags, //deprecated - store this under output_req
+
+                    //handle tag passthrough
+					var tags = [];
+                    if(output.datatype_tags_pass) {
+                        this.form.inputs[output.datatype_tags_pass].forEach(dataset_id=>{
+							tags = tags.concat(tags, datasets[dataset_id].datatype_tags);
+                        }); 
                     }
-                    */
+					//.. and add app specified output tags at the end
+					tags = tags.concat(tags, output.datatype_tags); 
+                    output_req.datatype_tags = lib.uniq(tags);
+
                     config._outputs.push(output_req);
                 });
 

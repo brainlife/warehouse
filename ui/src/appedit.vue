@@ -163,14 +163,22 @@
                             <b-row>
                                 <b-col>
                                     <div class="text-muted">Datatype</div>
-                                    <el-select v-model="output.datatype" style="width: 100%">
-                                        <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id"></el-option>
-                                    </el-select>
+                                    <b-form-select v-model="output.datatype">
+                                         <option v-for="datatype in datatypes" :key="datatype._id" :value="datatype._id">{{datatype.name}}</option>
+                                    </b-form-select>
                                 </b-col>
-                                <b-col cols="7">
+                                <b-col cols="7" v-if="output.datatype">
                                     <div class="text-muted">Datatype Tags</div>
-                                    <tageditor v-if="output.datatype" v-model="output.datatype_tags"/>
+                                    <tageditor v-model="output.datatype_tags"/>
                                     <small class="text-muted">Set these datatype tags on this output dataset</small>
+
+                                    <div class="text-muted">Tag Passthrough</div>
+                                    <b-form-select v-model="output.datatype_tags_pass">
+                                         <option :value="null">(No Pass)</option>
+                                         <option v-for="input in app.inputs" :key="input.id" :value="input.id">{{input.id}}</option>
+                                    </b-form-select>
+                                    <small class="text-muted">Add all datatype tags from the input dataset specified</small>
+                                    
                                 </b-col>
                             </b-row>
                             <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>(Optional JSON)</small></div>
@@ -537,6 +545,7 @@ export default {
                 id: "",
                 datatype: null,
                 datatype_tags: [],
+                datatype_tags_pass: null, //only for output
             });
         },
         

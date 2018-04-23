@@ -94,28 +94,28 @@ export default {
             {
                 ui: "tractview",
                 name: "WMC Tract View",
-                desc: "to-be-written.",
+                desc: "Web-based visualization tools for white matter tracts.",
                 avatar: "https://brainlife.io/images/ui-logos/tractview.png",
                 datatypes: [ "neuro/wmc" ],
             },
             {
                 ui: "images",
                 name: "Image Tile",
-                desc: "to-be-written.",
+                desc: "Generic image viewer",
                 avatar: "https://brainlife.io/images/ui-logos/images.png",
                 datatypes: ["generic/images"],
             },
             {
                 ui: "volumeviewer",
                 name: "Volume Viewer",
-                desc: "to-be-written.",
+                desc: "Web-based visualization tools for neurological data.",
                 avatar: "https://brainlife.io/images/ui-logos/ui-volumeviewer.png",
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/mask" ],
             },
             {
                 ui: "fslview",
                 name: "FSLView",
-                desc: "to-be-written.",
+                desc: "A 2d/3d brain volume viewer.",
                 avatar: "https://brainlife.io/images/ui-logos/fslview.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
@@ -123,7 +123,7 @@ export default {
             {
                 ui: "mrview",
                 name: "mrView",
-                desc: "to-be-written.",
+                desc: "The MRtrix image viewer.",
                 avatar: "https://brainlife.io/images/ui-logos/mrview.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
@@ -131,7 +131,7 @@ export default {
             {
                 ui: "fibernavigator",
                 name: "fiberNavigator",
-                desc: "to-be-written.",
+                desc: "A tool designed for a fast and versatile visualization of streamline datasets.",
                 avatar: "https://brainlife.io/images/ui-logos/fibernavigator.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
@@ -139,7 +139,7 @@ export default {
             {
                 ui: "freeview-gpu",
                 name: "FreeView",
-                desc: "to-be-written.",
+                desc: "Freeview is a program used to view and work with structural, anatomical scans in the sagittal, coronal, and axial planes, as well as in 3D. ",
                 avatar: "https://brainlife.io/images/ui-logos/freeview.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/freesurfer" ],
@@ -156,7 +156,7 @@ export default {
             {
                 ui: "conn",
                 name: "CONN",
-                desc: "Experimental",
+                desc: "A Matlab-based cross-platform software for the computation, display, and analysis of functional connectivity in fMRI (fcMRI).",
                 avatar: "https://brainlife.io/images/ui-logos/conn.png",
                 docker: true,
                 datatypes: [ "raw" ], 
@@ -165,7 +165,7 @@ export default {
             {
                 ui: "surfaces",
                 name: "3D Surfaces",
-                desc: "Display 3D Surfaces",
+                desc: "Display 3D Surfaces (vtk) using THREE.js(WebGL)",
                 avatar: "https://brainlife.io/images/ui-logos/surfaces.png",
                 datatypes: [ "neuro/3Dsurfaces" ], 
             },

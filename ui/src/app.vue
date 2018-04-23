@@ -11,6 +11,7 @@
                     </b-col>
                     <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right;">
+                            <span class="button" @click="go_github()" title="github"><icon name="github" scale="1.25"/></span>
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                         </div>
@@ -100,6 +101,7 @@
                                 </b-col>
                                 <b-col cols="3">
                                     <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
+                                    <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ {{output.datatype_tags_pass}}</span>
                                 </b-col>
                                 <b-col cols="4">
                                     <div style="position: relative"> 
@@ -355,6 +357,9 @@ export default {
         
         go: function(path) {
             this.$router.push(path);
+        },
+        go_github: function() {
+            document.location = "https://github.com/"+this.app.github;
         },
         
         find_resources: function(service) {
