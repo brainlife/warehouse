@@ -234,7 +234,7 @@ router.get('/prov/:id', (req, res, next)=>{
 
         load_task(dataset.prov.task_id, (err, task)=>{
             if(err) return cb(err);
-            if(task.service == "soichih/sca-product-raw") { //TODO might change in the future
+            if(task.service == "soichih/sca-product-raw" || task.service == "soichih/sca-service-noop") { //TODO might change in the future
                 if(defer) {
                     add_node(defer.node);
                     edges.push(defer.edge);

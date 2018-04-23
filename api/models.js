@@ -313,6 +313,7 @@ var appSchema = mongoose.Schema({
         id: String,
         datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
         datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
+        datatype_tags_pass: String, //add all datatype tags of input dataset with specified ID
 
         //optional output file/dir mapping to datatype file_id
         files: mongoose.Schema.Types.Mixed,

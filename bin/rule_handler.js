@@ -11,7 +11,7 @@ const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../api/models');
 
-// TODO Disable rule if failurer rate is too high?
+// TODO Disable rule if failure rate is too high?
 
 var rcon = null;
 
@@ -48,6 +48,16 @@ function health_check() {
 
     //reset counter
     _counts.rules = 0;
+}
+
+
+//dedupe an array
+//https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
+function uniq(a) {
+    var seen = {};
+    return a.filter(function(item) {
+        return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+    });
 }
 
 function run() {
@@ -584,10 +594,10 @@ function handle_rule(rule, cb) {
                 );
 
 				rule.app.outputs.forEach(output=>{
-                    _config._outputs.push({
+                    var output_req = {
                         id: output.id,
                         datatype: output.datatype,
-                        datatype_tags: output.datatype_tags,
+                        //datatype_tags: output.datatype_tags,
                         desc: output.desc,
                         meta: meta,
                         tags: rule.output_tags[output.id], 
@@ -597,7 +607,20 @@ function handle_rule(rule, cb) {
                             desc: rule.name,
                             //tags: rule.output_tags[output.id], //deprecated by parent's tags.. (remove this eventually)
                         }
-                    });
+                    }
+
+                    //handle tag passthrough
+                    var tags = [];
+                    if(output.datatype_tags_pass) {
+						//TODO - how is multi input handled here?
+            			var dataset = inputs[output.datatype_tags_pass];
+						tags = tags.concat(tags, dataset.datatype_tags);
+                    }
+                    //.. and add app specified output tags at the end
+                    tags = tags.concat(tags, output.datatype_tags);
+                    output_req.datatype_tags = uniq(tags);
+
+                    _config._outputs.push(output_req);
                 });
 
                 request.post({
@@ -628,8 +651,8 @@ function handle_rule(rule, cb) {
 }
 
 //app - rule.app
-//inputs - input datasets that can be used for app (datatype populated)
-//datasets - ... similar to inputs.. selected to submit?
+//input_info - input datasets that can be used for app (datatype populated)
+//_app_inputs ... similar to input_info.. selected to submit?
 function process_input_config(app, input_info, _app_inputs) {
     //logger.debug("process_input_config");
     //logger.debug(JSON.stringify(datasets, null, 4));
@@ -640,6 +663,7 @@ function process_input_config(app, input_info, _app_inputs) {
             var input = app.inputs.find(it=>it.id == node.input_id);
             if(input.multi) out[k] = [];
 
+			//TODO - multi could have more than 1 dataset... (let's just process first one for now?)
             var dataset = _app_inputs.find(d=>d.id == node.input_id);
             if(!dataset) continue; //optional input that's ignored?
 
