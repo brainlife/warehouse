@@ -147,6 +147,7 @@
                     </b-col>
                 </b-row>
                 -->
+                <!--
                 <b-row v-if="resources">
                     <b-col cols="3">
                         <span class="form-header">Computing Resources</span>
@@ -168,9 +169,34 @@
                                 <p class="text-muted">{{data.value}}</p>
                             </template>
                         </b-table>
-                        <!--<small class="text-muted" v-else>This app could run on one of above resource(s)</small>-->
                     </b-col>
                 </b-row>
+                -->
+
+                <b-row v-if="resources">
+                    <b-col cols="3">
+                        <span class="form-header">Computing Resources</span>
+                    </b-col>
+                    <b-col>
+                        <p><small class="text-muted">This App is currently registered to run on the following resources.</small></p>
+                        <b-row>
+                            <b-col cols="4" v-for="resource in resources" :key="resource._id">
+                                <div class="resource" v-b-popover.hover="resource.info.desc+'\n\n'+resource.detail" :title="resource.id">
+                                    <icon name="server" scale="2" style="float: right; opacity: 0.5;"/>
+                                    <b>{{resource.name}}</b><br>
+                                    <small>{{resource.info.name}}</small>
+                                    <h5><b-badge pill variant="light">Score {{resource.score}}</b-badge></h5>
+                                    <div v-if="resource.status != 'ok'" class="resource-status bg-danger">Down</div>
+                                    <div v-else-if="resource.score == 0" class="resource-status bg-warning">Busy</div>
+                                    <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success">
+                                        <icon name="thumbs-up"/>
+                                    </div>
+                                </div>
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                </b-row>
+
 
                 <!--detail table-->
                 <b-row v-if="config.user">
@@ -294,6 +320,7 @@ export default {
     },
 
     computed: {
+        /*
         resource_table: function() {
             let items = [];
             if(this.resources) {
@@ -316,6 +343,7 @@ export default {
             }
             return items;
         },
+        */
     },
 
     mounted: function() {
@@ -331,7 +359,6 @@ export default {
         .then(res=>{
             this.app = res.body.apps[0];
             if(this.config.user) this.find_resources(this.app.github);
-            //if(!this.app._rate) Vue.set(this.app, '_rate', 0); //needed..
 
             //then load github README
             var branch = this.app.github_branch||"master";
@@ -368,13 +395,14 @@ export default {
                 service,
             }})
             .then(res => {
+                console.log("loaded resources");
+                console.dir(res.body);
                 if(res.body.resource) this.preferred_resource = res.body.resource;
                 this.resources = res.body.considered.sort((a, b) => {
                     if (a.score < b.score) return 1;
                     if (a.score > b.score) return -1;
                     return 0;
                 });
-                //console.dir(this.resources);
             })
             .catch(err => {
                 console.error(err);
@@ -459,5 +487,28 @@ margin-bottom: 5px;
 }
 .project-card:hover {
 background-color: #ddd;
+}
+.resource {
+background-color: white;
+box-shadow: 2px 2px 5px #ddd;
+padding: 10px;
+margin-bottom: 10px;
+position: relative;
+}
+.resource-status {
+position: absolute;
+bottom: -8px;
+right: -8px;
+font-size: 10pt;
+text-align: center;
+padding-top: 13px;
+color: white;
+text-transform: uppercase;
+background-color: gray;
+width: 50px;
+height: 50px;
+border-radius: 50px;
+border: 3px solid white;
+box-shadow: 1px 1px 5px #999;
 }
 </style>
