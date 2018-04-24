@@ -100,7 +100,7 @@
                     <b-col cols="2">
                     </b-col>
                     <b-col>
-                        <vue-disqus shortname="brain-life" :identifier="selected._id"/>
+                        <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
                     </b-col>
                 </b-row>
             </div>
@@ -311,6 +311,12 @@ export default {
             if(this.selected == project) return; //no point of opening project if it's already opened
             this.selected = project;
             localStorage.setItem("last_projectid_used", project._id);
+
+            //https://github.com/ktquez/vue-disqus/issues/11#issuecomment-354023326
+            if(this.$refs.disqus) {
+                console.log("resetting disqus", this.selected._id);
+                this.$refs.disqus.reset(window.DISQUS);
+            }
         },
 
         /*

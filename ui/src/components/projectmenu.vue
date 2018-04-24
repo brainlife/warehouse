@@ -67,8 +67,7 @@ export default {
     mounted () {
         this.ps = new PerfectScrollbar(this.$el);
         this.scroll_to_active();
-
-        console.dir(this.projects);
+        //console.dir(this.projects);
     },
 
     destroyed() {
