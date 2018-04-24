@@ -296,6 +296,9 @@ opacity: 0.4;
 font-weight: bold;
 font-size: 90%;
 }
-
+p.text {
+line-height: 200%;
+opacity: 0.8;
+}
 </style>
 

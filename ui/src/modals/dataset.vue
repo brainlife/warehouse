@@ -127,8 +127,14 @@
                             <b-col cols="3"><span class="form-header">Publications</span></b-col>
                             <b-col cols="9">
                                 <small class="text-muted">This dataset has been published on following publications.</small>
+                                <!--
                                 <b-table small hover :items="dataset.publications" :fields="['name', 'desc', 'doi']" @row-clicked="openpub">
                                 </b-table>
+                                -->
+                                <div v-for="pub in dataset.publications" @click="openpub(pub)" v-if="!pub.removed" class="pub">
+                                    <h5>{{pub.name||pub}}</h5>
+                                    <p class="text">{{pub.desc}}</p>
+                                </div>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -350,6 +356,11 @@ export default {
         close: function() {
             if(!this.dataset) return;
             if(this.back) this.$router.push(this.back);
+            this.dataset = null;
+        },
+
+        openpub: function(pub_id) {
+            this.$router.push('/pub/'+pub_id);
             this.dataset = null;
         },
 
@@ -612,6 +623,21 @@ padding: 20px;
 }
 .fade-enter, .fade-leave-to {
     opacity: 0
+}
+.pub {
+background-color: white;
+padding: 10px;
+margin-bottom: 10px;
+cursor: pointer;
+}
+.pub:hover {
+background-color: #eee;
+}
+.pub .text {
+font-size: 90%;
+}
+.pub h5 {
+color: #007bff;
 }
 </style>
 

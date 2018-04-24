@@ -20,9 +20,10 @@
                             <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')">{{app.github}}</a>
                             <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
                         </h5>
-                        <p style="opacity: 0.8">{{app.desc_override||app.desc}}
+                        <p class="text">{{app.desc_override||app.desc}}
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
+                        <br>
                         <!--
                         <p style="line-height: 220%;">
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
@@ -129,7 +130,7 @@
                                 </b-col>
                                 <b-col>
                                     <b>{{project.name}}</b>
-                                    <p style="margin-bottom: 0px; color: gray;">{{project.desc}}</p>
+                                    <p style="margin-bottom: 0px; color: gray;" class="text">{{project.desc}}</p>
                                 </b-col>
                             </b-row>
                         </div>

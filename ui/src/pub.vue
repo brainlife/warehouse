@@ -23,7 +23,7 @@
                         <h4 style="color: #666; margin-bottom: 10px;">
                             {{pub.name}} 
                         </h4>
-                        <p style="opacity: 0.8;">{{pub.desc}}</p>
+                        <p class="text">{{pub.desc}}</p>
                         <p style="line-height: 200%;">
                             <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
                         </p>
