@@ -80,7 +80,7 @@ export default {
             }
         },
         options: function (options) {
-            console.log("select2: parent options changed to", options);
+            //console.log("select2: parent options changed to", options);
             this.opts.data = options;
             //we need to update val also here.. or it will break.. (really?)
             $(this.$el).empty().select2(this.opts).val(this.value).trigger('change');

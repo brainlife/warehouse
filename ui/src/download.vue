@@ -2,13 +2,11 @@
 <div>
     <pageheader/>
     <sidemenu active="/datasets"></sidemenu>
-    <div class="ui pusher">
-        <div class="page-content">
-        <div class="margin20" v-if="instance && tasks">
-
-            <h1><icon name="download" scale="2"></icon> BIDS Download</h1>
-            <p>We are staging requested datasets and organizing them in BIDS structure. Download should begin automatically once it's ready. </p>
-            <b-card>
+    <div class="page-content">
+        <div class="header">
+            <b-container v-if="instance && tasks">
+                <h1><icon name="download" scale="2"></icon> BIDS Download</h1>
+            </b-container>
                 <!--
                 <div slot="header" style="padding: 15px;">
                     <el-steps :space="200" :active="active">
@@ -25,34 +23,20 @@
                     </div>
                 </div>
                 -->
-                <h3>Task Status</h3>
+        </div><!--header-->
+        <b-container>
+            <div v-if="active != 3">
+                <p>We are staging requested datasets and organizing them in BIDS structure. Download should begin automatically once it's ready. </p>
                 <div v-for="task in tasks" :key="task._id">
                     <task :task="task"></task>
                     <br>
                 </div>
-                <div v-if="active == 3">
-                    <hr>
-                    <b-button variant="primary" class="animated bounceIn" size="lg" @click="download"><icon name="download"/> Download</b-button>    
-                </div>
-            </b-card>
-
-            <br>
-            <div v-if="config.debug">
-                <div v-if="instance">
-                    <h3>instance</h3>
-                    <pre v-highlightjs="JSON.stringify(instance, null, 4)"><code class="json hljs"></code></pre>
-                </div>
-                <div v-if="tasks">
-                    <h3>tasks</h3>
-                    <div v-for="task in tasks">
-                        <pre v-highlightjs="JSON.stringify(task, null, 4)"><code class="json hljs"></code></pre>
-                    </div>
-                </div>
             </div>
-
-        </div><!--margin20-->
-        </div><!--page-content-->
-    </div>
+            <div v-else>
+                <b-button variant="primary" class="animated bounceIn" @click="download"><icon name="download"/> Download</b-button>    
+            </div>
+        </b-container>
+    </div><!--page-content-->
 </div><!--root-->
 </template>
 
@@ -179,4 +163,11 @@ export default {
 </script>
 
 <style scoped>
+.header {
+background-color: white;
+margin-bottom: 30px;
+padding: 30px;
+border-bottom: 1px solid #ccc;
+z-index: 2;
+}
 </style>

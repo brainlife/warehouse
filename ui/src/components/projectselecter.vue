@@ -1,22 +1,22 @@
 <template>
-<!--TODO replace with v-select-->
-<select2 v-if="options" 
-    style="width: 100%" 
-    v-model="selected" 
-    :options="options" 
-    :allowClear="allownull" 
-    :placeholder="placeholder" 
-    :required="required"/>
+<v-select v-model="selected" :options="options" :placeholder="placeholder" label="name">
+    <!--
+    <template slot="option" slot-scope="option">
+        {{option.name}}
+    </template>
+    -->
+</v-select>
 </template>
 
 <script>
 import Vue from 'vue'
 
 import projectaccess from '@/components/projectaccess'
-import select2 from '@/components/select2'
+//import select2 from '@/components/select2'
+import vSelect from 'vue-select'
 
 export default {
-    components: { projectaccess, select2 },
+    components: { projectaccess, vSelect },
     props: [ 
         'value', 
         'allownull', 
@@ -31,16 +31,21 @@ export default {
     data() {
         return {
             selected: null, 
-            options: null, 
+            options: [], 
         }
     },
 
     watch: {
         selected: function() {
-            if(this.selected) localStorage.setItem('last_projectid_used', this.selected);
-            this.$emit('input', this.selected);
+            if(this.selected) localStorage.setItem('last_projectid_used', this.selected._id);
+            this.$emit('input', this.selected._id);
         }
     },
+    /*
+    destroyed() {
+        this.$el.select2('remove');
+    },
+    */
 
     mounted: function() {
         var that = this;
@@ -94,6 +99,7 @@ export default {
                 find: JSON.stringify(find),
                 sort: 'name',
             }}).then(res=>{
+                /*
                 var option_groups = {} 
                 res.body.projects.forEach(project=>{
                     if(!option_groups[project.access]) option_groups[project.access] = [];
@@ -105,11 +111,18 @@ export default {
                     var group_header = access.charAt(0).toUpperCase() + access.slice(1) + " Project";
                     that.options.push({text: group_header, children: option_groups[access]});
                 }
+                */
+                res.body.projects.forEach(project=>{
+                    that.options.push(project);
+                });
 
-                that.selected = that.value;
+                that.selected = that.options.find(it=>it._id == that.value);
                 if(!that.allownull && !that.selected) {
                     //need to preselect some value
-                    that.selected = localStorage.getItem('last_projectid_used') || that.options[0].id;
+                    var last = localStorage.getItem('last_projectid_used');
+                    var found = res.body.projects.find(project=>project._id == last);
+                    if(found) that.selected = that.options.find(it=>it._id == last);
+                    else that.selected = that.options[0];
                 }
             });
         }

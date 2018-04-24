@@ -5,7 +5,7 @@
     <b-row>
         <b-col :cols="3">Project</b-col>
         <b-col>
-            <projectselecter canwrite="true" v-model="project"/>
+            <projectselecter v-if="shown" canwrite="true" v-model="project"/>
             <small>Project to run a new process</small>
         </b-col>
     </b-row>
@@ -26,7 +26,7 @@
     <br>
     <div slot="modal-footer">
         <b-button variant="primary" v-if="isvalid()" @click="submit">Submit</b-button>
-        <b-button @click="cancel">Cancel</b-button>
+        <!--<b-button @click="cancel">Cancel</b-button>-->
     </div>
 </b-modal>
 </template>
@@ -44,6 +44,7 @@ export default {
         return {
             submit_cb: null, 
 
+            shown: false,
             project: null, 
             instance: null, 
             desc: null,
@@ -89,16 +90,14 @@ export default {
     },
 
     mounted() {
-        console.log("listening to newtask.open");
         this.$root.$on("instanceselecter.open", cb=>{
             this.submit_cb = cb;
             this.$refs.modal.show()
-
+            this.shown = true;
             this.instance = null;
             this.desc = null;
         });
 
-        console.log("loading projects that user can write to");
         this.$http.get('project', {params: {
             find: JSON.stringify({ 
                 members: Vue.config.user.sub,
@@ -111,7 +110,6 @@ export default {
             res.body.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
-            //console.dir(this.projects);
         });
     },
 
@@ -129,9 +127,11 @@ export default {
                 desc: this.desc,
             });
             this.$refs.modal.hide()
+            this.shown = false;
         },
         cancel: function() {
             this.$refs.modal.hide();
+            this.shown = false;
         },
     },
 } 
