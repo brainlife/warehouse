@@ -150,7 +150,7 @@
                                 <p><small class="text-muted">This publication is hosted in the following Brainlife project</small></p>
                                 <div @click="openproject(pub.project)" class="project">
                                     <h5><icon name="shield"/> {{pub.project.name}}</h5>
-                                    <p class="text=">{{pub.project.desc}}</p>
+                                    <p class="text">{{pub.project.desc}}</p>
                                 </div>
                                 <!--
                                 <p><small class="text-muted">This publication was created from the following project.</small></p>
@@ -568,9 +568,6 @@ cursor: pointer;
 }
 .project:hover {
 background-color: #eee;
-}
-.project .text {
-font-size: 90%;
 }
 .project h5 {
 color: #007bff;

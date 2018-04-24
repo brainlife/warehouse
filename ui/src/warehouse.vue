@@ -297,7 +297,7 @@ font-weight: bold;
 font-size: 90%;
 }
 p.text {
-line-height: 200%;
+line-height: 175%;
 opacity: 0.8;
 }
 </style>
