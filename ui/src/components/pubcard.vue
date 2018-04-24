@@ -12,7 +12,7 @@
             <div style="margin-right: 110px;">
                 <h5 class="name">
                     <b-badge  v-if="pub.removed" variant="danger">Removed</b-badge>
-                    <small>{{pub.project.name}} <icon name="arrow-right"/></small> {{pub.name}}
+                    <!--<small>{{pub.project.name}} <icon name="arrow-right"/></small>-->{{pub.name}}
                 </h5>
                 <p class="text">{{pub.desc}}</p>
                 <div style="line-height: 200%;">

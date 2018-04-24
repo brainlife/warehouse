@@ -20,6 +20,7 @@
                             <span class="button" @click="go('/pub/'+app._id+'/edit')" v-if="pub._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
                         </div>
                         -->
+                        <doibadge style="float: right;" :doi="pub.doi"/>
                         <h4 style="color: #666; margin-bottom: 10px;">
                             {{pub.name}} 
                         </h4>
@@ -86,21 +87,7 @@
                                 </ul>
                             </b-col>
                         </b-row>
-                        <b-row>
-                            <b-col cols="2">
-                                <span class="form-header">Project</span>
-                            </b-col>
-                            <b-col>
-                                <p>
-                                    <a :href="'/project/'+pub.project._id">{{pub.project.name}}</a>
-                                </p>
-                                <!--
-                                <p><small class="text-muted">This publication was created from the following project.</small></p>
-                                <projectcard :project="pub.project"/>
-                                -->
-                                <br>
-                            </b-col>
-                        </b-row>                      
+             
 
                         <b-row v-if="pub.doi">
                             <b-col cols="2">
@@ -108,7 +95,6 @@
                             </b-col>
                             <b-col cols="10">
                                 <p>
-                                    <doibadge style="float: right;" :doi="pub.doi"/>
                                     <small class="text-muted">Citation to this dataset/app published on Brainlife</small>
                                 </p>
                                 <b-card no-body>
@@ -155,6 +141,23 @@
                                 <br>
                             </b-col>
                         </b-row> 
+
+                        <b-row>
+                            <b-col cols="2">
+                                <span class="form-header">Project</span>
+                            </b-col>
+                            <b-col>
+                                <p><small class="text-muted">This publication is hosted in the following Brainlife project</small></p>
+                                <div @click="openproject(pub.project)" class="project">
+                                    <h5><icon name="shield"/> {{pub.project.name}}</h5>
+                                    <p class="text=">{{pub.project.desc}}</p>
+                                </div>
+                                <!--
+                                <p><small class="text-muted">This publication was created from the following project.</small></p>
+                                <projectcard :project="pub.project"/>
+                                -->
+                            </b-col>
+                        </b-row>
                         <b-row>
                             <b-col cols="2">
                                 <span class="form-header">Social</span>
@@ -446,6 +449,10 @@ export default {
         },
         */
 
+        openproject: function(project_id) {
+            this.$router.push('/project/'+project_id);
+        },
+
         toggle: function(block, subject, datatype, datatype_tags) {
             block.show = !block.show;
             if(!block.datasets) {
@@ -469,6 +476,34 @@ export default {
 }
 </script>
 
+<style>
+.social-buttons span[data-link] {
+background-color: white;
+border-radius: 10px;
+padding: 10px;
+margin: 5px;
+display: inline-block;
+width: 140px;
+transition: 0.5s background-color, 0.5s color;
+}
+.social-buttons span[data-link]:hover {
+background-color: #007bff;
+color: white;
+cursor: pointer;
+}
+.social-buttons svg {
+position: relative;
+top: 2px;
+height: 15px;
+width: 15px;
+margin: 0 5px;
+color: #999;
+transition: 0.5s color;
+}
+.social-buttons span[data-link]:hover svg {
+color: white;
+}
+</style>
 <style scoped>
 .header {
 background-color: white;
@@ -525,34 +560,21 @@ max-height: 230px;
 opacity: 0;
 max-height: 0px;
 }
-</style>
-
-
-<style>
-.social-buttons span[data-link] {
+.project {
 background-color: white;
-border-radius: 10px;
 padding: 10px;
-margin: 5px;
-display: inline-block;
-width: 140px;
-transition: 0.5s background-color, 0.5s color;
-}
-.social-buttons span[data-link]:hover {
-background-color: #007bff;
-color: white;
+margin-bottom: 10px;
 cursor: pointer;
 }
-.social-buttons svg {
-position: relative;
-top: 2px;
-height: 15px;
-width: 15px;
-margin: 0 5px;
-color: #999;
-transition: 0.5s color;
+.project:hover {
+background-color: #eee;
 }
-.social-buttons span[data-link]:hover svg {
-color: white;
+.project .text {
+font-size: 90%;
+}
+.project h5 {
+color: #007bff;
 }
 </style>
+
+

@@ -132,7 +132,7 @@
                                 </b-table>
                                 -->
                                 <div v-for="pub in dataset.publications" @click="openpub(pub)" v-if="!pub.removed" class="pub">
-                                    <h5>{{pub.name||pub}}</h5>
+                                    <h5><icon name="book"/> {{pub.name||pub}}</h5>
                                     <p class="text">{{pub.desc}}</p>
                                 </div>
                             </b-col>
