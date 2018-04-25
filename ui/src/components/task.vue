@@ -52,7 +52,7 @@
                     </table>
                 </b-popover>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
-                    <icon name="repeat"/>
+                    <icon name="redo"/>
                 </div>
                 <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop" title="Stop Task"><icon name="stop"/></div>
                 <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove" title="Remove Task"><icon name="trash"/></div>

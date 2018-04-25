@@ -96,7 +96,7 @@
 
                     <!--foreign project-->
                     <span class="text-muted" v-if="output.dataset_id && output.project != project._id">
-                        <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield"/> <b>{{projects[output.project].name}}</b>
+                        <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> <b>{{projects[output.project].name}}</b>
                     </span>
 
                     <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
@@ -109,7 +109,7 @@
                                 <mute>{{dataset.desc||dataset._id}}</mute>
                                 <tags :tags="dataset.tags"/>
                                 <span class="text-muted" v-if="dataset.project != project._id">
-                                    <small>on</small> <icon name="shield"/> <b>{{projects[dataset.project].name}}</b>
+                                    <small>on</small> <icon name="shield-alt"/> <b>{{projects[dataset.project].name}}</b>
                                 </span>
 
                                 <!--show dataset status if it's not stored-->

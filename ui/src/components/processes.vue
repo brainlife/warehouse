@@ -69,7 +69,7 @@
                     </div>
                     <div class="process-action" style="float: right; margin-right: 20px; position: relative; top: -4px">
                         <div @click.stop="editdesc(instance)" class="button">
-                            <icon name="pencil"/>
+                            <icon name="edit"/>
                         </div>
                         <div @click.stop="remove(instance)" class="button">
                             <icon name="trash"/>

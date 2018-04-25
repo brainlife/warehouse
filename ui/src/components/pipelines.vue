@@ -17,7 +17,7 @@
                 <div style="padding: 10px;">
                     <div style="float: right">
                         
-                        <div class="button" @click="edit(rule)" v-if="ismember()"><icon name="pencil"/></div>
+                        <div class="button" @click="edit(rule)" v-if="ismember()"><icon name="edit"/></div>
                         <div class="button" @click="remove(rule)" v-if="ismember()"><icon name="trash"/></div>
                         <contact :id="rule.user_id" short="true"/>
                         <timeago :since="rule.create_date" :auto-update="10"/>
@@ -61,7 +61,7 @@
                             <small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>
                         </span>
                         <span v-if="rule.input_project_override && rule.input_project_override[input.id]" class="text-muted">
-                            From <icon name="shield"/> {{projects[rule.input_project_override[input.id]].name}}
+                            From <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
                         </span>
                         <!--<span class="text-muted" v-if="input.optional">(optional)</span>-->
                         <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>

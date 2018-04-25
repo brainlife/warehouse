@@ -300,5 +300,15 @@ p.text {
 line-height: 175%;
 opacity: 0.8;
 }
+.v-select .dropdown-toggle {
+background-color: white;
+}
+
+.select2-container--default .select2-selection--single {
+height: 36px;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+margin: 3px 0px;
+}
 </style>
 

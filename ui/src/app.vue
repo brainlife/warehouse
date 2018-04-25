@@ -11,8 +11,8 @@
                     </b-col>
                     <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right;">
-                            <span class="button" @click="go_github()" title="github"><icon name="github" scale="1.25"/></span>
-                            <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
+                            <span class="button" @click="go_github()" title="github"><icon name="brands/github" scale="1.25"/></span>
+                            <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                         </div>
                         <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
@@ -179,10 +179,13 @@
                     </b-col>
                     <b-col>
                         <b-alert show variant="danger" v-if="resources.length == 0">
-                            This App can not run on any resource that you have access to. If you are the developer of this App, please contact resource administrators and enable it on more resources.
+                            This App is not registered to run any resource that you have access to. If you are the developer of this App, please contact resource administrators and enable it on more resources.
+                        </b-alert>
+                        <b-alert show variant="warning" v-else-if="!preferred_resource">
+                            This App can not run on any registered resources that you have access to at this moment.
                         </b-alert>
                         <p v-else>
-                            <small class="text-muted">This App is currently registered to run on the following resources.</small>
+                            <small class="text-muted">This App is registered to run on the following resources that you have access to.</small>
                         </p>
                         <b-row>
                             <b-col cols="4" v-for="resource in resources" :key="resource._id">
@@ -502,7 +505,7 @@ position: relative;
 }
 .resource-status {
 position: absolute;
-bottom: -8px;
+bottom: -5px;
 right: -8px;
 font-size: 10pt;
 text-align: center;

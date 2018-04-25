@@ -9,7 +9,7 @@
                     <a href="https://brain-life.github.io/docs/apps/register/" target="doc">Help</a>
                 </p>
                 <h3 v-if="$route.params.id == '_'">New App</h3>
-                <h3 v-else><icon name="pencil" scale="1.5" style="opacity: 0.5"/> {{app.name}}</h3>
+                <h3 v-else><icon name="edit" scale="1.5" style="opacity: 0.5"/> {{app.name}}</h3>
             </div>
         </div>
         <!--

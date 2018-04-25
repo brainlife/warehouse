@@ -26,7 +26,7 @@
                         :dataAdapter="debounce_fetch_datasets(input)" 
                         :allowClear="input.optional"
                         :multiple="false" 
-                        :placeholder="'Input Dataset'" 
+                        :placeholder="'Select Input Dataset'" 
                         :options="form.options[input.id]"/>
                 </b-col>
                 <b-col cols="1" v-if="input.multi">

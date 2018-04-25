@@ -1,7 +1,7 @@
 <template>
 <div>
     <span v-if="file.filename">
-        <icon name="file-o"></icon> 
+        <icon name="file"></icon> 
         {{file.filename}}
     </span>
     <span v-if="file.dirname">

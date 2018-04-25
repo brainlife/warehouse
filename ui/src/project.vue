@@ -19,7 +19,7 @@
                 <b-col style="background-color: rgb(240, 240, 240);"><!--hide avatar when screen is narrow-->
                     <div style="float: right;" v-if="isadmin()">
                         <div @click="edit()" class="button">
-                            <icon name="pencil" scale="1.25"/>
+                            <icon name="edit" scale="1.25"/>
                         </div>
                         <div @click="remove()" v-if="isadmin() && !selected.removed" class="button">
                             <icon name="trash" scale="1.25"/>

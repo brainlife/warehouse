@@ -82,7 +82,7 @@
 
     <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
         <h4 class="header">
-            <div class="button" style="float: right; position: relative; top: -3px" @click="clear_selected()"><icon name="close"/></div>
+            <div class="button" style="float: right; position: relative; top: -3px" @click="clear_selected()"><icon name="times"/></div>
             <icon name="check-square" style="position: relative; top: 3px; margin-right: 10px;"/> {{selected_count}} Selected 
         </h4>
 
@@ -90,14 +90,14 @@
             <datatypetag :datatype="datatypes[did]"/>
             <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open(id)">
                 <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
-                    <icon name="close"></icon>
+                    <icon name="times"></icon>
                 </div>
                 {{dataset.meta.subject}} 
                 <small>
                     <tags :tags="dataset.datatype_tags"></tags>
                 </small>
                 <small v-if="dataset.project != project._id" style="opacity: 0.5">
-                    <icon name="shield"/> {{projects[dataset.project].name}}</span>
+                    <icon name="shield-alt"/> {{projects[dataset.project].name}}</span>
                 </small>
             </div>
         </div>

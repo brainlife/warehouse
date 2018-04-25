@@ -5,7 +5,7 @@
         <li v-if="config.debug" 
             @click="go('/dashboard')"
             :class="{active: active == '/dashboard'}">
-            <icon name="tachometer" scale="2"></icon><br>Dashboard
+            <icon name="tachometer-alt" scale="2"></icon><br>Dashboard
         </li>
         <li v-if="config.debug" class="divider"></li>
 
@@ -21,7 +21,7 @@
         <!-- only for authenticated users -->
         <li v-if="config.user" @click="go('/project')"
             :class="{active: active == '/projects'}">
-            <icon name="shield" scale="2"></icon><br>Projects
+            <icon name="shield-alt" scale="2"></icon><br>Projects
         </li>
         <!--
         <li v-if="config.user" @click="go('/datasets')"

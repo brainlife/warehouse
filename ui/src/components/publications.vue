@@ -28,7 +28,7 @@
             <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': ismember()}" class="pub">
                 <doibadge :doi="pub.doi" style="float: right;"/>
                 <div class="pub-action">
-                    <div class="button" @click="edit(pub)" title="Edit publication metadata"> <icon name="pencil"/> </div>
+                    <div class="button" @click="edit(pub)" title="Edit publication metadata"> <icon name="edit"/> </div>
                     <div class="button" @click="open_pub(pub)" title="See in published page"> <icon name="eye"/> </div>
                 </div>
                 <b-badge v-if="pub.removed" variant="danger">Removed</b-badge>

@@ -7,7 +7,7 @@
             <el-button @click="remove()" icon="delete">Remove Datatype</el-button>
             <el-button @click="edit()" icon="edit">Edit</el-button>
         </el-button-group>
-        <h1><span class="text-muted"><icon name="shield" scale="1.5"/> Datatype |</span> {{datatype.name}}</h1>
+        <h1><span class="text-muted"><icon name="shield-alt" scale="1.5"/> Datatype |</span> {{datatype.name}}</h1>
     </div>
     <div class="page-content" v-if="datatype" style="margin-top: 80px">
         <table class="info">

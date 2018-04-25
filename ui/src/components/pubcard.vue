@@ -2,7 +2,7 @@
 <div class="pubcard clickable" :class="{'pub-removed': pub.removed}">
     <div @click="click()">
         <div style="float: left; margin-right: 15px;">
-            <projectavatar :project="pub.project" width="80" height="80"/>
+            <projectavatar :project="pub.project" :width="80" :height="80"/>
         </div>
         <div style="margin: 0px 10px 5px 100px;">
             <div v-if="pub.doi" style="float: right; margin: 10px;">

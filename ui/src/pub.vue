@@ -15,11 +15,6 @@
                         <projectavatar :project="pub.project"/>
                     </b-col>
                     <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
-                        <!-- (get)/pub API isn't authenticated so we don't know if user has edit access or now..
-                        <div style="float: right;">
-                            <span class="button" @click="go('/pub/'+app._id+'/edit')" v-if="pub._canedit" title="Edit"><icon name="pencil" scale="1.25"/></span>
-                        </div>
-                        -->
                         <doibadge style="float: right;" :doi="pub.doi"/>
                         <h4 style="color: #666; margin-bottom: 10px;">
                             {{pub.name}} 
@@ -149,7 +144,7 @@
                             <b-col>
                                 <p><small class="text-muted">This publication is hosted in the following Brainlife project</small></p>
                                 <div @click="openproject(pub.project)" class="project">
-                                    <h5><icon name="shield"/> {{pub.project.name}}</h5>
+                                    <h5><icon name="shield-alt"/> {{pub.project.name}}</h5>
                                     <p class="text">{{pub.project.desc}}</p>
                                 </div>
                                 <!--

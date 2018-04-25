@@ -1,11 +1,5 @@
 <template>
-<v-select v-model="selected" :options="options" :placeholder="placeholder" label="name">
-    <!--
-    <template slot="option" slot-scope="option">
-        {{option.name}}
-    </template>
-    -->
-</v-select>
+<v-select v-model="selected" :options="options" :placeholder="placeholder" label="name"/>
 </template>
 
 <script>
@@ -37,8 +31,12 @@ export default {
 
     watch: {
         selected: function() {
-            if(this.selected) localStorage.setItem('last_projectid_used', this.selected._id);
-            this.$emit('input', this.selected._id);
+            if(this.selected) {
+                localStorage.setItem('last_projectid_used', this.selected._id);
+                this.$emit('input', this.selected._id);
+            } else {
+                this.$emit('input', null);
+            }
         }
     },
     /*
@@ -99,19 +97,6 @@ export default {
                 find: JSON.stringify(find),
                 sort: 'name',
             }}).then(res=>{
-                /*
-                var option_groups = {} 
-                res.body.projects.forEach(project=>{
-                    if(!option_groups[project.access]) option_groups[project.access] = [];
-                    option_groups[project.access].push({ id: project._id, text: project.name, desc: project.desc });
-                });
-                that.options = [];
-                for(var access in option_groups) {
-                    if(option_groups.length == 0) continue;
-                    var group_header = access.charAt(0).toUpperCase() + access.slice(1) + " Project";
-                    that.options.push({text: group_header, children: option_groups[access]});
-                }
-                */
                 res.body.projects.forEach(project=>{
                     that.options.push(project);
                 });

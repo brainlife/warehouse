@@ -17,7 +17,7 @@
                     <icon name="paper-plane" scale="1.25"/> 
                 </div>
                 <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
-                    <icon name="close" scale="1.5"/>
+                    <icon name="times" scale="1.5"/>
                 </div>
             </div>
             <h4>

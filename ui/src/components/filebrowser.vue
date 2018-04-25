@@ -19,7 +19,7 @@
             <div class="fileitem" @click="click(file)" :class="{'fileitem-viewing': file.view}">
                 <span :style="{marginLeft: offset, opacity: '0.7'}">
                     <icon name="link" v-if="!file.directory && file.link" class="text-warning"></icon>
-                    <icon name="file-o" v-if="!file.directory && !file.link"></icon>
+                    <icon name="regular/file" v-if="!file.directory && !file.link"></icon>
                     <icon name="folder-open" v-if="file.directory && file.open" class="text-primary"></icon>
                     <icon name="folder" v-if="file.directory && !file.open" class="text-primary"></icon>
                 </span>

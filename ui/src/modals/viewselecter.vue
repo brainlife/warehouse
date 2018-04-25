@@ -139,7 +139,7 @@ export default {
             {
                 ui: "freeview-gpu",
                 name: "FreeView",
-                desc: "Freeview is a program used to view and work with structural, anatomical scans in the sagittal, coronal, and axial planes, as well as in 3D. ",
+                desc: "A freesurfer program used to view and work with structural, anatomical scans.",
                 avatar: "https://brainlife.io/images/ui-logos/freeview.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/freesurfer" ],

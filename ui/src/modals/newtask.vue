@@ -5,7 +5,7 @@
     <div class="brainlife-modal-header">
         <div style="float: right;">
             <div class="button" @click="open = false" style="margin-left: 20px; opacity: 0.8;">
-                <icon name="close" scale="1.5"/>
+                <icon name="times" scale="1.5"/>
             </div>
         </div>
         <h4 style="margin-top: 8px;">Submit New App</h4>
