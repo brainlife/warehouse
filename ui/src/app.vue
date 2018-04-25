@@ -178,10 +178,15 @@
                         <span class="form-header">Computing Resources</span>
                     </b-col>
                     <b-col>
-                        <p><small class="text-muted">This App is currently registered to run on the following resources.</small></p>
+                        <b-alert show variant="danger" v-if="resources.length == 0">
+                            This App can not run on any resource that you have access to. If you are the developer of this App, please contact resource administrators and enable it on more resources.
+                        </b-alert>
+                        <p v-else>
+                            <small class="text-muted">This App is currently registered to run on the following resources.</small>
+                        </p>
                         <b-row>
                             <b-col cols="4" v-for="resource in resources" :key="resource._id">
-                                <div class="resource" v-b-popover.hover="resource.info.desc+'\n\n'+resource.detail" :title="resource.id">
+                                <div class="resource" v-b-popover="resource.info.desc+'\n\n'+resource.detail+'\n'+resource.status" :title="resource.id">
                                     <icon name="server" scale="2" style="float: right; opacity: 0.5;"/>
                                     <b>{{resource.name}}</b><br>
                                     <small>{{resource.info.name}}</small>
