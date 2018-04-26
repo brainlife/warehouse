@@ -92,11 +92,11 @@
                     <mute>
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                     </mute>
-                    <b-badge v-if="output.archive" variant="primary">Auto Archive: {{projects[output.archive.project].name}}</b-badge>
+                    <b-badge v-if="output.archive" variant="primary">Auto Archive: {{projectname(output.archive.project)}}</b-badge>
 
                     <!--foreign project-->
                     <span class="text-muted" v-if="output.dataset_id && output.project != project._id">
-                        <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> <b>{{projects[output.project].name}}</b>
+                        <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> <b>{{projectname(output.project)}}</b>
                     </span>
 
                     <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
@@ -109,7 +109,7 @@
                                 <mute>{{dataset.desc||dataset._id}}</mute>
                                 <tags :tags="dataset.tags"/>
                                 <span class="text-muted" v-if="dataset.project != project._id">
-                                    <small>on</small> <icon name="shield-alt"/> <b>{{projects[dataset.project].name}}</b>
+                                    <small>on</small> <icon name="shield-alt"/> <b>{{projectname(dataset.project)}}</b>
                                 </span>
 
                                 <!--show dataset status if it's not stored-->
@@ -169,7 +169,6 @@ import pageheader from '@/components/pageheader'
 import appavatar from '@/components/appavatar'
 import app from '@/components/app'
 import appname from '@/components/appname'
-//import archiveform from '@/components/archiveform2'
 import projectselecter from '@/components/projectselecter'
 import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
@@ -393,8 +392,6 @@ export default {
                 sort: 'create_date',
             }})
             .then(res=>{
-                console.log("got tasks");
-
                 //load show/hide status
                 res.body.tasks.forEach(task=>{
                     task.show = true;
@@ -423,6 +420,12 @@ export default {
             return this.archived.filter(dataset=>{
                 return (!dataset.removed && dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
             });
+        },
+
+        projectname: function(project) {
+            var project = this.projects[project];
+            if(!project) return "(private project)"; //user don't have access to this project
+            return project.name; 
         },
 
         //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name

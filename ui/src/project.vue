@@ -45,7 +45,7 @@
                     </b-col>
                     <b-col>
                         <p>
-                            <small class="text-muted">Users who can update name / desc / project members, and create rules / publications.</small>
+                            <small class="text-muted">Users who can update name / desc / project members, share processed, and create rules / publications.</small>
                         </p>
                         <p v-for="c in selected.admins" :key="c._id">
                             <contact :id="c"/>
@@ -59,7 +59,7 @@
                     </b-col>
                     <b-col>
                         <p>
-                            <small class="text-muted">Users who have read/write access to dataets on this project, and create rules / publications.</small>
+                            <small class="text-muted">Users who have read/write access to dataets on this project, share processes, and create rules / publications.</small>
                         </p>
                         <p v-for="c in selected.members" :key="c._id">
                             <contact :id="c"/>

@@ -9,7 +9,7 @@
     <div v-if="files && !error">
         <div :style="{marginLeft: offset}" class="buttons">
             <div class="button" @click="download()" title="Download"><icon name="download"/></div>
-            <div class="button" @click="load()" title="Refresh"><icon name="refresh"/></div>
+            <div class="button" @click="load()" title="Refresh"><icon name="sync-alt"/></div>
         </div>
 
         <p v-if="files.length == 0" class="text-muted" :style="{marginLeft: offset}">Empty Directory</p>
@@ -41,7 +41,7 @@
                 <div v-if="file.content">
                     <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
                         <div class="button" @click="download_file(file)"><icon name="download"/></div>
-                        <div class="button" @click="refresh_file(file)"><icon name="refresh"/></div>
+                        <div class="button" @click="refresh_file(file)"><icon name="sync-alt"/></div>
                     </div>
                     <pre v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
                 </div>
