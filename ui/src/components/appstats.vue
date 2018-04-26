@@ -43,11 +43,11 @@
     </b-col>
     <b-col cols="2" style="border-left: 1px solid #ddd;">
         <center>
-            <gh-btns-star :slug="app.github" show-count></gh-btns-star>
             <!--
-            <span class="stat">{{app.stats.stars}}</span>
-            <p class="header">Stars</p>
+            <gh-btns-star :slug="app.github" show-count></gh-btns-star>
             -->
+            <span class="stat">{{app.stats.stars}}</span>
+            <p class="header">Github Stars</p>
         </center>
     </b-col>
 
@@ -68,10 +68,10 @@
 <script>
 import Vue from 'vue'
 import statustag from '@/components/statustag'
-import 'vue-github-buttons/dist/vue-github-buttons.css'; // Stylesheet
-import VueGitHubButtons from 'vue-github-buttons'; // Component plugin
 
-Vue.use(VueGitHubButtons, { useCache: true });
+//import 'vue-github-buttons/dist/vue-github-buttons.css'; // Stylesheet
+//import VueGitHubButtons from 'vue-github-buttons'; // Component plugin
+//Vue.use(VueGitHubButtons, { useCache: true });
 
 export default {
     props: ['app'],

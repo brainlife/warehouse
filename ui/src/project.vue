@@ -151,7 +151,8 @@ import processes from '@/components/processes'
 import publications from '@/components/publications'
 import pipelines from '@/components/pipelines'
 
-import VueDisqus from 'vue-disqus/VueDisqus.vue'
+import VueDisqus from 'vue-disqus'
+Vue.use(VueDisqus)
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -162,7 +163,6 @@ export default {
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
-        VueDisqus,
         processes, publications, pipelines,
 
         newtaskModal,

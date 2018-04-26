@@ -69,7 +69,7 @@ font-family: 'Montserrat', sans-serif;
 #warehouse {
 height: 100%;
 background-color: #f9f9f9;
-color: #444;
+color: #555;
 font-size: 11pt;
 }
 
@@ -296,9 +296,8 @@ opacity: 0.4;
 font-weight: bold;
 font-size: 90%;
 }
-p.text {
+div.readme p, p.text {
 line-height: 175%;
-opacity: 0.8;
 }
 .v-select .dropdown-toggle {
 background-color: white;

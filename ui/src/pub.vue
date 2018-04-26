@@ -67,7 +67,7 @@
                                 <span class="form-header">Detail</span>
                             </b-col>
                             <b-col>
-                                <vue-markdown :source="pub.readme"></vue-markdown>
+                                <vue-markdown :source="pub.readme" class="readme"></vue-markdown>
                             </b-col>
                         </b-row>  
                         <b-row v-if="pub.contributors.length > 0">
@@ -292,7 +292,8 @@ import citation from '@/components/citation'
 import app from '@/components/app'
 import doibadge from '@/components/doibadge'
 
-import VueDisqus from 'vue-disqus/VueDisqus.vue'
+import VueDisqus from 'vue-disqus'
+Vue.use(VueDisqus)
 
 export default {
 
@@ -300,7 +301,7 @@ export default {
         pageheader, sidemenu, projectavatar, 
         contact, VueMarkdown, license, 
         datatypetag, tags, 
-        app, VueDisqus, citation,
+        app, citation,
         doibadge, 
     },
 

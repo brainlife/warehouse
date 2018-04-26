@@ -301,13 +301,14 @@ import appsubmit from '@/components/appsubmit'
 import appstats from '@/components/appstats'
 import projectavatar from '@/components/projectavatar'
 
-import VueDisqus from 'vue-disqus/VueDisqus.vue'
+import VueDisqus from 'vue-disqus'
+Vue.use(VueDisqus)
 
 export default {
     components: { 
         sidemenu, pageheader, contact, 
         tags, datatype, appavatar,
-        VueMarkdown, statustag, VueDisqus,
+        VueMarkdown, statustag, 
         appsubmit, datatypetag, datatypefile,
         appstats, projectavatar,
      },

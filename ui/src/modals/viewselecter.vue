@@ -14,10 +14,13 @@
             <p class="card-text">{{view.desc}}</p>
         </b-card>
     </b-card-group>
-    <h4>
-        <b-badge variant="dark">Web UI</b-badge>
-        <b-badge variant="success">Docker</b-badge>
-    </h4>
+    <div style="opacity: 0.7">
+        <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+datatype_name+' datatype'" target="_blank" style="float: right;">Suggest a new visualization tool</a>
+        <h4>
+            <b-badge variant="dark">Web UI</b-badge>
+            <b-badge variant="success">Docker</b-badge>
+        </h4>
+    </div>
 </b-modal>
 </template>
 <script>
