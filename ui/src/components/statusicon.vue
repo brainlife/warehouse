@@ -25,7 +25,7 @@ export default {
                 return "trash";
             case "stop_requested":
             case "stopped":
-                return "hand-paper-o";
+                return "hand-paper";
             default:
                 return "question";
             }

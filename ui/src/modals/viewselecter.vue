@@ -148,6 +148,7 @@ export default {
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/freesurfer" ],
             },
 
+            /*
             {
                 ui: "conneval",
                 name: "Connectome Evaluator",
@@ -155,6 +156,7 @@ export default {
                 avatar: "https://brainlife.io/images/ui-logos/conneval.png",
                 datatypes: [ "neuro/conneval" ],
             },
+            */
 
             {
                 ui: "conn",

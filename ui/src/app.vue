@@ -7,7 +7,7 @@
             <b-container>
                 <b-row>
                     <b-col cols="3">
-                        <appavatar :app="app" style="margin-bottom: 10px;"/>
+                        <appavatar :app="app" style="margin-bottom: 10px;" :width="200" :height="200"/>
                     </b-col>
                     <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right;">
@@ -18,12 +18,15 @@
                         <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
                         <h5 style="opacity: 0.8">
                             <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')">{{app.github}}</a>
-                            <b-badge variant="primary" v-if="app.github_branch">{{app.github_branch}}</b-badge>
+                            <small><b-badge variant="primary" v-if="app.github_branch" style="position: relative; top: -3px">{{app.github_branch}}</b-badge></small>
                         </h5>
-                        <p class="text">{{app.desc_override||app.desc}}
+                        <p class="text">
+                            {{app.desc_override||app.desc}}
+                        </p>
+                        <p>
+                            <doibadge :doi="app.doi" v-if="app.doi" style="float: right;"/>
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
-                        <br>
                         <!--
                         <p style="line-height: 220%;">
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
@@ -300,6 +303,7 @@ import statustag from '@/components/statustag'
 import appsubmit from '@/components/appsubmit'
 import appstats from '@/components/appstats'
 import projectavatar from '@/components/projectavatar'
+import doibadge from '@/components/doibadge'
 
 import VueDisqus from 'vue-disqus'
 Vue.use(VueDisqus)
@@ -311,6 +315,7 @@ export default {
         VueMarkdown, statustag, 
         appsubmit, datatypetag, datatypefile,
         appstats, projectavatar,
+        doibadge, 
      },
 
     data () {
