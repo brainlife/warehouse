@@ -291,7 +291,7 @@ var appSchema = mongoose.Schema({
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     retry: Number, //not set, or 0 means no retry
-    doi: String, //doi associated with this app (TODO..)
+    doi: String, //doi associated with this app
     
     //configuration template
     config: mongoose.Schema.Types.Mixed, 

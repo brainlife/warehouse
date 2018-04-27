@@ -158,6 +158,13 @@ router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res
 });   
 */
 
+function mint_doi(cb) {
+    db.Apps.count({doi: {$exists: true}}).exec((err, count)=>{
+        if(err) return cb(err);
+        cb(null, config.datacite.prefix+"/bl.app."+count);
+    });
+}
+
 /**
  * @apiGroup App
  * @api {post} /app             Post App
@@ -193,16 +200,28 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
     validate_projects(req.user, req.body.projects, err=>{
         if(err) return next(err);
 
+        //create app record and load github info into
         let app = new db.Apps(req.body);
-
-        //load github info
         common.populate_github_fields(req.body.github, app, err=>{
-            if(err) return next(err);
-            app.save(function(err, _app) {
-                if (err) return next(err); 
-                app = JSON.parse(JSON.stringify(_app));
-                app._canedit = canedit(req.user, app);
-                res.json(app);
+            if (err) return next(err); 
+            mint_doi((err, doi)=>{
+                if(err) return next(err);
+                app.doi = doi;
+                app.save((err, _app)=>{
+                    if(err) return next(err);
+                    app = JSON.parse(JSON.stringify(_app));
+                    app._canedit = canedit(req.user, app);
+                    res.json(app);
+                    
+                    //post metadata and set url
+                    let metadata = common.compose_app_datacite_metadata(_app);
+                    common.doi_post_metadata(metadata, err=>{
+                        if(err) return next(err);
+                        //then attach url to it (to "mint" it!)
+                        let url = config.warehouse.url+"/app/"+app._id;  //TODO make it configurable?
+                        common.doi_put_url(app.doi, url, logger.error);
+                    });
+                });
             });
         });
     });
@@ -234,29 +253,74 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  */
 router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var id = req.params.id;
-    
     validate_projects(req.user, req.body.projects, err=>{
         if(err) return next(err);
-
         db.Apps.findById(id, (err, app)=>{
             if(err) return next(err);
             if(!app) return res.status(404).end();
-
-            if(canedit(req.user, app)) {
+            if(!canedit(req.user, app)) {
+                return res.status(401).end("you are not administartor of this app");
+            } else {
                 //user can't update some fields
                 delete req.body.user_id;
                 delete req.body.create_date;
                 for(var k in req.body) app[k] = req.body[k];
                 common.populate_github_fields(req.body.github, app, err=>{
                     if(err) return next(err);
-                    app.save((err)=>{
-                        if(err) return next(err);
-                        app = JSON.parse(JSON.stringify(app));
-                        app._canedit = canedit(req.user, app);
-                        res.json(app);
-                    });
+                    if(app.doi) {
+                        logger.debug("has doi !!!!!!!!!!!", app.doi);
+                        app.save((err)=>{
+                            if(err) return next(err);
+                            app = JSON.parse(JSON.stringify(app));
+                            app._canedit = canedit(req.user, app);
+                            res.json(app);
+                        });
+                        
+                        //update datacite info
+                        let metadata = common.compose_app_datacite_metadata(app);
+                        logger.debug("updating doi inffo", metadata);
+                        common.doi_post_metadata(metadata, err=>{
+                            if(err) logger.error(err);
+                            //shouldn't need to be updated but just in case..
+                            let url = config.warehouse.url+"/app/"+app._id; 
+                            logger.debug("setting url", url, app.doi);
+                            common.doi_put_url(app.doi, url, logger.error);
+                        });
+
+                    } else {
+                        
+                        //////////////////////////////////////////////////////////////////////
+                        //
+                        //old app? let's mint doi (deprecate this eventually..)
+                        //
+                        mint_doi((err, doi)=>{
+                            if(err) return next(err);
+                            logger.debug("minting doi", doi);
+                            app.doi = doi;
+                            app.save((err, _app)=>{
+                                if(err) return next(err);
+                                app = JSON.parse(JSON.stringify(_app));
+                                app._canedit = canedit(req.user, app);
+                                res.json(app);
+                                
+                                //post metadata and set url
+                                let metadata = common.compose_app_datacite_metadata(_app);
+                                common.doi_post_metadata(metadata, err=>{
+                                    if(err) return next(err);
+                                    //then attach url to it (to "mint" it!)
+                                    let url = config.warehouse.url+"/app/"+_app._id;  //TODO make it configurable?
+                                    logger.debug("setting url", url, app.doi);
+                                    common.doi_put_url(app.doi, url, logger.error);
+                                });
+                            });
+                            
+                        });
+                        //
+                        //
+                        //////////////////////////////////////////////////////////////////////
+                    }
                 });
-            } else return res.status(401).end("you are not administartor of this app");
+            }
         });
     });
 });
