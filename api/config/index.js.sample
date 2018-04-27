@@ -41,6 +41,10 @@ exports.warehouse = {
     //used by rule handler to submit dataset download request
     api: "https://dev1.soichi.us/api/warehouse",
 
+    //base url
+    //url: "https://localhost:8080",
+    url: "https://localhost.brainlife.io", //to test datacite
+
     //used to issue warehouse token to allow dataset download
     public_key: fs.readFileSync(__dirname+'/warehouse.pub'),
     private_key: fs.readFileSync(__dirname+'/warehouse.key'),
@@ -72,10 +76,14 @@ exports.express = {
 }
 
 exports.datacite = {
-    prefix: "10.0322",  //test account
-    username: "DATACITE.BL",
+    //prefix: "10.0322",  //test account
+    //username: "DATACITE.BL",
+    //api: "https://mds.test.datacite.org",
+
+    prefix: "10.5072",  //sandbox(test?) 
+    username: "BRAINL.IU",
     password: fs.readFileSync(__dirname+'/datacite.password', {encoding: "ascii"}).trim(),
-    api: "https://mds.test.datacite.org",
+    api: "https://mds.datacite.org",
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

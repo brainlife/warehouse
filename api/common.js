@@ -262,9 +262,66 @@ exports.load_github_detail = function(service_name, cb) {
         });
     });
 }
+exports.compose_app_datacite_metadata = function(app) {
+    //publication year
+    let year = app.create_date.getFullYear();
+    let publication_year = "<publicationYear>"+year+"</publicationYear>";
+
+    let creators = [];
+    app.admins.forEach(sub=>{
+        let contact = cached_contacts[sub];
+        if(!contact) {
+            logger.debug("missing contact", sub);
+            return;
+        }
+        //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
+        creators.push(`<creator> 
+            <creatorName>${xmlescape(contact.fullname)}</creatorName>
+            </creator>`);
+    });
+
+    let contributors = [];
+    app.contributors.forEach(contact=>{
+        //contributorType can be ..
+        //Value \'Contributor\' is not facet-valid with respect to enumeration \'[ContactPerson, DataCollector, DataCurator, DataManager, Distributor, Editor, HostingInstitution, Other, Producer, ProjectLeader, ProjectManager, ProjectMember, RegistrationAgency, RegistrationAuthority, RelatedPerson, ResearchGroup, RightsHolder, Researcher, Sponsor, Supervisor, WorkPackageLeader]\'. It must be a value from the enumeration.'
+        contributors.push(`<contributor contributorType="Other"> 
+            <contributorName>${xmlescape(contact.name)}</contributorName>
+            </contributor>`);
+    });
+
+    let subjects = []; //aka "keyword"
+    app.tags.forEach(tag=>{
+        subjects.push(`<subject>${xmlescape(tag)}</subject>`);
+    });
+
+    let metadata = `<?xml version="1.0" encoding="UTF-8"?>
+    <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+      <identifier identifierType="DOI">${app.doi}</identifier>
+      <creators>
+        ${creators.join("\n")}
+      </creators>
+      <contributors>
+        ${contributors.join("\n")}
+      </contributors>
+      <subjects>
+        ${subjects.join("\n")}
+      </subjects>
+      <titles>
+        <title>${xmlescape(app.name)}</title>
+      </titles>
+      <publisher>brainlife.io</publisher>
+      ${publication_year}
+      <resourceType resourceTypeGeneral="Software">XML</resourceType>
+      <descriptions>
+          <description descriptionType="Other">${xmlescape(app.desc_override||app.desc)}</description>
+      </descriptions>
+    </resource>`;
+    logger.debug(metadata);
+    return metadata;
+}
 
 //https://schema.datacite.org/meta/kernel-4.1/doc/DataCite-MetadataKernel_v4.1.pdf
-function compose_datacite_metadata(pub) {
+exports.compose_pub_datacite_metadata = function(pub) {
 
     //publication year
     let year = pub.create_date.getFullYear();
@@ -276,7 +333,6 @@ function compose_datacite_metadata(pub) {
     //in case author is empty.. let's use submitter as author..
     //TODO - we need to make author required field
     if(pub.authors.length == 0) pub.authors.push(pub.user_id);
-    logger.debug(pub.authors);
 
     let creators = [];
     pub.authors.forEach(sub=>{
@@ -336,11 +392,10 @@ function compose_datacite_metadata(pub) {
           <description descriptionType="Other">${xmlescape(pub.desc)}</description>
       </descriptions>
     </resource>`;
-
-    logger.debug(metadata);
     return metadata;
 }
 
+/*
 exports.doi_mint = function(pub, cb) {
     //get next doi id - use number of publication record with doi
     db.Publications.count({doi: {$exists: true}}).exec((err, count)=>{
@@ -350,10 +405,11 @@ exports.doi_mint = function(pub, cb) {
         pub.save(cb); //I am not sure if I should wait until actually registering metadata to save it?
     });
 }
+*/
 
 //https://support.datacite.org/v1.1/docs/mds-2
 //create new doi and register metadata (still needs to set url once it's minted)
-exports.doi_post_metadata = function(pub, cb) {
+exports.doi_post_metadata = function(metadata, cb) {
     //register!
     logger.debug("registering doi metadata");
     request.post({
@@ -363,12 +419,11 @@ exports.doi_post_metadata = function(pub, cb) {
             pass: config.datacite.password,
         },
         headers: { 'content-type': 'application/xml' },
-        body: compose_datacite_metadata(pub),
+        body: metadata,
     }, (err, res, body)=>{
         if(err) return cb(err); 
-        logger.debug(res.statusCode, body);
+        logger.debug('metadata registration:', res.statusCode, body);
         if(res.statusCode != 201) return cb(body);
-        logger.debug("storing doi to pub record");
         cb();
     });
 }
@@ -387,8 +442,8 @@ exports.doi_put_url = function(doi, url, cb) {
         body: "doi="+doi+"\nurl="+url,
     }, (err, res, body)=>{
         if(err) return cb(err); 
+        logger.debug('url registration:', res.statusCode, body);
         if(res.statusCode != 201) return cb(body);
-        logger.debug("registration success", doi, url, body);
         cb(null);
     });
 }

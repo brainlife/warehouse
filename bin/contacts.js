@@ -30,7 +30,7 @@ function list_developers(cb) {
         let contacts = {} ;
         async.eachSeries(apps, (app, next_app)=>{
             app.admins.forEach(id=>{
-                let contact = common.deref_contact(id);
+                let contact = common.deref_contact(id.toString());
                 if(contact) {
                     //console.log("\""+id+"\",\""+contact.username+"\",\""+contact.fullname+"\",\""+contact.email+"\",\""+app.github+"\"");
                     contacts[id] = contact;
@@ -43,14 +43,13 @@ function list_developers(cb) {
             if(err) return cb(err);
 
             console.log("app-----------------------------------------------");
-            console.log("\"fullname\",\"email\"");
             for(let id in contacts) {
-                console.log("\""+contacts[id].fullname+"\",\""+contacts[id].email+"\"");
+                let name = contacts[id].fullname.split(" ");
+                console.log("\""+name[0]+"\",\""+name[1]+"\", \""+contacts[id].email+"\"");
             }
             logger.debug("done with all apps");
             cb();
         });
 	});
 }
-
 

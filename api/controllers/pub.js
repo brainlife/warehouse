@@ -185,10 +185,10 @@ router.get('/datasets/:pubid', (req, res, next)=>{
  * @apiSuccess {Object}                 Publication record created
  *                              
  */
-router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
-    if(!req.body.project) return cb("project id not set");
-    if(!req.body.license) return cb("license not set");
-    if(!req.body.name) return cb("name not set");
+router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    if(!req.body.project) return next("project id not set");
+    if(!req.body.license) return next("license not set");
+    if(!req.body.name) return next("name not set");
     //TODO validate input?
 
     can_publish(req, req.body.project, (err, can)=>{
@@ -200,25 +200,30 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
         let override = {
             user_id: req.user.sub, 
         }
-        new db.Publications(Object.assign(def, req.body, override)).save((err, pub)=>{
-            if(err) return next(err);
+        //new db.Publications(Object.assign(def, req.body, override)).save((err, pub)=>{
+        let pub = new db.Publications(Object.assign(def, req.body, override));
 
-            common.doi_mint(pub, err=>{
+        //mint new doi - get next doi id - use number of publication record with doi (brittle?)
+        db.Publications.count({doi: {$exists: true}}).exec((err, count)=>{
+            if(err) return next(err);
+            let doi = config.datacite.prefix+"/bl.pub."+count; //TODO - should make the "shoulder" configurable?
+            pub.doi = doi;
+            pub.save(err=>{
                 if(err) return next(err);
 
-                common.doi_post_metadata(pub, err=>{
+                //return to the caller
+                res.json(pub);
+
+                //now post metadata and set url
+                let metadata = common.compose_pub_datacite_metadata(pub);
+                common.doi_post_metadata(metadata, err=>{
                     if(err) return next(err);
-
-                    res.json(pub);
-
                     //then attach url to it (to "mint" it!)
-                    let url = "https://brainlife.io/pub/"+pub._id;  //TODO make it configurable?
+                    let url = config.warehouse.url+"/pub/"+pub._id;  //TODO make it configurable?
                     common.doi_put_url(pub.doi, url, logger.error);
                 });
-            });
-            
+            }); 
         });
- 
     });
 });
 
@@ -269,11 +274,12 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             for(let k in req.body) pub[k] = req.body[k];
             pub.save((err, pub)=>{
                 if(err) return next(err);
-
                 res.json(pub); 
 
-                if(!pub.doi) return; //for backward compatibility.. should I new doi?register?
-                common.doi_post_metadata(pub, logger.error); 
+                if(pub.doi) { //old test pubs doesn't have doi
+                    let metadata = common.compose_pub_datacite_metadata(pub);
+                    common.doi_post_metadata(metadata, logger.error); 
+                }
             });
         });
     });
