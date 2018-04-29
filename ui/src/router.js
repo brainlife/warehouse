@@ -14,6 +14,7 @@ import novnc from '@/novnc'
 //import processes from '@/processes'
 
 import apps from '@/apps'
+import appsgraph from '@/appsgraph'
 import app from '@/app'
 import appedit from '@/appedit'
 
@@ -55,6 +56,7 @@ export default new Router({
         //{path: '/processes/:id?', component: processes},
         
         {path: '/apps', component: apps, meta: {public: true}},
+        {path: '/appsgraph', component: appsgraph, meta: {public: true}},
         {path: '/app/:id', component: app, meta: {public: true}},
         //{path: '/app/:id/submit', component: appsubmit},
         {path: '/app/:id/edit', component: appedit},

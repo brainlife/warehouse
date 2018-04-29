@@ -22,6 +22,14 @@
             </div>
             <br clear="both">
         </div>
+
+        <!--
+        <div class="relationships" style="position: relative;">
+            <h3 style="position: absolute; top: 10px; left: 10px; color: #ddd;">Relationships (experimental)</h3>
+            <div ref="vis" style="height: 500px; background-color: #fff;"/>
+        </div>
+        -->
+
         <b-button v-if="config.user" class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
     </div><!--page-content-->
 </div><!--root-->
@@ -96,6 +104,7 @@ export default {
                 if(e.offsetTop <= scrolltop) this.active = tag;
             });     
         },
+
     },
 }
 </script>
