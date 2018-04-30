@@ -1,12 +1,18 @@
 <template>
-<v-select v-model="selected" :options="options" :placeholder="placeholder" label="name"/>
+<!--
+v-select has some issue with clicking scrollbar closing the select dropdown..
+-->
+<b-form-select v-model="selected" :placeholder="placeholder">
+    <option v-for="project in options" :key="project._id" :value="project._id">
+        {{project.name}}
+    </option>
+</b-form-select>
 </template>
 
 <script>
 import Vue from 'vue'
 
 import projectaccess from '@/components/projectaccess'
-//import select2 from '@/components/select2'
 import vSelect from 'vue-select'
 
 export default {
@@ -32,8 +38,8 @@ export default {
     watch: {
         selected: function() {
             if(this.selected) {
-                localStorage.setItem('last_projectid_used', this.selected._id);
-                this.$emit('input', this.selected._id);
+                localStorage.setItem('last_projectid_used', this.selected);
+                this.$emit('input', this.selected);
             } else {
                 this.$emit('input', null);
             }
@@ -100,14 +106,13 @@ export default {
                 res.body.projects.forEach(project=>{
                     that.options.push(project);
                 });
-
                 that.selected = that.options.find(it=>it._id == that.value);
                 if(!that.allownull && !that.selected) {
                     //need to preselect some value
                     var last = localStorage.getItem('last_projectid_used');
                     var found = res.body.projects.find(project=>project._id == last);
-                    if(found) that.selected = that.options.find(it=>it._id == last);
-                    else that.selected = that.options[0];
+                    if(found) that.selected = that.options.find(it=>it._id == last)._id;
+                    else that.selected = that.options[0]._id;
                 }
             });
         }

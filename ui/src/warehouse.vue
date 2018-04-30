@@ -8,11 +8,13 @@
     <datatype/>
 
     <!--models only used by project page (TODO - move to project page eventually -->
-    <viewselecter v-if="config.user"/>
-    <datasetselecter v-if="config.user"/>
-    <uploader v-if="config.user"/>
-    <instanceselecter v-if="config.user"/>
-    <archiver v-if="config.user"/>
+    <div v-if="config.user">
+        <viewselecter/>
+        <datasetselecter/>
+        <uploader/>
+        <instanceselecter/>
+        <archiver/>
+    </div>
 </div>
 </template>
 
