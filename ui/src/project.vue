@@ -45,7 +45,7 @@
                     </b-col>
                     <b-col>
                         <p>
-                            <small class="text-muted">Users who can update name / desc / project members, share processed, and create rules / publications.</small>
+                            <small class="text-muted">Users who can update name / desc / project members, share processes, and create rules / publications.</small>
                         </p>
                         <p v-for="c in selected.admins" :key="c._id">
                             <contact :id="c"/>
@@ -112,7 +112,7 @@
         </div>
 
         <div v-if="tabs[tab].id == 'process'">
-            <b-alert show v-if="!ismember()">Only the members of this project can access processes.</b-alert>
+            <b-alert show v-if="!(ismember()||isadmin())">Only the members of this project can access processes.</b-alert>
             <processes :project="selected" v-else/>
         </div>
 
