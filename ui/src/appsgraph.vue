@@ -43,38 +43,69 @@ export default {
     },
 
     methods: {
+
+        hash: function(str) {
+            return str.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+        },
+
+        dtid: function(datatype, datatype_tags) {
+            var key = datatype._id;
+            datatype_tags.forEach(tag=>{
+                key += tag;
+            });
+            return this.hash(key);
+        },
+
         init_vis: function(apps) {
+            var $it = this;
+
             console.log("initializing");
             var nodes = [];
             var edges = [];
             var datatype_nodes = {};
             function add_datatype_node(io) {
-                if(datatype_nodes[io.datatype._id]) return; //already registered
-                var hash = io.datatype.name.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+                io.datatype_tags = io.datatype_tags.filter(tag=>{ return (tag[0] != '!') });
+                var dtid = $it.dtid(io.datatype, io.datatype_tags);
+                if(datatype_nodes[dtid]) return dtid; //already registered
+                var hash = $it.hash(io.datatype.name);
                 var numhash = Math.abs(hash+120)%360;
                 var color = "hsl("+(numhash%360)+", 50%, 60%)"
                 var node = {
-                    id: io.datatype._id, 
+                    id: dtid,
                     shape: "box", 
                     label: io.datatype.name, color, 
                     font: {size: 11, color: "#fff"}, 
                     margin: 10
                 }
-                datatype_nodes[node.id] = node;
+                if(io.datatype_tags.length > 0) {
+                    node.label += " : " + io.datatype_tags.join(" ");
+                }
+                datatype_nodes[dtid] = node;
                 nodes.push(node);
+                return dtid;
             }
 
             apps.forEach(app=>{
                 nodes.push({id: app._id, shape: "box", label: app.name, color: "#fff", font: {size: 11}, margin: 10}); 
+
+                var dtids = [];
                 app.inputs.forEach(input=>{
                     if(!input.datatype) return;
-                    add_datatype_node(input);
-                    edges.push({from: input.datatype._id, to: app._id, arrows: "to"});
+                    var dtid = add_datatype_node(input);
+                    if(!~dtids.indexOf(dtid)) {
+                        dtids.push(dtid);
+                        edges.push({from: dtid, to: app._id, arrows: "to"});
+                    }
                 });
+
+                dtids = [];
                 app.outputs.forEach(output=>{
                     if(!output.datatype) return;
-                    add_datatype_node(output);
-                    edges.push({from: app._id, to: output.datatype._id, arrows: "to"});
+                    var dtid = add_datatype_node(output);
+                    if(!~dtids.indexOf(dtid)) {
+                        dtids.push(dtid);
+                        edges.push({from: app._id, to: dtid, arrows: "to"});
+                    }
                 });
             });
 
@@ -82,6 +113,9 @@ export default {
                 nodes: new vis.DataSet(nodes), 
                 edges: new vis.DataSet(edges),
             }, {
+                layout: {  
+                    improvedLayout: false,
+                },
                 /*
                 layout: {
                 hierarchical: {

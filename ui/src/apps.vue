@@ -12,6 +12,12 @@
         <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)">
             {{tag}}
         </p>
+        <br>
+        <div style="position: fixed; bottom: 0px;">
+            <div class="button" style="margin: 5px; color: gray;" @click="go('/appsgraph')">
+                <icon name="code-branch"/>
+            </div>
+        </div>
     </div>
     <div class="page-content" v-on:scroll="update_active" ref="scrolled">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
