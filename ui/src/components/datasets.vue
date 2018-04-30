@@ -386,10 +386,10 @@ export default {
             }
             if(loaded === this.total_datasets) return;
 
-            console.log("fetching datasets");
+            //console.log("fetching datasets");
             this.$http.get('dataset', {
                 before(request) {
-                    console.log("loading ..........");
+                    //console.log("loading ..........");
                     this.loading = request;
                 },
                 params: {
@@ -432,7 +432,7 @@ export default {
                     if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
                     this.page_info.push({top: prev, bottom: h, height: h-prev, visible: true});
 
-                    console.log("done loading..");
+                    //console.log("done loading..");
                     this.loading = null;
                 });
             }, err=>{

@@ -92,7 +92,7 @@ export default {
         }
 
         function query() {
-            console.log("lpoading project with query", find);
+            //console.log("lpoading project with query", find);
             that.$http.get('project', {params: {
                 find: JSON.stringify(find),
                 sort: 'name',

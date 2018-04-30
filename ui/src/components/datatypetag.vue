@@ -23,7 +23,7 @@ export default {
 
     watch: {
         datatype: function() {
-            console.log("watch dataatype.................");
+            //console.log("watch dataatype.................");
             this.load();
         }
     },

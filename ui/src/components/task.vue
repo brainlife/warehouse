@@ -37,10 +37,6 @@
                         <th>Failed</th>
                         <td>{{new Date(this.task.fail_date).toLocaleString()}}</td>
                     </tr>
-                    <tr v-if="task.remove_date">
-                        <th>Remove At</th>
-                        <td>{{new Date(this.task.removed_date).toLocaleString()}}</td>
-                    </tr>
                     <tr v-if="task.next_date">
                         <th>Next Chk</th>
                         <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
@@ -50,6 +46,9 @@
                         <td>{{this.resource.name}}</td>
                     </tr>
                     </table>
+                    <p v-if="task.status == 'finished'" style="opacity: 0.5;">
+                        <icon name="exclamation-circle" scale="0.8"/> Will be removed on {{remove_date.toLocaleDateString()}}
+                    </p>
                 </b-popover>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="redo"/>
@@ -66,7 +65,6 @@
                     <time v-if="task.status == 'finished'"><timeago :since="task.finish_date"/></time>
                     <time v-if="task.status == 'failed'"><timeago :since="task.fail_date"/></time>
                     <time v-if="task.status == 'removed'"><timeago :since="task.remove_date"/></time>
-                    <!--<time v-if="task.status == 'stopped'"><timeago :since="task.stop_date"/></time>-->
                 </small>
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
@@ -89,11 +87,14 @@
 
     <div v-if="has_output_slot">
         <div @click="toggle('output')" class="toggler">
-            <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output
+            <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output 
+            <small v-if="remove_in_days < 7" class="text-danger" style="float: right;">Will be removed in <b>{{remove_in_days.toFixed(0)}} days</b></small>
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.output" class="task-content">
-                <slot name="output"></slot>
+            <div class="task-content">
+                <div v-if="activeSections.output">
+                    <slot name="output"></slot>
+                </div>
             </div>
         </transition>
     </div>
@@ -161,21 +162,20 @@ export default {
         has_output_slot() {
             return !!this.$slots.output;
         },
-        /*
-        popover_content() {
-            var content = "";
-            content += `<table class="table table-sm">`;
-            content += `<tr><th>Created</th><td>${new Date(this.task.create_date).toLocaleString()}</td></tr>`;
-            if(this.task.start_date) content += `<tr><th>Started</th><td>${new Date(this.task.start_date).toLocaleString()}</td></tr>`;
-            if(this.task.finish_date) content += `<tr><th>Finished</th><td>${new Date(this.task.finish_date).toLocaleString()}</td></tr>`;
-            if(this.task.fail_date) content += `<tr><th>Failed</th><td>${new Date(this.task.fail_date).toLocaleString()}</td></tr>`;
-            if(this.task.remove_date) content += `<tr><th>Removed</th><td>${new Date(this.task.removed_date).toLocaleString()}</td></tr>`;
-            if(this.task.next_date) content += `<tr><th>Next Chk</th><td>${new Date(this.task.next_date).toLocaleString()}</td></tr>`;
-            if(this.resource) content += `<tr><th>Resource</th><td>${this.resource.name}</td></tr>`;
-            content += `</table>`;
-            return content;
+        remove_date() {
+            var d = this.task.remove_date;
+            if(!d) {
+                //use finish date
+                d = new Date(this.task.finish_date);
+                d.setDate(d.getDate() + 25); //should match with amaretti bin/task
+            }
+            return d;
         },
-        */
+        remove_in_days() {
+            var d = new Date();
+            var i = this.remove_date.getTime() - d.getTime();
+            return i/(3600*24*1000);
+        }
     },
 
     filters: {

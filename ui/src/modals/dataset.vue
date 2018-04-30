@@ -238,7 +238,7 @@ export default {
     created() {
         console.log("modal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", opt=>{
-            console.log("requested to view", opt);
+            //console.log("requested to view", opt);
             this.back = opt.back;
             this.load(opt.id);
         });
@@ -444,7 +444,7 @@ export default {
         },
 
         load_status: function(id) {
-            console.log("loading dataset status");
+            //console.log("loading dataset status");
             if(!this.dataset) return; //route changed before timeout was fired?
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
@@ -476,7 +476,7 @@ export default {
 
             if(!id) return;
 
-            console.log("modal/dataset.vue loading");
+            //console.log("modal/dataset.vue loading");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 populate: "project datatype prov.deps.dataset publications",
@@ -495,7 +495,7 @@ export default {
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {
                     this.$http.get(Vue.config.wf_api+'/task/'+this.dataset.prov.task_id).then(res=>{
-                        console.log("loading prov task", res.body);
+                        //console.log("loading prov task", res.body);
                         this.task = res.body;
                     });
                 }
@@ -507,7 +507,7 @@ export default {
                 }});
             }).then(res=>{
                 this.alltags = res.body;
-                console.log("done loading dataset details");
+                //console.log("done loading dataset details");
              }).catch(err=>{
                 console.error(err);
             });
