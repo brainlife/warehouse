@@ -16,9 +16,8 @@
             <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule" v-if="rule.removed == false">
                 <div style="padding: 10px;">
                     <div style="float: right">
-                        
-                        <div class="button" @click="edit(rule)" v-if="ismember()"><icon name="edit"/></div>
-                        <div class="button" @click="remove(rule)" v-if="ismember()"><icon name="trash"/></div>
+                        <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()"><icon name="edit"/></div>
+                        <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()"><icon name="trash"/></div>
                         <contact :id="rule.user_id" short="true"/>
                         <timeago :since="rule.create_date" :auto-update="10"/>
                     </div>

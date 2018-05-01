@@ -291,6 +291,7 @@ padding: 10px;
 }
 small {
 font-size: 85%;
+opacity: 0.7;
 }
 .form-header {
 text-transform: uppercase;

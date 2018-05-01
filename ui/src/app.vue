@@ -16,10 +16,10 @@
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                         </div>
                         <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
-                        <h5 style="opacity: 0.8">
-                            <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')">{{app.github}}</a>
-                            <small><b-badge variant="primary" v-if="app.github_branch" style="position: relative; top: -3px"><icon name="code-branch" scale="0.7"/> {{app.github_branch}}</b-badge></small>
-                        </h5>
+                        <h6 style="opacity: 0.8;">
+                            <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
+                            <small><b-badge variant="secondary" v-if="app.github_branch" style="position: relative; top: -2px"><icon name="code-branch" scale="0.6"/> {{app.github_branch}}</b-badge></small>
+                        </h6>
                         <p class="text">
                             {{app.desc_override||app.desc}}
                         </p>
@@ -182,7 +182,7 @@
                     </b-col>
                     <b-col>
                         <b-alert show variant="danger" v-if="resources.length == 0">
-                            This App is not registered to run any resource that you have access to. If you are the developer of this App, please contact resource administrators and enable it on more resources.
+                            This App is not registered to run on any resource that you have access to. If you are a developer of this App, please contact resource administrators and enable this App on more resources.
                         </b-alert>
                         <b-alert show variant="warning" v-else-if="!preferred_resource">
                             This App can not run on any registered resources that you have access to at this moment.
@@ -192,14 +192,14 @@
                         </p>
                         <b-row>
                             <b-col cols="4" v-for="resource in resources" :key="resource._id">
-                                <div class="resource" v-b-popover="resource.info.desc+'\n\n'+resource.detail+'\n'+resource.status" :title="resource.id">
+                                <div class="resource" v-b-popover="resource.info.desc+'\n\n'+resource.detail+'\nstatus:'+resource.status" :title="resource.id">
                                     <icon name="server" scale="2" style="float: right; opacity: 0.5;"/>
                                     <b>{{resource.name}}</b><br>
                                     <small>{{resource.info.name}}</small>
                                     <h5><b-badge pill variant="light">Score {{resource.score}}</b-badge></h5>
                                     <div v-if="resource.status != 'ok'" class="resource-status bg-danger">Down</div>
                                     <div v-else-if="resource.score == 0" class="resource-status bg-warning">Busy</div>
-                                    <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success">
+                                    <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
                                         <icon name="thumbs-up"/>
                                     </div>
                                 </div>
@@ -216,11 +216,9 @@
                     </b-col>
                     <b-col>
                         <p><small class="text-muted">The following users can administer this application registration.</small></p>
-                        <ul style="list-style: none; padding: 0px;">
-                            <li v-for="c in app.admins" :key="c._id">
-                                <contact :id="c"/>
-                            </li>
-                        </ul>
+                        <p v-for="c in app.admins" :key="c._id">
+                            <contact :id="c"/>
+                        </p>
                     </b-col>
                 </b-row>
                 <br>
@@ -231,11 +229,9 @@
                     </b-col>
                     <b-col>
                         <p><small class="text-muted">The following people have contributed to the source code ({{app.github}}).</small></p>
-                        <ul style="list-style: none; padding: 0px;">
-                            <li v-for="dev in app.contributors" :key="dev._id">
-                                <contact :fullname="dev.name" :email="dev.email"/>
-                            </li>
-                        </ul>
+                        <p v-for="dev in app.contributors" :key="dev._id">
+                            <contact :fullname="dev.name" :email="dev.email"/>
+                        </p>
                     </b-col>
                 </b-row>
 

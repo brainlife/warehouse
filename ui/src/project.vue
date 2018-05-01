@@ -59,7 +59,7 @@
                     </b-col>
                     <b-col>
                         <p>
-                            <small class="text-muted">Users who have read/write access to dataets on this project, share processes, and create rules / publications.</small>
+                            <small class="text-muted">Users who have read/write access to datasets on this project, share processes, and create rules / publications.</small>
                         </p>
                         <p v-for="c in selected.members" :key="c._id">
                             <contact :id="c"/>

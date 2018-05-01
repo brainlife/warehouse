@@ -126,15 +126,12 @@
                         <b-row v-if="dataset.publications && dataset.publications.length > 0">
                             <b-col cols="3"><span class="form-header">Publications</span></b-col>
                             <b-col cols="9">
-                                <small class="text-muted">This dataset has been published on following publications.</small>
-                                <!--
-                                <b-table small hover :items="dataset.publications" :fields="['name', 'desc', 'doi']" @row-clicked="openpub">
-                                </b-table>
-                                -->
-                                <div v-for="pub in dataset.publications" @click="openpub(pub)" v-if="!pub.removed" class="pub">
-                                    <h5><icon name="book"/> {{pub.name||pub}}</h5>
-                                    <p class="text">{{pub.desc}}</p>
-                                </div>
+                                <p><small class="text-muted">This dataset has been published on the following publications.</small></p>
+                                <p v-for="pub in dataset.publications" v-if="!pub.removed">
+                                    <a href="javascript:void(0);" @click="openpub(pub)">
+                                        <icon name="book" scale="0.8"/> {{pub.name||pub}}
+                                    </a>
+                                </p>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -146,7 +143,7 @@
                                     <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
                                 </div>
                                 <div v-else>
-                                    <p style="font-size: 85%; background-color: #ddd; padding: 10px; max-height: 250px; overflow: auto;"><pre>{{dataset.meta}}</pre></p>
+                                    <pre v-highlightjs><code class="json">{{dataset.meta}}</code></pre>
                                 </div>
                                 <br>
                             </b-col>
@@ -359,8 +356,8 @@ export default {
             this.dataset = null;
         },
 
-        openpub: function(pub_id) {
-            this.$router.push('/pub/'+pub_id);
+        openpub: function(pub) {
+            this.$router.push('/pub/'+pub._id);
             this.dataset = null;
         },
 
@@ -575,9 +572,11 @@ export default {
             });
         },
 
+        /*
         openpub: function(pub) {
             document.location = '/pub/'+pub._id;
         },
+        */
 
         save_meta: function() {
             try {
@@ -623,21 +622,6 @@ padding: 20px;
 }
 .fade-enter, .fade-leave-to {
     opacity: 0
-}
-.pub {
-background-color: white;
-padding: 10px;
-margin-bottom: 10px;
-cursor: pointer;
-}
-.pub:hover {
-background-color: #eee;
-}
-.pub .text {
-font-size: 90%;
-}
-.pub h5 {
-color: #007bff;
 }
 </style>
 

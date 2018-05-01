@@ -55,11 +55,9 @@
                                 <span class="form-header">Authors</span>
                             </b-col>
                             <b-col>
-                                <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="contact in pub.authors" :key="contact._id">
-                                        <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                                    </li>
-                                </ul>
+                                <p v-for="contact in pub.authors" :key="contact._id">
+                                    <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                                </p>
                             </b-col>
                         </b-row>
                         <b-row v-if="pub.readme">
@@ -75,11 +73,9 @@
                                 <span class="form-header">Contributors</span>
                             </b-col>
                             <b-col>
-                                <ul style="list-style: none; padding: 0px;">
-                                    <li v-for="contact in pub.contributors" :key="contact._id">
-                                        <contact :fullname="contact.fullname" :email="contact.email"></contact>
-                                    </li>
-                                </ul>
+                                <p v-for="contact in pub.contributors" :key="contact._id">
+                                    <contact :fullname="contact.fullname" :email="contact.email"></contact>
+                                </p>
                             </b-col>
                         </b-row>
              
@@ -143,10 +139,8 @@
                             </b-col>
                             <b-col>
                                 <p><small class="text-muted">This publication is hosted in the following Brainlife project</small></p>
-                                <div @click="openproject(pub.project)" class="project">
-                                    <h5><icon name="shield-alt"/> {{pub.project.name}}</h5>
-                                    <p class="text">{{pub.project.desc}}</p>
-                                </div>
+                                <a href="javascript:void(0)" @click="openproject(pub.project._id)"><h5><icon name="shield-alt"/> {{pub.project.name}}</h5></a>
+                                <p class="text">{{pub.project.desc}}</p>
                                 <!--
                                 <p><small class="text-muted">This publication was created from the following project.</small></p>
                                 <projectcard :project="pub.project"/>
@@ -165,22 +159,22 @@
                                     <b-row class="social-buttons">
                                         <b-col> 
                                             <network network="email"> <icon name="envelope"/> Email </network> <br>
-                                            <network network="twitter"> <icon name="twitter"/> Twitter </network><br>
-                                            <network network="facebook"> <icon name="facebook"/> Facebook </network><br>
+                                            <network network="twitter"> <icon name="brands/twitter"/> Twitter </network><br>
+                                            <network network="facebook"> <icon name="brands/facebook"/> Facebook </network><br>
                                         </b-col>
                                         <b-col> 
-                                            <network network="googleplus"> <icon name="google-plus"/> Google + </network> <br>
-                                            <network network="linkedin"> <icon name="linkedin"/> LinkedIn </network><br>
-                                            <network network="pinterest"> <icon name="pinterest"/> Pinterest </network><br>
+                                            <network network="googleplus"> <icon name="brands/google-plus"/> Google + </network> <br>
+                                            <network network="linkedin"> <icon name="brands/linkedin"/> LinkedIn </network><br>
+                                            <network network="pinterest"> <icon name="brands/pinterest"/> Pinterest </network><br>
                                             <!--<network network="sms"> <icon name="commenting-o"/> SMS </network><br>-->
-                                            <!--<network network="line"> <icon name="line"/> Line </network> <br>-->
+                                            <!--<network network="line"> <icon name="brands/line"/> Line </network> <br>-->
                                         </b-col>
                                         <b-col>
-                                            <network network="reddit"> <icon name="reddit"/> Reddit </network><br>
-                                            <network network="skype"> <icon name="skype"/> Skype </network><br>
-                                            <network network="weibo"> <icon name="weibo"/> Weibo </network> <br>
-                                            <!-- <network network="whatsapp"> <icon name="whatsapp"/> Whatsapp </network><br>-->
-                                            <!-- <network network="telegram"> <icon name="telegram"/> Telegram </network><br>-->
+                                            <network network="reddit"> <icon name="brands/reddit"/> Reddit </network><br>
+                                            <network network="skype"> <icon name="brands/skype"/> Skype </network><br>
+                                            <network network="weibo"> <icon name="brands/weibo"/> Weibo </network> <br>
+                                            <!-- <network network="whatsapp"> <icon name="brands/whatsapp"/> Whatsapp </network><br>-->
+                                            <!-- <network network="telegram"> <icon name="brands/telegram"/> Telegram </network><br>-->
                                         </b-col>
                                         <!--
                                         <b-col>
@@ -555,15 +549,6 @@ max-height: 230px;
 {
 opacity: 0;
 max-height: 0px;
-}
-.project {
-background-color: white;
-padding: 10px;
-margin-bottom: 10px;
-cursor: pointer;
-}
-.project:hover {
-background-color: #eee;
 }
 .project h5 {
 color: #007bff;
