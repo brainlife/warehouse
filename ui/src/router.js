@@ -51,24 +51,18 @@ export default new Router({
     routes: [
         {path: '/', redirect: '/project'},
         {path: '/dashboard', component: dashboard},
-        //{path: '/upload', component: upload},
         {path: '/download/:id', component: download},
-        //{path: '/processes/:id?', component: processes},
         
         {path: '/apps', component: apps, meta: {public: true}},
         {path: '/appsgraph', component: appsgraph, meta: {public: true}},
         {path: '/app/:id', component: app, meta: {public: true}},
-        //{path: '/app/:id/submit', component: appsubmit},
         {path: '/app/:id/edit', component: appedit},
 
         {path: '/view/:instanceid/:taskid/:type/:subdir?', component: view, props: true},
         {path: '/novnc/:instanceid/:taskid/:type/:subdir?', component: novnc, props: true},
 
-        //{path: '/projects', component: projects, meta: {public: true}}, //deprecated by /project
-
         {path: '/project', component: project},
         {path: '/project/:id', component: project},
-        //{path: '/project/:id/upload', component: projectedit},
         {path: '/project/:id/edit', component: projectedit},
         {path: '/project/:id/:tab?/:subid?', component: project},
 
@@ -77,19 +71,16 @@ export default new Router({
         {path: '/datatype/:id', component: datatype},
         {path: '/datatype/:id/edit', component: datatypeedit},
 
-        //{path: '/settings', component: settings},
-
         {path: '/pubs', component: pubs, meta: {public: true}},
         {path: '/pub/:id', component: pub, meta: {public: true}},
 
         {path: '/test', component: test},
         {path: '/404', component: missing, meta: {public: true}},
         
+        {path: '/admin', component: admin},
+       
         //deprecated paths
         {path: '/datasets/:id?', component: project},
-        //{path: '/dataset/:id', component: dataset},
-
-        {path: '/admin', component: admin},
 
     ]
 })

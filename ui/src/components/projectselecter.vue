@@ -1,6 +1,7 @@
 <template>
 <!--
 v-select has some issue with clicking scrollbar closing the select dropdown..
+https://github.com/sagalbot/vue-select/issues/474
 -->
 <b-form-select v-model="selected" :placeholder="placeholder">
     <option v-for="project in options" :key="project._id" :value="project._id">
@@ -13,10 +14,10 @@ v-select has some issue with clicking scrollbar closing the select dropdown..
 import Vue from 'vue'
 
 import projectaccess from '@/components/projectaccess'
-import vSelect from 'vue-select'
+//import VueSelect from 'vue-select'
 
 export default {
-    components: { projectaccess, vSelect },
+    components: { projectaccess },
     props: [ 
         'value', 
         'allownull', 

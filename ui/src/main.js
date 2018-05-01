@@ -37,6 +37,8 @@ import SocialSharing from 'vue-social-sharing';
 
 Vue.config.productionTip = false
 
+import VueAnalytics from 'vue-analytics'
+
 Vue.component('icon', Icon)
 
 Vue.use(VueHighlightJS)
@@ -55,6 +57,7 @@ Vue.use(VueTimeago, {
         'en-US': require('vue-timeago/locales/en-US.json')
     }
 });
+
 
 var jwt_decode = require('jwt-decode');
 
@@ -193,6 +196,7 @@ new Vue({
                     console.log("renewed!");
                     Vue.config.jwt = res.body.jwt;
                     jwt_decode_brainlife(Vue.config.jwt);
+                    Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
                     localStorage.setItem("jwt", res.body.jwt);
                 }
             }).catch(err=>{
@@ -204,3 +208,6 @@ new Vue({
     },
 })
 
+if(!Vue.config.debug) {
+    Vue.use(VueAnalytics, { id: 'UA-118407195-1', router })
+}

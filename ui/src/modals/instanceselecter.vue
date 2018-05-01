@@ -43,14 +43,11 @@ export default {
     data() {
         return {
             submit_cb: null, 
-
             shown: false,
             project: null, 
             instance: null, 
             desc: null,
-
             projects: {},
-
             instances: [],
         }
     },

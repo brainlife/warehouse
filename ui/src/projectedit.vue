@@ -113,7 +113,8 @@ export default {
                 desc: "",
                 access: "private",
                 admins: [Vue.config.user.sub],
-                members: [Vue.config.user.sub],
+                //members: [Vue.config.user.sub],
+                members: [],
                 license: "ccby.40",
             },
 

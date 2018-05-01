@@ -18,7 +18,7 @@
                         <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
                         <h5 style="opacity: 0.8">
                             <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')">{{app.github}}</a>
-                            <small><b-badge variant="primary" v-if="app.github_branch" style="position: relative; top: -3px">{{app.github_branch}}</b-badge></small>
+                            <small><b-badge variant="primary" v-if="app.github_branch" style="position: relative; top: -3px"><icon name="code-branch" scale="0.7"/> {{app.github_branch}}</b-badge></small>
                         </h5>
                         <p class="text">
                             {{app.desc_override||app.desc}}
