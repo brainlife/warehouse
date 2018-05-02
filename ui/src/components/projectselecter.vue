@@ -64,13 +64,6 @@ export default {
         } else {
             //load project that user is admin/member, or public (who can read from datasets)
             find = {
-                /*
-                $or: [
-                    { admins: Vue.config.user.sub }, 
-                    { members: Vue.config.user.sub }, 
-                    { access: "public" },
-                ],
-                */
                 removed: false,
             };
         }
@@ -81,7 +74,15 @@ export default {
                 datatype: this.datatype,
                 removed: false,
             } 
-            if(this.datatype_tags && this.datatype_tags.length > 0) project_query.datatype_tags = { $all: this.datatype_tags };
+            if(this.datatype_tags && this.datatype_tags.length > 0) {
+                //project_query.datatype_tags = { $all: this.datatype_tags };
+                var ands = [];
+                this.datatype_tags.forEach(tag=>{
+                    if(tag[0] == "!") ands.push({datatype_tags: {$ne: tag.substring(1)}});
+                    else ands.push({datatype_tags: tag});
+                });
+                project_query.$and = ands;
+            }
             this.$http.get('dataset/distinct', {params: {
                 find: JSON.stringify(project_query),
                 distinct: 'project',
@@ -99,7 +100,6 @@ export default {
         }
 
         function query() {
-            //console.log("lpoading project with query", find);
             that.$http.get('project', {params: {
                 find: JSON.stringify(find),
                 sort: 'name',
@@ -113,7 +113,9 @@ export default {
                     var last = localStorage.getItem('last_projectid_used');
                     var found = res.body.projects.find(project=>project._id == last);
                     if(found) that.selected = that.options.find(it=>it._id == last)._id;
-                    else that.selected = that.options[0]._id;
+                    else if(that.options.length > 0) {
+                        that.selected = that.options[0]._id;
+                    }
                 }
             });
         }

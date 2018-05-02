@@ -1,5 +1,5 @@
 <template>
-<b-form v-if="app && projects" @submit="submit">
+<b-form v-if="app" @submit="submit">
     <b-alert :show="!this.resource_available">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
 
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
@@ -118,7 +118,7 @@ export default {
 
             //cache
             datasets: {}, //available datasets grouped by input._id then project_id then array of datasets
-            projects: [], //just names and group_ids
+            //projects: [], //just names and group_ids
             
             config: Vue.config,
         }
@@ -127,6 +127,7 @@ export default {
     mounted: function() {
         console.log("mounted");
 
+        /*
         //load project names (used in various input selecters)
         this.$http.get('project', {params: {
             find: JSON.stringify({
@@ -145,13 +146,13 @@ export default {
             });
 
             console.log("loaded projects");
+        */
 
-            //load app detail
-            return this.$http.get('app', {params: {
-                find: JSON.stringify({_id: this.id}),
-                populate: 'inputs.datatype outputs.datatype',
-            }})
-        })
+        //load app detail
+        return this.$http.get('app', {params: {
+            find: JSON.stringify({_id: this.id}),
+            populate: 'inputs.datatype outputs.datatype',
+        }})
         .then(res=>{
             this.app = res.body.apps[0];
 
@@ -360,22 +361,34 @@ export default {
                 all_dataset_ids = all_dataset_ids.concat(this.form.inputs[input_id]);
             }
 
+            //var project = this.projects[this.project];
             var app_inputs = [];
             var meta = {};
-            var project = this.projects[this.project];
-
-            //first create an instance to run everything
+            var project = null;
             var instance = null;
             var download = [];
             var _outputs = [];
             var datasets = {};
-            this.$http.post(Vue.config.wf_api+'/instance', {
-                group_id: project.group_id,
-                desc: this.form.desc||this.app.name,
-                config: {
-                    brainlife: true,
-                    type: "v2",
-                },
+
+            //I need a bit more detail on the destination project selected
+            this.$http.get('project', {params: {
+                find: JSON.stringify({
+                   _id: this.project, 
+                }),
+                select: 'name group_id',
+            }}).then(res=>{
+                project = res.body.projects[0];
+                debugger;
+                
+                //create an instance to run everything
+                return this.$http.post(Vue.config.wf_api+'/instance', {
+                    group_id: project.group_id,
+                    desc: this.form.desc||this.app.name,
+                    config: {
+                        brainlife: true,
+                        type: "v2",
+                    },
+                });
             }).then(res=>{
                 instance = res.body;
                 console.log("instance created", instance);
