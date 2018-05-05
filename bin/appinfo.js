@@ -66,7 +66,7 @@ function handle_app(app, cb) {
             //service_branch: app.github_branch,  //let's not group by branch for now.
         }
     }, (err, res, service)=>{
-        if(err) return next(err);
+        if(err) return cb(err);
         if(res.statusCode != 200) return cb("couldn't obtain service stats "+res.statusCode);
         //console.dir(service);
 

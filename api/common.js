@@ -395,18 +395,6 @@ exports.compose_pub_datacite_metadata = function(pub) {
     return metadata;
 }
 
-/*
-exports.doi_mint = function(pub, cb) {
-    //get next doi id - use number of publication record with doi
-    db.Publications.count({doi: {$exists: true}}).exec((err, count)=>{
-        if(err) return cb(err);
-        let doi = config.datacite.prefix+"/bl.p."+count; //TODO - should make the "shoulder" configurable?
-        pub.doi = doi;
-        pub.save(cb); //I am not sure if I should wait until actually registering metadata to save it?
-    });
-}
-*/
-
 //https://support.datacite.org/v1.1/docs/mds-2
 //create new doi and register metadata (still needs to set url once it's minted)
 exports.doi_post_metadata = function(metadata, cb) {

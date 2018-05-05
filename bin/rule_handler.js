@@ -360,7 +360,7 @@ function handle_rule(rule, cb) {
                     instance = body.instances[0];
                     if(instance) {
                         logger.debug("using instance id:", instance._id);
-                        logger.debug(JSON.stringify(instance, null, 4));
+                        //logger.debug(JSON.stringify(instance, null, 4));
                     }
                     next();
                 });
@@ -455,15 +455,18 @@ function handle_rule(rule, cb) {
                             let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
                             deps.push(task._id); 
 
+                            //console.log(JSON.stringify(output_detail, null, 4));
+
                             //TODO I should only put stuff that I need output input..
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
                                 task_id: task._id,
-                                //output_id: input.prov.output_id,
                                 subdir: input.prov.subdir,
                                 dataset_id: input._id, //TODO not sure if this is right?
                                 prov: null, //remove dataset prov
                                 keys,
+
+                                files: output_detail.files, //needed by process_input_config to map to correct output
                             }));
                             return true;
                         }
@@ -494,7 +497,6 @@ function handle_rule(rule, cb) {
                                 task_id: task._id,
                                 subdir: output.subdir, 
                                 dataset_id: output.dataset_id,
-                                //output_id: output.id, 
                                 prov: null, //remove dataset prov
                                 keys,
                             }));
@@ -654,8 +656,6 @@ function handle_rule(rule, cb) {
 //input_info - input datasets that can be used for app (datatype populated)
 //_app_inputs ... similar to input_info.. selected to submit?
 function process_input_config(app, input_info, _app_inputs) {
-    //logger.debug("process_input_config");
-    //logger.debug(JSON.stringify(datasets, null, 4));
     var out = {};
     for(var k in app.config) {
         var node = app.config[k];
@@ -673,7 +673,6 @@ function process_input_config(app, input_info, _app_inputs) {
             var info = input_info[node.input_id];
             var file = info.datatype.files.find(file=>file.id == node.file_id);
                 
-            //use file.fillname unless datasets.files exists.. which points to non-default input file location
             var path = base+"/"+(file.filename||file.dirname);
             if(dataset.files && dataset.files[node.file_id]) {
                 path = base+"/"+dataset.files[node.file_id];
