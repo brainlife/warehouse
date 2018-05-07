@@ -280,7 +280,7 @@ export default {
                             config[k] = "no such file_id:"+node.file_id;
                             return;
                         }
-
+                        
                         //use file.filename/dirname path, unless filemapping from the input dataset is provided
                         var path = base+"/"+(file.filename||file.dirname);
                         if(dataset.files && dataset.files[node.input_id]) {

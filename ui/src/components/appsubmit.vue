@@ -378,8 +378,6 @@ export default {
                 select: 'name group_id',
             }}).then(res=>{
                 project = res.body.projects[0];
-                debugger;
-                
                 //create an instance to run everything
                 return this.$http.post(Vue.config.wf_api+'/instance', {
                     group_id: project.group_id,
