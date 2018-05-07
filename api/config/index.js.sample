@@ -76,14 +76,17 @@ exports.express = {
 }
 
 exports.datacite = {
-    //prefix: "10.0322",  //test account
-    //username: "DATACITE.BL",
-    //api: "https://mds.test.datacite.org",
+    prefix: "10.0322/bldev.",  //test account
+    username: "DATACITE.BL",
+    password: fs.readFileSync(__dirname+'/datacite.password', {encoding: "ascii"}).trim(),
+    api: "https://mds.test.datacite.org",
 
-    prefix: "10.5072",  //sandbox(test?) 
+    /*
+    prefix: "10.5072/bldev.",  //sandbox(test?) 
     username: "BRAINL.IU",
     password: fs.readFileSync(__dirname+'/datacite.password', {encoding: "ascii"}).trim(),
     api: "https://mds.datacite.org",
+    */
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

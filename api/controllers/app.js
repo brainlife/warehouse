@@ -161,7 +161,7 @@ router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res
 function mint_doi(cb) {
     db.Apps.count({doi: {$exists: true}}).exec((err, count)=>{
         if(err) return cb(err);
-        cb(null, config.datacite.prefix+"/bl.app."+count);
+        cb(null, config.datacite.prefix+"app."+count);
     });
 }
 
@@ -218,7 +218,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
                     common.doi_post_metadata(metadata, err=>{
                         if(err) return next(err);
                         //then attach url to it (to "mint" it!)
-                        let url = config.warehouse.url+"/app/"+app._id;  //TODO make it configurable?
+                        let url = config.warehouse.url+"/app/"+app._id;  
                         common.doi_put_url(app.doi, url, logger.error);
                     });
                 });
@@ -308,7 +308,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                                 common.doi_post_metadata(metadata, err=>{
                                     if(err) return next(err);
                                     //then attach url to it (to "mint" it!)
-                                    let url = config.warehouse.url+"/app/"+_app._id;  //TODO make it configurable?
+                                    let url = config.warehouse.url+"/app/"+_app._id; 
                                     logger.debug("setting url", url, app.doi);
                                     common.doi_put_url(app.doi, url, logger.error);
                                 });

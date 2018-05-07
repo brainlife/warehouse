@@ -206,7 +206,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         //mint new doi - get next doi id - use number of publication record with doi (brittle?)
         db.Publications.count({doi: {$exists: true}}).exec((err, count)=>{
             if(err) return next(err);
-            let doi = config.datacite.prefix+"/bl.pub."+count; //TODO - should make the "shoulder" configurable?
+            let doi = config.datacite.prefix+"pub."+count; //TODO - should make the "shoulder" configurable?
             pub.doi = doi;
             pub.save(err=>{
                 if(err) return next(err);
