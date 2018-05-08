@@ -158,6 +158,7 @@ router.beforeEach(function (to, from, next) {
         }
     }
 
+    console.log("scrolling to top");
     window.scrollTo(0, 0); //scroll to top on route update (sensible default.. or bad practice?)
     next();
 })

@@ -3,23 +3,11 @@
     <div class="page-header">
         <div style="margin-top: 2px; margin-left: 10px; display: inline-block;">
             <b>{{instances.length}}</b> Processes
-            <!--
-            <small> - Showing {{sorted_and_filtered_instances.length}} Processes</small>
-            -->
         </div>
 
         <div v-if="instances.length > 1" style="float: right; position: relative; top: -3px;"> 
             <div style="display: inline-block; margin-right: 10px;">
                 <small>Show</small>
-                <!--
-                <b-dropdown :text="instance_filter_label" size="sm" :variant="showvariant()">
-                    <b-dropdown-item @click="show = null">All <span class="text-muted">({{instances.length}})</span></b-dropdown-item>
-                    <b-dropdown-divider></b-dropdown-divider>
-                    <b-dropdown-header>Status</b-dropdown-header>
-                    <b-dropdown-item @click="show = 'running'">Running <span class="text-muted">({{instance_counts.running||0}})</span></b-dropdown-item>
-                    <b-dropdown-item @click="show = 'failed'">Failed <span class="text-muted">({{instance_counts.failed||0}})</span></b-dropdown-item>
-                </b-dropdown>
-                -->
                 <div class="status-toggler">
                     <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">All ({{instances.length}})</b-button>
                     <b-button size="sm" v-for="state in ['running', 'finished', 'failed']"  :key="state"

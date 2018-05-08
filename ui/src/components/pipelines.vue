@@ -13,77 +13,78 @@
                 <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
                 <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brain-life.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
             </div>
-            <div v-for="rule in rules" :key="rule._id" :class="{'rule-removed': rule.removed}" class="rule" v-if="rule.removed == false">
-                <div style="padding: 10px;">
-                    <div style="float: right">
-                        <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()"><icon name="edit"/></div>
-                        <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()"><icon name="trash"/></div>
-                        <contact :id="rule.user_id" short="true"/>
+
+            <div v-for="rule in rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-active': selected == rule}" class="rule" @click="toggle(rule)" v-if="rule.removed == false">
+                <div class="rule-header">
+                    <div style="float: right; width: 130px; text-align: right">
                         <timeago :since="rule.create_date" :auto-update="10"/>
                     </div>
-                    <h5>
+                    <div style="float: right; width: 150px;">
+                        <contact :id="rule.user_id" short="true" style=""/>
+                    </div>
+                    <div class="rule-controls" style="float: right;">
+                        <div class="button" @click.stop="edit(rule)" v-if="ismember() || isadmin()"><icon name="edit"/></div>
+                        <div class="button" @click.stop="remove(rule)" v-if="ismember() || isadmin()"><icon name="trash"/></div>
+                    </div>
+                    <div>
                         <b-badge v-if="rule.removed" variant="danger">Removed</b-badge>
                         <b-badge variant="success" v-if="rule.active">ON</b-badge>
                         <b-badge variant="danger" v-else>OFF</b-badge>
                         {{rule.name}} 
-                    </h5>
+                    </div>
                 </div>
 
-                <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Submit the following app and archive output datasets to this project</p>
-                <b-row>
-                    <b-col>
-                        <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 30px; margin-bottom: 10px;"/>
-                    </b-col>
-                    <b-col>
-                        <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
-                        <tbody>
-                            <tr v-for="(v,k) in rule.config" :key="k">
-                                <th :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
-                                <th v-if="typeof v == 'object'">
-                                    <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
-                                </th>
-                                <th v-else>{{v}}</th>
-                            </tr>
-                        </tbody>
-                        </table>
-                    </b-col>
-                </b-row>
+                <div class="rule-body" v-if="selected == rule" transition="expand">
+                    <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Submit the following app and archive output datasets to this project</p>
+                    <b-row>
+                        <b-col>
+                            <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 30px; margin-bottom: 10px;"/>
+                        </b-col>
+                        <b-col>
+                            <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
+                            <tbody>
+                                <tr v-for="(v,k) in rule.config" :key="k">
+                                    <th :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
+                                    <th v-if="typeof v == 'object'">
+                                        <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
+                                    </th>
+                                    <th v-else>{{v}}</th>
+                                </tr>
+                            </tbody>
+                            </table>
+                        </b-col>
+                    </b-row>
 
-                <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">On subjects with the following set of archived datasets</p>
-                <div style="padding-left: 30px;">
-                    <p v-if="rule.subject_match">
-                        <span class="text-muted">Only process subjects that matches regex</span> <b>{{rule.subject_match}}</b>
-                    </p>       
-                    <p v-for="input in rule.app.inputs" :key="input.id">
-                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
-                        <span v-if="rule.input_tags && rule.input_tags[input.id]">
-                            <small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>
-                        </span>
-                        <span v-if="rule.input_project_override && rule.input_project_override[input.id]" class="text-muted">
-                            From <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
-                        </span>
-                        <!--<span class="text-muted" v-if="input.optional">(optional)</span>-->
-                        <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
-                    </p>
-                </div>
+                    <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">On subjects with the following set of archived datasets</p>
+                    <div style="padding-left: 30px;">
+                        <p v-if="rule.subject_match">
+                            <span class="text-muted">Only process subjects that matches regex</span> <b>{{rule.subject_match}}</b>
+                        </p>       
+                        <p v-for="input in rule.app.inputs" :key="input.id">
+                            <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
+                            <span v-if="rule.input_tags && rule.input_tags[input.id]">
+                                <small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>
+                            </span>
+                            <span v-if="rule.input_project_override && rule.input_project_override[input.id]" class="text-muted">
+                                From <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
+                            </span>
+                            <!--<span class="text-muted" v-if="input.optional">(optional)</span>-->
+                            <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
+                        </p>
+                    </div>
 
-                <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Only if the following output datasets aren't archived for the subject yet</p>
-                <div style="margin-left: 30px;">
-                    <p v-for="output in rule.app.outputs" :key="output.id">
-                        <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
-                        <span v-if="rule.output_tags && rule.output_tags[output.id]">
-                            <small class="text-muted">with user tags of</small> <tags :tags="rule.output_tags[output.id]"/>
-                        </span>
-                    </p>
-                </div>
-
-                <br>
-                
+                    <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Only if the following output datasets aren't archived for the subject yet</p>
+                    <div style="margin-left: 30px;">
+                        <p v-for="output in rule.app.outputs" :key="output.id">
+                            <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
+                            <span v-if="rule.output_tags && rule.output_tags[output.id]">
+                                <small class="text-muted">with user tags of</small> <tags :tags="rule.output_tags[output.id]"/>
+                            </span>
+                        </p>
+                    </div>
+                    <br>
+                </div><!--rule-body-->
             </div><!--rule-->
-
-            <!--
-            <p class="text-muted" style="margin: 20px;" v-if="!rules || rules.length == 0">No pipeline rules registered for this project</p>
-            -->
 
             <p style="padding-top: 100px;">&nbsp;</p>
             <b-button v-if="isadmin() || ismember()" @click="newrule" class="button-fixed" title="Create new rule">
@@ -117,6 +118,7 @@ export default {
     data () {
         return {
             editing: null,
+            selected: null,
 
             ready: false,
 
@@ -246,23 +248,13 @@ export default {
         cancel_edit: function() {
             this.editing = null;
             this.$router.push("/project/"+this.project._id+"/pipeline/");
-            this.$refs.scrolled.scrollTop = 0; //TODO - should I scroll to the rule that was being edited before?
+            //this.$refs.scrolled.scrollTop = 0; //TODO - should I scroll to the rule that was being edited before?
         },
 
         submit: function(rule) {
             rule.project = this.project._id;
 
             if(rule._id) {
-                /*
-                //update
-                this.rules.forEach(r=>{
-                    if(r._id == rule._id) {
-                        for(var k in rule) {
-                            r[k] = rule[k]; 
-                        }
-                    }
-                });
-                */
                 this.$http.put('rule/'+rule._id, rule).then(res=>{
                     this.load(); //need to reload all new datatypes, etc.. used by the updated rule
 
@@ -291,6 +283,17 @@ export default {
             }
         },
 
+        toggle: function(rule) {
+            if(this.selected == rule) this.selected = null;
+            else {
+                this.selected = rule;
+                Vue.nextTick(()=>{
+                    //scroll to the selected rule (TODO - I think I should delay until animation is over?)
+                    var elem = document.getElementById(rule._id);
+                    this.$refs.scrolled.scrollTop = elem.offsetTop;
+                });
+            }
+        },
     },
 }
 
@@ -298,11 +301,57 @@ export default {
 
 <style scoped>
 .rule {
-margin-bottom: 20px;
 box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+margin: 0px 20px;
+transition: margin 0.2s;
+background-color: white;
+}
+.rule:first-child {
+margin-top: 20px;
+}
+
+.rule.rule-active {
+margin: 20px 0px;
+}
+.rule-header {
+cursor: pointer;
+transition: background-color 0.3s;
+padding: 10px;
+padding-top: 5px;
+}
+.rule-header:hover {
+cursor: pointer;
+background-color: #ddd;
+}
+.rule-header .rule-controls {
+opacity: 0;
+transition: opacity 0.2s;
+display: inline-block;
+margin-right: 10px;
+}
+.rule.rule-active .rule-controls,
+.rule-header:hover .rule-controls {
+opacity: 1;
+}
+.rule.rule-active .rule-header {
+padding: 20px;
+}
+
+.expand-transition {
+  transition: all .3s ease;
+  height: 30px;
+  padding: 10px;
+  background-color: #eee;
+  overflow: hidden;
+}
+.expand-enter, .expand-leave {
+  height: 0;
+  padding: 0 10px;
+  opacity: 0;
 }
 
 .page-header {
+cursor: pointer;
 position: fixed;
 top: 100px;
 left: 350px;
