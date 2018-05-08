@@ -1,32 +1,31 @@
-'use strict';
 
 //contrib
-const amqp = require('amqp');
-const mongoose = require('mongoose');
-const winston = require('winston');
+const amqp = require("amqp");
+const mongoose = require("mongoose");
+const winston = require("winston");
 
 //mine
-const config = require('./config');
+const config = require("./config");
 const logger = new winston.Logger(config.logger.winston);
 
 //use native promise for mongoose
 //without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated
 mongoose.Promise = global.Promise; 
-if(config.mongoose_debug) mongoose.set('debug', true);
+if(config.mongoose_debug) mongoose.set("debug", true);
 
 let dataset_ex = null;
 let amqp_conn = null;
 function init_amqp(cb) {
     logger.info("connecting to amqp..");
     amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-    amqp_conn.once('ready', ()=>{
+    amqp_conn.once("ready", ()=>{
         logger.info("amqp connection ready.. creating exchanges");
         amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
             dataset_ex = ex;
             cb();
         });
     });
-    amqp_conn.on('error', (err)=>{
+    amqp_conn.on("error", (err)=>{
         logger.error("amqp connection error");
         logger.error(err);
     });
@@ -104,7 +103,7 @@ var projectSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false },
 });
-exports.Projects = mongoose.model('Projects', projectSchema);
+exports.Projects = mongoose.model("Projects", projectSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -119,10 +118,10 @@ var publicationSchema = mongoose.Schema({
     doi: String, //doi for this dataset (we generate this)
     paper_doi: String, //doi for the paper (journal should publish this)
 
-    fundings: [ new mongoose.Schema({funder: 'string', id: 'string'}) ], 
+    fundings: [ new mongoose.Schema({funder: "string", id: "string"}) ], 
     
     //project that this data belongs to
-    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
+    project: {type: mongoose.Schema.Types.ObjectId, ref: "Projects"},
 
     authors: [ String ], //list of users who are the author/creator of this publicaions
     //authors_ext: [new mongoose.Schema({name: 'string', email: 'string'})],
@@ -155,11 +154,13 @@ var publicationSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false },
 });
-exports.Publications = mongoose.model('Publications', publicationSchema);
+exports.Publications = mongoose.model("Publications", publicationSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//data that's entered to the warehouse
-//each data is a .tar.gz of a task directory from wf service
+//
+// data that's entered to the warehouse
+// each data is a .tar.gz of a task directory from wf service
+//
 var datasetSchema = mongoose.Schema({
     
     //user who submitted this rule. task will run under this user
@@ -214,7 +215,7 @@ var datasetSchema = mongoose.Schema({
 
     //list of publications that this datasets is published under
     publications: [{type: mongoose.Schema.Types.ObjectId, ref: 'Publications'}],
-})
+});
 datasetSchema.post('save', dataset_event);
 datasetSchema.post('findOneAndUpdate', dataset_event);
 datasetSchema.post('findOneAndRemove', dataset_event);
@@ -227,6 +228,7 @@ exports.Datasets = mongoose.model('Datasets', datasetSchema);
 //
 // defines data type entry points (allowing user to upload)
 //
+
 var datatypeSchema = mongoose.Schema({
     name: String,
     desc: String, 
@@ -398,18 +400,4 @@ var ruleSchema = mongoose.Schema({
     active: { type: Boolean, default: true} ,
 }, {minimize: false}); //to keep empty config{} from disappearing
 exports.Rules = mongoose.model('Rules', ruleSchema);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-//keeps up with all doi issued 
-var doiSchema = mongoose.Schema({
-    //issuer: { type: String, default: "datacite" },
-    id: Number, //used as part of doi
-    doi: String, //full doi issued
-    url: String, //brain-life url registered to this doi
-});
-exports.Dois = mongoose.model('Dois', doiSchema);
-*/
-
 

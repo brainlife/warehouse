@@ -1,4 +1,4 @@
-tag=1.1.9
+tag=1.1.10
 docker build -t soichih/warehouse ..
 if [ ! $? -eq 0 ]; then
     echo "failed to build"

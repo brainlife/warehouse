@@ -44,16 +44,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     }
 
     //only allow querying for public, or private project that user owns
-    /*
-    find = {$and: [
-        find,
-        {$or: [
-            { members: req.user.sub },
-            { admins: req.user.sub },
-            { access: "public" },
-        ]}
-    ]};
-    */
     if(req.user) {
         //user can see all public, private-listed or any project that they are member of
         let access_control = {$or: [

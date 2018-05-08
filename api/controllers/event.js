@@ -1,17 +1,14 @@
-'use strict';
 
 //contrib
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const winston = require('winston');
-const jwt = require('express-jwt');
+const jwt = require("express-jwt");
 
 //mine
-const config = require('../config');
-const logger = new winston.Logger(config.logger.winston);
-const db = require('../models');
+const config = require("../config");
+const db = require("../models");
 
-router.get('/checkaccess/project/:project_id', jwt({secret: config.express.pubkey}), function(req, res, next) {
+router.get("checkaccess/project/:project_id", jwt({secret: config.express.pubkey}), function(req, res, next) {
     //load project requested and check
     db.Projects.find({
         _id: req.params.project_id,
