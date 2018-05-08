@@ -71,7 +71,7 @@
             </div><!--scrolled-area-->
 
             <b-button class="button-fixed" v-b-modal.uploader 
-                @click="set_uploader_options" v-if="ismember()"
+                @click="set_uploader_options" v-if="isadmin() || ismember()"
                 title="Upload Dataset" 
                 :class="{'selected-view-open':selected_count}">
                 <icon name="plus" scale="2"/>
@@ -247,6 +247,12 @@ export default {
     },
 
 	methods: {
+
+        isadmin() {
+            if(!this.project) return false;
+            if(~this.project.admins.indexOf(Vue.config.user.sub)) return true;
+            return false;
+        },
 
         ismember: function() {
             if(!this.project) return false;

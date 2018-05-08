@@ -507,19 +507,6 @@ export default {
 
             this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
                 var _task = res.body.task;
-
-                /*
-                //surprisingly, we could receive task event before we get back from the rest!
-                //so we need to check to see if we haven't received it yet.
-                var t = this.tasks.find(t=>t._id == task._id);
-                if(!t) {
-                    _task.show = true;
-                    this.tasks.push(_task);
-                }
-                Vue.nextTick(()=>{
-                    this.scrollto(_task._id);
-                });
-                */
             }).catch(this.notify_error);
         },
 

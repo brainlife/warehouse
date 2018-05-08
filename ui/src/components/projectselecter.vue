@@ -56,9 +56,12 @@ export default {
         var that = this;
         var find = null
         if(this.canwrite) {
-            //only load project that user is member of
+            //only load project that user has write access to
             find = {
-                members: Vue.config.user.sub,
+                $or: [
+                    {members: Vue.config.user.sub},
+                    {admins: Vue.config.user.sub},
+                ],
                 removed: false,
             };
         } else {
@@ -89,6 +92,7 @@ export default {
             }}).then(res=>{
                 console.log('projects that has ', this.datatype);
                 var project_ids = res.body;
+
                 find._id = {$in: project_ids};
                 //TODO - if there are no project, not point of querying for datasets.
                 //we should warn user that they can't execue this app until data derivative is generated
