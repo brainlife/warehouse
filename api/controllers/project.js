@@ -137,6 +137,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  * @apiParam {String[]} [admins]  List of admins (auth sub)
  * @apiParam {String[]} [members] List of admins (auth sub)
  * @apiParam {String[]} [guests]  List of guest users (auth sub)
+ * @apiParam {String[]} [agreemenets]  List of data access agreemenets that user must check
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -164,19 +165,13 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 admins: req.body.admins,
                 members: req.body.members,
                 guests: req.body.guests,
+                agreemenets: req.body.agreements,
             }
         }, (err, _res, group)=>{
             if(err) return next(err);
             logger.debug("done updating group");
             project.save((err)=>{
                 if(err) return next(err);
-                /*
-                res.json(Object.assign({
-                    _canedit: isadmin(req.user, project), //deprecated
-                    _isadmin: isadmin(req.user, project),
-                    _ismember: ismember(req.user, project),
-                }, project));
-                */
                 res.json(project);
             });
         });

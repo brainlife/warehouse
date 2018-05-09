@@ -96,8 +96,8 @@ var projectSchema = mongoose.Schema({
     //for a private project, list it for everyone to see the summary
     listed: { type: Boolean, default: false},
 
-    //deprecated
-    license: String, //cc0, ccby.40, etc.
+    //list of agreemenets that user must agree before accessing datasets
+    agreements: [ new mongoose.Schema({agreement: "string"}) ], 
     
     create_date: { type: Date, default: Date.now },
 
