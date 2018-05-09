@@ -255,7 +255,7 @@ router.get('/prov/:id', (req, res, next)=>{
                     from: "task."+task._id,
                     to,
                     arrows: "to",
-                    label: datatypes[dataset.datatype].name,
+                    label: datatypes[dataset.datatype].name+" "+dataset.datatype_tags.join(","),
                 });
                 load_task_prov(task, cb);
             }
@@ -288,7 +288,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 node: {
                     id: "dataset."+dataset_id, 
                     font: {size: 12, color: "#fff"},
-                    label:dataset.project.name+" / "+ dataset.meta.subject + "\n" +datatypes[dataset.datatype].name,
+                    label: dataset.project.name+" / "+ dataset.meta.subject + "\n" +datatypes[dataset.datatype].name,
                 },
                 edge: {
                     from: "dataset."+dataset_id,
@@ -332,7 +332,7 @@ router.get('/prov/:id', (req, res, next)=>{
                         from: "task."+input.task_id,
                         to: "task."+task._id,
                         arrows: "to",
-                        label: datatype.name, 
+                        label: datatype.name+" "+input.datatype_tags.join(","),
                     });
                     load_task_prov(dep_task, next_dep); //recurse to its deps
                 }
