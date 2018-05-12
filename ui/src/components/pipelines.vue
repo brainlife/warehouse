@@ -105,11 +105,14 @@ import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
 import ruleform from '@/components/ruleform'
 
+//import agreementMixin from '@/mixins/agreement'
+
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 var debounce = null;
 
 export default {
+    //mixins: [agreementMixin],
     props: [ 'project' ], 
     components: { 
         contact, tags, app,
@@ -162,9 +165,13 @@ export default {
                 this.rules = res.body.rules; 
 
                 if(this.$route.params.subid) {
-                    this.editing = this.rules.find(rule=>{return rule._id == this.$route.params.subid});
+                    this.editing = this.rules.find(rule=>rule._id == this.$route.params.subid);
                 }
 
+                if(this.selected) {
+                    this.selected = this.rules.find(rule=>rule._id == this.selected._id); //need to reselect..
+                }
+                
                 //load datatypes referenced
                 let ids = [];
                 this.rules.forEach(rule=>{
@@ -243,21 +250,26 @@ export default {
             this.$router.push("/project/"+this.project._id+"/pipeline/"+rule._id);
             this.$refs.scrolled.scrollTop = 0;
             this.editing = rule;
+            this.selected = rule; //I think it makes sense to select rule that user is editing?
         },
 
         cancel_edit: function() {
             this.editing = null;
-            this.$router.push("/project/"+this.project._id+"/pipeline/");
+            //this.$router.push("/project/"+this.project._id+"/pipeline/");
             //this.$refs.scrolled.scrollTop = 0; //TODO - should I scroll to the rule that was being edited before?
+            this.$router.go(-1);
+            Vue.nextTick(()=>{
+                //scroll to the selected rule (TODO - I think I should delay until animation is over?)
+                var elem = document.getElementById(this.selected._id);
+                this.$refs.scrolled.scrollTop = elem.offsetTop;
+            });
         },
 
         submit: function(rule) {
-            rule.project = this.project._id;
-
+            rule.project = this.project._id; //rule editor doesn't set project id.
             if(rule._id) {
                 this.$http.put('rule/'+rule._id, rule).then(res=>{
                     this.load(); //need to reload all new datatypes, etc.. used by the updated rule
-
                     this.$notify({text: "Successfully updated a rule", type: "success"});
                     this.cancel_edit();
                 }).catch(this.notify_error);
@@ -266,7 +278,6 @@ export default {
                 this.$http.post('rule', rule).then(res=>{
                     //this.rules.push(res.body);
                     this.load(); //need to reload all new datatypes, etc.. used by the new rule
-
                     this.$notify({text: "Successfully created a new rule", type: "success"});
                     this.cancel_edit();
                 }).catch(this.notify_error);
@@ -295,7 +306,7 @@ export default {
             }
         },
     },
-}
+};
 
 </script>
 

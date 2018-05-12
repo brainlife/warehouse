@@ -193,7 +193,6 @@ export default {
                     }
                     var task = event.msg;
                     if(!task) return;
-                    //if(!task._id) return; //what kind of task is this?
                     if(this.tasks.upload && task._id == this.tasks.upload._id) {
                         this.tasks.upload = task;
                     }
@@ -259,7 +258,6 @@ export default {
             //var path = this.instance._id+'/'+this.tasks.upload._id+'/'+file.filename;
             var xhr = new XMLHttpRequest();
             file.xhr = xhr; //so that I can abort it if user wants to
-            //xhr.open("POST", Vue.config.wf_api+"/resource/upload/"+this.tasks.upload.resource_id+"/"+btoa(path));
             xhr.open("POST", Vue.config.wf_api+"/task/upload/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename));
             xhr.setRequestHeader("Authorization", "Bearer "+Vue.config.jwt);
             xhr.upload.addEventListener("progress", (evt)=>{
@@ -360,7 +358,6 @@ export default {
             //need to reset all meta properties to be reactive
             this.meta = {};
             this.datatypes[this.datatype_id].meta.forEach(meta=>{
-                //console.log("setting meta", meta.id);
                 Vue.set(this.meta, meta.id, "");
             });
             this.prep_upload();

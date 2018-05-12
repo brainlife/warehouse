@@ -128,7 +128,9 @@ let resource_cache = {};
 
 export default {
     props: ['task'],
-    components: { filebrowser, statusicon, mute, tags, taskconfig, contact },
+    components: { 
+        filebrowser, statusicon, mute, tags, taskconfig, contact ,
+    },
     data () {
         return {
 

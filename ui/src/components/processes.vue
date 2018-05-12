@@ -85,11 +85,14 @@ import statusicon from '@/components/statusicon'
 import contact from '@/components/contact'
 import process from '@/components/process'
 
+import agreementMixin from '@/mixins/agreement'
+
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 var debounce = null;
 
 export default {
+    mixins: [agreementMixin],
     props: [ 'project' ], 
     components: { 
         statusicon, contact, process,
@@ -191,7 +194,7 @@ export default {
     },
 
     mounted: function() {
-        console.log("processed mounted", this.$route.params);
+        //console.log("processed mounted", this.$route.params);
         this.load();
     },
 
@@ -246,14 +249,16 @@ export default {
 
     methods: {
         load: function() {
-            let group_id = this.project.group_id;
-            this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
-            this.show = window.localStorage.getItem("processes.show."+group_id)||null;
+            this.check_agreements(this.project, ()=>{
+                let group_id = this.project.group_id;
+                this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
+                this.show = window.localStorage.getItem("processes.show."+group_id)||null;
 
-            this.load_instances(err=>{
-                if(err) return this.notify_error(err);
-                this.subscribe_instance_update(err=>{
+                this.load_instances(err=>{
                     if(err) return this.notify_error(err);
+                    this.subscribe_instance_update(err=>{
+                        if(err) return this.notify_error(err);
+                    });
                 });
             });
         },
@@ -294,7 +299,6 @@ export default {
         },
 
         toggle_instance: function(instance) {
-            console.log("toggled", instance);
             if(this.selected != instance) {
                 //if jumping to instance below currently selected, I should adjust current scroll position
                 this.$router.push("/project/"+this.project._id+"/process/"+instance._id);

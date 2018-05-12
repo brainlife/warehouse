@@ -301,9 +301,6 @@ import appstats from '@/components/appstats'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
 
-import VueDisqus from 'vue-disqus'
-Vue.use(VueDisqus)
-
 export default {
     components: { 
         sidemenu, pageheader, contact, 
