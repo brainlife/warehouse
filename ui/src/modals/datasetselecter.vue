@@ -8,7 +8,8 @@
     </b-row>
     <br>
 
-    <b-card style="background-color: #eee; opacity; 0.7" title="Filters">
+    <div style="background-color: #eee; padding: 15px; opacity: 0.8;">
+        <p><b>Filter</b></p>
         <b-row v-if="subjects">
             <b-col>Subjects</b-col>
             <b-col cols="9">
@@ -22,7 +23,7 @@
                 <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
             </b-col>
         </b-row>
-    </b-card>
+    </div>
     <br>
 
     <b-row>
@@ -45,11 +46,15 @@ import projectselecter from '@/components/projectselecter'
 import select2 from '@/components/select2'
 import datatypetag from '@/components/datatypetag'
 
+import agreementMixin from '@/mixins/agreement'
+
+const async = require("async");
+
 var debounce = {};
 
 export default {
+    mixins: [agreementMixin],
     components: { metadata, tags, projectselecter, select2, datatypetag },
-    //props: [ 'visible' ],
     data() {
         return {
             //datasets selected via datasets page
@@ -77,6 +82,7 @@ export default {
 
     mounted() {
         this.$root.$on("datasetselecter.open", ()=>{
+            if(!this.$refs.modal) return console.log("received datasetselecter.open but this.$refs.modal not set");
             this.$refs.modal.show()
         });
     },
@@ -87,23 +93,34 @@ export default {
             this.selected_subjects = [];
             this.selected_datatypes = [];
             this.datasets = [];
+            this.$refs.modal.hide()
         },
 
-        /*
-        hide: function() {
-            this.$emit('update:visible', false);
-        },
-        */
+        submit: function(evt) {
+            evt.preventDefault();
 
-        submit: function() {
-            if(this.datasets.length) {
-                var os = {}; 
-                this.datasets.forEach(did=>{ 
-                    os[did] = this.alldatasets[did];
+            if(this.datasets.length == 0) return this.$notify("Please select a dataset");
+            var os = {}; 
+            let project_ids = []; 
+            this.datasets.forEach(did=>{ 
+                os[did] = this.alldatasets[did];
+                project_ids.push(this.alldatasets[did].project);
+            });
+
+            console.log("checking project agreement");
+            //load project agreements
+            this.$http.get('project', {params: {
+                find: JSON.stringify({
+                   _id: {$in : project_ids}
+                }),
+                select: 'name agreements',
+            }}).then(res=>{
+                async.eachSeries(res.body.projects, this.check_agreements, err=>{
+                    if(err) return console.error(err);
+                    this.$root.$emit("datasetselecter.submit", os);
+                    this.close();
                 });
-                this.$root.$emit("datasetselecter.submit", os);
-            }
-            this.close();
+            });
         },
 
         grab_datasets: function(params, cb) {
@@ -225,14 +242,6 @@ export default {
     },
 
     watch: {
-        /*
-        visible: function(v) {
-            console.log("visibility changed", v);
-            if(v) this.$refs.modal.show() 
-            else this.$refs.modal.hide() 
-        },
-        */
-
         project: function(project) {
             this.$http.get('dataset/distinct', { params: {
                 find: JSON.stringify({
@@ -244,17 +253,6 @@ export default {
             });
          }
     },
-
-    /*
-    mounted() {
-        //I should display this at root
-        document.body.appendChild(this.$refs.modal.$el);
-    },
-    destoyed() {
-        //TODO - not sure if this prevents the memory leak? Should I move it back to this component?
-        //document.body.remove(this.$refs.modal.$el);
-    },
-    */
 
     created: function() {
         //load datatypes

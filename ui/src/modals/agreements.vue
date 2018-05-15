@@ -1,10 +1,10 @@
 <template>
-<b-modal ref="modal" hide-footer> 
+<b-modal ref="modal" hide-footer v-if="project"> 
     <div slot="modal-title">
-        <icon name="handshake" scale="2" style="position: relative; top: 6px"/>&nbsp; Project Agreements
+        <icon name="handshake" scale="2" style="position: relative; top: 6px"/>&nbsp; {{project.name}} <small>Project Agreements</small>
     </div>
     <p class="text-muted">You must consent to the following agreements before accessing datasets on this project.</p>
-    <agreements :agreements="project.agreements" @agreed="close" v-if="project"/>
+    <agreements :agreements="project.agreements" @agreed="close"/>
 </b-modal>
 </template>
 <script>
@@ -26,9 +26,11 @@ export default {
     },
     mounted() {
         this.$root.$on("agreements.open", (opt)=>{
-            this.project = opt.project;
             this.cb = opt.cb;
-            this.$refs.modal.show()
+            this.project = opt.project;
+            this.$nextTick(()=>{
+                this.$refs.modal.show()
+            });
         });
     },
     methods: {
@@ -40,5 +42,3 @@ export default {
 }
 
 </script>
-<style scoped>
-</style>

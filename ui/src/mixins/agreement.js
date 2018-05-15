@@ -1,3 +1,5 @@
+'use strict';
+
 import Vue from 'vue'
 
 export default {
@@ -5,24 +7,49 @@ export default {
     created: function () {
     },
     */
+    data: function() {
+        return {
+            user_agreements: {},
+        }
+    },
+    created: function() {
+        console.log("mixin/agreement created");
+        this.load();
+        this.$root.$on("agreements.updated", (id, b)=>{
+            Vue.set(this.user_agreements, id, b);
+        });
+    },
+
     methods: {
-        get_user_agreements: function() {
-            let agreements = {};
-
-            //load from localstorage
-            let ls = localStorage.getItem("agreements");
-            if(ls) agreements = JSON.parse(ls);
-
-            //load from user profile
-            if(Vue.config.profile && Vue.config.profile.agreements) {
-                agreements = Vue.config.profile.agreements;
+        load: async function() {
+            console.log("loading agreement ui");
+            let agreements = await this.get_user_agreements();
+            for(let id in agreements) {
+                Vue.set(this.user_agreements, id, agreements[id]);
             }
-            return agreements;
+        },  
+
+        get_user_agreements: function() {
+            return new Promise((resolve, reject)=>{
+                let agreements = {};
+
+                //load from localstorage
+                let ls = localStorage.getItem("agreements");
+                if(ls) agreements = JSON.parse(ls);
+                if(!Vue.config.jwt) return resolve(agreements);
+
+                //load from profile service
+                console.log("loading private profile");
+                this.$http.get(Vue.config.profile_api+"/private").then(res=>{
+                    resolve(res.body.agreements);
+                }).catch(reject);
+            });
         },
         
-        check_agreements: function(project, cb) {
+        check_agreements: async function(project, cb) {
             if(!project.agreements) return cb(); 
-            let user_agreements = this.get_user_agreements();
+            let user_agreements = await this.get_user_agreements();
+            console.log("analyzig user_agreement", user_agreements);
             let agreed = true;
             project.agreements.forEach(agreement=>{
                 if(!user_agreements[agreement._id]) {

@@ -164,6 +164,7 @@ router.beforeEach(function (to, from, next) {
 if (!Vue.config.debug) {
     Vue.use(VueAnalytics, { id: 'UA-118407195-1', router })
 }
+
 new Vue({
     el: '#warehouse',
     router,
@@ -179,7 +180,7 @@ new Vue({
         //refresh immediately (on page reload)
         this.refresh_jwt();
         
-        this.load_profile();
+        //this.load_profile();
 
         this.$on("refresh_jwt", ()=>{
             this.refresh_jwt();
@@ -210,17 +211,5 @@ new Vue({
                 document.location = Vue.config.auth_signin;
             }
         },
-
-        load_profile: async function() {
-            if(!Vue.config.jwt) return;
-            try {
-                let res = await this.$http.get(Vue.config.profile_api+"/private");
-                Vue.config.profile = res.body;
-                console.log("profile loaded", Vue.config.profile);
-            } catch (err) {
-                console.error(err); 
-            }
-        },
-        
     },
 })

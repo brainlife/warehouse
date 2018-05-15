@@ -47,7 +47,7 @@
                     </tr>
                     </table>
                     <p v-if="task.status == 'finished'" style="opacity: 0.5;">
-                        <icon name="exclamation-circle" scale="0.8"/> Will be removed on {{remove_date.toLocaleDateString()}}
+                        <icon name="exclamation-circle" scale="0.8"/> will be removed on {{remove_date.toLocaleDateString()}}
                     </p>
                 </b-popover>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
@@ -165,7 +165,7 @@ export default {
             return !!this.$slots.output;
         },
         remove_date() {
-            var d = this.task.remove_date;
+            var d = new Date(this.task.remove_date);
             if(!d) {
                 //use finish date
                 d = new Date(this.task.finish_date);

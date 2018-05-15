@@ -272,15 +272,6 @@ export default {
                 console.log("resetting url due to missing tab");
                 this.$router.replace("/project/"+project_id+"/"+this.tabs[this.tab].id);
             }
-
-            /*
-            //copy all agreed agreements from profile
-            if(Vue.config.profile && Vue.config.profile.agreements) {
-                for(var id in Vue.config.profile.agreements) {
-                    Vue.set(this.agreements, id, Vue.config.profile.agreements[id]);
-                }
-            }
-            */
         })
         .catch(res=>{
             console.error(res);
@@ -321,24 +312,6 @@ export default {
             }
         },
 
-
-        /*
-        agree: function(agreement) {
-            return function(evt) {
-                console.dir(evt);
-                if(!Vue.config.profile) return;
-                if(!Vue.config.profile.agreements) Vue.config.profile.agreements = [];
-                let pos = Vue.config.profile.agreements.indexOf(agreement._id);
-                if(~pos) {
-                    Vue.config.profile.agreements.splice(pos, 1); //unset
-                } else {
-                    Vue.config.profile.agreements.push(agreement._id);
-                }
-                console.dir(Vue.config.profile.agreements);
-            }
-        },
-        */
-
         change_project: function(project) {
             this.$router.push('/project/'+project._id+'/'+this.$route.params.tab);
             this.open_project(project);
@@ -355,19 +328,6 @@ export default {
                 this.$refs.disqus.reset(window.DISQUS);
             }
         },
-
-        /*
-        start_publish: function() {
-            this.publishing = true;
-        },
-
-        publish: function(pub) {
-            this.publishing = false;
-            pub.project = this.selected; //pubcard needs project populated
-            this.pubs.push(pub);
-        }
-        */
-
     },
 }
 </script>

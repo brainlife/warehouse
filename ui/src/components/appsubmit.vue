@@ -87,9 +87,13 @@ import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 import configform from '@/components/configform'
 
-const lib = require('../lib');
+import agreementMixin from '@/mixins/agreement'
+
+const lib = require("../lib");
+const async = require("async");
 
 export default {
+    mixins: [agreementMixin],
     components: { 
         sidemenu, contact, 
         tags, metadata, pageheader, 
@@ -126,27 +130,6 @@ export default {
 
     mounted: function() {
         console.log("mounted");
-
-        /*
-        //load project names (used in various input selecters)
-        this.$http.get('project', {params: {
-            find: JSON.stringify({
-                $or: [
-                    { members: Vue.config.user.sub }, 
-                    { access: "public" },
-                ],
-                removed: false,
-            }),
-            select: 'name group_id',
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.body.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-
-            console.log("loaded projects");
-        */
 
         //load app detail
         return this.$http.get('app', {params: {
@@ -224,9 +207,6 @@ export default {
                 skip
             }})
             .then(res => {
-                //let filtered_datasets = lib.filter_datasets(res.body.datasets, input);
-                //console.log("filtered", res.body.datasets, filtered_datasets);
-                //filtered_datasets.forEach(dataset => {
                 res.body.datasets.forEach(dataset => {
                     var subject = "N/A";
                     if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
@@ -361,7 +341,6 @@ export default {
                 all_dataset_ids = all_dataset_ids.concat(this.form.inputs[input_id]);
             }
 
-            //var project = this.projects[this.project];
             var app_inputs = [];
             var meta = {};
             var project = null;
@@ -370,23 +349,36 @@ export default {
             var _outputs = [];
             var datasets = {};
 
-            //I need a bit more detail on the destination project selected
+            //load project detail for project selected and desintation project
+            let project_ids = [ this.project ]; //desintation
+            //for project selected for input
+            for(let input_id in this.form.projects) {
+                project_ids.push(this.form.projects[input_id]);
+            }
             this.$http.get('project', {params: {
                 find: JSON.stringify({
-                   _id: this.project, 
+                   _id: {$in : project_ids}
                 }),
-                select: 'name group_id',
+                select: 'name group_id agreements',
             }}).then(res=>{
-                project = res.body.projects[0];
-                //create an instance to run everything
-                return this.$http.post(Vue.config.wf_api+'/instance', {
-                    group_id: project.group_id,
-                    desc: this.form.desc||this.app.name,
-                    config: {
-                        brainlife: true,
-                        type: "v2",
-                    },
-                });
+                project = res.body.projects.find(p=>p._id == this.project);
+
+                //make sure user has met agreements to all projects used
+                return new Promise((resolve, reject)=>{
+                    async.eachSeries(res.body.projects, this.check_agreements, err=>{
+                        if(err) return reject(err);
+
+                        //create an instance to run everything
+                        this.$http.post(Vue.config.wf_api+'/instance', {
+                            group_id: project.group_id,
+                            desc: this.form.desc||this.app.name,
+                            config: {
+                                brainlife: true,
+                                type: "v2",
+                            },
+                        }).then(resolve);
+                    });
+                }); 
             }).then(res=>{
                 instance = res.body;
                 console.log("instance created", instance);
@@ -398,7 +390,6 @@ export default {
             }).then(res=>{
                 res.body.datasets.forEach(d=>{
                     datasets[d._id] = d;
-
                 });
 
                 //issue token to download datasets 

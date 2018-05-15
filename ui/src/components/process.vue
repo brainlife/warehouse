@@ -1,5 +1,5 @@
 <template>
-<div v-if="instance">
+<div v-if="projects && instance">
     <div class="task-tabs">
         <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
             <div class="task-tab-title">
@@ -19,7 +19,6 @@
             <icon name="caret-down" v-if="task.show"/><icon name="caret-right" v-else/> 
             t.{{task.config._tid}}
         </div>
-
 
         <!--full detail-->
         <task :task="task" class="task" v-if="task.show">
@@ -80,9 +79,6 @@
                                 <icon name="eye"/>
                             </div>
                             <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                            <!--
-                            <div class="button" :class="{'button-gray': archiving === output}" title="Archive" @click="archiving = output"><icon name="archive"/></div>
-                            -->
                             <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
                         </div>
                     </div>
@@ -179,6 +175,10 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 const lib = require('../lib');
 const async = require('async');
 
+//store full list of datatypes / projects names...
+let cache_datatypes = null;
+let cache_projects = null;
+
 export default {
     props: [ 'project', 'instance' ],
 
@@ -214,11 +214,19 @@ export default {
         this.$root.$on('newtask.submit', this.submit_task);
         this.$root.$on("archiver.submit", this.submit_archive);
 
+        //load full list of datatypes and projects
+        if(cache_datatypes && cache_projects) {
+            this.datatypes = cache_datatypes;
+            this.projects = cache_projects;
+            return this.load();
+        }
+
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
             });
+            cache_datatypes = this.datatypes;
 
             return this.$http.get('project', {params: {
                 select: 'name desc',
@@ -228,6 +236,7 @@ export default {
             res.body.projects.forEach(project=>{
                 this.projects[project._id] = project;
             });
+            cache_projects = this.projects;
 
             this.load();
         });
@@ -333,7 +342,7 @@ export default {
                     var event = null;
                     try {
                         event = JSON.parse(json.data);
-                        console.dir(event);
+                        //console.dir(event);
                     } catch(err) {
                         console.error(err);
                         return;
@@ -380,7 +389,7 @@ export default {
                         break;
                     case "warehouse.dataset":
                         //see if we care..
-                        console.log("dataset event", event.msg);
+                        //console.log("dataset event", event.msg);
                         this.archived.forEach(dataset=>{
                             if(dataset._id == event.msg._id) {
                                 for(var k in event.msg) dataset[k] = event.msg[k]; //update 

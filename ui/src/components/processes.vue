@@ -65,7 +65,12 @@
                     </div>
                     <div class="instance-desc" style="margin-left: 40px; margin-right: 300px;">
                         {{instance.desc}}
-                        <span v-if="!instance.desc" style="opacity: 0.5;">No Description ({{instance._id}})</span>
+                        <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
+                        <div v-if="instance.config && instance.config.summary" style="display: inline-block; margin-left: 10px; opacity: 0.8;">
+                            <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw'" :class="summary_class(summary)"> 
+                                <span v-if="summary.name">{{summary.name.substring(0,4).trim()}}</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <process v-if="instance == selected" :project="project" :instance="instance" class="process"/>
@@ -245,6 +250,8 @@ export default {
                 }
             }
         },
+
+    
     },
 
     methods: {
@@ -438,6 +445,10 @@ export default {
                 }
             }
         },
+
+        summary_class: function(summary) {
+            return ["summary", "summary-"+summary.status];
+        },
     },
 }
 
@@ -471,9 +482,6 @@ right: 0px;
 overflow: auto;
 margin-top: 45px;
 background-color: white;
-
-/*adjusting these requires sticky to be adjusted also*/
-/*padding-bottom: 50px;*/
 }
 
 .instance-header {
@@ -570,22 +578,42 @@ background-color: #50bfff;
 background-color: #007bff;
 }
 .instance.instance-active {
-/*
-background-color: #ddd;
-*/
 }
 
 .status-toggler {
 display: inline-block;
 }
+.summary {
+color: white;
+background-color: gray;
+height: 20px;
+padding: 3px;
+text-align: center;
+position: relative;
+margin-right: 4px;
+font-size: 60%;
+top: -2px;
+border-radius: 2px;
+}
+.summary-running {
+background-color: #007bff;
+}
+.summary-failed {
+background-color: #dc3545;
+}
+.summary-stopped {
+background-color: #999;
+}
+.summary-waiting,
+.summary-requested {
+background-color: #50bfff;
+}
+.summary-finished {
+background-color: #28a745;
+}
 </style>
 
 <style>
-/*
-.processes .status-toggler .btn:not(.active) {
-opacity: 0.5;
-}
-*/
 .processes .status-toggler .btn {
 border: none;
 margin-left: 5px;
