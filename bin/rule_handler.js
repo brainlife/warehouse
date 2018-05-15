@@ -630,7 +630,7 @@ function handle_rule(rule, cb) {
                     headers: { authorization: "Bearer "+jwt },
                     body: {
                         instance_id: instance._id,
-                        name: "brainlife.process",
+                        name: rule.app.name,
                         desc: "running application:"+rule.app.name+" for rule:"+rule.name+" for subject:"+subject,
                         service: rule.app.github,
                         service_branch: rule.app.github_branch,
