@@ -315,7 +315,7 @@ height: 36px;
 margin: 3px 0px;
 }
 .select2-container--default .select2-selection--single,
-.select2-container--default.select2-container--focus .select2-selection--multiple 
+.select2-container--default.select2-container--focus .select2-selection--multiple,
 .select2-container--default .select2-selection--multiple {
 border: 1px solid #ced4da;
 }

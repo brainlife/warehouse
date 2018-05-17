@@ -131,12 +131,12 @@
         </div>
 
         <div v-if="tabs[tab].id == 'process'">
-            <b-alert show v-if="!(ismember()||isadmin())">Only the members of this project can access processes.</b-alert>
+            <b-alert show v-if="!(ismember()||isadmin())">Only the admins or members of this project can access processes.</b-alert>
             <processes :project="selected" v-else/>
         </div>
 
         <div v-if="tabs[tab].id == 'pipeline'">
-            <b-alert show v-if="!(ismember()||isadmin())">Only the admin or members of this project can access pipelines.</b-alert>
+            <b-alert show v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines.</b-alert>
             <pipelines :project="selected" v-else/>
         </div>
 

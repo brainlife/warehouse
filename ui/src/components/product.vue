@@ -6,8 +6,17 @@
         <b-alert v-else-if="item.type == 'info'" variant="secondary" show>{{item.msg}}</b-alert>
         <b-alert v-else-if="item.type == 'danger'" variant="danger" show>{{item.msg}}</b-alert>
         <b-alert v-else-if="item.type == 'warning'" variant="warning" show>{{item.msg}}</b-alert>
+
+        <!-- invalid type -->
+        <div v-else>
+            <b-alert show variant="danger">Unknown brainlife product type</b-alert>
+            <pre v-if="Object.keys(other_product).length != 0" v-highlightjs="JSON.stringify(other_product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
+        </div>
     </div>
+    <!-- product.json can now contain large unstructured data.. let user check product.json manually..
     <pre v-if="Object.keys(other_product).length != 0" v-highlightjs="JSON.stringify(other_product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
+</div>
+    -->
 </div>
 </template>
 
