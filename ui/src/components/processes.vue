@@ -68,7 +68,7 @@
                         <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
                         <div v-if="instance.config && instance.config.summary" style="display: inline-block; margin-left: 10px; opacity: 0.8;">
                             <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw'" :class="summary_class(summary)"> 
-                                <span v-if="summary.name">{{summary.name.substring(0,4).trim()}}</span>
+                                <span v-if="summary.name" :title="summary.name">{{summary.name.substring(0,4).trim()}}</span>
                             </span>
                         </div>
                     </div>

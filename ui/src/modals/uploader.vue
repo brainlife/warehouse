@@ -44,6 +44,7 @@
                 <b-form-textarea v-model="desc" :rows="4" placeholder="Optional dataset description"></b-form-textarea> </b-form-group>
 
         </div><!--datatype_id set -->
+        <small>To bulk upload your datasets, you can use <a href="https://github.com/brain-life/cli" target="_blank">Brainlife CLI</a></small>
     </div><!--meta-->
 
     <div v-if="mode == 'validate' && tasks.validation">
@@ -58,7 +59,8 @@
             </b-form-group>
 
             <!--show info-->
-            <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
+            <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" 
+                v-if="k != 'errors' && k != 'warnings' && k != 'datatype_tags' && k != 'tags'" :label="k">
                 <pre v-highlightjs="v" v-if="typeof v == 'string'" style="max-height: 200px; overflow: auto;"><code class="text hljs"></code></pre>
                 <div v-else>
                     <pre>{{v}}</pre>
@@ -75,6 +77,7 @@
             </b-form-group>
         </div>
     </div>
+
 
     <div slot="modal-footer">
         <b-form-group v-if="mode == 'upload'">
