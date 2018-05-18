@@ -1,7 +1,7 @@
 <template>
 <div>
     <pageheader/>
-    <sidemenu active="/datasets"></sidemenu>
+    <sidemenu active="/projects"></sidemenu>
     <div class="page-content">
         <div class="header">
             <b-container v-if="instance && tasks">
@@ -10,14 +10,15 @@
         </div><!--header-->
         <b-container>
             <div v-if="active != 3">
-                <p>We are staging requested datasets and organizing them in BIDS structure. Download should begin automatically once it's ready. </p>
+                <p>We are staging requested datasets and organizing them in the BIDS structure. Download should begin automatically once it's ready. </p>
                 <div v-for="task in tasks" :key="task._id">
                     <task :task="task"></task>
                     <br>
                 </div>
             </div>
             <div v-else>
-                <h5> <a :href="url">Download</a></h5>
+                <p>Ready! Your browser should automatically start downloading your file now. If not, please click the link below.</p>
+                <p><a :href="url">Download</a></p>
                 <!--
                 <b-button variant="primary" class="animated bounceIn" @click="download"><icon name="download"/> Download</b-button>    
                 -->
@@ -145,12 +146,10 @@ export default {
             });
         },
 
-        /*
         download: function() {
             console.log(this.url);
             document.location = this.url;
         },
-        */
     }
 }
 
