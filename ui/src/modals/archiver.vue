@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Archive Dataset" ref="archiver" size="lg" @ok="submit">
+<b-modal :no-close-on-backdrop='true' title="Archive Dataset" ref="archiver" size="lg" @ok="submit">
     <div v-if="output && task">
         <b-form-group label="Description">
             <b-form-textarea v-model="output.desc" placeholder="Dataset Desc" :rows="3" style="width: 100%;"></b-form-textarea>
