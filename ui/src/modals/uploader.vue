@@ -1,5 +1,5 @@
 <template>
-<b-modal :title="'Upload Dataset to Project:'+(project?project.name:'')" ref="modal" id="uploader" size="lg">
+<b-modal :no-close-on-backdrop='true' :title="'Upload Dataset to Project:'+(project?project.name:'')" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
             <el-select v-model="datatype_id" placeholder="Please select" @change="change_datatype" style="width: 100%;">

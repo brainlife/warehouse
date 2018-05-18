@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Select Viewer" ref="modal" id="viewSelecter" size="lg" hide-footer>
+<b-modal :no-close-on-backdrop='true' title="Select Viewer" ref="modal" id="viewSelecter" size="lg" hide-footer>
     {{datatype_name}}
     <b-card-group deck class="mb-1" style="padding-bottom: 10px;" v-for="(group, gidx) in views.chunk_inefficient(3)" :key="gidx">
         <b-card 

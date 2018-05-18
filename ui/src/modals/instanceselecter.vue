@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Select Project / Process" ref="modal" size="lg" @ok="submit">
+<b-modal :no-close-on-backdrop='true' title="Select Project / Process" ref="modal" size="lg" @ok="submit">
     <p class="text-muted">Please select project / process where you want to stage your datasets to</p>
     <br>
     <b-row>
