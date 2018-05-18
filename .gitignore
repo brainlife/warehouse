@@ -16,3 +16,5 @@ api/config
 docs/_site
 docs/Gemfile.lock
 **/npm-debug.log
+npm-debug.*
+package-lock.json
