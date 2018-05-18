@@ -5,7 +5,7 @@
         <icon name="caret-down" scale="1"></icon>&nbsp;
         Private <icon name="lock"></icon> 
     </p>
-    <div class="project" v-for="project in sorted_projects('private')" :id="project._id"
+    <div class="project" v-for="project in sorted_projects('private')" :id="project._id" :key="project._id"
         @click="change(project)" :class="{listonly: islistonly(project), active: project._id == active}">
         <p class="name">
             <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
@@ -18,7 +18,7 @@
         <icon name="caret-down" scale="1"></icon>&nbsp;
         Public
     </p>
-    <div class="project" v-for="project in sorted_projects('public')" :id="project._id"
+    <div class="project" v-for="project in sorted_projects('public')" :id="project._id" :key="project._id"
         @click="change(project)" :class="{active: project._id == active}">
         <p class="name">
             <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>

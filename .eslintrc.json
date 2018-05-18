@@ -15,12 +15,12 @@
             "unix"
         ],
         "quotes": [
-            "error",
+            "warning",
             "double"
         ],
         "semi": [
             "error",
-            "always"
+            "never"
         ]
     }
 }

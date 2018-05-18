@@ -25,7 +25,7 @@
         </div>
         <div v-else>
             <!--list view-->
-            <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': ismember()}" class="pub">
+            <div v-for="pub in pubs" :key="pub._id" :class="{'pub-removed': pub.removed, 'pub-editable': (ismember()||isadmin())}" class="pub">
                 <doibadge :doi="pub.doi" style="float: right;"/>
                 <div class="pub-action">
                     <div class="button" @click="edit(pub)" title="Edit publication metadata"> <icon name="edit"/> </div>
@@ -165,7 +165,7 @@ export default {
         },
 
         edit: function(pub) {
-            if(this.ismember()) {
+            if(this.ismember() || this.isadmin()) {
                 this.$router.push("/project/"+this.project._id+"/pub/"+pub._id);
                 this.pub_editing = pub;
             } 

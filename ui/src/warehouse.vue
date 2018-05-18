@@ -6,6 +6,7 @@
     <!--modal that can be called from any view -->
     <dataset/>
     <datatype/>
+    <agreements/>
 
     <!--models only used by project page (TODO - move to project page eventually -->
     <div v-if="config.user">
@@ -30,19 +31,20 @@ import datasetselecter from '@/modals/datasetselecter'
 import uploader from '@/modals/uploader'
 import instanceselecter from '@/modals/instanceselecter'
 import archiver from '@/modals/archiver'
+import agreements from '@/modals/agreements'
 
 export default {
     components: {
         viewselecter, dataset, datatype, 
         uploader, datasetselecter, instanceselecter, 
-        archiver,
-
-        //loadingBar,
+        archiver, agreements,
     },
     data() {
         return {
             config: Vue.config,
         }
+    },
+    methods: { 
     },
 }
 
@@ -312,5 +314,22 @@ height: 36px;
 .select2-container--default .select2-selection--single .select2-selection__rendered {
 margin: 3px 0px;
 }
+.select2-container--default .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default .select2-selection--multiple {
+border: 1px solid #ced4da;
+}
+
+.ps__rail-x:hover, .ps__rail-y:hover, .ps__rail-x:focus, .ps__rail-y:focus {
+background-color: rgba(0,0,0,0);
+opacity: 1;
+}
+.ps__rail-y {
+width: 6px;
+}
+.ps__rail-y:hover > .ps__thumb-y, .ps__rail-y:focus > .ps__thumb-y {
+width: 6px;
+}
 </style>
+
 

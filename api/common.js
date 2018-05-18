@@ -61,7 +61,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
         if(!datatype) return cb("couldn't find specified datatype:"+dataset.datatype);
 
         //create temp directory to download things
-        tmp.dir({unsafeCleanup: true}, (err, tmpdir, cleantmp)=>{
+        tmp.dir({unsafeCleanup: true, template: "/tmp/archive-XXXXXX"}, (err, tmpdir, cleantmp)=>{
             if(err) return cb(err);
             var input_ok = true;
 

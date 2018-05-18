@@ -69,6 +69,7 @@ export default {
     props: {
         pub: { type: Object },
     },
+
     data () {
         return {
             licenses: [
@@ -81,19 +82,18 @@ export default {
             oldtags: null,
         }
     },
-    
 
     mounted() {
         //select2 needs option set to show existing tags.. so we copy my own tags and use it as options.. stupid select2
         this.oldtags = Object.assign(this.pub.tags);
     },
 
-
     methods: {
         cancel: function() {
             console.log("cancel pubform");
             this.$emit("cancel");
         },
+
         submit: function(evt) {
             evt.preventDefault();
             this.$emit("submit", this.pub);

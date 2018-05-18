@@ -1,39 +1,27 @@
 <template>
 <div>
     <pageheader/>
-    <sidemenu active="/datasets"></sidemenu>
+    <sidemenu active="/projects"></sidemenu>
     <div class="page-content">
         <div class="header">
             <b-container v-if="instance && tasks">
                 <h1><icon name="download" scale="2"></icon> BIDS Download</h1>
             </b-container>
-                <!--
-                <div slot="header" style="padding: 15px;">
-                    <el-steps :space="200" :active="active">
-                        <el-step title="Stage" description="Staging data out of Brain-Life warehouse"></el-step>
-                        <el-step title="Organize" description="Organizing data in BIDS format"></el-step>
-                        <el-step title="Download" description="Ready to download to your computer"></el-step>
-                    </el-steps>
-                    
-                    <br>
-                    <b-alert show v-if="error" type="error" title="Failed" :description="error" show-icon :closable="false"/>
-
-                    <div v-if="active == 3">
-                        <el-button type="primary" class="animated bounceIn" size="large" @click="download" icon="document">Download</el-button>    
-                    </div>
-                </div>
-                -->
         </div><!--header-->
         <b-container>
             <div v-if="active != 3">
-                <p>We are staging requested datasets and organizing them in BIDS structure. Download should begin automatically once it's ready. </p>
+                <p>We are staging requested datasets and organizing them in the BIDS structure. Download should begin automatically once it's ready. </p>
                 <div v-for="task in tasks" :key="task._id">
                     <task :task="task"></task>
                     <br>
                 </div>
             </div>
             <div v-else>
+                <p>Ready! Your browser should automatically start downloading your file now. If not, please click the link below.</p>
+                <p><a :href="url">Download</a></p>
+                <!--
                 <b-button variant="primary" class="animated bounceIn" @click="download"><icon name="download"/> Download</b-button>    
+                -->
             </div>
         </b-container>
     </div><!--page-content-->
@@ -131,6 +119,7 @@ export default {
 
     computed: {
         active: function() {
+            if(!this.tasks) return 1;
             this.tasks.forEach((task)=>{
                 if(task.status == "failed") {
                     this.error = task.status_msg;
@@ -141,6 +130,9 @@ export default {
             if(this.task_bids.status == "finished") return 3;
             if(this.task_stage.status == "finished") return 2;
             return 1;
+        },
+        url: function() {
+            return Vue.config.wf_api+"/task/download/"+this.task_bids._id+"?p=download&at="+Vue.config.jwt;
         },
     },
     methods: {
@@ -155,11 +147,12 @@ export default {
         },
 
         download: function() {
-            var url = Vue.config.wf_api+"/task/download/"+this.task_bids._id+"?p=download&at="+Vue.config.jwt;
-            document.location = url;
+            console.log(this.url);
+            document.location = this.url;
         },
-    },
+    }
 }
+
 </script>
 
 <style scoped>

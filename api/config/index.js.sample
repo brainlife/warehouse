@@ -50,11 +50,13 @@ exports.warehouse = {
     private_key: fs.readFileSync(__dirname+'/warehouse.key'),
  }
 
+/*
 //for archive service
 exports.archive = {
     //remporary path used to store downloaded datasets before shipping to hsi
     tmp: "/mnt/scratch/hayashis/archive-tmp",
 }
+*/
 
 //for event handler
 exports.event = {

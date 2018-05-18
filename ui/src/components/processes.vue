@@ -65,7 +65,12 @@
                     </div>
                     <div class="instance-desc" style="margin-left: 40px; margin-right: 300px;">
                         {{instance.desc}}
-                        <span v-if="!instance.desc" style="opacity: 0.5;">No Description ({{instance._id}})</span>
+                        <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
+                        <div v-if="instance.config && instance.config.summary" style="display: inline-block; margin-left: 10px; opacity: 0.8;">
+                            <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw'" :class="summary_class(summary)"> 
+                                <span v-if="summary.name">{{summary.name.substring(0,4).trim()}}</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <process v-if="instance == selected" :project="project" :instance="instance" class="process"/>
@@ -85,11 +90,14 @@ import statusicon from '@/components/statusicon'
 import contact from '@/components/contact'
 import process from '@/components/process'
 
+import agreementMixin from '@/mixins/agreement'
+
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 var debounce = null;
 
 export default {
+    mixins: [agreementMixin],
     props: [ 'project' ], 
     components: { 
         statusicon, contact, process,
@@ -191,7 +199,6 @@ export default {
     },
 
     mounted: function() {
-        console.log("processed mounted", this.$route.params);
         this.load();
     },
 
@@ -204,7 +211,6 @@ export default {
 
     watch: {
         project: function() {
-            console.log("project changed.. need to reload");
             this.load();
         },
         order: function() {
@@ -242,30 +248,24 @@ export default {
                 }
             }
         },
+
+    
     },
 
     methods: {
         load: function() {
-            let group_id = this.project.group_id;
-            this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
-            this.show = window.localStorage.getItem("processes.show."+group_id)||null;
-
-            this.load_instances(err=>{
-                if(err) return this.notify_error(err);
-                this.subscribe_instance_update(err=>{
+            this.check_agreements(this.project, ()=>{
+                let group_id = this.project.group_id;
+                this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
+                this.show = window.localStorage.getItem("processes.show."+group_id)||null;
+                this.load_instances(err=>{
                     if(err) return this.notify_error(err);
+                    this.subscribe_instance_update(err=>{
+                        if(err) return this.notify_error(err);
+                    });
                 });
             });
         },
-
-        /*
-        order: function(order) {
-            this.order = order;
-            this.load_instances(err=>{
-                if(err) return this.notify_error(err);
-            });
-        },
-        */
 
         capitalize: function(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
@@ -294,7 +294,6 @@ export default {
         },
 
         toggle_instance: function(instance) {
-            console.log("toggled", instance);
             if(this.selected != instance) {
                 //if jumping to instance below currently selected, I should adjust current scroll position
                 this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
@@ -379,12 +378,11 @@ export default {
         load_instances: function(cb) {
             this.instances = null; 
             if(!this.project.group_id) return; //can't load for non-group project..
-            console.log("loading instances for group", this.project.group_id);
+            //console.log("loading instances for group", this.project.group_id);
             this.$http.get(Vue.config.wf_api+'/instance', {params: {
                 find: JSON.stringify({
                     "config.brainlife": true,
                     status: {$ne: "removed"},
-                    //group_id: {$exists: false},
                     group_id: this.project.group_id,
                     "config.removing": {$exists: false},
                 }),
@@ -403,11 +401,9 @@ export default {
         
         subscribe_instance_update: function(cb) {
             if(this.ws) this.ws.close();
-
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("binding to all instance updates");
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
@@ -418,7 +414,6 @@ export default {
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
-                //console.log("instance update----------------", event);
                 if(event.dinfo && event.dinfo.exchange == "wf.instance") {
                     var instance = this.instances.find(i=>i._id == event.msg._id);
                     if(instance) {
@@ -433,6 +428,10 @@ export default {
                     this.$notify({type: 'error', text: event.error});
                 }
             }
+        },
+
+        summary_class: function(summary) {
+            return ["summary", "summary-"+summary.status];
         },
     },
 }
@@ -467,9 +466,6 @@ right: 0px;
 overflow: auto;
 margin-top: 45px;
 background-color: white;
-
-/*adjusting these requires sticky to be adjusted also*/
-/*padding-bottom: 50px;*/
 }
 
 .instance-header {
@@ -566,22 +562,42 @@ background-color: #50bfff;
 background-color: #007bff;
 }
 .instance.instance-active {
-/*
-background-color: #ddd;
-*/
 }
 
 .status-toggler {
 display: inline-block;
 }
+.summary {
+color: white;
+background-color: gray;
+height: 20px;
+padding: 3px;
+text-align: center;
+position: relative;
+margin-right: 4px;
+font-size: 60%;
+top: -2px;
+border-radius: 2px;
+}
+.summary-running {
+background-color: #007bff;
+}
+.summary-failed {
+background-color: #dc3545;
+}
+.summary-stopped {
+background-color: #999;
+}
+.summary-waiting,
+.summary-requested {
+background-color: #50bfff;
+}
+.summary-finished {
+background-color: #28a745;
+}
 </style>
 
 <style>
-/*
-.processes .status-toggler .btn:not(.active) {
-opacity: 0.5;
-}
-*/
 .processes .status-toggler .btn {
 border: none;
 margin-left: 5px;

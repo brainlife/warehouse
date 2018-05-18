@@ -1,9 +1,7 @@
 
-//CSS
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
-//theme for element-ui
 import '../theme/index.css' 
 
 import 'select2/dist/css/select2.css'
@@ -39,6 +37,9 @@ Vue.config.productionTip = false
 
 import VueAnalytics from 'vue-analytics'
 
+import VueDisqus from 'vue-disqus'
+Vue.use(VueDisqus)
+
 Vue.component('icon', Icon)
 
 Vue.use(VueHighlightJS)
@@ -49,7 +50,6 @@ Vue.use(VueLazyload)
 Vue.use(BootstrapVue);
 Vue.use(Vue2Filters)
 Vue.use(SocialSharing);
-
 Vue.use(VueTimeago, {
     name: 'timeago',
     locale: 'en-US',
@@ -57,7 +57,6 @@ Vue.use(VueTimeago, {
         'en-US': require('vue-timeago/locales/en-US.json')
     }
 });
-
 
 var jwt_decode = require('jwt-decode');
 
@@ -97,7 +96,7 @@ var apihost = "https://"+window.location.hostname;
 var apihost_ws = "wss://"+window.location.hostname;
 
 //override api hostname (from config/*.env.js)
-if(process.env.HOSTNAME) {
+if (process.env.HOSTNAME) {
     apihost = "https://"+process.env.HOSTNAME;
     apihost_ws = "wss://"+process.env.HOSTNAME;
 }
@@ -107,55 +106,54 @@ Vue.config.api = apihost+"/api/warehouse";
 Vue.config.wf_api = apihost+"/api/amaretti";
 Vue.config.auth_api = apihost+"/api/auth";
 Vue.config.event_api = apihost+"/api/event";
+Vue.config.profile_api = apihost+"/api/profile";
 Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
 
 Vue.http.options.root = Vue.config.api; //default root for $http
 
-if(process.env.NODE_ENV == "development") {
+if (process.env.NODE_ENV == "development") {
     Vue.config.debug = true;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 function jwt_decode_brainlife(jwt) {
     Vue.config.user = jwt_decode(jwt);
+    Vue.config.jwt = jwt;
     
     //auth service should return sub in string format, but currently it doesn't..
     //let's just covert it to string 
-    Vue.config.user.sub = Vue.config.user.sub.toString()
+    Vue.config.user.sub = Vue.config.user.sub.toString();
+    Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 }
 
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
-if(Vue.config.jwt) {
+if (Vue.config.jwt) {
     jwt_decode_brainlife(Vue.config.jwt);
+    /* will be checked soon - when it gets refreshed.
     if(Vue.config.user.exp && Vue.config.user.exp < Date.now()/1000) {
         console.error("jwt expired", Vue.config.user.exp, Date.now()/1000);
         delete Vue.config.jwt;
         localStorage.removeItem("jwt");
-    } else {
-        Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
     }
+    */
 } else {
     console.log("jwt not set");
 }
 
 router.beforeEach(function (to, from, next) {
-    if(to.matched.length == 0) {
+    if (to.matched.length == 0) {
         console.log("no matching reouter for", JSON.stringify(to, null, 4), "redirecting to /404");
         document.location = "/404";
         return;
     }
 
-    //redirect to auth unless route is public
-    if(!to.meta) to.meta = {};
-    if(!to.meta.public) {
-        if(!Vue.config.jwt) {
-            console.log("authentication required", document.location.href);
-            sessionStorage.setItem('auth_redirect', document.location.href);
-            document.location = Vue.config.auth_signin;
-            return;
-        }
+    // redirect to auth unless route is public
+    if (!to.meta) to.meta = {};
+    if (!to.meta.public && !Vue.config.jwt) {
+        console.log("authentication required", document.location.href);
+        sessionStorage.setItem('auth_redirect', document.location.href);
+        document.location = Vue.config.auth_signin;
+        return;
     }
 
     console.log("scrolling to top");
@@ -163,11 +161,16 @@ router.beforeEach(function (to, from, next) {
     next();
 })
 
+if (!Vue.config.debug) {
+    Vue.use(VueAnalytics, { id: 'UA-118407195-1', router })
+}
+
 new Vue({
     el: '#warehouse',
     router,
     template: '<warehouse/>',
     components: { warehouse },
+
     mounted() {
         console.log("starting jwt token interval");
         setInterval(()=>{
@@ -176,39 +179,37 @@ new Vue({
 
         //refresh immediately (on page reload)
         this.refresh_jwt();
+        
+        //this.load_profile();
 
         this.$on("refresh_jwt", ()=>{
             this.refresh_jwt();
         });
     },
+
     methods: {
-        refresh_jwt: function() {
-            if(Vue.config.debug) {
-                console.log("not refreshing token.. as this is running in debug mode");
-                return;
-            }
+        refresh_jwt: async function() {
+
             if(!Vue.config.jwt) {
                 console.log("no jwt.. not refreshing");
                 return;
             }
-            console.log("refreshing jwt token");
-            this.$http.post(Vue.config.auth_api+'/refresh').then(res=>{
-                if(res.body.jwt) {
-                    console.log("renewed!");
-                    Vue.config.jwt = res.body.jwt;
-                    jwt_decode_brainlife(Vue.config.jwt);
-                    Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
-                    localStorage.setItem("jwt", res.body.jwt);
-                }
-            }).catch(err=>{
+            if(Vue.config.debug) {
+                console.log("not refreshing token.. as this is running in debug mode");
+                return;
+            }
+
+            try {
+                let res = await this.$http.post(Vue.config.auth_api+"/refresh");
+                jwt_decode_brainlife(res.body.jwt);
+                localStorage.setItem("jwt", res.body.jwt);
+
+                console.dir(Vue.config);
+            } catch (err) {
                 console.error(err); 
                 localStorage.removeItem("jwt");
                 document.location = Vue.config.auth_signin;
-            });
-        }
+            }
+        },
     },
 })
-
-if(!Vue.config.debug) {
-    Vue.use(VueAnalytics, { id: 'UA-118407195-1', router })
-}

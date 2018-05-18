@@ -39,6 +39,26 @@
             <b-alert :show="selected.removed" style="border-radius: 0px" variant="warning">This project has been removed.</b-alert>
             <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px" variant="secondary">This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.</b-alert>
             <div class="margin20">
+                <b-row v-if="selected.agreements && selected.agreements.length > 0">
+                    <b-col cols="2"> 
+                        <span class="form-header">Agreements</span>
+                    </b-col>
+                    <b-col cols="10">
+                        <p> <small class="text-muted">You must consent to the following agreement before accessing datasets on this project.</small> </p>
+                        <agreements :agreements="selected.agreements"/>
+                        <!--
+                        <div v-for="agreement in selected.agreements" class="agreement">
+                            <p>
+                                {{agreement.agreement}}
+                            </p>
+                            <p>
+                                <b-form-checkbox @change="update_agreements" v-model="agreements[agreement._id]">I Agree</b-form-checkbox>
+                            </p>
+                        </div>
+                        -->
+                    </b-col>
+                </b-row>
+
                 <b-row>
                     <b-col cols="2">
                         <span class="form-header">Admins</span>
@@ -74,9 +94,7 @@
                         <span class="form-header">Guests</span>
                     </b-col>
                     <b-col>
-                        <p>
-                            <small class="text-muted">Users who have read access to datasets on this project.</small>
-                        </p>
+                        <p> <small class="text-muted">Users who have read access to datasets on this project.</small> </p>
                         <p v-for="c in selected.guests" :key="c._id">
                             <contact :id="c"/>
                         </p>
@@ -84,6 +102,7 @@
                         <br>
                     </b-col>
                 </b-row>
+
 
                 <b-row>
                     <b-col cols="2"> 
@@ -112,12 +131,12 @@
         </div>
 
         <div v-if="tabs[tab].id == 'process'">
-            <b-alert show v-if="!(ismember()||isadmin())">Only the members of this project can access processes.</b-alert>
+            <b-alert show v-if="!(ismember()||isadmin())">Only the admins or members of this project can access processes.</b-alert>
             <processes :project="selected" v-else/>
         </div>
 
         <div v-if="tabs[tab].id == 'pipeline'">
-            <b-alert show v-if="!(ismember()||isadmin())">Only the admin or members of this project can access pipelines.</b-alert>
+            <b-alert show v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines.</b-alert>
             <pipelines :project="selected" v-else/>
         </div>
 
@@ -150,9 +169,7 @@ import datasets from '@/components/datasets'
 import processes from '@/components/processes'
 import publications from '@/components/publications'
 import pipelines from '@/components/pipelines'
-
-import VueDisqus from 'vue-disqus'
-Vue.use(VueDisqus)
+import agreements from '@/components/agreements'
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -164,6 +181,7 @@ export default {
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
         processes, publications, pipelines,
+        agreements,
 
         newtaskModal,
     },
@@ -215,21 +233,13 @@ export default {
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
         },
+
+
     },
 
     mounted: function() {
         //load all projects that user has summary access (including removed ones so we can open it)
-        this.$http.get('project', {params: {
-            /*
-            find: JSON.stringify({
-                $or: [
-                    { members: Vue.config.user.sub }, 
-                    { admins: Vue.config.user.sub }, 
-                    { access: "public" },
-                ]
-            })
-            */
-        }})
+        this.$http.get('project')
         .then(res=>{
             this.projects = {};
             res.body.projects.forEach((p)=>{
@@ -318,18 +328,6 @@ export default {
                 this.$refs.disqus.reset(window.DISQUS);
             }
         },
-
-        /*
-        start_publish: function() {
-            this.publishing = true;
-        },
-
-        publish: function(pub) {
-            this.publishing = false;
-            pub.project = this.selected; //pubcard needs project populated
-            this.pubs.push(pub);
-        }
-        */
     },
 }
 </script>

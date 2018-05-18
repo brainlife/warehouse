@@ -233,7 +233,6 @@
                                                 <transition name="fadeHeight">
                                                     <b-list-group class="datasets" v-if="block.show && block.datasets">
                                                         <b-list-group-item v-for="(dataset, idx) in block.datasets" :key="idx" class="dataset" @click="download(dataset._id)">
-                                                            <icon name="file-zip-o"/>
                                                             {{dataset.desc}}
                                                             <span v-if="!dataset.desc" class="text-muted">{{dataset._id}}.tar.gz</span>
                                                             <tags :tags="dataset.tags"/>
@@ -285,9 +284,6 @@ import tags from '@/components/tags'
 import citation from '@/components/citation'
 import app from '@/components/app'
 import doibadge from '@/components/doibadge'
-
-import VueDisqus from 'vue-disqus'
-Vue.use(VueDisqus)
 
 export default {
 

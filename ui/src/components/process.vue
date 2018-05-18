@@ -1,5 +1,5 @@
 <template>
-<div v-if="instance">
+<div v-if="projects && instance">
     <div class="task-tabs">
         <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
             <div class="task-tab-title">
@@ -19,7 +19,6 @@
             <icon name="caret-down" v-if="task.show"/><icon name="caret-right" v-else/> 
             t.{{task.config._tid}}
         </div>
-
 
         <!--full detail-->
         <task :task="task" class="task" v-if="task.show">
@@ -76,13 +75,10 @@
                             <icon name="cubes"/>
                         </div>
                         <div v-if="task.status == 'finished'" style="display: inline-block;">
-                            <div class="button" v-b-modal.viewSelecter title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
+                            <div class="button" title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
                                 <icon name="eye"/>
                             </div>
                             <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                            <!--
-                            <div class="button" :class="{'button-gray': archiving === output}" title="Archive" @click="archiving = output"><icon name="archive"/></div>
-                            -->
                             <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
                         </div>
                     </div>
@@ -125,9 +121,7 @@
                     <archiveform v-if="archiving === output" :task="task" :output="output" @done="archive_submitted"></archiveform>
                     -->
                 </div>
-                <div v-if="task.product">
-                    <pre v-highlightjs="JSON.stringify(task.product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
-                </div>
+                <product :product="task.product"/>
             </div>
         </task>
 
@@ -174,11 +168,16 @@ import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
 import mute from '@/components/mute'
 import datatypetag from '@/components/datatypetag'
+import product from '@/components/product'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const lib = require('../lib');
 const async = require('async');
+
+//store full list of datatypes / projects names...
+let cache_datatypes = null;
+let cache_projects = null;
 
 export default {
     props: [ 'project', 'instance' ],
@@ -190,6 +189,7 @@ export default {
         appavatar, app, 
         projectselecter, statusicon, mute,
         datatypetag, appname, statustag,
+        product, 
     },
 
     data() {
@@ -214,11 +214,19 @@ export default {
         this.$root.$on('newtask.submit', this.submit_task);
         this.$root.$on("archiver.submit", this.submit_archive);
 
+        //load full list of datatypes and projects
+        if(cache_datatypes && cache_projects) {
+            this.datatypes = cache_datatypes;
+            this.projects = cache_projects;
+            return this.load();
+        }
+
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
             });
+            cache_datatypes = this.datatypes;
 
             return this.$http.get('project', {params: {
                 select: 'name desc',
@@ -228,6 +236,7 @@ export default {
             res.body.projects.forEach(project=>{
                 this.projects[project._id] = project;
             });
+            cache_projects = this.projects;
 
             this.load();
         });
@@ -310,23 +319,20 @@ export default {
 
         load() {
             this.loading = true;
-
-            console.log("loading process");
-            //this.archiving = null;
-
-            console.log("(re)connecting to task updates");
             if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+            console.log("connecting to task updates", url);
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("(re)connected to websocket - binding (again)");
-                console.log("binding to task update");
+                console.log("ws open");
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: this.instance._id+".#",
                     }
                 }));
+
+                console.log("binding to dataset updates", this.project._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse.dataset",
@@ -335,8 +341,23 @@ export default {
                 }));
 
                 this.ws.onmessage = (json)=>{
-                    var event = JSON.parse(json.data);
+                    var event = null;
+                    try {
+                        event = JSON.parse(json.data);
+                        //console.dir(event);
+                    } catch(err) {
+                        console.error(err);
+                        return;
+                    }
+                    if(!event) {
+                        console.log("cann't parse event", json);
+                        return;
+                    }
                     if(event.error) return console.error(event.error);
+                    if(!event.dinfo) {
+                        console.log("event.dinfo not set");
+                        return;
+                    }
                     switch(event.dinfo.exchange) {
                     case "wf.task":
                         var task = event.msg;
@@ -358,8 +379,9 @@ export default {
                                 case "failed": type = "error"; break;
                                 case "finished": type = "success"; break;
                                 case "stopped": type = "warn"; break;
+                                default: 
+                                    type = "";
                                 }
-                                console.log("notification type", type, task.status);
                                 this.$notify({type, text});
                             }
                             for(var k in task) {
@@ -525,7 +547,7 @@ export default {
 
         set_viewsel_options: function(task, datatype_name, subdir) {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
-            this.$root.$emit("viewselecter.option", {
+            this.$root.$emit("viewselecter.open", {
                 datatype_name, task, subdir
             });
         },

@@ -7,7 +7,7 @@
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.25"/>
                 </div>
-                <div class="button" v-b-modal.viewSelecter @click="start_viewer(dataset.datatype.name)" v-if="config.user && dataset.storage" title="View Dataset">
+                <div class="button" @click="start_viewer(dataset.datatype.name)" v-if="config.user && dataset.storage" title="View Dataset">
                     <icon name="eye" scale="1.25"/>
                 </div>
                 <div class="button" @click="download" v-if="dataset.storage" title="Downlnoad Dataset">
@@ -103,7 +103,7 @@
                         <b-row v-if="task && task.product">
                             <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
                             <b-col cols="9">
-                                <pre v-highlightjs><code class="json">{{task.product}}</code></pre>
+                                <product :product="task.product"/>
                             </b-col>
                         </b-row>
                         <b-row v-if="config.user">
@@ -192,6 +192,9 @@ import task from '@/components/task'
 import pubcard from '@/components/pubcard'
 import tageditor from '@/components/tageditor'
 import taskconfig from '@/components/taskconfig'
+import product from '@/components/product'
+
+import agreementMixin from '@/mixins/agreement'
 
 import vis from 'vis/dist/vis-network.min.js'
 import 'vis/dist/vis-network.min.css'
@@ -201,12 +204,14 @@ const lib = require('@/lib');
 let debounce;
 
 export default {
+    mixins: [agreementMixin],
+
     components: { 
         sidemenu, contact, 
         app, tags, datatype, 
         metadata, pageheader, appavatar,
         datatypetag, task, pubcard, 
-        tageditor, taskconfig,
+        tageditor, taskconfig, product,
 
         editor: require('vue2-ace-editor'),
 
@@ -368,31 +373,35 @@ export default {
         },
 
         download: function() {
-            var url = Vue.config.api+'/dataset/download/'+this.dataset._id;
-            if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
-            document.location = url;
+            this.check_agreements(this.dataset.project, ()=>{
+                var url = Vue.config.api+'/dataset/download/'+this.dataset._id;
+                if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
+                document.location = url;
+            });
         },
 
         process: function() {
-            this.$root.$emit('instanceselecter.open', opt=>{
-                if(opt.instance) {
-                    //using existing instance.. just submit staging task
-                    this.submit_process(opt.project_id, opt.instance);
-                } else {
-                    //need to create a new instance
-                    this.$http.post(Vue.config.wf_api+'/instance', {
-                        desc: opt.desc,
-                        config: {
-                            brainlife: true,
-                        },
-                        group_id: opt.group_id,
-                    }).then(res=>{
-                        this.submit_process(opt.project_id, res.body);
-                    }).catch(err=>{
-                        console.error(err);
-                        this.$notify({type: 'error', text: err.body.message});
-                    })
-                }
+            this.check_agreements(this.dataset.project, ()=>{
+                this.$root.$emit('instanceselecter.open', opt=>{
+                    if(opt.instance) {
+                        //using existing instance.. just submit staging task
+                        this.submit_process(opt.project_id, opt.instance);
+                    } else {
+                        //need to create a new instance
+                        this.$http.post(Vue.config.wf_api+'/instance', {
+                            desc: opt.desc,
+                            config: {
+                                brainlife: true,
+                            },
+                            group_id: opt.group_id,
+                        }).then(res=>{
+                            this.submit_process(opt.project_id, res.body);
+                        }).catch(err=>{
+                            console.error(err);
+                            this.$notify({type: 'error', text: err.body.message});
+                        })
+                    }
+                });
             });
         },
 
@@ -433,9 +442,11 @@ export default {
 
         remove: function() {
             if(confirm("Do you really want to remove this dataset?")) {
-                this.$http.delete('dataset/'+this.dataset._id)
-                .then(res=>{
-                    this.close();
+                this.check_agreements(this.dataset.project, ()=>{
+                    this.$http.delete('dataset/'+this.dataset._id)
+                    .then(res=>{
+                        this.close();
+                    });
                 });
             }
         },
@@ -521,11 +532,13 @@ export default {
         },
 
         start_viewer: function(datatype_name) {
-            //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
-            this.$root.$emit("viewselecter.option", {
-                datatype_name,
-                task_cb: this.create_view_task, 
-                subdir: "output",
+            this.check_agreements(this.dataset.project, ()=>{
+                //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
+                this.$root.$emit("viewselecter.open", {
+                    datatype_name,
+                    task_cb: this.create_view_task, 
+                    subdir: "output",
+                });
             });
         },
 
