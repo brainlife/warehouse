@@ -37,11 +37,12 @@
             </div>
 
             <b-form-group horizontal :label="m.id.toUpperCase()+(m.required?' *':'')" v-for="m in datatypes[datatype_id].meta" :key="m.id">
-                <b-input type="text" v-model="meta[m.id]" :required="m.required"/>
+                <b-input type="text" v-model="meta[m.id]" :required="m.required" :placeholder="m.required?'':'(optional)'"/>
             </b-form-group>
 
             <b-form-group horizontal label="Description">
-                <b-form-textarea v-model="desc" :rows="4" placeholder="Optional dataset description"></b-form-textarea> </b-form-group>
+                <b-form-textarea v-model="desc" :rows="4" placeholder="(optional)"></b-form-textarea>
+             </b-form-group>
 
         </div><!--datatype_id set -->
         <small>To bulk upload your datasets, you can use <a href="https://github.com/brain-life/cli" target="_blank">Brainlife CLI</a></small>
@@ -236,9 +237,8 @@ export default {
                 service: this.get_validator(),
             }}).then(res=>{
                 if(!res.body.resource) { 
-                    //TODO - not tested
                     this.$notify({ type: 'error', title: 'Server Busy', text: 'Validator service is busy. Please try again later' });
-                    return;
+                    this.cancel();
                 }
                 this.validator_resource = res.body.resource;
 
