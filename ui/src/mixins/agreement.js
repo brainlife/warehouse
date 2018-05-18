@@ -14,14 +14,14 @@ export default {
     },
     created: function() {
         console.log("mixin/agreement created");
-        this.load();
+        this.load_agreement();
         this.$root.$on("agreements.updated", (id, b)=>{
             Vue.set(this.user_agreements, id, b);
         });
     },
 
     methods: {
-        load: async function() {
+        load_agreement: async function() {
             console.log("loading agreement ui");
             let agreements = await this.get_user_agreements();
             for(let id in agreements) {

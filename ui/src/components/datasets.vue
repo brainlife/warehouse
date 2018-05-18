@@ -264,6 +264,7 @@ export default {
         },
 
         reload: function() {
+            console.log("datasets reloaeed..................");
             this.pages = [];
             this.page_info = [];
             this.last_groups = {};
@@ -280,12 +281,12 @@ export default {
                 this.total_subjects = res.body.length;
             });
 
-            //listen to all dataset change enent under this project
+            console.log("listen to all dataset change enent under this project", this.project._id);
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             if(this.ws) this.ws.close();
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("binding to dataset updates", this.project._id);
+                console.log("binding to dataset updates for project:", this.project._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse.dataset",

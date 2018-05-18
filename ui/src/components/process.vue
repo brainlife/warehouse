@@ -331,6 +331,8 @@ export default {
                         key: this.instance._id+".#",
                     }
                 }));
+
+                console.log("binding to dataset updates", this.project._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse.dataset",
@@ -389,7 +391,7 @@ export default {
                         break;
                     case "warehouse.dataset":
                         //see if we care..
-                        //console.log("dataset event", event.msg);
+                        console.log("dataset event", event.msg);
                         this.archived.forEach(dataset=>{
                             if(dataset._id == event.msg._id) {
                                 for(var k in event.msg) dataset[k] = event.msg[k]; //update 

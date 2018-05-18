@@ -374,7 +374,7 @@ export default {
                             desc: this.form.desc||this.app.name,
                             config: {
                                 brainlife: true,
-                                type: "v2",
+                                //type: "v2",
                             },
                         }).then(resolve);
                     });

@@ -199,7 +199,6 @@ export default {
     },
 
     mounted: function() {
-        //console.log("processed mounted", this.$route.params);
         this.load();
     },
 
@@ -212,7 +211,6 @@ export default {
 
     watch: {
         project: function() {
-            console.log("project changed.. need to reload");
             this.load();
         },
         order: function() {
@@ -260,7 +258,6 @@ export default {
                 let group_id = this.project.group_id;
                 this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
                 this.show = window.localStorage.getItem("processes.show."+group_id)||null;
-
                 this.load_instances(err=>{
                     if(err) return this.notify_error(err);
                     this.subscribe_instance_update(err=>{
@@ -269,15 +266,6 @@ export default {
                 });
             });
         },
-
-        /*
-        order: function(order) {
-            this.order = order;
-            this.load_instances(err=>{
-                if(err) return this.notify_error(err);
-            });
-        },
-        */
 
         capitalize: function(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
@@ -390,12 +378,11 @@ export default {
         load_instances: function(cb) {
             this.instances = null; 
             if(!this.project.group_id) return; //can't load for non-group project..
-            console.log("loading instances for group", this.project.group_id);
+            //console.log("loading instances for group", this.project.group_id);
             this.$http.get(Vue.config.wf_api+'/instance', {params: {
                 find: JSON.stringify({
                     "config.brainlife": true,
                     status: {$ne: "removed"},
-                    //group_id: {$exists: false},
                     group_id: this.project.group_id,
                     "config.removing": {$exists: false},
                 }),
@@ -414,11 +401,9 @@ export default {
         
         subscribe_instance_update: function(cb) {
             if(this.ws) this.ws.close();
-
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("binding to all instance updates");
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.instance",
@@ -429,7 +414,6 @@ export default {
             }
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
-                //console.log("instance update----------------", event);
                 if(event.dinfo && event.dinfo.exchange == "wf.instance") {
                     var instance = this.instances.find(i=>i._id == event.msg._id);
                     if(instance) {
