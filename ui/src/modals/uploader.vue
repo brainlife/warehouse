@@ -14,7 +14,6 @@
                     <pre v-if="config.debug">{{tasks.upload}}</pre>
                 </b-form-group>
             </div>
-
             
             <div v-if="tasks.upload && tasks.upload.resource_id">
                 <b-form-group horizontal v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id+(file.ext?'('+file.ext+')':'')+(file.required?' *':'')">
@@ -198,7 +197,7 @@ export default {
                 var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
                 var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
                 ws.onopen = (e)=>{
-                    console.log("websocket opened", this.instance._id);
+                    console.log("websocket opened binding to wf.task", this.instance._id+".#");
                     ws.send(JSON.stringify({
                       bind: {
                         ex: "wf.task",

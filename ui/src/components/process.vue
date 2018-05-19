@@ -113,7 +113,7 @@
                                     <icon name="cog" :spin="true"/> Storing ...
                                 </span> 
                                 <span v-else-if="dataset.status == 'stored'"></span>
-                                <span v-else>{{dataset.status}}</span>
+                                <span v-else><statustag :status="dataset.status"/></span>
                             </li>
                         </ul>
                     </div>
