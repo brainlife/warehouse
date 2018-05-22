@@ -171,6 +171,8 @@ function archive_dataset(task, output, cb) {
 
             var tags = output.tags||[];
             if(task.product && task.product.tags) tags = task.product.tags; //product.tags takes precedence
+
+            //TODO - I don't think I should be mucking with datatype_tags.. as it will break the logical consistency
             var datatype_tags = output.datatype_tags||[];
             if(task.product && task.product.datatype_tags) tags = task.product.datatype_tags; //product.datatype_tags takes precedence
 

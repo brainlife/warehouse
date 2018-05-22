@@ -23,12 +23,13 @@ exports.github = {
     client_secret: fs.readFileSync(__dirname+"/github.client.secret"),
 }
 
-exports.wf = {
+exports.amaretti = {
     api: "https://dev1.soichi.us/api/wf",
 
     //jwt used to query things from workflow service as admin
     jwt: fs.readFileSync(__dirname+'/amaretti.jwt', 'ascii').trim(),
 }
+exports.wf = exports.amaretti; //deprecated
 
 exports.auth = {
     api: "https://dev1.soichi.us/api/auth",
@@ -48,6 +49,9 @@ exports.warehouse = {
     //used to issue warehouse token to allow dataset download
     public_key: fs.readFileSync(__dirname+'/warehouse.pub'),
     private_key: fs.readFileSync(__dirname+'/warehouse.key'),
+
+    //place to store rule logs 
+    rule_logdir: "/tmp",
  }
 
 /*

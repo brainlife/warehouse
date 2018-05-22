@@ -5,6 +5,7 @@ const router = express.Router();
 const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
+const fs = require('fs');
 
 const config = require('../config');
 const logger = new winston.Logger(config.logger.winston);
@@ -60,6 +61,29 @@ router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         db.Datatypes.count(find).exec((err, count)=>{
             if(err) return next(err);
             res.json({rules, count});
+        });
+    });
+});
+
+/**
+ * @apiGroup Pipeline Rules
+ * @api {get} /rule/log/:ruleid     Get the latest rule execution log
+ *
+ * @apiSuccess String               Return string containing the entire log
+ */
+router.get('/log/:ruleid', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    db.Rules.findById(req.params.ruleid)
+    .exec((err, rule)=>{
+        if(err) return next(err);
+        if(!rule) return next("no such rule");
+        check_access(req, rule, err=>{
+            if(err) return next(err);
+            let logpath = config.warehouse.rule_logdir+"/"+rule._id.toString()+".log";
+            fs.stat(logpath, (err, stats)=>{
+                if(err) return res.status(500).json({err});
+                let logs = fs.readFileSync(logpath, 'ascii');
+                res.json({stats, logs});
+            });
         });
     });
 });
