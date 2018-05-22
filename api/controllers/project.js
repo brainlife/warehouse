@@ -36,6 +36,8 @@ function isadmin(user, rec) {
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) find = JSON.parse(req.query.find);
+    var skip = req.query.skip||0;
+    let limit = req.query.limit||100;
 
     //always load user_id so that we can compute canedit properly
     var select = null;
@@ -61,8 +63,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
     db.Projects.find(find)
     .select(select)
-    .limit(req.query.limit || 0)
-    .skip(req.query.skip || 0)
+    .skip(+skip)
+    .limit(+limit)
     .sort(req.query.sort || '_id')
     .lean()
     .exec((err, recs)=>{

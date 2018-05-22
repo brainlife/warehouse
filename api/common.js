@@ -63,7 +63,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
         //create temp directory to download things
         tmp.dir({unsafeCleanup: true, template: "/tmp/archive-XXXXXX"}, (err, tmpdir, cleantmp)=>{
             if(err) return cb(err);
-            var input_ok = true;
 
             //find files that doesn't need to be copied - as it's contained inside another dirname
             var dirs = datatype.files.filter(file=>file.dirname);
@@ -89,6 +88,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 logger.debug("processing file", file.toString());
                 var writestream = null;
                 var srcpath = "";
+                var input_ok = true;
                 if(dataset.prov.subdir) srcpath += dataset.prov.subdir+"/";
                 if(file.filename) {
                     //files can be downloaded directly to tmpdir
@@ -135,7 +135,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
 
                 //now start feeding the writestream
                 request({
-                    url: config.wf.api+"/task/download/"+task._id,
+                    url: config.amaretti.api+"/task/download/"+task._id,
                     qs: {
                         p: srcpath,
                     },
@@ -157,6 +157,8 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         cb(err);
                     });
                 }
+
+                logger.debug(filenames);
                 
                 //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
                 var storage = config.storage_default();
@@ -185,13 +187,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         dataset.status = "stored";
                         dataset.size = file.size;
                         dataset.save(cb);
-                            
-                        /*
-                        //also register to neo4j.. I might deprecate
-                        prov.register_dataset(dataset, err=>{
-                            if(err) logger.error(err); //fall through
-                        });
-                        */
                     }).catch(err=>{
                         logger.error("streaming failed", err);
                         dataset.desc = "Failed to archive "+err.toString();
