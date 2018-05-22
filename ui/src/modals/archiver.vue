@@ -6,7 +6,7 @@
         </b-form-group>
 
         <b-form-group label="Project">
-            <projectselecter canwrite="true" v-model="project" placeholder="Project to archive this dataset to"/>
+            <projectselecter :required="true" :canwrite="true" v-model="project" placeholder="Project to archive this dataset to"/>
         </b-form-group>
 
         <b-form-group label="User Tags (optional)">
@@ -15,21 +15,7 @@
 
         <b-form-group label="Metadata">
             <editor v-model="_meta" @init="editorInit" lang="json" height="100"></editor>
-            <!--
-            <b-input-group :prepend="k.toUpperCase()" v-for="(v,k) in output.meta" :key="k">
-                <b-form-input type="text" v-model="output.meta[k]"/>
-            </b-input-group>
-            <small class="text-muted">Datatype specific key/value pairs to describes hierarchy for this dataset</small>
-            -->
         </b-form-group>
-
-        <!--
-        <div style="float: right">
-            <b-button @click="cancel">Cancel</b-button>
-            <b-button variant="primary" icon="check" @click="submit">Archive</b-button>
-        </div>
-        <br clear="both">
-        -->
     </div>
 </b-modal>
 </template>
@@ -42,12 +28,6 @@ import projectselecter from '@/components/projectselecter'
 import tageditor from '@/components/tageditor'
 
 export default {
-    /*
-    props: {
-        task: {required: true},
-        output: {required: true},
-    },
-    */
 
     components: { 
         projectaccess, projectselecter, tageditor,
@@ -83,6 +63,13 @@ export default {
     methods: {
         submit: function(evt) {
             evt.preventDefault();
+
+            //TODO - project should be a required field, but somehow form validation isn't fireing. 
+            //maybe because it's modal?
+            if(!this.project) {
+                this.$notify({text: "Please select project", type: "error"});
+                return;
+            }
 
             //try parsing _meta
             var meta = null;

@@ -2,7 +2,7 @@
 v-select has some issue with clicking scrollbar closing the select dropdown..
 https://github.com/sagalbot/vue-select/issues/474
 -->
-<b-form-select v-model="selected" :options="options">
+<b-form-select v-model="selected" :options="options" :required="true">
 <!--
     <option :value="null" v-if="allownull">{{placeholder}}</option>
     <option v-for="project in options" :key="project._id" :value="project._id">

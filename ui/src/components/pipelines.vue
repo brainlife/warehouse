@@ -65,7 +65,7 @@
                             <span v-if="rule.input_tags && rule.input_tags[input.id]">
                                 <small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>
                             </span>
-                            <span v-if="rule.input_project_override && rule.input_project_override[input.id]" class="text-muted">
+                            <span v-if="rule.input_project_override && rule.input_project_override[input.id] && projects[rule.input_project_override[input.id]]" class="text-muted">
                                 From <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
                             </span>
                             <!--<span class="text-muted" v-if="input.optional">(optional)</span>-->
