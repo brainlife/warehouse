@@ -39,7 +39,9 @@
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
                     <b-tab title="Readme"/>
-                    <b-tab title="Execute"/>
+                    <b-tab>
+                        <template slot="title"><icon name="paper-plane"/> Execute</template>
+                    </b-tab>
                     <!--<b-tab title="Test Status"/>-->
                     <!--<b-tab title="Citation / References"/>-->
                 </b-tabs>

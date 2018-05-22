@@ -14,8 +14,8 @@
                 <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brain-life.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
             </div>
 
-            <div v-for="rule in rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-active': selected == rule}" class="rule" @click="toggle(rule)" v-if="rule.removed == false">
-                <div class="rule-header">
+            <div v-for="rule in rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-active': selected == rule}" class="rule" v-if="rule.removed == false">
+                <div class="rule-header" @click="toggle(rule)">
                     <div style="float: right; width: 130px; text-align: right">
                         <timeago :since="rule.create_date" :auto-update="10"/>
                     </div>
@@ -61,7 +61,7 @@
                             <span class="text-muted">Only process subjects that matches regex</span> <b>{{rule.subject_match}}</b>
                         </p>       
                         <p v-for="input in rule.app.inputs" :key="input.id">
-                            <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
+                            <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" v-if="datatypes"/>
                             <span v-if="rule.input_tags && rule.input_tags[input.id]">
                                 <small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>
                             </span>
@@ -76,13 +76,15 @@
                     <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Only if the following output datasets aren't archived for the subject yet</p>
                     <div style="margin-left: 30px;">
                         <p v-for="output in rule.app.outputs" :key="output.id">
-                            <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
+                            <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" v-if="datatypes"/>
                             <span v-if="rule.output_tags && rule.output_tags[output.id]">
                                 <small class="text-muted">with user tags of</small> <tags :tags="rule.output_tags[output.id]"/>
                             </span>
                         </p>
                     </div>
-                    <br>
+
+                    <p class="text-muted" style="background-color: #f3f3f3; padding: 10px; margin-bottom: 0px">Log</p>
+                    <rulelog :id="rule._id"/>
                 </div><!--rule-body-->
             </div><!--rule-->
 
@@ -104,8 +106,7 @@ import tags from '@/components/tags'
 import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
 import ruleform from '@/components/ruleform'
-
-//import agreementMixin from '@/mixins/agreement'
+import rulelog from '@/components/rulelog'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -116,7 +117,7 @@ export default {
     props: [ 'project' ], 
     components: { 
         contact, tags, app,
-        datatypetag, ruleform,
+        datatypetag, ruleform, rulelog,
     },
     data () {
         return {
@@ -139,7 +140,6 @@ export default {
     watch: {
         project: function() {
             //console.log("project changed.. need to reload");
-            this.ready = false;
             this.load();
         },
 
@@ -150,8 +150,8 @@ export default {
     },
 
     methods: {
-        load: function() {
-            //console.log("load all publication");
+        load: function(cb) {
+            this.ready = false;
             this.$http.get('rule', {params: {
                 find: JSON.stringify({
                     project: this.project._id,
@@ -171,23 +171,33 @@ export default {
                 if(this.selected) {
                     this.selected = this.rules.find(rule=>rule._id == this.selected._id); //need to reselect..
                 }
-                
-                //load datatypes referenced
-                let ids = [];
-                this.rules.forEach(rule=>{
-                    rule.app.outputs.forEach(output=>{
-                        if(!~ids.indexOf(output.datatype)) ids.push(output.datatype);
-                    });
-                    rule.app.inputs.forEach(input=>{
-                        if(!~ids.indexOf(input.datatype)) ids.push(input.datatype);
-                    });
+
+                this.load_referenced(err=>{
+                    if(err) console.error(err);
+                    this.ready = true;
+                    if(cb) cb();
                 });
-                return this.$http.get('datatype', {params: {
-                    find: JSON.stringify({
+            });
+        },
+
+        load_referenced(cb) {
+            this.datatypes = null;
+
+            //load referenced datatypes
+            let ids = [];
+            this.rules.forEach(rule=>{
+                rule.app.outputs.forEach(output=>{
+                    if(!~ids.indexOf(output.datatype)) ids.push(output.datatype);
+                });
+                rule.app.inputs.forEach(input=>{
+                    if(!~ids.indexOf(input.datatype)) ids.push(input.datatype);
+                });
+            });
+            return this.$http.get('datatype', {params: {
+                find: JSON.stringify({
                         _id: {$in: ids}
                     })
-                }})
-            })
+            }})
             .then(res=>{
                 this.datatypes = {};
                 res.body.datatypes.forEach(datatype=>{
@@ -213,8 +223,8 @@ export default {
                 res.body.projects.forEach(project=>{
                     this.projects[project._id] = project;
                 });
-                this.ready = true;
-            });
+                cb();
+            }).catch(cb); 
         },
 
         isadmin() {
@@ -255,31 +265,34 @@ export default {
 
         cancel_edit: function() {
             this.editing = null;
-            //this.$router.push("/project/"+this.project._id+"/pipeline/");
-            //this.$refs.scrolled.scrollTop = 0; //TODO - should I scroll to the rule that was being edited before?
-            this.$router.go(-1);
+            this.$router.push("/project/"+this.project._id+"/pipeline");
             Vue.nextTick(()=>{
                 //scroll to the selected rule (TODO - I think I should delay until animation is over?)
-                var elem = document.getElementById(this.selected._id);
-                this.$refs.scrolled.scrollTop = elem.offsetTop;
+                if(this.selected) {
+                    var elem = document.getElementById(this.selected._id);
+                    this.$refs.scrolled.scrollTop = elem.offsetTop;
+                }
             });
         },
 
         submit: function(rule) {
             rule.project = this.project._id; //rule editor doesn't set project id.
             if(rule._id) {
+                //update
                 this.$http.put('rule/'+rule._id, rule).then(res=>{
-                    this.load(); //need to reload all new datatypes, etc.. used by the updated rule
-                    this.$notify({text: "Successfully updated a rule", type: "success"});
-                    this.cancel_edit();
+                    this.load(err=>{
+                        this.$notify({text: "Successfully updated a rule", type: "success"});
+                        this.cancel_edit();
+                    }); 
                 }).catch(this.notify_error);
             } else {
                 //create
                 this.$http.post('rule', rule).then(res=>{
-                    //this.rules.push(res.body);
-                    this.load(); //need to reload all new datatypes, etc.. used by the new rule
-                    this.$notify({text: "Successfully created a new rule", type: "success"});
-                    this.cancel_edit();
+                    this.selected = res.body;
+                    this.load(err=>{
+                        this.$notify({text: "Successfully created a new rule", type: "success"});
+                        this.cancel_edit();
+                    });
                 }).catch(this.notify_error);
             }
         },
