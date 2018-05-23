@@ -61,8 +61,9 @@
                             <span class="text-muted">Only process subjects that matches regex</span> <b>{{rule.subject_match}}</b>
                         </p>       
                         <p v-for="input in rule.app.inputs" :key="input.id">
+                            <small style="float: right; margin-right: 10px;">{{input.id}}</small>
                             <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" v-if="datatypes"/>
-                            <span v-if="rule.input_tags && rule.input_tags[input.id]">
+                            <span v-if="rule.input_tags && rule.input_tags[input.id] && rule.input_tags[input.id].length > 0">
                                 <small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>
                             </span>
                             <span v-if="rule.input_project_override && rule.input_project_override[input.id] && projects[rule.input_project_override[input.id]]" class="text-muted">
@@ -70,16 +71,21 @@
                             </span>
                             <!--<span class="text-muted" v-if="input.optional">(optional)</span>-->
                             <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
+
+                            <!--<small>({{input_matches[input.id]}} subjects match)</small>-->
                         </p>
                     </div>
 
                     <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Only if the following output datasets aren't archived for the subject yet</p>
                     <div style="margin-left: 30px;">
                         <p v-for="output in rule.app.outputs" :key="output.id">
+                            <small style="float: right; margin-right: 10px">{{output.id}}</small>
                             <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" v-if="datatypes"/>
-                            <span v-if="rule.output_tags && rule.output_tags[output.id]">
-                                <small class="text-muted">with user tags of</small> <tags :tags="rule.output_tags[output.id]"/>
+                            <span v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">
+                                <small class="text-muted">with dataset tags of</small> <tags :tags="rule.output_tags[output.id]"/>
                             </span>
+
+                            <!--<small>({{output_matches[output.id]}} subjects match)</small>-->
                         </p>
                     </div>
 
@@ -94,7 +100,6 @@
             </b-button>
         </div>
     </div>
-
 </div>
 </template>
 
@@ -129,6 +134,10 @@ export default {
             rules: null, 
             datatypes: null,
             projects: null,
+
+            //input_matches: {},
+            //output_matches: {},
+
             config: Vue.config,
         }
     },
@@ -147,6 +156,35 @@ export default {
             var subid = this.$route.params.subid;
             if(!subid) this.editing = null;
         },
+
+        /*
+        selected: function() {
+
+            //count number of subjects that matches the input/output criteria
+            this.input_matches = {};
+            this.output_matches = {};
+            if(!this.selected) return;
+
+            this.selected.app.inputs.forEach(input=>{
+                let find = {
+                    removed: false,
+                    datatype: input.datatype,
+                    datatype_tags: [input.datatype_tags],
+                    project: this.selected.input_project_override[input.id] || this.project._id,
+                }
+                this.$http.get('dataset/distinct', {params: {
+                    find: JSON.stringify(find),
+                    distinct: 'meta.subject'
+                }}).then(res=>{
+                    Vue.set(this.input_matches, input.id, res.body.length);
+                }).catch(console.error);
+            });
+
+            this.selected.app.outputs.forEach(output=>{
+                this.output_matches[output.id] = 4567;
+            });
+        },
+        */
     },
 
     methods: {
