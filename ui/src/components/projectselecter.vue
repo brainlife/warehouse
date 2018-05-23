@@ -1,15 +1,9 @@
-<template> <!--
+<template> 
+<!--
 v-select has some issue with clicking scrollbar closing the select dropdown..
 https://github.com/sagalbot/vue-select/issues/474
 -->
-<b-form-select v-model="selected" :options="options" :required="true">
-<!--
-    <option :value="null" v-if="allownull">{{placeholder}}</option>
-    <option v-for="project in options" :key="project._id" :value="project._id">
-        {{project.name}}
-    </option>
--->
-</b-form-select>
+<b-form-select v-model="selected" :options="options" :required="true"/>
 </template>
 
 <script>
@@ -74,6 +68,7 @@ export default {
         }
 
         if(this.datatype) {
+            //construct query
             //only pull projects that has datasets with specified datatype
             let project_query = {
                 datatype: this.datatype,
@@ -97,16 +92,19 @@ export default {
                 find._id = {$in: project_ids};
                 //TODO - if there are no project, not point of querying for datasets.
                 //we should warn user that they can't execue this app until data derivative is generated
-                this.populate_options();
+                this.populate_options(find);
             });
         } else {    
             //no further query
-            this.populate_options();
+            this.populate_options(find);
         }
     },
     methods: {
-        populate_options: function() {
+        populate_options: function(find) {
             this.options = [];
+
+            console.log("finding project", find);
+
             if(this.allownull) this.options.push({value: null, text: this.placeholder||''});
             this.$http.get('project', {params: {
                 find: JSON.stringify(find),
