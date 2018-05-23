@@ -646,7 +646,7 @@ function handle_rule(rule, cb) {
                     }
                 }, (err, res, _body)=>{
                     task_app = _body.task;
-                    rogger.debug("submitted app task", task_app._id);
+                    rlogger.debug("submitted app task", task_app._id);
                     logger.debug("submitted app task", task_app);
                     //console.log(JSON.stringify(_body, null, 4));
                     next(err);
