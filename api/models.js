@@ -10,7 +10,7 @@ const logger = new winston.Logger(config.logger.winston);
 
 //use native promise for mongoose
 //without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated
-mongoose.Promise = global.Promise; 
+//mongoose.Promise = global.Promise; 
 if(config.mongoose_debug) mongoose.set("debug", true);
 
 let dataset_ex = null;
