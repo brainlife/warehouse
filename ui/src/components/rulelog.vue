@@ -5,7 +5,7 @@
             <span v-if="err">Hasn't run yet</span>
             <span v-if="stats"><timeago :since="stats.mtime" :auto-update="10"/></span>
     </div>
-    <pre v-if="logs" v-highlightjs style="padding: 10px; padding-top: 0px; margin-right: 30px; max-height: 350px; overflow-y: auto;">{{logs}}</pre>
+    <pre v-if="logs" v-highlightjs>{{logs}}</pre>
 </div>
 </template>
 
@@ -44,7 +44,7 @@ export default {
     
     methods: {
         load: function() {
-            console.log("loading");
+            //console.log("loading rulelog");
             if(!this.id) return;
             this.err = null;
             this.logs = null;
@@ -60,3 +60,13 @@ export default {
     }
 }
 </script>
+<style scoped>
+pre {
+background-color: #f9f9f9;
+font-size: 75%;
+padding: 10px; 
+margin-right: 30px; 
+max-height: 350px; 
+overflow-y: auto;
+}
+</style>
