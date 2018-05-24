@@ -7,7 +7,7 @@ const mkdirp = require('mkdirp'); //for dc2
 const pkgcloud = require('pkgcloud');
 const path = require('path');
 const archiver = require('archiver');
-//const ssh2 = require('ssh2');
+const ssh2 = require('ssh2');
 
 exports.mongodb = "mongodb://localhost/warehouse";
 exports.mongoose_debug = false;
@@ -183,7 +183,6 @@ exports.storage_systems.jetstream = {
     }
 }
 
-/*
 function connect_dc(cb) {
     var conn = new ssh2.Client();
     conn.on('ready', ()=>{
@@ -203,9 +202,7 @@ function connect_dc(cb) {
         cb(err);
     }
 }
-*/
 
-/*
 exports.storage_systems.dc2 = {
     need_backup: false,
     test: cb=>{
@@ -244,9 +241,7 @@ exports.storage_systems.dc2 = {
         });
     },
 } 
-*/
 
-/*
 exports.storage_systems["dcwan/hcp"] = {
     test: cb=>{
         connect_dc((err, conn)=>{
@@ -318,7 +313,6 @@ exports.storage_systems["dcwan/hcp"] = {
         });
     },
 }
-*/
 
 const nki_config = require(__dirname+'/nki');
 const nki_storage = pkgcloud.storage.createClient(nki_config);
