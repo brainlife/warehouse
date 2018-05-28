@@ -173,7 +173,6 @@ import datatypetag from '@/components/datatypetag'
 import product from '@/components/product'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
-import AsyncComputed from 'vue-async-computed'
 
 const lib = require('../lib');
 const async = require('async');
@@ -206,6 +205,7 @@ export default {
             ws: null, //websocket
 
             loading: false,
+            archivedFiles: {},
             
             config: Vue.config,
         }
@@ -302,7 +302,15 @@ export default {
         getMissingFiles: function(dataset) {
             let result = [];
             let datatype = this.datatypes[dataset.datatype];
-            console.log(datatype);
+            let storedFiles = this.archivedFiles[dataset._id] || [];
+            let storedFileTable = {};
+            storedFiles.forEach(file => storedFileTable[file.filename||file.dirname] = file);
+            
+            datatype.files.forEach(file => {
+                if (!storedFileTable[file.filename||file.dirname] && file.required) {
+                    result.push(file.filename||file.dirname);
+                }
+            })
             
             return result;
         },
@@ -442,8 +450,17 @@ export default {
                         removed: false,
                     }),
                     limit: 300,
-                }}).then(res=>{
+                }}).then(async res=>{
                     this.archived = res.body.datasets;
+                    
+                    for (let dataset of this.archived) {
+                        let fileRes = await this.$http.get(Vue.config.wf_api + '/task/ls/' + dataset.prov.task_id);
+                        if (fileRes.status != 200) console.error(fileRes);
+                        else {
+                            this.archivedFiles[dataset._id] = fileRes.body.files;
+                        }
+                    }
+                    
                     this.loading = false;
                 });
             });
