@@ -100,9 +100,11 @@
                         <ul class="archived">
                             <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
                                 <timeago class="text-muted" style="float: right" :since="dataset.create_date" :auto-update="10"/>
-
+                                
                                 <icon name="cubes"></icon>
-                                <mute>{{dataset.desc||dataset._id}}</mute>
+                                <mute v-if="dataset.status == 'failed'">Expected outputs {{getMissingFiles(dataset).join(',')}} are missing</mute>
+                                <mute v-else>{{dataset.desc||dataset._id}}</mute>
+                                
                                 <tags :tags="dataset.tags"/>
                                 <span class="text-muted" v-if="dataset.project != project._id">
                                     <small>on</small> <icon name="shield-alt"/> <b>{{projectname(dataset.project)}}</b>
@@ -171,6 +173,7 @@ import datatypetag from '@/components/datatypetag'
 import product from '@/components/product'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+import AsyncComputed from 'vue-async-computed'
 
 const lib = require('../lib');
 const async = require('async');
@@ -296,6 +299,14 @@ export default {
     },
 
     methods: {
+        getMissingFiles: function(dataset) {
+            let result = [];
+            let datatype = this.datatypes[dataset.datatype];
+            console.log(datatype);
+            
+            return result;
+        },
+        
         findtask: function(id) {
             var found = null;
             this.tasks.forEach(task=>{
