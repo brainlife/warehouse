@@ -42,10 +42,7 @@
     "stream-meter": "^1.0.4",
     "tar": "^4.4.3",
     "tmp": "0.0.33",
-<<<<<<< HEAD
     "vue-async-computed": "^3.3.1",
-=======
->>>>>>> 4aa943715b2fb309ad9dbafb9cf7fde20c47a8a3
     "winston": "^2.4.2",
     "xml-escape": "^1.1.0"
   },
