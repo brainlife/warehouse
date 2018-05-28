@@ -17,7 +17,6 @@
                     <app :app="app" :compact="true" :clickable="false"/>
                 </template>
                 <template slot="selected-option" slot-scope="app">
-                    <!--<app :app="app" :compact="true" :clickable="false"/>-->
                     {{app.name}}
                 </template>
             </v-select>
@@ -25,11 +24,6 @@
 
         <div v-if="rule.app">
             <b-form-group label="Configuration" horizontal>
-                <!--
-                <b-form-textarea id="needed" v-model="config" :rows="3" placeholder="application configuration"></b-form-textarea>
-                <small class="text-muted">configuration to use to submit this application (in json)</small>
-                -->
-                <!--<p class="text-muted">configuration used to submit the app</p>-->
                 <b-card>
                     <configform :spec="rule.app.config" v-model="rule.config"/>
                 </b-card>
@@ -53,20 +47,20 @@
                     </b-row> 
                     <div v-if="rule.input_selection[input.id] != 'ignore'">
                         <b-row>
-                            <b-col>tags</b-col>
+                            <b-col>Dataset Tags</b-col>
                             <b-col :cols="9">
                                 <p>
                                     <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)"/>
-                                    <small class="text-muted">look for datasets with specific tags</small>
+                                    <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
                                 </p>
                             </b-col>
                         </b-row> 
                         <b-row>
-                            <b-col>project</b-col>
+                            <b-col>Project</b-col>
                             <b-col :cols="9">
                                 <p>
                                 <projectselecter v-model="rule.input_project_override[input.id]" :allownull="true" placeholder="(from this project)"/>
-                                <small class="text-muted">look for datasets in this project</small>
+                                <small class="text-muted">Look for datasets in this project</small>
                                 </p>
                             </b-col>
                         </b-row> 

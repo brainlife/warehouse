@@ -49,6 +49,8 @@ function canedit(user, rec, canwrite_project_ids) {
  * @apiSuccess {Object}         List of datasets (maybe limited / skipped) and total count
  */
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    var skip = req.query.skip||0;
+    let limit = req.query.limit||100;
     var ands = [];
     if(req.query.find) ands.push(JSON.parse(req.query.find));
     if(req.query.datatype_tags) {
@@ -67,9 +69,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
             {project: {$in: canread_project_ids}},
             {publications: {$gt:[]}}, //allow access for published dataset
         ]});
-
-        var skip = req.query.skip||0;
-        let limit = req.query.limit||100;
 
         //logger.debug(JSON.stringify(ands, null, 4));
 
@@ -434,7 +433,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
         },
 
         next=>{
-			logger.debug("registering new dataset record");
+			logger.debug("registering new dataset record", req.body.meta);
             new db.Datasets({
                 user_id: req.user.sub,
 

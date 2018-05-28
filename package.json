@@ -22,34 +22,36 @@
   "dependencies": {
     "amqp": "^0.2.6",
     "archiver": "^2.1.1",
-    "async": "^2.6.0",
-    "body-parser": "^1.18.2",
+    "async": "^2.6.1",
+    "body-parser": "^1.18.3",
     "callback-timeout": "^3.0.1",
     "chai": "^4.1.2",
     "compression": "^1.7.1",
     "cors": "^2.8.4",
-    "coveralls": "^3.0.0",
+    "coveralls": "^3.0.1",
     "express": "^4.16.2",
     "express-jwt": "^5.3.0",
-    "express-winston": "^2.4.0",
+    "express-winston": "^2.5.1",
     "istanbul": "^0.4.5",
     "mkdirp": "^0.5.1",
-    "mocha": "^4.1.0",
-    "mongoose": "^4.13.11",
+    "mongoose": "^5.1.2",
     "pkgcloud": "^1.5.0",
     "redis": "^2.8.0",
-    "request": "^2.83.0",
-    "ssh2": "^0.6.0",
+    "request": "^2.87.0",
+    "ssh2": "^0.6.1",
     "stream-meter": "^1.0.4",
-    "tar": "^4.4.1",
+    "tar": "^4.4.3",
     "tmp": "0.0.33",
+<<<<<<< HEAD
     "vue-async-computed": "^3.3.1",
+=======
+>>>>>>> 4aa943715b2fb309ad9dbafb9cf7fde20c47a8a3
     "winston": "^2.4.2",
     "xml-escape": "^1.1.0"
   },
   "devDependencies": {
     "chai": "^4.0.1",
-    "mocha": "^5.0.5",
-    "supertest": "^3.0.0"
+    "mocha": "^5.2.0",
+    "supertest": "^3.1.0"
   }
 }

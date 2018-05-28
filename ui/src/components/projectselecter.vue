@@ -1,13 +1,9 @@
-<template>
+<template> 
 <!--
 v-select has some issue with clicking scrollbar closing the select dropdown..
 https://github.com/sagalbot/vue-select/issues/474
 -->
-<b-form-select v-model="selected" :placeholder="placeholder">
-    <option v-for="project in options" :key="project._id" :value="project._id">
-        {{project.name}}
-    </option>
-</b-form-select>
+<b-form-select v-model="selected" :options="options" :required="true"/>
 </template>
 
 <script>
@@ -39,6 +35,7 @@ export default {
     watch: {
         selected: function() {
             if(this.selected) {
+                console.log("new select", this.selected);
                 localStorage.setItem('last_projectid_used', this.selected);
                 this.$emit('input', this.selected);
             } else {
@@ -53,7 +50,6 @@ export default {
     */
 
     mounted: function() {
-        var that = this;
         var find = null
         if(this.canwrite) {
             //only load project that user has write access to
@@ -65,13 +61,14 @@ export default {
                 removed: false,
             };
         } else {
-            //load project that user is admin/member, or public (who can read from datasets)
+            //load project that user is admin/member/guest, or public (who can read from datasets)
             find = {
                 removed: false,
             };
         }
 
         if(this.datatype) {
+            //construct query
             //only pull projects that has datasets with specified datatype
             let project_query = {
                 datatype: this.datatype,
@@ -92,33 +89,44 @@ export default {
             }}).then(res=>{
                 console.log('projects that has ', this.datatype);
                 var project_ids = res.body;
-
                 find._id = {$in: project_ids};
                 //TODO - if there are no project, not point of querying for datasets.
                 //we should warn user that they can't execue this app until data derivative is generated
-                query();
+                this.populate_options(find);
             });
         } else {    
             //no further query
-            query();
+            this.populate_options(find);
         }
+    },
+    methods: {
+        populate_options: function(find) {
+            this.options = [];
 
-        function query() {
-            that.$http.get('project', {params: {
+            console.log("finding project", find);
+
+            if(this.allownull) this.options.push({value: null, text: this.placeholder||''});
+            this.$http.get('project', {params: {
                 find: JSON.stringify(find),
                 sort: 'name',
             }}).then(res=>{
                 res.body.projects.forEach(project=>{
-                    that.options.push(project);
+                    this.options.push({value: project._id, text: project.name});
                 });
-                that.selected = that.options.find(it=>it._id == that.value);
-                if(!that.allownull && !that.selected) {
-                    //need to preselect some value
+                let found = this.options.find(it=>it.value == this.value);
+                if(found) this.selected = found.value;
+                console.log("populated", found);
+                
+                //if null is not allowed, I need to set it to something.
+                if(!this.allownull && !this.selected) {
+                    //try last selected project
                     var last = localStorage.getItem('last_projectid_used');
-                    var found = res.body.projects.find(project=>project._id == last);
-                    if(found) that.selected = that.options.find(it=>it._id == last)._id;
-                    else if(that.options.length > 0) {
-                        that.selected = that.options[0]._id;
+                    found = this.options.find(it=>it.value == last);
+                    if(found) {
+                        this.selected = find.value;
+                    } else if(this.options.length > 0) {
+                        //select first one in the list
+                        this.selected = this.options[0].value;
                     }
                 }
             });

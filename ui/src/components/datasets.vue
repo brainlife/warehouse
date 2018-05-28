@@ -315,11 +315,9 @@ export default {
                             old_dataset.tags = dataset.tags;
                             old_dataset.meta = dataset.meta;
                             old_dataset.removed = dataset.removed;
+                            old_dataset.status = dataset.status;
                             if(dataset.removed) this.remove_selected(dataset);
                             this.$forceUpdate(); //need this because I am not inside vue hook?
-                        } else {
-                            //this causes whole page to get reloaded when user update dataset.. why does this exist anyway?
-                            //this.reload();
                         }
                     });
                  } 

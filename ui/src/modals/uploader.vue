@@ -14,7 +14,6 @@
                     <pre v-if="config.debug">{{tasks.upload}}</pre>
                 </b-form-group>
             </div>
-
             
             <div v-if="tasks.upload && tasks.upload.resource_id">
                 <b-form-group horizontal v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id+(file.ext?'('+file.ext+')':'')+(file.required?' *':'')">
@@ -37,13 +36,15 @@
             </div>
 
             <b-form-group horizontal :label="m.id.toUpperCase()+(m.required?' *':'')" v-for="m in datatypes[datatype_id].meta" :key="m.id">
-                <b-input type="text" v-model="meta[m.id]" :required="m.required"/>
+                <b-input type="text" v-model="meta[m.id]" :required="m.required" :placeholder="m.required?'':'(optional)'"/>
             </b-form-group>
 
             <b-form-group horizontal label="Description">
-                <b-form-textarea v-model="desc" :rows="4" placeholder="Optional dataset description"></b-form-textarea> </b-form-group>
+                <b-form-textarea v-model="desc" :rows="4" placeholder="(optional)"></b-form-textarea>
+             </b-form-group>
 
         </div><!--datatype_id set -->
+        <small>To bulk upload your datasets, you can use <a href="https://github.com/brain-life/cli" target="_blank">Brainlife CLI</a></small>
     </div><!--meta-->
 
     <div v-if="mode == 'validate' && tasks.validation">
@@ -58,7 +59,8 @@
             </b-form-group>
 
             <!--show info-->
-            <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" v-if="k != 'errors' && k != 'warnings'" :label="k">
+            <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" 
+                v-if="k != 'errors' && k != 'warnings' && k != 'datatype_tags' && k != 'tags'" :label="k">
                 <pre v-highlightjs="v" v-if="typeof v == 'string'" style="max-height: 200px; overflow: auto;"><code class="text hljs"></code></pre>
                 <div v-else>
                     <pre>{{v}}</pre>
@@ -75,6 +77,7 @@
             </b-form-group>
         </div>
     </div>
+
 
     <div slot="modal-footer">
         <b-form-group v-if="mode == 'upload'">
@@ -194,7 +197,7 @@ export default {
                 var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
                 var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
                 ws.onopen = (e)=>{
-                    console.log("websocket opened", this.instance._id);
+                    console.log("websocket opened binding to wf.task", this.instance._id+".#");
                     ws.send(JSON.stringify({
                       bind: {
                         ex: "wf.task",
@@ -233,9 +236,8 @@ export default {
                 service: this.get_validator(),
             }}).then(res=>{
                 if(!res.body.resource) { 
-                    //TODO - not tested
                     this.$notify({ type: 'error', title: 'Server Busy', text: 'Validator service is busy. Please try again later' });
-                    return;
+                    this.cancel();
                 }
                 this.validator_resource = res.body.resource;
 

@@ -63,7 +63,7 @@ function populate_github_fields(repo, app, cb) {
  * @apiParam {Object} [sort]    Optional Mongo sort object - defaults to {}
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
  * @apiParam {String} [populate] Relational fields to populate
- * @apiParam {Number} [limit]   Optional Maximum number of records to return - defaults to 0(no limit)
+ * @apiParam {Number} [limit]   Optional Maximum number of records to return
  * @apiParam {Number} [skip]    Optional Record offset for pagination
  *
  * @apiHeader {String} [authorization]
@@ -71,6 +71,8 @@ function populate_github_fields(repo, app, cb) {
  * @apiSuccess {Object}         List of apps (maybe limited / skipped) and total count
  */
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    var skip = req.query.skip||0;
+    let limit = req.query.limit||100;
     var ands = [];
     if(req.query.find) ands.push(JSON.parse(req.query.find));
     
@@ -89,8 +91,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
         db.Apps.find({$and: ands})
         .select(req.query.select)
-        .limit(req.query.limit || 0)
-        .skip(req.query.skip || 0)
+        .limit(+limit)
+        .skip(+skip)
         .sort(req.query.sort || '_id')
         .populate(req.query.populate || '')
         .lean()

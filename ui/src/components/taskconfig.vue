@@ -1,6 +1,6 @@
 <template>
 <div v-if="taskconfig">
-    <span class="text-muted" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
+    <span style="opacity: 0.4;" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
     <b-row v-for="(v,k) in taskconfig" :key="k">
         <b-col :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</b-col>
 

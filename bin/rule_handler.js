@@ -11,10 +11,7 @@ const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../api/models');
 
-// TODO Disable rule if failure rate is too high?
-
-var rcon = null;
-
+let rcon = null;
 db.init(function(err) {
     if(err) throw err;
     rcon = redis.createClient(config.redis.port, config.redis.server);
@@ -26,12 +23,12 @@ db.init(function(err) {
     });
 });
 
-var _counts = {
+let _counts = {
     rules: 0,
 }
 
 function health_check() {
-    var report = {
+    let report = {
         status: "ok",
         messages: [],
         counts: _counts,
@@ -54,7 +51,7 @@ function health_check() {
 //dedupe an array
 //https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
 function uniq(a) {
-    var seen = {};
+    let seen = {};
     return a.filter(function(item) {
         return seen.hasOwnProperty(item) ? false : (seen[item] = true);
     });
@@ -66,11 +63,7 @@ function run() {
         removed: false,
     })
     .populate('app project')
-    
-    //handle new ones first (doesn't solve anything.. each loop has to go through all active rules)
-    //I need to set deactivation date for each rule, or make rule handling much more efficient
-    //.sort('-create_date') 
-
+    //.sort('-create_date')  //I have to go through all rules for each loops anyway..
     .exec((err, rules)=>{
 		if(err) throw err;
         async.eachSeries(rules, handle_rule, err=>{
@@ -92,7 +85,27 @@ function handle_rule(rule, cb) {
     if(!rule.input_tags) rule.input_tags = {};
     if(!rule.output_tags) rule.output_tags = {};
 
-    logger.info("handling rule ----------------------- ", rule._id.toString(), rule.name);
+    let rlogger = logger;
+    if(config.warehouse.rule_logdir) {
+        let logpath = config.warehouse.rule_logdir+"/"+rule._id.toString()+".log";
+        try {
+            fs.truncateSync(logpath);
+        } catch (err) {
+            logger.error("failed to truncate", logpath);
+        }
+        rlogger = new winston.Logger({
+            transports: [
+                new (winston.transports.File)({
+                    filename: logpath,
+                    json: false,
+                    level: "debug",
+                })
+            ]
+        });
+    }
+
+    logger.info("handling project:", rule.project.name, "rule:", rule.name, rule._id.toString());
+    //rlogger.info(JSON.stringify(rule, null, 4));
     
     //prepare for stage / app / archive
     async.series([
@@ -142,12 +155,12 @@ function handle_rule(rule, cb) {
                     rule_tasks[task.config._rule.subject] = task;
                 });
 
-                logger.debug(body.tasks.length+" tasks submitted for this rule");
+                rlogger.debug(body.tasks.length+" tasks submitted for this rule");
                 if(body.tasks.length == limit) {
                     return next("too many tasks submitted for this rule");
                 }
 
-                logger.debug("running/requested tasks", running);
+                rlogger.debug("running/requested tasks", running);
                 next();
             });
         },
@@ -180,31 +193,29 @@ function handle_rule(rule, cb) {
         },
     ], err=>{
         if(err) return cb(err);
-        logger.debug("done processing all rules");
+        rlogger.debug("done processing all rules");
         cb();
     });
 
     function handle_subject(subject, next_subject) {
         if(running >= config.rule.max_task_per_rule) {
-            logger.info("reached max running task.. skipping the rest of subjects", subject, running);
+            rlogger.info("reached max running task.. skipping the rest of subjects", subject, running);
             return next_subject();
         }
 
         if(rule.subject_match && !subject.match(rule.subject_match)) {
-            //logger.debug("subject", subject, "doesn't match", rule.subject_match);
             return next_subject();
         }
 
         if(rule_tasks[subject]) {
-            logger.debug("task already submitted for subject:", subject, rule_tasks[subject]._id, rule_tasks[subject].status);
+            rlogger.debug("task already submitted for subject:", subject, rule_tasks[subject]._id, rule_tasks[subject].status);
             return next_subject();
         }
 
-        logger.debug("handling subject", subject);
+        rlogger.debug("handling subject", subject);
 
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var missing = false;
-        //console.time("find outputs");
         async.eachSeries(rule.app.outputs, (output, next_output)=>{
             var query = {
                 project: rule.project._id,
@@ -221,16 +232,15 @@ function handle_rule(rule, cb) {
             .exec((err, dataset)=>{
                 if(err) return next_output(err);
                 if(!dataset) {
-                    logger.debug("output dataset not yet created", output.id);
+                    rlogger.debug("output dataset not yet created", output.id);
                     missing = true;
                 }
                 next_output();
             });
         }, err=>{
             if(err) return next_subject(err);
-            //console.timeEnd("find outputs");
             if(!missing) {
-                logger.info("all datasets accounted for.. skipping to next subject");
+                rlogger.info("all datasets accounted for.. skipping to next subject");
                 return next_subject();
             }
 
@@ -238,10 +248,10 @@ function handle_rule(rule, cb) {
             find_inputs(subject, (err, input_missing, inputs)=>{
                 if(err) return next_subject(err);
                 if(input_missing) {
-                    logger.info("outputs missing, but so are inputs.. skipping");
+                    rlogger.info("outputs missing, but so are inputs.. skipping");
                     next_subject();
                 } else {
-                    logger.info("output missing, and we have all inputs! submitting tasks");
+                    rlogger.info("output missing, and we have all inputs! submitting tasks");
                     submit_tasks(subject, inputs, next_subject);
                 }
             });
@@ -283,15 +293,12 @@ function handle_rule(rule, cb) {
                 query.tags = { $all: rule.input_tags[input.id] }; 
             }
 
-            //console.time("query1");
             db.Datasets.find(query)
             .populate('datatype')
             .sort(sort)
             .lean()
             .exec((err, datasets)=>{
                 if(err) return next_input(err);
-
-                //console.timeEnd("query1");
 
                 //find first dataset that matches all tags
                 var matching_dataset = null;
@@ -311,7 +318,7 @@ function handle_rule(rule, cb) {
 
                 if(!matching_dataset) {
                     missing = true;
-                    logger.debug("no matching input", input.id);
+                    rlogger.debug("no matching input", input.id);
                 } 
 
                 inputs[input.id] = matching_dataset;
@@ -359,8 +366,7 @@ function handle_rule(rule, cb) {
                     if(err) return next(err);
                     instance = body.instances[0];
                     if(instance) {
-                        logger.debug("using instance id:", instance._id);
-                        //logger.debug(JSON.stringify(instance, null, 4));
+                        rlogger.debug("using instance id:", instance._id);
                     }
                     next();
                 });
@@ -369,7 +375,7 @@ function handle_rule(rule, cb) {
             //if we don't have the instance, create one
             next=>{
                 if(instance) return next();
-                logger.debug("creating a new instance");
+                rlogger.debug("creating a new instance");
                 request.post({
                     url: config.wf.api+'/instance', json: true, 
                     headers: { authorization: "Bearer "+jwt },
@@ -449,7 +455,7 @@ function handle_rule(rule, cb) {
                         var task = null;
                         if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
                         if(task && task.status != 'removed') {
-                            logger.debug("found the task generated the input dataset");
+                            rlogger.debug("found the task generated the input dataset");
 
                             //find output from task
                             let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
@@ -480,16 +486,16 @@ function handle_rule(rule, cb) {
                         for(var task_id in tasks) {
                             task = tasks[task_id];
                             if(task.service == "soichih/sca-product-raw" && task.status != 'removed') {
-                                logger.debug("checking for already staged output", input.id, input._id.toString());
+                                rlogger.debug("checking for already staged output", input.id, input._id.toString());
                                 output = task.config._outputs.find(o=>o._id == input._id);
                                 if(output) {
-                                    logger.debug("found it", output);
+                                    rlogger.debug("found it", output);
                                     break;
                                 }
                             }
                         }
                         if(output) {
-                            logger.debug("found the input dataset already staged previously");
+                            rlogger.debug("found the input dataset already staged previously");
                             deps.push(task._id); 
                             //TODO I should only put stuff that I need output input..
                             _app_inputs.push(Object.assign({}, input, {
@@ -507,7 +513,7 @@ function handle_rule(rule, cb) {
                     
                     if(!canuse_source() && !canuse_staged()) {
                         //we don't have it.. we need to stage from warehouse
-                        logger.debug("couldn't find staged dataset.. need to load from warehouse");
+                        rlogger.debug("couldn't find staged dataset.. need to load from warehouse");
                         downloads.push({
                             url: config.warehouse.api+"/dataset/download/safe/"+input._id+"?at="+safe_jwt,
                             untar: "auto",
@@ -561,7 +567,7 @@ function handle_rule(rule, cb) {
                     });
                     deps.push(task_stage._id);
 
-                    logger.debug("submitted staging task");//, task_stage);
+                    rlogger.debug("submitted staging task");//, task_stage);
                     console.log(JSON.stringify(_body, null, 4));
                     next();
                 });
@@ -599,7 +605,6 @@ function handle_rule(rule, cb) {
                     var output_req = {
                         id: output.id,
                         datatype: output.datatype,
-                        //datatype_tags: output.datatype_tags,
                         desc: output.desc,
                         meta: meta,
                         tags: rule.output_tags[output.id], 
@@ -607,7 +612,6 @@ function handle_rule(rule, cb) {
                         archive: {
                             project: rule.project._id,  
                             desc: rule.name,
-                            //tags: rule.output_tags[output.id], //deprecated by parent's tags.. (remove this eventually)
                         }
                     }
 
@@ -642,8 +646,9 @@ function handle_rule(rule, cb) {
                     }
                 }, (err, res, _body)=>{
                     task_app = _body.task;
+                    rlogger.debug("submitted app task", task_app._id);
                     logger.debug("submitted app task", task_app);
-                    console.log(JSON.stringify(_body, null, 4));
+                    //console.log(JSON.stringify(_body, null, 4));
                     next(err);
                 });
             },
