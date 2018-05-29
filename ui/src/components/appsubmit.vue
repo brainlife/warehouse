@@ -72,17 +72,14 @@
         </b-col>
     </b-row>
     
-    <div v-if="advancedOptions">
-        <b-row>
-            <b-col cols="3" class="text-muted">Preferred Resource</b-col>
-            <b-col>
-                <select2 v-if="preferrable_resources.length > 0"
-                        :options="preferrable_resources"
-                        :multiple="false"
-                        v-model='preferred_resource'></select2>
-            </b-col>
-        </b-row>
-    </div>
+    <b-row v-if="advancedOptions">
+        <b-col cols="3" class="text-muted">Preferred Resource</b-col>
+        <b-col>
+            <b-form-select v-if="preferrable_resources.length > 0"
+                    :options="preferrable_resources"
+                    v-model='preferred_resource' class="mb-3" />
+        </b-col>
+    </b-row>
 
     <br>
     <b-row>
@@ -176,8 +173,13 @@ export default {
         })
         .then(res => {
             this.preferred_resource = res.body.resource ? res.body.resource._id : null;
+            this.preferrable_resources = res.body.considered.map(resource => {
+                return {
+                    value: resource.id,
+                    text: resource.info.name
+                };
+            });
             
-            this.preferrable_resources = res.body.considered.map(resource => { return { id: resource.id, text: resource.info.name }; });
             this.preferrable_resources.sort((a, b) => a.score > b.score);
         })
         .catch(err=>{

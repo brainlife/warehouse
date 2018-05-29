@@ -354,7 +354,7 @@ export default {
                 this.apps = lib.filter_apps(this.dataset, res.body.apps);
             });
         },
-    
+        
         close: function() {
             if(!this.dataset) return;
             if(this.back) this.$router.push(this.back);
