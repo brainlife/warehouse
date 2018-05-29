@@ -153,9 +153,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     cleantmp(); 
                     dataset.desc = "Failed to store all files under tmpdir";
                     dataset.status = "failed";
-                    return dataset.save(_err=>{
-                        cb(err);
-                    });
+                    return dataset.save(cb);
                 }
 
                 logger.debug(filenames);
