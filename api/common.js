@@ -80,7 +80,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
             });
 
             let filenames = [];
-
+            
             //now download files to temp directory
             async.eachSeries(datatype.files, (file, next_file)=>{
                 if(file.skip) return next_file();
@@ -103,7 +103,12 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             filenames.push(file.filename);
                             next_file()
                         } else {
-                            if(file.required) return next_file("required input file failed for download");
+                            if(file.required) {
+                                return next_file({
+                                    message: "required input file failed for download",
+                                    file
+                                });
+                            }
                             
                             //failed but not required.. remove the file and move on
                             fs.unlink(fullpath, next_file);            
@@ -125,7 +130,10 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             filenames.push(file.dirname);
                             next_file();
                         } else {
-                            if(file.required) return next_file("required input directory failed to download/untar");
+                            if(file.required) return next_file({
+                                message: "required input directory failed to download/untar",
+                                file
+                            });
                             
                             //failed but not required.. remove the directory
                             fs.rmdir(fullpath, next_file);
@@ -149,9 +157,9 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 }).pipe(writestream);
             }, err=>{
                 if(err) {
-                    logger.error(err);
-                    cleantmp(); 
-                    dataset.desc = "Failed to store all files under tmpdir";
+                    cleantmp();
+                    if (err.file) dataset.desc = "Expected output " + (err.file.filename||err.file.dirname) + " not found";
+                    else dataset.desc = "Failed to store all files under tmpdir";
                     dataset.status = "failed";
                     return dataset.save(cb);
                 }
