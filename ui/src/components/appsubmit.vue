@@ -1,6 +1,6 @@
 <template>
 <b-form v-if="app" @submit="submit">
-    <b-alert :show="!this.resource_available">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
+    <b-alert :show="!this.preferred_resource">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
 
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col cols="3">
@@ -60,6 +60,29 @@
             <br>
         </b-col>
     </b-row>
+    
+    <b-row>
+        <b-col class="text-muted" style="text-align:right;">
+            <div class="advanced-options-toggle" style="display:inline-block;" @click="advancedOptions = !advancedOptions">
+                <icon v-if="advancedOptions" name="caret-down" />
+                <icon name="caret-right" v-else />
+                
+                <span>Advanced</span>
+            </div>
+        </b-col>
+    </b-row>
+    
+    <div v-if="advancedOptions">
+        <b-row>
+            <b-col cols="3" class="text-muted">Preferred Resource</b-col>
+            <b-col>
+                <select2 v-if="preferrable_resources.length > 0"
+                        :options="preferrable_resources"
+                        :multiple="false"
+                        v-model='preferred_resource'></select2>
+            </b-col>
+        </b-row>
+    </div>
 
     <br>
     <b-row>
@@ -108,7 +131,9 @@ export default {
             project: null,
 
             app: null,
-            resource_available: null,
+            preferrable_resources: [],
+            preferred_resource: null,
+            advancedOptions: false,
             //resource: null,
 
             form: {
@@ -150,7 +175,10 @@ export default {
             }});
         })
         .then(res => {
-            this.resource_available = !!res.body.resource
+            this.preferred_resource = res.body.resource ? res.body.resource._id : null;
+            
+            this.preferrable_resources = res.body.considered.map(resource => { return { id: resource.id, text: resource.info.name }; });
+            this.preferrable_resources.sort((a, b) => a.score > b.score);
         })
         .catch(err=>{
             console.error(err);
@@ -483,8 +511,8 @@ export default {
 
                     config._outputs.push(output_req);
                 });
-
-                return this.$http.post(Vue.config.wf_api+'/task', {
+                
+                let submissionParams = {
                     instance_id: instance._id,
                     name: this.app.name,
                     service: this.app.github,
@@ -492,7 +520,10 @@ export default {
                     config,
                     deps: [ download_task._id ],
                     retry: this.app.retry,
-                })
+                };
+                if (this.preferred_resource) submissionParams.preferred_resource_id = this.preferred_resource;
+                
+                return this.$http.post(Vue.config.wf_api+'/task', submissionParams);
             }).then(res=>{
                 console.log("submitted app task", res.body.task);
                 this.$router.push("/project/"+this.project+"/process/"+instance._id);
@@ -526,6 +557,15 @@ export default {
 </script>
 
 <style scoped>
+.advanced-options-toggle {
+    font-weight:bold;
+    opacity:.7;
+    cursor: pointer;
+}
+.advanced-options-toggle:hover {
+    opacity:1;
+}
+
 h4 {
 margin-top: 20px;
 opacity: 0.6;
