@@ -33,8 +33,14 @@
                     <div class="button button-danger" @click="form.inputs[input.id].splice(idx, 1)" size="sm"><icon name="trash"/></div>
                 </b-col>
             </b-row>
-            <div class="button" @click="form.inputs[input.id].push(null)" v-if="input.multi">Add Dataset</div>
-            <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
+            <b-row>
+                <b-col cols="5">
+                    <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
+                </b-col>
+                <b-col cols="6" style="text-align:right;">
+                    <b-button :size="'sm'" :variant="'secondary'" @click="form.inputs[input.id].push(null)" v-if="input.multi">Add Dataset</b-button>
+                </b-col>
+            </b-row>
         </b-col>
     </b-row>
     
