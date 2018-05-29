@@ -81,7 +81,7 @@ export default {
                 avatar: "https://brainlife.io/images/ui-logos/ui-lifeview.png",
                 datatypes: [ "neuro/life" ],
             },
-            /*
+
             {
                 ui: "lifestats",
                 name: "Life Stats",
@@ -89,7 +89,6 @@ export default {
                 avatar: "https://brainlife.io/images/ui-logos/lifestat.png",
                 datatypes: [ "neuro/life" ],
             },
-            */
 
             {
                 ui: "t1pdd",

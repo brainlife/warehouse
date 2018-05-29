@@ -165,13 +165,14 @@ export default {
             return !!this.$slots.output;
         },
         remove_date() {
-            var d = new Date(this.task.remove_date);
-            if(!d) {
-                //use finish date
-                d = new Date(this.task.finish_date);
+            if(this.task.remove_date) {
+                return new Date(this.task.remove_date);
+            } else {
+                //use finish date instead
+                let d = new Date(this.task.finish_date);
                 d.setDate(d.getDate() + 25); //should match with amaretti bin/task
+                return d;
             }
-            return d;
         },
         remove_in_days() {
             var d = new Date();
