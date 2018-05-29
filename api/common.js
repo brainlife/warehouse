@@ -81,152 +81,133 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
 
             let filenames = [];
             
-            request.get({
-                url: config.amaretti.api+"/task/ls/"+task._id,
-                headers: { authorization: auth },
-                json: true
-            }, (err, res, body) => {
-                if (err) {
-                    logger.error(err);
-                    return cb(err);
-                }
-                let taskFileTable = {};
-                let expectedFiles = [];
-                
-                res.body.files.forEach(file => {
-                    taskFileTable[file.filename||file.dirname] = file;
-                });
-                
-                //now download files to temp directory
-                async.eachSeries(datatype.files, (file, next_file)=>{
-                    if(file.skip) return next_file();
+            //now download files to temp directory
+            async.eachSeries(datatype.files, (file, next_file)=>{
+                if(file.skip) return next_file();
 
-                    logger.debug("processing file", file.toString());
-                    var writestream = null;
-                    var srcpath = "";
-                    var input_ok = true;
-                    if(dataset.prov.subdir) srcpath += dataset.prov.subdir+"/";
-                    if(file.filename) {
-                        //files can be downloaded directly to tmpdir
-                        srcpath += (files_override[file.id]||file.filename);
-                        var fullpath = tmpdir+"/"+file.filename;
-                        mkdirp.sync(path.dirname(fullpath)); //make sure the path exitsts
-                        logger.debug("downloading from", srcpath, "and write to", fullpath);
-                        writestream = fs.createWriteStream(fullpath);
-                        writestream.on('finish', ()=>{
-                            if(input_ok) {
-                                logger.debug("download complete");
-                                filenames.push(file.filename);
-                                next_file()
-                            } else {
-                                if(file.required) return next_file("required input file failed for download");
-                                
-                                //failed but not required.. remove the file and move on
-                                fs.unlink(fullpath, next_file);            
+                logger.debug("processing file", file.toString());
+                var writestream = null;
+                var srcpath = "";
+                var input_ok = true;
+                if(dataset.prov.subdir) srcpath += dataset.prov.subdir+"/";
+                if(file.filename) {
+                    //files can be downloaded directly to tmpdir
+                    srcpath += (files_override[file.id]||file.filename);
+                    var fullpath = tmpdir+"/"+file.filename;
+                    mkdirp.sync(path.dirname(fullpath)); //make sure the path exitsts
+                    logger.debug("downloading from", srcpath, "and write to", fullpath);
+                    writestream = fs.createWriteStream(fullpath);
+                    writestream.on('finish', ()=>{
+                        if(input_ok) {
+                            logger.debug("download complete");
+                            filenames.push(file.filename);
+                            next_file()
+                        } else {
+                            if(file.required) {
+                                return next_file({
+                                    message: "required input file failed for download",
+                                    file
+                                });
                             }
-                        });
-                    }
-                    if(file.dirname) {
-                        //directory has to be unzip/tar-edto tmpdir
-                        srcpath += (files_override[file.id]||file.dirname);
-                        var fullpath = tmpdir+"/"+file.dirname;
-                        mkdirp.sync(fullpath); //don't need to path.dirname() here
-                        logger.debug("downloading from", srcpath, "and untar to", fullpath);
-                        var untar = child_process.spawn("tar", ["xz"], {cwd: fullpath});
-                        writestream = untar.stdin;
-                        untar.on('close', code=>{
-                            if(code) return next_file("untar files with code:"+code);
-                            if(input_ok) {
-                                logger.debug("download/tar complete");
-                                filenames.push(file.dirname);
-                                next_file();
-                            } else {
-                                if(file.required) return next_file("required input directory failed to download/untar");
-                                
-                                //failed but not required.. remove the directory
-                                fs.rmdir(fullpath, next_file);
-                            }
-                        });
-                    }
-                    expectedFiles.push(file);
-
-                    //now start feeding the writestream
-                    request({
-                        url: config.amaretti.api+"/task/download/"+task._id,
-                        qs: {
-                            p: srcpath,
-                        },
-                        headers: { authorization: auth }
-                    })
-                    .on('response', function(r) {
-                        if(r.statusCode != 200) {
-                            logger.error("/task/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth);
-                            input_ok = false;
+                            
+                            //failed but not required.. remove the file and move on
+                            fs.unlink(fullpath, next_file);            
                         }
-                    }).pipe(writestream);
-                }, err=>{
-                    if(err) {
-                        logger.error(err);
-                        cleantmp();
-                        
-                        // detect missing files
-                        let missing = [];
-                        expectedFiles.forEach(file => {
-                            if (file.required && !taskFileTable[file.filename||file.dirname]) {
-                                missing.push(file.filename||file.dirname);
-                            }
-                        });
-                        
-                        if (missing.length > 0) dataset.desc = "Expected outputs " + missing.join(",") + " are missing";
-                        else dataset.desc = "Failed to store all files under tmpdir";
-                        dataset.status = "failed";
-                        return dataset.save(_err=>{
-                            cb(err);
-                        });
-                    }
-
-                    logger.debug(filenames);
-                    
-                    //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
-                    var storage = config.storage_default();
-                    var system = config.storage_systems[storage];
-                    logger.debug("obtaining upload stream for", storage);
-                    system.upload(dataset, (err, writestream, done)=>{
-                        if(err) return cb(err);
-                        filenames.unshift("hc");
-                        var tar = child_process.spawn("tar", filenames, {cwd: tmpdir});
-                        tar.on('close', code=>{
-                            logger.debug("tar finished", code);
-                            cleantmp();
-                            if(code) {
-                                //failed to upload..
-                                dataset.desc = "Failed to archive with code:"+code;
-                                dataset.status = "failed";
-                            }
-                        });
-
-                        //TODO - I am not sure if all writestream returnes file object (pkgcloud does.. but this makes it a bit less generic)
-                        //maybe I should run system.stat()?
-                        //writestream.on('success', file=>{
-                        done.then(file=>{
-                            logger.debug("streaming success", JSON.stringify(file));
-                            dataset.storage = storage;
-                            dataset.status = "stored";
-                            dataset.size = file.size;
-                            dataset.save(cb);
-                        }).catch(err=>{
-                            logger.error("streaming failed", err);
-                            dataset.desc = "Failed to archive "+err.toString();
-                            dataset.status = "failed";
-                            dataset.save(_err=>{
-                                if(_err) logger.error(_err); //ignore..?
-                                cb(err); //return error from streaming which is more interesting
-                            });
-                        });
-
-                        logger.debug("streaming to storage");
-                        tar.stdout.pipe(writestream);
                     });
+                }
+                if(file.dirname) {
+                    //directory has to be unzip/tar-edto tmpdir
+                    srcpath += (files_override[file.id]||file.dirname);
+                    var fullpath = tmpdir+"/"+file.dirname;
+                    mkdirp.sync(fullpath); //don't need to path.dirname() here
+                    logger.debug("downloading from", srcpath, "and untar to", fullpath);
+                    var untar = child_process.spawn("tar", ["xz"], {cwd: fullpath});
+                    writestream = untar.stdin;
+                    untar.on('close', code=>{
+                        if(code) return next_file("untar files with code:"+code);
+                        if(input_ok) {
+                            logger.debug("download/tar complete");
+                            filenames.push(file.dirname);
+                            next_file();
+                        } else {
+                            if(file.required) return next_file({
+                                message: "required input directory failed to download/untar",
+                                file
+                            });
+                            
+                            //failed but not required.. remove the directory
+                            fs.rmdir(fullpath, next_file);
+                        }
+                    });
+                }
+
+                //now start feeding the writestream
+                request({
+                    url: config.amaretti.api+"/task/download/"+task._id,
+                    qs: {
+                        p: srcpath,
+                    },
+                    headers: { authorization: auth }
+                })
+                .on('response', function(r) {
+                    if(r.statusCode != 200) {
+                        logger.error("/task/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth);
+                        input_ok = false;
+                    }
+                }).pipe(writestream);
+            }, err=>{
+                if(err) {
+                    cleantmp();
+                    
+                    if (err.file) dataset.desc = "Expected output " + (err.file.filename||err.file.dirname) + " not found";
+                    else dataset.desc = "Failed to store all files under tmpdir";
+                    dataset.status = "failed";
+                    return dataset.save(_err=>{
+                        cb(err.message || err);
+                    });
+                }
+
+                logger.debug(filenames);
+                
+                //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
+                var storage = config.storage_default();
+                var system = config.storage_systems[storage];
+                logger.debug("obtaining upload stream for", storage);
+                system.upload(dataset, (err, writestream, done)=>{
+                    if(err) return cb(err);
+                    filenames.unshift("hc");
+                    var tar = child_process.spawn("tar", filenames, {cwd: tmpdir});
+                    tar.on('close', code=>{
+                        logger.debug("tar finished", code);
+                        cleantmp();
+                        if(code) {
+                            //failed to upload..
+                            dataset.desc = "Failed to archive with code:"+code;
+                            dataset.status = "failed";
+                        }
+                    });
+
+                    //TODO - I am not sure if all writestream returnes file object (pkgcloud does.. but this makes it a bit less generic)
+                    //maybe I should run system.stat()?
+                    //writestream.on('success', file=>{
+                    done.then(file=>{
+                        logger.debug("streaming success", JSON.stringify(file));
+                        dataset.storage = storage;
+                        dataset.status = "stored";
+                        dataset.size = file.size;
+                        dataset.save(cb);
+                    }).catch(err=>{
+                        logger.error("streaming failed", err);
+                        dataset.desc = "Failed to archive "+err.toString();
+                        dataset.status = "failed";
+                        dataset.save(_err=>{
+                            if(_err) logger.error(_err); //ignore..?
+                            cb(err); //return error from streaming which is more interesting
+                        });
+                    });
+
+                    logger.debug("streaming to storage");
+                    tar.stdout.pipe(writestream);
                 });
             });
         });
