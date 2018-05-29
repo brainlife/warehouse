@@ -104,10 +104,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             next_file()
                         } else {
                             if(file.required) {
-                                return next_file({
-                                    message: "required input file failed for download",
-                                    file
-                                });
+                                return next_file({ message: "required input file failed for download", file });
                             }
                             
                             //failed but not required.. remove the file and move on
@@ -130,10 +127,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             filenames.push(file.dirname);
                             next_file();
                         } else {
-                            if(file.required) return next_file({
-                                message: "required input directory failed to download/untar",
-                                file
-                            });
+                            if(file.required) return next_file({ message: "required input directory failed to download/untar", file });
                             
                             //failed but not required.. remove the directory
                             fs.rmdir(fullpath, next_file);
