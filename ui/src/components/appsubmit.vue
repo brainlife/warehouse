@@ -513,7 +513,7 @@ export default {
 
                     config._outputs.push(output_req);
                 });
-                
+
                 let submissionParams = {
                     instance_id: instance._id,
                     name: this.app.name,
