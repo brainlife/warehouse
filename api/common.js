@@ -172,8 +172,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         // detect missing files
                         let missing = [];
                         expectedFiles.forEach(file => {
-                            logger.debug("FILE: ");
-                            logger.debug(file);
                             if (file.required && !taskFileTable[file.filename||file.dirname]) {
                                 missing.push(file.filename||file.dirname);
                             }
