@@ -1,6 +1,6 @@
 <template>
 <b-form v-if="app" @submit="submit">
-    <b-alert :show="!this.preferred_resource">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
+    <b-alert :show="!this.resource_available">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
 
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col cols="3">
@@ -134,6 +134,7 @@ export default {
             project: null,
 
             app: null,
+            resource_available: false,
             preferrable_resources: [],
             preferred_resource: null,
             advancedOptions: false,
@@ -178,6 +179,7 @@ export default {
             }});
         })
         .then(res => {
+            this.resource_available = !!res.body.resource;
             this.preferred_resource = res.body.resource ? res.body.resource._id : null;
             this.preferrable_resources = res.body.considered.map(resource => {
                 return {
@@ -185,6 +187,7 @@ export default {
                     text: resource.info.name
                 };
             });
+            this.preferrable_resources.unshift({ value: null, text: "(None)" });
             
             this.preferrable_resources.sort((a, b) => a.score > b.score);
         })
