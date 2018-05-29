@@ -17,11 +17,12 @@
                         v-model="form.projects[input.id]" 
                         :datatype="input.datatype"
                         :datatype_tags="input.datatype_tags"
-                        placeholder="Project" 
+                        placeholder="Select Project" 
                         @input="form.inputs[input.id][idx] = null"/>
                 </b-col>
                 <b-col cols="6">
                     <select2 
+                        v-if="form.projects[input.id]"
                         v-model="form.inputs[input.id][idx]" 
                         :dataAdapter="debounce_fetch_datasets(input)" 
                         :allowClear="input.optional"
