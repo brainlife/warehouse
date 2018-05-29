@@ -10,7 +10,7 @@
                 <div class="button" @click="start_viewer(dataset.datatype.name)" v-if="config.user && dataset.storage" title="View Dataset">
                     <icon name="eye" scale="1.25"/>
                 </div>
-                <div class="button" @click="download" v-if="dataset.storage" title="Downlnoad Dataset">
+                <div class="button" @click="download" v-if="dataset.storage" title="Download Dataset">
                     <icon name="download" scale="1.25"/>
                 </div>
                 <div class="button" @click="process" v-if="config.user && dataset.storage" title="Process">
