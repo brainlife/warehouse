@@ -103,6 +103,7 @@
 
                                 <icon name="cubes"></icon>
                                 <mute>{{dataset.desc||dataset._id}}</mute>
+                                
                                 <tags :tags="dataset.tags"/>
                                 <span class="text-muted" v-if="dataset.project != project._id">
                                     <small>on</small> <icon name="shield-alt"/> <b>{{projectname(dataset.project)}}</b>
@@ -203,7 +204,6 @@ export default {
             ws: null, //websocket
 
             loading: false,
-            
             config: Vue.config,
         }
     },
