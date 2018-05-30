@@ -63,22 +63,57 @@
                 </b-form-group>
             </b-col>
         </b-row>
-
-        <configform :spec="app.config" v-model="config"/>
-
+        
         <b-row>
-            <b-col cols="3"><!--archive--></b-col>
+            <b-col cols="3"></b-col>
             <b-col>
-                <div v-if="!archive.enable">
-                    <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
-                </div>
-                <b-card v-if="archive.enable">
-                    <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
-                    <p>
-                        <b>Dataset Description</b>
-                        <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="3"/>
-                    </p>
-                </b-card>
+                <configform :spec="app.config" v-model="config"/>
+                
+                <b-row>
+                    <b-col>
+                        <div v-if="!archive.enable">
+                            <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
+                        </div>
+                        <b-card v-if="archive.enable">
+                            <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
+                            <p>
+                                <b>Dataset Description</b>
+                                <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="3"/>
+                            </p>
+                        </b-card>
+                    </b-col>
+                    <b-col cols="1"></b-col>
+                </b-row>
+                
+                <br />
+                <b-row>
+                    <b-col class="text-muted" style="text-align:right;">
+                        <b-row>
+                            <b-col cols="11">
+                                <div class="advanced-options-toggle" style="display:inline-block;" @click="advancedOptions = !advancedOptions">
+                                    <icon v-if="advancedOptions" name="caret-down" />
+                                    <icon name="caret-right" v-else />
+                                    
+                                    <span>Advanced</span>
+                                </div>
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                </b-row>
+            </b-col>
+        </b-row>
+        
+        <br />
+        <b-row v-if="advancedOptions">
+            <b-col cols="3" class="text-muted">Preferred Resource</b-col>
+            <b-col>
+                <b-row>
+                    <b-col cols="11">
+                        <b-form-select v-if="preferrable_resources.length > 0"
+                                        :options="preferrable_resources"
+                                        v-model='preferred_resource' class="mb-3" />
+                    </b-col>
+                </b-row>
             </b-col>
         </b-row>
 
@@ -86,10 +121,14 @@
         <b-row>
             <b-col cols="3"></b-col>
             <b-col>
-                <div style="float: right">
-                    <b-button @click="back">Back</b-button>
-                    <b-button variant="primary" :disabled="!valid" type="submit">Submit</b-button>
-                </div>
+                <b-row>
+                    <b-col cols="11">
+                        <div style="float: right">
+                            <b-button @click="back">Back</b-button>
+                            <b-button variant="primary" :disabled="!valid" type="submit">Submit</b-button>
+                        </div>
+                    </b-col>
+                </b-row>
             </b-col>
         </b-row>
 
@@ -134,6 +173,9 @@ export default {
             datasets: null,
 
             deps: null,
+            advancedOptions: false,
+            preferred_resource: null,
+            preferrable_resources: [],
 
             valid: false, //form is ready to submit or not
         }
@@ -229,6 +271,26 @@ export default {
             });
 
             this.validate(); //for preselect
+            this.$http.get(Vue.config.wf_api + '/resource/best', {
+                params: { service: app.github }
+            })
+            .then(res => {
+                this.preferrable_resources = [];
+                if (res.body.resource) {
+                    this.preferred_resource = res.body.resource._id;
+                    this.preferrable_resources = res.body.considered.map(resource => {
+                        return {
+                            value: resource.id,
+                            text: resource.info.name
+                        };
+                    })
+                }
+                
+                this.preferrable_resources.unshift({
+                    value: null,
+                    text: '(None)'
+                });
+            });
         },
 
         back: function() {
@@ -388,6 +450,8 @@ export default {
                 deps: this.deps,
                 retry: this.app.retry,
             };
+            if (this.preferred_resource) task.preferred_resource_id = this.preferred_resource;
+            
             this.$root.$emit("newtask.submit", task);
             this.open = false;
         },
@@ -405,6 +469,15 @@ export default {
 </script>
 
 <style scoped>
+.advanced-options-toggle {
+    font-weight:bold;
+    opacity:.7;
+    cursor: pointer;
+}
+.advanced-options-toggle:hover {
+    opacity:1;
+}
+
 .app-selecter,
 .submit-form {
 position: absolute;
