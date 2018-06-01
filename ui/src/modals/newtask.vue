@@ -54,21 +54,27 @@
                                 </template>
                             </v-select>
                         </b-col>
-                        <b-col cols="1">
-                            <div class="button button-danger" v-if="input.multi" @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
+                        <b-col cols="1" v-if="input.multi">
+                            <div class="button button-danger" @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
                         </b-col>
                     </b-row>
-                    <div class="button" @click="input.selected.push(null)" v-if="input.multi">Add Dataset</div>
-                    <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
+                    <b-row v-if='input.multi'>
+                        <b-col cols="5">
+                            <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
+                        </b-col>
+                        <b-col cols="6" style="text-align:right;">
+                            <b-button :size="'sm'" :variant="'secondary'" @click="input.selected.push(null)">Add Dataset</b-button>
+                        </b-col>
+                    </b-row>
                 </b-form-group>
             </b-col>
         </b-row>
         
+        <configform :spec="app.config" v-model="config"/>
+        
         <b-row>
             <b-col cols="3"></b-col>
             <b-col>
-                <configform :spec="app.config" v-model="config"/>
-                
                 <b-row>
                     <b-col>
                         <div v-if="!archive.enable">
@@ -82,22 +88,17 @@
                             </p>
                         </b-card>
                     </b-col>
-                    <b-col cols="1"></b-col>
                 </b-row>
                 
                 <br />
                 <b-row>
                     <b-col class="text-muted" style="text-align:right;">
-                        <b-row>
-                            <b-col cols="11">
-                                <div class="advanced-options-toggle" style="display:inline-block;" @click="advancedOptions = !advancedOptions">
-                                    <icon v-if="advancedOptions" name="caret-down" />
-                                    <icon name="caret-right" v-else />
-                                    
-                                    <span>Advanced</span>
-                                </div>
-                            </b-col>
-                        </b-row>
+                        <div class="advanced-options-toggle" style="display:inline-block;" @click="advancedOptions = !advancedOptions">
+                            <icon v-if="advancedOptions" name="caret-down" />
+                            <icon name="caret-right" v-else />
+                            
+                            <span>Advanced</span>
+                        </div>
                     </b-col>
                 </b-row>
             </b-col>
@@ -107,13 +108,9 @@
         <b-row v-if="advancedOptions">
             <b-col cols="3" class="text-muted">Preferred Resource</b-col>
             <b-col>
-                <b-row>
-                    <b-col cols="11">
-                        <b-form-select v-if="preferrable_resources.length > 0"
-                                        :options="preferrable_resources"
-                                        v-model='preferred_resource' class="mb-3" />
-                    </b-col>
-                </b-row>
+                <b-form-select v-if="preferrable_resources.length > 0"
+                                :options="preferrable_resources"
+                                v-model='preferred_resource' class="mb-3" />
             </b-col>
         </b-row>
 
@@ -121,14 +118,10 @@
         <b-row>
             <b-col cols="3"></b-col>
             <b-col>
-                <b-row>
-                    <b-col cols="11">
-                        <div style="float: right">
-                            <b-button @click="back">Back</b-button>
-                            <b-button variant="primary" :disabled="!valid" type="submit">Submit</b-button>
-                        </div>
-                    </b-col>
-                </b-row>
+                <div style="float: right">
+                    <b-button @click="back">Back</b-button>
+                    <b-button variant="primary" :disabled="!valid" type="submit">Submit</b-button>
+                </div>
             </b-col>
         </b-row>
 
