@@ -58,8 +58,14 @@
                             <div class="button button-danger" @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
                         </b-col>
                     </b-row>
-                    <div class="button" @click="input.selected.push(null)" v-if="input.multi">Add Dataset</div>
-                    <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
+                    <b-row v-if='input.multi'>
+                        <b-col cols="5">
+                            <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
+                        </b-col>
+                        <b-col cols="6" style="text-align:right;">
+                            <b-button :size="'sm'" :variant="'secondary'" @click="input.selected.push(null)">Add Dataset</b-button>
+                        </b-col>
+                    </b-row>
                 </b-form-group>
             </b-col>
         </b-row>
