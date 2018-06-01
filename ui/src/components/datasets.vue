@@ -877,5 +877,8 @@ opacity: 0.4;
 padding-top: 5px;
 text-transform: uppercase;
 }
+.row {
+flex-wrap:nowrap;
+}
 </style>
 
