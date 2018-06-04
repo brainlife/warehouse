@@ -404,7 +404,7 @@ export default {
                     find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,
                     limit: 200, 
-                    select: '-prov',
+                    //select: '-prov',
                     sort: 'meta.subject meta.session -create_date'
                 }
             })
@@ -554,11 +554,28 @@ export default {
         download: function() {
             this.check_agreements(this.project, ()=>{
                 var download_instance = null;
+                var download_task = null;
                 this.get_instance().then(instance=>{
                     download_instance = instance;
                     return this.temp_stage_selected(instance);
                 }).then(task=>{
-                    var download_task = task;
+                    download_task = task;
+
+                    //load task prov
+                    let task_ids = [];
+                    for(var dataset_id in this.selected) {
+                        let dataset = this.selected[dataset_id]; 
+                        if(!dataset.prov || !dataset.prov.task_id) return;
+                        task_ids.push(dataset.prov.task_id); 
+                    } 
+                    return this.$http.get(Vue.config.amaretti_api+'/task', {
+                        params: {
+                            find: JSON.stringify({_id: {$in: task_ids}})
+                        },
+                    });
+                })
+                .then(res=>{
+                    var tasks = res.body.tasks;
 
                     //submit another sca-product-raw service to organize files 
                     var symlink = [];
@@ -572,7 +589,12 @@ export default {
 
                         var download_path = "../"+download_task._id+"/"+dataset_id;
 
-                        var process_name = "bl.download"; //TODO - not sure if I should a better name?
+                        //figure out the best process name
+                        var process_name = "brainlife-upload"; 
+                        if(dataset.prov && dataset.prov.task_id) {
+                            var task = tasks.find(t=>t._id == dataset.prov.task_id);
+                            if(task) process_name = task.service.replace("/", "-");
+                        }
 
                         //TODO - this is neuroscience specific, and I need to do a lot more thinking on this
                         var dataname = datatype.name.split("/")[1];
@@ -599,7 +621,7 @@ export default {
                     this.clear_selected();
                     this.$router.push("/download/"+download_instance._id);
                 }).catch(res=>{
-                    this.$notify({type: 'error', text: res.body.message});
+                    this.$notify({type: 'error', text: res.toString()});
                 });
             });
         },

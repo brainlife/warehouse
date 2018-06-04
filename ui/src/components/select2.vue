@@ -33,6 +33,7 @@ export default {
     },
 
     mounted: function() {
+        console.log("select2 component is deprecated by vue-select");
         
         this.opts = {
             data: this.options, 

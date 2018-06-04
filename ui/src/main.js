@@ -103,7 +103,8 @@ if (process.env.HOSTNAME) {
 
 Vue.config.debug = false;
 Vue.config.api = apihost+"/api/warehouse";
-Vue.config.wf_api = apihost+"/api/amaretti";
+Vue.config.wf_api = apihost+"/api/amaretti"; //deprecated use amaretti_api
+Vue.config.amaretti_api = apihost+"/api/amaretti";
 Vue.config.auth_api = apihost+"/api/auth";
 Vue.config.event_api = apihost+"/api/event";
 Vue.config.profile_api = apihost+"/api/profile";
