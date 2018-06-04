@@ -557,6 +557,7 @@ export default {
                 var download_task = null;
                 this.get_instance().then(instance=>{
                     download_instance = instance;
+
                     return this.temp_stage_selected(instance);
                 }).then(task=>{
                     download_task = task;
@@ -565,9 +566,10 @@ export default {
                     let task_ids = [];
                     for(var dataset_id in this.selected) {
                         let dataset = this.selected[dataset_id]; 
-                        if(!dataset.prov || !dataset.prov.task_id) return;
+                        if(!dataset.prov || !dataset.prov.task_id) break;
                         task_ids.push(dataset.prov.task_id); 
                     } 
+                    console.dir(task_ids);
                     return this.$http.get(Vue.config.amaretti_api+'/task', {
                         params: {
                             find: JSON.stringify({_id: {$in: task_ids}})
@@ -584,28 +586,41 @@ export default {
                         var datatype = this.datatypes[dataset.datatype];
                         var datatype_tags = dataset.datatype_tags;
 
-                        var subject = null;
-                        if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+                        var orgs = [];
+                        if(dataset.meta) {
+                            if(dataset.meta.subject) orgs.push("sub-"+dataset.meta.subject);
+                            if(dataset.meta.session) orgs.push("ses-"+dataset.meta.session);
+                            if(dataset.meta.run) orgs.push("run-"+dataset.meta.run);
+                        } else orgs.push("no-org");
 
                         var download_path = "../"+download_task._id+"/"+dataset_id;
 
                         //figure out the best process name
-                        var process_name = "brainlife-upload"; 
+                        var process_name = "upload"; 
                         if(dataset.prov && dataset.prov.task_id) {
                             var task = tasks.find(t=>t._id == dataset.prov.task_id);
-                            if(task) process_name = task.service.replace("/", "-");
+                            if(task) process_name = task.service.replace(/\//g, ".");
                         }
 
-                        //TODO - this is neuroscience specific, and I need to do a lot more thinking on this
-                        var dataname = datatype.name.split("/")[1];
-
-                        //TODO - until I figure out how to make things unique, let's add dataset_id
-                        dataname+="_"+dataset_id;
-
                         datatype.files.forEach(file=>{
+                            //last minute modification of filename depending on each datatype 
+                            var name = file.filename||file.dirname;
+                            switch(datatype.name) {
+                            case "neuro/func/task":
+                                name = datatype_tags.join("_")+"_"+name; 
+                                break;
+                            }
+                            var fullname = "ds-"+dataset_id+"_"+orgs.join("_")+"_"+name;
+            
+                            //can't create symlink as dir, so let's skip the dirname if it's just .
+                            if(file.dirname) {
+                                fullname = "ds-"+dataset_id+"_"+orgs.join("_");
+                                if(name != ".") fullname+="/"+name;
+                            }
+
                             symlink.push({
                                 src: download_path+"/"+(file.filename||file.dirname),
-                                dest: "download/derivatives/"+process_name+"/"+subject+"/"+dataname+"/"+subject+"_"+(file.filename||file.dirname),
+                                dest: "download/derivatives/"+process_name+"/"+orgs.join("/")+"/"+fullname,
                             });
                         });
                     }
