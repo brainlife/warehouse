@@ -105,15 +105,23 @@
         </b-row>
         
         <br />
-        <b-row v-if="advancedOptions">
-            <b-col cols="3" class="text-muted">Preferred Resource</b-col>
-            <b-col>
-                <b-form-select v-if="preferrable_resources.length > 0"
-                                :options="preferrable_resources"
-                                v-model='preferred_resource' class="mb-3" />
-            </b-col>
-        </b-row>
-
+        <div v-if="advancedOptions">
+            <b-row>
+                <b-col cols="3" class="text-muted">Preferred Resource</b-col>
+                <b-col>
+                    <b-form-select v-if="preferrable_resources.length > 0"
+                                    :options="preferrable_resources"
+                                    v-model='preferred_resource' class="mb-3" />
+                </b-col>
+            </b-row>
+            <b-row v-if="githubBranches">
+                <b-col cols="3" class="text-muted">Github Branch</b-col>
+                <b-col>
+                    <b-form-select style="width:100%;" :options="githubBranches" v-model='githubBranch'></b-form-select>
+                </b-col>
+            </b-row>
+        </div>
+        
         <hr>
         <b-row>
             <b-col cols="3"></b-col>
@@ -124,7 +132,6 @@
                 </div>
             </b-col>
         </b-row>
-
     </b-form>
 </b-container>
 </div>
@@ -169,6 +176,8 @@ export default {
             advancedOptions: false,
             preferred_resource: null,
             preferrable_resources: [],
+            githubBranch: null,
+            githubBranches: null,
 
             valid: false, //form is ready to submit or not
         }
@@ -247,6 +256,7 @@ export default {
 
         selectapp: function(app) {
             this.app = app;
+            this.githubBranch = this.app.github_branch || 'master';
 
             //this.config = Object.assign({}, app.config);
             //this.set_default(this.config);
@@ -276,13 +286,26 @@ export default {
                             value: resource.id,
                             text: resource.info.name
                         };
-                    })
+                    });
                 }
                 
                 this.preferrable_resources.unshift({
                     value: null,
                     text: '(None)'
                 });
+                
+                return this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', { headers: { Authorization: null } });
+            })
+            .then(res => {
+                this.githubBranches = res.body.map(b => {
+                    return {
+                        value: b.name,
+                        text: b.name
+                    };
+                });
+            })
+            .catch(err => {
+                console.error(err);
             });
         },
 
@@ -444,7 +467,8 @@ export default {
                 retry: this.app.retry,
             };
             if (this.preferred_resource) task.preferred_resource_id = this.preferred_resource;
-            
+            if (this.githubBranch) task.service_branch = this.githubBranch;
+             
             this.$root.$emit("newtask.submit", task);
             this.open = false;
         },
