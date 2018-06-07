@@ -68,24 +68,7 @@
         </b-col>
     </b-row>
     
-    <b-row>
-        <b-col class="text-muted" style="text-align:right; margin-bottom: 5px;">
-            <div class="advanced-options-toggle" style="display:inline-block;" @click="advancedOptions = !advancedOptions">
-                <icon v-if="advancedOptions" name="caret-down" />
-                <icon name="caret-right" v-else />
-                <span>Advanced</span>
-            </div>
-        </b-col>
-    </b-row>
-    
-    <b-row v-if="advancedOptions">
-        <b-col cols="3" class="text-muted">Preferred Resource</b-col>
-        <b-col>
-            <b-form-select v-if="preferrable_resources.length > 0"
-                    :options="preferrable_resources"
-                    v-model='preferred_resource' class="mb-3" />
-        </b-col>
-    </b-row>
+    <advanced :app='app' v-model='form.advanced'></advanced>
 
     <br>
     <b-row>
@@ -112,6 +95,7 @@ import projectselecter from '@/components/projectselecter'
 import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 import configform from '@/components/configform'
+import advanced from '@/components/appadvanced'
 
 import agreementMixin from '@/mixins/agreement'
 
@@ -124,7 +108,7 @@ export default {
         sidemenu, contact, 
         tags, metadata, pageheader, 
         appavatar, select2, projectselecter, 
-        app, datatypetag, configform,
+        app, datatypetag, configform, advanced,
     },
 
     props: [ "id" ], //appid
@@ -135,9 +119,6 @@ export default {
 
             app: null,
             resource_available: false,
-            preferrable_resources: [],
-            preferred_resource: null,
-            advancedOptions: false,
             //resource: null,
 
             form: {
@@ -147,6 +128,7 @@ export default {
                 
                 projects: {},
                 config: {},
+                advanced: {},
             },
 
             //cache
@@ -167,6 +149,7 @@ export default {
         }})
         .then(res=>{
             this.app = res.body.apps[0];
+            this.github_branch = this.app.github_branch || 'master';
 
             //initialize input datasets array (with null as first item)
             for(var idx in this.app.inputs) {
@@ -180,16 +163,6 @@ export default {
         })
         .then(res => {
             this.resource_available = !!res.body.resource;
-            this.preferred_resource = res.body.resource ? res.body.resource._id : null;
-            this.preferrable_resources = res.body.considered.map(resource => {
-                return {
-                    value: resource.id,
-                    text: resource.name + " - " + resource.info.name
-                };
-            });
-            this.preferrable_resources.unshift({ value: null, text: "(None)" });
-            
-            this.preferrable_resources.sort((a, b) => a.score > b.score);
         })
         .catch(err=>{
             console.error(err);
@@ -532,7 +505,8 @@ export default {
                     deps: [ download_task._id ],
                     retry: this.app.retry,
                 };
-                if (this.preferred_resource) submissionParams.preferred_resource_id = this.preferred_resource;
+                if (this.form.advanced.resource) submissionParams.preferred_resource_id = this.form.advanced.resource;
+                if (this.form.advanced.branch) submissionParams.service_branch = this.form.advanced.branch;
                 
                 return this.$http.post(Vue.config.wf_api+'/task', submissionParams);
             }).then(res=>{
@@ -568,15 +542,6 @@ export default {
 </script>
 
 <style scoped>
-.advanced-options-toggle {
-    font-weight:bold;
-    opacity:.7;
-    cursor: pointer;
-}
-.advanced-options-toggle:hover {
-    opacity:1;
-}
-
 h4 {
 margin-top: 20px;
 opacity: 0.6;
