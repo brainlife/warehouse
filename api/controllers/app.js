@@ -221,7 +221,9 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
                         if(err) return next(err);
                         //then attach url to it (to "mint" it!)
                         let url = config.warehouse.url+"/app/"+app._id;  
-                        common.doi_put_url(app.doi, url, logger.error);
+                        common.doi_put_url(app.doi, url, err=>{
+                            if(err) logger.error(err);
+                        });
                     });
                 });
             });
@@ -286,7 +288,9 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                             //shouldn't need to be updated but just in case..
                             let url = config.warehouse.url+"/app/"+app._id; 
                             logger.debug("setting url", url, app.doi);
-                            common.doi_put_url(app.doi, url, logger.error);
+                            common.doi_put_url(app.doi, url, err=>{
+                                if(err) logger.error(err);
+                            });
                         });
 
                     } else {
@@ -312,7 +316,9 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                                     //then attach url to it (to "mint" it!)
                                     let url = config.warehouse.url+"/app/"+_app._id; 
                                     logger.debug("setting url", url, app.doi);
-                                    common.doi_put_url(app.doi, url, logger.error);
+                                    common.doi_put_url(app.doi, url, err=>{
+                                        if(err) logger.error(err);
+                                    });
                                 });
                             });
                             

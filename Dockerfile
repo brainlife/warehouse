@@ -14,9 +14,7 @@ RUN npm install http-server -g && \
 
 COPY . /app
 RUN cd /app && npm install --production 
-#RUN cd /app/ui && npm install && npm run build
 
-#EXPOSE 80
 EXPOSE 8080
 
 CMD [ "/app/docker/start.sh" ]

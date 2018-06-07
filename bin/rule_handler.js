@@ -91,7 +91,7 @@ function handle_rule(rule, cb) {
         try {
             fs.truncateSync(logpath);
         } catch (err) {
-            logger.error("failed to truncate", logpath);
+            logger.info("failed to truncate.. maybe first time", logpath);
         }
         rlogger = new winston.Logger({
             transports: [
