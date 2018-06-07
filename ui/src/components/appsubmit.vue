@@ -69,11 +69,10 @@
     </b-row>
     
     <b-row>
-        <b-col class="text-muted" style="text-align:right;">
+        <b-col class="text-muted" style="text-align:right; margin-bottom: 5px;">
             <div class="advanced-options-toggle" style="display:inline-block;" @click="advancedOptions = !advancedOptions">
                 <icon v-if="advancedOptions" name="caret-down" />
                 <icon name="caret-right" v-else />
-                
                 <span>Advanced</span>
             </div>
         </b-col>
@@ -196,7 +195,7 @@ export default {
             this.preferrable_resources = res.body.considered.map(resource => {
                 return {
                     value: resource.id,
-                    text: resource.info.name
+                    text: resource.name + " - " + resource.info.name
                 };
             });
             this.preferrable_resources.unshift({ value: null, text: "(None)" });

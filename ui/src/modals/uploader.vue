@@ -51,8 +51,8 @@
         <task :task="tasks.validation" v-if="!tasks.validation.product"/>
         <div v-else>
             <b-form-group>
-                <b-alert show variant="danger" v-for="msg in tasks.validation.product.errors">{{msg}}</b-alert>
-                <b-alert show variant="warning" v-for="msg in tasks.validation.product.warnings">{{msg}}</b-alert>
+                <b-alert show variant="danger" v-for="(msg, $idx) in tasks.validation.product.errors" :key="$idx">{{msg}}</b-alert>
+                <b-alert show variant="warning" v-for="(msg, $idx) in tasks.validation.product.warnings" :key="$idx">{{msg}}</b-alert>
                 <b-alert show variant="success" v-if="tasks.validation.product.errors.length == 0">
                     Your data looks good! Please check information below and click Archive button.
                 </b-alert>

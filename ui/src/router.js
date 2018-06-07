@@ -1,40 +1,28 @@
 import Vue from 'vue'
+
 import Router from 'vue-router'
 
 import dashboard from '@/dashboard'
-
-//import datasets from '@/datasets'
-//import dataset from '@/dataset'
-//import upload from '@/upload'
 import download from '@/download'
-
 import view from '@/view'
 import novnc from '@/novnc'
-
-//import processes from '@/processes'
-
 import apps from '@/apps'
 import appsgraph from '@/appsgraph'
 import app from '@/app'
 import appedit from '@/appedit'
-
-//import projects from '@/projects'
 import project from '@/project'
 import projectedit from '@/projectedit'
-
 import datatypes from '@/datatypes'
 import datatype from '@/datatype'
 import datatypeedit from '@/datatypeedit'
-
+import pubs from '@/pubs'
+import pub from '@/pub'
 import settings from '@/settings'
+import admin from '@/admin'
 
 import test from '@/test'
 import missing from '@/missing'
 
-import pubs from '@/pubs'
-import pub from '@/pub'
-
-import admin from '@/admin'
 import Meta from 'vue-meta'
 
 Vue.use(Router)
@@ -74,14 +62,12 @@ export default new Router({
         {path: '/pubs', component: pubs, meta: {public: true}},
         {path: '/pub/:id', component: pub, meta: {public: true}},
 
-        {path: '/test', component: test},
+//        {path: '/test', component: test},
         {path: '/404', component: missing, meta: {public: true}},
         
         {path: '/admin', component: admin},
        
-        //deprecated paths
-        {path: '/datasets/:id?', component: project},
-
+//        {path: '/datasets/:id?', component: project},
     ]
 })
 
