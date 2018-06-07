@@ -44,6 +44,12 @@ export default {
             config: Vue.config,
         }
     },
+    mounted() {
+        this.$root.$emit("refresh_jwt");
+        setInterval(()=>{
+            this.$root.$emit("refresh_jwt");
+        }, 1000*1800);  //refresh in half an hour
+    },
     methods: { 
     },
 }

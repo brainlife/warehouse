@@ -332,7 +332,7 @@ export default {
                     }
                 }));
 
-                console.log("binding to dataset updates", this.project._id);
+                //console.log("binding to dataset updates", this.project._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse.dataset",
@@ -350,12 +350,12 @@ export default {
                         return;
                     }
                     if(!event) {
-                        console.log("cann't parse event", json);
+                        console.error("cann't parse event", json);
                         return;
                     }
                     if(event.error) return console.error(event.error);
                     if(!event.dinfo) {
-                        console.log("event.dinfo not set");
+                        console.error("event.dinfo not set");
                         return;
                     }
                     switch(event.dinfo.exchange) {
@@ -391,7 +391,7 @@ export default {
                         break;
                     case "warehouse.dataset":
                         //see if we care..
-                        console.log("dataset event", event.msg);
+                        //console.log("dataset event", event.msg);
                         this.archived.forEach(dataset=>{
                             if(dataset._id == event.msg._id) {
                                 for(var k in event.msg) dataset[k] = event.msg[k]; //update 
@@ -403,7 +403,7 @@ export default {
                 };
             };
 
-            console.log("loading tasks");
+            //console.log("loading tasks");
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({
                     instance_id: this.instance._id,
@@ -471,7 +471,7 @@ export default {
         },
 
         submit_stage: function(datasets) {
-            console.log("received datasets", datasets);
+            //console.log("received datasets", datasets);
 
             //issue jwt to allow access
             this.$http.get('dataset/token', {

@@ -274,7 +274,7 @@ export default {
                     this.preferrable_resources = res.body.considered.map(resource => {
                         return {
                             value: resource.id,
-                            text: resource.info.name
+                            text: resource.name + " - " + resource.info.name
                         };
                     })
                 }

@@ -8,6 +8,7 @@
 <script>
 import Vue from 'vue'
 
+//TODO - maybe I should use vue-plotly?
 //trying to load the entire plotly will cause build to fail
 //bad> import Plotly from 'plotly.js' 
 //Only load component you actually use
