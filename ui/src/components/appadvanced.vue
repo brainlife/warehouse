@@ -16,13 +16,13 @@
             <b-col>
                 <b-form-select v-if="preferrable_resources.length > 0"
                         :options="preferrable_resources"
-                        v-model='preferred_resource' class="mb-3" @change='update' />
+                        v-model='preferred_resource' class="mb-3" />
             </b-col>
         </b-row>
         <b-row v-if="github_branches">
             <b-col cols="3" class="text-muted">Github Branch</b-col>
             <b-col>
-                <b-form-select style="width:100%;" :options="github_branches" v-model='github_branch' @change='update'></b-form-select>
+                <b-form-select style="width:100%;" :options="github_branches" v-model='github_branch'></b-form-select>
             </b-col>
         </b-row>
     </div>
@@ -33,7 +33,7 @@
 import Vue from 'vue'
 
 export default {
-    props: [ 'app' ],
+    props: [ 'app', 'value' ],
     
     data () {
         return {
@@ -53,8 +53,7 @@ export default {
             service: this.app.github
         }})
         .then(res => {
-            this.resource_available = !!res.body.resource;
-            this.preferred_resource = res.body.resource ? res.body.resource._id : null;
+
             this.preferrable_resources = res.body.considered.map(resource => {
                 return {
                     value: resource.id,
@@ -63,11 +62,13 @@ export default {
             });
             this.preferrable_resources.unshift({ value: null, text: "(None)" });
             this.preferrable_resources.sort((a, b) => a.score > b.score);
+
+            this.preferred_resource = this.value.preferred_resource
+            if(!this.value.preferred_resource && res.body.resource) this.preferred_resource = res.body.resource._id;
             
             return this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', { headers: { Authorization: null } });
         })
         .then(res => {
-            this.github_branch = this.app.github_branch || 'master';
             this.github_branches = res.body.map(b => {
                 return {
                     value: b.name,
@@ -75,15 +76,25 @@ export default {
                 };
             });
             
-            this.update();
+            this.github_branch = this.value.github_branch || this.app.github_branch || 'master';
         })
         .catch(err => {
             console.error(err)
         });
     },
+
+    watch: {
+        'preferred_resource': function() {
+            this.update();
+        },
+        'github_branch': function() {
+            this.update();
+        },
+    },
     
     methods: {
         update: function() {
+            console.log("changed", this.github_branch);
             this.$emit('input', {
                 resource: this.preferred_resource,
                 branch: this.github_branch

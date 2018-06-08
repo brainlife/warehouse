@@ -610,7 +610,6 @@ export default {
                 var download_task = null;
                 this.get_instance().then(instance=>{
                     download_instance = instance;
-
                     return this.temp_stage_selected(instance);
                 }).then(task=>{
                     download_task = task;
@@ -744,53 +743,67 @@ export default {
         },
 
         submit_process: function(project_id, instance) {
-            //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject)
-            var tid = 0;
-            //var did = 0;
-            async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
-                var download = [];
-                var _outputs = [];
-                this.$http.get('dataset/token', {
-                    params: {
-                        ids: JSON.stringify(Object.keys(datasets))
-                    },
-                }).then(res=>{
-                    var jwt = res.body.jwt;
-                    for(var dataset_id in datasets) {
-                        download.push({
-                            url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
-                            untar: "auto",
-                            dir: dataset_id,
-                        });
-                        _outputs.push(Object.assign(datasets[dataset_id], {
-                            id: dataset_id, 
-                            //did: did++,
-                            subdir: dataset_id, 
-                            dataset_id,
-                            prov: null,
-                        }));
-                    }
-                    return this.$http.post(Vue.config.wf_api+'/task', {
-                        instance_id: instance._id,
-                        name: "Staging Datasets - "+this.datatypes[datatype_id].name,
-                        service: "soichih/sca-product-raw",
-                        config: { download, _outputs, _tid: tid++ },
-                    });
-                }).then(res=>{
-                    console.log("submitted download task", res.body.task);
-                    next_group();
-                }).catch(err=>{
-                    next_group(err.body.message);
-                });
-            }, err=>{
-                if(err) {
-                    console.error(err);
-                    this.$notify({type: 'error', text: err});
-                    return;
-                }
 
-                this.clear_selected();
-                this.$router.push("/project/"+project_id+"/process/"+instance._id);
+            //find the next _tid to use
+            var tid = 0;
+            this.$http.get(Vue.config.wf_api+'/task', {params: {
+                find: JSON.stringify({
+                    instance_id: instance._id,
+                    status: {$ne: "removed"},
+                    'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
+                }),
+                populate: 'config._tid',
+                limit: 1000, //should be enough.. for now
+            }}).then(res=>{
+                res.body.tasks.forEach(task=>{
+                    if(task.config._tid >= tid) tid = task.config._tid+1;
+                });
+
+                //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject?)
+                async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
+                    var download = [];
+                    var _outputs = [];
+                    this.$http.get('dataset/token', {
+                        params: {
+                            ids: JSON.stringify(Object.keys(datasets))
+                        },
+                    }).then(res=>{
+                        var jwt = res.body.jwt;
+                        for(var dataset_id in datasets) {
+                            download.push({
+                                url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
+                                untar: "auto",
+                                dir: dataset_id,
+                            });
+                            _outputs.push(Object.assign(datasets[dataset_id], {
+                                id: dataset_id, 
+                                subdir: dataset_id, 
+                                dataset_id,
+                                prov: null,
+                            }));
+                        }
+                        return this.$http.post(Vue.config.wf_api+'/task', {
+                            instance_id: instance._id,
+                            name: "Staging Datasets - "+this.datatypes[datatype_id].name,
+                            service: "soichih/sca-product-raw",
+                            config: { download, _outputs, _tid: tid++ },
+                        });
+                    }).then(res=>{
+                        console.log("submitted download task", res.body.task);
+                        next_group();
+                    }).catch(err=>{
+                        next_group(err.body.message);
+                    });
+                }, err=>{
+                    if(err) {
+                        console.error(err);
+                        this.$notify({type: 'error', text: err});
+                        return;
+                    }
+
+                    this.clear_selected();
+                    this.$router.push("/project/"+project_id+"/process/"+instance._id);
+                });
             });
         }
     },
