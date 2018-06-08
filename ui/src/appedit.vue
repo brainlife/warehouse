@@ -129,9 +129,7 @@
                         <b-row>
                             <b-col cols="5">
                                 <span class="text-muted">Datatype</span>
-                                <b-form-select v-model="input.datatype">
-                                    <option v-for="datatype in datatypes" :key="datatype._id" :value="datatype._id">{{datatype.name}}</option>
-                                </b-form-select>
+                                <datatypeselecter v-model="input.datatype"></datatypeselecter>
                             </b-col>
                             <b-col cols="7">
                                 <div class="text-muted">Datatype Tags</div>
@@ -185,7 +183,7 @@
                         <b-row>
                             <b-col>
                                 <b-input-group prepend="ID">
-                                    <b-form-input type="text" v-model="output.id"required/>
+                                    <b-form-input type="text" v-model="output.id" required />
                                 </b-input-group>
                                 <small class="text-muted">Internal ID used to identify this output</small>
                             </b-col>
@@ -195,13 +193,11 @@
                         <b-row>
                             <b-col>
                                 <div class="text-muted">Datatype</div>
-                                <b-form-select v-model="output.datatype">
-                                     <option v-for="datatype in datatypes" :key="datatype._id" :value="datatype._id">{{datatype.name}}</option>
-                                </b-form-select>
+                                <datatypeselecter v-model="output.datatype"></datatypeselecter>
                             </b-col>
                             <b-col cols="7" v-if="output.datatype">
                                 <div class="text-muted">Datatype Tags</div>
-                                <tageditor v-model="output.datatype_tags"/>
+                                <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
                                 <small class="text-muted">Set these datatype tags on this output dataset</small>
 
                                 <div class="text-muted">Tag Passthrough</div>
@@ -409,6 +405,7 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import projectsselecter from '@/components/projectsselecter'
+import datatypeselecter from '@/components/datatypeselecter'
 import trueorfalse from '@/components/trueorfalse'
 import tageditor from '@/components/tageditor'
 
@@ -416,7 +413,7 @@ export default {
     components: { 
         sidemenu, contactlist, 
         pageheader, projectsselecter,
-        trueorfalse, tageditor,
+        datatypeselecter, trueorfalse, tageditor,
 
         editor: require('vue2-ace-editor'),
     },

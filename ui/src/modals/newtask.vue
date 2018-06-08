@@ -405,7 +405,7 @@ export default {
             };
             if (this.advanced.resource) task.preferred_resource_id = this.advanced.resource;
             if (this.advanced.branch) task.service_branch = this.advanced.branch;
-             
+            
             this.$root.$emit("newtask.submit", task);
             this.open = false;
         },
