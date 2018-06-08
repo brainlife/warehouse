@@ -126,8 +126,6 @@ function check_access(req, rule, cb) {
  * @apiParam {String} subject_match Subject Match
  * @apiParam {Object} config        Application configuration
  *
- * @apiParam {Boolean} active       Activation flag
- *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  *
@@ -168,7 +166,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiParam {Object} config        Application configuration
  *
  * @apiParam {Boolean} removed      If this is a removed publication
- * @apiParam {Boolean} active       Activation flag
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -191,6 +188,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
             //update rule record
             for(let k in req.body) rule[k] = req.body[k];
+            rule.update_date = new Date();
             rule.save((err, _rule)=>{
                 if(err) return next(err);
                 res.json(_rule); 
