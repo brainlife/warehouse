@@ -89,31 +89,11 @@
                         </b-card>
                     </b-col>
                 </b-row>
-                
-                <br />
-                <b-row>
-                    <b-col class="text-muted" style="text-align:right;">
-                        <div class="advanced-options-toggle" style="display:inline-block;" @click="advancedOptions = !advancedOptions">
-                            <icon v-if="advancedOptions" name="caret-down" />
-                            <icon name="caret-right" v-else />
-                            
-                            <span>Advanced</span>
-                        </div>
-                    </b-col>
-                </b-row>
             </b-col>
         </b-row>
         
-        <br />
-        <b-row v-if="advancedOptions">
-            <b-col cols="3" class="text-muted">Preferred Resource</b-col>
-            <b-col>
-                <b-form-select v-if="preferrable_resources.length > 0"
-                                :options="preferrable_resources"
-                                v-model='preferred_resource' class="mb-3" />
-            </b-col>
-        </b-row>
-
+        <advanced :app='app' v-model='advanced'></advanced>
+        
         <hr>
         <b-row>
             <b-col cols="3"></b-col>
@@ -124,7 +104,6 @@
                 </div>
             </b-col>
         </b-row>
-
     </b-form>
 </b-container>
 </div>
@@ -138,12 +117,14 @@ import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
 import configform from '@/components/configform'
 import vSelect from 'vue-select'
+import advanced from '@/components/appadvanced'
 
 const lib = require('../lib');
 
 export default {
     components: { 
         app, datatypetag, configform, vSelect,
+        advanced
     },
 
     data() {
@@ -166,9 +147,7 @@ export default {
             datasets: null,
 
             deps: null,
-            advancedOptions: false,
-            preferred_resource: null,
-            preferrable_resources: [],
+            advanced: {},
 
             valid: false, //form is ready to submit or not
         }
@@ -247,6 +226,7 @@ export default {
 
         selectapp: function(app) {
             this.app = app;
+            this.github_branch = this.app.github_branch || 'master';
 
             //this.config = Object.assign({}, app.config);
             //this.set_default(this.config);
@@ -264,26 +244,6 @@ export default {
             });
 
             this.validate(); //for preselect
-            this.$http.get(Vue.config.wf_api + '/resource/best', {
-                params: { service: app.github }
-            })
-            .then(res => {
-                this.preferrable_resources = [];
-                if (res.body.resource) {
-                    this.preferred_resource = res.body.resource._id;
-                    this.preferrable_resources = res.body.considered.map(resource => {
-                        return {
-                            value: resource.id,
-                            text: resource.name + " - " + resource.info.name
-                        };
-                    })
-                }
-                
-                this.preferrable_resources.unshift({
-                    value: null,
-                    text: '(None)'
-                });
-            });
         },
 
         back: function() {
@@ -443,8 +403,9 @@ export default {
                 deps: this.deps,
                 retry: this.app.retry,
             };
-            if (this.preferred_resource) task.preferred_resource_id = this.preferred_resource;
-            
+            if (this.advanced.resource) task.preferred_resource_id = this.advanced.resource;
+            if (this.advanced.branch) task.service_branch = this.advanced.branch;
+             
             this.$root.$emit("newtask.submit", task);
             this.open = false;
         },
@@ -462,15 +423,6 @@ export default {
 </script>
 
 <style scoped>
-.advanced-options-toggle {
-    font-weight:bold;
-    opacity:.7;
-    cursor: pointer;
-}
-.advanced-options-toggle:hover {
-    opacity:1;
-}
-
 .app-selecter,
 .submit-form {
 position: absolute;

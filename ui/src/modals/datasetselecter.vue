@@ -3,7 +3,7 @@
     <b-row>
         <b-col>From Project</b-col>
         <b-col cols="9">
-            <projectselecter v-model="project"></projectselecter>
+            <projectselecter ref="psel" v-model="project"></projectselecter>
         </b-col>
     </b-row>
     <br>
@@ -82,7 +82,9 @@ export default {
 
     mounted() {
         this.$root.$on("datasetselecter.open", ()=>{
-            if(!this.$refs.modal) return console.log("received datasetselecter.open but this.$refs.modal not set");
+            if(!this.$refs.modal) return console.log("received datasetselecter.open but this.$refs.modal not yet initialized");
+            this.project = null;
+            this.$refs.psel.load_projects();
             this.$refs.modal.show()
         });
     },

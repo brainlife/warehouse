@@ -42,7 +42,7 @@
                             <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
                                 <div class="row" v-if="!dataset.removed">
                                     <div class="col-md-3 truncate">
-                                        <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset)" class="dataset-checker">
+                                        <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
                                         <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"></datatypetag>
                                         <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
@@ -161,6 +161,7 @@ export default {
             last_groups: {},
 
             selected: {}, //grouped by datatype_id, then array of datasets also keyed by dataset id
+            last_dataset_checked: null,
 
             query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
             ws: null, //websocket
@@ -173,6 +174,21 @@ export default {
     },
 
     computed: {
+        all_datasets: function() {
+            let result = {};
+            this.pages.forEach(page => {
+                for (let subject in page) {
+                    let datasets = page[subject];
+                    datasets.forEach(dataset => {
+                        if (!dataset.removed) {
+                            result[dataset._id] = dataset;
+                        }
+                    });
+                }
+            });
+            return result;
+        },
+        
         selected_count: function() {
             return Object.keys(this.selected).length;
         },
@@ -229,7 +245,7 @@ export default {
 
     mounted() {
         var area = document.getElementById("scrolled-area").parentNode;
-		area.addEventListener("scroll", this.page_scrolled);
+        area.addEventListener("scroll", this.page_scrolled);
 
         let subid = this.$route.params.subid;
         if(subid) this.$root.$emit('dataset.view', {id: subid, back: './'});
@@ -250,7 +266,6 @@ export default {
     },
 
 	methods: {
-
         isadmin() {
             if(!this.project) return false;
             if(~this.project.admins.indexOf(Vue.config.user.sub)) return true;
@@ -413,11 +428,11 @@ export default {
                 var groups = this.last_groups; //start with the last subject group from previous load
 
                 var last_subject = null;
-                res.body.datasets.forEach(dataset=>{
+                res.body.datasets.forEach((dataset, idx)=>{
                     dataset.checked = this.selected[dataset._id];
                     var subject = "nosub"; //not all datasets has subject tag
                     if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
-                    if(dataset.meta.session) subject += " session "+dataset.meta.session;
+                    if(dataset.meta.session) subject += " session " + dataset.meta.session;
                     last_subject = subject;
                     if(!groups[subject]) groups[subject] = [];
                     groups[subject].push(dataset);
@@ -458,13 +473,51 @@ export default {
             this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
         },
 
-        check: function(dataset) {
-            if(this.selected[dataset._id]) {    
-                dataset.checked = false;
-                Vue.delete(this.selected, dataset._id);
+        check: function(dataset, event) {
+            console.log(dataset._index);
+            if (event.shiftKey && this.last_dataset_checked) {
+                let datasetIds = Object.keys(this.all_datasets);
+                let indexOfLast = datasetIds.indexOf(this.last_dataset_checked._id);
+                let indexOfCurrent = datasetIds.indexOf(dataset._id);
+                let performCheck = !this.selected[dataset._id];
+                
+                if (indexOfLast > indexOfCurrent) {
+                    let tmp = indexOfLast;
+                    indexOfLast = indexOfCurrent;
+                    indexOfCurrent = tmp;
+                }
+                for (let i = indexOfLast; i <= indexOfCurrent; i++) {
+                    let datasetToCheckOrUncheck = this.all_datasets[datasetIds[i]];
+                    
+                    datasetToCheckOrUncheck.checked = performCheck;
+                    if (performCheck) {
+                        Vue.set(this.selected, datasetToCheckOrUncheck._id, datasetToCheckOrUncheck);
+                    }
+                    else {
+                        if (this.selected[datasetToCheckOrUncheck._id]) {
+                            Vue.delete(this.selected, datasetToCheckOrUncheck._id);
+                        }
+                    }
+                }
+                
+                // if checking was performed,
+                // then update the last dataset checked
+                if (performCheck) {
+                    this.last_dataset_checked = dataset;
+                }
+                else {
+                    this.last_dataset_checked = null;
+                }
             } else {
-                dataset.checked = true;
-                Vue.set(this.selected, dataset._id, dataset);
+                if(this.selected[dataset._id]) {
+                    dataset.checked = false;
+                    Vue.delete(this.selected, dataset._id);
+                    this.last_dataset_checked = null;
+                } else {
+                    dataset.checked = true;
+                    Vue.set(this.selected, dataset._id, dataset);
+                    this.last_dataset_checked = dataset;
+                }
             }
             this.persist_selected();
         },
@@ -557,7 +610,6 @@ export default {
                 var download_task = null;
                 this.get_instance().then(instance=>{
                     download_instance = instance;
-
                     return this.temp_stage_selected(instance);
                 }).then(task=>{
                     download_task = task;
@@ -691,53 +743,67 @@ export default {
         },
 
         submit_process: function(project_id, instance) {
-            //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject)
-            var tid = 0;
-            //var did = 0;
-            async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
-                var download = [];
-                var _outputs = [];
-                this.$http.get('dataset/token', {
-                    params: {
-                        ids: JSON.stringify(Object.keys(datasets))
-                    },
-                }).then(res=>{
-                    var jwt = res.body.jwt;
-                    for(var dataset_id in datasets) {
-                        download.push({
-                            url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
-                            untar: "auto",
-                            dir: dataset_id,
-                        });
-                        _outputs.push(Object.assign(datasets[dataset_id], {
-                            id: dataset_id, 
-                            //did: did++,
-                            subdir: dataset_id, 
-                            dataset_id,
-                            prov: null,
-                        }));
-                    }
-                    return this.$http.post(Vue.config.wf_api+'/task', {
-                        instance_id: instance._id,
-                        name: "Staging Datasets - "+this.datatypes[datatype_id].name,
-                        service: "soichih/sca-product-raw",
-                        config: { download, _outputs, _tid: tid++ },
-                    });
-                }).then(res=>{
-                    console.log("submitted download task", res.body.task);
-                    next_group();
-                }).catch(err=>{
-                    next_group(err.body.message);
-                });
-            }, err=>{
-                if(err) {
-                    console.error(err);
-                    this.$notify({type: 'error', text: err});
-                    return;
-                }
 
-                this.clear_selected();
-                this.$router.push("/project/"+project_id+"/process/"+instance._id);
+            //find the next _tid to use
+            var tid = 0;
+            this.$http.get(Vue.config.wf_api+'/task', {params: {
+                find: JSON.stringify({
+                    instance_id: instance._id,
+                    status: {$ne: "removed"},
+                    'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
+                }),
+                populate: 'config._tid',
+                limit: 1000, //should be enough.. for now
+            }}).then(res=>{
+                res.body.tasks.forEach(task=>{
+                    if(task.config._tid >= tid) tid = task.config._tid+1;
+                });
+
+                //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject?)
+                async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
+                    var download = [];
+                    var _outputs = [];
+                    this.$http.get('dataset/token', {
+                        params: {
+                            ids: JSON.stringify(Object.keys(datasets))
+                        },
+                    }).then(res=>{
+                        var jwt = res.body.jwt;
+                        for(var dataset_id in datasets) {
+                            download.push({
+                                url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
+                                untar: "auto",
+                                dir: dataset_id,
+                            });
+                            _outputs.push(Object.assign(datasets[dataset_id], {
+                                id: dataset_id, 
+                                subdir: dataset_id, 
+                                dataset_id,
+                                prov: null,
+                            }));
+                        }
+                        return this.$http.post(Vue.config.wf_api+'/task', {
+                            instance_id: instance._id,
+                            name: "Staging Datasets - "+this.datatypes[datatype_id].name,
+                            service: "soichih/sca-product-raw",
+                            config: { download, _outputs, _tid: tid++ },
+                        });
+                    }).then(res=>{
+                        console.log("submitted download task", res.body.task);
+                        next_group();
+                    }).catch(err=>{
+                        next_group(err.body.message);
+                    });
+                }, err=>{
+                    if(err) {
+                        console.error(err);
+                        this.$notify({type: 'error', text: err});
+                        return;
+                    }
+
+                    this.clear_selected();
+                    this.$router.push("/project/"+project_id+"/process/"+instance._id);
+                });
             });
         }
     },

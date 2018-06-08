@@ -403,7 +403,6 @@ export default {
                 };
             };
 
-            //console.log("loading tasks");
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({
                     instance_id: this.instance._id,
