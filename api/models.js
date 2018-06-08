@@ -210,6 +210,7 @@ var datasetSchema = mongoose.Schema({
     backup_date: Date, //date when this dataset was copied to the SDA (not set if it's not yet backed up)
     download_date: Date, //last time this dataset was downloaded
     remove_date: Date, //date when this dataset was removed
+    update_date: { type: Date, index: true }, //date which this document was last updated (used by rule handler)
 
     removed: { type: Boolean, default: false},
 
@@ -220,8 +221,14 @@ datasetSchema.post('save', dataset_event);
 datasetSchema.post('findOneAndUpdate', dataset_event);
 datasetSchema.post('findOneAndRemove', dataset_event);
 datasetSchema.post('remove', dataset_event);
+datasetSchema.pre('save', function(next) {
+    console.log("updating dataset....................................", this._id);
+    this.update_date = new Date;
+    next();
+});
 
 datasetSchema.index({'$**': 'text'}) //make all text fields searchable
+//taskSchema.index({project: 1, next_date: 1});
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -395,9 +402,14 @@ var ruleSchema = mongoose.Schema({
 
     //when the rule is first defined
     create_date: { type: Date, default: Date.now },
+    update_date: { type: Date, default: Date.now }, //date which this document was last updated 
+    handle_date: { type: Date }, //date which the rule was last handled
 
     removed: { type: Boolean, default: false} ,
-    active: { type: Boolean, default: true} ,
+
+    //allows user to temporarily disable processing of the rule
+    active: { type: Boolean, default: true } ,
+
 }, {minimize: false}); //to keep empty config{} from disappearing
 exports.Rules = mongoose.model('Rules', ruleSchema);
 

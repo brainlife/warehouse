@@ -69,7 +69,7 @@ function run() {
         async.eachSeries(rules, handle_rule, err=>{
             if(err) logger.error(err);
             logger.debug("done with all rules - sleeping for a while");
-            setTimeout(run, 1000*30);
+            setTimeout(run, 1000*10);
         });
 	});
 }
@@ -77,46 +77,65 @@ function run() {
 function handle_rule(rule, cb) {
     _counts.rules++;
 
-    var jwt = null;
-    var subjects = null;
-    var running = null; //number of currently running tasks for this rule
-    var rule_tasks = null; //tasks submitted for this rule (grouped by subject name)
+    let jwt = null;
+    let subjects = null;
+    let running = null; //number of currently running tasks for this rule
+    let rule_tasks = null; //tasks submitted for this rule (grouped by subject name)
+    let rlogger = logger;
 
     if(!rule.input_tags) rule.input_tags = {};
     if(!rule.output_tags) rule.output_tags = {};
-
-    let rlogger = logger;
-    if(config.warehouse.rule_logdir) {
-        let logpath = config.warehouse.rule_logdir+"/"+rule._id.toString()+".log";
-        try {
-            fs.truncateSync(logpath);
-        } catch (err) {
-            logger.info("failed to truncate.. maybe first time", logpath);
-        }
-        rlogger = new winston.Logger({
-            transports: [
-                new (winston.transports.File)({
-                    filename: logpath,
-                    json: false,
-                    level: "debug",
-                })
-            ]
-        });
-    }
-
-    logger.info("handling project:", rule.project.name, "rule:", rule.name, rule._id.toString());
-    //rlogger.info(JSON.stringify(rule, null, 4));
     
     //prepare for stage / app / archive
     async.series([
-
+        
         //validate
         next=>{
             if(!rule.project) return next("project not specified");
             if(!rule.app) return next("app not specified");
             next();
         },
+        
+        //find the latest update_date of all input datasets
+        next=>{
+            //if not handled yet, go ahead and handle it
+            if(!rule.handle_date) return next();
+
+            //if updated, go ahead and handle it
+            if(rule.update_date > rule.handle_date) return next();
+
+            let projects = [ rule.project._id ];
+            if(rule.input_project_override) {
+                for(var input_id in rule.input_project_override) {
+                    projects.push(rule.input_project_override[input_id]); 
+                }
+            }                
+
+            db.Datasets.findOne({
+                project: { $in: projects }, 
+                update_date: { $exists: true } , 
+                removed: false, //don't care about removed ones
+            })
+            .sort("-update_date") //give me the max
+            .select("update_date")
+            .exec((err, dataset)=>{
+                if(err) return next(err);
+                if(!dataset) return cb(); //no dataset, nothing to do
+                if(rule.handle_date > dataset.update_date) return cb(); //no new dataset to handle
+
+                //has new input dataset to handle.. proceed
+                //logger.debug("processinng", rule.handle_date, dataset.update_date, dataset._id.toString());
+                next();
+            });
+        },
             
+        //update handle_date
+        next=>{
+            logger.info("handling project:", rule.project.name, "rule:", rule.name, rule._id.toString());
+            rule.handle_date = new Date();
+            rule.save(next);
+        },
+
         //issue user jwt
         next=>{
             request.get({
@@ -128,6 +147,28 @@ function handle_rule(rule, cb) {
                 jwt = body.jwt;
                 next();
             });
+        },
+
+        //initialize rlogger
+        next=>{
+            if(config.warehouse.rule_logdir) {
+                let logpath = config.warehouse.rule_logdir+"/"+rule._id.toString()+".log";
+                try {
+                    fs.truncateSync(logpath);
+                } catch (err) {
+                    logger.info("failed to truncate.. maybe first time", logpath);
+                }
+                rlogger = new winston.Logger({
+                    transports: [
+                        new (winston.transports.File)({
+                            filename: logpath,
+                            json: false,
+                            level: "debug",
+                        })
+                    ]
+                });
+            }
+            next();
         },
 
         //get all tasks submitted for this rule
