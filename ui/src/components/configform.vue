@@ -5,12 +5,12 @@
         <b-col>
             <b-form-group>
                 <!--integer will be deprecated (still used..)-->
-                <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" 
+                <b-form-input type="number" v-if="v.type == 'number' || v.type == 'integer'" @mousewheel.native="handle_scroll"
                     :min="v.min" :max="v.max" :step="0.001" :readonly="v.readonly" :required="!v.optional"
                     v-model.number="value[k]" :placeholder="v.placeholder"/>
 
                 <!--string-->
-                <b-form-input type="text" v-if="v.type == 'string'" 
+                <b-form-input type="text" v-if="v.type == 'string'"
                     :readonly="v.readonly" :required="!v.optional"
                     v-model="value[k]" :placeholder="v.placeholder"/>
 
@@ -63,6 +63,13 @@ export default {
             }
         }
     },
+    methods: {
+        //prevent vue-form-input's value from getting changed accidentally by use mouse-wheeling on top of focused
+        //number input
+        handle_scroll: function(evt) {
+            evt.preventDefault();
+        }
+    }
 }
 </script>
 
