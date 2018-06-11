@@ -22,7 +22,6 @@ export default {
     
     mounted() {
         this.tags = this.value;
-        console.log(this.options);
     },
 
     watch: {
