@@ -421,6 +421,7 @@ export default {
                 });
 
                 this.tasks = res.body.tasks;
+                this.loading = false;
 
                 //loading archived datasets for all tasks
                 var task_ids = this.tasks.map(task=>task._id); 
@@ -432,7 +433,6 @@ export default {
                     limit: 300,
                 }}).then(res=>{
                     this.archived = res.body.datasets;
-                    this.loading = false;
                 });
             });
         },
