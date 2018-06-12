@@ -108,7 +108,7 @@ export default {
         sidemenu, contact, 
         tags, metadata, pageheader, 
         appavatar, select2, projectselecter, 
-        app, datatypetag, configform, advanced,
+        app, datatypetag, configform, advanced
     },
 
     props: [ "id" ], //appid

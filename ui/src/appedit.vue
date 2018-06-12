@@ -133,7 +133,7 @@
                             </b-col>
                             <b-col cols="7">
                                 <div class="text-muted">Datatype Tags</div>
-                                <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags"/>
+                                <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags" :options="datatypes[input.datatype]._tags" />
                                 <small class="text-muted">Only allow user to select datasets with these tags. You can prefix tags with ! for negative tags</small>
                             </b-col>
                         </b-row>
