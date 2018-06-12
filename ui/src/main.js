@@ -177,12 +177,10 @@ new Vue({
                 return;
             }
 
-            /*
             if(Vue.config.debug) {
                 console.log("not refreshing token.. as this is running in debug mode");
                 return;
             }
-            */
 
             try {
                 console.log("refreshing jwt");

@@ -135,6 +135,14 @@ export default {
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
             },
             {
+                ui: "mricrogl",
+                name: "MRIcroGL",
+                desc: "View 2D slices and renderings of your brain imaging data. It allows you to draw regions of interest which can aid lesion mapping and fMRI analysis.",
+                avatar: "https://brainlife.io/images/ui-logos/mricrogl.png",
+                docker: true,
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
+            },
+            {
                 ui: "fibernavigator",
                 name: "fiberNavigator",
                 desc: "A tool designed for a fast and versatile visualization of streamline datasets.",
