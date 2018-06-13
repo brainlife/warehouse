@@ -239,10 +239,12 @@ function handle_rule(rule, cb) {
     });
 
     function handle_subject(subject, next_subject) {
+        /* disabling this now because we are only running rule when datasets or rule is updated
         if(running >= config.rule.max_task_per_rule) {
             rlogger.info("reached max running task.. skipping the rest of subjects", subject, running);
             return next_subject();
         }
+        */
 
         if(rule.subject_match && !subject.match(rule.subject_match)) {
             return next_subject();
