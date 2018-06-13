@@ -1,48 +1,33 @@
 <template>
     <!--TODO replace with vue-select-->
-    <select multiple="multiple" style="width: 100%;"></select>
+    <v-select multiple taggable v-model='tags' :options='options' :placeholder='placeholder' :close-on-select="false">
+        <span slot="no-options">
+            <!-- Don't show anything if there are no options -->
+        </span>
+    </v-select>
 </template>
 
 <script>
+import vSelect from 'vue-select'
+
 export default {
     props: ['options', 'value', 'placeholder'],
-    mounted() {
-        //make sure options include values
-        let _options = this.value.concat(this.options);
-        $(this.$el).select2({
-            tags: true,
-            data: _options,
-            placeholder: this.placeholder, //TODO doesn't seem to work..
-            language: {
-                noResults: ()=>"(Please Enter Tag)",
-            },
-        })
-        .val(this.value)
-        .trigger('change')
-        .on('change', ()=>{
-            this.$emit('input', $(this.$el).val());  
-        });
-    },
+    components: { vSelect },
+    
     data: function() {
         return {
-            old: null,
+            tags: null
         }
+    },
+    
+    mounted() {
+        this.tags = this.value;
     },
 
     watch: {
-        value: function(value) {
-            console.log("tageditor value changed", value);
-            if(JSON.stringify(value) === JSON.stringify(this.old)) return; //don't update if it's same
-            $(this.$el).val(value).trigger('change');
-            this.old = value;
-        },
-        options: function(options) {
-            $(this.$el).empty().select({data: options});
-        },
+        'tags': function() {
+            this.$emit('input', this.tags);
+        }
     },
-
-    destroyed: function () {
-        $(this.$el).off().select2('destroy');
-    }
 }
 </script>

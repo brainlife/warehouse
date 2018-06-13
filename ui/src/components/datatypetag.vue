@@ -14,23 +14,55 @@ import Vue from 'vue'
 
 export default {
     props: [ 'datatype', 'tags' ],
+    
     data() {
         return {
             ready: false,
+
             _datatype: null,
+            name: null, 
+            color: null, 
         }
     },
 
     watch: {
         datatype: function() {
-            //console.log("watch dataatype.................");
-            this.load();
+            this.init();
         }
     },
     
     computed: {
+    },
 
-        name: function() {
+    mounted() {
+        this.init();
+    },
+
+    methods: {
+        init: function() {
+            this.ready = false;
+
+            if(!this.datatype) return;
+
+            //user could pass datatype as string(id) or an object
+            //TODO - I should cache datatype results?
+            if(typeof this.datatype != "string") {
+                this.post_init(this.datatype);
+            } else {
+                //if passed as string (id), dereference it from db
+                this.$http.get("datatype", {params: {
+                    find: JSON.stringify({
+                        _id: this.datatype,
+                    })
+                }}).then(res=>{
+                    this.post_init(res.body.datatypes[0]);
+                });
+            }
+        },
+
+        post_init: function(datatype) {
+            this._datatype = datatype;
+
             //trim fist token
             if(!this._datatype) return "unknown";
             if(!this._datatype.name) {
@@ -38,10 +70,8 @@ export default {
             }
             var tokens = this._datatype.name.split("/");
             if(tokens.length > 1) tokens = tokens.splice(1);
-            return tokens.join("/");
-        },
+            this.name = tokens.join("/");
 
-        color: function() {
             //map datatype.name to 0 - 360
             if(!this._datatype) return {color: "#666"};
             if(!this._datatype.name) {
@@ -50,35 +80,10 @@ export default {
             }
             var hash = this._datatype.name.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
             var numhash = Math.abs(hash+120)%360;
-            return "hsl("+(numhash%360)+", 50%, 60%)"
+            this.color = "hsl("+(numhash%360)+", 50%, 60%)"
+
+            this.ready = true;
         }
-    },
-
-    mounted() {
-        this.load();
-    },
-
-    methods: {
-        load: function() {
-            if(this.datatype) {
-                //user could pass datatype as string(id) or an object
-                //TODO - I should cache datatype results?
-                if(typeof this.datatype == "string") {
-                    //if passed as string, load it from db
-                    this.$http.get("datatype", {params: {
-                        find: JSON.stringify({
-                            _id: this.datatype,
-                        })
-                    }}).then(res=>{
-                        this._datatype = res.body.datatypes[0];
-                        this.ready = true;
-                    });
-                } else {
-                    this._datatype = this.datatype;
-                    this.ready = true;
-                }
-            }
-        },
     },
 }
 </script>
