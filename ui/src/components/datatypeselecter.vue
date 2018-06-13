@@ -27,12 +27,11 @@ import vSelect from 'vue-select'
 
 import datatypetag from '@/components/datatypetag'
 import datatypefile from '@/components/datatypefile'
-import datatypecolor from '@/mixins/datatypecolor'
 
 export default {
     components: { vSelect, datatypetag, datatypefile },
     props: [ 'value' ],
-    mixins: [ datatypecolor ],
+    mixins: [],
     
     data () {
         return {
