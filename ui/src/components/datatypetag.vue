@@ -14,6 +14,7 @@ import Vue from 'vue'
 
 export default {
     props: [ 'datatype', 'tags' ],
+    
     data() {
         return {
             ready: false,
