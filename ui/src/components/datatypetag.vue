@@ -14,7 +14,6 @@ import Vue from 'vue'
 
 export default {
     props: [ 'datatype', 'tags' ],
-    mixins: [],
     
     data() {
         return {

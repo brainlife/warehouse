@@ -31,7 +31,6 @@ import datatypefile from '@/components/datatypefile'
 export default {
     components: { vSelect, datatypetag, datatypefile },
     props: [ 'value' ],
-    mixins: [],
     
     data () {
         return {
@@ -66,13 +65,6 @@ export default {
             this.$emit('input', value);
         }
     },
-    
-    methods: {
-        get_short_name: function(name) {
-            if (name.indexOf("/") == -1) return name;
-            return name.substring(name.indexOf("/") + 1);
-        }
-    }
 }
 </script>
 
