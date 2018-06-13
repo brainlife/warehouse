@@ -3,8 +3,8 @@
     <v-select v-model="selected" :options="datatypes" label="name" placeholder="datatype">
         <template slot="option" slot-scope="datatype">
             <div class="item">
-                <div class='datatype_name' :style="{ background: make_color(datatype.name) }">
-                    {{get_short_name(datatype.name)}}
+                <div>
+                    <datatypetag :datatype="datatype" :tags="[]" />
                 </div>
                 <div>
                     <small style="opacity:.7;">{{datatype.desc}}</small>
@@ -83,11 +83,5 @@ export default {
     text-overflow:ellipsis;
     overflow:hidden;
     white-space:normal !important;
-}
-.datatype_name {
-    display:inline-block;
-    color:white;
-    padding-left:5px;
-    padding-right:5px;
 }
 </style>
