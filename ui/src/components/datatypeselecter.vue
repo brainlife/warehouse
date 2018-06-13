@@ -27,10 +27,12 @@ import vSelect from 'vue-select'
 
 import datatypetag from '@/components/datatypetag'
 import datatypefile from '@/components/datatypefile'
+import datatypecolor from '@/mixins/datatypecolor'
 
 export default {
     components: { vSelect, datatypetag, datatypefile },
     props: [ 'value' ],
+    mixins: [ datatypecolor ],
     
     data () {
         return {
@@ -68,11 +70,6 @@ export default {
     },
     
     methods: {
-        make_color: function(name) {
-            var hash = name.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
-            var numhash = Math.abs(hash+120)%360;
-            return "hsl("+(numhash%360)+", 50%, 60%)"
-        },
         get_short_name: function(name) {
             if (name.indexOf("/") == -1) return name;
             return name.substring(name.indexOf("/") + 1);
