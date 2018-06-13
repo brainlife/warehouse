@@ -3,8 +3,8 @@
     <v-select v-model="selected" :options="datatypes" label="name" placeholder="datatype">
         <template slot="option" slot-scope="datatype">
             <div class="item">
-                <div>
-                    <datatypetag :datatype="datatype._id" :tags="[]" />
+                <div class='datatype_name' :style="{ background: make_color(datatype.name) }">
+                    {{get_short_name(datatype.name)}}
                 </div>
                 <div>
                     <small style="opacity:.7;">{{datatype.desc}}</small>
@@ -27,10 +27,12 @@ import vSelect from 'vue-select'
 
 import datatypetag from '@/components/datatypetag'
 import datatypefile from '@/components/datatypefile'
+import datatypecolor from '@/mixins/datatypecolor'
 
 export default {
     components: { vSelect, datatypetag, datatypefile },
     props: [ 'value' ],
+    mixins: [ datatypecolor ],
     
     data () {
         return {
@@ -65,6 +67,13 @@ export default {
             this.$emit('input', value);
         }
     },
+    
+    methods: {
+        get_short_name: function(name) {
+            if (name.indexOf("/") == -1) return name;
+            return name.substring(name.indexOf("/") + 1);
+        }
+    }
 }
 </script>
 
@@ -74,5 +83,11 @@ export default {
     text-overflow:ellipsis;
     overflow:hidden;
     white-space:normal !important;
+}
+.datatype_name {
+    display:inline-block;
+    color:white;
+    padding-left:5px;
+    padding-right:5px;
 }
 </style>

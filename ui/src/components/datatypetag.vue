@@ -1,6 +1,6 @@
 <template>
 <div v-if="ready" class="dt" :title="_datatype.desc">
-    <div class="dot" :style="{backgroundColor: color}">{{name}}</div
+    <div class="dot" :style="{backgroundColor: make_color(_datatype.name)}">{{name}}</div
     ><div class="tags" v-for="tag in tags" :key="tag">
         <span v-if="tag[0] == '!'" class="text-danger"><icon scale="0.8" name="exclamation-triangle" style="position: relative; top: 2px;"/> {{tag.substring(1)}}</span>
         <span v-else>{{tag}}</span>
@@ -11,9 +11,12 @@
 <script>
 
 import Vue from 'vue'
+import datatypecolor from '@/mixins/datatypecolor'
 
 export default {
     props: [ 'datatype', 'tags' ],
+    mixins: [ datatypecolor ],
+    
     data() {
         return {
             ready: false,
@@ -29,7 +32,6 @@ export default {
     },
     
     computed: {
-
         name: function() {
             //trim fist token
             if(!this._datatype) return "unknown";
@@ -40,18 +42,6 @@ export default {
             if(tokens.length > 1) tokens = tokens.splice(1);
             return tokens.join("/");
         },
-
-        color: function() {
-            //map datatype.name to 0 - 360
-            if(!this._datatype) return {color: "#666"};
-            if(!this._datatype.name) {
-                console.error("name not set");
-                console.error(this._datatype);
-            }
-            var hash = this._datatype.name.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
-            var numhash = Math.abs(hash+120)%360;
-            return "hsl("+(numhash%360)+", 50%, 60%)"
-        }
     },
 
     mounted() {
