@@ -4,7 +4,7 @@
         <template slot="option" slot-scope="datatype">
             <div class="item">
                 <div>
-                    <datatypetag :datatype="datatype._id" :tags="[]" />
+                    <datatypetag :datatype="datatype" :tags="[]" />
                 </div>
                 <div>
                     <small style="opacity:.7;">{{datatype.desc}}</small>
