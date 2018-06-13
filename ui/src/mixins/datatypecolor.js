@@ -1,24 +1,7 @@
 'use strict';
 
 export default {
-    /*
-    created: function () {
-    },
-    */
-    data: function() {
-        return {
-            user_agreements: {},
-        }
-    },
-    created: function() {
-        console.log("mixin/agreement created");
-        this.load_agreement();
-        this.$root.$on("agreements.updated", (id, b)=>{
-            Vue.set(this.user_agreements, id, b);
-        });
-    },
-
-    methods: {
+   methods: {
         make_color: function(name) {
             //map datatype.name to 0 - 360
             if(!name) return "#666";
