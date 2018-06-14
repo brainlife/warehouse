@@ -25,7 +25,10 @@ export default {
     },
 
     watch: {
-        'tags': function() {
+        value: function() {
+            this.tags = this.value;
+        },
+        tags: function() {
             this.$emit('input', this.tags);
         }
     },
