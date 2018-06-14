@@ -1,6 +1,6 @@
 <template>
     <!--TODO replace with vue-select-->
-    <v-select multiple taggable v-model='tags' :options='options' :placeholder='placeholder'>
+    <v-select multiple taggable v-model='tags' :options='options' :placeholder='placeholder' :close-on-select="false">
         <span slot="no-options">
             <!-- Don't show anything if there are no options -->
         </span>
