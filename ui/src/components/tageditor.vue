@@ -16,8 +16,9 @@ export default {
     
     data: function() {
         return {
-            tags: null
-        }
+            old_tags: null,
+            tags: null,
+        };
     },
     
     mounted() {
@@ -25,8 +26,16 @@ export default {
     },
 
     watch: {
-        'tags': function() {
-            this.$emit('input', this.tags);
+        tags: function() {
+            if (JSON.stringify(this.old_tags) != JSON.stringify(this.tags)) {
+                if (this.old_tags) {
+                    this.$emit('input', this.tags);
+                }
+            }
+            this.old_tags = this.tags.slice();
+        },
+        value: function() {
+            this.tags = this.value;
         }
     },
 }

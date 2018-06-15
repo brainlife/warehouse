@@ -50,7 +50,7 @@
                             <b-col cols="3"><span class="form-header">User Tags</span></b-col>
                             <b-col cols="9">
                                 <div v-if="dataset._canedit && alltags">
-                                    <tageditor v-model="dataset.tags" @input="update_dataset('tags')"/>
+                                    <tageditor :value="dataset.tags" v-model="dataset.tags" @input="update_dataset('tags')" />
                                 </div>
                                 <div v-else>
                                     <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
