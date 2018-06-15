@@ -38,7 +38,10 @@
                             </b-col>
                             <b-col>
                                 <div v-if="dataset._canedit">
-                                    <b-form-textarea v-model="dataset.desc" @input="update_dataset('desc')" :rows="2"/>
+                                    <b-form-textarea v-model="dataset.desc" @input="dataset._desc_dirty = true" :rows="2"/>
+                                    <div v-if="dataset._desc_dirty" style="text-align:right;margin-top:10px;">
+                                        <b-button variant="primary" @click="save_desc()">Save Description</b-button>
+                                    </div>
                                 </div>
                                 <div v-else>
                                     {{dataset.desc}}
@@ -50,10 +53,10 @@
                             <b-col cols="3"><span class="form-header">User Tags</span></b-col>
                             <b-col cols="9">
                                 <div v-if="dataset._canedit && alltags">
-                                    <tageditor :value="dataset.tags" v-model="dataset.tags" @input="update_dataset('tags')" />
-                                    <!-- <div style="text-align:right;">
-                                        <b-button v-if="dataset._tags_dirty" variant="primary" @click="save_tags()">Save Tags</b-button>
-                                    </div> -->
+                                    <tageditor :value="dataset.tags" v-model="dataset.tags" @input="dataset._tags_dirty = true" />
+                                    <div v-if="dataset._tags_dirty" style="text-align:right;margin-top:10px;">
+                                        <b-button variant="primary" @click="save_tags()">Save Tags</b-button>
+                                    </div>
                                 </div>
                                 <div v-else>
                                     <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
@@ -502,6 +505,8 @@ export default {
 
                 Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
                 Vue.set(this.dataset, '_meta_dirty',  false);
+                Vue.set(this.dataset, '_tags_dirty',  false);
+                Vue.set(this.dataset, '_desc_dirty',  false);
 
                 //optionally, load task info
                 if(this.dataset.prov && this.dataset.prov.task_id) {
@@ -593,7 +598,15 @@ export default {
             document.location = '/pub/'+pub._id;
         },
         */
-
+        
+        save_desc: function() {
+            this.update_dataset('desc');
+            this.dataset._desc_dirty = false;
+        },
+        save_tags: function() {
+            this.update_dataset('tags');
+            this.dataset._tags_dirty = false;
+        },
         save_meta: function() {
             try {
                 this.dataset.meta = JSON.parse(this.dataset._meta);
