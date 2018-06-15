@@ -51,6 +51,9 @@
                             <b-col cols="9">
                                 <div v-if="dataset._canedit && alltags">
                                     <tageditor :value="dataset.tags" v-model="dataset.tags" @input="update_dataset('tags')" />
+                                    <!-- <div style="text-align:right;">
+                                        <b-button v-if="dataset._tags_dirty" variant="primary" @click="save_tags()">Save Tags</b-button>
+                                    </div> -->
                                 </div>
                                 <div v-else>
                                     <span class="text-muted" v-if="dataset.tags.length == 0">No Tags</span>
