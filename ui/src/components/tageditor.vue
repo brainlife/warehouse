@@ -16,20 +16,38 @@ export default {
     
     data: function() {
         return {
-            tags: null
-        }
+            dont_emit: null,
+            old_tags: null,
+            tags: null,
+        };
     },
     
     mounted() {
-        this.tags = this.value;
+        if (this.value) {
+            this.tags = this.value;
+            this.dont_emit = true;
+        }
     },
 
     watch: {
-        value: function() {
-            this.tags = this.value;
-        },
         tags: function() {
-            this.$emit('input', this.tags);
+            if (JSON.stringify(this.old_tags) != JSON.stringify(this.tags)) {
+                if (!this.dont_emit) {
+                    this.$emit('input', this.tags);
+                }
+                this.dont_emit = false;
+                this.old_tags = this.tags.slice();
+            }
+        },
+        value: function() {
+            if (!this.tags) {
+                this.dont_emit = true;
+                this.old_tags = null;
+            } else {
+                this.old_tags = this.tags.slice();
+            }
+            
+            this.tags = this.value;
         }
     },
 }
