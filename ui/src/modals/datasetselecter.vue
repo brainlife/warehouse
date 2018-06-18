@@ -126,6 +126,7 @@ export default {
         },
 
         grab_datasets: function(params, cb) {
+            console.log(params, this.project);
             // select2 page parameter -> determines what new 'page' of data to get for the dropdown menu
             // but it's not set on its initial call, so we have to set it to 1 when it's undefined
             if (!params.page) {
