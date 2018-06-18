@@ -24,7 +24,7 @@
                     <div v-if="!file.uploaded && file.progress">
                         <div class="button" @click="cancelupload(file)" style="float: right; position: relative; top:-5px;"><icon name="times"/></div>
                         Uploading {{file.local_filename}}
-                        <el-progress :text-inside="true" :stroke-width="18" :percentage="Math.floor(file.progress.loaded*1000/file.progress.total)/10"></el-progress>
+                        <b-progress :value="Math.floor(file.progress.loaded*1000/file.progress.total)/10" show-value/>
                     </div>
 
                     <div v-if="file.uploaded">
@@ -60,12 +60,15 @@
 
             <!--show info-->
             <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" 
-                v-if="k != 'errors' && k != 'warnings' && k != 'datatype_tags' && k != 'tags'" :label="k">
+                v-if="k != 'errors' && k != 'warnings' && k != 'datatype_tags' && k != 'tags' && k != 'brainlife'" :label="k">
                 <pre v-highlightjs="v" v-if="typeof v == 'string'" style="max-height: 200px; overflow: auto;"><code class="text hljs"></code></pre>
                 <div v-else>
                     <pre>{{v}}</pre>
                 </div>
             </b-form-group>
+            <!-- 3d plot doesn't seem to work yet (https://github.com/statnett/vue-plotly/issues/7)
+            <product :product="tasks.validation.product"/>
+            -->
 
             <b-form-group horizontal label="Dataset Tags">
                 <tageditor v-model="tags"/>
@@ -77,7 +80,6 @@
             </b-form-group>
         </div>
     </div>
-
 
     <div slot="modal-footer">
         <b-form-group v-if="mode == 'upload'">
@@ -102,10 +104,13 @@ import projectaccess from '@/components/projectaccess'
 import projectselecter from '@/components/projectselecter'
 import task from '@/components/task'
 import tageditor from '@/components/tageditor'
+import product from '@/components/product'
 
 //singleton instance to handle upload request
 export default {
-    components: { sidemenu, pageheader, projectselecter, task, tageditor, },
+    components: { 
+        sidemenu, pageheader, projectselecter, 
+        task, tageditor, product },
     data () {
         return {
             instance: null, //instance to upload things to
