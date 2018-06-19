@@ -217,6 +217,14 @@ var datasetSchema = mongoose.Schema({
     //list of publications that this datasets is published under
     publications: [{type: mongoose.Schema.Types.ObjectId, ref: 'Publications'}],
 });
+datasetSchema.post('validate', function() {
+    //normalize meta fields that needs to be in string 
+    if(this.meta) {
+        if(typeof this.meta.subject == 'number') this.meta.subject = this.meta.subject.toString();
+        if(typeof this.meta.session == 'number') this.meta.session = this.meta.session.toString();
+        if(typeof this.meta.run == 'number') this.meta.run = this.meta.run.toString();
+    }
+});
 datasetSchema.post('save', dataset_event);
 datasetSchema.post('findOneAndUpdate', dataset_event);
 datasetSchema.post('findOneAndRemove', dataset_event);
