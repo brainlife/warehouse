@@ -62,7 +62,7 @@ export default new Router({
         {path: '/pubs', component: pubs, meta: {public: true}},
         {path: '/pub/:id', component: pub, meta: {public: true}},
 
-//        {path: '/test', component: test},
+        {path: '/test', component: test},
         {path: '/404', component: missing, meta: {public: true}},
         
         {path: '/admin', component: admin},

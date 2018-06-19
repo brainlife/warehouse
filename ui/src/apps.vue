@@ -67,6 +67,7 @@ export default {
                     { removed: {$exists: false }},
                 ]
             }),
+            limit: 500, //TODO - paging?
             populate: 'inputs.datatype outputs.datatype contributors',
         }})
         .then(res=>{
