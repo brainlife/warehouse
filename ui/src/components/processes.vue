@@ -32,7 +32,7 @@
             </div>
         </div>
     </div>
-    <div class="instances" id="scrolled-area">
+    <div class="instances" id="scrolled-area" ref="scrolled_area">
         <div class="text-muted margin20" v-if="instances.length == 0">
             <p>Here, you can submit series of apps with shared input and output datasets.</p>
             <p>Output datasets will be removed within 25 days. Please archive any output dataset you'd like to keep.</p>
@@ -73,7 +73,7 @@
                         </div>
                     </div>
                 </div>
-                <process v-if="instance == selected" :project="project" :instance="instance" class="process"/>
+                <process v-if="instance == selected" :project="project" :instance="instance" class="process" ref="process" />
             </div>
         </div>
         <br>
@@ -95,6 +95,10 @@ import agreementMixin from '@/mixins/agreement'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 var debounce = null;
+function getHashValue(key) {
+    var matches = window.location.hash.match(new RegExp(key+'=([^&]*)'));
+    return matches ? decodeURIComponent(matches[1]) : null;
+}
 
 export default {
     mixins: [agreementMixin],
@@ -107,7 +111,8 @@ export default {
             instances: null,
             order: 'create_date', //default (new > old)
             show: null, //null == all
-
+            visible_tid: null,
+            
             selected: null,
 
             query: "",
@@ -199,10 +204,17 @@ export default {
     },
 
     mounted: function() {
-        this.load();
+        this.load(() => {
+            Vue.nextTick(() => {
+                this.$refs.scrolled_area.addEventListener('scroll', this.scrolled);
+            });
+        });
     },
 
     destroyed() {
+        if (this.$refs.scrolled) {
+            this.$refs.scrolled.removeEventListener('scroll', this.scrolled);
+        }
         if(this.ws) {
             console.log("disconnecting from ws - processes");
             this.ws.close();
@@ -222,9 +234,17 @@ export default {
             if(this.show) window.localStorage.setItem("processes.show."+group_id, this.show);
             else window.localStorage.removeItem("processes.show."+group_id);
         },
+        visible_tid: function() {
+            console.log(this.visible_tid);
+            let url_tid = getHashValue('tid');
+            let visible_tid = this.visible_tid;
+            
+            if (url_tid != visible_tid) {
+                this.$router.replace('#tid=' + visible_tid);
+            }
+        },
 
         '$route': function() {
-            console.log("route change");
             var subid = this.$route.params.subid;
             if(subid) {
                 var selected = this.instances.find(it=>it._id == subid);
@@ -253,7 +273,7 @@ export default {
     },
 
     methods: {
-        load: function() {
+        load: function(cb) {
             this.check_agreements(this.project, ()=>{
                 let group_id = this.project.group_id;
                 this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
@@ -263,6 +283,7 @@ export default {
                     this.subscribe_instance_update(err=>{
                         if(err) return this.notify_error(err);
                     });
+                    if (cb) return cb();
                 });
             });
         },
@@ -285,12 +306,48 @@ export default {
             console.error(err);
             this.$notify({type: 'error', text: err.body.message});
         },
+        
+        calculate_center_distance: function(el) {
+            let bb = el.getBoundingClientRect();
+            let window_center = window.innerHeight / 2;
+            let el_center = bb.top + bb.height / 2;
+            return Math.abs(el_center - window_center);
+        },
+        
+        scrolled: function() {
+            let process = this.$refs.process[0];
+            
+            if (process) {
+                if (process.$refs.tasks) {
+                    let smallest_center_distance = null;
+                    let visible_task_idx = null;
+                    // get task element with smallest distance to
+                    // the center of the viewport
+                    process.$refs.tasks.forEach((task_element, idx) => {
+                        let center_distance = this.calculate_center_distance(task_element);
+                        if (!smallest_center_distance
+                            || center_distance < smallest_center_distance) {
+                            smallest_center_distance = center_distance;
+                            visible_task_idx = idx;
+                        }
+                    });
+                    this.visible_tid = process.tasks[visible_task_idx]._id;
+                }
+            }
+        },
 
         scrollto: function(instance) {
-            console.log("scrolling to", instance);
             var elem = document.getElementById(instance._id);
             var top = elem.offsetTop;
-            document.getElementById("scrolled-area").scrollTop = top;
+            if (this.$refs.scrolled_area) {
+                if (this.$refs.process) {
+                    let process = this.$refs.process[0];
+                    console.log(process);
+                }
+                else {
+                    this.$refs.scrolled_area.scrollTop = top;
+                }
+            }
         },
 
         toggle_instance: function(instance) {

@@ -13,7 +13,7 @@
     </div>
 
     <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-    <div class="tasks" v-if="tasks" v-for="task in tasks" :key="task._id">
+    <div class="tasks" v-if="tasks" v-for="task in tasks" :key="task._id" ref="tasks">
         <!--task-id and toggler-->
         <div style="float: right;" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
             <icon name="caret-down" v-if="task.show"/><icon name="caret-right" v-else/> 
@@ -179,6 +179,10 @@ const async = require('async');
 //store full list of datatypes / projects names...
 let cache_datatypes = null;
 let cache_projects = null;
+function getHashValue(key) {
+    var matches = window.location.hash.match(new RegExp(key+'=([^&]*)'));
+    return matches ? decodeURIComponent(matches[1]) : null;
+}
 
 export default {
     props: [ 'project', 'instance' ],
@@ -196,6 +200,7 @@ export default {
     data() {
         return {
             tasks: null,
+            
             datatypes: {}, 
             archived: [], //archived datasets from this process
             projects: null,
@@ -218,7 +223,7 @@ export default {
         if(cache_datatypes && cache_projects) {
             this.datatypes = cache_datatypes;
             this.projects = cache_projects;
-            return this.load();
+            return this.load(this.gotoTid);
         }
 
         this.$http.get('datatype').then(res=>{
@@ -238,7 +243,7 @@ export default {
             });
             cache_projects = this.projects;
 
-            this.load();
+            this.load(this.gotoTid);
         });
 
     },
@@ -287,8 +292,12 @@ export default {
 
     watch: {
         instance: function() {
-            console.log("instance updated");
             this.load();
+        },
+        $route: function(to, from) {
+            if (from.path != to.path) {
+                this.gotoTid();
+            }
         },
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
@@ -296,6 +305,14 @@ export default {
     },
 
     methods: {
+        gotoTid: function() {
+            let tid = getHashValue('tid');
+            if (typeof tid == 'string' && tid.length > 0) {
+                // this.scrollto(tid);
+                console.log('scroll to', tid);
+            }
+        },
+        
         findtask: function(id) {
             var found = null;
             this.tasks.forEach(task=>{
@@ -317,7 +334,7 @@ export default {
             this.$root.$emit('archiver.show', {task, output});
         },
 
-        load() {
+        load(cb) {
             this.loading = true;
             if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -433,6 +450,7 @@ export default {
                     limit: 300,
                 }}).then(res=>{
                     this.archived = res.body.datasets;
+                    if (cb) cb();
                 });
             });
         },
