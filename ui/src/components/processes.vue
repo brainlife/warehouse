@@ -268,7 +268,7 @@ export default {
     },
 
     methods: {
-        load: function(cb) {
+        load: function() {
             this.check_agreements(this.project, ()=>{
                 let group_id = this.project.group_id;
                 this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
@@ -278,7 +278,6 @@ export default {
                     this.subscribe_instance_update(err=>{
                         if(err) return this.notify_error(err);
                     });
-                    if (cb) return cb();
                 });
             });
         },
@@ -300,13 +299,6 @@ export default {
         notify_error: function(err) {
             console.error(err);
             this.$notify({type: 'error', text: err.body.message});
-        },
-        
-        calculate_center_distance: function(el) {
-            let bb = el.getBoundingClientRect();
-            let window_center = window.innerHeight / 2;
-            let el_center = bb.top + bb.height / 2;
-            return Math.abs(el_center - window_center);
         },
 
         scrollto: function(instance) {
