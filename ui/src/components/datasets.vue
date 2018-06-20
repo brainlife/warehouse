@@ -379,7 +379,7 @@ export default {
                     //lookup datatype ids that matches the query
                     let datatype_ids = [];
                     for(var id in this.datatypes) {
-                        if((this.datatypes[id].name + "").includes(q)) datatype_ids.push(id);
+                        if(this.datatypes[id].name.includes(q)) datatype_ids.push(id);
                     }
                     ands.push({$or: [
                         {"meta.subject": {$regex: q}},
