@@ -312,7 +312,7 @@ export default {
         gotoTid: function() {
             let tid = getHashValue('tid');
             if (typeof tid == 'string' && tid.length > 0) {
-                this.scrollto(tid, true);
+                this.scrollto(tid);
             }
         },
         
