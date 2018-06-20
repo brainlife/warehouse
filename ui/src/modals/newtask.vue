@@ -298,7 +298,7 @@ export default {
                         
                         //use file.filename/dirname path, unless filemapping from the input dataset is provided
                         var path = base+"/"+(file.filename||file.dirname);
-                        if(dataset.files && dataset.files[node.input_id]) {
+                        if(dataset.files && dataset.files[node.file_id]) {
                             path = base+"/"+dataset.files[node.file_id];
                         }
                         if(input.multi) config[k].push(path);

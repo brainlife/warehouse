@@ -51,12 +51,15 @@
         <task :task="tasks.validation" v-if="!tasks.validation.product"/>
         <div v-else>
             <b-form-group>
+                <!--
                 <b-alert show variant="danger" v-for="(msg, $idx) in tasks.validation.product.errors" :key="$idx">{{msg}}</b-alert>
                 <b-alert show variant="warning" v-for="(msg, $idx) in tasks.validation.product.warnings" :key="$idx">{{msg}}</b-alert>
+                -->
                 <b-alert show variant="success" v-if="tasks.validation.product.errors.length == 0">
                     Your data looks good! Please check information below and click Archive button.
                 </b-alert>
             </b-form-group>
+            <product :product="tasks.validation.product"/>
 
             <!--show info-->
             <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" 
@@ -66,9 +69,6 @@
                     <pre>{{v}}</pre>
                 </div>
             </b-form-group>
-            <!-- 3d plot doesn't seem to work yet (https://github.com/statnett/vue-plotly/issues/7)
-            <product :product="tasks.validation.product"/>
-            -->
 
             <b-form-group horizontal label="Dataset Tags">
                 <tageditor v-model="tags"/>

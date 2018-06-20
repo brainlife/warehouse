@@ -47,11 +47,20 @@ module.exports = {
         loader: 'vue-loader',
         options: vueLoaderConfig
       },
+      
       {
         test: /\.js$/,
         loader: 'babel-loader',
         include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')]
       },
+      
+      //plotly needs ify-loader (rest should be babel-loader - for es6 syntax)
+      {
+        test: /\.js$/,
+		loader: 'ify-loader', //to make it work with plotly
+        exclude: [resolve('src')],
+      },
+
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         loader: 'url-loader',
@@ -75,7 +84,7 @@ module.exports = {
           limit: 10000,
           name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
         }
-      }
+      },
     ],
   },
 
