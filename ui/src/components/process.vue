@@ -295,9 +295,7 @@ export default {
             this.load();
         },
         $route: function(to, from) {
-            if (from.path != to.path) {
-                this.gotoTid();
-            }
+            this.gotoTid();
         },
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
@@ -308,8 +306,8 @@ export default {
         gotoTid: function() {
             let tid = getHashValue('tid');
             if (typeof tid == 'string' && tid.length > 0) {
-                // this.scrollto(tid);
-                console.log('scroll to', tid);
+                this.scrollto(tid, true);
+                // console.log('scroll to', tid);
             }
         },
         
@@ -321,6 +319,11 @@ export default {
             return found;
         },
         scrollto: function(id) {
+            let tid = getHashValue('tid');
+            if (tid != id) {
+                this.$router.push('#tid=' + id);
+            }
+            
             var header = document.getElementsByClassName("instance-active")[0];
             var elem = document.getElementById(id);
             var top = elem.offsetTop-header.clientHeight;

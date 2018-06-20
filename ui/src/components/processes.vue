@@ -95,10 +95,6 @@ import agreementMixin from '@/mixins/agreement'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 var debounce = null;
-function getHashValue(key) {
-    var matches = window.location.hash.match(new RegExp(key+'=([^&]*)'));
-    return matches ? decodeURIComponent(matches[1]) : null;
-}
 
 export default {
     mixins: [agreementMixin],
@@ -204,17 +200,10 @@ export default {
     },
 
     mounted: function() {
-        this.load(() => {
-            Vue.nextTick(() => {
-                this.$refs.scrolled_area.addEventListener('scroll', this.scrolled);
-            });
-        });
+        this.load();
     },
 
     destroyed() {
-        if (this.$refs.scrolled) {
-            this.$refs.scrolled.removeEventListener('scroll', this.scrolled);
-        }
         if(this.ws) {
             console.log("disconnecting from ws - processes");
             this.ws.close();
@@ -313,40 +302,12 @@ export default {
             let el_center = bb.top + bb.height / 2;
             return Math.abs(el_center - window_center);
         },
-        
-        scrolled: function() {
-            let process = this.$refs.process[0];
-            
-            if (process) {
-                if (process.$refs.tasks) {
-                    let smallest_center_distance = null;
-                    let visible_task_idx = null;
-                    // get task element with smallest distance to
-                    // the center of the viewport
-                    process.$refs.tasks.forEach((task_element, idx) => {
-                        let center_distance = this.calculate_center_distance(task_element);
-                        if (!smallest_center_distance
-                            || center_distance < smallest_center_distance) {
-                            smallest_center_distance = center_distance;
-                            visible_task_idx = idx;
-                        }
-                    });
-                    this.visible_tid = process.tasks[visible_task_idx]._id;
-                }
-            }
-        },
 
         scrollto: function(instance) {
             var elem = document.getElementById(instance._id);
             var top = elem.offsetTop;
             if (this.$refs.scrolled_area) {
-                if (this.$refs.process) {
-                    let process = this.$refs.process[0];
-                    console.log(process);
-                }
-                else {
-                    this.$refs.scrolled_area.scrollTop = top;
-                }
+                this.$refs.scrolled_area.scrollTop = top;
             }
         },
 
@@ -365,7 +326,7 @@ export default {
                     var elem = document.getElementById(instance._id);
                     if(elem) { //could go missing
                         var top = elem.offsetTop;
-                        var area = document.getElementById("scrolled-area");
+                        var area = this.$refs.scrolled_area;
                         if(elem.offsetTop < area.scrollTop) area.scrollTop = top;
                     }
                 });
