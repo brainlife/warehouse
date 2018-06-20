@@ -56,7 +56,7 @@ export default {
             app_groups: null,
             query: "",
             config: Vue.config,
-        }
+        };
     },
 
     created: function() {
@@ -109,9 +109,8 @@ export default {
             this.sorted_tags.forEach(tag=>{
                 var e = document.getElementById(tag);
                 if(e.offsetTop <= scrolltop) this.active = tag;
-            });     
+            });
         },
-
     },
 }
 </script>

@@ -205,6 +205,7 @@ export default {
                         text: subject,
                         date: dataset.create_date,
                         datatype: this.datatypes[dataset.datatype],
+                        datatype_tags: dataset.datatype_tags,
                         tags: dataset.datatype_tags,
                         //meta: dataset.meta,
                     };

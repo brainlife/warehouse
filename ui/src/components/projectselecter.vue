@@ -32,11 +32,12 @@ export default {
         return {
             selected: null, 
             options: [], 
-        }
+        };
     },
 
     watch: {
         selected: function() {
+            console.log("changing select...");
             if(this.selected) {
                 console.log("new select", this.selected);
                 localStorage.setItem('last_projectid_used', this.selected);
@@ -45,6 +46,11 @@ export default {
                 this.$emit('input', null);
             }
         },
+        value: function() {
+            if (this.selected != this.value) {
+                this.selected = this.value;
+            }
+        }
     },
 
     mounted: function() {
@@ -54,7 +60,6 @@ export default {
     methods: {
         query_projects: function(find) {
             this.options = [];
-
             if(this.allownull) this.options.push({value: null, text: this.placeholder||''});
             this.$http.get('project', {params: {
                 find: JSON.stringify(find),
@@ -76,12 +81,12 @@ export default {
                         //if we can't find it, and null not allowed, then select first one from the list
                         this.selected = this.options[0].value;
                     }
-                } 
+                }
             });
         },
 
         load_projects: function() {         
-            var find = null
+            var find = null;
             if(this.canwrite) {
                 //only load project that user has write access to
                 find = {

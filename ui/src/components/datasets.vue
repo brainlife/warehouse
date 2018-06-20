@@ -28,7 +28,7 @@
 
             <!--start of dataset list-->
             <div class="list" id="scrolled-area">
-                <div v-for="(page, page_idx) in pages" v-if="datatypes">
+                <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx">
                     <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
                         :style="{height: page_info[page_idx].height}">
                         <!--show empty div to speed up rendering if it's outside the view-->
