@@ -185,10 +185,6 @@ const async = require('async');
 //store full list of datatypes / projects names...
 let cache_datatypes = null;
 let cache_projects = null;
-function getHashValue(key) {
-    var matches = window.location.hash.match(new RegExp(key+'=([^&]*)'));
-    return matches ? decodeURIComponent(matches[1]) : null;
-}
 
 export default {
     props: [ 'project', 'instance' ],
@@ -229,7 +225,7 @@ export default {
         if(cache_datatypes && cache_projects) {
             this.datatypes = cache_datatypes;
             this.projects = cache_projects;
-            return this.load(this.gotoTid);
+            return this.load(this.goto_tid);
         }
 
         this.$http.get('datatype').then(res=>{
@@ -249,7 +245,7 @@ export default {
             });
             cache_projects = this.projects;
 
-            this.load(this.gotoTid);
+            this.load(this.goto_tid);
         });
 
     },
@@ -301,7 +297,7 @@ export default {
             this.load();
         },
         $route: function(to, from) {
-            this.gotoTid();
+            this.goto_tid();
         },
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
@@ -309,10 +305,10 @@ export default {
     },
 
     methods: {
-        gotoTid: function() {
-            let tid = getHashValue('tid');
-            if (typeof tid == 'string' && tid.length > 0) {
-                this.scrollto(tid);
+        goto_tid: function() {
+            let tid = +this.$route.hash.substring(1);
+            if (!isNaN(tid) && this.tasks[tid]) {
+                this.scrollto(this.tasks[tid]._id);
             }
         },
         
@@ -324,9 +320,14 @@ export default {
             return found;
         },
         scrollto: function(id) {
-            let tid = getHashValue('tid');
-            if (tid != id) {
-                this.$router.push('#tid=' + id);
+            let url_tid = +this.$route.hash.substring(1);
+            let _ids = this.tasks.map(t => t._id);
+            let tid = _ids.indexOf(id); // this.findtask(id).config._tid doesn't always work
+            
+            if (tid > -1) {
+                if (url_tid != tid) {
+                    this.$router.push("#" + tid);
+                }
             }
             
             var header = document.getElementsByClassName("instance-active")[0];

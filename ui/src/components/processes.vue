@@ -47,7 +47,7 @@
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)">
                     <b-row style="flex-wrap:nowrap !important;">
-                        <b-col :cols="6">
+                        <b-col>
                             <div class="instance-status instance-info" :class="'instance-status-'+instance.status">
                                 <statusicon :status="instance.status"/>
                             </div>
@@ -113,7 +113,6 @@ export default {
             instances: null,
             order: 'create_date', //default (new > old)
             show: null, //null == all
-            visible_tid: null,
             
             selected: null,
 
@@ -228,15 +227,6 @@ export default {
             let group_id = this.project.group_id;
             if(this.show) window.localStorage.setItem("processes.show."+group_id, this.show);
             else window.localStorage.removeItem("processes.show."+group_id);
-        },
-        visible_tid: function() {
-            console.log(this.visible_tid);
-            let url_tid = getHashValue('tid');
-            let visible_tid = this.visible_tid;
-            
-            if (url_tid != visible_tid) {
-                this.$router.replace('#tid=' + visible_tid);
-            }
         },
 
         '$route': function() {
