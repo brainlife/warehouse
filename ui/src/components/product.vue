@@ -5,6 +5,7 @@
         <b-alert v-else-if="alert.type == 'info'" variant="secondary" show>{{alert.msg}}</b-alert>
         <b-alert v-else-if="alert.type == 'danger'" variant="danger" show>{{alert.msg}}</b-alert>
         <b-alert v-else-if="alert.type == 'warning'" variant="warning" show>{{alert.msg}}</b-alert>
+        <b-alert v-else-if="alert.type == 'success'" variant="success" show>{{alert.msg}}</b-alert>
         <div v-else>
             <b-alert show variant="danger">Unknown brainlife product type</b-alert>
             <pre v-if="Object.keys(other_product).length != 0" v-highlightjs="JSON.stringify(other_product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
@@ -59,7 +60,9 @@ export default {
         plotidx: function() {
             //this resizes the graph, but somehow duplicates legend.. (waiting for it to be resolved)
             //https://github.com/statnett/vue-plotly/issues/6
-            this.$refs.plotrefs[this.plotidx].plot();
+            let p = this.$refs.plotrefs[this.plotidx];
+            //if(p) p.relayout();
+            if(p) p.newPlot();
         },
     },
 }

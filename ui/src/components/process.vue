@@ -29,7 +29,7 @@
                     </div>
 
                     <!--input-->
-                    <div slot="input" v-if="task.config._inputs">
+                    <div slot="input" v-if="task.config._inputs" style="padding: 10px;">
                         <div v-for="(input, idx) in task.config._inputs" :key="idx" style="padding: 5px;">
                             <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                                 <b v-if="input.meta.subject">{{input.meta.subject}}</b>
@@ -58,61 +58,63 @@
                     </div>
 
                     <!--output-->
-                    <div slot="output" v-if="task.config._outputs.length > 0">
-                        <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 5px;">
-                            <div class="float-right" style="position: relative; top: -5px;">
-                                <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
-                                    <icon name="cubes"/>
-                                </div>
-                                <div v-if="task.status == 'finished'" style="display: inline-block;">
-                                    <div class="button" title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
-                                        <icon name="eye"/>
+                    <div slot="output" v-if="task.config._outputs.length > 0 || task.product">
+                        <div v-if="task.config._outputs.length > 0" style="padding: 10px">
+                            <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 5px;">
+                                <div class="float-right" style="position: relative; top: -5px;">
+                                    <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
+                                        <icon name="cubes"/>
                                     </div>
-                                    <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
-                                    <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
+                                    <div v-if="task.status == 'finished'" style="display: inline-block;">
+                                        <div class="button" title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
+                                            <icon name="eye"/>
+                                        </div>
+                                        <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
+                                        <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
+                                    </div>
                                 </div>
+
+                                <b v-if="output.meta.subject">{{output.meta.subject}}</b>
+                                <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
+                                <mute>
+                                    <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
+                                </mute>
+                                <b-badge v-if="output.archive" variant="primary">Auto Archive: {{projectname(output.archive.project)}}</b-badge>
+
+                                <!--foreign project-->
+                                <span class="text-muted" v-if="output.dataset_id && output.project != project._id">
+                                    <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> <b>{{projectname(output.project)}}</b>
+                                </span>
+
+                                <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
+                                    <div class="archived-datasets-title">Archived Datasets</div>
+                                    <ul class="archived">
+                                        <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
+                                            <timeago class="text-muted" style="float: right" :since="dataset.create_date" :auto-update="10"/>
+
+                                            <icon name="cubes"></icon>
+                                            <mute>{{dataset.desc||dataset._id}}</mute>
+                                            
+                                            <tags :tags="dataset.tags"/>
+                                            <span class="text-muted" v-if="dataset.project != project._id">
+                                                <small>on</small> <icon name="shield-alt"/> <b>{{projectname(dataset.project)}}</b>
+                                            </span>
+
+                                            <!--show dataset status if it's not stored-->
+                                            <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
+                                                <icon name="cog" :spin="true"/> Storing ...
+                                            </span> 
+                                            <span v-else-if="dataset.status == 'stored'"></span>
+                                            <span v-else><statustag :status="dataset.status"/></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <!--
+                                <archiveform v-if="archiving === output" :task="task" :output="output" @done="archive_submitted"></archiveform>
+                                -->
                             </div>
-
-                            <b v-if="output.meta.subject">{{output.meta.subject}}</b>
-                            <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
-                            <mute>
-                                <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
-                            </mute>
-                            <b-badge v-if="output.archive" variant="primary">Auto Archive: {{projectname(output.archive.project)}}</b-badge>
-
-                            <!--foreign project-->
-                            <span class="text-muted" v-if="output.dataset_id && output.project != project._id">
-                                <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> <b>{{projectname(output.project)}}</b>
-                            </span>
-
-                            <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
-                                <div class="archived-datasets-title">Archived Datasets</div>
-                                <ul class="archived">
-                                    <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
-                                        <timeago class="text-muted" style="float: right" :since="dataset.create_date" :auto-update="10"/>
-
-                                        <icon name="cubes"></icon>
-                                        <mute>{{dataset.desc||dataset._id}}</mute>
-                                        
-                                        <tags :tags="dataset.tags"/>
-                                        <span class="text-muted" v-if="dataset.project != project._id">
-                                            <small>on</small> <icon name="shield-alt"/> <b>{{projectname(dataset.project)}}</b>
-                                        </span>
-
-                                        <!--show dataset status if it's not stored-->
-                                        <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                                            <icon name="cog" :spin="true"/> Storing ...
-                                        </span> 
-                                        <span v-else-if="dataset.status == 'stored'"></span>
-                                        <span v-else><statustag :status="dataset.status"/></span>
-                                    </li>
-                                </ul>
-                            </div>
-                            <!--
-                            <archiveform v-if="archiving === output" :task="task" :output="output" @done="archive_submitted"></archiveform>
-                            -->
                         </div>
-                        <product :product="task.product"/>
+                        <product v-if="task.product" :product="task.product"/>
                     </div>
                 </task>
 

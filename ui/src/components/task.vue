@@ -59,12 +59,12 @@
             <h4>
                 <strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
-                    <time v-if="task.status == 'requested'"><timeago :since="task.create_date"/></time>
-                    <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date"/></time>
-                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date"/></time>
-                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date"/></time>
-                    <time v-if="task.status == 'failed'"><timeago :since="task.fail_date"/></time>
-                    <time v-if="task.status == 'removed'"><timeago :since="task.remove_date"/></time>
+                    <time v-if="task.status == 'requested'"><timeago :since="task.create_date" :auto-update="60"/></time>
+                    <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date" :auto-update="60"/></time>
+                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :auto-update="30"/></time>
+                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :auto-update="60"/></time>
+                    <time v-if="task.status == 'failed'"><timeago :since="task.fail_date" :auto-update="60"/></time>
+                    <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :auto-update="60"/></time>
                 </small>
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
@@ -72,14 +72,14 @@
     </div>
 
     <div v-if="task.service != 'soichih/sca-product-raw'">
-        <taskconfig :task="task" class="task-content"/>
+        <taskconfig :task="task" style="padding: 10px;"/>
     </div>
     <div v-if="has_input_slot">
         <div @click="toggle('input')" class="toggler">
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
         </div>
         <transition name="fadeHeight">
-            <div v-if="activeSections.input" class="task-content">
+            <div v-if="activeSections.input">
                 <slot name="input"></slot>
             </div>
         </transition>
@@ -91,10 +91,8 @@
             <small v-if="remove_in_days < 7" class="text-danger" style="float: right;">Will be removed in <b>{{remove_in_days.toFixed(0)}} days</b></small>
         </div>
         <transition name="fadeHeight">
-            <div class="task-content">
-                <div v-if="activeSections.output">
-                    <slot name="output"></slot>
-                </div>
+            <div v-if="activeSections.output">
+                <slot name="output"></slot>
             </div>
         </transition>
     </div>
@@ -254,6 +252,9 @@ export default {
 </script>
 
 <style scoped>
+.task {
+background-color: #fafafa;
+}
 .status-card {
 padding: 5px;
 }
@@ -335,9 +336,5 @@ max-height: 230px;
 {
 opacity: 0;
 max-height: 0px;
-}
-.task-content {
-padding: 10px;
-background-color: #fafafa;
 }
 </style>
