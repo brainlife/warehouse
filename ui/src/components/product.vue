@@ -12,7 +12,7 @@
     </div>
     <b-tabs class="brainlife-tab" v-model="plotidx">
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
-            <vue-plotly :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize-bug="true"/>
+            <vue-plotly :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true"/>
         </b-tab>
     </b-tabs>
 </div>
@@ -59,7 +59,7 @@ export default {
         plotidx: function() {
             //this resizes the graph, but somehow duplicates legend.. (waiting for it to be resolved)
             //https://github.com/statnett/vue-plotly/issues/6
-            //this.$refs.plotrefs[this.plotidx].plot();
+            this.$refs.plotrefs[this.plotidx].plot();
         },
     },
 }

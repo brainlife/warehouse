@@ -10,7 +10,7 @@
     "deploy": "rsync --delete -avz -e ssh dist/ root@test.brainlife.io:/root/docker/nginx/static/warehouse"
   },
   "dependencies": {
-    "@statnett/vue-plotly": "^0.1.0",
+    "@statnett/vue-plotly": "^0.2.0",
     "animate.css": "^3.6.1",
     "async": "^2.6.1",
     "bootstrap": "^4.1.1",
@@ -76,7 +76,7 @@
     "eslint-config-standard": "^10.2.1",
     "eslint-friendly-formatter": "^3.0.0",
     "eslint-loader": "^1.7.1",
-    "eslint-plugin-html": "^4.0.3",
+    "eslint-plugin-html": "^4.0.5",
     "eslint-plugin-import": "^2.12.0",
     "eslint-plugin-node": "^5.2.0",
     "eslint-plugin-promise": "^3.8.0",
@@ -113,7 +113,7 @@
     "sinon": "^4.5.0",
     "sinon-chai": "^2.8.0",
     "superagent": "^3.8.1",
-    "uglifyjs-webpack-plugin": "^1.2.5",
+    "uglifyjs-webpack-plugin": "^1.2.6",
     "url-loader": "^0.6.2",
     "vue-loader": "^13.7.2",
     "vue-style-loader": "^3.1.2",
