@@ -507,8 +507,11 @@ margin-top: 20px;
 }
 .instance-desc {
 font-size: 95%;
+display:block;
 white-space: nowrap;
-margin-top: 3px;
+margin-right:300px;
+margin-left:40px;
+margin-top:10px;
 overflow: hidden;
 text-overflow: ellipsis;
 }
