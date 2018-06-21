@@ -140,7 +140,7 @@
             </div>
         </div>
         <div class="instance-col" style="width:300px;">
-            <div class="task-tabs">
+            <div class="task-tabs" ref="task_tabs">
                 <div class="task-container">
                     <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
                         <div class="task-tab-title">
@@ -225,7 +225,7 @@ export default {
         if(cache_datatypes && cache_projects) {
             this.datatypes = cache_datatypes;
             this.projects = cache_projects;
-            return this.load(this.goto_tid);
+            return this.load(this.stickify_tabs);
         }
 
         this.$http.get('datatype').then(res=>{
@@ -245,7 +245,7 @@ export default {
             });
             cache_projects = this.projects;
 
-            this.load(this.goto_tid);
+            this.load(this.stickify_tabs);
         });
 
     },
@@ -290,6 +290,9 @@ export default {
             }); 
             return datasets;
         },
+        header_height: function() {
+            return document.getElementById(this.instance._id).clientHeight;
+        },
     },
 
     watch: {
@@ -302,9 +305,24 @@ export default {
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
         },
+        header_height: function(value) {
+            console.log(value);
+        },
     },
 
     methods: {
+        stickify_tabs: function() {
+            if (this.$refs.task_tabs) {
+                console.log(this.header_height);
+                let instance_element = document.getElementById(this.instance._id);
+                let bb_container = instance_element.getBoundingClientRect();
+                let bb_tabs = this.$refs.task_tabs.getBoundingClientRect();
+                
+                this.$refs.task_tabs.style.position = "sticky";
+                this.$refs.task_tabs.style.top = (bb_tabs.top - bb_container.top) + "px";
+            }
+        },
+        
         goto_tid: function() {
             let tid = +this.$route.hash.substring(1);
             if (!isNaN(tid) && this.tasks[tid]) {
@@ -740,10 +758,6 @@ display:table-cell;
 position:block;
 padding:0;
 vertical-align:top;
-}
-.task-tabs {
-position:sticky;
-top:35px;
 }
 .task-tab {
 font-size: 90%;

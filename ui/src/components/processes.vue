@@ -46,12 +46,14 @@
         <div v-if="instances.length > 0">
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)">
-                    <b-row style="flex-wrap:nowrap !important;">
-                        <b-col>
+                    <b-row>
+                        <b-col :cols="1">
                             <div class="instance-status instance-info" :class="'instance-status-'+instance.status">
                                 <statusicon :status="instance.status"/>
                             </div>
-                            <div class="instance-desc instance-info">
+                        </b-col>
+                        <b-col :cols="5">
+                            <div class="instance-desc">
                                 {{instance.desc}}
                                 <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
                                 <div v-if="instance.config && instance.config.summary" style="display: inline-block; margin-left: 10px; opacity: 0.8;">
@@ -61,7 +63,7 @@
                                 </div>
                             </div>
                         </b-col>
-                        <b-col style="text-align:right;">
+                        <b-col :cols="6" style="text-align:right;">
                             <div class="instance-info">
                                 <contact :id="instance.user_id" short="true"/>
                             </div>
@@ -481,8 +483,7 @@ box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 /*transition: background-color 0.5s, margin 0.5s;*/
 margin-left: 20px;
 margin-right: 20px;
-/* min-height: 35px; */
-height:35px;
+min-height: 35px;
 white-space:nowrap;
 z-index: 1; /*app desc/github name shows up on top without it*/
 transition: margin 0.3s, background-color 0.3s;
@@ -500,6 +501,7 @@ background-color: #eee;
 margin: 0px;
 position: sticky; top: 0px; 
 box-shadow: none;
+white-space: inherit;
 background-color: #f0f0f0;
 }
 .instance-item:not(:first-child) .instance-active {
@@ -507,16 +509,12 @@ margin-top: 20px;
 }
 .instance-desc {
 font-size: 95%;
-display:block;
-white-space: nowrap;
-margin-right:300px;
-margin-left:40px;
-margin-top:10px;
 overflow: hidden;
 text-overflow: ellipsis;
 }
 .instance-active .instance-desc {
 white-space: inherit;
+text-overflow: inherit;
 }
 
 .process {
