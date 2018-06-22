@@ -763,7 +763,6 @@ background-color: #28a745;
 .instance-container {
 display:table;
 width:100%;
-border-spacing:10px;
 }
 .instance-col {
 display:table-cell;

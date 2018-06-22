@@ -46,40 +46,53 @@
         <div v-if="instances.length > 0">
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
-                    <b-row>
-                        <b-col :cols="1">
-                            <div class="instance-status instance-info" :class="'instance-status-'+instance.status">
-                                <statusicon :status="instance.status"/>
-                            </div>
-                        </b-col>
-                        <b-col :cols="5">
-                            <div class="instance-desc">
-                                {{instance.desc}}
-                                <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
-                                <div v-if="instance.config && instance.config.summary" style="display: inline-block; margin-left: 10px; opacity: 0.8;">
-                                    <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw'" :class="summary_class(summary)"> 
-                                        <span v-if="summary.name" :title="summary.name">{{summary.name.substring(0,4).trim()}}</span>
-                                    </span>
+                    <table style="overflow:hidden; width:100%; max-width:100%;" cellpadding="0" cellspacing="0" width="100%" border="0">
+                        <tr>
+                            <td>
+                                <div class="instance-status instance-info" :class="'instance-status-'+instance.status">
+                                    <statusicon :status="instance.status"/>
                                 </div>
-                            </div>
-                        </b-col>
-                        <b-col :cols="6" style="text-align:right;">
-                            <div class="instance-info">
+                            </td>
+                            <td>
+                                <div>
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    Testing
+                                    <!-- <div class="instance-desc" style="overflow:hidden; display: inline-block;">
+                                        {{instance.desc}}
+                                        <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
+                                        <div v-if="instance.config && instance.config.summary" style="display: inline-block; margin-left: 10px; opacity: 0.8;">
+                                            <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw'" :class="summary_class(summary)"> 
+                                                <span v-if="summary.name" :title="summary.name">{{summary.name.substring(0,4).trim()}}</span>
+                                            </span>
+                                        </div>
+                                    </div> -->
+                                </div>
+                            </td>
+                            <td style="width: 330px; text-align: right;">
+                                <div class="process-action instance-info" style="margin-right: 20px; position: relative; top: -4px">
+                                    <div @click.stop="editdesc(instance)" class="button">
+                                        <icon name="edit"/>
+                                    </div>
+                                    <div @click.stop="remove(instance)" class="button">
+                                        <icon name="trash"/>
+                                    </div>
+                                </div>
                                 <contact :id="instance.user_id" short="true"/>
-                            </div>
-                            <div class="process-action instance-info" style="margin-right: 20px; position: relative; top: -4px">
-                                <div @click.stop="editdesc(instance)" class="button">
-                                    <icon name="edit"/>
-                                </div>
-                                <div @click.stop="remove(instance)" class="button">
-                                    <icon name="trash"/>
-                                </div>
-                            </div>
-                            <div style="width: 130px;" class="text-muted instance-info">
                                 <timeago :since="instance.create_date" :auto-update="10"/>
-                            </div>
-                        </b-col>
-                    </b-row>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
                 <process v-if="instance == selected" :project="project" :instance="instance" class="process" ref="process" />
             </div>
@@ -484,7 +497,7 @@ box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 margin-left: 20px;
 margin-right: 20px;
 min-height: 35px;
-white-space:nowrap;
+/* white-space:nowrap; */
 z-index: 1; /*app desc/github name shows up on top without it*/
 transition: margin 0.3s, background-color 0.3s;
 }
@@ -499,7 +512,7 @@ background-color: #eee;
 }
 .instance-active {
 margin: 0px;
-padding: 15px 15px;
+padding: 5px 15px;
 position: sticky; top: 0px; 
 box-shadow: none;
 white-space: inherit;
@@ -510,7 +523,9 @@ margin-top: 20px;
 }
 .instance-desc {
 font-size: 95%;
-overflow: hidden;
+width:100%;
+display:block;
+position:relative;
 text-overflow: ellipsis;
 }
 .instance-active .instance-desc {
