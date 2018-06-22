@@ -179,7 +179,6 @@ import mute from '@/components/mute'
 import datatypetag from '@/components/datatypetag'
 import product from '@/components/product'
 
-import { watch, unwatch } from 'melanke-watchjs'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const lib = require('../lib');
