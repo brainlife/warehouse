@@ -491,7 +491,7 @@ transition: margin 0.3s, background-color 0.3s;
 
 .instance-info {
 display:inline-block;
-vertical-align:top;
+vertical-align:middle;
 }
 .instance-header:hover {
 cursor: pointer;
@@ -499,6 +499,7 @@ background-color: #eee;
 }
 .instance-active {
 margin: 0px;
+padding: 15px 15px;
 position: sticky; top: 0px; 
 box-shadow: none;
 white-space: inherit;
