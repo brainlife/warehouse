@@ -1,6 +1,21 @@
 <template>
 <div v-if="projects && instance">
     <div class="instance-container">
+        <div class="instance-col" style="width:300px;">
+            <div class="task-tabs" ref="task_tabs">
+                <div class="task-container">
+                    <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
+                        <div class="task-tab-title">
+                            <b style="float: right;">t.{{task.config._tid}}</b> 
+                            <span v-if="task.service!='soichih/sca-product-raw'">{{task.service}}</span>
+                        </div>
+                        <div v-for="(output, idx) in task.config._outputs" :key="idx">
+                            <b>{{output.meta.subject}}</b> <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="instance-col">
             <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
             <div class="tasks" v-if="tasks" v-for="task in tasks" :key="task._id" ref="tasks">
@@ -141,21 +156,6 @@
                 </b-row>
             </div>
         </div>
-        <div class="instance-col" style="width:300px;">
-            <div class="task-tabs" ref="task_tabs">
-                <div class="task-container">
-                    <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
-                        <div class="task-tab-title">
-                            <b style="float: right;">t.{{task.config._tid}}</b> 
-                            <span v-if="task.service!='soichih/sca-product-raw'">{{task.service}}</span>
-                        </div>
-                        <div v-for="(output, idx) in task.config._outputs" :key="idx">
-                            <b>{{output.meta.subject}}</b> <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 </template>
@@ -179,6 +179,7 @@ import mute from '@/components/mute'
 import datatypetag from '@/components/datatypetag'
 import product from '@/components/product'
 
+import { watch, unwatch } from 'melanke-watchjs'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const lib = require('../lib');
@@ -209,6 +210,11 @@ export default {
             archived: [], //archived datasets from this process
             projects: null,
             
+            // information about parent
+            instance_header: null,
+            instance_element: null,
+            instance_observer: null,
+            
             //archiving: null, 
             ws: null, //websocket
 
@@ -222,6 +228,10 @@ export default {
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
         this.$root.$on("archiver.submit", this.submit_archive);
+        
+        this.instance_element = document.getElementById(this.instance._id);
+        this.instance_header = document.getElementById(this.instance._id+'-header');
+        window.addEventListener('resize', this.stickify_tabs);
 
         //load full list of datatypes and projects
         if(cache_datatypes && cache_projects) {
@@ -256,7 +266,8 @@ export default {
         this.$root.$off('datasetselecter.submit');
         this.$root.$off('newtask.submit');
         this.$root.$off('archiver.submit');
-
+        
+        window.removeEventListener('resize', this.stickify_tabs);
         if(this.ws) {
             console.log("disconnecting from ws - process");
             this.ws.close();
@@ -292,14 +303,19 @@ export default {
             }); 
             return datasets;
         },
-        header_height: function() {
-            return document.getElementById(this.instance._id).clientHeight;
-        },
     },
 
     watch: {
-        instance: function() {
-            this.load();
+        instance: {
+            handler: function (old_value, new_value) {
+                if (old_value._id != new_value._id) {
+                    this.load();
+                }
+                else {
+                    this.stickify_tabs();
+                }
+            },
+            deep: true
         },
         $route: function(to, from) {
             this.goto_tid();
@@ -307,21 +323,16 @@ export default {
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
         },
-        header_height: function(value) {
-            console.log(value);
-        },
     },
 
     methods: {
         stickify_tabs: function() {
             if (this.$refs.task_tabs) {
-                console.log(this.header_height);
-                let instance_element = document.getElementById(this.instance._id);
-                let bb_container = instance_element.getBoundingClientRect();
+                let bb_header = this.instance_header.getBoundingClientRect();
                 let bb_tabs = this.$refs.task_tabs.getBoundingClientRect();
                 
                 this.$refs.task_tabs.style.position = "sticky";
-                this.$refs.task_tabs.style.top = (bb_tabs.top - bb_container.top) + "px";
+                this.$refs.task_tabs.style.top = (bb_header.height) + "px";
             }
         },
         

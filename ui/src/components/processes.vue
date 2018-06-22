@@ -45,7 +45,7 @@
         <br>
         <div v-if="instances.length > 0">
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
-                <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)">
+                <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
                     <b-row>
                         <b-col :cols="1">
                             <div class="instance-status instance-info" :class="'instance-status-'+instance.status">
