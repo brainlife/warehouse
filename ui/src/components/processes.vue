@@ -46,40 +46,32 @@
         <div v-if="instances.length > 0">
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
-                    <b-row>
-                        <b-col :cols="1">
-                            <div class="instance-status instance-info" :class="'instance-status-'+instance.status">
-                                <statusicon :status="instance.status"/>
-                            </div>
-                        </b-col>
-                        <b-col :cols="5">
-                            <div class="instance-desc">
-                                {{instance.desc}}
-                                <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
-                                <div v-if="instance.config && instance.config.summary" style="display: inline-block; margin-left: 10px; opacity: 0.8;">
-                                    <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw'" :class="summary_class(summary)"> 
-                                        <span v-if="summary.name" :title="summary.name">{{summary.name.substring(0,4).trim()}}</span>
-                                    </span>
-                                </div>
-                            </div>
-                        </b-col>
-                        <b-col :cols="6" style="text-align:right;">
-                            <div class="instance-info">
-                                <contact :id="instance.user_id" short="true"/>
-                            </div>
-                            <div class="process-action instance-info" style="margin-right: 20px; position: relative; top: -4px">
-                                <div @click.stop="editdesc(instance)" class="button">
-                                    <icon name="edit"/>
-                                </div>
-                                <div @click.stop="remove(instance)" class="button">
-                                    <icon name="trash"/>
-                                </div>
-                            </div>
-                            <div style="width: 130px;" class="text-muted instance-info">
-                                <timeago :since="instance.create_date" :auto-update="10"/>
-                            </div>
-                        </b-col>
-                    </b-row>
+                    <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
+                        <statusicon :status="instance.status"/>
+                    </div>
+                    <div style="float: right; margin: 0px 10px; width: 100px; text-align: right;">
+                        <timeago :since="instance.create_date" :auto-update="10"/>
+                    </div>
+                    <div style="float: right; margin: 0px 10px;">
+                        <contact :id="instance.user_id" short="true"/>
+                    </div>
+                    <div class="process-action instance-info" style="margin-right: 20px; position: relative; top: -3px; float: right;">
+                        <div @click.stop="editdesc(instance)" class="button">
+                            <icon name="edit"/>
+                        </div>
+                        <div @click.stop="remove(instance)" class="button">
+                            <icon name="trash"/>
+                        </div>
+                    </div>
+                    <div class="instance-desc">
+                        {{instance.desc}}
+                        <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
+                        <div v-if="instance.config && instance.config.summary" style="display: inline-block; margin-left: 10px; opacity: 0.8;">
+                            <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw'" :class="summary_class(summary)"> 
+                                <span v-if="summary.name" :title="summary.name">{{summary.name.substring(0,4).trim()}}</span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <process v-if="instance == selected" :project="project" :instance="instance" class="process" ref="process" />
             </div>
@@ -484,7 +476,7 @@ box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 margin-left: 20px;
 margin-right: 20px;
 min-height: 35px;
-white-space:nowrap;
+/* white-space:nowrap; */
 z-index: 1; /*app desc/github name shows up on top without it*/
 transition: margin 0.3s, background-color 0.3s;
 }
@@ -499,7 +491,7 @@ background-color: #eee;
 }
 .instance-active {
 margin: 0px;
-padding: 15px 15px;
+padding: 15px;
 position: sticky; top: 0px; 
 box-shadow: none;
 white-space: inherit;
@@ -510,8 +502,11 @@ margin-top: 20px;
 }
 .instance-desc {
 font-size: 95%;
-overflow: hidden;
+white-space: nowrap; 
+overflow: hidden; 
 text-overflow: ellipsis;
+margin-top: 3px;
+padding-left: 3px;
 }
 .instance-active .instance-desc {
 white-space: inherit;
@@ -533,11 +528,13 @@ right: 30px;
 padding: 8px 0px;
 }
 .process-action {
+display: none;
 opacity: 0;
 transition: opacity 0.5s;
 }
 .instance-active .process-action,
 .instance-header:hover .process-action {
+display: block;
 opacity: 1;
 }
 

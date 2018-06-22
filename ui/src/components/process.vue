@@ -763,7 +763,6 @@ background-color: #28a745;
 .instance-container {
 display:table;
 width:100%;
-border-spacing:10px;
 }
 .instance-col {
 display:table-cell;
@@ -775,11 +774,11 @@ vertical-align:top;
 font-size: 90%;
 background-color: white;
 box-shadow: 1px 1px 2px #ccc;
-margin-bottom: 5px;
-padding: 5px;
 cursor: pointer;
+padding: 5px;
 padding-left: 10px;
-/*border-radius: 10px;*/
+margin-left: 10px;
+margin-bottom: 5px;
 }
 .task-tab-title {
 position: relative;
