@@ -142,7 +142,7 @@
             </div>
         </div>
         <div class="instance-col" style="width:300px;">
-            <div class="task-tabs">
+            <div class="task-tabs" ref="task_tabs">
                 <div class="task-container">
                     <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
                         <div class="task-tab-title">
@@ -209,6 +209,11 @@ export default {
             archived: [], //archived datasets from this process
             projects: null,
             
+            // information about parent
+            instance_header: null,
+            instance_element: null,
+            instance_observer: null,
+            
             //archiving: null, 
             ws: null, //websocket
 
@@ -222,12 +227,16 @@ export default {
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
         this.$root.$on("archiver.submit", this.submit_archive);
+        
+        this.instance_element = document.getElementById(this.instance._id);
+        this.instance_header = document.getElementById(this.instance._id+'-header');
+        window.addEventListener('resize', this.stickify_tabs);
 
         //load full list of datatypes and projects
         if(cache_datatypes && cache_projects) {
             this.datatypes = cache_datatypes;
             this.projects = cache_projects;
-            return this.load(this.goto_tid);
+            return this.load(this.stickify_tabs);
         }
 
         this.$http.get('datatype').then(res=>{
@@ -247,7 +256,7 @@ export default {
             });
             cache_projects = this.projects;
 
-            this.load(this.goto_tid);
+            this.load(this.stickify_tabs);
         });
 
     },
@@ -256,7 +265,8 @@ export default {
         this.$root.$off('datasetselecter.submit');
         this.$root.$off('newtask.submit');
         this.$root.$off('archiver.submit');
-
+        
+        window.removeEventListener('resize', this.stickify_tabs);
         if(this.ws) {
             console.log("disconnecting from ws - process");
             this.ws.close();
@@ -295,8 +305,16 @@ export default {
     },
 
     watch: {
-        instance: function() {
-            this.load();
+        instance: {
+            handler: function (old_value, new_value) {
+                if (old_value._id != new_value._id) {
+                    this.load();
+                }
+                else {
+                    this.stickify_tabs();
+                }
+            },
+            deep: true
         },
         $route: function(to, from) {
             this.goto_tid();
@@ -307,6 +325,16 @@ export default {
     },
 
     methods: {
+        stickify_tabs: function() {
+            if (this.$refs.task_tabs) {
+                let bb_header = this.instance_header.getBoundingClientRect();
+                let bb_tabs = this.$refs.task_tabs.getBoundingClientRect();
+                
+                this.$refs.task_tabs.style.position = "sticky";
+                this.$refs.task_tabs.style.top = (bb_header.height) + "px";
+            }
+        },
+        
         goto_tid: function() {
             let tid = +this.$route.hash.substring(1);
             if (!isNaN(tid) && this.tasks[tid]) {
@@ -742,10 +770,6 @@ display:table-cell;
 position:block;
 padding:0;
 vertical-align:top;
-}
-.task-tabs {
-position:sticky;
-top:35px;
 }
 .task-tab {
 font-size: 90%;
