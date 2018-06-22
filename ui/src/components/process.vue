@@ -1,21 +1,6 @@
 <template>
 <div v-if="projects && instance">
     <div class="instance-container">
-        <div class="instance-col" style="width:300px;">
-            <div class="task-tabs" ref="task_tabs">
-                <div class="task-container">
-                    <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
-                        <div class="task-tab-title">
-                            <b style="float: right;">t.{{task.config._tid}}</b> 
-                            <span v-if="task.service!='soichih/sca-product-raw'">{{task.service}}</span>
-                        </div>
-                        <div v-for="(output, idx) in task.config._outputs" :key="idx">
-                            <b>{{output.meta.subject}}</b> <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="instance-col">
             <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
             <div class="tasks" v-if="tasks" v-for="task in tasks" :key="task._id" ref="tasks">
@@ -154,6 +139,21 @@
                         <div class="new-action-button new-action-button-newdataset" @click="newdataset"><icon name="cube"/> Stage New Dataset</div>
                     </b-col>
                 </b-row>
+            </div>
+        </div>
+        <div class="instance-col" style="width:300px;">
+            <div class="task-tabs" ref="task_tabs">
+                <div class="task-container">
+                    <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
+                        <div class="task-tab-title">
+                            <b style="float: right;">t.{{task.config._tid}}</b> 
+                            <span v-if="task.service!='soichih/sca-product-raw'">{{task.service}}</span>
+                        </div>
+                        <div v-for="(output, idx) in task.config._outputs" :key="idx">
+                            <b>{{output.meta.subject}}</b> <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
