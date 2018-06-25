@@ -49,7 +49,7 @@
                     <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
                         <statusicon :status="instance.status"/>
                     </div>
-                    <div style="float: right; margin: 0px 10px; width: 100px; text-align: right;">
+                    <div style="float: right; width: 125px; text-align: right;">
                         <timeago :since="instance.create_date" :auto-update="10"/>
                     </div>
                     <div style="float: right; margin: 0px 10px;">
