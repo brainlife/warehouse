@@ -60,9 +60,11 @@ export default {
         plotidx: function() {
             //this resizes the graph, but somehow duplicates legend.. (waiting for it to be resolved)
             //https://github.com/statnett/vue-plotly/issues/6
-            let p = this.$refs.plotrefs[this.plotidx];
-            //if(p) p.relayout();
-            if(p) p.newPlot();
+            this.$nextTick(()=>{
+                let p = this.$refs.plotrefs[this.plotidx];
+                //if(p) p.relayout();
+                if(p) p.newPlot();
+            });
         },
     },
 }

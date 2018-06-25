@@ -40,7 +40,7 @@
 
             <!--input-->
             <div slot="input" v-if="task.config._inputs">
-                <div v-for="(input, idx) in task.config._inputs" :key="idx" style="padding: 5px;">
+                <div v-for="(input, idx) in task.config._inputs" :key="idx" style="padding: 10px;">
                     <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
@@ -69,7 +69,7 @@
 
             <!--output-->
             <div slot="output" v-if="task.config._outputs.length > 0">
-                <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 5px;">
+                <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 10px;">
                     <div class="float-right" style="position: relative; top: -5px;">
                         <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
                             <icon name="cubes"/>
@@ -708,7 +708,6 @@ background-color: #28a745;
 .task-tabs {
 float: right;
 width: 300px;
-margin-top: 5px;
 }
 .task-tab {
 font-size: 90%;
