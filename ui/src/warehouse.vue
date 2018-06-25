@@ -336,6 +336,9 @@ width: 6px;
 .ps__rail-y:hover > .ps__thumb-y, .ps__rail-y:focus > .ps__thumb-y {
 width: 6px;
 }
+.js-plotly-plot .plotly .modebar {
+z-index: inherit;
+}
 </style>
 
 

@@ -124,7 +124,7 @@ export default {
                 project_id: this.project,
                 group_id: this.projects[this.project].group_id,
                 instance: this.instance,
-                desc: this.desc,
+                desc: this.desc.trim(),
             });
             this.$refs.modal.hide()
             this.shown = false;

@@ -483,13 +483,10 @@ export default {
                 var _outputs = [];
                 for(var dataset_id in datasets) {
                     //ignore already staged dataset
-                    var found = false;
-                    this._datasets.forEach(dataset=>{
-                        if(dataset.dataset_id == dataset_id) found = true;
-                    });
+                    var found = this._datasets.find(dataset=>dataset.dataset_id == dataset_id);
                     if(found) {
-                        this.$notify({type: 'warning', text:'Dataset(s) specified is already staged. Skipping.'});
-                        return;
+                        this.$notify({type: 'warn', text:'Dataset(s) specified is already staged. Skipping.'});
+                        continue;
                     }
                     download.push({
                         url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
@@ -503,6 +500,7 @@ export default {
                         prov: null,
                     }));
                 }
+                if(download.length == 0) return;
 
                 //now submit request
                 this.$http.post(Vue.config.wf_api+'/task', {
@@ -715,9 +713,14 @@ background-color: white;
 box-shadow: 1px 1px 2px #ccc;
 margin-bottom: 5px;
 padding: 5px;
-cursor: pointer;
 padding-left: 10px;
 /*border-radius: 10px;*/
+opacity: 0.5;
+transition: opacity 0.3s;
+}
+.task-tab:hover {
+opacity: 1;
+cursor: pointer;
 }
 .task-tab-title {
 position: relative;
