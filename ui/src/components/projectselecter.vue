@@ -3,7 +3,7 @@
 v-select has some issue with clicking scrollbar closing the select dropdown..
 https://github.com/sagalbot/vue-select/issues/474
 -->
-<div>
+<div v-if="options">
     <b-alert show variant="danger" v-if="options.length == 0 && !allownull">You don't have any project that you can select. Please create a new project inside the project page.</b-alert>
     <b-form-select v-if="options.length > 0" v-model="selected" :options="options" :placeholder-nowork="placeholder" :required="!allownull">
     </b-form-select>
@@ -31,7 +31,7 @@ export default {
     data() {
         return {
             selected: null, 
-            options: [], 
+            options: null, 
         };
     },
 
@@ -58,32 +58,6 @@ export default {
     },
 
     methods: {
-        query_projects: function(find) {
-            this.options = [];
-            if(this.allownull) this.options.push({value: null, text: this.placeholder||''});
-            this.$http.get('project', {params: {
-                find: JSON.stringify(find),
-                sort: 'name',
-            }}).then(res=>{
-                res.body.projects.forEach(project=>{
-                    this.options.push({value: project._id, text: project.name});
-                });
-
-                //first, select project that client has requested
-                let found = this.options.find(it=>it.value == this.value);
-                if(found) this.selected = found.value;
-                else {
-                    //if not, then try selecting the last project used
-                    var last = localStorage.getItem('last_projectid_used');
-                    found = this.options.find(it=>it.value == last);
-                    if(found) this.selected = found.value;
-                    else if(!this.allownull && this.options.length > 0) {
-                        //if we can't find it, and null not allowed, then select first one from the list
-                        this.selected = this.options[0].value;
-                    }
-                }
-            });
-        },
 
         load_projects: function() {         
             var find = null;
@@ -133,6 +107,33 @@ export default {
                 //no further query
                 this.query_projects(find);
             }
+        },
+
+        query_projects: function(find) {
+            this.$http.get('project', {params: {
+                find: JSON.stringify(find),
+                sort: 'name',
+            }}).then(res=>{
+                this.options = [];
+                if(this.allownull) this.options.push({value: null, text: this.placeholder||''});
+                res.body.projects.forEach(project=>{
+                    this.options.push({value: project._id, text: project.name});
+                });
+
+                //first, select project that client has requested
+                let found = this.options.find(it=>it.value == this.value);
+                if(found) this.selected = found.value;
+                else {
+                    //if not, then try selecting the last project used
+                    var last = localStorage.getItem('last_projectid_used');
+                    found = this.options.find(it=>it.value == last);
+                    if(found) this.selected = found.value;
+                    else if(!this.allownull && this.options.length > 0) {
+                        //if we can't find it, and null not allowed, then select first one from the list
+                        this.selected = this.options[0].value;
+                    }
+                }
+            });
         },
     }
 }

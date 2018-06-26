@@ -1,6 +1,6 @@
 <template>
-<b-form v-if="app" @submit="submit">
-    <b-alert :show="!this.resource_available">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
+<b-form @submit="submit">
+    <b-alert :show="this.no_resource">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
 
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
         <b-col cols="3">
@@ -71,12 +71,11 @@
     <advanced :app='app' v-model='form.advanced'></advanced>
 
     <br>
-    <b-row>
-        <b-col cols="3"></b-col>
-        <b-col>
-            <b-button variant="primary" type="submit">Submit</b-button>
-        </b-col>
-    </b-row>
+    <br>
+    <br>
+    <div class="form-action">
+        <b-button variant="primary" type="submit">Submit</b-button>
+    </div>
 
 </b-form>
 </template>
@@ -118,8 +117,7 @@ export default {
             project: null,
 
             app: null,
-            resource_available: false,
-            //resource: null,
+            no_resource: false,
 
             form: {
                 desc: "",
@@ -162,7 +160,7 @@ export default {
             }});
         })
         .then(res => {
-            this.resource_available = !!res.body.resource;
+            this.no_resource = !res.body.resource;
         })
         .catch(err=>{
             console.error(err);
@@ -549,5 +547,14 @@ padding-bottom: 10px;
 border-bottom: 1px solid #ddd;
 font-size: 18px;
 font-weight: bold;
+}
+.form-action {
+text-align: right;
+position: fixed;
+right: 0px;
+left: 90px;
+bottom: 0px;
+padding: 10px 30px;
+background-color: rgba(100,100,100,0.4);
 }
 </style>
