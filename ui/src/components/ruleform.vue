@@ -50,7 +50,7 @@
                             <b-col>Dataset Tags</b-col>
                             <b-col :cols="9">
                                 <p>
-                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)"/>
+                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="dataset_tags[input.id]"/>
                                     <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
                                 </p>
                             </b-col>
@@ -77,7 +77,10 @@
                     </div>
                     <b-row>
                         <b-col>tags</b-col>
-                        <b-col :cols="9"><tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)"/></b-col>
+                        <b-col :cols="9">
+                            <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)"/>
+                            <small class="text-muted">Output tags allows you can easily query for specific set of datasets on subsequent rules.</small>
+                        </b-col>
                     </b-row>
                 </b-card>
             </b-form-group>
@@ -128,6 +131,7 @@ export default {
         "rule.app": function() {
             this.ensure_ids_exists();
             this.ensure_config_exists();
+            this.load_dataset_tags();
         },
     },
 
@@ -136,6 +140,7 @@ export default {
             rule: {},
             apps: [],
             ready: false,
+            dataset_tags: {},
         }
     },
     
@@ -147,6 +152,7 @@ export default {
     methods: {
         load_value: function() {
             if(!this.value) return; //no value specified yet
+
             this.rule = Object.assign({
                 //should be set to empty object by default
                 input_tags: {},
@@ -188,6 +194,19 @@ export default {
         submit: function(evt) {
             evt.preventDefault();
 
+            /* let's not make this *required* yet
+            //validate
+            let valid = true;
+            for(let id in this.rule.output_tags) {
+                let tags = this.rule.output_tags[id];
+                if(tags.length == 0) {
+                    this.$notify({type: "error", text: "Please enter tags for each output dataset"});
+                    valid = false;
+                }
+            }
+            if(!valid) return;
+            */
+
             //clean up _tags, and input_project_override that shouldn't exist
             var input_ids = this.rule.app.inputs.map(it=>it.id);
             var output_ids = this.rule.app.outputs.map(it=>it.id);
@@ -219,8 +238,8 @@ export default {
                 output_tags,
                 input_project_override,
             });
-            console.log("submit-----------------------");
-            console.dir(rule);
+            //console.log("submit-----------------------");
+            //console.dir(rule);
             this.$emit("submit", rule);
         },
 
@@ -249,6 +268,20 @@ export default {
                     loading(false);
                 });
             }, 300);
+        },
+
+        load_dataset_tags: function() {
+            this.rule.app.inputs.forEach(input=>{
+                let datatype = input.datatype._id || input.datatype; //parent component passes app.input without populating datatype
+                let project = this.rule.input_project_override[input.id] || this.rule.project;
+                this.$http.get('dataset/distinct', {params: {
+                    distinct: 'tags',
+                    find: JSON.stringify({project, datatype}),
+                }}).then(res=>{
+                    //console.log("tags loaded", input.id, datatype, res.body);
+                    Vue.set(this.dataset_tags, input.id, res.body);
+                }); 
+            });
         },
     }
 }

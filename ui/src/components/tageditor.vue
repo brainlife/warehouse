@@ -1,6 +1,6 @@
 <template>
-    <!--TODO replace with vue-select-->
-    <v-select multiple taggable v-model='tags' :options='options' :placeholder='placeholder' :close-on-select="false">
+    <!--vue-select doesn't support required attribute yet (https://github.com/sagalbot/vue-select/issues/477)-->
+    <v-select multiple taggable v-model='tags' :options='options' :placeholder='placeholder' :close-on-select="false" :required="required">
         <span slot="no-options">
             <!-- Don't show anything if there are no options -->
         </span>
@@ -11,7 +11,7 @@
 import vSelect from 'vue-select'
 
 export default {
-    props: ['options', 'value', 'placeholder'],
+    props: ['options', 'value', 'placeholder', 'required'],
     components: { vSelect },
     
     data: function() {
@@ -35,20 +35,27 @@ export default {
                 if (!this.dont_emit) {
                     this.$emit('input', this.tags);
                 }
-                this.dont_emit = false;
-                this.old_tags = this.tags.slice();
+                if(this.tags) {
+                    this.dont_emit = false;
+                    this.old_tags = this.tags.slice();
+                }
             }
         },
         value: function() {
-            if (!this.tags) {
+            if (this.tags) {
+                this.old_tags = this.tags.slice();
+            } else {
                 this.dont_emit = true;
                 this.old_tags = null;
-            } else {
-                this.old_tags = this.tags.slice();
             }
             
             this.tags = this.value;
-        }
+        },
+        /*
+        options: function() {
+            console.log("options updated", this.options);
+        },
+        */
     },
 }
 </script>
