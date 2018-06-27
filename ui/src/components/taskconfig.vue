@@ -74,10 +74,9 @@ export default {
             .then(res => {
                 //create key/value of scalar config
                 this.taskconfig = {};
-                
                 this.appconfig = {};
-                if (res.body.apps[0]) this.appconfig = res.body.apps[0].config;
                 
+                if (res.body.apps[0]) this.appconfig = res.body.apps[0].config;
                 for(let id in config) {
                     if(id[0] == "_") continue;
                     
