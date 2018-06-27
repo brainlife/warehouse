@@ -78,7 +78,6 @@ export default {
                 let app = res.body.apps[0];
                 this.appconfig = {};
                 if (app) this.appconfig = app.config;
-                console.log(this.appconfig);
                 
                 for(let id in config) {
                     if(id[0] == "_") continue;
