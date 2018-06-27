@@ -1,15 +1,21 @@
 <template>
 <div v-if="taskconfig">
     <span style="opacity: 0.4;" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
-    <b-row v-for="(v,k) in taskconfig" :key="k">
-        <b-col :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</b-col>
-
-        <b-col v-if="v === null"><pre class="text-muted" style="margin-bottom: 0">null</pre></b-col>
-        <b-col v-else-if="typeof v == 'object'">
-            <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
-        </b-col>
-        <b-col v-else>{{v}}</b-col>
-    </b-row>
+    <table>
+        <tr v-for="(v,k) in taskconfig" :key="k" :class="{ default: is_default(k) }">
+            <td>{{k}}</td>
+            
+            <td v-if="v === null">
+                <pre class="text-muted" style="margin-bottom: 0">null</pre>
+            </td>
+            <td v-else-if="typeof v == 'object'">
+                <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
+            </td>
+            <td v-else>{{v}}</td>
+            
+            <td v-if="appconfig[k]" style="font-size: 70%;">{{ appconfig[k].desc }}</td>
+        </tr>
+    </table>
 </div>
 </template>
 
@@ -26,6 +32,7 @@ export default {
         return {
             //task: null,    
             taskconfig: null,
+            appconfig: {},
 
             config: Vue.config,
         }
@@ -58,21 +65,48 @@ export default {
         },
 
         load_config: function(config) {
-            //create key/value of scalar config
-            this.taskconfig = {};
-            for(let id in config) {
-                if(id[0] == "_") continue;
-                let v = config[id];
-                if(v === null) {
-                    this.taskconfig[id] = null;
-                } else {
-                    let vs = v.toString();
-                    if(vs.indexOf("..") != 0) this.taskconfig[id] = v;
+            this.$http.get('app', { params: {
+                find: JSON.stringify({
+                    _id: config._app,
+                    removed: false,
+                }),
+            } })
+            .then(res => {
+                //create key/value of scalar config
+                this.taskconfig = {};
+                this.appconfig = {};
+                
+                if (res.body.apps[0]) this.appconfig = res.body.apps[0].config;
+                for(let id in config) {
+                    if(id[0] == "_") continue;
+                    
+                    let v = config[id];
+                    if(v === null) {
+                        this.taskconfig[id] = null;
+                    } else {
+                        let vs = v.toString();
+                        if(vs.indexOf("..") != 0) this.taskconfig[id] = v;
+                    }
                 }
+            });
+        },
+        
+        is_default: function(key) {
+            if (typeof this.appconfig[key] != 'undefined') {
+                return (this.appconfig[key].default + "").length > 0;
             }
-
-        }
+            return false;
+        },
     },
 }
 </script>
 
+<style scoped>
+tr.default {
+opacity:.5;
+}
+
+td {
+padding-right:40px;
+}
+</style>
