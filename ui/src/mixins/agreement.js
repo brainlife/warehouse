@@ -3,10 +3,6 @@
 import Vue from 'vue'
 
 export default {
-    /*
-    created: function () {
-    },
-    */
     data: function() {
         return {
             user_agreements: {},
@@ -41,7 +37,7 @@ export default {
                 //load from profile service
                 console.log("loading private profile");
                 this.$http.get(Vue.config.profile_api+"/private").then(res=>{
-                    resolve(res.body.agreements);
+                    resolve(res.body.agreements||{});
                 }).catch(reject);
             });
         },
@@ -49,7 +45,7 @@ export default {
         check_agreements: async function(project, cb) {
             if(!project.agreements) return cb(); 
             let user_agreements = await this.get_user_agreements();
-            console.log("analyzig user_agreement", user_agreements);
+            //console.log("analyzig user_agreement", user_agreements);
             let agreed = true;
             project.agreements.forEach(agreement=>{
                 if(!user_agreements[agreement._id]) {
