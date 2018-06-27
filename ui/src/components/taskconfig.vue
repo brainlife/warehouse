@@ -75,9 +75,8 @@ export default {
                 //create key/value of scalar config
                 this.taskconfig = {};
                 
-                let app = res.body.apps[0];
                 this.appconfig = {};
-                if (app) this.appconfig = app.config;
+                if (res.body.apps[0]) this.appconfig = res.body.apps[0].config;
                 
                 for(let id in config) {
                     if(id[0] == "_") continue;
@@ -96,9 +95,8 @@ export default {
         is_default: function(key) {
             if (typeof this.appconfig[key] != 'undefined') {
                 return (this.appconfig[key].default + "").length > 0;
-            } else {
-                return false;
             }
+            return false;
         },
     },
 }
