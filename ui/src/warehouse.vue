@@ -313,6 +313,9 @@ line-height: 175%;
 .v-select .dropdown-toggle {
 background-color: white;
 }
+.v-select {
+font-family: inherit;
+}
 
 .select2-container--default .select2-selection--single {
 height: 36px;
