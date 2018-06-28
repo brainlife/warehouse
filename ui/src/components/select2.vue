@@ -121,15 +121,6 @@ export default {
                 result.innerHTML += " ";
             }
             if(data.tags) {
-                result.innerHTML += "<br>";
-                /*
-                var firsttag = true;
-                data.tags.forEach(tag => {
-                    if(!firsttag) result.innerHTML += " | ";
-                    firsttag = false;
-                    result.innerHTML += this.ascii_escape(tag);
-                });
-                */
                 result.innerHTML += data.tags.filter(this.ascii_escape).join(" | ");
             }
             

@@ -51,6 +51,10 @@
                                     {{option.dataset.task.name}} (t.{{option.dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
                                     <b>{{option.dataset.meta.subject}}</b> 
                                     <small>{{option.dataset.datatype_tags.toString()}}</small>
+                                    <span v-if="option.dataset.tags.length > 0">
+                                        |
+                                        <small>{{option.dataset.tags.toString()}}</small>
+                                    </span>
                                 </template>
                             </v-select>
                         </b-col>
@@ -414,8 +418,8 @@ export default {
             var label = "";
             if(dataset.task.status != 'finished') label += "("+dataset.task.status+") ";
             label += dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject;
-            if(dataset.datatype_tags.length > 0) label += ' > '+dataset.datatype_tags;
-            //if(dataset.tags.length > 0) label +=' | '+dataset.tags; //I am not sure if we need to show tag..
+            if(dataset.datatype_tags.length > 0) label += ' '+dataset.datatype_tags;
+            if(dataset.tags.length > 0) label +=' | '+dataset.tags; 
             return label;
         },
     },
