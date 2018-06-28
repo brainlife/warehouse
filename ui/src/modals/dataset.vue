@@ -275,6 +275,13 @@ export default {
                 this.load_apps();
             }
         },
+        '$route': function() {
+            if (this.dataset) {
+                if (this.$route.params.tab != 'dataset') {
+                    this.close();
+                }
+            }
+        },
     },
 
     methods: {
@@ -363,7 +370,10 @@ export default {
 
         close: function() {
             if(!this.dataset) return;
-            if(this.back) this.$router.push(this.back);
+            if(this.back) {
+                // this.$router.push(this.back); // causes problems sometimes
+                this.$router.push(this.$route.path.replace(this.dataset._id, ""));
+            }
             this.dataset = null;
         },
 
