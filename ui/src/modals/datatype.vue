@@ -65,6 +65,14 @@ export default {
             }
         });
     },
+    
+    watch: {
+        '$route': function() {
+            if (!this.$route.path.startsWith('/datatypes')) {
+                this.close();
+            }
+        },
+    },
 
     methods: {
         load: function(id) {
@@ -94,7 +102,7 @@ export default {
     
         close: function() {
             if(!this.datatype) return;
-            this.$router.replace("/datatypes");
+            this.$router.push(this.$route.path.replace(this.datatype._id, ""));
             this.datatype = null;
         },
         

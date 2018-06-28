@@ -370,10 +370,7 @@ export default {
 
         close: function() {
             if(!this.dataset) return;
-            if(this.back) {
-                // this.$router.push(this.back); // causes problems sometimes
-                this.$router.push(this.$route.path.replace(this.dataset._id, ""));
-            }
+            this.$router.push(this.$route.path.replace(this.dataset._id, ""));
             this.dataset = null;
         },
 
