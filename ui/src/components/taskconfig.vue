@@ -3,17 +3,17 @@
     <span style="opacity: 0.4;" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
     <table>
         <tr v-for="(v,k) in taskconfig" :key="k" :class="{ default: is_default(k) }">
-            <td>{{k}}</td>
+            <td width="25%">{{k}}</td>
             
-            <td v-if="v === null">
+            <td v-if="v === null" width="25%">
                 <pre class="text-muted" style="margin-bottom: 0">null</pre>
             </td>
-            <td v-else-if="typeof v == 'object'">
+            <td v-else-if="typeof v == 'object'" width="25%">
                 <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
             </td>
-            <td v-else>{{v}}</td>
+            <td v-else width="25%">{{v}}</td>
             
-            <td v-if="appconfig[k]" style="font-size: 70%;">{{ appconfig[k].desc }}</td>
+            <td v-if="appconfig[k]" style="font-size: 80%;">{{ appconfig[k].desc }} default={{get_default(k)}}</td>
         </tr>
     </table>
 </div>
@@ -51,6 +51,7 @@ export default {
             this.load();
         },
     },
+
 
     methods: {
         load: function() {
@@ -92,10 +93,26 @@ export default {
         },
         
         is_default: function(key) {
-            if (typeof this.appconfig[key] != 'undefined') {
-                return (this.appconfig[key].default + "").length > 0;
+            return (this.appconfig[key].default == this.taskconfig[key]);
+        },
+
+        get_default: function(key) {
+            var d = this.appconfig[key].default;
+            console.dir(d);
+            if(d === undefined) {
+                return "(not set)";
             }
-            return false;
+            if(d === null) {
+                return "(null)";
+            }
+            if(typeof d == 'boolean') {
+                if(d) return "(true)";
+                return "(false)";
+            }
+            if(d === '') {
+                return "(empty)";
+            }
+            return d;
         },
     },
 }
@@ -105,8 +122,7 @@ export default {
 tr.default {
 opacity:.5;
 }
-
 td {
-padding-right:40px;
+vertical-align: top;
 }
 </style>
