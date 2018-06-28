@@ -1,9 +1,9 @@
 <template>
 <div v-if="taskconfig">
     <span style="opacity: 0.4;" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
-    <table>
+    <table width="100%:">
         <tr v-for="(v,k) in taskconfig" :key="k" :class="{ default: is_default(k) }">
-            <td width="25%">{{k}}</td>
+            <th width="25%">{{k}}</th>
             
             <td v-if="v === null" width="25%">
                 <pre class="text-muted" style="margin-bottom: 0">null</pre>
@@ -13,7 +13,11 @@
             </td>
             <td v-else width="25%">{{v}}</td>
             
-            <td v-if="appconfig[k]" style="font-size: 80%;">{{ appconfig[k].desc }} default={{get_default(k)}}</td>
+            <td style="font-size: 85%;">
+                <div v-if="appconfig[k]">
+                    {{ appconfig[k].desc }} <span style="opacity: 0.6;">default={{get_default(k)}}</span>
+                </div>
+            </td>
         </tr>
     </table>
 </div>
@@ -120,9 +124,9 @@ export default {
 
 <style scoped>
 tr.default {
-opacity:.5;
+opacity:.6;
 }
-td {
+td,th {
 vertical-align: top;
 }
 </style>
