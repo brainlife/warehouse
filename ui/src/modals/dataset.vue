@@ -172,7 +172,7 @@
                     <b-alert show variant="info" v-if="apps.length == 0">There are currently no applications that use the datatype from this dataset.</b-alert>
                     <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
                         <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)">
-                            <app :app="app" descheight="150px" :clickable="false"></app>
+                            <app :app="app" height="270px" :clickable="false"></app>
                         </div>
                     </div>
                 </div>

@@ -2,7 +2,7 @@
 <div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click">
         <div v-if="compact">
-            <appavatar :app="app_" style="float: left;margin-right: 15px;" :width="80" :height="80"/>
+            <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="80" :height="80"/>
             <div style="max-height: 73px; overflow: hidden;">
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
@@ -13,15 +13,15 @@
             </div>
             <slot/>
         </div>
-        <div v-else>
-            <appavatar :app="app_" style="float: left;margin-right: 15px;" :width="80" :height="80"/>
+        <div v-else style="overflow: hidden; position: relative;" :style="{ height }">
+            <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
             <div class="header">
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
                     {{app_.name}}
                 </h4>
                 <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
-                <div class="datatypes" v-if="!compact">
+                <div class="datatypes">
                     <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id">
                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                     </div>
@@ -31,7 +31,7 @@
                     </div>
                 </div>
             </div>
-            <div class="desc" :style="{height: descheight}">{{app_.desc_override||app_.desc||'no description..'}}</div>
+            <div class="desc">{{app_.desc_override||app_.desc||'no description..'}}</div>
             <slot/>
             <div class="stats" v-if="app_.stats && app_.stats.service">
                 <span class="stat" v-b-tooltip.hover title="number of time this App was requested">
@@ -75,8 +75,7 @@ export default {
         appid: String,
         branch: String, //branch to show instead of current app github_branch
         clickable: {type: Boolean, default: true},
-        descheight: String,
-        devsheight: String,
+        height: String,
     },
     data() {
         return {
@@ -130,8 +129,9 @@ background-color: inherit;
 }
 .header {
 margin-right: 10px;
-height: 90px;
-overflow: hidden;
+margin-left: 10px;
+/* min-height: 90px; */
+/* overflow: hidden; */
 }
 .name {
 color: #666;
@@ -148,11 +148,12 @@ margin-bottom: 2px;
 }
 .desc {
 opacity: 0.8;
-overflow: hidden;
 margin-top: 0px;
+padding: 10px;
+margin-bottom: 32px;
 transition: color 0.5s;
 font-size: 90%;
-border: solid 7px white;
+/* border: solid 7px white; */
 }
 
 .image {
@@ -203,6 +204,9 @@ margin-right: 2px;
 margin-top: 2px;
 }
 .stats {
+position:absolute;
+bottom:0;
+width:100%;
 padding: 5px 10px;
 color: #bbb;
 height: 32px;
