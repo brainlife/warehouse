@@ -207,11 +207,13 @@ margin-top: 2px;
 position:absolute;
 bottom:0;
 width:100%;
-padding: 5px 10px;
+padding: 0px 10px;
+padding-top: 9px;
 color: #bbb;
 height: 32px;
-border-top: 1px solid #f0f0f0;
+/*border-top: 1px solid #f0f0f0;*/
 background-color: #f7f7f7;
+line-height: 100%;
 }
 .stat {
 }
