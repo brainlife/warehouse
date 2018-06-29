@@ -24,7 +24,7 @@
         <div v-for="tag in sorted_tags" :id="tag">
             <h4 class="group-title">{{tag}}</h4> 
             <div v-for="app in app_groups[tag]" :key="app._id" class="app">
-                <app :app="app" height="250px"></app>
+                <app :app="app" height="246px"></app>
             </div>
             <br clear="both">
         </div>
