@@ -105,10 +105,17 @@
             <div><!--to keep input indx separate from output-->
                 <div v-for="(input, idx) in app.inputs" :key="idx" style="margin-bottom: 10px;">
                     <b-card style="position: relative;">
+                        <b-row v-if="is_raw(input)">
+                            <b-col>
+                                <b-alert show variant="warning">
+                                    Warning: You have chosen a raw datatype as an input. If possible, please request your upstream app developer to create a new datatype so that it can instead be used to pass data between apps.
+                                </b-alert>
+                            </b-col>
+                        </b-row>
                         <b-row>
                             <b-col cols="5">
                                 <b-input-group prepend="ID">
-                                    <b-form-input type="text" v-model="input.id"required/>
+                                    <b-form-input type="text" v-model="input.id" required />
                                 </b-input-group>
                             </b-col>
                             <b-col cols="7">
@@ -513,7 +520,7 @@ export default {
 
                 });
             });
-        }, res=>{
+        }, res => {
             console.error(res);
         });
     },
@@ -704,6 +711,14 @@ export default {
         editorInit: function() {
             require('brace/mode/json')
             //require('brace/theme/twilight')
+        },
+        is_raw: function(input) {
+            if (this.datatypes) {
+                let dtype = this.datatypes[input.datatype];
+                if (dtype) {
+                    return dtype.name == "raw";
+                }
+            }
         },
     }
 }

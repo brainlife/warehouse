@@ -11,7 +11,7 @@
             <pre v-if="Object.keys(other_product).length != 0" v-highlightjs="JSON.stringify(other_product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
         </div>
     </div>
-    <b-tabs class="brainlife-tab" v-model="plotidx">
+    <b-tabs class="brainlife-tab" v-model="plotidx" v-if="ready">
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
             <vue-plotly :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true"/>
         </b-tab>
@@ -33,8 +33,15 @@ export default {
         return {
             config: Vue.config,
             plotidx: null,
+            ready: false,
         }
     },
+    mounted() {
+        setTimeout(() => {
+            this.ready = true;
+        }, 1000);
+    },
+    
     computed: {
         other_product: function() {
             let all = Object.assign({}, this.product);
