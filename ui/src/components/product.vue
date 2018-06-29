@@ -35,10 +35,11 @@ export default {
             plotidx: null,
         }
     },
+    
     computed: {
         other_product: function() {
             let all = Object.assign({}, this.product);
-            delete all.brainlife; 
+            delete all.brainlife;
             return all;
         },
         alerts: function() {

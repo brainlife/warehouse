@@ -20,7 +20,7 @@
 
         <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
             <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px;">
-                <app :app="app" :compact="true" :clickable="false" class="clickable" descheight="50px"/>
+                <app :app="app" :compact="true" :clickable="false" class="clickable" height="170px"/>
             </div>
         </div>
         <br clear="both">
@@ -28,7 +28,7 @@
 
     <!--app configuration page--> 
     <b-form v-if="app" class="submit-form" @submit="submit">
-        <app :app="app" :compact="false"/>
+        <app :app="app" :compact="false" />
         <br>
 
         <!--input-->

@@ -21,7 +21,7 @@
                     <p v-else>The following apps require this datatype as an input.</p>
                     <div v-for="app in apps" :key="app._id" style="display:inline-block; width: 33%;">
                         <div style="margin-left: 5px; margin-right: 5px; margin-bottom: 10px; cursor: pointer;" @click="openapp(app._id)">
-                            <app :app="app" descheight="80px" :clickable="false"></app>
+                            <app :app="app" height="200px" :clickable="false"></app>
                         </div>
                     </div>
                 </div>
@@ -65,6 +65,14 @@ export default {
             }
         });
     },
+    
+    watch: {
+        '$route': function() {
+            if (!this.$route.path.startsWith('/datatypes')) {
+                this.close();
+            }
+        },
+    },
 
     methods: {
         load: function(id) {
@@ -94,7 +102,7 @@ export default {
     
         close: function() {
             if(!this.datatype) return;
-            this.$router.replace("/datatypes");
+            this.$router.push(this.$route.path.replace(this.datatype._id, ""));
             this.datatype = null;
         },
         

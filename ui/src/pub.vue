@@ -257,7 +257,7 @@
                         <p class="text-muted">Following applications are used to generate published datasets.</p>
                         <b-row>
                             <b-col cols="6" v-for="app in apps" :key="app._id" style="margin-bottom: 10px;">
-                                <app :app="app" descheight="130px" :compact="true"></app>
+                                <app :app="app" height="250px" :compact="true"></app>
                             </b-col>
                         </b-row>
                     </div>

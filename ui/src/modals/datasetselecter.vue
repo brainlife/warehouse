@@ -254,7 +254,7 @@ export default {
             }}).then(res=>{
                 this.subjects = res.body;
             });
-         }
+        },
     },
 
     created: function() {
