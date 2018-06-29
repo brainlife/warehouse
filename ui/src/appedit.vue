@@ -528,9 +528,14 @@ export default {
     methods: {
         add_config: function(type, input) {
             //tempid just have to be unique
-            var tempid = 0;
-            while(this.app.config[tempid]) tempid++;
-
+            let maxid = 0;
+            for (let id in this.app.config) {
+                let value = +id;
+                if (value) {
+                    maxid = Math.max(value, maxid);
+                }
+            }
+            
             var config = { _id: '', type, placeholder: '', desc: '', default: ''};
             switch(type) {
             case "input":
@@ -549,7 +554,7 @@ export default {
             case "string":
                 break;
             }
-            Vue.set(this.app.config, tempid, config);
+            Vue.set(this.app.config, maxid + 1, config);
         },
         
         add_dataset: function(it) {
