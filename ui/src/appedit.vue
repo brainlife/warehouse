@@ -563,6 +563,7 @@ export default {
             
             let inputTable = {};
             let outputTable = {};
+            let paramTable = {};
             
             this.input_datasets.forEach(input => {
                 if (!input.id) {
@@ -651,7 +652,11 @@ export default {
                 if (outputTable[param.id]) {
                     err = "Duplicate ID '" + param.id + "' used for configuration parameter and output";
                 }
+                if (paramTable[param.id]) {
+                    err = "Duplicate ID '" + param.id + "' found in list of config parameters";
+                }
                 
+                paramTable[param.id] = true;
                 config[param.id] = {
                     type: param.type,
                     placeholder: param.placeholder,
