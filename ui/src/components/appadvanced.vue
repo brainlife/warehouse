@@ -63,8 +63,8 @@ export default {
             this.preferrable_resources.unshift({ value: null, text: "(None)" });
             this.preferrable_resources.sort((a, b) => a.score > b.score);
 
-            this.preferred_resource = this.value.preferred_resource
-            if(!this.value.preferred_resource && res.body.resource) this.preferred_resource = res.body.resource._id;
+            //this.preferred_resource = this.value.preferred_resource; //leave it none
+            //if(!this.value.preferred_resource && res.body.resource) this.preferred_resource = res.body.resource._id;
             
             return this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', { headers: { Authorization: null } });
         })

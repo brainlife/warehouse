@@ -714,22 +714,14 @@ box-shadow: 1px 1px 2px #ccc;
 margin-bottom: 5px;
 padding: 5px;
 padding-left: 10px;
-/*border-radius: 10px;*/
-opacity: 0.5;
-transition: opacity 0.3s;
-}
-.task-tab:hover {
-opacity: 1;
-cursor: pointer;
 }
 .task-tab-title {
 position: relative;
 top: -2px;
 }
 .task-tab-stage {
-background-color: #159957;
-color: white;
 opacity: 0.7;
+background-color: #eee;
 }
 .task-tab-failed {
 border-left: 2px solid #c00;
@@ -747,6 +739,9 @@ border-left: 2px solid #007bff;
 .task-tab-stop_requested,
 .task-tab-stopped {
 border-left: 2px solid gray;
+}
+.task-tab:hover {
+cursor: pointer;
 }
 .loading {
 bottom: 100px;
