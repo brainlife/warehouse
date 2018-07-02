@@ -788,7 +788,6 @@ export default {
             console.log("clicked submit");
             
             this.convert_ui_to_config(err => {
-                console.log("Called");
                 if (err) {
                     this.$notify({ text: err, type: 'error' });
                     console.error(err);
