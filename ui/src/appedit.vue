@@ -136,7 +136,7 @@
                         <b-row>
                             <b-col cols="5">
                                 <span class="text-muted">Datatype</span>
-                                <datatypeselecter v-model="input.datatype"></datatypeselecter>
+                                <datatypeselecter v-model="input.datatype" @input="input_datatype_changed(idx)"></datatypeselecter>
                             </b-col>
                             <b-col cols="7">
                                 <div class="text-muted">Datatype Tags</div>
@@ -671,11 +671,12 @@ export default {
             return cb(null);
         },
         
-        add_file: function(index) {
+        add_file: function(index, file_id) {
             this.input_datasets[index].files.push({
                 type: 'input',
                 id: '',
                 desc: '',
+                file_id: file_id || null,
                 default: '',
             });
             // to trigger vue dom change
@@ -722,10 +723,36 @@ export default {
         },
         
         input_datatype_changed: function(idx) {
-            let input = this.app.inputs[idx];
-            if (input.id) {
-                console.log('input datatype changed', input);
+            let input = this.input_datasets[idx];
+            
+            if (input.datatype) {
+                let datatype = this.datatypes[input.datatype];
+                let fileTable = {};
+                datatype.files.forEach(file => {
+                    fileTable[file.id] = file;
+                });
                 
+                if (input.files.length > 0) {
+                    let resetFiles = false;
+                    input.files.forEach(file => {
+                        if (!fileTable[file.file_id]) {
+                            resetFiles = true;
+                        }
+                    });
+                    
+                    if (resetFiles) {
+                        input.files = [];
+                    }
+                }
+                
+                if (input.files.length == 0) {
+                    input.files = [];
+                    datatype.files.forEach(file => {
+                        if (file.required) {
+                            this.add_file(idx, file.id);
+                        }
+                    });
+                }
             }
         },
         
