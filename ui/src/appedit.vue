@@ -559,21 +559,22 @@ export default {
             let config = {};
             let inputs = [];
             let outputs = [];
+            let err = null;
             
             let inputTable = {};
             let outputTable = {};
             
             this.input_datasets.forEach(input => {
                 if (!input.id) {
-                    return cb("Not all input ids are non-null");
+                    err = "Not all input ids are non-null";
                 }
                 if (inputTable[input.id]) {
-                    return cb("Duplicate ID '" + input.id + "' found in list of inputs");
+                    err = "Duplicate ID '" + input.id + "' found in list of inputs";
                 }
                 
                 let datatype = this.datatypes[input.datatype];
                 if (datatype.name == "raw" && input.datatype_tags.length == 0) {
-                    return cb("All raw input datatypes should have at least 1 datatype tag (when checking input '" + input.id + "').");
+                    err = "All raw input datatypes should have at least 1 datatype tag (when checking input '" + input.id + "').";
                 }
                 
                 inputTable[input.id] = true;
@@ -588,12 +589,12 @@ export default {
                 
                 if (!input.files || input.files.length == 0) {
                     if (!file.id) {
-                        return cb("No file mapping given for input '" + input.id + "'");
+                        err = "No file mapping given for input '" + input.id + "'";
                     }
                 }
                 input.files.forEach(file => {
                     if (!file.id) {
-                        return cb("Not all file ids for input '" + input.id + "' are non-null");
+                        err = "Not all file ids for input '" + input.id + "' are non-null";
                     }
                     config[file.id] = {
                         type: 'input',
@@ -605,20 +606,20 @@ export default {
             
             this.output_datasets.forEach(output => {
                 if (!output.id) {
-                    return cb("Not all output ids are non-null");
+                    err = "Not all output ids are non-null";
                 }
                 if (inputTable[output.id]) {
-                    return cb("Duplicate ID '" + output.id + "' found in list of inputs and outputs");
+                    err = "Duplicate ID '" + output.id + "' found in list of inputs and outputs";
                 }
                 if (outputTable[output.id]) {
-                    return cb("Duplicate ID '" + output.id + "' found in list of outputs");
+                    err = "Duplicate ID '" + output.id + "' found in list of outputs";
                 }
                 
                 let datatype = this.datatypes[output.datatype];
                 let invalid = false;
                 
                 if (datatype.name == "raw" && output.datatype_tags.length == 0) {
-                    return cb("All raw output datatypes should have at least 1 datatype tag (when checking '" + output.id + "').");
+                    err = "All raw output datatypes should have at least 1 datatype tag (when checking '" + output.id + "').";
                 }
                 
                 try {
@@ -636,19 +637,19 @@ export default {
                 }
                 
                 if (invalid) {
-                    return cb("Failed to parse JSON given for output '" + output.id + "'");
+                    err = "Failed to parse JSON given for output '" + output.id + "'";
                 }
             });
             
             this.config_params.forEach(param => {
                 if (!param.id) {
-                    return cb("Not all configuration parameter ids are non-null");
+                    err = "Not all configuration parameter ids are non-null";
                 }
                 if (inputTable[param.id]) {
-                    return cb("Duplicate ID '" + param.id + "' used for configuration parameter and input");
+                    err = "Duplicate ID '" + param.id + "' used for configuration parameter and input";
                 }
                 if (outputTable[param.id]) {
-                    return cb("Duplicate ID '" + param.id + "' used for configuration parameter and output");
+                    err = "Duplicate ID '" + param.id + "' used for configuration parameter and output";
                 }
                 
                 config[param.id] = {
@@ -668,7 +669,7 @@ export default {
             this.app.inputs = inputs;
             this.app.outputs = outputs;
             
-            return cb(null);
+            return cb(err);
         },
         
         add_file: function(index, file_id) {
@@ -764,6 +765,7 @@ export default {
             console.log("clicked submit");
             
             this.convert_ui_to_config(err => {
+                console.log("Called");
                 if (err) {
                     this.$notify({ text: err, type: 'error' });
                     console.error(err);
