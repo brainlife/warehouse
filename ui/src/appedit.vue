@@ -514,6 +514,13 @@ export default {
                 }
                 this.output_datasets.push(output);
             }
+            
+            this.config_params.sort((a, b) => {
+                if (!a._order || !b._order) {
+                    return 0;
+                }
+                return a._order > b._order ? 1 : -1;
+            })
         },
         
         convert_ui_to_config: function(cb) {
@@ -703,6 +710,7 @@ export default {
         },
         
         input_datatype_changed: function(idx) {
+            // auto populate required datatype files
             let input = this.input_datasets[idx];
             
             if (input.datatype) {
@@ -712,6 +720,8 @@ export default {
                     fileTable[file.id] = file;
                 });
                 
+                // only auto populate if there are no files,
+                // or invalid files currently set
                 if (input.files.length > 0) {
                     let resetFiles = false;
                     input.files.forEach(file => {
