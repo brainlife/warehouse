@@ -551,7 +551,6 @@ export default {
                 if (output.files) {
                     output._files = JSON.stringify(output.files, null, 4);
                 }
-                console.log(output);
                 this.output_datasets.push(output);
             }
         },
