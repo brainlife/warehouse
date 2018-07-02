@@ -548,6 +548,10 @@ export default {
                 this.input_datasets.push(input);
             }
             for (let output of this.app.outputs) {
+                if (output.files) {
+                    output._files = JSON.stringify(output.files, null, 4);
+                }
+                console.log(output);
                 this.output_datasets.push(output);
             }
         },
@@ -654,6 +658,10 @@ export default {
                     desc: param.desc,
                     default: param.default,
                     options: param.options,
+                    readonly: param.readonly,
+                    optional: param.optional,
+                    min: param.min,
+                    max: param.max,
                 };
             });
             
