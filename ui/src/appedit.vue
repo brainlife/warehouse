@@ -300,13 +300,6 @@
                                     <b-form-checkbox v-model="param.readonly">Read Only 
                                     <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                 </b-form-group>
-
-                                <!-- doesn't make sense that boolean field can be optional
-                                <b-form-group>
-                                    <b-form-checkbox v-model="config.optional">Optional Configuration<br>
-                                    <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
-                                </b-form-group>
-                                -->
                             </b-col>
                             <b-col sm="7">
                                 <div class="text-muted">Description</div>
@@ -470,7 +463,7 @@ export default {
                 this.load_app_tags().then(tags=>{
                     this.alltags = tags;
 
-                    if(this.$route.params.id !== '_') {
+                    if (this.$route.params.id !== '_') {
 
                         //finally time to load app to edit
                         this.$http.get('app', {params: {
@@ -478,12 +471,6 @@ export default {
                         }})
                         .then(res=>{
                             this.app = res.body.apps[0];
-
-                            //convert output.files to JSON string - for now, we let user enter key/value where key is file_id and value is file/dir path 
-                            this.app.outputs.forEach(output=>{
-                                if(output.files) Vue.set(output, '_files', JSON.stringify(output.files, null, 4));
-                            });
-                            
                             this.convert_config_to_ui();
                             this.ready = true;
                         });
@@ -503,32 +490,6 @@ export default {
 
     methods: {
         convert_config_to_ui: function() {
-            /*
-            put app information into input_datasets, output_datasets, and config_params,
-            input_datasets: [{
-                    id: 'input1',
-                    _id: '5b35212ee546831043cde671',
-                    datatype_tags: [...],
-                    ...,
-                    files: [{
-                        type: 'input',
-                        _id: 'networkneuro',
-                        ...
-                    }, ...]
-                }, ...]
-            output_datasets: [{
-                    id: 'output1',
-                    _id: '5b35212ee546831043cde671',
-                    datatype_tags: [...],
-                    ... // (no 'files' entry)
-                }, ...]
-            config_params: [{
-                    id: 'test_string',
-                    type: 'string',
-                    default: 'test',
-                    ...
-                }, ...]
-            */
             let input_files = {};
             for (let id in this.app.config) {
                 let param = this.app.config[id];
@@ -741,11 +702,6 @@ export default {
             });
         },
         
-        add_reference: function() {
-            if(!this.app.references) Vue.set(this.app, 'references', []);
-            this.app.references.push({text: ''});
-        },
-        
         input_datatype_changed: function(idx) {
             let input = this.input_datasets[idx];
             
@@ -785,8 +741,6 @@ export default {
         },
 
         submit: function() {
-            console.log("clicked submit");
-            
             this.convert_ui_to_config(err => {
                 if (err) {
                     this.$notify({ text: err, type: 'error' });
@@ -831,10 +785,7 @@ export default {
                 }, reject);
             });
         },
-        editorInit: function() {
-            require('brace/mode/json')
-            //require('brace/theme/twilight')
-        },
+        
         is_raw: function(input) {
             if (this.datatypes) {
                 let dtype = this.datatypes[input.datatype];
