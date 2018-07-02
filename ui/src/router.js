@@ -10,6 +10,7 @@ import apps from '@/apps'
 import appsgraph from '@/appsgraph'
 import app from '@/app'
 import appedit from '@/appedit'
+import appeditold from '@/appeditold'
 import project from '@/project'
 import projectedit from '@/projectedit'
 import datatypes from '@/datatypes'
@@ -45,6 +46,7 @@ export default new Router({
         {path: '/appsgraph', component: appsgraph, meta: {public: true}},
         {path: '/app/:id', component: app, meta: {public: true}},
         {path: '/app/:id/edit', component: appedit},
+        {path: '/app/:id/editold', component: appeditold},
 
         {path: '/view/:instanceid/:taskid/:type/:subdir?', component: view, props: true},
         {path: '/novnc/:instanceid/:taskid/:type/:subdir?', component: novnc, props: true},
