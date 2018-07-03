@@ -119,8 +119,16 @@
                                 </b-input-group>
                             </b-col>
                             <b-col cols="7">
-                                <div class="button button-danger" @click="input_datasets.splice(idx, 1);" style="float: right">
-                                    <icon name="trash" scale="1.25"/>
+                                <div style="float: right;">
+                                    <div class="button" v-if="idx > 0 && input_datasets.length > 1" @click="swap_inputs(idx, idx - 1)">
+                                        <icon name="arrow-up" />
+                                    </div>
+                                    <div class="button" v-if="idx < input_datasets.length - 1 && input_datasets.length > 1" @click="swap_inputs(idx, idx + 1)">
+                                        <icon name="arrow-down" />
+                                    </div>
+                                    <div class="button button-danger" @click="input_datasets.splice(idx, 1)">
+                                        <icon name="trash"/>
+                                    </div>
                                 </div>
                                 <b-form-checkbox v-model="input.optional">
                                     Optional 
@@ -184,8 +192,16 @@
             <div>
                 <div v-for="(output, idx) in output_datasets" :key="idx" style="margin-bottom: 10px;">
                     <b-card>
-                        <div class="button button-danger" @click="output_datasets.splice(idx, 1)" style="float: right">
-                            <icon name="trash"/>
+                        <div style="float: right;">
+                            <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
+                                <icon name="arrow-up" />
+                            </div>
+                            <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
+                                <icon name="arrow-down" />
+                            </div>
+                            <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
+                                <icon name="trash"/>
+                            </div>
                         </div>
                         <b-row>
                             <b-col>
@@ -230,10 +246,10 @@
                 <div v-for="(param, idx) in config_params" :key="idx" style="margin:5px;">
                     <b-card v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
                         <div style="float: right">
-                            <div class="button" v-if="idx > 0" @click="move_up(idx)">
+                            <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
                             </div>
-                            <div class="button" v-if="param._order < get_max_order()" @click="move_down(idx)">
+                            <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
                                 <icon name="arrow-down" scale="1.25" />
                             </div>
                             <div class="button button-danger" @click="config_params.splice(idx, 1)">
@@ -290,10 +306,10 @@
                     </b-card>
                     <b-card v-if="param.type == 'boolean'">
                         <div style="float: right">
-                            <div class="button" v-if="idx > 0" @click="move_up(idx)">
+                            <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
                             </div>
-                            <div class="button" v-if="param._order < get_max_order()" @click="move_down(idx)">
+                            <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
                                 <icon name="arrow-down" scale="1.25" />
                             </div>
                             <div class="button button-danger" @click="config_params.splice(idx, 1)">
@@ -326,10 +342,10 @@
                     </b-card>
                     <b-card v-else-if="param.type == 'enum'">
                         <div style="float: right">
-                            <div class="button" v-if="idx > 0" @click="move_up(idx)">
+                            <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
                             </div>
-                            <div class="button" v-if="param._order < get_max_order()" @click="move_down(idx)">
+                            <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
                                 <icon name="arrow-down" scale="1.25" />
                             </div>
                             <div class="button button-danger" @click="config_params.splice(idx, 1)">
@@ -515,13 +531,24 @@ export default {
     },
 
     methods: {
-        move_up: function(idx) {
+        swap_inputs: function(first_idx, snd_idx) {
+            let tmp = this.input_datasets[first_idx];
+            Vue.set(this.input_datasets, first_idx, this.input_datasets[snd_idx]);
+            Vue.set(this.input_datasets, snd_idx, tmp);
+        },
+        swap_outputs: function(first_idx, snd_idx) {
+            let tmp = this.output_datasets[first_idx];
+            Vue.set(this.output_datasets, first_idx, this.output_datasets[snd_idx]);
+            Vue.set(this.output_datasets, snd_idx, tmp);
+        },
+        
+        move_param_up: function(idx) {
             this.config_params[idx]._order--;
             this.config_params[idx - 1]._order++;
             this.sort_params_by_order();
         },
         
-        move_down: function(idx) {
+        move_param_down: function(idx) {
             this.config_params[idx]._order++;
             this.config_params[idx + 1]._order--;
             this.sort_params_by_order();
