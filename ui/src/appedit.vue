@@ -385,7 +385,7 @@
                                 </b-col>
                             </b-row>
                             <b>Options</b>
-                            <b-card v-for="(option, idx) in param.options" :key="idx">
+                            <b-card v-for="(option, idx) in param.options" :key="idx" style="margin-bottom: 5px; margin-top: 5px;">
                                 <div class="button" @click="param.options.splice(idx, 1)" style="float: right">
                                     <icon name="trash"/>
                                 </div>
