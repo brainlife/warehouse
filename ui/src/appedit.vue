@@ -288,7 +288,7 @@
                             </b-col>
                         </b-row>
                     </b-card>
-                    <b-card v-if="param.type == 'boolean'" :title="param.type | capitalize">
+                    <b-card v-if="param.type == 'boolean'">
                         <div style="float: right">
                             <div class="button" v-if="idx > 0" @click="move_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
@@ -300,6 +300,7 @@
                                 <icon name="trash" scale="1.25"/>
                             </div>
                         </div>
+                        <h4>{{param.type|capitalize}}</h4>
                         <b-row>
                             <b-col>
                                 <b-form-group>
@@ -323,7 +324,7 @@
                             </b-col>
                         </b-row>
                     </b-card>
-                    <b-card v-else-if="param.type == 'enum'" :title="param.type | capitalize">
+                    <b-card v-else-if="param.type == 'enum'">
                         <div style="float: right">
                             <div class="button" v-if="idx > 0" @click="move_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
@@ -335,6 +336,7 @@
                                 <icon name="trash" scale="1.25"/>
                             </div>
                         </div>
+                        <h4>{{param.type|capitalize}}</h4>
                         <b-row>
                             <b-col>
                                 <b-form-group>
