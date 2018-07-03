@@ -230,14 +230,14 @@
                 <div v-for="(param, idx) in config_params" :key="idx" style="margin:5px;">
                     <b-card v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
                         <div style="float: right">
-                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
                             <div class="button" v-if="idx > 0" @click="move_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
                             </div>
                             <div class="button" v-if="param._order < get_max_order()" @click="move_down(idx)">
                                 <icon name="arrow-down" scale="1.25" />
+                            </div>
+                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
+                                <icon name="trash" scale="1.25"/>
                             </div>
                         </div>
                         <h4>{{param.type|capitalize}}</h4>
@@ -290,14 +290,14 @@
                     </b-card>
                     <b-card v-if="param.type == 'boolean'" :title="param.type | capitalize">
                         <div style="float: right">
-                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
                             <div class="button" v-if="idx > 0" @click="move_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
                             </div>
                             <div class="button" v-if="param._order < get_max_order()" @click="move_down(idx)">
                                 <icon name="arrow-down" scale="1.25" />
+                            </div>
+                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
+                                <icon name="trash" scale="1.25"/>
                             </div>
                         </div>
                         <b-row>
@@ -325,14 +325,14 @@
                     </b-card>
                     <b-card v-else-if="param.type == 'enum'" :title="param.type | capitalize">
                         <div style="float: right">
-                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
                             <div class="button" v-if="idx > 0" @click="move_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
                             </div>
                             <div class="button" v-if="param._order < get_max_order()" @click="move_down(idx)">
                                 <icon name="arrow-down" scale="1.25" />
+                            </div>
+                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
+                                <icon name="trash" scale="1.25"/>
                             </div>
                         </div>
                         <b-row>
