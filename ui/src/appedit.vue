@@ -160,8 +160,8 @@
                             <div v-if="input.files">
                                 <br><b>File Mapping</b><br>
                                 <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
-                                <transition-group name="height">
-                                    <b-card v-for="(file, fidx) in input.files" :key="fidx">
+                                <transition-group name="file-transition" tag="div" class="file-map-container">
+                                    <div v-for="(file, fidx) in input.files" :key="fidx" class="file-map">
                                         <div class="button" @click="remove_file(idx, fidx)" style="float: right">
                                             <icon name="trash"/>
                                         </div>
@@ -177,7 +177,7 @@
                                                 </b-input-group>
                                             </b-col>
                                         </b-row>
-                                    </b-card>
+                                    </div>
                                 </transition-group>
                                 <br>
                                 <b-button @click="add_file(idx)" size="sm">Add File Mapping</b-button>
@@ -789,7 +789,7 @@ export default {
         
         add_dataset: function(it) {
             it.push({
-                _id: Math.random(),
+                pid: Math.random(),
                 id: "",
                 datatype: null,
                 datatype_tags: [],
@@ -923,16 +923,24 @@ bottom: 0px;
 overflow: auto;
 }
 
-.slide-fade-enter-active {
-  transition: all .3s ease;
+.file-map-container {
+border:1px solid #ced4da;
+padding:4px;
+border-radius:0.25rem;
 }
-.slide-fade-leave-active {
-  transition: none;
+
+.file-map {
+margin: 7px;
 }
-.slide-fade-enter, .slide-fade-leave-to {
-  transform: translateX(10px);
-  opacity: 0;
+
+/*
+.file-transition-enter-active, .file-transition-leave-active {
+transition: opacity .3s;
 }
+.file-transition-enter, .file-transition-leave-to {
+opacity: 0;
+}*/
+
 .form-action {
 text-align: right;
 position: sticky;
@@ -940,7 +948,10 @@ bottom:0;
 background-color: rgba(100,100,100,0.4);
 padding:10px;
 }
+.move-item-enter-active, .move-item-leave-active {
+transition: none;
+}
 .move-item-move {
-transition: transform 1s;
+transition: transform .8s;
 }
 </style>
