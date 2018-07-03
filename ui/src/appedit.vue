@@ -229,8 +229,16 @@
             <div>
                 <div v-for="(param, idx) in config_params" :key="idx" style="margin:5px;">
                     <b-card v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
-                        <div class="button button-danger" @click="config_params.splice(idx, 1)" style="float: right">
-                            <icon name="trash" scale="1.25"/>
+                        <div style="float: right">
+                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
+                                <icon name="trash" scale="1.25"/>
+                            </div>
+                            <div class="button" v-if="idx > 0" @click="move_up(idx)">
+                                <icon name="arrow-up" scale="1.25"/>
+                            </div>
+                            <div class="button" v-if="param._order < get_max_order()" @click="move_down(idx)">
+                                <icon name="arrow-down" scale="1.25" />
+                            </div>
                         </div>
                         <h4>{{param.type|capitalize}}</h4>
                         <b-row>
@@ -281,8 +289,16 @@
                         </b-row>
                     </b-card>
                     <b-card v-if="param.type == 'boolean'" :title="param.type | capitalize">
-                        <div class="button button-danger" @click="config_params.splice(idx, 1)" style="float: right">
-                            <icon name="trash"/>
+                        <div style="float: right">
+                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
+                                <icon name="trash" scale="1.25"/>
+                            </div>
+                            <div class="button" v-if="idx > 0" @click="move_up(idx)">
+                                <icon name="arrow-up" scale="1.25"/>
+                            </div>
+                            <div class="button" v-if="param._order < get_max_order()" @click="move_down(idx)">
+                                <icon name="arrow-down" scale="1.25" />
+                            </div>
                         </div>
                         <b-row>
                             <b-col>
@@ -308,8 +324,16 @@
                         </b-row>
                     </b-card>
                     <b-card v-else-if="param.type == 'enum'" :title="param.type | capitalize">
-                        <div class="button button-danger" @click="config_params.splice(idx, 1)" style="float: right">
-                            <icon name="trash"/>
+                        <div style="float: right">
+                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
+                                <icon name="trash" scale="1.25"/>
+                            </div>
+                            <div class="button" v-if="idx > 0" @click="move_up(idx)">
+                                <icon name="arrow-up" scale="1.25"/>
+                            </div>
+                            <div class="button" v-if="param._order < get_max_order()" @click="move_down(idx)">
+                                <icon name="arrow-down" scale="1.25" />
+                            </div>
                         </div>
                         <b-row>
                             <b-col>
@@ -489,6 +513,44 @@ export default {
     },
 
     methods: {
+        move_up: function(idx) {
+            this.config_params[idx]._order--;
+            this.config_params[idx - 1]._order++;
+            this.sort_params_by_order();
+        },
+        
+        move_down: function(idx) {
+            this.config_params[idx]._order++;
+            this.config_params[idx + 1]._order--;
+            this.sort_params_by_order();
+        },
+        
+        get_max_order: function() {
+            let max_order = 0;
+            for (let param of this.config_params) {
+                if (typeof param._order == 'number') {
+                    max_order = Math.max(max_order, param._order);
+                }
+            }
+            return max_order;
+        },
+        
+        sort_params_by_order: function() {
+            // first assign ordering to items
+            // that don't have one
+            let max_order = this.get_max_order();
+            for (let param of this.config_params) {
+                if (typeof param._order != 'number') {
+                    param._order = max_order + 1;
+                    max_order++;
+                }
+            }
+            
+            this.config_params.sort((a, b) => {
+                return a._order > b._order ? 1 : -1;
+            });
+        },
+        
         convert_config_to_ui: function() {
             let input_files = {};
             for (let id in this.app.config) {
@@ -515,12 +577,8 @@ export default {
                 this.output_datasets.push(output);
             }
             
-            this.config_params.sort((a, b) => {
-                if (!a._order || !b._order) {
-                    return 0;
-                }
-                return a._order > b._order ? 1 : -1;
-            })
+            // use _order for ordering of array items
+            this.sort_params_by_order();
         },
         
         convert_ui_to_config: function(cb) {
@@ -643,17 +701,8 @@ export default {
                 }
                 
                 paramTable[param.id] = true;
-                config[param.id] = {
-                    type: param.type,
-                    placeholder: param.placeholder,
-                    desc: param.desc,
-                    default: param.default,
-                    options: param.options,
-                    readonly: param.readonly,
-                    optional: param.optional,
-                    min: param.min,
-                    max: param.max,
-                };
+                config[param.id] = {};
+                Object.assign(config[param.id], param);
             });
             
             this.app.config = config;
@@ -681,8 +730,9 @@ export default {
         },
         
         add_param: function(type, input) {
+            let max_order = this.get_max_order();
             //tempid just have to be unique
-            let param = { id: '', type, placeholder: '', desc: '', default: ''};
+            let param = { id: '', type, placeholder: '', desc: '', default: '', _order: max_order + 1 };
             switch(type) {
             case "boolean":
                 param.default = false;
@@ -697,6 +747,7 @@ export default {
                 break;
             }
             this.config_params.push(param);
+            this.sort_params_by_order();
         },
         
         add_dataset: function(it) {
