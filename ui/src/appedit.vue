@@ -104,7 +104,7 @@
             <h4>Input Datasets</h4>
             <div>
                 <transition-group name="move-item" tag="p">
-                    <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="display:inline-block; width: 100%; margin-bottom: 10px;">
+                    <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="margin-bottom: 10px;">
                         <b-card style="position: relative;">
                             <b-row v-if="is_raw(input)">
                                 <b-col>
@@ -933,13 +933,13 @@ border-radius:0.25rem;
 margin: 7px;
 }
 
-/*
-.file-transition-enter-active, .file-transition-leave-active {
-transition: opacity .3s;
+.file-transition-enter-active {
+transition: all .45s;
 }
-.file-transition-enter, .file-transition-leave-to {
+.file-transition-enter {
 opacity: 0;
-}*/
+transform: translate(0, 100%);
+}
 
 .form-action {
 text-align: right;
@@ -952,6 +952,6 @@ padding:10px;
 transition: none;
 }
 .move-item-move {
-transition: transform .8s;
+transition: transform .45s;
 }
 </style>
