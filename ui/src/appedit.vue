@@ -103,86 +103,88 @@
             
             <h4>Input Datasets</h4>
             <div>
-                <div v-for="(input, idx) in input_datasets" :key="idx" style="margin-bottom: 10px;">
-                    <b-card style="position: relative;">
-                        <b-row v-if="is_raw(input)">
-                            <b-col>
-                                <b-alert show variant="warning">
-                                    Warning: You have chosen a raw datatype as an input. If possible, please request your upstream app developer to create a new datatype so that it can instead be used to pass data between apps.
-                                </b-alert>
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="5">
-                                <b-input-group prepend="ID">
-                                    <b-form-input type="text" v-model="input.id" required />
-                                </b-input-group>
-                            </b-col>
-                            <b-col cols="7">
-                                <div style="float: right;">
-                                    <div class="button" v-if="idx > 0 && input_datasets.length > 1" @click="swap_inputs(idx, idx - 1)">
-                                        <icon name="arrow-up" />
+                <transition-group name="move-item" tag="p">
+                    <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="display:inline-block; width: 100%; margin-bottom: 10px;">
+                        <b-card style="position: relative;">
+                            <b-row v-if="is_raw(input)">
+                                <b-col>
+                                    <b-alert show variant="warning">
+                                        Warning: You have chosen a raw datatype as an input. If possible, please request your upstream app developer to create a new datatype so that it can instead be used to pass data between apps.
+                                    </b-alert>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="5">
+                                    <b-input-group prepend="ID">
+                                        <b-form-input type="text" v-model="input.id" required />
+                                    </b-input-group>
+                                </b-col>
+                                <b-col cols="7">
+                                    <div style="float: right;">
+                                        <div class="button" v-if="idx > 0 && input_datasets.length > 1" @click="swap_inputs(idx, idx - 1)">
+                                            <icon name="arrow-up" />
+                                        </div>
+                                        <div class="button" v-if="idx < input_datasets.length - 1 && input_datasets.length > 1" @click="swap_inputs(idx, idx + 1)">
+                                            <icon name="arrow-down" />
+                                        </div>
+                                        <div class="button button-danger" @click="input_datasets.splice(idx, 1)">
+                                            <icon name="trash"/>
+                                        </div>
                                     </div>
-                                    <div class="button" v-if="idx < input_datasets.length - 1 && input_datasets.length > 1" @click="swap_inputs(idx, idx + 1)">
-                                        <icon name="arrow-down" />
-                                    </div>
-                                    <div class="button button-danger" @click="input_datasets.splice(idx, 1)">
-                                        <icon name="trash"/>
-                                    </div>
-                                </div>
-                                <b-form-checkbox v-model="input.optional">
-                                    Optional 
-                                    <small class="text-muted">user can submit this app without this input specified</small>
-                                </b-form-checkbox>
-                                <b-form-checkbox v-model="input.multi">
-                                    Multi
-                                    <small class="text-muted">Allow user to select multiple datasets in an array</small>
-                                </b-form-checkbox>
-                            </b-col>
-                        </b-row>
-                        <hr>
-                        <b-row>
-                            <b-col cols="5">
-                                <span class="text-muted">Datatype</span>
-                                <datatypeselecter v-model="input.datatype" @input="input_datatype_changed(idx)"></datatypeselecter>
-                            </b-col>
-                            <b-col cols="7">
-                                <div class="text-muted">Datatype Tags</div>
-                                <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags" :options="datatypes[input.datatype]._tags" />
-                                <small class="text-muted">Only allow user to select datasets with these tags. You can prefix tags with ! for negative tags</small>
-                            </b-col>
-                        </b-row>
+                                    <b-form-checkbox v-model="input.optional">
+                                        Optional 
+                                        <small class="text-muted">user can submit this app without this input specified</small>
+                                    </b-form-checkbox>
+                                    <b-form-checkbox v-model="input.multi">
+                                        Multi
+                                        <small class="text-muted">Allow user to select multiple datasets in an array</small>
+                                    </b-form-checkbox>
+                                </b-col>
+                            </b-row>
+                            <hr>
+                            <b-row>
+                                <b-col cols="5">
+                                    <span class="text-muted">Datatype</span>
+                                    <datatypeselecter v-model="input.datatype" @input="input_datatype_changed(idx)"></datatypeselecter>
+                                </b-col>
+                                <b-col cols="7">
+                                    <div class="text-muted">Datatype Tags</div>
+                                    <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags" :options="datatypes[input.datatype]._tags" />
+                                    <small class="text-muted">Only allow user to select datasets with these tags. You can prefix tags with ! for negative tags</small>
+                                </b-col>
+                            </b-row>
 
-                        <span class="text-muted">Description (optional)</span>
-                        <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"/>
+                            <span class="text-muted">Description (optional)</span>
+                            <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"/>
 
-                        <div v-if="input.files">
-                            <br><b>File Mapping</b><br>
-                            <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
-                            <transition-group name="height">
-                                <b-card v-for="(file, fidx) in input.files" :key="fidx">
-                                    <div class="button" @click="remove_file(idx, fidx)" style="float: right">
-                                        <icon name="trash"/>
-                                    </div>
-                                    <b-row>
-                                        <b-col>
-                                            <b-input-group prepend="config.json key">
-                                                <b-form-input type="text" v-model="file.id" required/>
-                                            </b-input-group>
-                                        </b-col>
-                                        <b-col v-if="input.datatype" cols="7">
-                                            <b-input-group prepend="file/dir">
-                                                <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="file.file_id" required/>
-                                            </b-input-group>
-                                        </b-col>
-                                    </b-row>
-                                </b-card>
-                            </transition-group>
-                            <br>
-                            <b-button @click="add_file(idx)" size="sm">Add File Mapping</b-button>
-                        </div>
-                    </b-card>
-                </div>
+                            <div v-if="input.files">
+                                <br><b>File Mapping</b><br>
+                                <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
+                                <transition-group name="height">
+                                    <b-card v-for="(file, fidx) in input.files" :key="fidx">
+                                        <div class="button" @click="remove_file(idx, fidx)" style="float: right">
+                                            <icon name="trash"/>
+                                        </div>
+                                        <b-row>
+                                            <b-col>
+                                                <b-input-group prepend="config.json key">
+                                                    <b-form-input type="text" v-model="file.id" required/>
+                                                </b-input-group>
+                                            </b-col>
+                                            <b-col v-if="input.datatype" cols="7">
+                                                <b-input-group prepend="file/dir">
+                                                    <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="file.file_id" required/>
+                                                </b-input-group>
+                                            </b-col>
+                                        </b-row>
+                                    </b-card>
+                                </transition-group>
+                                <br>
+                                <b-button @click="add_file(idx)" size="sm">Add File Mapping</b-button>
+                            </div>
+                        </b-card>
+                    </div>
+                </transition-group>
                 <p>
                     <b-button size="sm" @click="add_dataset(input_datasets)" variant="success">Add Input Dataset</b-button>
                 </p>
@@ -190,52 +192,54 @@
             
             <h4>Output Datasets</h4>
             <div>
-                <div v-for="(output, idx) in output_datasets" :key="idx" style="margin-bottom: 10px;">
-                    <b-card>
-                        <div style="float: right;">
-                            <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
-                                <icon name="arrow-up" />
+                <transition-group name="move-item" tag="p">
+                    <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
+                        <b-card>
+                            <div style="float: right;">
+                                <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
+                                    <icon name="arrow-up" />
+                                </div>
+                                <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
+                                    <icon name="arrow-down" />
+                                </div>
+                                <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
+                                    <icon name="trash"/>
+                                </div>
                             </div>
-                            <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
-                                <icon name="arrow-down" />
-                            </div>
-                            <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
-                                <icon name="trash"/>
-                            </div>
-                        </div>
-                        <b-row>
-                            <b-col>
-                                <b-input-group prepend="ID">
-                                    <b-form-input type="text" v-model="output.id" required />
-                                </b-input-group>
-                                <small class="text-muted">Internal ID used to identify this output</small>
-                            </b-col>
-                            <b-col cols="7">
-                            </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col>
-                                <div class="text-muted">Datatype</div>
-                                <datatypeselecter v-model="output.datatype"></datatypeselecter>
-                            </b-col>
-                            <b-col cols="7" v-if="output.datatype">
-                                <div class="text-muted">Datatype Tags</div>
-                                <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
-                                <small class="text-muted">Set these datatype tags on this output dataset</small>
+                            <b-row>
+                                <b-col>
+                                    <b-input-group prepend="ID">
+                                        <b-form-input type="text" v-model="output.id" required />
+                                    </b-input-group>
+                                    <small class="text-muted">Internal ID used to identify this output</small>
+                                </b-col>
+                                <b-col cols="7">
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col>
+                                    <div class="text-muted">Datatype</div>
+                                    <datatypeselecter v-model="output.datatype"></datatypeselecter>
+                                </b-col>
+                                <b-col cols="7" v-if="output.datatype">
+                                    <div class="text-muted">Datatype Tags</div>
+                                    <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
+                                    <small class="text-muted">Set these datatype tags on this output dataset</small>
 
-                                <div class="text-muted">Tag Passthrough</div>
-                                <b-form-select v-model="output.datatype_tags_pass">
-                                     <option :value="null">(No Pass)</option>
-                                     <option v-for="input in app.inputs" v-if="input.datatype == output.datatype" :key="input.id" :value="input.id">{{input.id}}</option>
-                                </b-form-select>
-                                <small class="text-muted">Add all datatype tags from the input dataset specified</small>
-                                
-                            </b-col>
-                        </b-row>
-                        <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>(Optional JSON)</small></div>
-                        <b-form-textarea v-model="output._files" :rows="3"></b-form-textarea>
-                    </b-card>
-                </div>
+                                    <div class="text-muted">Tag Passthrough</div>
+                                    <b-form-select v-model="output.datatype_tags_pass">
+                                        <option :value="null">(No Pass)</option>
+                                        <option v-for="input in app.inputs" v-if="input.datatype == output.datatype" :key="input.id" :value="input.id">{{input.id}}</option>
+                                    </b-form-select>
+                                    <small class="text-muted">Add all datatype tags from the input dataset specified</small>
+                                    
+                                </b-col>
+                            </b-row>
+                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>(Optional JSON)</small></div>
+                            <b-form-textarea v-model="output._files" :rows="3"></b-form-textarea>
+                        </b-card>
+                    </div>
+                </transition-group>
                 <p>
                     <b-button size="sm" @click="add_dataset(output_datasets)" variant="success">Add Output Dataset</b-button>
                 </p>
@@ -243,166 +247,168 @@
             
             <h4>Configuration</h4>
             <div>
-                <div v-for="(param, idx) in config_params" :key="idx" style="margin:5px;">
-                    <b-card v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
-                        <div style="float: right">
-                            <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
-                                <icon name="arrow-up" scale="1.25"/>
-                            </div>
-                            <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
-                                <icon name="arrow-down" scale="1.25" />
-                            </div>
-                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
-                        </div>
-                        <h4>{{param.type|capitalize}}</h4>
-                        <b-row>
-                            <b-col>
-                                <b-form-group>
-                                    <b-input-group prepend="config.json key">
-                                        <b-form-input type="text" v-model="param.id" required/>
-                                    </b-input-group>
-                                </b-form-group>
-
-                                <b-form-group>
-                                    <b-input-group prepend="Default Value">
-                                        <b-form-input v-if="param.type == 'integer'" type="number" v-model.number="param.default" placeholder="(no default)"/><!--deprecated-->
-                                        <b-form-input v-if="param.type == 'number'" type="number" :step="0.01" v-model.number="param.default" placeholder="(no default)"/>
-                                        <b-form-input v-if="param.type == 'string'" type="text" v-model="param.default" placeholder="(no default)"/>
-                                    </b-input-group>
-                                </b-form-group>
-
-                                <b-form-group v-if="param.default !== ''">
-                                    <b-form-checkbox v-model="param.readonly">Read Only<br>
-                                    <small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
-                                </b-form-group>
-
-                                <b-form-group>
-                                    <b-form-checkbox v-model="param.optional">Optional Configuration<br>
-                                    <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
-                                </b-form-group>
-
-                                <div v-if="!param.readonly && (param.type == 'number' || param.type == 'integer')">
-                                    <b-input-group prepend="Min">
-                                        <b-form-input type="number" :step="0.01" v-model.number="param.min" placeholder="(No min)"/>
-                                    </b-input-group><br />
-                                    <b-input-group prepend="Max">
-                                        <b-form-input type="number" :step="0.01" v-model.number="param.max" placeholder="(No max)"/>
-                                    </b-input-group>
+                <transition-group name="move-item" tag="p">
+                    <div v-for="(param, idx) in config_params" v-if="param.pid" :key="param.pid" style="margin:5px;">
+                        <b-card v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
+                            <div style="float: right">
+                                <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
+                                    <icon name="arrow-up" scale="1.25"/>
                                 </div>
-                            </b-col>
-                            <b-col sm="7">
-                                <b-form-group>
-                                    <div class="text-muted">Placeholder <small>optional text to show inside the form element if no value is specified</small></div>
-                                    <b-form-input type="text" v-model="param.placeholder"></b-form-input>
-                                </b-form-group>
-                                <b-form-group>
-                                    <div class="text-muted">Description <small>optional</small></div>
-                                    <b-form-textarea v-model="param.desc" placeholder="Enter description to add for this field" :rows="5" :max-rows="8"></b-form-textarea>
-                                </b-form-group>
-                            </b-col>
-                        </b-row>
-                    </b-card>
-                    <b-card v-if="param.type == 'boolean'">
-                        <div style="float: right">
-                            <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
-                                <icon name="arrow-up" scale="1.25"/>
+                                <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
+                                    <icon name="arrow-down" scale="1.25" />
+                                </div>
+                                <div class="button button-danger" @click="config_params.splice(idx, 1)">
+                                    <icon name="trash" scale="1.25"/>
+                                </div>
                             </div>
-                            <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
-                                <icon name="arrow-down" scale="1.25" />
-                            </div>
-                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
-                        </div>
-                        <h4>{{param.type|capitalize}}</h4>
-                        <b-row>
-                            <b-col>
-                                <b-form-group>
-                                    <b-input-group prepend="Key">
-                                        <b-form-input type="text" v-model="param.id"></b-form-input>
-                                    </b-input-group>
-                                </b-form-group>
-                                <b-form-group>
-                                    <b-input-group prepend="Default Value">
-                                        <trueorfalse v-model="param.default"/>
-                                    </b-input-group>
-                                </b-form-group>
-                                <b-form-group>
-                                    <b-form-checkbox v-model="param.readonly">Read Only 
-                                    <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
-                                </b-form-group>
-                            </b-col>
-                            <b-col sm="7">
-                                <div class="text-muted">Description</div>
-                                <b-form-input type="text" v-model="param.desc"></b-form-input>
-                            </b-col>
-                        </b-row>
-                    </b-card>
-                    <b-card v-else-if="param.type == 'enum'">
-                        <div style="float: right">
-                            <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
-                                <icon name="arrow-up" scale="1.25"/>
-                            </div>
-                            <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
-                                <icon name="arrow-down" scale="1.25" />
-                            </div>
-                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
-                        </div>
-                        <h4>{{param.type|capitalize}}</h4>
-                        <b-row>
-                            <b-col>
-                                <b-form-group>
-                                    <b-input-group prepend="Key">
-                                        <b-form-input type="text" v-model="param.id"></b-form-input>
-                                    </b-input-group>
-                                </b-form-group>
-                                <b-form-group v-if="param.options.length">
-                                    <b-input-group prepend="Default Value">
-                                        <b-form-select :options="param.options.map(o => o.value)" v-model="param.default"></b-form-select>
-                                    </b-input-group>
-                                </b-form-group>
-                                <b-form-group v-if="param.default !== ''">
-                                    <b-form-checkbox v-model="param.readonly">Read Only 
-                                    <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
-                                </b-form-group>
-                                <b-form-group>
-                                    <b-form-checkbox v-model="param.optional">Optional Configuration<br>
-                                    <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
-                                </b-form-group>
-                            </b-col>
-                            <b-col sm="7">
-                                <div class="text-muted">Description</div>
-                                <b-form-textarea v-model="param.desc" :rows="4"></b-form-textarea>
-                            </b-col>
-                        </b-row>
-                        <b>Options</b>
-                        <b-card v-for="(option, idx) in param.options" :key="idx">
-                            <div class="button" @click="param.options.splice(idx, 1)" style="float: right">
-                                <icon name="trash"/>
-                            </div>
+                            <h4>{{param.type|capitalize}}</h4>
                             <b-row>
-                                <b-col cols="2">
-                                    <div class="text-muted">Value</div>
-                                    <b-form-input type="text" v-model="option.value"></b-form-input>
-                                </b-col>
                                 <b-col>
-                                    <div class="text-muted">Label</div>
-                                    <b-form-input type="text" v-model="option.label"></b-form-input>
+                                    <b-form-group>
+                                        <b-input-group prepend="config.json key">
+                                            <b-form-input type="text" v-model="param.id" required/>
+                                        </b-input-group>
+                                    </b-form-group>
+
+                                    <b-form-group>
+                                        <b-input-group prepend="Default Value">
+                                            <b-form-input v-if="param.type == 'integer'" type="number" v-model.number="param.default" placeholder="(no default)"/><!--deprecated-->
+                                            <b-form-input v-if="param.type == 'number'" type="number" :step="0.01" v-model.number="param.default" placeholder="(no default)"/>
+                                            <b-form-input v-if="param.type == 'string'" type="text" v-model="param.default" placeholder="(no default)"/>
+                                        </b-input-group>
+                                    </b-form-group>
+
+                                    <b-form-group v-if="param.default !== ''">
+                                        <b-form-checkbox v-model="param.readonly">Read Only<br>
+                                        <small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
+                                    </b-form-group>
+
+                                    <b-form-group>
+                                        <b-form-checkbox v-model="param.optional">Optional Configuration<br>
+                                        <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
+                                    </b-form-group>
+
+                                    <div v-if="!param.readonly && (param.type == 'number' || param.type == 'integer')">
+                                        <b-input-group prepend="Min">
+                                            <b-form-input type="number" :step="0.01" v-model.number="param.min" placeholder="(No min)"/>
+                                        </b-input-group><br />
+                                        <b-input-group prepend="Max">
+                                            <b-form-input type="number" :step="0.01" v-model.number="param.max" placeholder="(No max)"/>
+                                        </b-input-group>
+                                    </div>
                                 </b-col>
-                                <b-col>
-                                    <div class="text-muted">Description</div>
-                                    <b-form-input type="text" v-model="option.desc"></b-form-input>
+                                <b-col sm="7">
+                                    <b-form-group>
+                                        <div class="text-muted">Placeholder <small>optional text to show inside the form element if no value is specified</small></div>
+                                        <b-form-input type="text" v-model="param.placeholder"></b-form-input>
+                                    </b-form-group>
+                                    <b-form-group>
+                                        <div class="text-muted">Description <small>optional</small></div>
+                                        <b-form-textarea v-model="param.desc" placeholder="Enter description to add for this field" :rows="5" :max-rows="8"></b-form-textarea>
+                                    </b-form-group>
                                 </b-col>
                             </b-row>
                         </b-card>
-                        <br>
-                        <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm">Add Enum Option</b-button>
-                    </b-card>
-                </div>
+                        <b-card v-if="param.type == 'boolean'">
+                            <div style="float: right">
+                                <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
+                                    <icon name="arrow-up" scale="1.25"/>
+                                </div>
+                                <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
+                                    <icon name="arrow-down" scale="1.25" />
+                                </div>
+                                <div class="button button-danger" @click="config_params.splice(idx, 1)">
+                                    <icon name="trash" scale="1.25"/>
+                                </div>
+                            </div>
+                            <h4>{{param.type|capitalize}}</h4>
+                            <b-row>
+                                <b-col>
+                                    <b-form-group>
+                                        <b-input-group prepend="Key">
+                                            <b-form-input type="text" v-model="param.id"></b-form-input>
+                                        </b-input-group>
+                                    </b-form-group>
+                                    <b-form-group>
+                                        <b-input-group prepend="Default Value">
+                                            <trueorfalse v-model="param.default"/>
+                                        </b-input-group>
+                                    </b-form-group>
+                                    <b-form-group>
+                                        <b-form-checkbox v-model="param.readonly">Read Only 
+                                        <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
+                                    </b-form-group>
+                                </b-col>
+                                <b-col sm="7">
+                                    <div class="text-muted">Description</div>
+                                    <b-form-input type="text" v-model="param.desc"></b-form-input>
+                                </b-col>
+                            </b-row>
+                        </b-card>
+                        <b-card v-else-if="param.type == 'enum'">
+                            <div style="float: right">
+                                <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
+                                    <icon name="arrow-up" scale="1.25"/>
+                                </div>
+                                <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
+                                    <icon name="arrow-down" scale="1.25" />
+                                </div>
+                                <div class="button button-danger" @click="config_params.splice(idx, 1)">
+                                    <icon name="trash" scale="1.25"/>
+                                </div>
+                            </div>
+                            <h4>{{param.type|capitalize}}</h4>
+                            <b-row>
+                                <b-col>
+                                    <b-form-group>
+                                        <b-input-group prepend="Key">
+                                            <b-form-input type="text" v-model="param.id"></b-form-input>
+                                        </b-input-group>
+                                    </b-form-group>
+                                    <b-form-group v-if="param.options.length">
+                                        <b-input-group prepend="Default Value">
+                                            <b-form-select :options="param.options.map(o => o.value)" v-model="param.default"></b-form-select>
+                                        </b-input-group>
+                                    </b-form-group>
+                                    <b-form-group v-if="param.default !== ''">
+                                        <b-form-checkbox v-model="param.readonly">Read Only 
+                                        <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
+                                    </b-form-group>
+                                    <b-form-group>
+                                        <b-form-checkbox v-model="param.optional">Optional Configuration<br>
+                                        <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
+                                    </b-form-group>
+                                </b-col>
+                                <b-col sm="7">
+                                    <div class="text-muted">Description</div>
+                                    <b-form-textarea v-model="param.desc" :rows="4"></b-form-textarea>
+                                </b-col>
+                            </b-row>
+                            <b>Options</b>
+                            <b-card v-for="(option, idx) in param.options" :key="idx">
+                                <div class="button" @click="param.options.splice(idx, 1)" style="float: right">
+                                    <icon name="trash"/>
+                                </div>
+                                <b-row>
+                                    <b-col cols="2">
+                                        <div class="text-muted">Value</div>
+                                        <b-form-input type="text" v-model="option.value"></b-form-input>
+                                    </b-col>
+                                    <b-col>
+                                        <div class="text-muted">Label</div>
+                                        <b-form-input type="text" v-model="option.label"></b-form-input>
+                                    </b-col>
+                                    <b-col>
+                                        <div class="text-muted">Description</div>
+                                        <b-form-input type="text" v-model="option.desc"></b-form-input>
+                                    </b-col>
+                                </b-row>
+                            </b-card>
+                            <br>
+                            <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm">Add Enum Option</b-button>
+                        </b-card>
+                    </div>
+                </transition-group>
             </div>
             <p>
                 <b-dropdown size="sm" text="Add Configuration Parameter" variant="success">
@@ -591,18 +597,21 @@ export default {
                     }
                     input_files[param.input_id].push(param);
                 } else {
+                    param.pid = Math.random();
                     this.config_params.push(param);
                 }
             }
             
             for (let input of this.app.inputs) {
                 input.files = input_files[input.id] || [];
+                input.pid = Math.random();
                 this.input_datasets.push(input);
             }
             for (let output of this.app.outputs) {
                 if (output.files) {
                     output._files = JSON.stringify(output.files, null, 4);
                 }
+                output.pid = Math.random();
                 this.output_datasets.push(output);
             }
             
@@ -760,8 +769,7 @@ export default {
         
         add_param: function(type, input) {
             let max_order = this.get_max_order();
-            //tempid just have to be unique
-            let param = { id: '', type, placeholder: '', desc: '', default: '', _order: max_order + 1 };
+            let param = { id: '', type, placeholder: '', desc: '', default: '', _order: max_order + 1, pid: Math.random() };
             switch(type) {
             case "boolean":
                 param.default = false;
@@ -781,6 +789,7 @@ export default {
         
         add_dataset: function(it) {
             it.push({
+                _id: Math.random(),
                 id: "",
                 datatype: null,
                 datatype_tags: [],
@@ -930,5 +939,8 @@ position: sticky;
 bottom:0;
 background-color: rgba(100,100,100,0.4);
 padding:10px;
+}
+.move-item-move {
+transition: transform 1s;
 }
 </style>
