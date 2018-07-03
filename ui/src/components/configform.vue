@@ -65,6 +65,8 @@ export default {
     },
     computed: {
         sorted_spec: function() {
+            // return sorted array of
+            // config objects by _order
             let spec_arr = [];
             for (let k in this.spec) {
                 spec_arr.push(Object.assign({}, this.spec[k], { id: k }));
@@ -76,8 +78,6 @@ export default {
                 }
                 return a._order > b._order ? 1 : -1;
             });
-            
-            console.log(spec_arr);
             return spec_arr;
         },
     },
