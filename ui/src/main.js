@@ -39,6 +39,9 @@ import VueAnalytics from 'vue-analytics'
 
 Vue.component('icon', Icon)
 
+import VueDisqus from 'vue-disqus'
+
+Vue.use(VueDisqus)
 Vue.use(VueHighlightJS)
 Vue.use(VueResource)
 Vue.use(Element, {locale})

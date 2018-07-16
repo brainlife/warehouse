@@ -20,7 +20,7 @@
                         <timeago :since="rule.create_date" :auto-update="10"/>
                     </div>
                     <div style="float: right; width: 150px;">
-                        <contact :id="rule.user_id" short="true" style=""/>
+                        <contact :id="rule.user_id" size="small" style=""/>
                     </div>
                     <div class="rule-controls" style="float: right;">
                         <div class="button" @click.stop="edit(rule)" v-if="ismember() || isadmin()"><icon name="edit"/></div>
