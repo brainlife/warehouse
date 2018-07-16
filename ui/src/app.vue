@@ -9,7 +9,7 @@
                     <b-col cols="3">
                         <appavatar :app="app" style="margin-bottom: 10px;" :width="200" :height="200"/>
                     </b-col>
-                    <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
+                    <b-col cols="9" style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right;">
                             <span class="button" @click="go_github()" title="github"><icon name="brands/github" scale="1.25"/></span>
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
