@@ -14,7 +14,7 @@
                     <b-col cols="2">
                         <projectavatar :project="pub.project"/>
                     </b-col>
-                    <b-col style="background-color: white;"><!--hide avatar when screen is narrow-->
+                    <b-col cols="10" style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <doibadge style="float: right;" :doi="pub.doi"/>
                         <h4 style="color: #666; margin-bottom: 10px;">
                             {{pub.name}} 

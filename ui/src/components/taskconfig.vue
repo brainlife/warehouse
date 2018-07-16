@@ -8,6 +8,7 @@
             <td v-if="v === null" width="25%">
                 <pre class="text-muted" style="margin-bottom: 0">null</pre>
             </td>
+            <td v-else-if="v === ''" width="25%">(empty)</td>
             <td v-else-if="typeof v == 'object'" width="25%">
                 <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
             </td>
@@ -128,5 +129,6 @@ opacity:.6;
 }
 td,th {
 vertical-align: top;
+padding-right: 10px;
 }
 </style>

@@ -16,7 +16,7 @@
                 <b-col cols="2">
                     <projectavatar :project="selected"/>
                 </b-col>
-                <b-col style="background-color: rgb(240, 240, 240);"><!--hide avatar when screen is narrow-->
+                <b-col cols="10" style="background-color: rgb(240, 240, 240);"><!--hide avatar when screen is narrow-->
                     <div style="float: right;" v-if="isadmin()">
                         <div @click="edit()" class="button">
                             <icon name="edit" scale="1.25"/>

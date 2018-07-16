@@ -31,16 +31,11 @@ import router from './router.js'
 import warehouse from './warehouse'
 import VueTimeago from 'vue-timeago'
 
-import SocialSharing from 'vue-social-sharing'
+import SocialSharing from 'vue-social-sharing';
 
 Vue.config.productionTip = false
 
 import VueAnalytics from 'vue-analytics'
-
-import VueDisqus from 'vue-disqus'
-Vue.use(VueDisqus)
-
-import jwt_decode from 'jwt-decode'
 
 Vue.component('icon', Icon)
 
@@ -60,6 +55,7 @@ Vue.use(VueTimeago, {
     }
 });
 
+var jwt_decode = require('jwt-decode');
 
 Vue.filter('filesize', function (num) {
 	// jacked from: https://github.com/sindresorhus/pretty-bytes
@@ -104,8 +100,7 @@ if (process.env.HOSTNAME) {
 
 Vue.config.debug = false;
 Vue.config.api = apihost+"/api/warehouse";
-Vue.config.wf_api = apihost+"/api/amaretti"; //deprecated use amaretti_api
-Vue.config.amaretti_api = apihost+"/api/amaretti";
+Vue.config.wf_api = apihost+"/api/amaretti";
 Vue.config.auth_api = apihost+"/api/auth";
 Vue.config.event_api = apihost+"/api/event";
 Vue.config.profile_api = apihost+"/api/profile";
@@ -117,7 +112,30 @@ Vue.http.options.root = Vue.config.api; //default root for $http
 if (process.env.NODE_ENV == "development") {
     Vue.config.debug = true;
 }
-load_jwt(localStorage.getItem("jwt"));
+
+function jwt_decode_brainlife(jwt) {
+    Vue.config.user = jwt_decode(jwt);
+    Vue.config.jwt = jwt;
+    
+    //auth service should return sub in string format, but currently it doesn't..
+    //let's just covert it to string 
+    Vue.config.user.sub = Vue.config.user.sub.toString();
+    Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
+}
+
+Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
+if (Vue.config.jwt) {
+    jwt_decode_brainlife(Vue.config.jwt);
+    /* will be checked soon - when it gets refreshed.
+    if(Vue.config.user.exp && Vue.config.user.exp < Date.now()/1000) {
+        console.error("jwt expired", Vue.config.user.exp, Date.now()/1000);
+        delete Vue.config.jwt;
+        localStorage.removeItem("jwt");
+    }
+    */
+} else {
+    console.log("jwt not set");
+}
 
 router.beforeEach(function (to, from, next) {
     if (to.matched.length == 0) {
@@ -135,26 +153,13 @@ router.beforeEach(function (to, from, next) {
         return;
     }
 
-    //console.log("scrolling to top");
+    console.log("scrolling to top");
     window.scrollTo(0, 0); //scroll to top on route update (sensible default.. or bad practice?)
     next();
-})
+});
 
 if (!Vue.config.debug) {
     Vue.use(VueAnalytics, { id: 'UA-118407195-1', router })
-}
-
-function load_jwt(jwt) {
-    if(!jwt) return;
-    console.log("setting jwt to ", jwt);
-    Vue.config.user = jwt_decode(jwt);
-    Vue.config.jwt = jwt;
-    localStorage.setItem("jwt", jwt);
-    
-    //auth service should return sub in string format, but currently it doesn't..
-    //let's just covert it to string 
-    Vue.config.user.sub = Vue.config.user.sub.toString();
-    Vue.http.headers.common['Authorization'] = 'Bearer '+jwt;
 }
 
 new Vue({
@@ -163,8 +168,18 @@ new Vue({
     template: '<warehouse/>',
     components: { warehouse },
 
-    created() {
-        this.$root.$on("refresh_jwt", ()=>{
+    mounted() {
+        console.log("starting jwt token interval");
+        setInterval(()=>{
+            this.refresh_jwt();
+        }, 1000*3600); //every 1hour?
+
+        //refresh immediately (on page reload)
+        this.refresh_jwt();
+        
+        this.load_profile();
+
+        this.$on("refresh_jwt", ()=>{
             this.refresh_jwt();
         });
     },
@@ -176,28 +191,32 @@ new Vue({
                 console.log("no jwt.. not refreshing");
                 return;
             }
-
             if(Vue.config.debug) {
                 console.log("not refreshing token.. as this is running in debug mode");
                 return;
             }
 
             try {
-                console.log("refreshing jwt");
                 let res = await this.$http.post(Vue.config.auth_api+"/refresh");
-                load_jwt(res.body.jwt);
+                jwt_decode_brainlife(res.body.jwt);
+                localStorage.setItem("jwt", res.body.jwt);
+
+                console.dir(Vue.config);
             } catch (err) {
-                console.error("failed to refresh token.............", err);
-                //alert(err.toString());
-
-                //firefox could status code to 0 if request is terminated before finishes..
-                //https://stackoverflow.com/questions/3825581/does-an-http-status-code-of-0-have-any-meaning
-                //without this, when user opens volumeviewer, which immediately redirect away from warehouse to /ui/..
-                //user incorrectly redirected to auth page without this.
-                if(err.status == 0) return;
-
+                console.error(err); 
                 localStorage.removeItem("jwt");
                 document.location = Vue.config.auth_signin;
+            }
+        },
+
+        load_profile: async function() {
+            if(!Vue.config.jwt) return;
+            try {
+                let res = await this.$http.get(Vue.config.profile_api+"/private");
+                Vue.config.profile = res.body;
+                console.dir(Vue.config.profile);
+            } catch (err) {
+                console.error(err); 
             }
         },
     },
