@@ -52,7 +52,7 @@ export default {
             this.load();
         },
         task: function() {
-            console.log("task changed");
+            //console.log("task changed");
             this.load();
         },
     },
@@ -103,7 +103,7 @@ export default {
 
         get_default: function(key) {
             var d = this.appconfig[key].default;
-            console.dir(d);
+            //console.dir(d);
             if(d === undefined) {
                 return "(not set)";
             }

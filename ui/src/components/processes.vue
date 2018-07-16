@@ -42,20 +42,34 @@
             -->
         </div>
 
-        <br>
-        <div v-if="instances.length > 0">
+        <!--header-->
+        <div style="margin-right: 20px; padding: 5px 15px; opacity: 0.8; line-height: 200%;">
+            <div class="date">
+                <small>Update Date</small>
+            </div>
+            <div class="date">
+                <small>Create Date</small>
+            </div>
+            <!--
+            <div style="float: right; text-align: right;">
+                <small>Contact</small>
+            </div>
+            -->
+        </div>
+
+        <div v-if="instances.length > 0" style="clear: both;">
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
                     <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
                         <statusicon :status="instance.status"/>
                     </div>
-                    <div style="float: right; width: 125px; text-align: right;">
-                        <timeago :since="instance.create_date" :auto-update="10"/>
-                    </div>
-                    <div style="float: right; margin: 0px 10px;">
+
+                    <timeago :since="instance.update_date" :auto-update="10" class="date"/>
+                    <timeago :since="instance.create_date" :auto-update="10" class="date"/>
+                    <div style="float: right; text-align: right;">
                         <contact :id="instance.user_id" short="true"/>
                     </div>
-                    <div class="process-action instance-info" style="margin-right: 20px; position: relative; top: -3px; float: right;">
+                    <div class="process-action instance-info" style="float: right; position: relative; top: -3px; margin-right: 5px;">
                         <div @click.stop="editdesc(instance)" class="button">
                             <icon name="edit"/>
                         </div>
@@ -497,6 +511,9 @@ box-shadow: none;
 white-space: inherit;
 background-color: #f0f0f0;
 }
+.instance-item {
+clear: both;
+}
 .instance-item:not(:first-child) .instance-active {
 margin-top: 20px;
 }
@@ -604,6 +621,13 @@ background-color: #50bfff;
 }
 .summary-finished {
 background-color: #28a745;
+}
+.date {
+float: right;
+width: 110px;
+text-align: right;
+font-size: 88%;
+line-height: 200%;
 }
 </style>
 
