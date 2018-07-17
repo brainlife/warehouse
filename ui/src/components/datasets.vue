@@ -849,9 +849,9 @@ overflow-y: visible;
 }
 
 h4 {
-font-size: 15px;
+font-size: 13px;
 font-weight: bold;
-margin-bottom: 7px;
+margin-bottom: 5px;
 }
 
 .page-header h4 {
