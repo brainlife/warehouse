@@ -27,7 +27,6 @@ export default {
             if(subdir) basepath += subdir+"/";
             
             let url_surfaces_json = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces/surfaces.json")+"&at="+Vue.config.jwt;
-            console.log("loading", url_surfaces_json);
             
             this.$http.get(url_surfaces_json)
             .then(res => {
