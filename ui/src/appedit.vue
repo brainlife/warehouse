@@ -567,9 +567,8 @@ export default {
         get_max_order: function() {
             let max_order = 0;
             for (let param of this.config_params) {
-                let order = +param._order;
-                if (!isNaN(order)) {
-                    max_order = Math.max(max_order, order);
+                if (max_order < param._order) {
+                    max_order = param._order;
                 }
             }
             return max_order;
