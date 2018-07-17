@@ -42,20 +42,33 @@
             -->
         </div>
 
-        <br>
-        <div v-if="instances.length > 0">
+        <div v-if="instances.length > 0" style="clear: both;">
+            <!--header-->
+            <div style="margin-right: 20px; padding: 5px 15px; opacity: 0.8; line-height: 200%;">
+                <div class="date">
+                    <small>Update Date</small>
+                </div>
+                <div class="date">
+                    <small>Create Date</small>
+                </div>
+                <!--
+                <div style="float: right; text-align: right;">
+                    <small>Contact</small>
+                </div>
+                -->
+            </div>
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
                     <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
                         <statusicon :status="instance.status"/>
                     </div>
-                    <div style="float: right; width: 125px; text-align: right;">
-                        <timeago :since="instance.create_date" :auto-update="10"/>
+
+                    <timeago :since="instance.update_date" :auto-update="10" class="date"/>
+                    <timeago :since="instance.create_date" :auto-update="10" class="date"/>
+                    <div style="float: right; text-align: right;" v-if="instance.config && instance.config.summary">
+                        <contact v-for="id in unique_user_ids(instance)" :key="id" :id="id" size="tiny"/>
                     </div>
-                    <div style="float: right; margin: 0px 10px;">
-                        <contact :id="instance.user_id" short="true"/>
-                    </div>
-                    <div class="process-action instance-info" style="margin-right: 20px; position: relative; top: -3px; float: right;">
+                    <div class="process-action instance-info" style="float: right; position: relative; top: -3px; margin-right: 5px;">
                         <div @click.stop="editdesc(instance)" class="button">
                             <icon name="edit"/>
                         </div>
@@ -196,6 +209,7 @@ export default {
             if(!this.show) return "All ("+this.instances.length+")";
             return this.capitalize(this.show)+" ("+(this.instance_counts[this.show]||0)+")";
         },
+
     },
 
     mounted: function() {
@@ -433,6 +447,18 @@ export default {
         summary_class: function(summary) {
             return ["summary", "summary-"+summary.status];
         },
+        unique_user_ids: function(instance) {
+            if(!instance.config) return [];
+            if(!instance.config.summary) return [];
+
+            let ids = [];
+            instance.config.summary.forEach(summary=>{
+                var id = summary.user_id;
+                if(id && !ids.includes(id)) ids.push(id);
+            });
+            return ids;
+    
+        },
     },
 }
 
@@ -496,6 +522,9 @@ position: sticky; top: 0px;
 box-shadow: none;
 white-space: inherit;
 background-color: #f0f0f0;
+}
+.instance-item {
+clear: both;
 }
 .instance-item:not(:first-child) .instance-active {
 margin-top: 20px;
@@ -604,6 +633,13 @@ background-color: #50bfff;
 }
 .summary-finished {
 background-color: #28a745;
+}
+.date {
+float: right;
+width: 110px;
+text-align: right;
+font-size: 88%;
+line-height: 200%;
 }
 </style>
 

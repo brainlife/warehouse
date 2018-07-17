@@ -1,11 +1,13 @@
 <template>
 <div class="contact" :class="{'text-muted': !profile.active}" :title="profile.email" @click="click">
     <img :src="gurl">
-    <div class="name" v-if="profile.fullname">
-        {{profile.fullname||'No Name'}}
-    </div><div class="name" v-else>
-        <span class="text-muted">No Name</span>
-    </div><div class="email" v-if="profile.email && !short">&lt;{{profile.email}}&gt;</div>
+    <div v-if="size != 'tiny'" style="display: inline-block;">
+        <div class="name" v-if="profile.fullname">
+            {{profile.fullname||'No Name'}}
+        </div><div class="name" v-else>
+            <span class="text-muted">No Name</span>
+        </div><div class="email" v-if="profile.email && size == 'full'">&lt;{{profile.email}}&gt;</div>
+    </div>
 </div>
 </template>
 
@@ -16,7 +18,27 @@ import md5 from 'md5'
 var profiles = null;
 
 export default {
-    props: ['id', 'fullname', 'email', 'short'],
+    props: {
+        //set id or (fullname, email)
+        id: {
+            type: String,
+        },
+        fullname: {
+            type: String,
+        }, 
+        email: {
+            type: String,
+        }, 
+
+        //size can be either
+        // full (default)
+        // small
+        // tiny (avatar only)
+        size: {
+            type: String,
+            default: "full",
+        },
+    },
     data () {
         return {
             profile: {
@@ -84,7 +106,6 @@ font-size: 12px;
 color: #555;
 font-weight: 700;
 white-space: nowrap;
-margin: 2px 0px;
 line-height: 22px;
 box-shadow: 1px 1px 2px rgba(0,0,0,0.15);
 margin-right: 5px;
@@ -102,9 +123,8 @@ padding: 0px 10px;
 background-color: #fff;
 }
 .email {
-position: relative;
 background-color: #ddd;
 color: #888;
-font-family: monospace;
+/*font-family: monospace;*/
 }
 </style>

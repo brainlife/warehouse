@@ -11,14 +11,11 @@
         </div>
         <div style="margin-left: 45px;">
             <div style="float: right;">
-                <!--
-                <contact :id="task.user_id" :short="true" style="position: relative; top: -3px; opacity: 0.9"/>
-                -->
                 <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid"><icon name="info"/></div>
                 <b-popover :target="'popover'+task.config._tid" triggers="hover click focus">
                     <template slot="title"><span class="text-muted">ID {{task._id}}</span></template>
                     <p>
-                        <contact :id="task.user_id" :short="true"/>
+                        <contact :id="task.user_id" size="small"/>
                     </p>
                     <table class="table table-sm">
                     <tr>
