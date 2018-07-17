@@ -565,6 +565,7 @@ export default {
         },
         
         get_max_order: function() {
+            
             let max_order = 0;
             for (let param of this.config_params) {
                 if (max_order < param._order) {
@@ -628,29 +629,19 @@ export default {
             let config = {};
             let inputs = [];
             let outputs = [];
-            let err = null;
             
             let inputTable = {};
             let outputTable = {};
             let paramTable = {};
             
-            this.input_datasets.forEach(input => {
-                if (!input.id) {
-                    err = "Not all input ids are non-null";
-                    return;
-                }
-                if (inputTable[input.id]) {
-                    err = "Duplicate ID '" + input.id + "' found in list of inputs";
-                    return;
-                }
-                if (!input.datatype) {
-                    err = "No datatype given for input '" + input.id + "'";
-                    return;
-                }
+            for (let input of this.input_datasets) {
+                if (!input.id) return cb("Not all input ids are non-null");
+                if (inputTable[input.id]) return cb("Duplicate ID '" + input.id + "' found in list of inputs");
+                if (!input.datatype) return cb("No datatype given for input '" + input.id + "'");
                 
                 let datatype = this.datatypes[input.datatype];
                 if (datatype.name == "raw" && input.datatype_tags.length == 0) {
-                    err = "All raw input datatypes should have at least 1 datatype tag (when checking input '" + input.id + "').";
+                    return cb("All raw input datatypes should have at least 1 datatype tag (when checking input '" + input.id + "').");
                 }
                 
                 inputTable[input.id] = true;
@@ -664,46 +655,44 @@ export default {
                 });
                 
                 if (!input.files || input.files.length == 0) {
-                    err = "No file mapping given for input '" + input.id + "'";
-                    return;
+                    return cb("No file mapping given for input '" + input.id + "'");
                 }
-                input.files.forEach(file => {
+                
+                for (let file of input.files) {
                     if (!file.id) {
-                        err = "Not all file ids for input '" + input.id + "' are non-null";
-                        return;
+                        return cb("Not all file ids for input '" + input.id + "' are non-null");
                     }
+                    if (config[file.id]) {
+                        return cb("Duplicate config.json key '" + input.id + "' found when checking file mapping");
+                    }
+                    
                     config[file.id] = {
                         type: 'input',
                         file_id: file.file_id,
                         input_id: input.id,
                     };
-                });
-            });
+                }
+            }
             
-            this.output_datasets.forEach(output => {
+            for (let output of this.output_datasets) {
                 if (!output.id) {
-                    err = "Not all output ids are non-null";
-                    return;
+                    return cb("Not all output ids are non-null");
                 }
                 if (inputTable[output.id]) {
-                    err = "Duplicate ID '" + output.id + "' found in list of inputs and outputs";
-                    return;
+                    return cb("Duplicate ID '" + output.id + "' found in list of inputs and outputs");
                 }
                 if (outputTable[output.id]) {
-                    err = "Duplicate ID '" + output.id + "' found in list of outputs";
-                    return;
+                    return cb("Duplicate ID '" + output.id + "' found in list of outputs");
                 }
                 if (!output.datatype) {
-                    err = "No datatype given for output '" + input.id + "'";
-                    return;
+                    return cb("No datatype given for output '" + input.id + "'");
                 }
                 
                 let datatype = this.datatypes[output.datatype];
                 let invalid = false;
                 
                 if (datatype.name == "raw" && output.datatype_tags.length == 0) {
-                    err = "All raw output datatypes should have at least 1 datatype tag (when checking '" + output.id + "').";
-                    return;
+                    return cb("All raw output datatypes should have at least 1 datatype tag (when checking '" + output.id + "').");
                 }
                 
                 try {
@@ -721,38 +710,34 @@ export default {
                 }
                 
                 if (invalid) {
-                    err = "Failed to parse JSON given for output '" + output.id + "'";
+                    return cb("Failed to parse JSON given for output '" + output.id + "'");
                 }
-            });
+            }
             
-            this.config_params.forEach(param => {
+            for (let param of this.config_params) {
                 if (!param.id) {
-                    err = "Not all configuration parameter ids are non-null";
-                    return;
+                    return cb("Not all configuration parameter ids are non-null");
                 }
                 if (inputTable[param.id]) {
-                    err = "Duplicate ID '" + param.id + "' used for configuration parameter and input";
-                    return;
+                    return cb("Duplicate ID '" + param.id + "' used for configuration parameter and input");
                 }
                 if (outputTable[param.id]) {
-                    err = "Duplicate ID '" + param.id + "' used for configuration parameter and output";
-                    return;
+                    return cb("Duplicate ID '" + param.id + "' used for configuration parameter and output");
                 }
                 if (paramTable[param.id]) {
-                    err = "Duplicate ID '" + param.id + "' found in list of config parameters";
-                    return;
+                    return cb("Duplicate ID '" + param.id + "' found in list of config parameters");
                 }
                 
                 paramTable[param.id] = true;
                 config[param.id] = {};
                 Object.assign(config[param.id], param);
-            });
+            }
             
             this.app.config = config;
             this.app.inputs = inputs;
             this.app.outputs = outputs;
             
-            return cb(err);
+            return cb();
         },
         
         add_file: function(index, file_id) {
