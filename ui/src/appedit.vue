@@ -463,7 +463,11 @@ export default {
     data () {
         return {
             //tab_index: 0,
-            app: {},
+            app: {
+                config: {},
+                inputs: [],
+                outputs: []
+            },
             
             input_datasets: [],
             output_datasets: [],
@@ -938,7 +942,7 @@ transition: all .45s;
 }
 .file-transition-enter {
 opacity: 0;
-transform: translate(0, 100%);
+transform: translate(0, -100%);
 }
 
 .form-action {
