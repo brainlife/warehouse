@@ -25,16 +25,29 @@ export default {
         load_surfaces: function(subdir, cb) {
             var basepath = "";
             if(subdir) basepath += subdir+"/";
-            //3dsurfaces app doesn't produce surfaces.json.. I need to enumerate myself
-            this.$http.get(Vue.config.wf_api+"/task/ls/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces"))
-            .then(res=>{        
-                var surfaces = [];
-                res.body.files.forEach(file=>{
-                    var url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces/"+file.filename)+"&at="+Vue.config.jwt;
-                    surfaces.push({ name: file.filename.substring(0, file.filename.length-4), path: url }); 
+            
+            let url_surfaces_json = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces/surfaces.json")+"&at="+Vue.config.jwt;
+            
+            this.$http.get(url_surfaces_json)
+            .then(res => {
+                let surfaces = res.body;
+                surfaces.forEach(surface => {
+                    surface.basename = surface.filename;
+                    surface.filename = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces/"+surface.filename)+"&at="+Vue.config.jwt;
                 });
                 cb(surfaces);
-            }).catch(this.$notify.error);
+            }).catch(err => {
+                // old code to use in case surfaces.json doesn't exist
+                this.$http.get(Vue.config.wf_api+"/task/ls/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces"))
+                .then(res=>{        
+                    var surfaces = [];
+                    res.body.files.forEach(file=>{
+                        var url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces/"+file.filename)+"&at="+Vue.config.jwt;
+                        surfaces.push({ name: file.filename.substring(0, file.filename.length-4), path: url }); 
+                    });
+                    cb(surfaces);
+                }).catch(this.$notify.error);
+            });
 
             /* 
             this.$http.get(Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/tracts.json"))
