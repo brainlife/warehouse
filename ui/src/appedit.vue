@@ -180,7 +180,7 @@
                                     </div>
                                 </transition-group>
                                 <br>
-                                <b-button @click="add_file(idx)" size="sm">Add File Mapping</b-button>
+                                <b-button v-if="input.datatype" @click="add_file(idx)" size="sm">Add File Mapping</b-button>
                             </div>
                         </b-card>
                     </div>
