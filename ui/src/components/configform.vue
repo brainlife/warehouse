@@ -73,7 +73,10 @@ export default {
             }
             
             spec_arr.sort((a, b) => {
-                if (typeof a._order != 'number' || typeof b._order != 'number') {
+                let order_a = +a._order;
+                let order_b = +b._order;
+                
+                if (isNaN(order_a) || isNaN(order_b)) {
                     return 0;
                 }
                 return a._order > b._order ? 1 : -1;

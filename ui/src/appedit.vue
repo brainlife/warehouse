@@ -567,8 +567,9 @@ export default {
         get_max_order: function() {
             let max_order = 0;
             for (let param of this.config_params) {
-                if (typeof param._order == 'number') {
-                    max_order = Math.max(max_order, param._order);
+                let order = +param._order;
+                if (!isNaN(order)) {
+                    max_order = Math.max(max_order, order);
                 }
             }
             return max_order;
@@ -579,7 +580,8 @@ export default {
             // that don't have one
             let max_order = this.get_max_order();
             for (let param of this.config_params) {
-                if (typeof param._order != 'number') {
+                let order = +param._order;
+                if (isNaN(order)) {
                     param._order = max_order + 1;
                     max_order++;
                 }
