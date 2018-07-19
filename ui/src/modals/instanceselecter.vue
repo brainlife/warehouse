@@ -46,7 +46,7 @@ export default {
             shown: false,
             project: null, 
             instance: null, 
-            desc: null,
+            desc: "",
             projects: {},
             instances: [],
         }
@@ -92,7 +92,7 @@ export default {
             this.$refs.modal.show()
             this.shown = true;
             this.instance = null;
-            this.desc = null;
+            this.desc = "";
         });
 
         this.$http.get('project', {params: {

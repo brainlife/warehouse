@@ -570,7 +570,6 @@ opacity: 1;
 .instance-status {
 width: 24px;
 height: 24px;
-padding-top: 4px;
 text-align: center;
 border-radius: 15px;
 display: inline-block;
