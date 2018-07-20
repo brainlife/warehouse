@@ -105,7 +105,7 @@
         <div class="select-action">
             <p>
                 <b-button size="sm" @click="download">
-                    <icon name="download" scale="0.8"/> Dowload (BIDS)
+                    <icon name="download" scale="0.8"/> Download (BIDS)
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
                 </b-button>
             </p>
@@ -621,7 +621,6 @@ export default {
                         if(!dataset.prov || !dataset.prov.task_id) break;
                         task_ids.push(dataset.prov.task_id); 
                     } 
-                    console.dir(task_ids);
                     return this.$http.get(Vue.config.amaretti_api+'/task', {
                         params: {
                             find: JSON.stringify({_id: {$in: task_ids}})
