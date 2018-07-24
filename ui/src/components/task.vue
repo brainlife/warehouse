@@ -149,7 +149,7 @@ export default {
     },
 
     mounted() {
-        this.load_resource_info(this.task.resource_id);
+        if(this.task) this.load_resource_info(this.task.resource_id);
     },
 
     computed: {
