@@ -4,7 +4,7 @@ v-select has some issue with clicking scrollbar closing the select dropdown..
 https://github.com/sagalbot/vue-select/issues/474
 -->
 <div v-if="options">
-    <b-alert show variant="danger" v-if="options.length == 0 && !allownull">You don't have any project that you can select. Please create a new project inside the project page.</b-alert>
+    <b-alert show variant="danger" v-if="options.length == 0 && !allownull">You don't have any project that you can select.</b-alert>
     <b-form-select v-if="options.length > 0" v-model="selected" :options="options" :placeholder-nowork="placeholder" :required="!allownull">
     </b-form-select>
 </div>

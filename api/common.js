@@ -145,7 +145,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 })
                 .on('response', function(r) {
                     if(r.statusCode != 200) {
-                        logger.error("/task/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth);
+                        logger.debug("/task/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth, file.required); 
                         input_ok = false;
                     }
                 }).pipe(writestream);
