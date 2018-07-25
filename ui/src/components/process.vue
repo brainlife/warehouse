@@ -68,7 +68,7 @@
             </div>
 
             <!--output-->
-            <div slot="output" v-if="task.config._outputs.length > 0">
+            <div slot="output" v-if="task.config._outputs.length > 0 || task.product">
                 <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 10px;">
                     <div class="float-right" style="position: relative; top: -5px;">
                         <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
