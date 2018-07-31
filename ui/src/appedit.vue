@@ -612,9 +612,13 @@ export default {
             }
             for (let output of this.app.outputs) {
                 if (output.files) {
-                    output._files = JSON.stringify(output.files, null, 4);
+                    //output._files = JSON.stringify(output.files, null, 4);
+
+                    //_files needs to be obervable - otherwise textare won't work..
+                    Vue.set(output, '_files', JSON.stringify(output.files, null, 4));
                 }
                 output.pid = Math.random();
+                //this.output_datasets.push(Object.assign({}, output));
                 this.output_datasets.push(output);
             }
             

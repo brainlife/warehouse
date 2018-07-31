@@ -576,7 +576,7 @@ display: inline-block;
 margin-right: 10px;
 background-color: gray;
 color: white;
-line-height: 200%;
+line-height: 150%;
 }
 
 .instance-finished .instance-status {
