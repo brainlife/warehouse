@@ -701,17 +701,8 @@ export default {
                 
                 outputTable[output.id] = true;
 
+                output.files = null;
                 try {
-                    /*
-                    outputs.push({
-                        _id: output._id,
-                        id: output.id,
-                        datatype_tags: output.datatype_tags,
-                        datatype: output.datatype,
-                        datatype_tags_pass: output.datatype_tags_pass,
-                        files: output._files ? JSON.parse(output._files) : null,
-                    });
-                    */
                     if(output._files) output.files = JSON.parse(output._files);
                 } catch (err) {
                     return cb("Failed to parse JSON given for output '" + output.id + "'");
