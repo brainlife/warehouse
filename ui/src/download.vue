@@ -10,12 +10,18 @@
         </div><!--header-->
         <b-container>
             <div v-if="active != 3">
-                <p>We are staging requested datasets and organizing them in the BIDS structure. Download should begin automatically once it's ready. </p>
-                <b-alert show variant="secondary"><icon name="info-circle"/> <b>Hint!</b/> You can download datasets directly from the dataset detail dialog without having to organize them into BIDS.</b-alert>
-                <div v-for="task in tasks" :key="task._id">
-                    <task :task="task"></task>
-                    <br>
-                </div>
+                <b-row>
+                    <b-col cols="9">
+                        <p>We are staging requested datasets and organizing them in the BIDS structure. Download should begin automatically once it's ready. </p>
+                        <div v-for="task in tasks" :key="task._id">
+                            <task :task="task"></task>
+                            <br>
+                        </div>
+                    </b-col>
+                    <b-col cols="3">
+                        <b-alert show variant="secondary"><icon name="info-circle"/> <b>Hint!</b/><p>You can download datasets directly from the dataset detail dialog without having to organize them into BIDS.</p></b-alert>
+                    </b-col>
+                </b-row>
             </div>
             <div v-else>
                 <p>Ready! Your browser should automatically start downloading your file now. If not, please click the link below.</p>

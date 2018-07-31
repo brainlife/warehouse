@@ -17,7 +17,7 @@
         </div>
     </div>
     <div v-else style="padding: 20px; height: 100%; overflow: auto;">
-        <h3>Staging Data</h3>
+        <h4>Staging Data</h4>
         <task :task="task"/>
     </div>
 </div>
