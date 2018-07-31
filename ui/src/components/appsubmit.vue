@@ -1,5 +1,5 @@
 <template>
-<b-form @submit="submit">
+<b-form @submit="submit" v-if="app">
     <b-alert :show="this.no_resource">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
 
     <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
