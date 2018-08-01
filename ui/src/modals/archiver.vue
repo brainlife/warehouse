@@ -100,6 +100,7 @@ export default {
                 this.$refs.archiver.hide();
             }).catch(err=>{
                 console.error(err);
+                this.$notify({text: err.body, type: "error"});
             });
         },
         editorInit: function() {
