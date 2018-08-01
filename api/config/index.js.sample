@@ -24,7 +24,7 @@ exports.github = {
 }
 
 exports.amaretti = {
-    api: "https://dev1.soichi.us/api/wf",
+    api: "https://dev1.soichi.us/api/amaretti",
 
     //jwt used to query things from workflow service as admin
     jwt: fs.readFileSync(__dirname+'/amaretti.jwt', 'ascii').trim(),
