@@ -169,12 +169,22 @@ function archive_dataset(task, output, cb) {
         next=>{
             logger.debug("registering dataset now");
 
-            var tags = output.tags||[];
-            if(task.product && task.product.tags) tags = task.product.tags; //product.tags takes precedence
+            //add tags specified in task.product.tags to dataset tags
+            let tags = output.archive.tags||[];
+            if(task.product && task.product.tags) {
+                task.product.tags.forEach(tag=>{
+                    if(!~tags.indexOf(tag)) tags.push(tag);
+                });
+            }
 
             //TODO - I don't think I should be mucking with datatype_tags.. as it will break the logical consistency
-            var datatype_tags = output.datatype_tags||[];
-            if(task.product && task.product.datatype_tags) tags = task.product.datatype_tags; //product.datatype_tags takes precedence
+            //but.. importer sets normalized, single_shell, etc.. maybe we keep it undocumented?
+            let datatype_tags = output.datatype_tags||[];
+            if(task.product && task.product.datatype_tags) {
+                task.product.datatype_tags.forEach(tag=>{
+                    if(!~datatype_tags.indexOf(tag)) datatype_tags.push(tag);
+                });
+            }
 
             new db.Datasets({
                 user_id: task.user_id,

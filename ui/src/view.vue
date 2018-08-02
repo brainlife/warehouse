@@ -5,7 +5,7 @@
         <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="task" :subdir="subdir"></freesurfer>-->
 
         <dtiinit v-if="type == 't1pdd'" :task="task" :subdir="subdir"></dtiinit>
-        <wmc v-else-if="type == 'tractview'" :task="task" :subdir="subdir"></wmc>
+        <tractview v-else-if="type == 'tractview'" :task="task" :subdir="subdir"></tractview>
         <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir"></surfaces>
         <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir"></lifeview>
         <life v-else-if="type == 'lifestats'" :task="task" :subdir="subdir"></life>
@@ -17,7 +17,7 @@
         </div>
     </div>
     <div v-else style="padding: 20px; height: 100%; overflow: auto;">
-        <h3>Staging Data</h3>
+        <h4>Staging Data</h4>
         <task :task="task"/>
     </div>
 </div>
@@ -29,7 +29,7 @@ import Vue from 'vue'
 // datatype UIs
 import dtiinit from '@/datauis/dtiinit'
 import freesurfer from '@/datauis/freesurfer'
-import wmc from '@/datauis/wmc'
+import tractview from '@/datauis/tractview'
 import surfaces from '@/datauis/surfaces'
 import lifeview from '@/datauis/lifeview'
 import life from '@/datauis/life'
@@ -44,7 +44,7 @@ import ReconnectingWebSocket from 'reconnectingwebsocket'
 export default {
     props: [ 'instanceid', 'taskid', 'type', 'subdir' ],
     components: { 
-        dtiinit, freesurfer, wmc, 
+        dtiinit, freesurfer, tractview, 
         life, evaluator, images, 
         volumeviewer, filebrowser, task,
         lifeview, surfaces,

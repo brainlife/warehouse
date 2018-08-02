@@ -54,7 +54,7 @@ exports.getprojects = function(user, cb) {
 
 exports.archive_task = function(task, dataset, files_override, auth, cb) {
     if(!files_override) files_override = {};
-   
+
     //start by pulling datatype detail
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
         if(err) return cb(err);
@@ -113,7 +113,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     });
                 }
                 if(file.dirname) {
-                    //directory has to be unzip/tar-edto tmpdir
+                    //directory has to be unzip/tar-ed to tmpdir
                     srcpath += (files_override[file.id]||file.dirname);
                     var fullpath = tmpdir+"/"+file.dirname;
                     mkdirp.sync(fullpath); //don't need to path.dirname() here
@@ -145,7 +145,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 })
                 .on('response', function(r) {
                     if(r.statusCode != 200) {
-                        logger.error("/task/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth);
+                        logger.debug("/task/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth, file.required); 
                         input_ok = false;
                     }
                 }).pipe(writestream);

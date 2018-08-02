@@ -30,7 +30,8 @@
                         <b-badge v-if="rule.removed" variant="danger">Removed</b-badge>
                         <b-badge variant="success" v-if="rule.active">ON</b-badge>
                         <b-badge variant="danger" v-else>OFF</b-badge>
-                        {{rule.name}} 
+                        <span>{{rule.app.name}}</span>
+                        <small style="opacity: 0.5">{{rule.name}}</small>
                     </div>
                 </div>
 
@@ -156,35 +157,6 @@ export default {
             var subid = this.$route.params.subid;
             if(!subid) this.editing = null;
         },
-
-        /*
-        selected: function() {
-
-            //count number of subjects that matches the input/output criteria
-            this.input_matches = {};
-            this.output_matches = {};
-            if(!this.selected) return;
-
-            this.selected.app.inputs.forEach(input=>{
-                let find = {
-                    removed: false,
-                    datatype: input.datatype,
-                    datatype_tags: [input.datatype_tags],
-                    project: this.selected.input_project_override[input.id] || this.project._id,
-                }
-                this.$http.get('dataset/distinct', {params: {
-                    find: JSON.stringify(find),
-                    distinct: 'meta.subject'
-                }}).then(res=>{
-                    Vue.set(this.input_matches, input.id, res.body.length);
-                }).catch(console.error);
-            });
-
-            this.selected.app.outputs.forEach(output=>{
-                this.output_matches[output.id] = 4567;
-            });
-        },
-        */
     },
 
     methods: {

@@ -1,14 +1,14 @@
 <template>
 <div style="height: 100%; overflow: auto;">
     <div v-if="task && task.status == 'finished'" style="padding: 20px;">
-        <h3>Staging Data</h3>
+        <h4>Staging Data</h4>
         <task :task="task"/>
         <br>
-        <h3>Starting Viewer</h3>
+        <h4>Starting Viewer</h4>
         <task :task="novnc_task"/>
     </div>
     <div v-else style="padding: 20px;">
-        <h3>Staging Data</h3>
+        <h4>Staging Data</h4>
         <task :task="task"/>
     </div>
 </div>

@@ -32,12 +32,8 @@ app.use(expressWinston.errorLogger(config.logger.winston));
 app.use(function(err, req, res, next) {
     if(typeof err == "string") err = {message: err};
 
-    //log this error
-    logger.error(err);
-    if(err.name) switch(err.name) {
-    case "UnauthorizedError":
-        logger.debug(req.headers); //dump headers for debugging purpose..
-        break;
+    if(!err.name || err.name != "UnauthorizedError") {
+        logger.error(err);
     }
 
     if(err.stack) err.stack = "hidden"; //don't sent call stack to UI - for security reason

@@ -421,12 +421,15 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     async.series([
         next=>{
             //get the task to archive
+            console.log(config.amaretti.api, req.body.task_id);
             request.get({
-                url: config.wf.api+"/task/"+req.body.task_id, json: true,
+                url: config.amaretti.api+"/task/"+req.body.task_id, json: true,
                 headers: { authorization: req.headers.authorization, }
             }, (err, _res, _task)=>{
+                if(err) return next(err);
+                if(_res.statusCode != 200) return next("failed to load task "+req.body.task_id);
                 const gids = req.user.gids||[];
-                if(_task.user_id != req.user.sub && !~gids.indexOf(_task._group_id)) return next("you don't own this task");
+                if(_task.user_id != req.user.sub && !~gids.indexOf(_task._group_id)) return next("you don't own this task or member of a group "+_task._group_id);
                 if(!_task.resource_id) return next("resource_id not set");
                 if(_task.status != "finished") return next("task not in finished state");
                 

@@ -1,5 +1,5 @@
 <template>
-<div class="contact" :class="{'text-muted': !profile.active}" :title="profile.email" @click="click">
+<div class="contact" :class="{'text-muted': !profile.active}" :title="title()" @click.stop="click">
     <img :src="gurl">
     <div v-if="size != 'tiny'" style="display: inline-block;">
         <div class="name" v-if="profile.fullname">
@@ -92,7 +92,14 @@ export default {
 
         click: function() {
             if(this.profile.email) document.location = 'mailto:'+this.profile.email;
-        }
+        },
+
+        title: function() {
+            let t = "";
+            if(this.profile.fullname) t += this.profile.fullname + " ";
+            t+="<"+this.profile.email+">";
+            return t;
+        },
     },
 }
 </script>

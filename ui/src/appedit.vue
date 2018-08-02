@@ -612,9 +612,13 @@ export default {
             }
             for (let output of this.app.outputs) {
                 if (output.files) {
-                    output._files = JSON.stringify(output.files, null, 4);
+                    //output._files = JSON.stringify(output.files, null, 4);
+
+                    //_files needs to be obervable - otherwise textare won't work..
+                    Vue.set(output, '_files', JSON.stringify(output.files, null, 4));
                 }
                 output.pid = Math.random();
+                //this.output_datasets.push(Object.assign({}, output));
                 this.output_datasets.push(output);
             }
             
@@ -624,13 +628,14 @@ export default {
         
         convert_ui_to_config: function(cb) {
             let config = {};
-            let inputs = [];
-            let outputs = [];
+            //let inputs = [];
+            //let outputs = [];
             
             let inputTable = {};
             let outputTable = {};
             let paramTable = {};
             
+            //validate
             for (let input of this.input_datasets) {
                 if (!input.id) return cb("Not all input ids are non-null");
                 if (inputTable[input.id]) return cb("Duplicate ID '" + input.id + "' found in list of inputs");
@@ -642,6 +647,7 @@ export default {
                 }
                 
                 inputTable[input.id] = true;
+                /*
                 inputs.push({
                     _id: input._id,
                     id: input.id,
@@ -649,7 +655,10 @@ export default {
                     datatype: input.datatype,
                     optional: input.optional,
                     multi: input.multi,
+                    desc: input.desc,
                 });
+                inputs.push(Object.assign({}, input));
+                */
                 
                 if (!input.files || input.files.length == 0) {
                     return cb("No file mapping given for input '" + input.id + "'");
@@ -662,7 +671,6 @@ export default {
                     if (config[file.id]) {
                         return cb("Duplicate config.json key '" + input.id + "' found when checking file mapping");
                     }
-                    
                     config[file.id] = {
                         type: 'input',
                         file_id: file.file_id,
@@ -686,27 +694,17 @@ export default {
                 }
                 
                 let datatype = this.datatypes[output.datatype];
-                let invalid = false;
                 
                 if (datatype.name == "raw" && output.datatype_tags.length == 0) {
                     return cb("All raw output datatypes should have at least 1 datatype tag (when checking '" + output.id + "').");
                 }
                 
+                outputTable[output.id] = true;
+
+                output.files = null;
                 try {
-                    outputTable[output.id] = true;
-                    outputs.push({
-                        _id: output._id,
-                        id: output.id,
-                        datatype_tags: output.datatype_tags,
-                        datatype: output.datatype,
-                        datatype_tags_pass: output.datatype_tags_pass,
-                        files: output._files ? JSON.parse(output._files) : null,
-                    });
+                    if(output._files) output.files = JSON.parse(output._files);
                 } catch (err) {
-                    invalid = true;
-                }
-                
-                if (invalid) {
                     return cb("Failed to parse JSON given for output '" + output.id + "'");
                 }
             }
@@ -731,8 +729,10 @@ export default {
             }
             
             this.app.config = config;
-            this.app.inputs = inputs;
-            this.app.outputs = outputs;
+            //this.app.inputs = inputs;
+            this.app.inputs = this.input_datasets;
+            //this.app.outputs = outputs;
+            this.app.outputs = this.output_datasets;
             
             return cb();
         },
@@ -756,7 +756,15 @@ export default {
         
         add_param: function(type, input) {
             let max_order = this.get_max_order();
-            let param = { id: '', type, placeholder: '', desc: '', default: '', _order: max_order + 1, pid: Math.random() };
+            let param = { 
+                id: '', 
+                type, 
+                placeholder: '', 
+                desc: '', 
+                default: '', 
+                _order: max_order + 1, 
+                pid: Math.random() 
+            };
             switch(type) {
             case "boolean":
                 param.default = false;

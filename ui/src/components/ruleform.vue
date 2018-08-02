@@ -33,7 +33,7 @@
                 <b-card v-for="input in rule.app.inputs" :key="input._id" class="card">
                     <div slot="header">
                         <small class="text-muted" style="float: right">{{input.id}}</small>
-                        <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                        <datatypetag :datatype="input.datatype_id" :tags="input.datatype_tags"/>
                         <span class="text-muted" v-if="input.optional">(optional)</span>
                     </div>
                     <b-row v-if="input.optional">
@@ -50,7 +50,7 @@
                             <b-col>Dataset Tags</b-col>
                             <b-col :cols="9">
                                 <p>
-                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="dataset_tags[input.id]"/>
+                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="dataset_tags[input.datatype_id]"/>
                                     <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
                                 </p>
                             </b-col>
@@ -76,9 +76,9 @@
                         <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                     </div>
                     <b-row>
-                        <b-col>tags</b-col>
+                        <b-col>Dataset Tags</b-col>
                         <b-col :cols="9">
-                            <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)"/>
+                            <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="dataset_tags[output.datatype]"/>
                             <small class="text-muted">Output tags allows you can easily query for specific set of datasets on subsequent rules.</small>
                         </b-col>
                     </b-row>
@@ -128,10 +128,13 @@ export default {
             this.load_value();
         },
 
-        "rule.app": function() {
-            this.ensure_ids_exists();
-            this.ensure_config_exists();
-            this.load_dataset_tags();
+        "rule.app": {
+            handler: function(newv) {
+                this.ensure_ids_exists();
+                this.ensure_config_exists();
+                this.load_dataset_tags();
+            },
+            deep: true,
         },
     },
 
@@ -272,15 +275,24 @@ export default {
 
         load_dataset_tags: function() {
             this.rule.app.inputs.forEach(input=>{
-                let datatype = input.datatype._id || input.datatype; //parent component passes app.input without populating datatype
+                input.datatype_id = input.datatype._id || input.datatype; //parent component passes app.input without populating datatype sometimes?
                 let project = this.rule.input_project_override[input.id] || this.rule.project;
+
                 this.$http.get('dataset/distinct', {params: {
                     distinct: 'tags',
+                    find: JSON.stringify({project, datatype: input.datatype_id}),
+                }}).then(res=>{
+                    Vue.set(this.dataset_tags, input.datatype_id, res.body);
+                }); 
+
+                /*
+                this.$http.get('dataset/distinct', {params: {
+                    distinct: 'datatype_tags',
                     find: JSON.stringify({project, datatype}),
                 }}).then(res=>{
-                    //console.log("tags loaded", input.id, datatype, res.body);
-                    Vue.set(this.dataset_tags, input.id, res.body);
+                    Vue.set(this.datatype_tags, input.id, res.body);
                 }); 
+                */
             });
         },
     }

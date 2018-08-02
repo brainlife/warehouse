@@ -31,9 +31,17 @@ export default {
 
     watch: {
         tags: function() {
+
             if (JSON.stringify(this.old_tags) != JSON.stringify(this.tags)) {
                 if (!this.dont_emit) {
-                    this.$emit('input', this.tags);
+                    //v-select allows space attached to the tag (https://github.com/sagalbot/vue-select/issues/605)
+                    //until v-select can remove space by itself, I need to clean it up myself
+                    let clean_tags = [];
+                    if(this.tags) this.tags.forEach(tag=>{
+                        clean_tags.push(tag.trim());
+                    });
+                    console.dir(clean_tags);
+                    this.$emit('input', clean_tags);
                 }
                 if(this.tags) {
                     this.dont_emit = false;
@@ -51,11 +59,6 @@ export default {
             
             this.tags = this.value;
         },
-        /*
-        options: function() {
-            console.log("options updated", this.options);
-        },
-        */
     },
 }
 </script>

@@ -71,11 +71,12 @@
             </b-form-group>
 
             <b-form-group horizontal label="Dataset Tags">
-                <tageditor v-model="tags"/>
+                <tageditor v-model="tags" :options="available_tags"/>
                 <small>Dataset tags is used to help organize datasets and make searching easier. It can be edited by users anytime.</small>
             </b-form-group>
             <b-form-group horizontal label="Datatype Tags">
-                <tageditor v-model="datatype_tags"/> 
+                <!--<datatypetag :datatype="datatype_id" :tags="datatype_tags"/>-->
+                <tageditor v-model="datatype_tags" :options="available_dt_tags"/>
                 <small>Datatype tags add context to the datatype. It can not be changed once archived.</small>
             </b-form-group>
         </div>
@@ -105,12 +106,15 @@ import projectselecter from '@/components/projectselecter'
 import task from '@/components/task'
 import tageditor from '@/components/tageditor'
 import product from '@/components/product'
+import datatypetag from '@/components/datatypetag'
 
 //singleton instance to handle upload request
 export default {
     components: { 
         sidemenu, pageheader, projectselecter, 
-        task, tageditor, product },
+        task, tageditor, product,
+        datatypetag,
+    },
     data () {
         return {
             instance: null, //instance to upload things to
@@ -133,6 +137,9 @@ export default {
             validator_resource: null,
             
             datatypes: null, //registered datatypes (keyed by datatype_id)
+
+            available_tags: null,
+            available_dt_tags: null,
 
             config: Vue.config,
         }
@@ -358,12 +365,10 @@ export default {
                 output_id: "output", //validation service isn't realy BL app, so I just have to come up with something
 
                 datatype: this.datatype_id,
-                //datatype_tags: validation_product.datatype_tags, 
                 datatype_tags: this.datatype_tags,
 
                 meta: this.meta,
                 desc: this.desc,
-                //tags: validation_product.tags, 
                 tags: this.tags,
             }).then(res=>{
                 console.log("submitted dataset request");
@@ -399,6 +404,22 @@ export default {
                 Vue.set(this.meta, meta.id, "");
             });
             this.prep_upload();
+
+            //load available dataset tags
+            this.$http.get('dataset/distinct', {params: {
+                distinct: 'tags',
+                find: JSON.stringify({project: this.project._id, datatype: this.datatype_id}),
+            }}).then(res=>{
+                this.available_tags = res.body;
+            });
+
+            //load available datatype tags
+            this.$http.get('dataset/distinct', {params: {
+                distinct: 'datatype_tags',
+                find: JSON.stringify({project: this.project._id, datatype: this.datatype_id}),
+            }}).then(res=>{
+                this.available_dt_tags = res.body;
+            });            
         },
     },
 }

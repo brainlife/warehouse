@@ -7,9 +7,16 @@
     </p>
     <b-alert :show="error" variant="danger">{{error}}</b-alert>
     <div v-if="files && !error">
-        <div :style="{marginLeft: offset}" class="buttons">
-            <div class="button" @click="download()" title="Download"><icon name="download"/></div>
-            <div class="button" @click="load()" title="Refresh"><icon name="sync-alt"/></div>
+        <div :style="{marginLeft: offset}">
+            <!--
+            <div class="fileitem" style="float: right; margin-right: 20px;">
+                {{files.length}}
+            </div>
+            -->
+            <div  class="buttons">
+                <div class="button" @click="download()" title="Download"><icon name="download" scale="0.9"/> {{files.length}} files</div>
+                <div class="button" @click="load()" title="Refresh"><icon name="sync-alt" scale="0.9"/></div>
+            </div>
         </div>
 
         <p v-if="files.length == 0" class="text-muted" :style="{marginLeft: offset}">Empty Directory</p>
@@ -40,8 +47,8 @@
                 <!-- controls -->
                 <div v-if="file.content">
                     <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
-                        <div class="button" @click="download_file(file)"><icon name="download"/></div>
-                        <div class="button" @click="refresh_file(file)"><icon name="sync-alt"/></div>
+                        <div class="button" @click="download_file(file)" title="Download"><icon name="download" scale="0.8"/></div>
+                        <div class="button" @click="refresh_file(file)" title="Refresh"><icon name="sync-alt" scale="0.8"/></div>
                     </div>
                     <pre v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
                 </div>
@@ -274,7 +281,7 @@ position: relative;
 .file-content-buttons {
 position: absolute; 
 top: 5px; 
-right: 35px; 
+right: 25px; 
 opacity: 0;
 transition: opacity 0.5s;
 }

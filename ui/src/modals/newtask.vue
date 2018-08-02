@@ -90,6 +90,10 @@
                                 <b>Dataset Description</b>
                                 <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="3"/>
                             </p>
+                            <p>
+                                <b>Dataset Tags</b>
+                                <tageditor placeholder="Optional" v-model="archive.tags"/>
+                            </p>
                         </b-card>
                     </b-col>
                 </b-row>
@@ -122,13 +126,14 @@ import datatypetag from '@/components/datatypetag'
 import configform from '@/components/configform'
 import vSelect from 'vue-select'
 import advanced from '@/components/appadvanced'
+import tageditor from '@/components/tageditor'
 
 const lib = require('../lib');
 
 export default {
     components: { 
         app, datatypetag, configform, vSelect,
-        advanced
+        advanced, tageditor,
     },
 
     data() {
@@ -146,6 +151,7 @@ export default {
                 enable: false,
                 //project: null,
                 desc: "",
+                tags: [],
             },
 
             datasets: null,
@@ -169,6 +175,7 @@ export default {
             this.app = null;
             this.valid = false;
             this.archive.desc = "";
+            this.archive.tags = [];
             this.archive.enable = false;
 
             //create list of all datatypes that user has staged / generated
@@ -382,6 +389,7 @@ export default {
                 if(this.archive.enable) output_req.archive = {
                     //project: this.project,  //should be set by the client
                     desc: this.archive.desc,
+                    tags: this.archive.tags,
                 }
 
                 //handle tag passthrough
