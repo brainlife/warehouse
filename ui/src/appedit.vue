@@ -101,7 +101,7 @@
 
             </div>
             
-            <h4>Input Datasets</h4>
+            <h4>Input</h4>
             <div>
                 <transition-group name="move-item" tag="p">
                     <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="margin-bottom: 10px;">
@@ -186,11 +186,11 @@
                     </div>
                 </transition-group>
                 <p>
-                    <b-button size="sm" @click="add_dataset(input_datasets)" variant="success">Add Input Dataset</b-button>
+                    <b-button size="sm" @click="add_dataset(input_datasets)" variant="success">Add Input</b-button>
                 </p>
             </div>
             
-            <h4>Output Datasets</h4>
+            <h4>Output</h4>
             <div>
                 <transition-group name="move-item" tag="p">
                     <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
@@ -241,7 +241,7 @@
                     </div>
                 </transition-group>
                 <p>
-                    <b-button size="sm" @click="add_dataset(output_datasets)" variant="success">Add Output Dataset</b-button>
+                    <b-button size="sm" @click="add_dataset(output_datasets)" variant="success">Add Output</b-button>
                 </p>
             </div>
             
