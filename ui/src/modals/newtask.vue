@@ -333,6 +333,10 @@ export default {
         submit: function(evt) {
             evt.preventDefault();
 
+            //prevent double submit
+            if(!this.open) return; 
+            this.open = false;
+
             //now construct the task objeect
             this.deps = [];
             this.process_input_config(this.config);
@@ -419,7 +423,6 @@ export default {
             if (this.advanced.branch) task.service_branch = this.advanced.branch;
             
             this.$root.$emit("newtask.submit", task);
-            this.open = false;
         },
 
         compose_label: function(dataset) {
