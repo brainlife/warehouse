@@ -1,4 +1,4 @@
-tag=1.1.20
+tag=1.1.21
 docker pull node:8
 
 docker build -t soichih/warehouse ..
