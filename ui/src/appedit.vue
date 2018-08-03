@@ -5,8 +5,9 @@
     <div class="fixed-top">
         <div class="container" style="height: 50px;">
             <div style="margin: 20px 0px;">
-                <p style="float: right">
-                    <a href="https://brain-life.github.io/docs/apps/register/" target="doc">Help</a>
+                <p style="float: right; color: #999;">
+                    If you are new to creating App for Brainlife, please read our
+                    <b-button size="sm" variant="outline-secondary" href="https://brain-life.github.io/docs/apps/introduction" target="doc">Documentation</b-button>
                 </p>
                 <h3 v-if="$route.params.id == '_'">New App</h3>
                 <h3 v-else>{{app.name}}</h3>
@@ -16,7 +17,12 @@
 
     <div class="main-section" v-if="ready">
         <b-form @submit="submit" class="container">
-            <!--detail-->
+            <!--
+            <p v-if="$route.params.id == '_'">
+                Before you can 
+            </p>
+            -->
+    
             <div style="margin-top:20px;">
                 <h4>Detail</h4>
 
@@ -101,7 +107,10 @@
 
             </div>
             
-            <h4>Input</h4>
+            <h4>
+                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="info"/></a>
+                Input
+            </h4>
             <div>
                 <transition-group name="move-item" tag="p">
                     <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="margin-bottom: 10px;">
@@ -190,7 +199,10 @@
                 </p>
             </div>
             
-            <h4>Output</h4>
+            <h4>
+                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="info"/></a>
+                Output
+            </h4>
             <div>
                 <transition-group name="move-item" tag="p">
                     <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
@@ -245,7 +257,9 @@
                 </p>
             </div>
             
-            <h4>Configuration</h4>
+            <h4>
+                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="info"/></a>
+                Configuration</h4>
             <div>
                 <transition-group name="move-item" tag="p">
                     <div v-for="(param, idx) in config_params" v-if="param.pid" :key="param.pid" style="margin:5px;">
