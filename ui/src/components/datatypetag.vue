@@ -2,7 +2,7 @@
 <div v-if="ready" class="dt" :title="_datatype.desc">
     <div class="dot" :style="{backgroundColor: color}">{{name}}</div
     ><div class="tags" v-for="tag in tags" :key="tag">
-        <span v-if="tag[0] == '!'" class="text-danger"><icon scale="0.8" name="exclamation-triangle" style="position: relative; top: 2px;"/> {{tag.substring(1)}}</span>
+        <span v-if="tag[0] == '!'" class="text-danger"><b-badge variant="danger">not</b-badge> {{tag.substring(1)}}</span>
         <span v-else>{{tag}}</span>
     </div>
 </div>

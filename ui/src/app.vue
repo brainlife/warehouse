@@ -202,7 +202,7 @@
                                     <div v-if="resource.status != 'ok'" class="resource-status bg-danger">Down</div>
                                     <div v-else-if="resource.score == 0" class="resource-status bg-warning">Busy</div>
                                     <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
-                                        <icon name="thumbs-up"/>
+                                        <icon name="thumbs-up" style="position: relative; top: -3px;"/>
                                     </div>
                                 </div>
                             </b-col>
