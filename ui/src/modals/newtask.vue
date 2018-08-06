@@ -92,7 +92,7 @@
                             </p>
                             <p>
                                 <b>Dataset Tags</b>
-                                <tageditor placeholder="Optional" v-model="archive.tags"/>
+                                <tageditor placeholder="Optional" v-model="tags"/>
                             </p>
                         </b-card>
                     </b-col>
@@ -142,6 +142,7 @@ export default {
 
             apps: null, //applications user can run with selected data
             app: null, //selected
+            tags: [],
 
             //desc: null,
             config: null,
@@ -151,7 +152,6 @@ export default {
                 enable: false,
                 //project: null,
                 desc: "",
-                tags: [],
             },
 
             datasets: null,
@@ -175,7 +175,7 @@ export default {
             this.app = null;
             this.valid = false;
             this.archive.desc = "";
-            this.archive.tags = [];
+            this.tags = [];
             this.archive.enable = false;
 
             //create list of all datatypes that user has staged / generated
@@ -381,18 +381,16 @@ export default {
                 var output_req = {
                     id: output.id,
                     datatype: output.datatype._id,
-                    //datatype_tags: output.datatype_tags,
                     desc: output.id+ " from "+this.app.name,
                     meta,
                     files: output.files,
+                    tags: this.tags,
                 };
                 if(this.archive.enable) output_req.archive = {
-                    //project: this.project,  //should be set by the client
                     desc: this.archive.desc,
-                    tags: this.archive.tags,
                 }
 
-                //handle tag passthrough
+                //handle datatype tag passthrough
                 var tags = [];
                 if(output.datatype_tags_pass) {
                     this.inputs[output.datatype_tags_pass].selected.forEach(selected=>{

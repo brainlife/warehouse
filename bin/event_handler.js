@@ -144,6 +144,7 @@ function archive_dataset(task, output, cb) {
             logger.debug("see if this dataset is already archived");
             db.Datasets.findOne({
                 "prov.task_id": task._id,
+
                 "prov.output_id": output.id,
                 
                 //ignore failed and removed ones
@@ -170,7 +171,7 @@ function archive_dataset(task, output, cb) {
             logger.debug("registering dataset now");
 
             //add tags specified in task.product.tags to dataset tags
-            let tags = output.archive.tags||[];
+            let tags = output.tags||[];
             if(task.product && task.product.tags) {
                 task.product.tags.forEach(tag=>{
                     if(!~tags.indexOf(tag)) tags.push(tag);
@@ -197,8 +198,12 @@ function archive_dataset(task, output, cb) {
                 tags,
 
                 prov: {
+                    task,
+
+                    //deprecated by prov.task._id and prov.task.instance_id (will be removed once all use of these are removed)
                     instance_id: task.instance_id,
                     task_id: task._id,
+
                     output_id: output.id, 
                     subdir: output.subdir, //optional
                 },

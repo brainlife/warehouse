@@ -191,8 +191,11 @@ var datasetSchema = mongoose.Schema({
 
     //not set if user uploaded it. 
     prov: {
-        instance_id: String, 
-        task_id: String, 
+        task: mongoose.Schema.Types.Mixed, //task document at the timme of archival
+
+        instance_id: String,  //deprecated by prov.task.instance_id
+        task_id: String, //deprecated by prov.task._id
+
         output_id: String, 
         subdir: String, //(optional) subdir that contained the actual output. often output_id == subdir
     },

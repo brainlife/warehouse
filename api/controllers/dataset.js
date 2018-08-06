@@ -238,7 +238,6 @@ router.get('/prov/:id', (req, res, next)=>{
 
         load_task(dataset.prov.task_id, (err, task)=>{
             if(err) return cb(err);
-            //logger.debug("loaded task", dataset.prov.task_id);
             if(task.service == "soichih/sca-product-raw" || task.service == "soichih/sca-service-noop") { //TODO might change in the future
                 if(defer) {
                     add_node(defer.node);
@@ -458,13 +457,14 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 tags: req.body.tags||[],
 
                 prov: {
-                    //always set
+                    task,
+
+                    //deprecated by prov.task (will be removed)
                     instance_id: task.instance_id,
                     task_id: task._id,
+                    
                     output_id: req.body.output_id,
-
-                    //optional
-                    subdir: req.body.subdir,
+                    subdir: req.body.subdir, //optional
                 },
                 meta: req.body.meta||{},
             }).save((err, _dataset)=>{
