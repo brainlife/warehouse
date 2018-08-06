@@ -68,7 +68,7 @@
             </div>
 
             <!--output-->
-            <div slot="output" v-if="task.config._outputs.length > 0 || task.product">
+            <div slot="output">
                 <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 10px;">
                     <div class="float-right" style="position: relative; top: -5px;">
                         <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
@@ -118,11 +118,9 @@
                             </li>
                         </ul>
                     </div>
-                    <!--
-                    <archiveform v-if="archiving === output" :task="task" :output="output" @done="archive_submitted"></archiveform>
-                    -->
                 </div>
                 <product :product="task.product"/>
+                <div v-if="task.config._outputs.length == 0 && !task.product" style="padding: 10px; opacity: 0.5">No output</div>
             </div>
         </task>
 
@@ -384,20 +382,17 @@ export default {
                                 }
                                 this.$notify({type, text});
                             }
-                            for(var k in task) {
-                                t[k] = task[k];
-                            }
+                            for(var k in task) t[k] = task[k]; //apply updates
+                            //for(var k in task) Vue.set(t, k, task[k]);
                         }
                         break;
                     case "warehouse.dataset":
                         //see if we care..
-                        //console.log("dataset event", event.msg);
                         this.archived.forEach(dataset=>{
                             if(dataset._id == event.msg._id) {
                                 for(var k in event.msg) dataset[k] = event.msg[k]; //update 
                             }
                         });
-                        //vm.$forceUpdate();
                         break;
                     }
                 };
@@ -594,16 +589,9 @@ background-color: #fff;
 .task {
 box-shadow: 0px 2px 4px #ccc;
 }
-
-/*
-.task.v-enter, .task.v-leave {
-height: 0;
-}
-*/
 .task {
 margin-bottom: 10px;
 }
-
 .task-desc {
 margin-top: 5px;
 margin-left: 95px;

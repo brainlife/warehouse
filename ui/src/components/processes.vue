@@ -37,9 +37,6 @@
             <p>Here, you can submit series of apps with shared input and output datasets.</p>
             <p>Output datasets will be removed within 25 days. Please archive any output dataset you'd like to keep.</p>
             <p>To learn about how to submit processes, please refer to our <a href="https://brain-life.github.io/docs/user/process/" target="doc">Documentation</a>.</p>
-            <!--
-            <b-alert variant="warning" show>You should avoid mixing datasets from different subject on a process. Create separate process for each subject.</b-alert>
-            -->
         </div>
 
         <div v-if="instances.length > 0" style="clear: both;">
@@ -51,11 +48,6 @@
                 <div class="date">
                     <small>Create Date</small>
                 </div>
-                <!--
-                <div style="float: right; text-align: right;">
-                    <small>Contact</small>
-                </div>
-                -->
             </div>
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
@@ -181,12 +173,6 @@ export default {
             });
         },
         instance_counts: function() {
-            /*
-            return this.instances.reduce((count, it)=>{
-                if(it.status == status) return count+1;
-                return count; 
-            });
-            */
             let counts = {};
             this.instances.forEach(i=>{
                 //convert odd status into "others"
@@ -498,11 +484,9 @@ background-color: white;
 padding: 5px 15px;
 background-color: white;
 box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-/*transition: background-color 0.5s, margin 0.5s;*/
 margin-left: 20px;
 margin-right: 20px;
 min-height: 35px;
-/* white-space:nowrap; */
 z-index: 1; /*app desc/github name shows up on top without it*/
 transition: margin 0.3s, background-color 0.3s;
 }
