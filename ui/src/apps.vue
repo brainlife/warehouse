@@ -21,20 +21,38 @@
     </div>
     <div class="page-content" v-on:scroll="update_active" ref="scrolled">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
-        <div v-for="tag in sorted_tags" :id="tag">
-            <h4 class="group-title">{{tag}}</h4> 
-            <div v-for="app in app_groups[tag]" :key="app._id" class="app">
-                <app :app="app" height="246px"></app>
+        <div v-else>
+            <div v-for="tag in sorted_tags" :id="tag">
+                <h4 class="group-title">{{tag}}</h4> 
+                <div v-for="app in app_groups[tag]" :key="app._id" class="app">
+                    <app :app="app" height="246px"></app>
+                </div>
+                <br clear="both">
             </div>
-            <br clear="both">
-        </div>
 
-        <!--
-        <div class="relationships" style="position: relative;">
-            <h3 style="position: absolute; top: 10px; left: 10px; color: #ddd;">Relationships (experimental)</h3>
-            <div ref="vis" style="height: 500px; background-color: #fff;"/>
+            <!--
+            <div class="relationships" style="position: relative;">
+                <h3 style="position: absolute; top: 10px; left: 10px; color: #ddd;">Relationships (experimental)</h3>
+                <div ref="vis" style="height: 500px; background-color: #fff;"/>
+            </div>
+            -->
+
+            <br>
+            <br>
+            <br>
+
+            <div style="background-color: #aaa; color: white;">
+                <h4 class="group-title" style="color: #ccc; background-color: #888;">Register New App</h4>
+                <div style="padding: 10px 20px;">
+                    <p>Do you have a code that you'd like to publish on Brainlife?</p>
+                    <p>You can publish it so that other users can execute your code!</p>
+                    <b-button variant="secondary" @click="go('/app/_/edit')">Register New App</b-button> 
+                </div>
+
+                <br>
+                <br>
+            </div>
         </div>
-        -->
 
         <b-button v-if="config.user" class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
     </div><!--page-content-->
