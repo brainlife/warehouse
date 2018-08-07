@@ -172,6 +172,7 @@ exports.storage_systems.jetstream = {
             contname = dataset.storage_config.contname;
             filename = dataset.storage_config.filename;
         }
+        console.log("removing", contname, filename);
         js_storage.removeFile(contname, filename, cb);
     }
 }

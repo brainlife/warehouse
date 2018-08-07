@@ -31,7 +31,7 @@ function run(cb) {
         if(err) return cb(err);
         logger.debug("datasets stored in jetstream", datasets.length);
         async.eachSeries(datasets, (dataset, next_dataset)=>{
-            console.dir(dataset.storage_config);
+            console.dir(dataset);
 
             //open destination first 
             //TODO if we open the source first, it somehow ends up truncating the first part of the file..... find out why!?
@@ -47,15 +47,18 @@ function run(cb) {
                     read.pipe(write);
                     success.then(stat=>{
                         console.dir(stat);
-                        delete dataset.storage_config
-                        dataset.storage = "wrangler";
-                        console.log("dataset size:"+dataset.size);
-                        console.log("stat.size:"+stat.size);
+                        //console.log("dataset size:"+dataset.size);
+                        //console.log("stat.size:"+stat.size);
                         if(dataset.size != stat.size) throw new Error("dataset size not the same");
-                        dataset.save(err=>{
+                        config.storage_systems.jetstream.remove(dataset, err=>{
                             if(err) throw err;
-                            console.log("removing jetstream dataset");
-                            config.storage_systems.jetstream.remove(dataset, next_dataset);
+
+                            dataset.storage_config = undefined;
+                            dataset.storage = "wrangler";
+                            dataset.save(err=>{
+                                if(err) throw err;
+                                console.log("removing jetstream dataset");
+                            });
                         });
                     }).catch(err=>{
                         throw err;
