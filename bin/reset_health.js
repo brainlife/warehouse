@@ -1,5 +1,4 @@
 const winston = require('winston');
-const timeout = require('callback-timeout');
 const async = require('async');
 
 const config = require('../api/config');
