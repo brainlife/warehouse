@@ -126,6 +126,12 @@
                             <b-col cols="3"><span class="form-header">Download Count</span></b-col>
                             <b-col>
                                 <p><b>{{dataset.download_count}}</b> times</p>
+                                <p>
+                                    <small style="opacity: 0.8;">
+                                        Download this dataset via <a href="https://github.com/brain-life/cli" target="doc">Brainlife CLI</a>
+                                    </small>
+                                    <pre>$ bl dataset download --id {{dataset._id}}</pre>
+                                </p>
                             </b-col>
                         </b-row>
 
@@ -230,7 +236,6 @@ export default {
             task: null, //task that produced this dataset (optional)
             apps: null,
             prov: null, 
-            //derivatives: {},
 
             tab_index: 0,
 
@@ -516,11 +521,16 @@ export default {
                 Vue.set(this.dataset, '_desc_dirty',  false);
 
                 //optionally, load task info
-                if(this.dataset.prov && this.dataset.prov.task_id) {
-                    this.$http.get(Vue.config.wf_api+'/task/'+this.dataset.prov.task_id).then(res=>{
-                        //console.log("loading prov task", res.body);
-                        this.task = res.body;
-                    });
+                if(this.dataset.prov) {
+                    if(this.dataset.prov.task) {
+                        console.log("prov.task is set.. no need to load");
+                        this.task = this.dataset.prov.task;
+                    } else if(this.dataset.prov.task_id) {
+                        console.log("old dataset that doesn't have prov.task.. loading task..");
+                        this.$http.get(Vue.config.wf_api+'/task/'+this.dataset.prov.task_id).then(res=>{
+                            this.task = res.body;
+                        });
+                    }
                 }
 
                 //load tags from other datasets in this project

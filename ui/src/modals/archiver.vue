@@ -51,9 +51,14 @@ export default {
         this.$root.$on("archiver.show", (opt)=>{
             this.task = opt.task;
             this.output = Object.assign({}, opt.output);
-            this.tags = [];
+
+            //add tags specified in task.product.tags to dataset tags
+            this.tags = opt.output.tags||[];
             if(this.task.product && this.task.product.tags) {
-                this.tags = this.task.product.tags;
+                //this.tags = this.task.product.tags;
+                this.task.product_tags.forEach(tag=>{
+                    if(!~tags.indexOf(tag)) tags.push(tag);
+                });
             }
             this._meta = JSON.stringify(this.output.meta, null, 4);
             this.$refs.archiver.show();
