@@ -23,8 +23,9 @@ exports.health_check = function() {
 
     //check for storage system status
     async.forEachOf(config.storage_systems, function(system, system_id, next) {
+        logger.debug("testing storage", system_id);
         var system = config.storage_systems[system_id];
-        system.test(timeout(err=>{
+        system.test(err=>{
             if(err) {
 				report.status = "failed";
 				report.messages.push(system_id+" "+err);
@@ -33,7 +34,7 @@ exports.health_check = function() {
 				report.storages[system_id] = "ok";
 			}
             next();
-        }, 10*000)); //8 not enough for js often
+        }); //, 10*000)); //8 not enough for js often
     }, err=>{
 		common.redis.set("health.warehouse.api."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
     });
