@@ -4,8 +4,8 @@ v-select has some issue with clicking scrollbar closing the select dropdown..
 https://github.com/sagalbot/vue-select/issues/474
 -->
 <div v-if="options">
-    <b-alert show variant="danger" v-if="options.length == 0 && !allownull">You don't have any project that you can select.</b-alert>
-    <b-form-select v-if="options.length > 0" v-model="selected" :options="options" :placeholder-nowork="placeholder" :required="!allownull">
+    <b-alert show variant="danger" v-if="options.length == 0 && required">You don't have any project that you can select.</b-alert>
+    <b-form-select v-if="options.length > 0" v-model="selected" :options="options" :placeholder-nowork="placeholder" :required="required">
     </b-form-select>
 </div>
 </template>
@@ -19,7 +19,6 @@ export default {
     components: { projectaccess },
     props: [ 
         'value', 
-        'allownull', 
         'placeholder', 
         'canwrite', 
         'required', 
@@ -59,10 +58,11 @@ export default {
 
     methods: {
 
-        load_projects: function() {         
+        load_projects() {         
             var find = null;
             if(this.canwrite) {
                 //only load project that user has write access to
+                console.log("only showing member/admin projects");
                 find = {
                     $or: [
                         {members: Vue.config.user.sub},
@@ -109,13 +109,13 @@ export default {
             }
         },
 
-        query_projects: function(find) {
+        query_projects(find) {
             this.$http.get('project', {params: {
                 find: JSON.stringify(find),
                 sort: 'name',
             }}).then(res=>{
                 this.options = [];
-                if(this.allownull) this.options.push({value: null, text: this.placeholder||''});
+                if(!this.required) this.options.push({value: null, text: this.placeholder||''});
                 res.body.projects.forEach(project=>{
                     this.options.push({value: project._id, text: project.name});
                 });
@@ -128,8 +128,8 @@ export default {
                     var last = localStorage.getItem('last_projectid_used');
                     found = this.options.find(it=>it.value == last);
                     if(found) this.selected = found.value;
-                    else if(!this.allownull && this.options.length > 0) {
-                        //if we can't find it, and null not allowed, then select first one from the list
+                    else if(this.required && this.options.length > 0) {
+                        //if we can't find it, and required field.. then select first one from the list
                         this.selected = this.options[0].value;
                     }
                 }

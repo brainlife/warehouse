@@ -10,13 +10,18 @@
             <h3>Services Running</h3>
             <pre>{{service_running}}</pre>
 
-            <h3>su</h3>
-            <v-select 
-                :debounce="250" 
-                :on-change="su" 
-                :on-search="get_sulist" 
-                :options="su_options" placeholder="search user to become" label="fullname"/>
+            <p>
+                <h3>su</h3>
+                <v-select 
+                    :debounce="250" 
+                    :on-change="su" 
+                    :on-search="get_sulist" 
+                    :options="su_options" placeholder="search user to become" label="fullname"/>
+            </p>
 
+            <p>
+                <b-button @click="refresh">Refresh Token</b-button>
+            </p>
         </div><!--magin20-->
         </div><!--page-content-->
     </div><!--off-sidemenu-->
@@ -75,9 +80,18 @@ export default {
             if(!person) return;
             this.$http.get(Vue.config.auth_api+'/jwt/'+person.id).then(res=>{
                 localStorage.setItem("jwt", res.body.jwt);
-                document.location = "/project";
+                document.location = "/project/";
             });
-        }
+        },
+
+        refresh() {
+            this.$http.post(Vue.config.auth_api+'/refresh').then(res=>{
+                console.log(res.body.jwt);
+                localStorage.setItem("jwt", res.body.jwt);
+                this.$notify("refreshed");
+            });
+            
+        },
     },
 }
 </script>

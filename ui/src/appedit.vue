@@ -6,7 +6,7 @@
         <div class="container" style="height: 50px;">
             <div style="margin: 20px 0px;">
                 <p style="float: right; color: #999;">
-                    If you are new to creating App for Brainlife, please read our
+                    If you are new to creating Apps for Brainlife, please read our
                     <b-button size="sm" variant="outline-secondary" href="https://brain-life.github.io/docs/apps/introduction" target="doc">Documentation</b-button>
                 </p>
                 <h3 v-if="$route.params.id == '_'">New App</h3>
@@ -70,14 +70,10 @@
 
                 <b-row>
                     <b-col cols="3">
-                        <span class="form-header">Projects *</span>
+                        <span class="form-header">Projects</span>
                     </b-col> 
                     <b-col cols="9">
-                        <projectsselecter 
-                            v-model="app.projects" 
-                            :allownull="true" 
-                            access="private"
-                            placeholder="(Leave it empty to make it available for all users)"/>
+                        <multiprojectselecter v-model="app.projects" placeholder="(Leave it empty to make it available for all users)"/>
                         <p>
                             <small class="text-muted">If a private project is selected, only the member of the project can access this app</small>
                         </p>
@@ -91,7 +87,7 @@
                     <b-col>
                         <b-row>
                             <b-col cols="7">
-                                <b-input-group prepend="Github Repository Name *">
+                                <b-input-group prepend="Github Repository Name">
                                     <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
                                 </b-input-group>
                             </b-col>
@@ -166,23 +162,26 @@
                             <span class="text-muted">Description (optional)</span>
                             <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"/>
 
-                            <div v-if="input.files">
+                            <div v-if="input.datatype">
                                 <br><b>File Mapping</b><br>
-                                <p class="text-muted">Please specify configuration key to map each input files/directory to</p>
-                                <transition-group name="file-transition" tag="div" class="file-map-container">
+                                <p class="text-muted">Please choose keys used to specify the input files/directories inside config.json</p>
+                                <transition-group name="file-transition" tag="div">
                                     <div v-for="(file, fidx) in input.files" :key="fidx" class="file-map">
                                         <div class="button" @click="remove_file(idx, fidx)" style="float: right">
                                             <icon name="trash"/>
                                         </div>
                                         <b-row>
-                                            <b-col>
-                                                <b-input-group prepend="config.json key">
-                                                    <b-form-input type="text" v-model="file.id" required/>
-                                                </b-input-group>
-                                            </b-col>
-                                            <b-col v-if="input.datatype" cols="7">
+                                            <b-col v-if="input.datatype" cols="6">
                                                 <b-input-group prepend="file/dir">
                                                     <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="file.file_id" required/>
+                                                </b-input-group>
+                                            </b-col>
+                                            <b-col cols="1">
+                                                <icon name="arrow-right"/>
+                                            </b-col>
+                                            <b-col cols="5">
+                                                <b-input-group prepend="key">
+                                                    <b-form-input type="text" v-model="file.id" required/>
                                                 </b-input-group>
                                             </b-col>
                                         </b-row>
@@ -195,7 +194,7 @@
                     </div>
                 </transition-group>
                 <p>
-                    <b-button size="sm" @click="add_dataset(input_datasets)" variant="success">Add Input</b-button>
+                    <b-button size="sm" @click="add_dataset(input_datasets)" variant="primary">Add Input</b-button>
                 </p>
             </div>
             
@@ -425,7 +424,7 @@
                 </transition-group>
             </div>
             <p>
-                <b-dropdown size="sm" text="Add Configuration Parameter" variant="success">
+                <b-dropdown size="sm" text="Add Configuration Parameter" variant="secondary">
                     <b-dropdown-item @click="add_param('string')">String</b-dropdown-item>
                     <b-dropdown-item @click="add_param('number')">Number</b-dropdown-item>
                     <b-dropdown-item @click="add_param('boolean')">Boolean</b-dropdown-item>
@@ -461,7 +460,7 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
-import projectsselecter from '@/components/projectsselecter'
+import multiprojectselecter from '@/components/multiprojectselecter'
 import datatypeselecter from '@/components/datatypeselecter'
 import trueorfalse from '@/components/trueorfalse'
 import tageditor from '@/components/tageditor'
@@ -469,14 +468,13 @@ import tageditor from '@/components/tageditor'
 export default {
     components: { 
         sidemenu, contactlist, 
-        pageheader, projectsselecter,
+        pageheader, multiprojectselecter,
         datatypeselecter, trueorfalse, tageditor,
 
         editor: require('vue2-ace-editor'),
     },
     data () {
         return {
-            //tab_index: 0,
             app: {
                 config: {},
                 inputs: [],
@@ -555,30 +553,27 @@ export default {
     },
 
     methods: {
-        swap_inputs: function(first_idx, snd_idx) {
+        swap_inputs(first_idx, snd_idx) {
             let tmp = this.input_datasets[first_idx];
             Vue.set(this.input_datasets, first_idx, this.input_datasets[snd_idx]);
             Vue.set(this.input_datasets, snd_idx, tmp);
         },
-        swap_outputs: function(first_idx, snd_idx) {
+        swap_outputs(first_idx, snd_idx) {
             let tmp = this.output_datasets[first_idx];
             Vue.set(this.output_datasets, first_idx, this.output_datasets[snd_idx]);
             Vue.set(this.output_datasets, snd_idx, tmp);
         },
-        
-        move_param_up: function(idx) {
+        move_param_up(idx) {
             this.config_params[idx]._order--;
             this.config_params[idx - 1]._order++;
             this.sort_params_by_order();
         },
-        
-        move_param_down: function(idx) {
+        move_param_down(idx) {
             this.config_params[idx]._order++;
             this.config_params[idx + 1]._order--;
             this.sort_params_by_order();
         },
-        
-        get_max_order: function() {
+        get_max_order() {
             let max_order = 1;
             for (let param of this.config_params) {
                 if (max_order < param._order) {
@@ -587,8 +582,7 @@ export default {
             }
             return max_order;
         },
-        
-        sort_params_by_order: function() {
+        sort_params_by_order() {
             // first assign ordering to items
             // that don't have one
             let max_order = this.get_max_order();
@@ -603,7 +597,7 @@ export default {
             });
         },
         
-        convert_config_to_ui: function() {
+        convert_config_to_ui() {
             let input_files = {};
             for (let id in this.app.config) {
                 let param = this.app.config[id];
@@ -626,13 +620,10 @@ export default {
             }
             for (let output of this.app.outputs) {
                 if (output.files) {
-                    //output._files = JSON.stringify(output.files, null, 4);
-
-                    //_files needs to be obervable - otherwise textare won't work..
+                    //_files needs to be obervable - otherwise textarea won't work..
                     Vue.set(output, '_files', JSON.stringify(output.files, null, 4));
                 }
                 output.pid = Math.random();
-                //this.output_datasets.push(Object.assign({}, output));
                 this.output_datasets.push(output);
             }
             
@@ -640,11 +631,8 @@ export default {
             this.sort_params_by_order();
         },
         
-        convert_ui_to_config: function(cb) {
+        convert_ui_to_config(cb) {
             let config = {};
-            //let inputs = [];
-            //let outputs = [];
-            
             let inputTable = {};
             let outputTable = {};
             let paramTable = {};
@@ -743,32 +731,26 @@ export default {
             }
             
             this.app.config = config;
-            //this.app.inputs = inputs;
             this.app.inputs = this.input_datasets;
-            //this.app.outputs = outputs;
             this.app.outputs = this.output_datasets;
             
             return cb();
         },
         
-        add_file: function(index, file_id) {
+        add_file(index, file_id) {
             this.input_datasets[index].files.push({
-                type: 'input',
-                id: '',
-                desc: '',
+                id: file_id, //use the same key as file_id by default
                 file_id: file_id || null,
-                default: '',
             });
-            // to trigger vue dom change
             Vue.set(this.input_datasets, index, this.input_datasets[index]);
         },
         
-        remove_file: function(dataset_idx, file_idx) {
+        remove_file(dataset_idx, file_idx) {
             this.input_datasets[dataset_idx].files.splice(file_idx, 1);
             Vue.set(this.input_datasets, dataset_idx, this.input_datasets[dataset_idx]);
         },
         
-        add_param: function(type, input) {
+        add_param(type, input) {
             let max_order = this.get_max_order();
             let param = { 
                 id: '', 
@@ -796,7 +778,7 @@ export default {
             this.sort_params_by_order();
         },
         
-        add_dataset: function(it) {
+        add_dataset(it) {
             it.push({
                 pid: Math.random(),
                 id: "",
@@ -807,48 +789,25 @@ export default {
             });
         },
         
-        input_datatype_changed: function(idx) {
-            // auto populate required datatype files
+        input_datatype_changed(idx) {
+            // auto populate required datatype files when datatype is changed (also called when the form is first loaded)
+            // NOTE .. "required" for datatype. it doesn't mean the file is required to be used as input for the App. Every App uses different things.
+            // but, let's assume that "required" fields are usually some important files and most App will use it.
             let input = this.input_datasets[idx];
-            
             if (input.datatype) {
                 let datatype = this.datatypes[input.datatype];
-                let fileTable = {};
+                input.files = [];
                 datatype.files.forEach(file => {
-                    fileTable[file.id] = file;
+                    if (file.required) this.add_file(idx, file.id);
                 });
-                
-                // only auto populate if there are no files,
-                // or invalid files currently set
-                if (input.files.length > 0) {
-                    let resetFiles = false;
-                    input.files.forEach(file => {
-                        if (!fileTable[file.file_id]) {
-                            resetFiles = true;
-                        }
-                    });
-                    
-                    if (resetFiles) {
-                        input.files = [];
-                    }
-                }
-                
-                if (input.files.length == 0) {
-                    input.files = [];
-                    datatype.files.forEach(file => {
-                        if (file.required) {
-                            this.add_file(idx, file.id);
-                        }
-                    });
-                }
             }
         },
         
-        cancel: function() {
+        cancel() {
             this.$router.go(-1);
         },
 
-        submit: function() {
+        submit() {
             this.convert_ui_to_config(err => {
                 if (err) {
                     this.$notify({ text: err, type: 'error' });
@@ -878,7 +837,7 @@ export default {
         },
 
         //load tags from all apps and create a catalog
-        load_app_tags: function() {
+        load_app_tags() {
             return new Promise((resolve, reject)=>{
                 this.$http.get('app', {params: {
                     select: 'tags',
@@ -894,7 +853,7 @@ export default {
             });
         },
         
-        is_raw: function(input) {
+        is_raw(input) {
             if (this.datatypes) {
                 let dtype = this.datatypes[input.datatype];
                 if (dtype) {
@@ -930,12 +889,6 @@ right: 0px;
 top: 130px;
 bottom: 0px;
 overflow: auto;
-}
-
-.file-map-container {
-border:1px solid #ced4da;
-padding:4px;
-border-radius:0.25rem;
 }
 
 .file-map {

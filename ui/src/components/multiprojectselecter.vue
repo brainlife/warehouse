@@ -33,6 +33,7 @@ export default {
             find: JSON.stringify({
                 $or: [
                     { members: Vue.config.user.sub}, 
+                    { admins: Vue.config.user.sub}, 
                     { access: "public" },
                 ],
                 removed: false,

@@ -3,7 +3,7 @@
     <b-row>
         <b-col>From Project</b-col>
         <b-col cols="9">
-            <projectselecter ref="psel" v-model="project"></projectselecter>
+            <projectselecter ref="psel" v-model="project" :required="true"></projectselecter>
         </b-col>
     </b-row>
     <br>
