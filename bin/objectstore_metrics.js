@@ -16,7 +16,7 @@ js_storage.getContainers((err, containers)=>{
     if(err) throw err;
     const time = Math.round(new Date().getTime()/1000);
     containers.forEach(container=>{
-        if(container.bytes > 1024*1024*1024*10) { //>10Gb
+        if(container.bytes > 1024*1024*1024*20) { //>20Gb
             console.log(graphite_prefix+".objectstore.bytes."+container.name+" "+container.bytes+" "+time);
             console.log(graphite_prefix+".objectstore.count."+container.name+" "+container.count+" "+time);
         }
