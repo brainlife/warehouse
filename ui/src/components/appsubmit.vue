@@ -17,6 +17,7 @@
                         v-model="form.projects[input.id]" 
                         :datatype="input.datatype"
                         :datatype_tags="input.datatype_tags"
+                        :required="true"
                         placeholder="Select Project" 
                         @input="form.inputs[input.id][idx] = null"/>
                 </b-col>

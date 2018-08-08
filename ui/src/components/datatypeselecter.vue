@@ -58,11 +58,10 @@ export default {
     },
     
     watch: {
-        "selected": function() {
+        "selected": function(v) {
             let value = null;
             if (this.selected) value = this.selected._id;
-            
-            this.$emit('input', value);
+            if(this.value != value) this.$emit('input', value);
         }
     },
 }

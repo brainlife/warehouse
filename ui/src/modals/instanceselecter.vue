@@ -5,7 +5,7 @@
     <b-row>
         <b-col :cols="3">Project</b-col>
         <b-col>
-            <projectselecter v-if="shown" canwrite="true" v-model="project"/>
+            <projectselecter v-if="shown" canwrite="true" v-model="project" :required="true"/>
             <small>Project to run a new process</small>
         </b-col>
     </b-row>

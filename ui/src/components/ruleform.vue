@@ -59,7 +59,7 @@
                             <b-col>Project</b-col>
                             <b-col :cols="9">
                                 <p>
-                                <projectselecter v-model="rule.input_project_override[input.id]" :allownull="true" placeholder="(from this project)"/>
+                                <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(from this project)"/>
                                 <small class="text-muted">Look for datasets in this project</small>
                                 </p>
                             </b-col>
