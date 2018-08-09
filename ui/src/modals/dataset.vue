@@ -66,7 +66,44 @@
                             </b-col>
                         </b-row>
                         <b-row>
-                            <b-col cols="3"><span class="form-header">Stored in</span></b-col>
+                            <b-col cols="3"><span class="form-header">Datatype</span></b-col>
+                            <b-col>
+                                <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
+                                <br>
+                            </b-col>
+                        </b-row>
+                        <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.config && dataset.prov.task.config._app">
+                            <b-col cols="3"><span class="form-header">Produced by</span></b-col>
+                            <b-col>
+                                <app slot="header" 
+                                    :appid="dataset.prov.task.config._app" 
+                                    :branch="dataset.prov.task.service_branch||'master'" 
+                                    :clickable="false" 
+                                    @click.native="openapp(dataset.prov.task.config._app)">
+                                    <taskconfig style="margin: 10px;" :task="dataset.prov.task"/>
+                                </app>
+                                <br>
+                            </b-col>
+                        </b-row>
+                        <b-row v-if="resource">
+                            <b-col cols="3"><span class="form-header">Produced In</span></b-col>
+                            <b-col>
+                                <p title="resource._id">
+                                    <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>
+                                    {{resource.name}}
+                                    <small v-if="resource.desc">{{resource.desc}}</small>
+                                </p>
+                            </b-col>
+                        </b-row>                 
+                       <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.product">
+                            <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
+                            <b-col cols="9">
+                                <product :product="dataset.prov.task.product"/>
+                            </b-col>
+                        </b-row>
+
+                        <b-row>
+                            <b-col cols="3"><span class="form-header">Archived in</span></b-col>
                             <b-col>
                                 <p>
                                     <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
@@ -89,29 +126,6 @@
                                 </p>
                             </b-col>
                         </b-row>
-                        <b-row>
-                            <b-col cols="3"><span class="form-header">Datatype</span></b-col>
-                            <b-col>
-                                <datatype :datatype="dataset.datatype" :datatype_tags="dataset.datatype_tags"></datatype>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row v-if="task && task.config && task.config._app">
-                            <b-col cols="3"><span class="form-header">Produced by</span></b-col>
-                            <b-col>
-                                <app slot="header" :appid="task.config._app" :branch="task.service_branch||'master'" :clickable="false" @click.native="openapp(task.config._app)">
-                                    <!--TODO I should allow just passing this.task-->
-                                    <taskconfig style="margin: 10px;" :task="task"/>
-                                </app>
-                                <br>
-                            </b-col>
-                        </b-row>
-                        <b-row v-if="task && task.product">
-                            <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
-                            <b-col cols="9">
-                                <product :product="task.product"/>
-                            </b-col>
-                        </b-row>
                         <b-row v-if="config.user">
                             <b-col cols="3"><span class="form-header">Archived by</span></b-col>
                             <b-col>
@@ -121,14 +135,13 @@
                                 </p>
                             </b-col>
                         </b-row>
-
                         <b-row v-if="dataset.download_count > 0">
                             <b-col cols="3"><span class="form-header">Download Count</span></b-col>
                             <b-col>
                                 <p><b>{{dataset.download_count}}</b> times</p>
                                 <p>
                                     <small style="opacity: 0.8;">
-                                        Download this dataset via <a href="https://github.com/brain-life/cli" target="doc">Brainlife CLI</a>
+                                        You can download this dataset via <a href="https://github.com/brain-life/cli" target="doc">Brainlife CLI</a>
                                     </small>
                                     <pre>$ bl dataset download --id {{dataset._id}}</pre>
                                 </p>
@@ -232,10 +245,10 @@ export default {
     data () {
         return {
             dataset: null,
-
-            task: null, //task that produced this dataset (optional)
             apps: null,
             prov: null, 
+            
+            resource: null,
 
             tab_index: 0,
 
@@ -251,7 +264,6 @@ export default {
     created() {
         console.log("modal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", opt=>{
-            //console.log("requested to view", opt);
             this.back = opt.back;
             this.load(opt.id);
         });
@@ -290,7 +302,7 @@ export default {
     },
 
     methods: {
-        update_dataset: function(elem) {
+        update_dataset(elem) {
             if(debounce) clearTimeout(debounce);
             debounce = setTimeout(()=>{
                 this.$http.put(Vue.config.api+'/dataset/'+this.dataset._id, this.dataset).then(res=>{
@@ -299,7 +311,7 @@ export default {
             }, 500);
         },
 
-        load_prov: function() {
+        load_prov() {
             //load provenance
             this.$http.get('dataset/prov/'+this.dataset._id).then(res=>{
                 this.prov = res.body;
@@ -358,7 +370,7 @@ export default {
             });
         },
 
-        load_apps: function() {
+        load_apps() {
             console.log("looking for app that uses this data", this.dataset.datatype._id);
             this.$http.get('app', {params: {
                 "find": JSON.stringify({
@@ -373,24 +385,24 @@ export default {
             });
         },
 
-        close: function() {
+        close() {
             if(!this.dataset) return;
             this.$router.push(this.$route.path.replace(this.dataset._id, ""));
             this.dataset = null;
         },
 
-        openpub: function(pub) {
+        openpub(pub) {
             this.$router.push('/pub/'+pub._id);
             this.dataset = null;
         },
 
-        openapp: function(app_id) {
+        openapp(app_id) {
             if(!this.dataset) return;
             this.$router.push('/app/'+app_id);
             this.dataset = null;
         },
 
-        download: function() {
+        download() {
             this.check_agreements(this.dataset.project, ()=>{
                 var url = Vue.config.api+'/dataset/download/'+this.dataset._id;
                 if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
@@ -398,7 +410,7 @@ export default {
             });
         },
 
-        process: function() {
+        process() {
             this.check_agreements(this.dataset.project, ()=>{
                 this.$root.$emit('instanceselecter.open', opt=>{
                     if(opt.instance) {
@@ -406,7 +418,7 @@ export default {
                         this.submit_process(opt.project_id, opt.instance);
                     } else {
                         //need to create a new instance
-                        this.$http.post(Vue.config.wf_api+'/instance', {
+                        this.$http.post(Vue.config.amaretti_api+'/instance', {
                             desc: opt.desc,
                             config: {
                                 brainlife: true,
@@ -423,9 +435,9 @@ export default {
             });
         },
 
-        submit_process: function(project_id, instance) {
+        submit_process(project_id, instance) {
             console.log("submitting staging task", this.dataset);
-            this.$http.post(Vue.config.wf_api+'/task', {
+            this.$http.post(Vue.config.amaretti_api+'/task', {
                 instance_id: instance._id,
                 name: "Staged Datasets - "+this.dataset.datatype.name,
                 service: "soichih/sca-product-raw",
@@ -458,7 +470,7 @@ export default {
             });
         },
 
-        remove: function() {
+        remove() {
             if(confirm("Do you really want to remove this dataset?")) {
                 this.check_agreements(this.dataset.project, ()=>{
                     this.$http.delete('dataset/'+this.dataset._id)
@@ -469,7 +481,7 @@ export default {
             }
         },
 
-        load_status: function(id) {
+        load_status(id) {
             //console.log("loading dataset status");
             if(!this.dataset) return; //route changed before timeout was fired?
             this.$http.get('dataset', {params: {
@@ -491,18 +503,16 @@ export default {
             });
         },
 
-        load: function(id) {
+        load(id) {
             this.dataset = null;
             this.prov = null;
             this.apps = null;
+            this.resource = null;
             this.tab_index = 0;
-            this.task = null;
             this.alltags = null;
-            //this.derivatives = {}; //reset
 
             if(!id) return;
 
-            //console.log("modal/dataset.vue loading");
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
                 populate: "project datatype prov.deps.dataset publications",
@@ -520,16 +530,15 @@ export default {
                 Vue.set(this.dataset, '_tags_dirty',  false);
                 Vue.set(this.dataset, '_desc_dirty',  false);
 
-                //optionally, load task info
+                //old dataset that doesn't have prov.task.. need to deref
                 if(this.dataset.prov) {
-                    if(this.dataset.prov.task) {
-                        console.log("prov.task is set.. no need to load");
-                        this.task = this.dataset.prov.task;
-                    } else if(this.dataset.prov.task_id) {
-                        console.log("old dataset that doesn't have prov.task.. loading task..");
-                        this.$http.get(Vue.config.wf_api+'/task/'+this.dataset.prov.task_id).then(res=>{
-                            this.task = res.body;
+                    if(this.dataset.prov.task_id) {
+                        this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.prov.task_id).then(res=>{
+                            this.dataset.prov.task = res.body;
+                            this.load_resource();
                         });
+                    } else if(this.dataset.prov.task) {
+                        this.load_resource();
                     }
                 }
 
@@ -540,15 +549,26 @@ export default {
                 }});
             }).then(res=>{
                 this.alltags = res.body;
-                //console.log("done loading dataset details");
              }).catch(err=>{
                 console.error(err);
             });
         },
 
-        get_instance: function() {
+        load_resource() {
+            if(!this.dataset.prov || !this.dataset.prov.task) return;
+            this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
+                find: JSON.stringify({_id: this.dataset.prov.task.resource_id}),
+            }})
+            .then(res=>{
+                this.resource = res.body.resources[0];
+            }).catch(err=>{
+                console.error(err);
+            });;
+        },
+
+        get_instance() {
             //first create an instance to download things to
-            return this.$http.post(Vue.config.wf_api+'/instance', {
+            return this.$http.post(Vue.config.amaretti_api+'/instance', {
                 name: "brainlife.download",
                 config: {
                     selected: this.selected,
@@ -556,7 +576,7 @@ export default {
             }).then(res=>res.body);
         },
 
-        start_viewer: function(datatype_name) {
+        start_viewer(datatype_name) {
             this.check_agreements(this.dataset.project, ()=>{
                 //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
                 this.$root.$emit("viewselecter.open", {
@@ -567,10 +587,10 @@ export default {
             });
         },
 
-        create_view_task: function(cb) {
+        create_view_task(cb) {
             //first, query for the viewing task to see if it already exist
             var name = "brainlife.view "+this.dataset._id;
-            this.$http.get(Vue.config.wf_api+'/task', {params: {
+            this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({ name, status: { $ne: "removed" } })
             }})
             .then(res=>{
@@ -585,7 +605,6 @@ export default {
                         download.push({
                             url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
                             untar: "auto",
-                            //dir: "download/"+this.dataset._id, 
                             dir: "output",
                         });
 
@@ -593,11 +612,10 @@ export default {
                         var remove_date = new Date();
                         remove_date.setDate(remove_date.getDate()+2);
 
-                        return this.$http.post(Vue.config.wf_api+'/task', {
+                        return this.$http.post(Vue.config.amaretti_api+'/task', {
                             instance_id: download_instance._id,
                             name,
                             service: "soichih/sca-product-raw",
-                            //preferred_resource_id: resource,
                             config: { download },
                             remove_date: remove_date,
                         }).then(res=>res.body.task);
@@ -610,21 +628,15 @@ export default {
             });
         },
 
-        /*
-        openpub: function(pub) {
-            document.location = '/pub/'+pub._id;
-        },
-        */
-        
-        save_desc: function() {
+        save_desc() {
             this.update_dataset('desc');
             this.dataset._desc_dirty = false;
         },
-        save_tags: function() {
+        save_tags() {
             this.update_dataset('tags');
             this.dataset._tags_dirty = false;
         },
-        save_meta: function() {
+        save_meta() {
             try {
                 this.dataset.meta = JSON.parse(this.dataset._meta);
                 this.update_dataset('meta');
@@ -634,8 +646,7 @@ export default {
                 return;
             }
         },
-
-        editorInit: function() {
+        editorInit() {
             require('brace/mode/json')
             require('brace/theme/chrome')
         },

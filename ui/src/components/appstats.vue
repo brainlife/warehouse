@@ -25,7 +25,7 @@
     -->
     <b-col cols="2">
         <center>
-            <span class="stat">{{app.stats.service.counts.requested}}</span>
+            <span class="stat">{{app.stats.service.counts.requested||0}}</span>
             <p class="header">Total&nbsp;Runs</p>
         </center>
     </b-col>

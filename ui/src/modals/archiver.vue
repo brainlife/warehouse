@@ -9,8 +9,8 @@
             <projectselecter :required="true" :canwrite="true" v-model="project" placeholder="Project to archive this dataset to"/>
         </b-form-group>
 
-        <b-form-group label="User Tags (optional)">
-            <tageditor v-model="tags"/>
+        <b-form-group label="Dataset Tags">
+            <tageditor placeholder="optional" v-model="tags" :options="other_tags"/>
         </b-form-group>
 
         <b-form-group label="Metadata">
@@ -39,12 +39,23 @@ export default {
             project: null,
             task: null,
             output: null,
+
+            other_tags: [],
             tags: [],
 
             _meta: null,
 
             config: Vue.config,
         }
+    },
+
+    watch: {
+        output() {
+            this.load_tags();
+        },
+        project() {
+            this.load_tags();
+        },
     },
     
     created: function() {
@@ -55,18 +66,19 @@ export default {
             //add tags specified in task.product.tags to dataset tags
             this.tags = opt.output.tags||[];
             if(this.task.product && this.task.product.tags) {
-                //this.tags = this.task.product.tags;
                 this.task.product_tags.forEach(tag=>{
                     if(!~tags.indexOf(tag)) tags.push(tag);
                 });
             }
             this._meta = JSON.stringify(this.output.meta, null, 4);
+
+
             this.$refs.archiver.show();
         });
     },
 
     methods: {
-        submit: function(evt) {
+        submit(evt) {
             evt.preventDefault();
 
             //TODO - project should be a required field, but somehow form validation isn't fireing. 
@@ -108,10 +120,26 @@ export default {
                 this.$notify({text: err.body, type: "error"});
             });
         },
-        editorInit: function() {
+        editorInit() {
             require('brace/mode/json')
             require('brace/theme/chrome')
         },
+
+        load_tags() {
+            if(!this.project || !this.output) return;
+
+            //console.log("reloading tags", this.project, this.output.datatype);
+            //load dataset tags used on other datasets on this project
+            this.$http.get('dataset/distinct', {params: {
+                find: JSON.stringify({
+                    project: this.project,
+                    datatype: this.output.datatype,
+                }),
+                distinct: 'tags',
+            }}).then(res=>{
+                this.other_tags = res.body;
+            });
+        }
     },
 }
 </script>

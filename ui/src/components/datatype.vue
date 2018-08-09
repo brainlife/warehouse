@@ -1,17 +1,17 @@
 <template>
-<b-card v-if="datatype" style="margin-bottom: 5px">
-    <div slot="header">
-        <!--<b style="opacity: 0.5;">{{id}}</b>-->
+<div v-if="datatype" class="datatype">
+    <div class="header">
         <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id"/>
         <small class="text-muted">{{datatype.desc}}</small>
     </div>
-
-    <b-row>
-    <b-col cols="4" v-for="file in datatype.files" :key="file.id" :class="{'text-muted': !file.required}">
-        <datatypefile :file="file"/>
-    </b-col>
-    </b-row>
-</b-card>
+    <div class="body">
+        <b-row>
+            <b-col cols="4" v-for="file in datatype.files" :key="file.id" :class="{'text-muted': !file.required}">
+                <datatypefile :file="file"/>
+            </b-col>
+        </b-row>
+    </div>
+</div>
 </template>
 
 <script>
@@ -30,5 +30,18 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.datatype {
+box-shadow: 1px 1px 2px rgba(0,0,0,0.10);
+}
+.header {
+padding: 10px;
+}
+.body {
+padding: 10px;
+background-color: white;
+}
+</style>
 
 

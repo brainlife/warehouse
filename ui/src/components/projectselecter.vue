@@ -2,6 +2,7 @@
 <!--
 v-select has some issue with clicking scrollbar closing the select dropdown..
 https://github.com/sagalbot/vue-select/issues/474
+PR > https://github.com/sagalbot/vue-select/pull/373
 -->
 <div v-if="options">
     <b-alert show variant="danger" v-if="options.length == 0 && required">You don't have any project that you can select.</b-alert>

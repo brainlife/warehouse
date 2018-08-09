@@ -1,5 +1,5 @@
 <template>
-<div v-if="taskconfig">
+<div v-if="taskconfig && appconfig">
     <span style="opacity: 0.4;" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
     <table width="100%:">
         <tr v-for="(v,k) in taskconfig" :key="k" :class="{ default: is_default(k) }">
@@ -35,9 +35,8 @@ export default {
     },
     data() {
         return {
-            //task: null,    
             taskconfig: null,
-            appconfig: {},
+            appconfig: null,
 
             config: Vue.config,
         }
@@ -98,6 +97,10 @@ export default {
         },
         
         is_default: function(key) {
+            if(!this.appconfig[key]) {
+                console.log(key, "not found in ", this.appconfig);
+                return;
+            }
             return (this.appconfig[key].default == this.taskconfig[key]);
         },
 

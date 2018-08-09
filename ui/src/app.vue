@@ -194,17 +194,7 @@
                         </p>
                         <b-row>
                             <b-col cols="4" v-for="resource in resources" :key="resource._id">
-                                <div class="resource" v-b-popover="resource.info.desc+'\n\n'+resource.detail+'\nstatus:'+resource.status" :title="resource.id">
-                                    <icon name="server" scale="2" style="float: right; opacity: 0.5;"/>
-                                    <b>{{resource.name}}</b><br>
-                                    <small>{{resource.info.name}}</small>
-                                    <h5><b-badge pill variant="light">Score {{resource.score}}</b-badge></h5>
-                                    <div v-if="resource.status != 'ok'" class="resource-status bg-danger">Down</div>
-                                    <div v-else-if="resource.score == 0" class="resource-status bg-warning">Busy</div>
-                                    <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
-                                        <icon name="thumbs-up" style="position: relative; top: -3px;"/>
-                                    </div>
-                                </div>
+                                <availableresource :resource="resource" :preferred="preferred_resource"/>
                             </b-col>
                         </b-row>
                     </b-col>
@@ -302,6 +292,7 @@ import appsubmit from '@/components/appsubmit'
 import appstats from '@/components/appstats'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
+import availableresource from '@/components/availableresource'
 
 export default {
     components: { 
@@ -310,7 +301,7 @@ export default {
         VueMarkdown, statustag, 
         appsubmit, datatypetag, datatypefile,
         appstats, projectavatar,
-        doibadge, 
+        doibadge, availableresource,
      },
 
     data () {
@@ -496,28 +487,5 @@ margin-bottom: 5px;
 }
 .project-card:hover {
 background-color: #ddd;
-}
-.resource {
-background-color: white;
-box-shadow: 2px 2px 5px #ddd;
-padding: 10px;
-margin-bottom: 10px;
-position: relative;
-}
-.resource-status {
-position: absolute;
-bottom: -5px;
-right: -8px;
-font-size: 10pt;
-text-align: center;
-padding-top: 13px;
-color: white;
-text-transform: uppercase;
-background-color: gray;
-width: 50px;
-height: 50px;
-border-radius: 50px;
-border: 3px solid white;
-box-shadow: 1px 1px 5px #999;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-<div v-if="product && product.brainlife">
+<div v-if="product">
     <div v-for="alert in alerts">
         <b-alert v-if="alert.type == 'error'" variant="danger" show>{{alert.msg}}</b-alert>
         <b-alert v-else-if="alert.type == 'info'" variant="secondary" show>{{alert.msg}}</b-alert>
@@ -14,6 +14,10 @@
     <b-tabs class="brainlife-tab" v-model="plotidx">
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
             <vue-plotly :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true"/>
+        </b-tab>
+        <b-tab title="JSON" v-if="others != {}">
+            <pre v-if="Object.keys(others).length != 0" v-highlightjs="JSON.stringify(others, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
+
         </b-tab>
     </b-tabs>
 </div>
@@ -43,10 +47,17 @@ export default {
             return all;
         },
         alerts: function() {
+            if(!this.product.brainlife) return [];
             return this.product.brainlife.filter(p=>p.type != 'plotly'); //hacky..
         },
         plots: function() {
+            if(!this.product.brainlife) return [];
             return this.product.brainlife.filter(p=>p.type == 'plotly');
+        },
+        others: function() {
+            let others = Object.assign({}, this.product);
+            delete others.brainlife;
+            return others;
         },
     },
     methods: {
@@ -62,8 +73,11 @@ export default {
             //this resizes the graph, but somehow duplicates legend.. (waiting for it to be resolved)
             //https://github.com/statnett/vue-plotly/issues/6
             this.$nextTick(()=>{
+                if(!this.$refs.plotrefs) {
+                    console.log("plotrefs not set (yet?)");
+                    return;
+                }
                 let p = this.$refs.plotrefs[this.plotidx];
-                //if(p) p.relayout();
                 if(p) p.newPlot();
             });
         },
