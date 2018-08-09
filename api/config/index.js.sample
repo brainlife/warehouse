@@ -233,6 +233,7 @@ function connect_wrangler(cb) {
     console.log("open new wrangler sftp connection");
     var conn = new ssh2.Client();
     conn.on('ready', function() {
+        console.log("connected");
         conn.sftp((err, sftp)=>{
             if(err) return cb(err);
             wrangler_sftp = sftp;
@@ -355,6 +356,7 @@ exports.storage_systems.wrangler = {
             });
             stream.on('close', code=>{
                 //conn.end();
+                console.log("write stream closed");
             });
             cb(null, stream, dataset._id+".tar");
         });
