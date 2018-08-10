@@ -60,15 +60,23 @@ function run(cb) {
                         console.dir(stat);
                         //console.log("dataset size:"+dataset.size);
                         //console.log("stat.size:"+stat.size);
-                        if(dataset.size != stat.size) throw new Error("dataset size not the same");
-                        console.log("removing");
-                        config.storage_systems.jetstream.remove(dataset, err=>{
-                            if(err) throw err;
+                        //if(dataset.size != stat.size) throw new Error("dataset size not the same");
+                        if(dataset.size > stat.size) throw new Error("couldn't download all data");
+                        if(dataset.size < stat.size) {
+                            console.error("dataset.size is smaller than stat.size.. resetting dataset");
+                            dataset.size = stat.size;
+                        }
 
-                            console.log("saving");
-                            dataset.storage_config = undefined;
-                            dataset.storage = "wrangler";
-                            dataset.save(next_dataset);
+                        console.log("done copying.. updating dataset info");
+                        dataset.storage_config = undefined;
+                        dataset.storage = "wrangler";
+                        dataset.save(err=>{
+                            if(err) throw err;
+                            console.log("removing dataset from jetstream");
+                            config.storage_systems.jetstream.remove(dataset, err=>{
+                                if(err) throw err;
+                                next_dataset();
+                            });
                         });
                     }).catch(err=>{
                         throw err;
