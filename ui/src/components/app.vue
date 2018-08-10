@@ -112,7 +112,7 @@ box-shadow: 1px 1px 2px rgba(0,0,0,0.10);
 transition: box-shadow 0.3s;
 }
 .appcard:hover {
-box-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+box-shadow: 3px 3px 6px rgba(0,0,0,0.25);
 }
 
 .appcard.clickable:hover {

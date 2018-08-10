@@ -135,8 +135,8 @@ import agreementMixin from '@/mixins/agreement'
 
 const async = require('async');
 
-var query_debounce = null;
-var scroll_debounce = null;
+let query_debounce = null;
+let scroll_debounce = null;
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -230,7 +230,7 @@ export default {
     },
 
     created() {
-        //load all datatypes (TODO .. cache it?)
+        //loading the entire datatype...
         return this.$http.get('datatype')
         .then(res=>{
             this.datatypes = {};
@@ -349,17 +349,13 @@ export default {
             }
         },
 
-        change_query_debounce: function() {
+        change_query_debounce() {
             clearTimeout(query_debounce);
             query_debounce = setTimeout(this.change_query, 300);        
         },
 
-        change_query: function() {
-            //if already loading, then wait
-            if(this.loading) {
-                setTimeout(this.change_query, 300);
-                return;
-            }
+        change_query() {
+            if(this.loading) return setTimeout(this.change_query, 300);
             this.reload();
         },
 
@@ -382,10 +378,10 @@ export default {
                         if(this.datatypes[id].name.includes(q)) datatype_ids.push(id);
                     }
                     ands.push({$or: [
-                        {"meta.subject": {$regex: q}},
-                        {"desc": {$regex: q}},
-                        {"tags": {$regex: q}},
-                        {"datatype_tags": {$regex: q}},
+                        {"meta.subject": {$regex: q, $options: 'i'}},
+                        {"desc": {$regex: q, $options: 'i'}},
+                        {"tags": {$regex: q, $options: 'i'}},
+                        {"datatype_tags": {$regex: q, $options: 'i'}},
                         {"datatype": {$in: datatype_ids}},
                     ]});
                 });

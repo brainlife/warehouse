@@ -342,6 +342,12 @@ width: 6px;
 .js-plotly-plot .plotly .modebar {
 z-index: inherit;
 }
+::placeholder,
+.form-control::placeholder {
+color: black;
+opacity: 0.35;
+}
+
 </style>
 
 

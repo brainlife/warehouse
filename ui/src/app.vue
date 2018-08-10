@@ -392,14 +392,14 @@ export default {
          */
         trimGit: (text) => text.replace(/^[ \t]*(https?:\/\/)?github\.com\/?/g, ''),
         
-        go: function(path) {
+        go(path) {
             this.$router.push(path);
         },
-        go_github: function() {
+        go_github() {
             document.location = "https://github.com/"+this.app.github;
         },
         
-        find_resources: function(service) {
+        find_resources(service) {
             this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
                 service,
             }})
@@ -422,7 +422,7 @@ export default {
             prompt("The Badge Markdown", "[![brainlife.io/app](https://img.shields.io/badge/brainlife.io-app-green.svg)]("+this.selfurl+")");
         },
 
-        remove: function() {
+        remove() {
             if(confirm("Do you really want to remove this app ?")) {
                 this.$http.delete('app/'+this.app._id)
                 .then(res=>{
@@ -431,21 +431,11 @@ export default {
             }
         },
 
-        /*
-        ratechange: function() {
-            this.$http.post('app/'+this.app._id+'/rate', {
-                rate: this.app._rate,
-            }).then(res=>{
-                //console.dir(res.body);
-            });
-        },
-        */
-
-        bibtex: function() {
+        bibtex() {
             document.location = '/api/warehouse/app/bibtex/'+this.app._id;
         },
 
-        find_by_id: function(list, id) {
+        find_by_id(list, id) {
             var item = list.find(it=>it.id == id);
             if(!item) {
                 console.error("failed to find_by_id", id);
@@ -480,14 +470,6 @@ position: absolute;
 left: 0px;
 font-weight: bold;
 }
-/*
-.side-card {
-background-color: white;
-box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-padding: 15px 0px;
-margin: 15px 0px;
-}
-*/
 .project-card {
 cursor: pointer;
 background-color: white;
@@ -496,5 +478,28 @@ margin-bottom: 5px;
 }
 .project-card:hover {
 background-color: #ddd;
+}
+.resource {
+background-color: white;
+box-shadow: 2px 2px 5px #ddd;
+padding: 10px;
+margin-bottom: 10px;
+position: relative;
+}
+.resource-status {
+position: absolute;
+bottom: -5px;
+right: -8px;
+font-size: 10pt;
+text-align: center;
+padding-top: 13px;
+color: white;
+text-transform: uppercase;
+background-color: gray;
+width: 50px;
+height: 50px;
+border-radius: 50px;
+border: 3px solid white;
+box-shadow: 1px 1px 5px #999;
 }
 </style>

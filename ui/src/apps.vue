@@ -1,10 +1,7 @@
 <template>
 <div>
     <pageheader>
-        <!--pageheader slot-->
-        <!--
-        <el-input icon="search" v-model="query" placeholder="Search ..."></el-input>
-        -->
+        <!--TODO - should I show filter under pagehaeder?-->
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="group-list">
@@ -20,6 +17,11 @@
         </div>
     </div>
     <div class="page-content" v-on:scroll="update_active" ref="scrolled">
+        <div class="search-box">
+            <icon name="search" class="search-icon" scale="1.5"/>
+            <b-form-input v-model="query" type="text" placeholder="Search" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
+        </div>
+
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div v-else>
             <div v-for="tag in sorted_tags" :id="tag">
@@ -38,10 +40,15 @@
             -->
 
             <br>
-            <br>
+
+            <p style="padding: 20px 20px; opacity: 0.5; border-top: solid 1px #ddd;">
+                <span style="float: right">
+                    Showing {{count}} Apps
+                </span>
+            </p>
             <br>
 
-            <div style="background-color: #aaa; color: white;">
+            <div style="background-color: #ddd; color: #666;">
                 <h4 class="group-title" style="color: #ccc; background-color: #888;">Register New App</h4>
                 <div style="padding: 10px 20px;">
                     <p>Do you have a code that you'd like to publish on Brainlife?</p>
@@ -65,6 +72,8 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import app from '@/components/app'
 
+let query_debounce = null;
+
 export default {
     components: { sidemenu, pageheader, app },
     data () {
@@ -72,48 +81,112 @@ export default {
             active: null,
             sorted_tags: [], 
             app_groups: null,
+            count: null,  //number of total apps loaded
             query: "",
             config: Vue.config,
+
+            datatypes: null, //only loaded if search box is focused
         };
     },
 
     created: function() {
-        this.$http.get('app', {params: {
-            find: JSON.stringify({
-                $or: [
-                    { removed: false },
-                    { removed: {$exists: false }},
-                ]
-            }),
-            limit: 500, //TODO - paging?
-            populate: 'inputs.datatype outputs.datatype contributors',
-        }})
-        .then(res=>{
-            //organize apps into various tags
-            this.app_groups = {};
-            res.body.apps.forEach(app=>{
-                var tags = [ 'miscellaneous' ];
-                if(app.tags && app.tags.length > 0) tags = app.tags;
-                tags.forEach(tag=>{
-                    if(!this.app_groups[tag]) this.app_groups[tag] = [];
-                    if(!~this.sorted_tags.indexOf(tag)) this.sorted_tags.push(tag);
-                    this.app_groups[tag].push(app);
-                });
-            });
-            this.sorted_tags.sort();
+        this.load();
 
-            this.$nextTick(()=>{
-                if(document.location.hash) {
-                    this.jump(document.location.hash.substring(1));
-                }
-                this.update_active();
-            });
-        }, res=>{
-            console.error(res);
-        });
+
     },
 
     methods: {
+        focus_search() {
+            if(this.datatypes) return; //already loaded
+            return this.$http.get('datatype')
+            .then(res=>{
+                this.datatypes = {};
+                res.body.datatypes.forEach((d)=>{
+                    this.datatypes[d._id] = d;
+                });
+            }).catch(err=>{
+                console.error(err);
+            });
+        },
+
+        get_mongo_query() {
+			var finds = [
+                {removed: false},
+                {project: this.project._id},
+            ] 
+
+            return finds;
+        },
+
+        load() {
+            this.app_groups = null;
+            this.sorted_tags = [];
+
+            let ands = [
+                {$or: [
+                    { removed: false },
+                    { removed: {$exists: false }},
+                ]}
+            ];
+            if(this.query) {
+                //split query into each token and allow for regex search on each token
+                //so that we can query against multiple fields simultanously
+                this.query.split(" ").forEach(q=>{
+                    if(q === "") return;
+
+                    //lookup datatype ids that matches the query
+                    let datatype_ids = [];
+                    for(var id in this.datatypes) {
+                        if(this.datatypes[id].name.includes(q)) datatype_ids.push(id);
+                    }
+                    ands.push({$or: [
+                        {"name": {$regex: q, $options: 'i'}},
+                        {"github": {$regex: q, $options: 'i'}},
+                        {"github_branch": {$regex: q, $options: 'i'}},
+                        {"desc": {$regex: q, $options: 'i'}},
+                        {"desc_override": {$regex: q, $options: 'i'}},
+                        {"tags": {$regex: q, $options: 'i'}},
+
+                        {"inputs.datatype": {$in: datatype_ids}},
+                        {"inputs.datatype_tags": {$regex: q, $options: 'i'}},
+                        {"outputs.datatype": {$in: datatype_ids}},
+                        {"outputs.datatype_tags": {$regex: q, $options: 'i'}},
+                    ]});
+                });
+            }
+
+            this.$http.get('app', {params: {
+                find: JSON.stringify({$and: ands}),
+                limit: 1000, //TODO - use paging?
+                populate: 'inputs.datatype outputs.datatype contributors',
+            }})
+            .then(res=>{
+                this.count = res.body.count;
+
+                //organize apps into various tags
+                this.app_groups = {};
+                res.body.apps.forEach(app=>{
+                    var tags = [ 'miscellaneous' ];
+                    if(app.tags && app.tags.length > 0) tags = app.tags;
+                    tags.forEach(tag=>{
+                        if(!this.app_groups[tag]) this.app_groups[tag] = [];
+                        if(!~this.sorted_tags.indexOf(tag)) this.sorted_tags.push(tag);
+                        this.app_groups[tag].push(app);
+                    });
+                });
+                this.sorted_tags.sort();
+
+                this.$nextTick(()=>{
+                    if(document.location.hash) {
+                        this.jump(document.location.hash.substring(1));
+                    }
+                    this.update_active();
+                });
+            }, res=>{
+                console.error(res);
+            });
+        },
+
         go: function(path) {
             this.$router.push(path);
         },
@@ -121,14 +194,27 @@ export default {
             document.location="#"+tag;
         },
         update_active: function() {
-            //this.active = "test";
             var scrolltop = this.$refs.scrolled.scrollTop;
+            var height = this.$refs.scrolled.clientHeight;
             this.active = false;
             this.sorted_tags.forEach(tag=>{
                 var e = document.getElementById(tag);
-                if(e.offsetTop <= scrolltop) this.active = tag;
+                if(e.offsetTop-height/2 <= scrolltop) this.active = tag;
             });
         },
+
+        change_query_debounce() {
+            clearTimeout(query_debounce);
+            query_debounce = setTimeout(this.change_query, 300);        
+        },
+
+        change_query() {
+            if(this.loading || !this.datatypes) return setTimeout(this.change_query, 300);
+
+            document.location="#"; //clear hash
+            this.load();
+        },
+
     },
 }
 </script>
@@ -182,6 +268,33 @@ background-color: black;
 }
 .group-list .item.active {
 background-color: #007bff;
+}
+.search-box {
+padding: 15px 25px;
+position: relative;
+border-bottom: 1px solid #eee;
+background-color: white;
+}
+.search-box .input {
+font-size: 150%;
+padding: 20px;
+padding-left: 60px;
+opacity: 0.8;
+background-color: #eee;
+width: 70%;
+/*
+transition: width 0.5s;
+*/
+}
+/*
+.search-box .input:focus {
+width: 100%;
+}
+*/
+.search-box .search-icon {
+position: absolute;
+top: 25px;
+left: 45px;
 }
 </style>
 
