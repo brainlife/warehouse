@@ -194,8 +194,18 @@
                         </p>
                         <b-row>
                             <b-col cols="4" v-for="resource in resources" :key="resource._id">
-                                <availableresource :resource="resource" :preferred="preferred_resource"/>
-                            </b-col>
+                                <div class="resource" v-b-popover="resource.info.desc+'\n\n'+resource.detail+'\nstatus:'+resource.status" :title="resource.id">
+                                    <icon name="server" scale="2" style="float: right; opacity: 0.5;"/>
+                                    <b>{{resource.name}}</b><br>
+                                    <small>{{resource.info.name}}</small>
+                                    <h5><b-badge pill variant="light">Score {{resource.score}}</b-badge></h5>
+                                    <div v-if="resource.status != 'ok'" class="resource-status bg-danger">Down</div>
+                                    <div v-else-if="resource.score == 0" class="resource-status bg-warning">Busy</div>
+                                    <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
+                                        <icon name="thumbs-up" style="position: relative; top: -3px;"/>
+                                    </div>
+                                </div>
+			    </b-col>
                         </b-row>
                     </b-col>
                 </b-row>
@@ -292,7 +302,6 @@ import appsubmit from '@/components/appsubmit'
 import appstats from '@/components/appstats'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
-import availableresource from '@/components/availableresource'
 
 export default {
     components: { 
@@ -301,7 +310,7 @@ export default {
         VueMarkdown, statustag, 
         appsubmit, datatypetag, datatypefile,
         appstats, projectavatar,
-        doibadge, availableresource,
+        doibadge, 
      },
 
     data () {
