@@ -195,7 +195,7 @@ export default {
     },
 
     computed: {
-        views: function() {
+        views() {
             if(this.datatype_name) return this.list_views_single();
             if(this.datatype_names) return this.list_views_multi();
             return [];
@@ -203,7 +203,7 @@ export default {
     },
 
 	methods: {
-        list_views_single: function() {
+        list_views_single() {
             var views = [];
             views.push(this.view_catalog["raw"]); //everyone gets this by default
 
@@ -218,7 +218,7 @@ export default {
             return views;
         },
 
-        list_views_multi: function() {
+        list_views_multi() {
             var views = [];
             views.push(this.view_catalog["raw"]); //we can always use raw view
 
@@ -245,7 +245,7 @@ export default {
             return views;
         },
 
-        select: function(view) {
+        select(view) {
             this.$refs.modal.hide(); 
             if(this.task) this.openview(view, this.task, this.subdir);
             if(this.task_cb) this.task_cb(task=>{
@@ -253,8 +253,8 @@ export default {
             });
         },
 
-        openview: function(view, task, subdir) {
-            console.log("openview", view, task);
+        openview(view, task, subdir) {
+            //console.log("openview", view, task);
             let path;
             if(view.docker) {
                 path = "/novnc/"+task.instance_id+"/"+task._id+'/'+view.ui;

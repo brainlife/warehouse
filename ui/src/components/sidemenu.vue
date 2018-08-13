@@ -98,7 +98,7 @@ export default {
 
 <style scoped>
 li svg {
-margin: 0px 10px 0px 10px;
+margin: 0px 10px 10px 10px;
 }
 .sidemenu {
     position: fixed;
@@ -108,7 +108,7 @@ margin: 0px 10px 0px 10px;
     bottom: 0px;
     background-color: #222;
     color: #888;
-    font-size: 9pt;
+    font-size: 8pt;
     z-index: 5;
 }
 ul.items {
@@ -123,16 +123,16 @@ ul.items li {
     transition: background-color 0.2s, color 0.2s;
     padding-left: 4px;
 }
+ul.items li:hover {
+    background-color: #1c1c1c;
+    color: white;
+    cursor: pointer;
+}
 ul.items li.active {
     padding-left: 0px;
     color: white;
     border-left: 4px solid #007bff;
-    background-color: #1c1c1c;
-}
-ul.items li:hover {
     background-color: #444;
-    color: white;
-    cursor: pointer;
 }
 ul.items li.divider {
     border-bottom: 1px solid #444;

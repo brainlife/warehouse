@@ -182,12 +182,13 @@ new Vue({
             this.refresh_jwt();
         });
 
-        await this.refresh_jwt();
-        this.load_profile();
+        this.refresh_jwt(err=>{
+            this.load_profile();
+        });
     },
 
     methods: {
-        async refresh_jwt() {
+        refresh_jwt(cb) {
             if(!Vue.config.jwt) {
                 console.log("no jwt.. not refreshing");
                 return;
@@ -198,33 +199,31 @@ new Vue({
                 return;
             }
 
-            try {
-		console.log("attemping to refresh token");
-                let res = await this.$http.post(Vue.config.auth_api+"/refresh");
-		if(!res.body.jwt) console.log("token refresh didn't work.. resetting jwt");
-		console.dir(res.body);
+            console.log("attemping to refresh token");
+            this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{
+                if(!res.body.jwt) console.log("token refresh didn't work.. resetting jwt");
+                console.dir(res.body);
                 jwt_decode_brainlife(res.body.jwt);
                 localStorage.setItem("jwt", res.body.jwt);
-            } catch (err) {
-		console.error("failed to referesh token - removing jwt");
+                if(cb) cb();
+            }).catch(err=>{
+                console.error("failed to referesh token - removing jwt");
                 console.error(err); 
-		   
-		//on firebox, above post call fails (with valid jwt?) and ends up firing jwt remove..
-		//let's disable this until I find out what's going on..
-                //localStorage.removeItem("jwt");
-                //document.location = Vue.config.auth_signin;
-            }
+
+                //token refresh randomely failing on firefox?
+                localStorage.removeItem("jwt");
+                document.location = Vue.config.auth_signin;
+            });
         },
 
-        async load_profile() {
-	    if(!Vue.config.jwt) return;
-            try {
-                let res = await this.$http.get(Vue.config.profile_api+"/private");
+        load_profile() {
+            if(!Vue.config.jwt) return;
+            this.$http.get(Vue.config.profile_api+"/private").then(res=>{
                 Vue.config.profile = res.body;
                 console.dir(Vue.config.profile);
-            } catch (err) {
+            }).catch(err=>{
                 console.error(err); 
-            }
+            });
         },
     },
 })
