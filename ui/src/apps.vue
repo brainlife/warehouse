@@ -282,15 +282,16 @@ padding-left: 60px;
 opacity: 0.8;
 background-color: #eee;
 width: 70%;
+transition: background-color 0.5s;
 /*
 transition: width 0.5s;
 */
 }
-/*
+
 .search-box .input:focus {
-width: 100%;
+background-color: white;
 }
-*/
+
 .search-box .search-icon {
 position: absolute;
 top: 25px;

@@ -299,9 +299,9 @@ export default {
             console.log("listen to all dataset change enent under this project", this.project._id);
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             if(this.ws) this.ws.close();
-            this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
+            this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("binding to dataset updates for project:", this.project._id);
+                //console.log("binding to dataset updates for project:", this.project._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse.dataset",

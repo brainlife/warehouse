@@ -172,49 +172,52 @@ new Vue({
     template: '<warehouse/>',
     components: { warehouse },
 
-    mounted() {
+    async mounted() {
         console.log("starting jwt token interval");
         setInterval(()=>{
             this.refresh_jwt();
         }, 1000*3600); //every 1hour?
 
-        //refresh immediately (on page reload)
-        this.refresh_jwt();
-        
-        this.load_profile();
-
         this.$on("refresh_jwt", ()=>{
             this.refresh_jwt();
         });
+
+        await this.refresh_jwt();
+        this.load_profile();
     },
 
     methods: {
-        refresh_jwt: async function() {
-
+        async refresh_jwt() {
             if(!Vue.config.jwt) {
                 console.log("no jwt.. not refreshing");
                 return;
             }
+
             if(Vue.config.debug) {
                 console.log("not refreshing token.. as this is running in debug mode");
                 return;
             }
 
             try {
+		console.log("attemping to refresh token");
                 let res = await this.$http.post(Vue.config.auth_api+"/refresh");
+		if(!res.body.jwt) console.log("token refresh didn't work.. resetting jwt");
+		console.dir(res.body);
                 jwt_decode_brainlife(res.body.jwt);
                 localStorage.setItem("jwt", res.body.jwt);
-
-                console.dir(Vue.config);
             } catch (err) {
+		console.error("failed to referesh token - removing jwt");
                 console.error(err); 
-                localStorage.removeItem("jwt");
-                document.location = Vue.config.auth_signin;
+		   
+		//on firebox, above post call fails (with valid jwt?) and ends up firing jwt remove..
+		//let's disable this until I find out what's going on..
+                //localStorage.removeItem("jwt");
+                //document.location = Vue.config.auth_signin;
             }
         },
 
-        load_profile: async function() {
-            if(!Vue.config.jwt) return;
+        async load_profile() {
+	    if(!Vue.config.jwt) return;
             try {
                 let res = await this.$http.get(Vue.config.profile_api+"/private");
                 Vue.config.profile = res.body;

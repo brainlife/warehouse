@@ -283,7 +283,7 @@ export default {
     
     watch: {
         tab_index: function() {
-            console.log("tab_index changed", this.prov);
+            //console.log("tab_index changed", this.prov);
             if(this.tab_index == 1 && this.prov == null) {
                 this.load_prov();
             }
@@ -315,7 +315,7 @@ export default {
             //load provenance
             this.$http.get('dataset/prov/'+this.dataset._id).then(res=>{
                 this.prov = res.body;
-                console.log("loaded provenance", this.prov);
+                //console.log("loaded provenance", this.prov);
 
                 //apply styles
                 this.prov.nodes.forEach(node=>{
@@ -436,7 +436,7 @@ export default {
         },
 
         submit_process(project_id, instance) {
-            console.log("submitting staging task", this.dataset);
+            //console.log("submitting staging task", this.dataset);
             this.$http.post(Vue.config.amaretti_api+'/task', {
                 instance_id: instance._id,
                 name: "Staged Datasets - "+this.dataset.datatype.name,
@@ -621,7 +621,7 @@ export default {
                         }).then(res=>res.body.task);
                         return this.stage_selected(download_instance);
                     }).then(task=>{
-                        console.log("created task", task); 
+                        //console.log("created task", task); 
                         cb(task);
                     }).catch(console.error);
                 }
