@@ -29,6 +29,7 @@
                     <div class="datatype" v-for="output in app_.outputs" :key="'output.'+output.id">
                         <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                     </div>
+                    <span style="opacity: 0.7" v-if="app_.outputs.length == 0">(no output)</span>
                 </div>
             </div>
             <div class="desc">{{app_.desc_override||app_.desc||'no description..'}}</div>

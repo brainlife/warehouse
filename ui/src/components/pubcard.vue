@@ -14,16 +14,15 @@
                     <b-badge  v-if="pub.removed" variant="danger">Removed</b-badge>
                     <!--<small>{{pub.project.name}} <icon name="arrow-right"/></small>-->{{pub.name}}
                 </h5>
-                <p class="text">{{pub.desc}}</p>
+                <p style="opacity: 0.7;">{{pub.desc}}</p>
                 <div style="line-height: 200%;">
                     <b-badge v-for="tag in pub.tags" :key="tag" class="topic">{{tag}}</b-badge>
                 </div>
             </div>
         </div>
         <div v-if="!compact" style="clear: both; background-color: #f0f0f0; opacity: 0.8;">
-            <hr>
-            <div style="margin-left: 100px; padding-bottom: 15px;">
-                <b class="text-muted">Authors</b> <contact v-for="contact in pub.authors" :key="contact.id" :fullname="contact.fullname" :email="contact.email"></contact>
+            <div style="margin-left: 100px; padding-bottom: 15px; margin-top: 10px; padding-top: 10px;">
+                <b style="opacity: 0.6; margin-right: 20px;">Authors</b> <contact v-for="contact in pub.authors" :key="contact.id" :fullname="contact.fullname" :email="contact.email"></contact>
                 <!--
                 <p>
                     <b class="text-muted">Published On </b> {{new Date(pub.create_date).toLocaleDateString()}}
@@ -60,8 +59,8 @@ export default {
 
 <style scoped>
 .pubcard {
-transition: box-shadow 0.5s, background-color 0.5s;
-box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+box-shadow: 1px 1px 2px rgba(0,0,0,0.10);
+transition: box-shadow 0.3s;
 }
 h4 {
 font-size: 15px;
@@ -72,7 +71,7 @@ background-color: white;
 }
 .pubcard.clickable:hover {
 cursor: pointer;
-box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+box-shadow: 3px 3px 6px rgba(0,0,0,0.25);
 }
 .name {
 color: #666;
