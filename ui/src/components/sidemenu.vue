@@ -98,7 +98,8 @@ export default {
 
 <style scoped>
 li svg {
-margin: 0px 10px 10px 10px;
+margin: 10px;
+margin-top: 0px;
 }
 .sidemenu {
     position: fixed;
@@ -119,7 +120,7 @@ ul.items {
 ul.items li {
     text-align: center;
     margin: 0px;
-    padding: 7px 0px;
+    padding: 10px 0px;
     transition: background-color 0.2s, color 0.2s;
     padding-left: 4px;
 }
@@ -129,10 +130,10 @@ ul.items li:hover {
     cursor: pointer;
 }
 ul.items li.active {
-    padding-left: 0px;
     color: white;
+    background-color: #222;
     border-left: 4px solid #007bff;
-    background-color: #444;
+    padding-left: 0px;
 }
 ul.items li.divider {
     border-bottom: 1px solid #444;

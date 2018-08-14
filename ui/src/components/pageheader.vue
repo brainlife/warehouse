@@ -25,7 +25,7 @@
         <b-nav-item v-if="!config.user" @click="signup">Sign Up</b-nav-item>
     </b-nav>
 
-    <span class="title" @click="gohome">Brain Life</span>
+    <span class="title" @click="gohome">BrainLife</span>
     <div class="slot"><slot/></div>
 </div>
 </template>
@@ -33,7 +33,6 @@
 <script>
 import Vue from 'vue'
 import md5 from 'md5'
-
 
 export default {
     components: { },
@@ -126,8 +125,8 @@ svg.cloud {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 20pt;
     position: relative;
-    top: 5px;
-    margin-left: 23px;
+    top: 3px;
+    margin-left: 15px;
     margin-right: 20px;
     font-weight: bold;
 }

@@ -1,7 +1,10 @@
 <template>
 <div>
     <pageheader>
-        <!--TODO - should I show filter under pagehaeder?-->
+        <div class="search-box">
+            <icon name="search" class="search-icon" scale="1.5"/>
+            <b-form-input v-model="query" type="text" placeholder="Search" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
+        </div>
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="group-list">
@@ -17,11 +20,6 @@
         </div>
     </div>
     <div class="page-content" v-on:scroll="update_active" ref="scrolled">
-        <div class="search-box">
-            <icon name="search" class="search-icon" scale="1.5"/>
-            <b-form-input v-model="query" type="text" placeholder="Search" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
-        </div>
-
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div v-else>
             <div v-for="tag in sorted_tags" :id="tag">
@@ -270,32 +268,36 @@ background-color: black;
 background-color: #007bff;
 }
 .search-box {
-padding: 15px 25px;
-position: relative;
-border-bottom: 1px solid #eee;
-background-color: white;
+padding-left: 130px;
+position: fixed;
+top: 6px;
 }
 .search-box .input {
-font-size: 150%;
-padding: 20px;
-padding-left: 60px;
-opacity: 0.8;
-background-color: #eee;
-width: 70%;
-transition: background-color 0.5s;
+font-size: 140%;
+padding-left: 50px;
+background-color: #fff9;
+border: none;
 /*
-transition: width 0.5s;
+transition: width 0.3s;
+width: 140px;
 */
+width: 100%;
+color: #444;
 }
 
-.search-box .input:focus {
-background-color: white;
+.search-box .input:focus,
+.search-box .input.active {
+width: 100%;
 }
 
 .search-box .search-icon {
+color: white;
+opacity: 0.8;
 position: absolute;
-top: 25px;
-left: 45px;
+top: 7px;
+left: 145px;
+z-index: -1;
 }
+
 </style>
 

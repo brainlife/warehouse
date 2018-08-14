@@ -1,7 +1,9 @@
 <template>
 <div>
     <pageheader>
+        <!--
         <b-input v-model="query" placeholder="Search ..."/>
+        -->
     </pageheader>
     <sidemenu active="/pubs"></sidemenu>
     <div class="page-content">
@@ -29,7 +31,7 @@ export default {
         return {
             pubs: [],
             config: Vue.config,
-            query: "",
+            //query: "",
         }
     },
 
