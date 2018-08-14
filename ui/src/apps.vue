@@ -275,7 +275,7 @@ top: 6px;
 .search-box .input {
 font-size: 140%;
 padding-left: 50px;
-background-color: #fff9;
+background-color: #fff6;
 border: none;
 /*
 transition: width 0.3s;
@@ -297,6 +297,10 @@ position: absolute;
 top: 7px;
 left: 145px;
 z-index: -1;
+}
+.search-box .input::placeholder {
+color: white;
+font-weight: bold;
 }
 
 </style>
