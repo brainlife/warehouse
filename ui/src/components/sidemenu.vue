@@ -5,43 +5,38 @@
         <li v-if="config.debug" 
             @click="go('/dashboard')"
             :class="{active: active == '/dashboard'}">
-            <icon name="tachometer-alt" scale="2"></icon><br>Dashboard
+            <icon name="tachometer-alt" scale="2"></icon>
+            <h5>Dashboard</h5>
         </li>
         <li v-if="config.debug" class="divider"></li>
 
         <!-- for everyone -->
         <li @click="go('/apps')"
             :class="{active: active == '/apps'}" >
-            <icon name="th-large" scale="2" ></icon><br>Apps
+            <icon name="th-large" scale="2" ></icon>
+            <h5>Apps</h5>
         </li>
         <li @click="go('/pubs');"
             :class="{active: active == '/pubs'}">
-            <icon name="book" scale="2"></icon><br>Publications
+            <icon name="book" scale="2"></icon>
+            <h5>Publications</h5>
+        </li>
 
         <!-- only for authenticated users -->
         <li v-if="config.user" @click="go('/project')"
             :class="{active: active == '/projects'}">
-            <icon name="shield-alt" scale="2"></icon><br>Projects
+            <icon name="shield-alt" scale="2"></icon>
+            <h5>Projects</h5>
         </li>
-        <!--
-        <li v-if="config.user" @click="go('/datasets')"
-            :class="{active: active == '/datasets'}">
-            <icon name="cubes" scale="2"></icon><br>Dataset
-        </li>
-        -->
-        <!--deprecated
-        <li v-if="config.user" @click="go('/processes')"
-            :class="{active: active == '/processes'}">
-            <icon name="paper-plane" scale="2"></icon><br>Process
-        </li>
-        -->
         <li v-if="config.user && config.debug" @click="go('/datatypes')"
             :class="{active: active == '/datatypes'}">
-            <icon name="cube" scale="2"></icon><br>Datatypes
+            <icon name="cube" scale="2"></icon>
+            <h5>Datatypes</h5>
         </li>
         
         <li v-if="config.user" @click="setting">
-            <icon name="cog" scale="2"></icon><br>Settings
+            <icon name="cog" scale="2"></icon>
+            <h5>Settings</h5>
         </li>
     </ul>
 
@@ -50,7 +45,8 @@
         <li class="divider"></li>
         <li @click="go('/admin')"
             :class="{active: active == '/admin'}">
-            <icon name="wrench" scale="2"></icon><br>Admin
+            <icon name="wrench" scale="2"></icon>
+            <h5>Admin</h5>
         </li>
     </ul>
 </div>
@@ -124,16 +120,27 @@ ul.items li {
     transition: background-color 0.2s, color 0.2s;
     padding-left: 4px;
 }
+h5 {
+    font-size: 8pt;
+    transition: color 0.2s;
+    color: #444;
+}
 ul.items li:hover {
     background-color: #1c1c1c;
     color: white;
     cursor: pointer;
+}
+ul.items li:hover h5 {
+    color: white;
 }
 ul.items li.active {
     color: white;
     background-color: #222;
     border-left: 4px solid #007bff;
     padding-left: 0px;
+}
+ul.items li.active h5 {
+    color: white;
 }
 ul.items li.divider {
     border-bottom: 1px solid #444;
