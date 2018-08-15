@@ -233,7 +233,6 @@ border-bottom: 3px solid #aaa;
 .brainlife-tab .nav-tabs {
 padding-top: 10px;
 border: none;
-height: 50px;
 background-color: white;
 }
 
