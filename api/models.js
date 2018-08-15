@@ -191,7 +191,7 @@ var datasetSchema = mongoose.Schema({
 
     //not set if user uploaded it. 
     prov: {
-        task: mongoose.Schema.Types.Mixed, //task document at the timme of archival
+        task: mongoose.Schema.Types.Mixed, //task document at the time of archival
 
         instance_id: String,  //deprecated by prov.task.instance_id
         task_id: String, //deprecated by prov.task._id

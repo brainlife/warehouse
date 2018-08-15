@@ -76,12 +76,12 @@ router.get('/', (req, res, next)=>{
 /**
  * @apiGroup Publications
  * @api {get} /pub/datasets-inventory/:pubid
- *                              Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:pubid to get the actual list of datasets for each subject / datatypes / etc..
- *
- * @apiSuccess {Object}         Object containing counts
- * 
+ *              Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:pubid to 
+ *              get the actual list of datasets for each subject / datatypes / etc..
+ * @apiSuccess {Object}         
+ *              Object containing counts
  */
-//similar code in dataset.js
+//WARNING: similar code in dataset.js
 router.get('/datasets-inventory/:pubid', (req, res, next)=>{
     db.Datasets.aggregate()
     .match({ publications: mongoose.Types.ObjectId(req.params.pubid) })
@@ -94,7 +94,6 @@ router.get('/datasets-inventory/:pubid', (req, res, next)=>{
     });
 });
 
-//we no longer set prov.app. this API no longer works
 /**
  * @apiGroup Publications
  * @api {get} /pub/apps/:pubid
@@ -103,12 +102,11 @@ router.get('/datasets-inventory/:pubid', (req, res, next)=>{
  * @apiSuccess {Object[]}       Application objects
  * 
  */
-/*
 router.get('/apps/:pubid', (req, res, next)=>{
     db.Datasets.find({
         publications: mongoose.Types.ObjectId(req.params.pubid) 
     })
-    .distinct("prov.app")
+    .distinct("prov.task.config._app")
     .exec((err, app_ids)=>{
         if(err) return next(err);
         db.Apps.find({
@@ -122,7 +120,6 @@ router.get('/apps/:pubid', (req, res, next)=>{
         });
     });
 });
-*/
 
 /**
  * @apiGroup Publications
