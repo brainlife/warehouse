@@ -194,10 +194,12 @@ new Vue({
                 return;
             }
 
+            /*
             if(Vue.config.debug) {
                 console.log("not refreshing token.. as this is running in debug mode");
                 return;
             }
+            */
 
             console.log("attemping to refresh token");
             this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{

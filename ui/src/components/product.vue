@@ -15,9 +15,8 @@
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
             <vue-plotly :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true"/>
         </b-tab>
-        <b-tab title="JSON" v-if="others != {}">
-            <pre v-if="Object.keys(others).length != 0" v-highlightjs="JSON.stringify(others, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
-
+        <b-tab title="JSON" v-if="Object.keys(others).length > 0">
+            <pre v-highlightjs="JSON.stringify(others, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
         </b-tab>
     </b-tabs>
 </div>

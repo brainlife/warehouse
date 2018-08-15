@@ -88,7 +88,7 @@
                         <b-row v-if="resource">
                             <b-col cols="3"><span class="form-header">Produced In</span></b-col>
                             <b-col>
-                                <p title="resource._id">
+                                <p :title="resource._id">
                                     <icon name="server" style="opacity: 0.5; margin-right: 7px;"/>
                                     {{resource.name}}
                                     <small v-if="resource.desc">{{resource.desc}}</small>
