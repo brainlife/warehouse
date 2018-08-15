@@ -1,7 +1,7 @@
 <template>
 <div class="pageheader" :style="styles">
     <b-nav class="nav">
-        <b-nav-item @click="doc">Documentation</b-nav-item>
+        <b-nav-item @click="doc"><icon name="book"/></b-nav-item>
         <!--
         <b-nav-item-dropdown text="Support">
             <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
@@ -136,11 +136,10 @@ svg.cloud {
 }
 
 .slot {
-    /*margin-left: 155px;*/
     margin-top: 7px;
     display: inline-block;
 }
-@media screen and (max-width: 850px) {
+@media screen and (max-width: 950px) {
     .slot {
         display: none;
     }

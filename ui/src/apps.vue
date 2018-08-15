@@ -271,16 +271,13 @@ background-color: #007bff;
 padding-left: 130px;
 position: fixed;
 top: 6px;
+width: 495px;
 }
 .search-box .input {
 font-size: 140%;
 padding-left: 50px;
 background-color: #fff9;
 border: none;
-/*
-transition: width 0.3s;
-width: 140px;
-*/
 width: 100%;
 color: #444;
 }
