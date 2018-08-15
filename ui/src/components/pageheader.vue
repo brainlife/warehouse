@@ -1,7 +1,7 @@
 <template>
 <div class="pageheader" :style="styles">
     <b-nav class="nav">
-        <b-nav-item @click="doc">Documentation</b-nav-item>
+        <b-nav-item @click="doc"><icon name="book"/></b-nav-item>
         <!--
         <b-nav-item-dropdown text="Support">
             <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
@@ -25,7 +25,7 @@
         <b-nav-item v-if="!config.user" @click="signup">Sign Up</b-nav-item>
     </b-nav>
 
-    <span class="title" @click="gohome">Brain Life</span>
+    <span class="title" @click="gohome">BrainLife</span>
     <div class="slot"><slot/></div>
 </div>
 </template>
@@ -33,7 +33,6 @@
 <script>
 import Vue from 'vue'
 import md5 from 'md5'
-
 
 export default {
     components: { },
@@ -126,8 +125,8 @@ svg.cloud {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 20pt;
     position: relative;
-    top: 5px;
-    margin-left: 23px;
+    top: 3px;
+    margin-left: 15px;
     margin-right: 20px;
     font-weight: bold;
 }
@@ -137,11 +136,10 @@ svg.cloud {
 }
 
 .slot {
-    /*margin-left: 155px;*/
     margin-top: 7px;
     display: inline-block;
 }
-@media screen and (max-width: 850px) {
+@media screen and (max-width: 950px) {
     .slot {
         display: none;
     }

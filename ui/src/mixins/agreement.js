@@ -9,7 +9,7 @@ export default {
         }
     },
     created: function() {
-        console.log("mixin/agreement created");
+        //console.log("mixin/agreement created");
         this.load_agreement();
         this.$root.$on("agreements.updated", (id, b)=>{
             Vue.set(this.user_agreements, id, b);
@@ -18,7 +18,7 @@ export default {
 
     methods: {
         load_agreement: async function() {
-            console.log("loading agreement ui");
+            //console.log("loading agreement ui");
             let agreements = await this.get_user_agreements();
             for(let id in agreements) {
                 Vue.set(this.user_agreements, id, agreements[id]);
@@ -35,7 +35,7 @@ export default {
                 if(!Vue.config.jwt) return resolve(agreements);
 
                 //load from profile service
-                console.log("loading private profile");
+                //console.log("loading private profile");
                 this.$http.get(Vue.config.profile_api+"/private").then(res=>{
                     resolve(res.body.agreements||{});
                 }).catch(reject);
@@ -49,12 +49,12 @@ export default {
             let agreed = true;
             project.agreements.forEach(agreement=>{
                 if(!user_agreements[agreement._id]) {
-                    console.log(agreement._id, "not agreed");
+                    //console.log(agreement._id, "not agreed");
                     agreed = false;
                 }
             });
             if(agreed) return cb();
-            console.log("need to agree...");
+            //console.log("need to agree...");
             this.$root.$emit("agreements.open", {project, cb});
         }
     }

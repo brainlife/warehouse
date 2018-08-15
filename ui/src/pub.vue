@@ -48,6 +48,7 @@
                             </b-col>
                             <b-col>
                                 <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
+                                <br>
                             </b-col>
                         </b-row>                         
                         <b-row>
@@ -58,6 +59,7 @@
                                 <p v-for="contact in pub.authors" :key="contact._id">
                                     <contact :fullname="contact.fullname" :email="contact.email"></contact>
                                 </p>
+                                <br>
                             </b-col>
                         </b-row>
                         <b-row v-if="pub.readme">
@@ -66,6 +68,7 @@
                             </b-col>
                             <b-col>
                                 <vue-markdown :source="pub.readme" class="readme"></vue-markdown>
+                                <br>
                             </b-col>
                         </b-row>  
                         <b-row v-if="pub.contributors.length > 0">
@@ -76,6 +79,7 @@
                                 <p v-for="contact in pub.contributors" :key="contact._id">
                                     <contact :fullname="contact.fullname" :email="contact.email"></contact>
                                 </p>
+                                <br>
                             </b-col>
                         </b-row>
              
@@ -102,7 +106,6 @@
                                     </b-tabs>
                                 </b-card>
                                 <br>
-
                             </b-col>
                        </b-row>  
 
@@ -120,6 +123,7 @@
                                         {{funding.id}}
                                     </li>
                                 </ul>
+
                             </b-col>
                         </b-row>
                         <b-row>
@@ -145,6 +149,7 @@
                                 <p><small class="text-muted">This publication was created from the following project.</small></p>
                                 <projectcard :project="pub.project"/>
                                 -->
+                                <br>
                             </b-col>
                         </b-row>
                         <b-row>
