@@ -29,7 +29,7 @@
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Details"/>
                     <b-tab title="Datasets"/>
-                    <!--<b-tab title="Apps"/>-->
+                    <b-tab title="Apps"/>
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -209,64 +209,59 @@
                     </div>
                     <div v-if="tab_index == 1">
                         <!-- datasets -->
-                        <h6>
-                            <b>{{ds.subjects}}</b> <span class="text-muted">Subjects</span> |
+                        <p>
+                            <b>{{ds.subjects}}</b> <span class="text-muted">Subjects</span> <span style="opacity: 0.2">|</span>
                             <b>{{ds.count}}</b> <span class="text-muted">Datasets</span>
                             (<b>{{ds.size | filesize}}</b>)
-                        </h6>
-                        <br>
+                        </p>
 
-                        <b-list-group>
-                            <b-list-group-item v-for="(group, subject) in dataset_groups" :key="subject">
-                                <b-row>
-                                    <b-col cols="2">
-                                        <b>{{subject}}</b>
-                                    </b-col>
-                                    <b-col>
-                                        <div v-for="(datatype, datatype_id) in group.datatypes" :key="datatype_id">
-                                            <b-row v-for="(block, datatype_tags_s) in datatype.datatype_tags" :key="datatype_tags_s" style="margin-bottom: 3px;">
-                                                <div @click="toggle(block, subject, datatype_id, JSON.parse(datatype_tags_s))" class="toggler">
-                                                    <div style="width: 20px; display: inline-block;" class="text-muted">
-                                                        <icon name="caret-right" v-if="!block.show"/> 
-                                                        <icon name="caret-down" v-if="block.show"/> 
-                                                    </div>
-                                                    <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)"/>
-                                                    &nbsp;
-                                                    <span class="text-muted">{{datatypes[datatype_id].desc}}</span>
-                                                    <small class="text-muted" style="float: right;">{{block.count}} datasets {{block.size|filesize}}</small>
+                        <div class="group" v-for="(group, subject) in dataset_groups" :key="subject">
+                            <b-row>
+                                <b-col cols="2">
+                                    <b>{{subject}}</b>
+                                </b-col>
+                                <b-col>
+                                    <div v-for="(datatype, datatype_id) in group.datatypes" :key="datatype_id">
+                                        <b-row v-for="(block, datatype_tags_s) in datatype.datatype_tags" :key="datatype_tags_s" style="margin-bottom: 3px;">
+                                            <div @click="toggle(block, subject, datatype_id, JSON.parse(datatype_tags_s))" class="toggler">
+                                                <div style="width: 20px; display: inline-block;" class="text-muted">
+                                                    <icon name="caret-right" v-if="!block.show"/> 
+                                                    <icon name="caret-down" v-if="block.show"/> 
                                                 </div>
-                                                <transition name="fadeHeight">
-                                                    <b-list-group class="datasets" v-if="block.show && block.datasets">
-                                                        <b-list-group-item v-for="(dataset, idx) in block.datasets" :key="idx" class="dataset" @click="download(dataset._id)">
-                                                            {{dataset.desc}}
-                                                            <span v-if="!dataset.desc" class="text-muted">{{dataset._id}}.tar.gz</span>
-                                                            <tags :tags="dataset.tags"/>
-                                                            <div style="float: right; width: 90px; text-align: right">{{new Date(dataset.create_date).toLocaleDateString()}}</div>
-                                                            <div style="float: right; width: 90px;"><span v-if="dataset.size" class="text-muted">{{dataset.size|filesize}}</span>&nbsp;</div>
-                                                            <div style="float: right; width: 90px;"><span v-if="dataset.download_count" class="text-muted"><icon name="download"/> {{dataset.download_count}} times</span>&nbsp;</div>
-                                                            <!--<td>{{dataset.storage}}</td>-->
-                                                        </b-list-group-item>
-                                                    </b-list-group>
-                                                </transition>
-                                            </b-row>
-                                        </div>
-                                    </b-col>
-                                </b-row>
-                            </b-list-group-item>
-                        </b-list-group>
-                            
+                                                <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)"/>
+                                                &nbsp;
+                                                <span class="text-muted">{{datatypes[datatype_id].desc}}</span>
+                                                <small class="text-muted" style="float: right;">{{block.count}} datasets {{block.size|filesize}}</small>
+                                            </div>
+                                            <transition name="fadeHeight">
+                                                <b-list-group class="datasets" v-if="block.show && block.datasets">
+                                                    <b-list-group-item v-for="(dataset, idx) in block.datasets" :key="idx" class="dataset" @click="view(dataset._id)">
+                                                        {{dataset.desc}}
+                                                        <span v-if="!dataset.desc" class="text-muted">{{dataset._id}}.tar.gz</span>
+                                                        <tags :tags="dataset.tags"/>
+                                                        <div style="float: right; width: 90px; text-align: right">{{new Date(dataset.create_date).toLocaleDateString()}}</div>
+                                                        <div style="float: right; width: 90px;"><span v-if="dataset.size" class="text-muted">{{dataset.size|filesize}}</span>&nbsp;</div>
+                                                        <div style="float: right; width: 90px;"><span v-if="dataset.download_count" class="text-muted"><icon name="download"/> {{dataset.download_count}} times</span>&nbsp;</div>
+                                                        <!--<td>{{dataset.storage}}</td>-->
+                                                    </b-list-group-item>
+                                                </b-list-group>
+                                            </transition>
+                                        </b-row>
+                                    </div>
+                                </b-col>
+                            </b-row>
+                        </div>
                     </div>
                     
-                    <!--
                     <div v-if="tab_index == 2">
-                        <p class="text-muted">Following applications are used to generate published datasets.</p>
+                        <p class="text-muted">Following Apps are used to generate published datasets.</p>
                         <b-row>
-                            <b-col cols="6" v-for="app in apps" :key="app._id" style="margin-bottom: 10px;">
-                                <app :app="app" height="250px" :compact="true"></app>
+                            <b-col cols="6" v-for="rec in apps" :key="rec.app._id" style="margin-bottom: 10px;">
+                                <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
+                                <div class="button" style="float: right;" @click="download_app(rec.service, rec.service_branch)"><icon name="download"/></div>
                             </b-col>
                         </b-row>
                     </div>
-                    -->
                 </b-col>
             </b-row>
         </b-container>
@@ -400,7 +395,6 @@ export default {
             });
             this.dataset_groups = groups;
 
-/*
             //load apps
             return this.$http.get('pub/apps/'+this.$route.params.id, {params: {
                 //populate: 'inputs.datatype outputs.datatype contributors',
@@ -408,7 +402,12 @@ export default {
         })
         .then(res=>{
             this.apps = res.body;
-*/
+
+            //open dataset previously selected
+            if(document.location.hash) {
+                let id = document.location.hash.substring(1);
+                this.$root.$emit('dataset.view', {id});
+            }
 
             Vue.nextTick(()=>{
                 //re-initialize altmetric badge - now that we have badge <div> placed
@@ -419,32 +418,16 @@ export default {
     },
     
     methods: {
-        download: function(id) {
-            //document.location = Vue.config.api+'/dataset/download/'+id;
+        view(id) {
+            document.location.hash = id;
             this.$root.$emit('dataset.view', {id});
         },
 
-        /*
-        load_page: function() {
-            this.$http.get('pub/datasets/'+this.$route.params.id, {params: {
-                //find: JSON.stringify({_id: this.$route.params.id}),
-                //populate: 'project',
-                sort: 'meta.subject datatype tags',
-                skip: this.datasets_perpage*(this.datasets_page-1),
-                //limit: this.datasets_perpage,
-                limit: 5000,
-            }}).then(res=>{
-                this.datasets = res.body.datasets;
-                this.datasets_count = res.body.count;
-            }).catch(console.error);
-        },
-        */
-
-        openproject: function(project_id) {
+        openproject(project_id) {
             this.$router.push('/project/'+project_id);
         },
 
-        toggle: function(block, subject, datatype, datatype_tags) {
+        toggle(block, subject, datatype, datatype_tags) {
             block.show = !block.show;
             if(!block.datasets) {
                 //load datasets
@@ -462,7 +445,12 @@ export default {
                     block.datasets = res.body.datasets;
                 }).catch(console.error);
             }
-        }
+        },
+
+        download_app(service, branch) {
+            if(!branch) branch = "master";
+            document.location = "https://github.com/"+service+"/archive/"+branch+".zip";
+        },
     }
 }
 </script>
@@ -524,8 +512,10 @@ display: inline-block;
 padding: 3px 5px;
 }
 .datasets {
-margin: 5px;
 width: 100%;
+margin-top: 5px;
+margin-bottom: 5px;
+margin-left: 28px;
 box-shadow: 2px 2px 2px #ddd;
 }
 .dataset:hover {
@@ -533,7 +523,7 @@ cursor: pointer;
 background-color: #f7f7f7;
 }
 .toggler {
-padding: 1px 5px;
+padding: 4px;
 width: 100%;
 }
 .toggler:hover {
@@ -553,6 +543,11 @@ max-height: 0px;
 }
 .project h5 {
 color: #007bff;
+}
+.group {
+margin-top: 10px;
+padding-top: 10px;
+border-top: 1px solid #eee;
 }
 </style>
 
