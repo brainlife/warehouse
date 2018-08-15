@@ -1,16 +1,13 @@
-//node
 const fs = require('fs');
 const path = require('path');
-
-//contrib
 const express = require('express');
 const bodyParser = require('body-parser');
 const winston = require('winston');
 const expressWinston = require('express-winston');
 const compression = require('compression');
 const cors = require('cors');
+const nocache = require('nocache');
 
-//mine
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
@@ -20,6 +17,7 @@ const db = require('./models');
 const app = express();
 app.use(cors());
 app.use(compression());
+app.use(nocache());
 
 //parse application/json
 app.use(bodyParser.json({limit: '2mb'}));  //default is 100kb
