@@ -103,12 +103,48 @@ router.get('/datasets-inventory/:pubid', (req, res, next)=>{
  * 
  */
 router.get('/apps/:pubid', (req, res, next)=>{
+    /*
     db.Datasets.find({
         publications: mongoose.Types.ObjectId(req.params.pubid) 
     })
     .distinct("prov.task.config._app")
-    .exec((err, app_ids)=>{
+    */
+    db.Datasets.aggregate([
+        {$match: {
+            publications: mongoose.Types.ObjectId(req.params.pubid) 
+        }},
+        {$group: {
+            _id: {
+                app: "$prov.task.config._app",
+                service: "$prov.task.service",
+                service_branch: "$prov.task.service_branch",
+            }
+        }},
+
+        //cleanup result
+        {$project: {
+            _id: 0, 
+            app: "$_id.app", 
+            service: "$_id.service",
+            service_branch: "$_id.service_branch",
+        }},
+
+        /* doesn't work..
+        {$lookup: {
+            from: "app",
+            localField: "app",
+            foreignField: "_id",
+            as: "appp",
+        }},
+        */
+    ])
+    .exec((err, recs)=>{
         if(err) return next(err);
+        
+        //now populate apps
+        let app_ids = [];
+        recs.forEach(rec=>{ if(rec.app) app_ids.push(rec.app);});
+
         db.Apps.find({
             _id: {$in: app_ids},
             projects: [], //only show *public* apps
@@ -116,7 +152,22 @@ router.get('/apps/:pubid', (req, res, next)=>{
         .populate(req.query.populate || '')
         .exec((err, apps)=>{
             if(err) return next(err);
-            res.json(apps);
+
+            //make it easier to lookup apps
+            let app_obj = {};
+            apps.forEach(app=>{
+                app_obj[app._id] = app;
+            });
+
+            //populate on recs
+            let populated = [];
+            recs.forEach(rec=>{
+                if(rec.app) {
+                    rec.app = app_obj[rec.app];
+                    populated.push(rec);
+                }
+            });
+            res.json(populated);
         });
     });
 });
