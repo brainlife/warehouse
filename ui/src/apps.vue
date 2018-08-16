@@ -10,7 +10,7 @@
     <div class="group-list">
         <h4>Categories</h4>
         <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)">
-            {{tag}}
+            {{tag}} <b-badge variant="dark">{{app_groups[tag].length}}</b-badge>
         </p>
         <br>
         <div style="position: fixed; bottom: 0px;">
@@ -235,14 +235,14 @@ width: 350px;
 float: left;
 }
 .page-content {
-margin-left: 200px;
+margin-left: 240px;
 }
 .group-list {
 position: fixed;
 top: 50px;
 bottom: 0px;
-left: 90px;
-width: 200px;
+left: 50px;
+width: 240px;
 background-color: #444;
 }
 .group-list h4 {

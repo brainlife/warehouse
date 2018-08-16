@@ -146,12 +146,10 @@ export default {
 
 <style scoped>
 .graph {
+background-color: #333;
 position: fixed;
 top: 50px;
-left: 90px;
-right: 0px;
 bottom: 0px;
-background-color: #333;
 }
 </style>
 

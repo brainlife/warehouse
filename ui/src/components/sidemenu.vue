@@ -4,39 +4,33 @@
         <!-- currently being developped -->
         <li v-if="config.debug" 
             @click="go('/dashboard')"
-            :class="{active: active == '/dashboard'}">
-            <icon name="tachometer-alt" scale="2"></icon>
-            <h5>Dashboard</h5>
+            :class="{active: active == '/dashboard'}" v-b-popover.hover="'Your homepage for Brainlife'" title="Dashboard">
+            <icon name="tachometer-alt" scale="1.3"/>
         </li>
         <li v-if="config.debug" class="divider"></li>
 
         <!-- for everyone -->
         <li @click="go('/apps')"
-            :class="{active: active == '/apps'}" >
-            <icon name="th-large" scale="2" ></icon>
-            <h5>Apps</h5>
+            :class="{active: active == '/apps'}" v-b-popover.hover="'A list of registered Apps that you can execute.'" title="Apps">
+            <icon name="th-large" scale="1.3" ></icon>
         </li>
         <li @click="go('/pubs');"
-            :class="{active: active == '/pubs'}">
-            <icon name="book" scale="2"></icon>
-            <h5>Publications</h5>
+            :class="{active: active == '/pubs'}" v-b-popover.hover="'A list of registered publications with links to datasets, apps, and DOI.'" title="Publications">
+            <icon name="book" scale="1.3"></icon>
         </li>
 
         <!-- only for authenticated users -->
         <li v-if="config.user" @click="go('/project')"
-            :class="{active: active == '/projects'}">
-            <icon name="shield-alt" scale="2"></icon>
-            <h5>Projects</h5>
+            :class="{active: active == '/projects'}" v-b-popover.hover="'Project is where you can upload / archive your dataset and run Apps.'" title="Projects">
+            <icon name="shield-alt" scale="1.3"></icon>
         </li>
         <li v-if="config.user && config.debug" @click="go('/datatypes')"
-            :class="{active: active == '/datatypes'}">
-            <icon name="cube" scale="2"></icon>
-            <h5>Datatypes</h5>
+            :class="{active: active == '/datatypes'}" v-b-popover.hover="'A list of registered datatypes that you can use as input/output for your Apps.'" title="Datatypes">
+            <icon name="cube" scale="1.3"></icon>
         </li>
         
         <li v-if="config.user" @click="setting">
-            <icon name="cog" scale="2"></icon>
-            <h5>Settings</h5>
+            <icon name="cog" scale="1.3" v-b-popover.hover="'Configure your account, profile and other details.'" title="Settings"></icon>
         </li>
     </ul>
 
@@ -44,9 +38,15 @@
     <ul class="items" v-if="is_admin">
         <li class="divider"></li>
         <li @click="go('/admin')"
-            :class="{active: active == '/admin'}">
+            :class="{active: active == '/admin'}" v-b-popover.hover="'Admin Only'" title="Administration">
             <icon name="wrench" scale="2"></icon>
-            <h5>Admin</h5>
+        </li>
+    </ul>
+
+    <!--bottom-->
+    <ul class="items items-bottom">
+        <li @click="doc">
+            <icon name="book" scale="1.3" v-b-popover.hover="'Open Brainlife documentation'" title="Documentation"></icon>
         </li>
     </ul>
 </div>
@@ -77,11 +77,14 @@ export default {
         }
     },
     methods: {
-        setting: function() {
+        setting() {
             window.open("/auth/#!/settings/account", "_blank");
         },
-        go: function(page) {
+        go(page) {
             this.$router.push(page);
+        },
+        doc() {
+            window.open("https://brain-life.github.io/docs/", "brainlife doc");
         },
         /*
         goraw: function(url) {
@@ -93,60 +96,50 @@ export default {
 </script>
 
 <style scoped>
-li svg {
-margin: 10px;
-margin-top: 0px;
-}
 .sidemenu {
     position: fixed;
     top: 50px;
     left: 0px;
-    width: 90px;
+    width: 50px;
     bottom: 0px;
     background-color: #222;
     color: #888;
     font-size: 8pt;
-    z-index: 5;
 }
-ul.items {
+.items {
     list-style: none;
     margin: 0px;
-    padding: 0px;
+    padding: 5px 0px;
 }
-ul.items li {
+.items li {
     text-align: center;
     margin: 0px;
     padding: 10px 0px;
     transition: background-color 0.2s, color 0.2s;
-    padding-left: 4px;
+    padding-left: 3px;
 }
-h5 {
-    font-size: 8pt;
-    transition: color 0.2s;
-    color: #444;
-}
-ul.items li:hover {
+.items li:hover {
     background-color: #1c1c1c;
     color: white;
     cursor: pointer;
 }
-ul.items li:hover h5 {
-    color: white;
-}
-ul.items li.active {
+.items li.active {
     color: white;
     background-color: #222;
-    border-left: 4px solid #007bff;
+    border-left: 3px solid #007bff;
     padding-left: 0px;
 }
-ul.items li.active h5 {
-    color: white;
-}
-ul.items li.divider {
+.items li.divider {
     border-bottom: 1px solid #444;
     padding: 0px;
     margin: 0px;
     padding-top: 5px;
     margin-bottom: 5px;
+}
+.items-bottom {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    width: 50px;
 }
 </style>

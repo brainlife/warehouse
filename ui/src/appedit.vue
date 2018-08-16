@@ -15,7 +15,7 @@
         </div>
     </div>
 
-    <div class="main-section" v-if="ready">
+    <div class="page-content" v-if="ready">
         <b-form @submit="submit" class="container">
             <!--
             <p v-if="$route.params.id == '_'">
@@ -869,7 +869,7 @@ export default {
 .fixed-top {
 position: fixed;
 top: 50px;
-left: 90px;
+left: 50px;
 right: 0px;
 height: 80px;
 z-index: 1;
@@ -882,13 +882,8 @@ border-bottom: 1px solid #ddd;
 padding-bottom: 10px;
 margin-bottom: 15px;
 }
-.main-section {
-position: fixed;
-left: 90px;
-right: 0px;
+.page-content {
 top: 130px;
-bottom: 0px;
-overflow: auto;
 }
 
 .file-map {

@@ -453,7 +453,6 @@ background-color: white;
 margin-bottom: 30px;
 padding: 30px 0px 0px 0px;
 border-bottom: 1px solid #ccc;
-/*position: sticky; top: -190px;  //don't know the exact height of the area..*/
 z-index: 2;
 }
 .topic {

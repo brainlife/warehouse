@@ -27,7 +27,7 @@
                 </div>
             </div>
             <hr>
-            <div class="form-action">
+            <div class="page-header form-action">
                 <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
                 <button type="button" class="btn btn-primary" @click="page++">Next</button>
             </div>
@@ -203,12 +203,10 @@ opacity: 0.8;
 }
 .form-action {
 text-align: right; 
-position: fixed; 
-right: 0px; 
-left: 350px; 
 bottom: 0px; 
 padding: 10px 30px;
 background-color: rgba(100,100,100,0.4);
+overflow: hidden;
 }
 </style>
 

@@ -1,9 +1,8 @@
 <template>
 <div class="projectmenu">
-    <p class="header">Projects</p>
     <p class="group-header">
-        <icon name="caret-down" scale="1"></icon>&nbsp;
-        Private <icon name="lock"></icon> 
+        <icon name="caret-down"></icon>&nbsp;
+        Private <icon name="lock" scale="0.8"></icon> 
     </p>
     <div class="project" v-for="project in sorted_projects('private')" :id="project._id" :key="project._id"
         @click="change(project)" :class="{listonly: islistonly(project), active: project._id == active}">
@@ -15,8 +14,8 @@
     </div>
 
     <p class="group-header">
-        <icon name="caret-down" scale="1"></icon>&nbsp;
-        Public
+        <icon name="caret-down"></icon>&nbsp;
+        Public 
     </p>
     <div class="project" v-for="project in sorted_projects('public')" :id="project._id" :key="project._id"
         @click="change(project)" :class="{active: project._id == active}">
@@ -67,7 +66,6 @@ export default {
     mounted () {
         this.ps = new PerfectScrollbar(this.$el);
         this.scroll_to_active();
-        //console.dir(this.projects);
     },
 
     destroyed() {
@@ -129,10 +127,11 @@ export default {
     position: fixed;
     top: 50px;
     bottom: 0px;
-    width: 260px;
+    width: 280px;
     background-color: #444;
     color: white;
-    left: 90px;
+    left: 50px;
+    transition: 0.2s width;
 }
 .header {
     font-size: 18px;
@@ -150,11 +149,11 @@ export default {
 }
 .name {
     font-size: 13px;
-    margin-bottom: 3px;
+    margin-bottom: 5px;
 }
 .project {
     margin: 0px;
-    padding: 10px 15px;
+    padding: 7px 15px;
     transition: background-color 0.4s;
 }
 .project:hover {
@@ -187,8 +186,27 @@ opacity: 1;
 .projectavatar {
 opacity: 1;
 position: relative;
-top: -3px;
 left: -3px;
+}
+
+@media screen and (max-width: 850px) {
+    .projectmenu {
+        width: 150px;
+    }
+    .desc {
+        display: none;
+    }
+    .name {
+        font-size: 11px;
+    }
+    .project {
+        margin: 0px;
+        padding: 5px 10px;
+        transition: background-color 0.4s;
+    }
+    .group-header {
+        padding: 5px 10px;
+    }
 }
 </style>
 

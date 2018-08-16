@@ -247,7 +247,7 @@ export default {
 .main-section {
 position: fixed;
 padding: 20px;
-left: 90px;
+left: 50px;
 right: 0px;
 top: 130px;
 bottom: 0px;
@@ -258,7 +258,7 @@ background-color: white;
 padding: 20px;
 position: fixed;
 top: 50px;
-left: 90px;
+left: 50px;
 right: 0px;
 height: 80px;
 z-index: 1;
@@ -268,7 +268,7 @@ border-bottom: 1px solid #eee;
 text-align: right;
 position: fixed;
 right: 0px;
-left: 90px;
+left: 50px;
 bottom: 0px;
 padding: 10px 30px;
 background-color: rgba(100,100,100,0.4);

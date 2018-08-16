@@ -1,17 +1,21 @@
 <template>
 <div class="pageheader" :style="styles">
     <b-nav class="nav">
+        <!--
         <b-nav-item @click="doc"><icon name="book"/></b-nav-item>
+        -->
         <!--
         <b-nav-item-dropdown text="Support">
             <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
             <b-dropdown-item @click="reportbug">Report Issues / Feature Requests</b-dropdown-item>
         </b-nav-item-dropdown>
         -->
+        <!--
         <b-nav-item-dropdown v-if="config.user" text="New">
             <b-dropdown-item @click="go('/app/_/edit')">App</b-dropdown-item>
             <b-dropdown-item @click="go('/project/_/edit')">Project</b-dropdown-item>
         </b-nav-item-dropdown>
+        -->
         <b-nav-item-dropdown v-if="config.user">
             <span slot="button-content">
                 <img :src="gurl">
@@ -71,9 +75,6 @@ export default {
         },
         signout() {
             document.location = "/auth#!/signout";
-        },
-        doc() {
-            window.open("https://brain-life.github.io/docs/", "brainlife doc");
         },
         reportbug() {
             window.open("https://github.com/brain-life/warehouse/issues", "github");
@@ -139,12 +140,12 @@ svg.cloud {
     margin-top: 7px;
     display: inline-block;
 }
-@media screen and (max-width: 950px) {
+@media screen and (max-width: 850px) {
     .slot {
         display: none;
     }
 }
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 400px) {
      .nav {
         display: none;
     }

@@ -1,27 +1,27 @@
 <template>
 <div>
     <div :class="{rightopen: selected_count}">
-        <div class="page-header">
+        <div class="page-header with-menu">
             <div style="float: right; position: relative; top: -3px;">
                 <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
             </div>
-            <div style="margin-top: 2px;">
+            <div style="margin-top: 4px;">
                 <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
             </div>
         </div>
 
-        <div class="page-content">
+        <div class="page-content with-menu">
             <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <b-row class="list-header">
                 <b-col cols="2"><h4>Subject</h4></b-col>
                 <!--everything under subject is grouped, thus a odd layout-->
-                <b-col>
+                <b-col cols="10">
                     <b-row>
-                        <b-col><h4>Datatype</h4></b-col>
-                        <b-col><h4>Description</h4></b-col>
-                        <b-col><h4>Create&nbsp;Date</h4></b-col>
-                        <b-col><h4>Tags</h4></b-col>
+                        <b-col cols="3"><h4>Datatype</h4></b-col>
+                        <b-col cols="3"><h4>Description</h4></b-col>
+                        <b-col cols="3"><h4>Create&nbsp;Date</h4></b-col>
+                        <b-col cols="3"><h4>Tags</h4></b-col>
                     </b-row>
                 </b-col>
             </b-row>
@@ -38,12 +38,12 @@
                         <b-col cols="2">
                             <strong>{{subject}}</strong>
                         </b-col>
-                        <b-col>
+                        <b-col cols="10">
                             <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
-                                <div class="row" v-if="!dataset.removed">
-                                    <div class="col-md-3 truncate">
+                                <b-row v-if="!dataset.removed">
+                                    <b-col cols="3" class="truncate">
                                         <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
-                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"></datatypetag>
+                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
                                         <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
@@ -52,17 +52,17 @@
                                             <icon name="book" scale="0.8"/>
                                             <small v-if="dataset.publications.length > 1">{{dataset.publications.length}}</small>
                                         </span>
-                                    </div>
-                                    <div class="col-md-3 truncate">
+                                    </b-col>
+                                    <b-col cols="3" class="truncate">
                                         {{dataset.desc||'&nbsp;'}}
-                                    </div>
-                                    <div class="col-md-3 truncate">
+                                    </b-col>
+                                    <b-col cols="3" class="truncate">
                                         <time>{{new Date(dataset.create_date).toLocaleString()}}</time>
-                                    </div>
-                                    <div class="col-md-3 truncate">
+                                    </b-col>
+                                    <b-col cols="3" class="truncate">
                                         <tags :tags="dataset.tags"></tags> &nbsp;
-                                    </div>
-                                </div>
+                                    </b-col>
+                                </b-row>
                                 <!--<p v-else>Removed</p>-->
                             </div>
                         </b-col>
@@ -808,39 +808,20 @@ export default {
 <style scoped>
 
 .page-header {
-position: fixed;
-top: 100px;
-left: 350px;
+margin-top: 50px;
+background-color: #f9f9f9;
 padding: 10px;
-right: 15px;
-height: 45px;
 color: #999;
-z-index: 1;
+overflow: hidden;
 }
 
 .page-content {
-position: fixed;
 margin-top: 50px;
-left: 350px;
-padding-left: 10px;
-right: 0;
-/*
-overflow-y: hidden;
-padding-right: 14px;
-background-color: white;
-*/
 }
-/*
-.page-content::-webkit-scrollbar {
-width: 30px;
-overflow-y: scroll;
-}
-*/
-.page-content:hover {
-/*
-padding-right: 0px;
-*/
-overflow-y: visible;
+
+.page-header,
+.page-content {
+min-width: 450px;
 }
 
 h4 {
@@ -861,6 +842,7 @@ transition: right 0.2s, bottom 0.2s;
 top: 95px;
 overflow-x: hidden;
 font-size: 12px;
+padding-left: 10px;
 }
 
 .rightopen .page-content,
@@ -972,7 +954,7 @@ width: 100%;
 }
 .list-header {
 opacity: 0.4;
-padding-top: 5px;
+padding-top: 8px;
 text-transform: uppercase;
 }
 .row {

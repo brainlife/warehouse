@@ -1,17 +1,17 @@
 <template>
 <div v-if="pubs">
-    <div class="page-header">
+    <div class="page-header with-menu">
         <div style="margin-top: 2px; margin-left: 10px;">
             <b>{{pubs.length}}</b> Publications
         </div>
     </div>
-    <div class="page-content">
-        <div v-if="publishing">
-            <h3 style="opacity: 0.7">New Publication</h3>
+    <div class="page-content with-menu">
+        <div v-if="publishing" style="background-color: white; padding: 20px;">
+            <h3 style="opacity: 0.7;">New Publication</h3>
             <publisher :project="project" @close="publishing = false" @submit="publish"/>
         </div>
-        <div v-else-if="pub_editing">
-            <h3 style="opacity: 0.7">{{pub_editing.doi||pub_editing._id+' (no doi)'}}</h3>
+        <div v-else-if="pub_editing" style="background-color: white; padding: 20px;">
+            <h3 style="opacity: 0.7;">{{pub_editing.doi||pub_editing._id+' (no doi)'}}</h3>
             <b-tabs class="brainlife-tab">
                 <br>
                 <b-tab title="Details">
@@ -187,34 +187,31 @@ export default {
 </script>
 
 <style scoped>
-
 .page-header {
-position: fixed;
 top: 100px;
-left: 350px;
-padding: 10px;
-width: 300px;
-height: 45px;
+padding: 6px 10px;
 color: #999;
-z-index: 1;
+background-color: #f9f9f9;
+z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 }
-
 .page-content {
-position: fixed;
-top: 100px;
-left: 350px;
-bottom: 0px;
-right: 0px;
-overflow: auto;
-padding: 20px;
-margin-top: 45px;
-background-color: white;
+top: 135px;
 }
 
+.page-header, 
+.page-content {
+min-width: 500px;
+}
+
+.pub:first-child {
+margin-top: 2px;
+}
 .pub {
 padding: 5px 15px;
+margin: 0px 20px;
 background-color: white;
 box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+font-size: 88%;
 }
 .pub.pub-editable {
 cursor: pointer;

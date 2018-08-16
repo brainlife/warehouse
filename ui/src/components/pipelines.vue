@@ -1,11 +1,11 @@
 <template>
 <div v-if="ready">
-    <div class="page-header">
+    <div class="page-header with-menu">
         <div style="margin-top: 2px; margin-left: 10px;">
             <b>{{rules.length}}</b> Pipeline Rules
         </div>
     </div>
-    <div class="page-content" ref="scrolled">
+    <div class="page-content with-menu" ref="scrolled">
         <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
         <div v-else>
             <!--list view-->
@@ -16,11 +16,11 @@
 
             <div v-for="rule in rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-active': selected == rule}" class="rule" v-if="rule.removed == false">
                 <div class="rule-header" @click="toggle(rule)">
-                    <div style="float: right; width: 130px; text-align: right">
+                    <div style="float: right; width: 130px; text-align: right;">
                         <timeago :since="rule.create_date" :auto-update="10"/>
                     </div>
                     <div style="float: right; width: 150px;">
-                        <contact :id="rule.user_id" size="small" style=""/>
+                        <contact :id="rule.user_id" size="tiny"/>
                     </div>
                     <div class="rule-controls" style="float: right;">
                         <div class="button" @click.stop="edit(rule)" v-if="ismember() || isadmin()"><icon name="edit"/></div>
@@ -70,10 +70,7 @@
                             <span v-if="rule.input_project_override && rule.input_project_override[input.id] && projects[rule.input_project_override[input.id]]" class="text-muted">
                                 From <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
                             </span>
-                            <!--<span class="text-muted" v-if="input.optional">(optional)</span>-->
                             <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
-
-                            <!--<small>({{input_matches[input.id]}} subjects match)</small>-->
                         </p>
                     </div>
 
@@ -85,8 +82,6 @@
                             <span v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">
                                 <small class="text-muted">with dataset tags of</small> <tags :tags="rule.output_tags[output.id]"/>
                             </span>
-
-                            <!--<small>({{output_matches[output.id]}} subjects match)</small>-->
                         </p>
                     </div>
 
@@ -341,7 +336,7 @@ transition: margin 0.2s;
 background-color: white;
 }
 .rule:first-child {
-margin-top: 20px;
+margin-top: 2px;
 }
 
 .rule.rule-active {
@@ -352,6 +347,7 @@ cursor: pointer;
 transition: background-color 0.3s;
 padding: 10px;
 padding-top: 5px;
+font-size: 88%;
 }
 .rule-header:hover {
 cursor: pointer;
@@ -384,11 +380,12 @@ padding: 20px;
   opacity: 0;
 }
 
+/*
 .page-header {
 cursor: pointer;
 position: fixed;
 top: 100px;
-left: 350px;
+left: 330px;
 padding: 10px;
 width: 300px;
 height: 45px;
@@ -399,7 +396,7 @@ z-index: 1;
 .page-content {
 position: fixed;
 top: 100px;
-left: 350px;
+left: 330px;
 bottom: 0px;
 right: 0px;
 overflow: auto;
@@ -407,6 +404,23 @@ overflow-x: hidden;
 margin-top: 45px;
 background-color: white;
 }
+*/
+.page-header {
+top: 100px;
+padding: 6px 10px;
+color: #999;
+background-color: #f9f9f9;
+z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
+}
+.page-content {
+top: 135px;
+}
+
+.page-header, 
+.page-content {
+min-width: 500px;
+}
+
 
 .pub {
 padding: 5px 15px;

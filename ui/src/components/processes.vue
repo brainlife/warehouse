@@ -1,11 +1,11 @@
 <template>
 <div v-if="instances" class="processes">
-    <div class="page-header">
-        <div style="margin-top: 2px; margin-left: 10px; display: inline-block;">
+    <div class="page-header with-menu">
+        <div style="margin-top: 5px; margin-left: 10px; display: inline-block;">
             <b>{{instances.length}}</b> Processes
         </div>
 
-        <div v-if="instances.length > 1" style="float: right; position: relative; top: -3px;"> 
+        <div v-if="instances.length > 1" style="float: right;"> 
             <div style="display: inline-block; margin-right: 10px;">
                 <small>Show</small>
                 <div class="status-toggler">
@@ -32,7 +32,7 @@
             </div>
         </div>
     </div>
-    <div class="instances" id="scrolled-area" ref="scrolled_area">
+    <div class="page-content with-menu" id="scrolled-area" ref="scrolled_area">
         <div class="text-muted margin20" v-if="instances.length == 0">
             <p>Here, you can submit series of apps with shared input and output datasets.</p>
             <p>Output datasets will be removed within 25 days. Please archive any output dataset you'd like to keep.</p>
@@ -459,25 +459,20 @@ font-size: 170%;
 }
 
 .page-header {
-position: fixed;
 top: 100px;
-left: 350px;
-padding: 10px;
-right: 10px;
-height: 45px;
+padding: 6px 10px;
 color: #999;
-z-index: 1;
+background-color: inherit;
+z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
+}
+.page-content {
+top: 95px;
+margin-top: 50px;
 }
 
-.instances {
-position: fixed;
-top: 100px;
-left: 350px;
-bottom: 0px;
-right: 0px;
-overflow: auto;
-margin-top: 45px;
-background-color: white;
+.page-header, 
+.page-content {
+min-width: 700px;
 }
 
 .instance-header {
