@@ -5,7 +5,7 @@
     <div class="page-content">
         <div class="header">
             <b-container v-if="instance && tasks">
-                <h1><icon name="download" scale="2"></icon> BIDS Download</h1>
+                <h2><icon name="download"></icon> BIDS Download</h2>
             </b-container>
         </div><!--header-->
         <b-container>
@@ -19,7 +19,7 @@
                         </div>
                     </b-col>
                     <b-col cols="3">
-                        <b-alert show variant="secondary"><icon name="info-circle"/> <b>Hint!</b/><p>You can download datasets directly from the dataset detail dialog without having to organize them into BIDS.</p></b-alert>
+                        <b-alert show variant="secondary"><icon name="info-circle"/> <b>Hint</b/><br><p>You can download datasets quickly from the dataset detail dialog without having to organize them into BIDS.</p></b-alert>
                     </b-col>
                 </b-row>
             </div>
