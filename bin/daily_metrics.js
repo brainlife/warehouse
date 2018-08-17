@@ -23,6 +23,17 @@ function count_apps(d) {
     });
 }
 
+function count_dataset(d) {
+    return new Promise((resolve, reject)=>{
+        db.Datasets.count({create_date: {$lt: d}, removed: false}, (err, count)=>{
+            if(err) return reject(err);
+            const time = Math.round(d.getTime()/1000);
+            console.log(graphite_prefix+".dataset.count "+count+" "+time);
+            resolve();
+        });
+    });
+}
+
 db.init(async function(err) {
     if(err) throw err;
     /*
@@ -35,6 +46,7 @@ db.init(async function(err) {
     */
     let today = new Date();
     await count_apps(today); 
+    await count_dataset(today); 
     db.disconnect();
 });
 
