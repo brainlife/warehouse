@@ -1,7 +1,7 @@
 <template>
 <div>
     <div :class="{rightopen: selected_count}">
-        <div class="page-header with-menu">
+        <div class="page-header with-menu header">
             <div style="float: right; position: relative; top: -3px;">
                 <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
             </div>
@@ -10,7 +10,7 @@
             </div>
         </div>
 
-        <div class="page-content with-menu">
+        <div class="page-content with-menu content">
             <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <b-row class="list-header">
@@ -807,20 +807,15 @@ export default {
 
 <style scoped>
 
-.page-header {
+.header {
 margin-top: 50px;
-background-color: #f9f9f9;
 padding: 10px;
 color: #999;
 overflow: hidden;
 }
 
-.page-content {
-margin-top: 50px;
-}
-
-.page-header,
-.page-content {
+.header,
+.content {
 min-width: 450px;
 }
 
@@ -830,19 +825,19 @@ font-weight: bold;
 margin-bottom: 5px;
 }
 
-.page-header h4 {
+.header h4 {
 font-size: 16px;
 font-weight: bold;
 color: #999;
 }
 
-.page-content {
-background-color: white;
+.content {
 transition: 0.2s right, 0.2s bottom, 0.2s left;
 top: 95px;
 overflow-x: hidden;
 font-size: 12px;
 padding-left: 10px;
+margin-top: 50px;
 }
 
 .rightopen .page-content,
