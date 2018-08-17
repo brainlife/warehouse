@@ -2,8 +2,8 @@
 <div>
     <pageheader>
         <div class="search-box">
-            <icon name="search" class="search-icon" scale="1.5"/>
             <b-form-input v-model="query" type="text" placeholder="Search" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
+            <icon name="search" class="search-icon" scale="1.5"/>
         </div>
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
@@ -278,13 +278,13 @@ font-size: 140%;
 padding-left: 50px;
 background-color: #fff6;
 border: none;
-width: 100%;
-color: #444;
+color: white;
+transition: background-color 0.5s, color 0.5s;
 }
 
-.search-box .input:focus,
-.search-box .input.active {
-width: 100%;
+.search-box .input:focus {
+background-color: white;
+color: gray;
 }
 
 .search-box .search-icon {
@@ -294,10 +294,15 @@ position: absolute;
 top: 7px;
 left: 145px;
 z-index: -1;
+transition: color 0.5s;
 }
 .search-box .input::placeholder {
 color: white;
 font-weight: bold;
+}
+.input:focus ~ .search-icon {
+color: gray;
+z-index: 2;
 }
 
 </style>

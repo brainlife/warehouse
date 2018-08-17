@@ -27,12 +27,7 @@
                             <doibadge :doi="app.doi" v-if="app.doi" style="float: right;"/>
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
-                        <!--
-                        <p style="line-height: 220%;">
-                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                        </p>
-                        -->
-                        <appstats :app="app"/>
+                        <appstats :app="app" style="clear: both;"/>
                     </b-col>
                 </b-row>
 
@@ -431,9 +426,11 @@ export default {
             }
         },
 
+        /*
         bibtex() {
             document.location = '/api/warehouse/app/bibtex/'+this.app._id;
         },
+        */
 
         find_by_id(list, id) {
             var item = list.find(it=>it.id == id);
