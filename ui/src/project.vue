@@ -26,11 +26,10 @@
                         </div>
                     </div>
 
-                    <h3 style="color: #666; margin-bottom: 10px;">
+                    <h4 style="color: #666; margin-bottom: 10px;">
                         <projectaccess :access="selected.access"/> 
-                        <!--<b-badge variant="secondary" v-if="selected.listed">Listed</b-badge>-->
                         {{selected.name}}
-                    </h3>
+                    </h4>
                     <p style="opacity: 0.8;">{{selected.desc}}</p>
                 </b-col>
             </b-row>

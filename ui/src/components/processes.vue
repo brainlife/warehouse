@@ -591,12 +591,11 @@ display: inline-block;
 .summary {
 color: white;
 background-color: gray;
-height: 20px;
-padding: 3px;
+padding: 2px;
 text-align: center;
 position: relative;
-margin-right: 4px;
-font-size: 60%;
+margin-right: 2px;
+font-size: 65%;
 top: -2px;
 border-radius: 2px;
 display: inline-block;

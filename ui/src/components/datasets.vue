@@ -70,26 +70,26 @@
                  </div> 
             </div><!--scrolled-area-->
 
-            <b-button class="button-fixed" v-b-modal.uploader 
+            <b-btn class="button-fixed" v-b-modal.uploader 
                 @click="set_uploader_options" v-if="isadmin() || ismember()"
                 title="Upload Dataset" 
                 :class="{'selected-view-open':selected_count}">
                 <icon name="plus" scale="2"/>
-            </b-button>
+            </b-btn>
 
         </div><!--page-content-->
     </div>
 
     <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
-        <h4 class="header">
-            <div class="button" style="float: right; position: relative; top: -3px" @click="clear_selected()"><icon name="times"/></div>
-            <icon name="check-square" style="position: relative; top: 3px; margin-right: 10px;"/> {{selected_count}} Selected 
+        <h4>
+            <div class="button" style="float: right; position: relative; top: -5px" @click="clear_selected"><icon name="times"/></div>
+            <icon name="check-square" style="position: relative; margin-right: 10px;"/> {{selected_count}} Selected 
         </h4>
 
         <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
             <datatypetag :datatype="datatypes[did]"/>
             <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open(id)">
-                <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
+                <div @click.stop="remove_selected(dataset)" style="float: right; padding-right: 3px;" title="Unselect">
                     <icon name="times"></icon>
                 </div>
                 {{dataset.meta.subject}} 
@@ -104,16 +104,16 @@
 
         <div class="select-action">
             <p>
-                <b-button size="sm" @click="download">
+                <b-btn size="sm" @click="download">
                     <icon name="download" scale="0.8"/> Download (BIDS)
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
-                </b-button>
+                </b-btn>
             </p>
             <p>
-                <b-button size="sm" @click="process"><icon name="paper-plane" scale="0.8"/> Stage For Processing</b-button>
+                <b-btn size="sm" @click="process"><icon name="paper-plane" scale="0.8"/> Stage to process</b-btn>
             </p>
             <p>
-                <b-button size="sm" @click="remove" variant="danger"><icon name="trash" scale="0.8"/> Remove</b-button>
+                <b-btn size="sm" @click="remove" variant="danger"><icon name="trash" scale="0.8"/> Remove</b-btn>
             </p>
         </div>
         <br clear="both">
@@ -863,19 +863,21 @@ right: 250px;
     z-index: 2;
     transition: right 0.2s;
 }
-.selected-view .header {
+.selected-view h4 {
     color: #666;
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0,0,0,0.05);
     padding: 10px;
+    padding-top: 15px;
     text-transform: uppercase;
+    height: 45px;
 }
 .selected-view-open {
     right: 0px;
 }
 .selected-view .selected-item {
-    background-color: rgba(0,0,0,0.04);
+    background-color: white;
     margin-bottom: 1px;
-    padding: 4px;
+    padding: 3px;
     padding-left: 10px;
 }
 .selected-view .selected-item:hover {
@@ -883,8 +885,6 @@ right: 250px;
     cursor: pointer;
 }
 .selected-view .select-action {
-    border-top: 1px solid #ddd;
-    margin-top: 10px;
     padding: 10px;
 }
 .select-group {
