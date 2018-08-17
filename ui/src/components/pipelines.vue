@@ -1,11 +1,11 @@
 <template>
 <div v-if="ready">
-    <div class="page-header with-menu">
+    <div class="page-header with-menu header">
         <div style="margin-top: 2px; margin-left: 10px;">
             <b>{{rules.length}}</b> Pipeline Rules
         </div>
     </div>
-    <div class="page-content with-menu" ref="scrolled">
+    <div class="page-content with-menu content" ref="scrolled">
         <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
         <div v-else>
             <!--list view-->
@@ -14,6 +14,13 @@
                 <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brain-life.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
             </div>
 
+            <!--header-->
+            <div style="margin-right: 20px; padding: 5px 15px; opacity: 0.8; line-height: 200%;">
+                <div class="date">
+                    <small>Create Date</small>
+                </div>
+            </div>
+            <br clear="both">
             <div v-for="rule in rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-active': selected == rule}" class="rule" v-if="rule.removed == false">
                 <div class="rule-header" @click="toggle(rule)">
                     <div style="float: right; width: 130px; text-align: right;">
@@ -365,6 +372,10 @@ opacity: 1;
 }
 .rule.rule-active .rule-header {
 padding: 20px;
+position: sticky;
+top: 0px;
+background-color: white;
+z-index: 2; /*make it on top of the most content*/
 }
 
 .expand-transition {
@@ -380,47 +391,24 @@ padding: 20px;
   opacity: 0;
 }
 
-/*
-.page-header {
-cursor: pointer;
-position: fixed;
-top: 100px;
-left: 330px;
-padding: 10px;
-width: 300px;
-height: 45px;
-color: #999;
-z-index: 1;
-}
-
-.page-content {
-position: fixed;
-top: 100px;
-left: 330px;
-bottom: 0px;
-right: 0px;
-overflow: auto;
-overflow-x: hidden;
-margin-top: 45px;
-background-color: white;
-}
-*/
-.page-header {
+.header {
 top: 100px;
 padding: 6px 10px;
 color: #999;
 background-color: #f9f9f9;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
+height: 40px;
 }
-.page-content {
-top: 135px;
+.content {
+top: 100px;
+margin-top: 40px;
+overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
 }
 
-.page-header, 
-.page-content {
+.header, 
+.content {
 min-width: 500px;
 }
-
 
 .pub {
 padding: 5px 15px;
@@ -438,5 +426,11 @@ opacity: 1;
 .config {
 background-color: #f9f9f9;
 }
-</style>
+.date {
+float: right;
+width: 110px;
+text-align: right;
+font-size: 88%;
+line-height: 200%;
+}</style>
 

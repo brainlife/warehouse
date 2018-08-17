@@ -1,6 +1,6 @@
 <template>
 <div v-if="instances" class="processes">
-    <div class="page-header with-menu">
+    <div class="page-header with-menu header">
         <div style="margin-top: 5px; margin-left: 10px; display: inline-block;">
             <b>{{instances.length}}</b> Processes
         </div>
@@ -32,7 +32,7 @@
             </div>
         </div>
     </div>
-    <div class="page-content with-menu" id="scrolled-area" ref="scrolled_area">
+    <div class="page-content with-menu content" id="scrolled-area" ref="scrolled_area">
         <div class="text-muted margin20" v-if="instances.length == 0">
             <p>Here, you can submit series of apps with shared input and output datasets.</p>
             <p>Output datasets will be removed within 25 days. Please archive any output dataset you'd like to keep.</p>
@@ -71,9 +71,12 @@
                     <div class="instance-desc">
                         {{instance.desc}}
                         <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
-                        <div v-if="instance.config && instance.config.summary" style="display: inline-block; margin-left: 10px; opacity: 0.8;">
-                            <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw'" :class="summary_class(summary)"> 
-                                <span v-if="summary.name" :title="summary.name">{{summary.name.substring(0,4).trim()}}</span>
+                        &nbsp;
+                        <div v-if="instance.config && instance.config.summary" style="display: contents; opacity: 0.8;">
+                            <span v-for="summary in instance.config.summary" 
+                                v-if="summary.service != 'soichih/sca-product-raw' && summary.name" 
+                                :class="summary_class(summary)" :title="summary.name">
+                                {{summary.name.substring(0,4).trim()}}
                             </span>
                         </div>
                     </div>
@@ -252,7 +255,7 @@ export default {
     },
 
     methods: {
-        load: function() {
+        load() {
             this.check_agreements(this.project, ()=>{
                 let group_id = this.project.group_id;
                 this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
@@ -266,11 +269,11 @@ export default {
             });
         },
 
-        capitalize: function(string) {
+        capitalize(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         },
 
-        state2variant: function(state) {
+        state2variant(state) {
             switch(state) {
             case "failed": return "outline-danger";
             case "finished": return "outline-success";
@@ -280,12 +283,12 @@ export default {
             }
         },
 
-        notify_error: function(err) {
+        notify_error(err) {
             console.error(err);
             this.$notify({type: 'error', text: err.body.message});
         },
 
-        scrollto: function(instance) {
+        scrollto(instance) {
             var elem = document.getElementById(instance._id);
             var top = elem.offsetTop;
             if (this.$refs.scrolled_area) {
@@ -293,7 +296,7 @@ export default {
             }
         },
 
-        toggle_instance: function(instance) {
+        toggle_instance(instance) {
             if(this.selected != instance) {
                 //if jumping to instance below currently selected, I should adjust current scroll position
                 this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
@@ -316,7 +319,7 @@ export default {
             }
         },
 
-        editdesc: function(instance) {
+        editdesc(instance) {
             //Vue.set(instance, 'edit', true);
             var desc = prompt("Please enter description", instance.desc);
             if(desc != null) {
@@ -327,7 +330,7 @@ export default {
             }
         },
 
-        newinstance: function() {
+        newinstance() {
             var desc = prompt("Please enter process description");
             if(!desc) return;
             this.$http.post(Vue.config.wf_api+'/instance', {
@@ -347,7 +350,7 @@ export default {
             });
         },
 
-        remove: function(instance) {
+        remove(instance) {
             if(confirm("Do you really want to remove this process and all tasks?")) {
                 //unselect
                 if(this.selected == instance) this.toggle_instance(instance);
@@ -368,14 +371,14 @@ export default {
             }
         },
 
-        instance_class: function(instance) {
+        instance_class(instance) {
             let a = ["instance-header"];
             a.push("instance-"+instance.status);
             if(instance == this.selected) a.push("instance-active");
             return a;
         },
 
-        load_instances: function(cb) {
+        load_instances(cb) {
             this.instances = null; 
             if(!this.project.group_id) return; //can't load for non-group project..
             //console.log("loading instances for group", this.project.group_id);
@@ -399,7 +402,7 @@ export default {
             }).catch(cb);
         },
         
-        subscribe_instance_update: function(cb) {
+        subscribe_instance_update(cb) {
             if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
@@ -430,10 +433,10 @@ export default {
             }
         },
 
-        summary_class: function(summary) {
+        summary_class(summary) {
             return ["summary", "summary-"+summary.status];
         },
-        unique_user_ids: function(instance) {
+        unique_user_ids(instance) {
             if(!instance.config) return [];
             if(!instance.config.summary) return [];
 
@@ -458,20 +461,20 @@ opacity: 0.5;
 font-size: 170%;
 }
 
-.page-header {
+.header {
 top: 100px;
 padding: 6px 10px;
 color: #999;
-background-color: inherit;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
+height: 45px;
 }
-.page-content {
+.content {
 top: 95px;
 margin-top: 50px;
 }
 
-.page-header, 
-.page-content {
+.header, 
+.content {
 min-width: 700px;
 }
 
@@ -596,6 +599,7 @@ margin-right: 4px;
 font-size: 60%;
 top: -2px;
 border-radius: 2px;
+display: inline-block;
 }
 .summary-running {
 background-color: #007bff;

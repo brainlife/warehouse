@@ -1,11 +1,11 @@
 <template>
 <div v-if="pubs">
-    <div class="page-header with-menu">
+    <div class="page-header with-menu header">
         <div style="margin-top: 2px; margin-left: 10px;">
             <b>{{pubs.length}}</b> Publications
         </div>
     </div>
-    <div class="page-content with-menu">
+    <div class="page-content with-menu content">
         <div v-if="publishing" style="background-color: white; padding: 20px;">
             <h3 style="opacity: 0.7;">New Publication</h3>
             <publisher :project="project" @close="publishing = false" @submit="publish"/>
@@ -35,15 +35,15 @@
                 <h5 style="margin-top: 10px;">
                     {{pub.name}}
                 </h5>
-                <p style="opacity: 0.7;">
+                <p style="opacity: 0.7; margin-bottom: 5px;">
                     {{pub.desc}}
                 </p>
-                <p style="line-height: 180%;">
+                <p style="line-height: 180%; margin-bottom: 5px;" v-if="pub.tags.length > 0">
                     <small><tags :tags="pub.tags"/></small>
                 </p>
                 <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
             </div>
-            <div class="text-muted" v-if="!pubs || pubs.length == 0">
+            <div class="margin20 text-muted" v-if="!pubs || pubs.length == 0">
                 <p>No publication registered for this project.</p>
                 <p>To learn about how to submit publications, please refer to our <a href="https://brain-life.github.io/docs/user/publication/" target="doc">Documentation</a>.</p>
             </div>
@@ -187,19 +187,22 @@ export default {
 </script>
 
 <style scoped>
-.page-header {
+.header {
 top: 100px;
 padding: 6px 10px;
 color: #999;
 background-color: #f9f9f9;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
+height: 40px;
 }
-.page-content {
-top: 135px;
+.content {
+top: 100px;
+margin-top: 40px;
+padding-top: 10px;
 }
 
-.page-header, 
-.page-content {
+.header, 
+.content {
 min-width: 500px;
 }
 
