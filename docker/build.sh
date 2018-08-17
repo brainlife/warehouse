@@ -1,5 +1,6 @@
-tag=1.1.26
-docker pull node:8
+tag=1.1.27
+
+#docker pull node:8
 
 docker build -t soichih/warehouse ..
 if [ ! $? -eq 0 ]; then
