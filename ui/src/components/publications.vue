@@ -1,17 +1,17 @@
 <template>
 <div v-if="pubs">
-    <div class="page-header">
+    <div class="page-header with-menu header">
         <div style="margin-top: 2px; margin-left: 10px;">
             <b>{{pubs.length}}</b> Publications
         </div>
     </div>
-    <div class="page-content">
-        <div v-if="publishing">
-            <h3 style="opacity: 0.7">New Publication</h3>
+    <div class="page-content with-menu content">
+        <div v-if="publishing" style="background-color: white; padding: 20px;">
+            <h3 style="opacity: 0.7;">New Publication</h3>
             <publisher :project="project" @close="publishing = false" @submit="publish"/>
         </div>
-        <div v-else-if="pub_editing">
-            <h3 style="opacity: 0.7">{{pub_editing.doi||pub_editing._id+' (no doi)'}}</h3>
+        <div v-else-if="pub_editing" style="background-color: white; padding: 20px;">
+            <h3 style="opacity: 0.7;">{{pub_editing.doi||pub_editing._id+' (no doi)'}}</h3>
             <b-tabs class="brainlife-tab">
                 <br>
                 <b-tab title="Details">
@@ -35,15 +35,15 @@
                 <h5 style="margin-top: 10px;">
                     {{pub.name}}
                 </h5>
-                <p style="opacity: 0.7;">
+                <p style="opacity: 0.7; margin-bottom: 5px;">
                     {{pub.desc}}
                 </p>
-                <p style="line-height: 180%;">
+                <p style="line-height: 180%; margin-bottom: 5px;" v-if="pub.tags.length > 0">
                     <small><tags :tags="pub.tags"/></small>
                 </p>
                 <!--<span style="float: right; opacity: 0.7;"><b>{{new Date(pub.publish_date||pub.create_date).toLocaleDateString()}}</b></span>-->
             </div>
-            <div class="text-muted" v-if="!pubs || pubs.length == 0">
+            <div class="margin20 text-muted" v-if="!pubs || pubs.length == 0">
                 <p>No publication registered for this project.</p>
                 <p>To learn about how to submit publications, please refer to our <a href="https://brain-life.github.io/docs/user/publication/" target="doc">Documentation</a>.</p>
             </div>
@@ -187,34 +187,34 @@ export default {
 </script>
 
 <style scoped>
-
-.page-header {
-position: fixed;
+.header {
 top: 100px;
-left: 350px;
-padding: 10px;
-width: 300px;
-height: 45px;
+padding: 6px 10px;
 color: #999;
-z-index: 1;
+background-color: #f9f9f9;
+z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
+height: 40px;
 }
-
-.page-content {
-position: fixed;
+.content {
 top: 100px;
-left: 350px;
-bottom: 0px;
-right: 0px;
-overflow: auto;
-padding: 20px;
-margin-top: 45px;
-background-color: white;
+margin-top: 40px;
+padding-top: 10px;
 }
 
+.header, 
+.content {
+min-width: 500px;
+}
+
+.pub:first-child {
+margin-top: 2px;
+}
 .pub {
 padding: 5px 15px;
+margin: 0px 20px;
 background-color: white;
 box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+font-size: 88%;
 }
 .pub.pub-editable {
 cursor: pointer;

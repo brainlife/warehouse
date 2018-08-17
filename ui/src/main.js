@@ -130,13 +130,6 @@ function jwt_decode_brainlife(jwt) {
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
 if (Vue.config.jwt) {
     jwt_decode_brainlife(Vue.config.jwt);
-    /* will be checked soon - when it gets refreshed.
-    if(Vue.config.user.exp && Vue.config.user.exp < Date.now()/1000) {
-        console.error("jwt expired", Vue.config.user.exp, Date.now()/1000);
-        delete Vue.config.jwt;
-        localStorage.removeItem("jwt");
-    }
-    */
 } else {
     console.log("jwt not set");
 }
@@ -201,19 +194,19 @@ new Vue({
             }
             */
 
-            console.log("attemping to refresh token");
+            console.log("attemping to refresh token - mainly to detect expiration");
             this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{
                 if(!res.body.jwt) console.log("token refresh didn't work.. resetting jwt");
-                console.dir(res.body);
+                console.log("refreshed token!");
                 jwt_decode_brainlife(res.body.jwt);
                 localStorage.setItem("jwt", res.body.jwt);
                 if(cb) cb();
             }).catch(err=>{
-                console.error("failed to referesh token - removing jwt");
+                console.error("failed to referesh token - redirecting to auth service");
                 console.error(err); 
 
-                //token refresh randomely failing on firefox?
-                localStorage.removeItem("jwt");
+                //localStorage.removeItem("jwt"); //token refresh randomly failing on firefox?
+                sessionStorage.setItem('auth_redirect', document.location.href);
                 document.location = Vue.config.auth_signin;
             });
         },

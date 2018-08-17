@@ -3,12 +3,12 @@
     <pageheader/>
     <sidemenu active="/projects"/>
     <projectmenu :active="selected._id" :projects="projects" @change="change_project"></projectmenu>
-    <div class="header">
+    <div class="page-header with-menu">
         <b-tabs class="brainlife-tab" v-model="tab">
             <b-tab v-for="tabinfo in tabs" :key="tabinfo.id" :title="tabinfo.label"/>
         </b-tabs>
     </div><!--header-->
-    <div class="page-content">
+    <div class="page-content with-menu">
         <!--detail-->
         <div v-if="tabs[tab].id == 'detail'">
             <div style="padding: 20px; background-color: #f0f0f0;">
@@ -26,11 +26,10 @@
                         </div>
                     </div>
 
-                    <h3 style="color: #666; margin-bottom: 10px;">
+                    <h4 style="color: #666; margin-bottom: 10px;">
                         <projectaccess :access="selected.access"/> 
-                        <!--<b-badge variant="secondary" v-if="selected.listed">Listed</b-badge>-->
                         {{selected.name}}
-                    </h3>
+                    </h4>
                     <p style="opacity: 0.8;">{{selected.desc}}</p>
                 </b-col>
             </b-row>
@@ -46,16 +45,6 @@
                     <b-col cols="10">
                         <p> <small class="text-muted">You must consent to the following agreement before accessing datasets on this project.</small> </p>
                         <agreements :agreements="selected.agreements"/>
-                        <!--
-                        <div v-for="agreement in selected.agreements" class="agreement">
-                            <p>
-                                {{agreement.agreement}}
-                            </p>
-                            <p>
-                                <b-form-checkbox @change="update_agreements" v-model="agreements[agreement._id]">I Agree</b-form-checkbox>
-                            </p>
-                        </div>
-                        -->
                     </b-col>
                 </b-row>
 
@@ -145,7 +134,6 @@
          </div>
     </div><!--page-content-->
 
-    <!--modal-->
     <newtask-modal/>
 </div>
 </template>
@@ -333,10 +321,11 @@ export default {
 </script>
 
 <style scoped>
+.page-header {
+border-bottom: 1px solid #ccc;
+overflow: hidden;
+}
 .page-content {
-position: fixed;
-left: 350px;
-right: 0;
 margin-top: 50px;
 }
 
@@ -350,18 +339,6 @@ font-weight:bold;
 color:#88f;
 }
 
-.header {
-position: fixed;
-top: 50px;
-left: 350px;
-right: 0px;
-
-background-color: white;
-margin-bottom: 20px;
-padding: 0;
-border-bottom: 1px solid #ccc;
-z-index: 1;
-}
 .pub-removed {
 background-color: #aaa;
 opacity: 0.6;

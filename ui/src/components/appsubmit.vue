@@ -74,7 +74,7 @@
     <br>
     <br>
     <br>
-    <div class="form-action">
+    <div class="page-footer">
         <b-button variant="primary" type="submit">Submit</b-button>
     </div>
 
@@ -404,10 +404,8 @@ export default {
                 });
 
                 //issue token to download datasets 
-                return this.$http.get('dataset/token', {
-                    params: {
-                        ids: JSON.stringify(all_dataset_ids)
-                    },
+                return this.$http.post('dataset/token', {
+                    ids: all_dataset_ids,
                 });
             }).then(res=>{
                 var jwt = res.body.jwt;
@@ -548,14 +546,5 @@ padding-bottom: 10px;
 border-bottom: 1px solid #ddd;
 font-size: 18px;
 font-weight: bold;
-}
-.form-action {
-text-align: right;
-position: fixed;
-right: 0px;
-left: 90px;
-bottom: 0px;
-padding: 10px 30px;
-background-color: rgba(100,100,100,0.4);
 }
 </style>

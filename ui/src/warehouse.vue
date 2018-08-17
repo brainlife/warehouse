@@ -115,14 +115,47 @@ margin: 20px;
 .margin10 {
 margin: 10px;
 }
+
+.page-header {
+height: 50px;
+}
+.page-header,
 .page-content {
 position: fixed;
-left: 90px;
+left: 50px;
 right: 0px;
 top: 50px;
+}
+.page-content {
 bottom: 0px;
 overflow: auto;
 }
+.page-footer {
+text-align: right; 
+position: fixed; 
+height: 60px;
+left: 50px;
+right: 0px;
+bottom: 0px; 
+padding: 10px 30px;
+background-color: rgba(100,100,100,0.4);
+}
+
+.page-footer.with-menu,
+.page-header.with-menu,
+.page-content.with-menu {
+left: 330px;
+transition: 0.2s left;
+}
+
+@media screen and (max-width: 850px) {
+    .page-header.with-menu,
+    .page-footer.with-menu,
+    .page-content.with-menu {
+        left: 200px;
+    }
+}
+
 code.hljs {
 font-size: 80%;
 }
@@ -231,7 +264,7 @@ border-bottom: 3px solid #aaa;
 }
 
 .brainlife-tab .nav-tabs {
-padding-top: 10px;
+padding-top: 9px;
 border: none;
 background-color: white;
 }

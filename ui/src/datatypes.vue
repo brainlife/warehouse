@@ -5,7 +5,6 @@
     <div class="page-content">
         <div v-if="!datatypes" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div class="margin20" v-if="datatypes">
-            <h2 class="group-title">Datatypes</h2>
             <div v-if="datatype_tags != null" v-for="datatype in datatypes" :key="datatype._id" style="margin-bottom: 10px;" @click="open_datatype(datatype)" class="datatype-container">
                 <datatype :datatype="datatype" :datatype_tags="datatype_tags[datatype._id]" />
             </div>
@@ -127,12 +126,6 @@ box-shadow: none;
 </style>
 
 <style scoped>
-.group-title {
-color: #999;
-padding-bottom: 10px;
-border-bottom: 1px solid #ddd;
-}
-
 .datatype-container {
 box-shadow: 1px 1px 2px rgba(0,0,0,0.10);
 transition: box-shadow 0.3s;

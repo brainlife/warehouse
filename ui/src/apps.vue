@@ -2,15 +2,15 @@
 <div>
     <pageheader>
         <div class="search-box">
-            <icon name="search" class="search-icon" scale="1.5"/>
             <b-form-input v-model="query" type="text" placeholder="Search" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
+            <icon name="search" class="search-icon" scale="1.5"/>
         </div>
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="group-list">
         <h4>Categories</h4>
         <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)">
-            {{tag}}
+            {{tag}} <b-badge variant="dark">{{app_groups[tag].length}}</b-badge>
         </p>
         <br>
         <div style="position: fixed; bottom: 0px;">
@@ -235,14 +235,14 @@ width: 350px;
 float: left;
 }
 .page-content {
-margin-left: 200px;
+margin-left: 240px;
 }
 .group-list {
 position: fixed;
 top: 50px;
 bottom: 0px;
-left: 90px;
-width: 200px;
+left: 50px;
+width: 240px;
 background-color: #444;
 }
 .group-list h4 {
@@ -278,13 +278,13 @@ font-size: 140%;
 padding-left: 50px;
 background-color: #fff6;
 border: none;
-width: 100%;
-color: #444;
+color: white;
+transition: background-color 0.5s, color 0.5s;
 }
 
-.search-box .input:focus,
-.search-box .input.active {
-width: 100%;
+.search-box .input:focus {
+background-color: white;
+color: gray;
 }
 
 .search-box .search-icon {
@@ -294,10 +294,15 @@ position: absolute;
 top: 7px;
 left: 145px;
 z-index: -1;
+transition: color 0.5s;
 }
 .search-box .input::placeholder {
 color: white;
 font-weight: bold;
+}
+.input:focus ~ .search-icon {
+color: gray;
+z-index: 2;
 }
 
 </style>

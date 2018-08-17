@@ -94,7 +94,7 @@
     <br>
     <br>
     <br>
-    <div class="form-action">
+    <div class="page-footer with-menu">
         <b-button type="button" @click="cancel">Cancel</b-button>
         <b-button type="submit" variant="primary">Submit</b-button>
     </div>
@@ -302,14 +302,5 @@ export default {
 <style scoped>
 .card:not(:first-of-type) {
 border-top: none;
-}
-.form-action {
-text-align: right; 
-position: fixed; 
-right: 0px; 
-left: 350px; 
-bottom: 0px; 
-padding: 10px 30px;
-background-color: rgba(100,100,100,0.4);
 }
 </style>

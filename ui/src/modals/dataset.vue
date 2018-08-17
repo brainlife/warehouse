@@ -316,7 +316,6 @@ export default {
             //load provenance
             this.$http.get('dataset/prov/'+this.dataset._id).then(res=>{
                 this.prov = res.body;
-                //console.log("loaded provenance", this.prov);
 
                 //apply styles
                 this.prov.nodes.forEach(node=>{

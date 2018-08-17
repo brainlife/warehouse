@@ -1,27 +1,27 @@
 <template>
 <div>
     <div :class="{rightopen: selected_count}">
-        <div class="page-header">
+        <div class="page-header with-menu header">
             <div style="float: right; position: relative; top: -3px;">
                 <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
             </div>
-            <div style="margin-top: 2px;">
+            <div style="margin-top: 4px;">
                 <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
             </div>
         </div>
 
-        <div class="page-content">
+        <div class="page-content with-menu content">
             <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <b-row class="list-header">
                 <b-col cols="2"><h4>Subject</h4></b-col>
                 <!--everything under subject is grouped, thus a odd layout-->
-                <b-col>
+                <b-col cols="10">
                     <b-row>
-                        <b-col><h4>Datatype</h4></b-col>
-                        <b-col><h4>Description</h4></b-col>
-                        <b-col><h4>Create&nbsp;Date</h4></b-col>
-                        <b-col><h4>Tags</h4></b-col>
+                        <b-col cols="3"><h4>Datatype</h4></b-col>
+                        <b-col cols="3"><h4>Description</h4></b-col>
+                        <b-col cols="3"><h4>Create&nbsp;Date</h4></b-col>
+                        <b-col cols="3"><h4>Tags</h4></b-col>
                     </b-row>
                 </b-col>
             </b-row>
@@ -38,12 +38,12 @@
                         <b-col cols="2">
                             <strong>{{subject}}</strong>
                         </b-col>
-                        <b-col>
+                        <b-col cols="10">
                             <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
-                                <div class="row" v-if="!dataset.removed">
-                                    <div class="col-md-3 truncate">
+                                <b-row v-if="!dataset.removed">
+                                    <b-col cols="3" class="truncate">
                                         <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
-                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"></datatypetag>
+                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
                                         <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
@@ -52,17 +52,17 @@
                                             <icon name="book" scale="0.8"/>
                                             <small v-if="dataset.publications.length > 1">{{dataset.publications.length}}</small>
                                         </span>
-                                    </div>
-                                    <div class="col-md-3 truncate">
+                                    </b-col>
+                                    <b-col cols="3" class="truncate">
                                         {{dataset.desc||'&nbsp;'}}
-                                    </div>
-                                    <div class="col-md-3 truncate">
+                                    </b-col>
+                                    <b-col cols="3" class="truncate">
                                         <time>{{new Date(dataset.create_date).toLocaleString()}}</time>
-                                    </div>
-                                    <div class="col-md-3 truncate">
+                                    </b-col>
+                                    <b-col cols="3" class="truncate">
                                         <tags :tags="dataset.tags"></tags> &nbsp;
-                                    </div>
-                                </div>
+                                    </b-col>
+                                </b-row>
                                 <!--<p v-else>Removed</p>-->
                             </div>
                         </b-col>
@@ -70,26 +70,26 @@
                  </div> 
             </div><!--scrolled-area-->
 
-            <b-button class="button-fixed" v-b-modal.uploader 
+            <b-btn class="button-fixed" v-b-modal.uploader 
                 @click="set_uploader_options" v-if="isadmin() || ismember()"
                 title="Upload Dataset" 
                 :class="{'selected-view-open':selected_count}">
                 <icon name="plus" scale="2"/>
-            </b-button>
+            </b-btn>
 
         </div><!--page-content-->
     </div>
 
     <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
-        <h4 class="header">
-            <div class="button" style="float: right; position: relative; top: -3px" @click="clear_selected()"><icon name="times"/></div>
-            <icon name="check-square" style="position: relative; top: 3px; margin-right: 10px;"/> {{selected_count}} Selected 
+        <h4>
+            <div class="button" style="float: right; position: relative; top: -5px" @click="clear_selected"><icon name="times"/></div>
+            <icon name="check-square" style="position: relative; margin-right: 10px;"/> {{selected_count}} Selected 
         </h4>
 
         <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
             <datatypetag :datatype="datatypes[did]"/>
             <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open(id)">
-                <div @click.stop="remove_selected(dataset)" style="display: inline;" title="Unselect">
+                <div @click.stop="remove_selected(dataset)" style="float: right; padding-right: 3px;" title="Unselect">
                     <icon name="times"></icon>
                 </div>
                 {{dataset.meta.subject}} 
@@ -104,16 +104,16 @@
 
         <div class="select-action">
             <p>
-                <b-button size="sm" @click="download">
+                <b-btn size="sm" @click="download">
                     <icon name="download" scale="0.8"/> Download (BIDS)
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
-                </b-button>
+                </b-btn>
             </p>
             <p>
-                <b-button size="sm" @click="process"><icon name="paper-plane" scale="0.8"/> Stage For Processing</b-button>
+                <b-btn size="sm" @click="process"><icon name="paper-plane" scale="0.8"/> Stage to process</b-btn>
             </p>
             <p>
-                <b-button size="sm" @click="remove" variant="danger"><icon name="trash" scale="0.8"/> Remove</b-button>
+                <b-btn size="sm" @click="remove" variant="danger"><icon name="trash" scale="0.8"/> Remove</b-btn>
             </p>
         </div>
         <br clear="both">
@@ -174,7 +174,7 @@ export default {
     },
 
     computed: {
-        all_datasets: function() {
+        all_datasetsfunction() {
             let result = {};
             this.pages.forEach(page => {
                 for (let subject in page) {
@@ -189,10 +189,10 @@ export default {
             return result;
         },
         
-        selected_count: function() {
+        selected_count() {
             return Object.keys(this.selected).length;
         },
-        selected_size: function() {
+        selected_size() {
             var size = 0;
             for(var did in this.selected) {
                 if(this.selected[did].size) {
@@ -204,7 +204,7 @@ export default {
             return size;
         },
 
-        selected_datatype_names: function() {
+        selected_datatype_names() {
             if(!this.datatypes) return null;
 
             var names = [];
@@ -217,7 +217,7 @@ export default {
             return names;
         },
 
-        group_selected: function() {
+        group_selected() {
             var groups = {};
             for(var id in this.selected) {
                 var selected = this.selected[id];
@@ -253,7 +253,7 @@ export default {
 
     watch: {
         //when user select different project, this gets called (mounted() won't be called anymore)
-        project: function() {
+        project() {
             this.query = ""; //clear query to avoid confusion
             if(this.loading) this.loading.abort();
             this.reload();
@@ -272,13 +272,13 @@ export default {
             return false;
         },
 
-        ismember: function() {
+        ismember() {
             if(!this.project) return false;
             if(~this.project.members.indexOf(Vue.config.user.sub)) return true;
             return false;
         },
 
-        reload: function() {
+        reload() {
             console.log("datasets reloaeed..................");
             this.pages = [];
             this.page_info = [];
@@ -339,7 +339,7 @@ export default {
             }
         },
         
-		page_scrolled: function() {
+		page_scrolled() {
             var e = document.getElementById("scrolled-area").parentNode;
             var scroll_top = e.scrollTop;
             var client_height = e.clientHeight;
@@ -359,7 +359,7 @@ export default {
             this.reload();
         },
 
-        get_mongo_query: function() {
+        get_mongo_query() {
 			var finds = [
                 {removed: false},
                 {project: this.project._id},
@@ -390,7 +390,7 @@ export default {
             return finds;
         },
 
-        load: function() {
+        load() {
             if(this.loading) return;
 
             //count number of datasets already loaded
@@ -460,16 +460,16 @@ export default {
             });
         },
 
-        start_upload: function() {
+        start_upload() {
             this.uploading = true;
         },
 
-        open: function(dataset_id) {
+        open(dataset_id) {
             this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
             this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
         },
 
-        check: function(dataset, event) {
+        check(dataset, event) {
             console.log(dataset._index);
             if (event.shiftKey && this.last_dataset_checked) {
                 let datasetIds = Object.keys(this.all_datasets);
@@ -517,10 +517,10 @@ export default {
             }
             this.persist_selected();
         },
-        persist_selected: function() {
+        persist_selected() {
             localStorage.setItem('datasets.selected', JSON.stringify(this.selected));
         },
-        clear_selected: function() {
+        clear_selected() {
             //unselect all 
             this.pages.forEach(page=>{
                 for(var subject in page) {
@@ -532,7 +532,7 @@ export default {
             this.selected = {};
             this.persist_selected();
         },
-        remove_selected: function(dataset) {
+        remove_selected(dataset) {
             //NOTE - selected[] contains clone of the datasets selected - not the same object so I can't just do "dataset.checked = false"
             //find the real dataset object
             this.pages.forEach(page=>{
@@ -546,7 +546,7 @@ export default {
             this.persist_selected();
         },
 
-        get_instance: function() {
+        get_instance() {
             //first create an instance to download things to
             return this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "brainlife.download",
@@ -556,15 +556,13 @@ export default {
             }).then(res=>res.body);
         },
 
-        temp_stage_selected: function(instance) {
+        temp_stage_selected(instance) {
             //create config to download all selected data from archive
             var download = [];
             var datatypes = {};
 
-            return this.$http.get('dataset/token', {
-                params: {
-                    ids: JSON.stringify(Object.keys(this.selected))
-                },
+            return this.$http.post('dataset/token', {
+                ids: Object.keys(this.selected)
             }).then(res=>{
                 var jwt = res.body.jwt;
                 for(var dataset_id in this.selected) {
@@ -593,14 +591,14 @@ export default {
             }).then(res=>res.body.task);
         },
 
-        set_uploader_options: function() {
+        set_uploader_options() {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
             this.$root.$emit("uploader.option", {
                 project: this.project,
             });
         },
 
-        download: function() {
+        download() {
             this.check_agreements(this.project, ()=>{
                 var download_instance = null;
                 var download_task = null;
@@ -688,7 +686,7 @@ export default {
             });
         },
 
-        process: function() {
+        process() {
             this.check_agreements(this.project, ()=>{
                 this.$root.$emit('instanceselecter.open', opt=>{
                     if(opt.instance) {
@@ -714,7 +712,7 @@ export default {
             });
         },
 
-        remove: function() {
+        remove() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 this.check_agreements(this.project, ()=>{
                     async.forEach(this.selected, (dataset, next)=>{
@@ -737,7 +735,7 @@ export default {
             }
         },
 
-        submit_process: function(project_id, instance) {
+        submit_process(project_id, instance) {
 
             //find the next _tid to use
             var tid = 0;
@@ -758,10 +756,8 @@ export default {
                 async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
                     var download = [];
                     var _outputs = [];
-                    this.$http.get('dataset/token', {
-                        params: {
-                            ids: JSON.stringify(Object.keys(datasets))
-                        },
+                    this.$http.post('dataset/token', {
+                        ids: Object.keys(datasets),
                     }).then(res=>{
                         var jwt = res.body.jwt;
                         for(var dataset_id in datasets) {
@@ -792,7 +788,7 @@ export default {
                 }, err=>{
                     if(err) {
                         console.error(err);
-                        this.$notify({type: 'error', text: err});
+                        this.$notify({type: 'error', text: JSON.stringify(err)});
                         return;
                     }
 
@@ -807,40 +803,16 @@ export default {
 
 <style scoped>
 
-.page-header {
-position: fixed;
-top: 100px;
-left: 350px;
+.header {
+margin-top: 50px;
 padding: 10px;
-right: 15px;
-height: 45px;
 color: #999;
-z-index: 1;
+overflow: hidden;
 }
 
-.page-content {
-position: fixed;
-margin-top: 50px;
-left: 350px;
-padding-left: 10px;
-right: 0;
-/*
-overflow-y: hidden;
-padding-right: 14px;
-background-color: white;
-*/
-}
-/*
-.page-content::-webkit-scrollbar {
-width: 30px;
-overflow-y: scroll;
-}
-*/
-.page-content:hover {
-/*
-padding-right: 0px;
-*/
-overflow-y: visible;
+.header,
+.content {
+min-width: 450px;
 }
 
 h4 {
@@ -849,18 +821,20 @@ font-weight: bold;
 margin-bottom: 5px;
 }
 
-.page-header h4 {
+.header h4 {
 font-size: 16px;
 font-weight: bold;
 color: #999;
 }
 
-.page-content {
-background-color: white;
-transition: right 0.2s, bottom 0.2s;
+.content {
+transition: 0.2s right, 0.2s bottom, 0.2s left;
 top: 95px;
 overflow-x: hidden;
 font-size: 12px;
+padding-left: 10px;
+margin-top: 50px;
+background-color: white;
 }
 
 .rightopen .page-content,
@@ -886,19 +860,21 @@ right: 250px;
     z-index: 2;
     transition: right 0.2s;
 }
-.selected-view .header {
+.selected-view h4 {
     color: #666;
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0,0,0,0.05);
     padding: 10px;
+    padding-top: 15px;
     text-transform: uppercase;
+    height: 45px;
 }
 .selected-view-open {
     right: 0px;
 }
 .selected-view .selected-item {
-    background-color: rgba(0,0,0,0.04);
+    background-color: white;
     margin-bottom: 1px;
-    padding: 4px;
+    padding: 3px;
     padding-left: 10px;
 }
 .selected-view .selected-item:hover {
@@ -906,8 +882,6 @@ right: 250px;
     cursor: pointer;
 }
 .selected-view .select-action {
-    border-top: 1px solid #ddd;
-    margin-top: 10px;
     padding: 10px;
 }
 .select-group {
@@ -972,7 +946,7 @@ width: 100%;
 }
 .list-header {
 opacity: 0.4;
-padding-top: 5px;
+padding-top: 8px;
 text-transform: uppercase;
 }
 .row {

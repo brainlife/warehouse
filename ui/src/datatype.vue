@@ -101,7 +101,7 @@ margin-top: 42px;
 height: 40px;
 position: fixed;
 right: 0px;
-left: 90px;
+left: 50px;
 color: #666;
 z-index: 1;
 border-bottom: 1px solid #666;
