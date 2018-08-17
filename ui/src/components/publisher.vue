@@ -27,7 +27,7 @@
                 </div>
             </div>
             <hr>
-            <div class="page-header form-action">
+            <div class="page-footer with-menu">
                 <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
                 <button type="button" class="btn btn-primary" @click="page++">Next</button>
             </div>
@@ -200,13 +200,6 @@ color: white;
 }
 h4 {
 opacity: 0.8;
-}
-.form-action {
-text-align: right; 
-bottom: 0px; 
-padding: 10px 30px;
-background-color: rgba(100,100,100,0.4);
-overflow: hidden;
 }
 </style>
 
