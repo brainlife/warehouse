@@ -25,7 +25,7 @@
             </div>
             <div v-else>
                 <p>Ready! Your browser should automatically start downloading your file now. If not, please click the link below.</p>
-                <h4><b><a :href="url"><icon name="download" scale="1.3"/> Download</a></b></h4>
+                <b><a :href="url"><icon name="download" scale="1.3"/> Download</a></b>
                 <!--
                 <b-button variant="primary" class="animated bounceIn" @click="download"><icon name="download"/> Download</b-button>    
                 -->
