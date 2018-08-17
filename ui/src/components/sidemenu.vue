@@ -16,7 +16,7 @@
         </li>
         <li @click="go('/pubs');"
             :class="{active: active == '/pubs'}" v-b-popover.hover="'A list of registered publications with links to datasets, apps, and DOI.'" title="Publications">
-            <icon name="book" scale="1.3"></icon>
+            <icon name="brands/leanpub" scale="1.3"></icon>
         </li>
 
         <!-- only for authenticated users -->

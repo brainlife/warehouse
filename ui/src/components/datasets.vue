@@ -838,7 +838,7 @@ color: #999;
 
 .page-content {
 background-color: white;
-transition: right 0.2s, bottom 0.2s;
+transition: 0.2s right, 0.2s bottom, 0.2s left;
 top: 95px;
 overflow-x: hidden;
 font-size: 12px;
