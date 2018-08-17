@@ -468,10 +468,8 @@ export default {
             //console.log("received datasets", datasets);
 
             //issue jwt to allow access
-            this.$http.get('dataset/token', {
-                params: {
-                    ids: JSON.stringify(Object.keys(datasets))
-                },
+            this.$http.post('dataset/token', {
+                ids: Object.keys(datasets),
             }).then(res=>{
                 var jwt = res.body.jwt;
                 var download = [];

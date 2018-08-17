@@ -174,7 +174,7 @@ export default {
     },
 
     computed: {
-        all_datasets: function() {
+        all_datasetsfunction() {
             let result = {};
             this.pages.forEach(page => {
                 for (let subject in page) {
@@ -189,10 +189,10 @@ export default {
             return result;
         },
         
-        selected_count: function() {
+        selected_count() {
             return Object.keys(this.selected).length;
         },
-        selected_size: function() {
+        selected_size() {
             var size = 0;
             for(var did in this.selected) {
                 if(this.selected[did].size) {
@@ -204,7 +204,7 @@ export default {
             return size;
         },
 
-        selected_datatype_names: function() {
+        selected_datatype_names() {
             if(!this.datatypes) return null;
 
             var names = [];
@@ -217,7 +217,7 @@ export default {
             return names;
         },
 
-        group_selected: function() {
+        group_selected() {
             var groups = {};
             for(var id in this.selected) {
                 var selected = this.selected[id];
@@ -253,7 +253,7 @@ export default {
 
     watch: {
         //when user select different project, this gets called (mounted() won't be called anymore)
-        project: function() {
+        project() {
             this.query = ""; //clear query to avoid confusion
             if(this.loading) this.loading.abort();
             this.reload();
@@ -272,13 +272,13 @@ export default {
             return false;
         },
 
-        ismember: function() {
+        ismember() {
             if(!this.project) return false;
             if(~this.project.members.indexOf(Vue.config.user.sub)) return true;
             return false;
         },
 
-        reload: function() {
+        reload() {
             console.log("datasets reloaeed..................");
             this.pages = [];
             this.page_info = [];
@@ -339,7 +339,7 @@ export default {
             }
         },
         
-		page_scrolled: function() {
+		page_scrolled() {
             var e = document.getElementById("scrolled-area").parentNode;
             var scroll_top = e.scrollTop;
             var client_height = e.clientHeight;
@@ -359,7 +359,7 @@ export default {
             this.reload();
         },
 
-        get_mongo_query: function() {
+        get_mongo_query() {
 			var finds = [
                 {removed: false},
                 {project: this.project._id},
@@ -390,7 +390,7 @@ export default {
             return finds;
         },
 
-        load: function() {
+        load() {
             if(this.loading) return;
 
             //count number of datasets already loaded
@@ -460,16 +460,16 @@ export default {
             });
         },
 
-        start_upload: function() {
+        start_upload() {
             this.uploading = true;
         },
 
-        open: function(dataset_id) {
+        open(dataset_id) {
             this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
             this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
         },
 
-        check: function(dataset, event) {
+        check(dataset, event) {
             console.log(dataset._index);
             if (event.shiftKey && this.last_dataset_checked) {
                 let datasetIds = Object.keys(this.all_datasets);
@@ -517,10 +517,10 @@ export default {
             }
             this.persist_selected();
         },
-        persist_selected: function() {
+        persist_selected() {
             localStorage.setItem('datasets.selected', JSON.stringify(this.selected));
         },
-        clear_selected: function() {
+        clear_selected() {
             //unselect all 
             this.pages.forEach(page=>{
                 for(var subject in page) {
@@ -532,7 +532,7 @@ export default {
             this.selected = {};
             this.persist_selected();
         },
-        remove_selected: function(dataset) {
+        remove_selected(dataset) {
             //NOTE - selected[] contains clone of the datasets selected - not the same object so I can't just do "dataset.checked = false"
             //find the real dataset object
             this.pages.forEach(page=>{
@@ -546,7 +546,7 @@ export default {
             this.persist_selected();
         },
 
-        get_instance: function() {
+        get_instance() {
             //first create an instance to download things to
             return this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "brainlife.download",
@@ -556,15 +556,13 @@ export default {
             }).then(res=>res.body);
         },
 
-        temp_stage_selected: function(instance) {
+        temp_stage_selected(instance) {
             //create config to download all selected data from archive
             var download = [];
             var datatypes = {};
 
-            return this.$http.get('dataset/token', {
-                params: {
-                    ids: JSON.stringify(Object.keys(this.selected))
-                },
+            return this.$http.post('dataset/token', {
+                ids: Object.keys(this.selected)
             }).then(res=>{
                 var jwt = res.body.jwt;
                 for(var dataset_id in this.selected) {
@@ -593,14 +591,14 @@ export default {
             }).then(res=>res.body.task);
         },
 
-        set_uploader_options: function() {
+        set_uploader_options() {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
             this.$root.$emit("uploader.option", {
                 project: this.project,
             });
         },
 
-        download: function() {
+        download() {
             this.check_agreements(this.project, ()=>{
                 var download_instance = null;
                 var download_task = null;
@@ -688,7 +686,7 @@ export default {
             });
         },
 
-        process: function() {
+        process() {
             this.check_agreements(this.project, ()=>{
                 this.$root.$emit('instanceselecter.open', opt=>{
                     if(opt.instance) {
@@ -714,7 +712,7 @@ export default {
             });
         },
 
-        remove: function() {
+        remove() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 this.check_agreements(this.project, ()=>{
                     async.forEach(this.selected, (dataset, next)=>{
@@ -737,7 +735,7 @@ export default {
             }
         },
 
-        submit_process: function(project_id, instance) {
+        submit_process(project_id, instance) {
 
             //find the next _tid to use
             var tid = 0;
@@ -758,10 +756,8 @@ export default {
                 async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
                     var download = [];
                     var _outputs = [];
-                    this.$http.get('dataset/token', {
-                        params: {
-                            ids: JSON.stringify(Object.keys(datasets))
-                        },
+                    this.$http.post('dataset/token', {
+                        ids: Object.keys(datasets),
                     }).then(res=>{
                         var jwt = res.body.jwt;
                         for(var dataset_id in datasets) {
@@ -792,7 +788,7 @@ export default {
                 }, err=>{
                     if(err) {
                         console.error(err);
-                        this.$notify({type: 'error', text: err});
+                        this.$notify({type: 'error', text: JSON.stringify(err)});
                         return;
                     }
 
@@ -838,6 +834,7 @@ overflow-x: hidden;
 font-size: 12px;
 padding-left: 10px;
 margin-top: 50px;
+background-color: white;
 }
 
 .rightopen .page-content,

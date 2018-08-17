@@ -117,7 +117,6 @@ margin: 10px;
 }
 
 .page-header {
-background-color: #f9f9f9;
 height: 50px;
 }
 .page-header,
@@ -130,7 +129,6 @@ top: 50px;
 .page-content {
 bottom: 0px;
 overflow: auto;
-background-color: white;
 }
 .page-footer {
 text-align: right; 
