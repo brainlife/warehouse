@@ -314,7 +314,6 @@ cursor: pointer;
 }
 .toggler .caret {
 position: relative;
-top: 3px;
 margin-right: 5px;
 transition: transform 0.3s;
 opacity: 0.3;
