@@ -2,7 +2,7 @@ FROM node:8
 
 MAINTAINER Soichi Hayashi <hayashis@iu.edu>
 
-RUN apt-get update && apt install -y vim
+RUN apt-get update && apt install -y vim #update #update
 
 RUN npm install http-server -g && \
     npm install pm2 -g && \

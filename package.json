@@ -32,7 +32,7 @@
     "express-winston": "^2.6.0",
     "istanbul": "^0.4.5",
     "mkdirp": "^0.5.1",
-    "mongoose": "^5.2.8",
+    "mongoose": "^5.2.9",
     "nocache": "^2.0.0",
     "pkgcloud": "^1.5.0",
     "redis": "^2.8.0",

@@ -39,7 +39,7 @@
         <li class="divider"></li>
         <li @click="go('/admin')"
             :class="{active: active == '/admin'}" v-b-popover.hover="'Admin Only'" title="Administration">
-            <icon name="wrench" scale="2"></icon>
+            <icon name="wrench" scale="1.3"></icon>
         </li>
     </ul>
 

@@ -226,7 +226,7 @@ router.get('/prov/:id', (req, res, next)=>{
         let to = "dataset."+dataset._id;
         if(defer) to = defer.to;
         
-        if(!dataset.prov.task_id) {
+        if(!dataset.prov.task) {
             //leaf dataset.. we are done!
             if(defer) {
                 //but we have defer.. so add it for the last time
@@ -236,7 +236,7 @@ router.get('/prov/:id', (req, res, next)=>{
             return cb();
         } 
 
-        load_task(dataset.prov.task_id, (err, task)=>{
+        load_task(dataset.prov.task._id, (err, task)=>{
             if(err) return cb(err);
             if(task.service == "soichih/sca-product-raw" || task.service == "soichih/sca-service-noop") { //TODO might change in the future
                 if(defer) {
@@ -526,7 +526,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
 /**
  * @apiGroup Dataset
- * @api {get} /dataset/token    Generate dataset access token
+ * @api {post} /dataset/token    Generate dataset access token
  * @apiDescription              Issues warehouse jwt token that grants access to specified dataset IDs that user has access to
  *
  * @apiParam {String[]} ids     List of dataset IDs to grant access
@@ -534,21 +534,12 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *                              A valid JWT token "Bearer: xxxxx"
  *
  * @apiSuccess {Object}         Object containing jwt: key
- */
-router.get('/token', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+*/
+router.post('/token', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        /*
-        let ids = req.query.ids.map(id=>{
-            return new mongoose.ObjectId(id);
-        });
-        */
-        let ids = JSON.parse(req.query.ids);
-        db.Datasets.find({_id: {$in: ids}}).exec(function(err, datasets) {
+        db.Datasets.find({_id: {$in: req.body.ids}}).exec(function(err, datasets) {
             if(err) return next(err);
-            //logger.debug("------------------");
-            //logger.debug(req.query.ids);
-
             //find dataset ids that user have access to
             var valid_ids = [];
             datasets.forEach(dataset=>{
