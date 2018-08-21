@@ -206,18 +206,7 @@
                 <transition-group name="move-item" tag="p">
                     <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
                         <b-card>
-                            <div style="float: right;">
-                                <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
-                                    <icon name="arrow-up" />
-                                </div>
-                                <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
-                                    <icon name="arrow-down" />
-                                </div>
-                                <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
-                                    <icon name="trash"/>
-                                </div>
-                            </div>
-                            <b-row>
+                               <b-row>
                                 <b-col>
                                     <b-input-group prepend="ID">
                                         <b-form-input type="text" v-model="output.id" required />
@@ -225,6 +214,17 @@
                                     <small class="text-muted">Internal ID used to identify this output</small>
                                 </b-col>
                                 <b-col cols="7">
+                                     <div style="float: right;">
+                                        <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
+                                            <icon name="arrow-up" />
+                                        </div>
+                                        <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
+                                            <icon name="arrow-down" />
+                                        </div>
+                                        <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
+                                            <icon name="trash"/>
+                                        </div>
+                                    </div>
                                 </b-col>
                             </b-row>
                             <b-row>
