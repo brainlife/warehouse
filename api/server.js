@@ -11,7 +11,6 @@ const nocache = require('nocache');
 const config = require('./config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('./models');
-//const prov = require('./prov');
 
 //init express
 const app = express();
@@ -49,7 +48,7 @@ exports.app = app;
 exports.start = function(cb) {
     var port = process.env.PORT || config.express.port || '8081';
     var host = process.env.HOST || config.express.host || 'localhost';
-    db.init(function(err) {
+    db.init((err)=>{
         if(err) return cb(err);
         var server = app.listen(port, host, function() {
             logger.info("warehouse api service running on %s:%d in %s mode", host, port, app.settings.env);
