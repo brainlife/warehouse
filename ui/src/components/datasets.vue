@@ -174,7 +174,7 @@ export default {
     },
 
     computed: {
-        all_datasetsfunction() {
+        all_datasets() {
             let result = {};
             this.pages.forEach(page => {
                 for (let subject in page) {
@@ -260,7 +260,6 @@ export default {
         },
         '$route': function() {
             let subid = this.$route.params.subid;
-            console.log("route change", subid);
             this.$root.$emit('dataset.view', {id: subid, back: './'});
         },
     },
@@ -279,7 +278,6 @@ export default {
         },
 
         reload() {
-            console.log("datasets reloaeed..................");
             this.pages = [];
             this.page_info = [];
             this.last_groups = {};
@@ -288,7 +286,6 @@ export default {
             this.load();
 
             //get number of subjects stored 
-            //console.log("querying subjects");
             this.$http.get('dataset/distinct', {params: {
                 find: JSON.stringify({$and: this.get_mongo_query()}),
                 distinct: 'meta.subject'
@@ -296,12 +293,10 @@ export default {
                 this.total_subjects = res.body.length;
             });
 
-            console.log("listen to all dataset change enent under this project", this.project._id);
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             if(this.ws) this.ws.close();
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                //console.log("binding to dataset updates for project:", this.project._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse.dataset",
@@ -405,10 +400,8 @@ export default {
             }
             if(loaded === this.total_datasets) return;
 
-            //console.log("fetching datasets");
             this.$http.get('dataset', {
                 before(request) {
-                    //console.log("loading ..........");
                     this.loading = request;
                 },
                 params: {
@@ -450,8 +443,6 @@ export default {
                     var prev = 0;
                     if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
                     this.page_info.push({top: prev, bottom: h, height: h-prev, visible: true});
-
-                    //console.log("done loading..");
                     this.loading = null;
                 });
             }, err=>{
@@ -470,7 +461,6 @@ export default {
         },
 
         check(dataset, event) {
-            console.log(dataset._index);
             if (event.shiftKey && this.last_dataset_checked) {
                 let datasetIds = Object.keys(this.all_datasets);
                 let indexOfLast = datasetIds.indexOf(this.last_dataset_checked._id);
@@ -720,7 +710,6 @@ export default {
                             this.$notify({type: "error", text: "You don't have permission to remove this dataset: "+dataset._id});
                             return next();
                         }
-                        console.log("deleting", dataset);
                         this.$http.delete('dataset/'+dataset._id).then(res=>{
                             next();
                         }).catch(next);
@@ -780,7 +769,6 @@ export default {
                             config: { download, _outputs, _tid: tid++ },
                         });
                     }).then(res=>{
-                        console.log("submitted download task", res.body.task);
                         next_group();
                     }).catch(err=>{
                         next_group(err.body.message);

@@ -12,25 +12,25 @@
         <!-- for everyone -->
         <li @click="go('/apps')"
             :class="{active: active == '/apps'}" v-b-popover.hover="'A list of registered Apps that you can execute.'" title="Apps">
-            <icon name="th-large" scale="1.3" ></icon>
+            <icon name="th-large" scale="1.3"/>
         </li>
         <li @click="go('/pubs');"
             :class="{active: active == '/pubs'}" v-b-popover.hover="'A list of registered publications with links to datasets, apps, and DOI.'" title="Publications">
-            <icon name="brands/leanpub" scale="1.3"></icon>
+            <icon name="brands/leanpub" scale="1.3"/>
         </li>
 
         <!-- only for authenticated users -->
         <li v-if="config.user" @click="go('/project')"
             :class="{active: active == '/projects'}" v-b-popover.hover="'Project is where you can upload / archive your dataset and run Apps.'" title="Projects">
-            <icon name="shield-alt" scale="1.3"></icon>
+            <icon name="shield-alt" scale="1.3"/>
         </li>
         <li v-if="config.user && config.debug" @click="go('/datatypes')"
             :class="{active: active == '/datatypes'}" v-b-popover.hover="'A list of registered datatypes that you can use as input/output for your Apps.'" title="Datatypes">
-            <icon name="cube" scale="1.3"></icon>
+            <icon name="cube" scale="1.3"/>
         </li>
         
-        <li v-if="config.user" @click="setting">
-            <icon name="cog" scale="1.3" v-b-popover.hover="'Configure your account, profile and other details.'" title="Settings"></icon>
+        <li v-if="config.user" @click="setting" v-b-popover.hover="'Open Brainlife documentation'" title="Documentation">
+            <icon name="cog" scale="1.3"/>
         </li>
     </ul>
 
@@ -39,14 +39,14 @@
         <li class="divider"></li>
         <li @click="go('/admin')"
             :class="{active: active == '/admin'}" v-b-popover.hover="'Admin Only'" title="Administration">
-            <icon name="wrench" scale="2"></icon>
+            <icon name="wrench" scale="1.3"/>
         </li>
     </ul>
 
     <!--bottom-->
     <ul class="items items-bottom">
-        <li @click="doc">
-            <icon name="book" scale="1.3" v-b-popover.hover="'Open Brainlife documentation'" title="Documentation"></icon>
+        <li @click="doc" v-b-popover.hover="'Open Brainlife documentation'" title="Documentation">
+            <icon name="book" scale="1.3"/>
         </li>
     </ul>
 </div>
