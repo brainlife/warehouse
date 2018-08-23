@@ -70,7 +70,7 @@ function run(cb) {
                         }
 
                         console.log("done copying.. updating dataset info");
-                        let copy = Object.assign(dataset);
+                        let copy = Object.assign({}, dataset);
                         dataset.storage_config = undefined;
                         dataset.storage = "wrangler";
                         dataset.save(err=>{
