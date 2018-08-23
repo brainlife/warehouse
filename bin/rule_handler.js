@@ -291,10 +291,10 @@ function handle_rule(rule, cb) {
             find_inputs(subject, (err, input_missing, inputs)=>{
                 if(err) return next_subject(err);
                 if(input_missing) {
-                    rlogger.info("outputs missing, but so are inputs.. skipping");
+                    rlogger.info("Found the output datasets that need to be generated, but we can't find input datasets with specified datatype / tags to submit the task with.. skipping");
                     next_subject();
                 } else {
-                    rlogger.info("output missing, and we have all inputs! submitting tasks");
+                    rlogger.info("Found the output datasets that need to be generated, and we have all the inputs! submitting tasks");
                     submit_tasks(subject, inputs, next_subject);
                 }
             });
