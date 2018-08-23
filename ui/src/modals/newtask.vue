@@ -366,9 +366,8 @@ export default {
                         keys,
                     });
 
-                    //aggregating meta from all inputs
+                    //aggregating meta from all inputs -  if 2 inputs has different value for the same meta, keep the first one..
                     //TODO - I need a better way to discover meta (like letting app to decide?)
-                    //TODO - if 2 inputs has different value for the same meta (like subject) the latterr wins.. bad!
                     for(var k in dataset.meta) {
                         if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
                     }

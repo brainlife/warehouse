@@ -5,7 +5,7 @@
         <li v-if="config.debug" 
             @click="go('/dashboard')"
             :class="{active: active == '/dashboard'}" v-b-popover.hover="'Your homepage for Brainlife'" title="Dashboard">
-            <icon name="tachometer-alt" scale="1.3"/>
+            <icon name="home" scale="1.3"/>
         </li>
         <li v-if="config.debug" class="divider"></li>
 
