@@ -38,7 +38,11 @@
                         <th>Next Chk</th>
                         <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
                     </tr>
-                    <tr v-if="resource">
+                    <tr v-if="task.nice">
+                        <th>Nice</th>
+                        <td>{{task.nice}} <small style="opacity: 0.5">yeilds to less nice tasks</small></td>
+                    </tr>
+                   <tr v-if="resource">
                         <th>Resource</th>
                         <td>{{this.resource.name}}</td>
                     </tr>
