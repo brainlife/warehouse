@@ -11,7 +11,7 @@
             <pre v-if="Object.keys(other_product).length != 0" v-highlightjs="JSON.stringify(other_product, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
         </div>
     </div>
-    <b-tabs class="brainlife-tab" v-model="plotidx">
+    <b-tabs class="brainlife-tab" v-model="tab">
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
             <vue-plotly :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true"/>
         </b-tab>
@@ -29,55 +29,72 @@ import VuePlotly from '@statnett/vue-plotly'
 
 export default {
     props: ['product'],
+
     components: {
         VuePlotly,
     },
+
     data() {
         return {
             config: Vue.config,
-            plotidx: null,
+            tab: null,
         }
     },
     
     computed: {
-        other_product: function() {
+        other_product() {
             let all = Object.assign({}, this.product);
             delete all.brainlife;
             return all;
         },
-        alerts: function() {
+        alerts() {
             if(!this.product.brainlife) return [];
             return this.product.brainlife.filter(p=>p.type != 'plotly'); //hacky..
         },
-        plots: function() {
+        plots() {
             if(!this.product.brainlife) return [];
             return this.product.brainlife.filter(p=>p.type == 'plotly');
         },
-        others: function() {
+        others() {
             let others = Object.assign({}, this.product);
             delete others.brainlife;
             return others;
         },
     },
-    methods: {
-        /*
-        log: function(evt) {
-            console.log("autosize?");
-            console.dir(evt);
-        }
-        */
+    mounted() {
+        if(!this.product) return;
+        if(!this.product.brainlife) return;
+
+        //add svg export button on plotly plots
+        this.product.brainlife.forEach((p, idx)=>{
+            if(p.type != 'plotly') return;
+            if(p._svg_added) return;
+            p._svg_added = true;
+            if(!p.options) p.options = {};
+            if(!p.options.modeBarButtonsToAdd) p.options.modeBarButtonsToAdd = [];
+            p.options.modeBarButtonsToAdd.push({
+                name: 'SVG',
+
+                //TODO - I should find a better logo for svg export
+                icon: {
+                  'width': 1792,
+                  'path': 'M1344 1344q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm256 0q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm128-224v320q0 40-28 68t-68 28h-1472q-40 0-68-28t-28-68v-320q0-40 28-68t68-28h465l135 136q58 56 136 56t136-56l136-136h464q40 0 68 28t28 68zm-325-569q17 41-14 70l-448 448q-18 19-45 19t-45-19l-448-448q-31-29-14-70 17-39 59-39h256v-448q0-26 19-45t45-19h256q26 0 45 19t19 45v448h256q42 0 59 39z',
+                'ascent': 1792,
+                'descent': 0,
+                },
+                click: ()=>{
+                    let plot = this.$refs.plotrefs[this.tab];
+                    plot.downloadImage({format: 'svg', height: plot.$el.clientHeight, width: plot.$el.clientWidth});
+                }
+            });
+        });
     },
     watch: {
-        plotidx: function() {
-            //this resizes the graph, but somehow duplicates legend.. (waiting for it to be resolved)
-            //https://github.com/statnett/vue-plotly/issues/6
+        tab() {
             this.$nextTick(()=>{
-                if(!this.$refs.plotrefs) {
-                    console.log("plotrefs not set (yet?)");
-                    return;
-                }
-                let p = this.$refs.plotrefs[this.plotidx];
-                if(p) p.newPlot();
+                if(!this.$refs.plotrefs) return; //console.log("plotrefs not set (yet?)");
+                let p = this.$refs.plotrefs[this.tab];
+                if(p) p.newPlot(); //this causes it to be resized
             });
         },
     },

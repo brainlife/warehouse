@@ -25,7 +25,7 @@ export default {
         update_agreements: function(id) {
             //somehow @change event gets fired before this.agreements is updated.. 
             this.$nextTick(function() {
-                console.log("agreements changed - saving", this.user_agreements);
+                //console.log("agreements changed - saving", this.user_agreements);
                 if(Vue.config.jwt) {
                     this.$http.put(Vue.config.profile_api+"/private", {agreements: this.user_agreements});
                     //Vue.config.profile.agreements = this.user_agreements;
@@ -40,11 +40,11 @@ export default {
                 //see if all agreed
                 let agreed = true;
                 this.agreements.forEach(agreement=>{
-                    console.log("checking", agreement);
+                    //console.log("checking", agreement);
                     if(!this.user_agreements[agreement._id]) agreed = false;
                 });
                 if(agreed) {
-                    console.log("all agreed");
+                    //console.log("all agreed");
                     this.$emit("agreed");
                 }
             });
