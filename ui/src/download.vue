@@ -19,7 +19,7 @@
                         </div>
                     </b-col>
                     <b-col cols="3">
-                        <b-alert show variant="secondary"><icon name="info-circle"/> <b>Hint</b/><br><p>You can download datasets quickly from the dataset detail dialog without having to organize them into BIDS.</p></b-alert>
+                        <b-alert show variant="secondary"><icon name="info-circle"/> <b>Hint</b/><br><br><p>If you are downloading a single dataset, you can download it directly from the dataset detail dialog.</p></b-alert>
                     </b-col>
                 </b-row>
             </div>
