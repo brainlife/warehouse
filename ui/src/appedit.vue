@@ -104,7 +104,7 @@
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="info"/></a>
+                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
                 Input
             </h4>
             <div>
@@ -199,25 +199,14 @@
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="info"/></a>
+                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
                 Output
             </h4>
             <div>
                 <transition-group name="move-item" tag="p">
                     <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
                         <b-card>
-                            <div style="float: right;">
-                                <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
-                                    <icon name="arrow-up" />
-                                </div>
-                                <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
-                                    <icon name="arrow-down" />
-                                </div>
-                                <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
-                                    <icon name="trash"/>
-                                </div>
-                            </div>
-                            <b-row>
+                               <b-row>
                                 <b-col>
                                     <b-input-group prepend="ID">
                                         <b-form-input type="text" v-model="output.id" required />
@@ -225,6 +214,17 @@
                                     <small class="text-muted">Internal ID used to identify this output</small>
                                 </b-col>
                                 <b-col cols="7">
+                                     <div style="float: right;">
+                                        <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
+                                            <icon name="arrow-up" />
+                                        </div>
+                                        <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
+                                            <icon name="arrow-down" />
+                                        </div>
+                                        <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
+                                            <icon name="trash"/>
+                                        </div>
+                                    </div>
                                 </b-col>
                             </b-row>
                             <b-row>
@@ -257,7 +257,7 @@
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="info"/></a>
+                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
                 Configuration</h4>
             <div>
                 <transition-group name="move-item" tag="p">
@@ -286,7 +286,7 @@
                                     <b-form-group>
                                         <b-input-group prepend="Default Value">
                                             <b-form-input v-if="param.type == 'integer'" type="number" v-model.number="param.default" placeholder="(no default)" @mousewheel.native="$event.preventDefault()"/><!--deprecated-->
-                                            <b-form-input v-if="param.type == 'number'" type="number" :step="0.01" v-model.number="param.default" placeholder="(no default)" @mousewheel.native="$event.preventDefault()"/>
+                                            <b-form-input v-if="param.type == 'number'" type="number" step="0.01" v-model.number="param.default" placeholder="(no default)" @mousewheel.native="$event.preventDefault()"/>
                                             <b-form-input v-if="param.type == 'string'" type="text" v-model="param.default" placeholder="(no default)"/>
                                         </b-input-group>
                                     </b-form-group>

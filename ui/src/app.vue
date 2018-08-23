@@ -189,7 +189,7 @@
                         </p>
                         <b-row>
                             <b-col cols="4" v-for="resource in resources" :key="resource._id">
-                                <div class="resource" v-b-popover="resource.info.desc+'\n\n'+resource.detail+'\nstatus:'+resource.status" :title="resource.id">
+                                <div class="resource" v-b-popover.hover="resource.info.desc+'\n\n'+resource.detail+'\nstatus:'+resource.status" :title="null">
                                     <icon name="server" scale="2" style="float: right; opacity: 0.5;"/>
                                     <b>{{resource.name}}</b><br>
                                     <small>{{resource.info.name}}</small>
@@ -199,8 +199,11 @@
                                     <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
                                         <icon name="thumbs-up" style="position: relative; top: -3px;"/>
                                     </div>
+                                    <!--
+                                    <p style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">{{resource.id}}</p>
+                                    -->
                                 </div>
-			    </b-col>
+                            </b-col>
                         </b-row>
                     </b-col>
                 </b-row>

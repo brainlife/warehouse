@@ -1,6 +1,6 @@
 <template>
-<div class="contact" :class="{'text-muted': !profile.active}" :title="title()" @click.stop="click">
-    <img :src="gurl">
+<div v-if="profile" class="contact" :class="{'text-muted': !profile.active}" :id="uuid" @click-dis.stop="click">
+    <img :src="gurl(20)">
     <div v-if="size != 'tiny'" style="display: inline-block;">
         <div class="name" v-if="profile.fullname">
             {{profile.fullname||'No Name'}}
@@ -8,6 +8,19 @@
             <span class="text-muted">No Name</span>
         </div><div class="email" v-if="profile.email && size == 'full'">&lt;{{profile.email}}&gt;</div>
     </div>
+    <b-popover :target="uuid" :title="null" triggers="hover click" v-if="public">
+        <img :src="gurl(60)" style="float: left">
+        <div style="margin-left: 70px; min-height: 60px;">
+            <b>{{profile.fullname}}</b> <small style="opacity: 0.5">{{profile.username}}</small>
+            <p style="margin-top: 5px; opacity: 0.8; margin-bottom: 0px;">{{public.bio}}</p>
+            <small style="opacity: 0.5;" v-if="public.institution">
+                <icon name="university"/> {{public.institution}}
+            </small>
+        </div>
+        <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee">
+            <small>{{profile.email}}</small>
+        </div>
+    </b-popover>
 </div>
 </template>
 
@@ -42,25 +55,17 @@ export default {
     data () {
         return {
             profile: {
-                active: true
+                active: true,
+
             },
+            _public: null,  //promise to load public profile from profile service
+            public: null, //public profile itself
+
+            uuid: Math.random().toString(),
         }
     },
 
     computed: {
-        gurl: function() {
-            var email = this.profile.email;
-            if(this.profile.email) {
-                return "//www.gravatar.com/avatar/"+md5(this.profile.email)+"?s=22";  
-            } else {
-                //generate avatar for user who doesn't have email set..
-                //return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=22";
-                //return "//www.gravatar.com/avatar/"+md5(this.fullname)+"?d=robohash&s=22";
-                //return "https://api.adorable.io/avatars/22/"+this.fullname.replace(" ", "")+".png";
-                var key = (this.fullname||this.email||this.id);
-                return "https://api.adorable.io/avatars/22/"+key+".png";
-            }
-        } 
     },
 
     watch: {
@@ -76,7 +81,20 @@ export default {
     },
 
     methods: {
-        loadprofile: function() {
+        gurl(size) {
+            var email = this.profile.email;
+            if(this.profile.email) {
+                return "//www.gravatar.com/avatar/"+md5(this.profile.email)+"?s="+size;  
+            } else {
+                //generate avatar for user who doesn't have email set..
+                //return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=22";
+                //return "//www.gravatar.com/avatar/"+md5(this.fullname)+"?d=robohash&s=22";
+                //return "https://api.adorable.io/avatars/22/"+this.fullname.replace(" ", "")+".png";
+                var key = (this.fullname||this.email||this.id);
+                return "https://api.adorable.io/avatars/"+size+"/"+key+".png";
+            }
+        },
+        loadprofile() {
             if(profiles === null) {
                 //TODO -- do soemthing smarter..
                 profiles = this.$http.get(Vue.config.auth_api+'/profile?limit=3000');
@@ -85,21 +103,28 @@ export default {
                 res.body.profiles.forEach((profile)=>{
                     if(profile.id == this.id) this.profile = profile;
                 });
-            }, res=>{
-                console.error(res);
+            
+                //let's hope that browser will cache this
+                this.$http.get(Vue.config.profile_api+'/public/'+this.profile.id).then(res=>{
+                    this.public = res.body;
+                });
+            }).catch(err=>{
+                console.error(err);
             });
         },
 
-        click: function() {
+        click() {
             if(this.profile.email) document.location = 'mailto:'+this.profile.email;
         },
 
-        title: function() {
+        /*
+        title() {
             let t = "";
             if(this.profile.fullname) t += this.profile.fullname + " ";
             t+="<"+this.profile.email+">";
             return t;
         },
+        */
     },
 }
 </script>

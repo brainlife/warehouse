@@ -53,7 +53,12 @@ function dataset_event(dataset) {
         logger.error("amqp not connected - but event handler called");
         return;
     }
-    let key = dataset.project+"."+dataset._id;
+    if(!dataset.project) {
+        logger.error("no project set - can't publish event");
+        return;
+    }
+    let project = dataset.project._id || dataset.project;
+    let key = project+"."+dataset._id;
     dataset_ex.publish(key, dataset, {});
 }
 

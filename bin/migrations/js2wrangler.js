@@ -36,7 +36,9 @@ function run(cb) {
 
             if(dataset.project.removed) {
                 console.log("project is removed - no need to move");
-                return next_dataset();
+                return setTimeout(()=>{
+                    next_dataset();
+                }, 0);
             }
             dataset.project = dataset.project._id; //unpopulate 
 
@@ -68,12 +70,13 @@ function run(cb) {
                         }
 
                         console.log("done copying.. updating dataset info");
+                        let copy = Object.assign({}, dataset);
                         dataset.storage_config = undefined;
                         dataset.storage = "wrangler";
                         dataset.save(err=>{
                             if(err) throw err;
                             console.log("removing dataset from jetstream");
-                            config.storage_systems.jetstream.remove(dataset, err=>{
+                            config.storage_systems.jetstream.remove(copy, err=>{
                                 if(err) throw err;
                                 next_dataset();
                             });

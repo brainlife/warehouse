@@ -132,5 +132,6 @@ opacity:.6;
 td,th {
 vertical-align: top;
 padding-right: 10px;
+font-size: 90%;
 }
 </style>
