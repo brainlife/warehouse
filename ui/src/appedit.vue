@@ -104,7 +104,7 @@
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="info"/></a>
+                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
                 Input
             </h4>
             <div>
@@ -199,7 +199,7 @@
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="info"/></a>
+                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
                 Output
             </h4>
             <div>
@@ -257,7 +257,7 @@
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="info"/></a>
+                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
                 Configuration</h4>
             <div>
                 <transition-group name="move-item" tag="p">
@@ -286,7 +286,7 @@
                                     <b-form-group>
                                         <b-input-group prepend="Default Value">
                                             <b-form-input v-if="param.type == 'integer'" type="number" v-model.number="param.default" placeholder="(no default)" @mousewheel.native="$event.preventDefault()"/><!--deprecated-->
-                                            <b-form-input v-if="param.type == 'number'" type="number" :step="0.01" v-model.number="param.default" placeholder="(no default)" @mousewheel.native="$event.preventDefault()"/>
+                                            <b-form-input v-if="param.type == 'number'" type="number" step="0.01" v-model.number="param.default" placeholder="(no default)" @mousewheel.native="$event.preventDefault()"/>
                                             <b-form-input v-if="param.type == 'string'" type="text" v-model="param.default" placeholder="(no default)"/>
                                         </b-input-group>
                                     </b-form-group>
