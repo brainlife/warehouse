@@ -41,6 +41,7 @@ function run(cb) {
                 }, 0);
             }
             dataset.project = dataset.project._id; //unpopulate 
+            if(!dataset.project) throw new Error("no project id..");
 
             //open destination first 
             //TODO if we open the source first, it somehow ends up truncating the first part of the file..... find out why!?
@@ -59,10 +60,6 @@ function run(cb) {
                     console.log("piping");
                     read.pipe(write);
                     success.then(stat=>{
-                        console.dir(stat);
-                        //console.log("dataset size:"+dataset.size);
-                        //console.log("stat.size:"+stat.size);
-                        //if(dataset.size != stat.size) throw new Error("dataset size not the same");
                         if(dataset.size > stat.size) throw new Error("couldn't download all data");
                         if(dataset.size < stat.size) {
                             console.error("dataset.size is smaller than stat.size.. resetting dataset");
@@ -70,7 +67,7 @@ function run(cb) {
                         }
 
                         console.log("done copying.. updating dataset info");
-                        let copy = Object.assign({}, dataset);
+                        let copy = Object.assign({}, dataset.toObject());
                         dataset.storage_config = undefined;
                         dataset.storage = "wrangler";
                         dataset.save(err=>{
