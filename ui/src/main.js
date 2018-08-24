@@ -166,7 +166,7 @@ new Vue({
     components: { warehouse },
 
     async mounted() {
-        console.log("starting jwt token interval");
+        //console.log("starting jwt token interval");
         setInterval(()=>{
             this.refresh_jwt();
         }, 1000*3600); //every 1hour?
@@ -183,7 +183,7 @@ new Vue({
     methods: {
         refresh_jwt(cb) {
             if(!Vue.config.jwt) {
-                console.log("no jwt.. not refreshing");
+                //console.log("no jwt.. not refreshing");
                 return;
             }
 
@@ -194,7 +194,7 @@ new Vue({
             }
             */
 
-            console.log("attemping to refresh token - mainly to detect expiration");
+            //console.log("attemping to refresh token - mainly to detect expiration");
             this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{
                 if(!res.body.jwt) console.log("token refresh didn't work.. resetting jwt");
                 console.log("refreshed token!");
@@ -215,7 +215,7 @@ new Vue({
             if(!Vue.config.jwt) return;
             this.$http.get(Vue.config.profile_api+"/private").then(res=>{
                 Vue.config.profile = res.body;
-                console.dir(Vue.config.profile);
+                //console.dir(Vue.config.profile);
             }).catch(err=>{
                 console.error(err); 
             });

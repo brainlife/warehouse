@@ -13,9 +13,8 @@
                 <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
                 <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brain-life.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
             </div>
-
             <!--header-->
-            <div style="margin-right: 20px; padding: 5px 15px; opacity: 0.8; line-height: 200%;">
+            <div v-else style="margin-right: 20px; padding: 5px 15px; opacity: 0.8; line-height: 200%;">
                 <div class="date">
                     <small>Create Date</small>
                 </div>

@@ -88,11 +88,12 @@
                             <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
                             <p>
                                 <b>Dataset Description</b>
-                                <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="3"/>
+                                <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="2"/>
                             </p>
                             <p>
                                 <b>Dataset Tags</b>
-                                <tageditor placeholder="Optional" v-model="tags"/>
+                                <tageditor placeholder="Optional" v-model="tags" :options="available_tags"/>
+                                <small style="opacity: 0.8">Description / tags will be applied to all output datasets</small>
                             </p>
                         </b-card>
                     </b-col>
@@ -145,13 +146,14 @@ export default {
             app: null, //selected
             tags: [],
 
-            //desc: null,
+            //TODO - newtask doesn't know the project it's opened for.. so I am not sure how I should load tags
+            available_tags: [], 
+
             config: null,
             inputs: null,
 
             archive: {
                 enable: false,
-                //project: null,
                 desc: "",
             },
 
@@ -239,13 +241,8 @@ export default {
         selectapp: function(app) {
             this.app = app;
             this.github_branch = this.app.github_branch || 'master';
-
-            //this.config = Object.assign({}, app.config);
-            //this.set_default(this.config);
-            console.log("resetting this.config");
             this.config = {};
-
-            this.inputs = {}; //reset first
+            this.inputs = {}; 
             this.app.inputs.forEach(input=>{
                 var input_copy = Object.assign({
                     selected: [null], 
@@ -254,6 +251,11 @@ export default {
                 Vue.set(this.inputs, input.id, input_copy);
                 this.preselect_single_items(input_copy);
             });
+
+            /* I might use it if I decide to set desk/tag for each output
+            this.app.outputs.forEach(output=>{
+            });
+            */
 
             this.validate(); //for preselect
         },
@@ -366,9 +368,8 @@ export default {
                         keys,
                     });
 
-                    //aggregating meta from all inputs
+                    //aggregating meta from all inputs -  if 2 inputs has different value for the same meta, keep the first one..
                     //TODO - I need a better way to discover meta (like letting app to decide?)
-                    //TODO - if 2 inputs has different value for the same meta (like subject) the latterr wins.. bad!
                     for(var k in dataset.meta) {
                         if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
                     }

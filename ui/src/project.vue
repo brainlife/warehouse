@@ -324,6 +324,7 @@ export default {
 .page-header {
 border-bottom: 1px solid #ccc;
 overflow: hidden;
+background-color: white;
 }
 .page-content {
 margin-top: 50px;

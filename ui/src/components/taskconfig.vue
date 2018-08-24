@@ -4,7 +4,6 @@
     <table width="100%:">
         <tr v-for="(v,k) in taskconfig" :key="k" :class="{ default: is_default(k) }">
             <th width="25%">{{k}}</th>
-            
             <td v-if="v === null" width="25%">
                 <pre class="text-muted" style="margin-bottom: 0">null</pre>
             </td>

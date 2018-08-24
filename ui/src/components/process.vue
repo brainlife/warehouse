@@ -319,7 +319,7 @@ export default {
             this.loading = true;
             if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-            console.log("connecting to task updates", url);
+            //console.log("connecting to task updates", url);
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
                 console.log("ws open");

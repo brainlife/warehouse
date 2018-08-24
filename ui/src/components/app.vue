@@ -3,7 +3,7 @@
     <div @click="click">
         <div v-if="compact">
             <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="80" :height="80"/>
-            <div style="max-height: 73px; overflow: hidden;">
+            <div style="max-height: 80px; overflow: hidden;">
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
                     {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
