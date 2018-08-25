@@ -96,7 +96,6 @@ font-size: 1.1rem;
 .dropdown-menu {
 font-size: inherit;
 }
-
 /*needed to keep iframe 100% with for view*/
 html,body {
 height:100%;
@@ -378,6 +377,21 @@ z-index: inherit;
 .form-control::placeholder {
 color: black;
 opacity: 0.35;
+}
+
+.readme h1 {
+font-size: 1.5rem;
+}
+.readme h2 {
+font-size: 1.3rem;
+}
+.readme h3 {
+font-size: 1.1rem;
+}
+.readme h4,
+.readme h5,
+.readme h6 {
+font-size: 1rem;
 }
 
 </style>

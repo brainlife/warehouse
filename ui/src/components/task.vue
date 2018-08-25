@@ -4,15 +4,6 @@
         <h3><icon name="paper-plane"></icon> {{task.name||task.service}}</h3>
     </slot>
 
-    <div class="comment" v-if="task.desc || editing_desc !== null">
-        <div v-if="task.desc && editing_desc == null" @click="edit_desc" class="comment-text">
-            <vue-markdown :source="task.desc"></vue-markdown>
-        </div>
-        <div v-if="editing_desc !== null" style="position: relative;">
-            <b-form-textarea ref="desc_editor" v-model="editing_desc" placeholder="Enter Notes in Markdown" :rows="3" style="border: none; border-radius: 0"/>
-            <div class="button" @click="update_desc" style="position: absolute; top: 0; right: 0px; background-color: #ddd; margin: 5px;"><icon name="check"/> Update</div>
-        </div>
-    </div>
 
     <!--status indicator-->
     <div class="status-card" :class="task.status" style="border: none;">
@@ -83,10 +74,21 @@
         </div>
     </div>
 
+    <div class="note" v-if="task.desc || editing_desc !== null">
+        <div v-if="task.desc && editing_desc == null" @click="edit_desc" class="note-text">
+            <vue-markdown :source="task.desc" class="readme"></vue-markdown>
+        </div>
+        <div v-if="editing_desc !== null" style="position: relative;">
+            <b-form-textarea ref="desc_editor" v-model="editing_desc" placeholder="Enter Notes in Markdown" :rows="3" style="border: none; border-radius: 0"/>
+            <div class="button" @click="update_desc" style="position: absolute; top: 0; right: 0px; background-color: #ddd; margin: 5px;"><icon name="check"/> Update</div>
+        </div>
+    </div>
 
     <div v-if="task.service != 'soichih/sca-product-raw'">
         <taskconfig :task="task" style="padding: 10px;"/>
     </div>
+
+
     <div v-if="has_input_slot">
         <div @click="toggle('input')" class="toggler">
             <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
@@ -367,15 +369,15 @@ max-height: 230px;
 opacity: 0;
 max-height: 0px;
 }
-.comment {
+.note {
 color: #666;
-border-top: 1px solid #eee;
-background-color: white;
+border-bottom: 1px solid #eee;
 }
-.comment-text {
+.note-text {
 padding: 5px; 
+font-size: 90%;
 }
-.comment-text:hover {
+.note-text:hover {
 background-color: #eee;
 cursor: pointer;
 }
