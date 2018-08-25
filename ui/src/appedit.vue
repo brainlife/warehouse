@@ -685,9 +685,6 @@ export default {
                 if (!output.id) {
                     return cb("Not all output ids are non-null");
                 }
-                if (inputTable[output.id]) {
-                    return cb("Duplicate ID '" + output.id + "' found in list of inputs and outputs");
-                }
                 if (outputTable[output.id]) {
                     return cb("Duplicate ID '" + output.id + "' found in list of outputs");
                 }
