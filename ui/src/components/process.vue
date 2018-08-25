@@ -13,7 +13,7 @@
     </div>
 
     <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-    <div class="tasks" v-if="tasks" v-for="task in tasks" :key="task._id">
+    <div class="task-area" v-if="tasks" v-for="task in tasks" :key="task._id">
         <!--task-id and toggler-->
         <div style="float: right;" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
             <icon name="caret-down" v-if="task.show"/><icon name="caret-right" v-else/> 
@@ -26,9 +26,11 @@
             <div slot="header" class="task-header">
                 <div v-if="task.config._app && task.show" style="margin-right: 30px;">
                     <app :appid="task.config._app" :branch="task.service_branch||'master'" :compact="true">
+                        <!-- moved to components/task
                         <div v-if="task.desc" class="task-desc">
                             {{task.desc}}
                         </div>
+                        -->
                     </app>
                 </div>
                 <div v-else>
@@ -583,10 +585,6 @@ margin: 0px;
 padding: 15px;
 background-color: #fff;
 }
-.new-action,
-.task {
-box-shadow: 0px 2px 4px #ccc;
-}
 .task {
 margin-bottom: 10px;
 }
@@ -656,8 +654,9 @@ margin-bottom: 1px;
 }
 
 .new-action,
-.tasks {
+.task-area {
 margin-right: 310px;
+box-shadow: 0px 2px 4px #ccc;
 }
 .new-action {
 position: sticky; bottom: 0px;
