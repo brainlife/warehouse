@@ -8,17 +8,22 @@
             <span class="text-muted">No Name</span>
         </div><div class="email" v-if="profile.email && size == 'full'">&lt;{{profile.email}}&gt;</div>
     </div>
-    <b-popover :target="uuid" :title="null" triggers="hover click" v-if="public">
-        <img :src="gurl(60)" style="float: left">
-        <div style="margin-left: 70px; min-height: 60px;">
-            <b>{{profile.fullname}}</b> <small style="opacity: 0.5">{{profile.username}}</small>
-            <p style="margin-top: 5px; opacity: 0.8; margin-bottom: 0px;">{{public.bio}}</p>
-            <small style="opacity: 0.5;" v-if="public.institution">
-                <icon name="university"/> {{public.institution}}
-            </small>
+    <b-popover :target="uuid" :title="null" triggers="hover click" @show="show">
+        <div v-if="!public || !public.bio">
+            <small style="opacity: 0.8">No bio..</small>
         </div>
-        <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee">
-            <small>{{profile.email}}</small>
+        <div v-else>
+            <img :src="gurl(60)" style="float: left">
+            <div style="margin-left: 70px; min-height: 60px;">
+                <b>{{profile.fullname}}</b> <small style="opacity: 0.5">{{profile.username}}</small>
+                <p style="margin-top: 5px; opacity: 0.8; margin-bottom: 0px;">{{public.bio}}</p>
+                <small style="opacity: 0.5;" v-if="public.institution">
+                    <icon name="university"/> {{public.institution}}
+                </small>
+            </div>
+            <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee">
+                <small>{{profile.email}}</small>
+            </div>
         </div>
     </b-popover>
 </div>
@@ -58,7 +63,6 @@ export default {
                 active: true,
 
             },
-            _public: null,  //promise to load public profile from profile service
             public: null, //public profile itself
 
             uuid: Math.random().toString(),
@@ -104,10 +108,6 @@ export default {
                     if(profile.id == this.id) this.profile = profile;
                 });
             
-                //let's hope that browser will cache this
-                this.$http.get(Vue.config.profile_api+'/public/'+this.profile.id).then(res=>{
-                    this.public = res.body;
-                });
             }).catch(err=>{
                 console.error(err);
             });
@@ -125,6 +125,16 @@ export default {
             return t;
         },
         */
+
+        show() {
+            if(!this.public) {
+                this.$http.get(Vue.config.profile_api+'/public/'+this.profile.id).then(res=>{
+                    this.public = res.body;
+                }).catch(err=>{
+                    console.log("couldn't load profile");
+                });
+            }
+        },
     },
 }
 </script>
