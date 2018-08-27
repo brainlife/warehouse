@@ -29,7 +29,7 @@
             <icon name="cube" scale="1.3"/>
         </li>
         
-        <li v-if="config.user" @click="setting" v-b-popover.hover="'Open Brainlife documentation'" title="Documentation">
+        <li v-if="config.user" @click="setting" v-b-popover.hover="'Access your account / profile settings'" title="Settings">
             <icon name="cog" scale="1.3"/>
         </li>
     </ul>

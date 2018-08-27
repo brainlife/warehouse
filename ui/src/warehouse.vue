@@ -288,6 +288,7 @@ border-bottom: 3px solid #2693ff;
 #warehouse .alert {
 border-radius: 0;
 border: none;
+margin-bottom: 0px;
 }
 #warehouse .card {
 border-radius: 0;
@@ -392,6 +393,13 @@ font-size: 1.1rem;
 .readme h5,
 .readme h6 {
 font-size: 1rem;
+}
+
+pre {
+margin-bottom: 0px;
+}
+.hljs {
+background-color: inherit;
 }
 
 </style>

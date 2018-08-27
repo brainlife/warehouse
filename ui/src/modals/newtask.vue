@@ -14,13 +14,13 @@
     <!--app selection page--> 
     <div v-if="!app" class="app-selecter">
         <div v-if="apps && apps.length == 0" style="margin: 20px;">
-            <p class="text-muted">You have no application that you can submit with currently staged datasets.<br><br>Please try staging more datasets.</p>
+            <p style="opacity: 0.8">You have no application that you can submit with currently staged datasets.<br><br>Please try staging more datasets.</p>
         </div>
-        <p v-else class="text-muted">You can submit following application(s) with currently available dataset.</p>
+        <p v-else style="opacity: 0.8">You can submit following application(s) with currently available dataset.</p>
 
         <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
-            <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px;">
-                <app :app="app" :compact="true" :clickable="false" class="clickable" height="170px"/>
+            <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px; font-size: 85%;">
+                <app :app="app" :clickable="false" class="clickable" height="160px"/>
             </div>
         </div>
         <br clear="both">
@@ -36,7 +36,7 @@
             <b-col cols="3">
                 <span style="opacity: 0.8">{{input_id}}</span>
                 <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
-                <span v-if="input.optional" class="text-muted">(optional)</span>
+                <span v-if="input.optional" style="opacity: 0.8">(optional)</span>
                 <span v-else>*</span>
             </b-col>
             <b-col>
@@ -64,7 +64,7 @@
                     </b-row>
                     <b-row v-if='input.multi'>
                         <b-col cols="5">
-                            <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
+                            <small v-if="input.desc" style="opacity: 0.8">{{input.desc}}</small>
                         </b-col>
                         <b-col cols="6" style="text-align:right;">
                             <b-button :size="'sm'" :variant="'secondary'" @click="input.selected.push(null)">Add Dataset</b-button>
@@ -193,6 +193,7 @@ export default {
                     "inputs.datatype": {$in: datatype_ids},
                     removed: false,
                 }),
+                sort: 'name', 
                 populate: 'inputs.datatype outputs.datatype',
             }})
             .then(res=>{
