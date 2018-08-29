@@ -23,19 +23,19 @@
         <center style="opacity: 0.3; padding-top: 10px;"><b>&nbsp;&nbsp;&nbsp;<icon name="cog" spin/> Loading..&nbsp;&nbsp;&nbsp;</b></center>
     </b-col>
     -->
-    <b-col cols="2">
+    <b-col cols="2" v-b-tooltip.hover title="Number of time this App was requested.">
         <center>
             <span class="stat">{{app.stats.service.counts.requested||0}}</span>
             <p class="header">Total&nbsp;Runs</p>
         </center>
     </b-col>
-    <b-col cols="2">
+    <b-col cols="2" v-b-tooltip.hover title="Number of unique users who ran this App.">
         <center>
             <span class="stat">{{app.stats.service.users}}</span>
             <p class="header">Users</p>
         </center>
     </b-col>
-    <b-col cols="2">
+    <b-col cols="2" v-b-tooltip.hover title="finished/(failed+finished). Same request could be re-submitted / rerun.">
         <center>
             <span class="stat" :class="success_rate_color">{{app.stats.success_rate.toFixed(1)}}%</span>
             <p class="header">Success&nbsp;Rate</p>

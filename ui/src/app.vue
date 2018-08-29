@@ -137,7 +137,7 @@
                         <br>
                     </b-col>
                 </b-row>
-                <!--
+
                 <b-row v-if="app.retry">
                     <b-col cols="3">
                         <b>Retry</b>
@@ -146,32 +146,6 @@
                         <p>If this app fails, it will automatically retry up to <b>{{app.retry}}</b> times</p>
                     </b-col>
                 </b-row>
-                -->
-                <!--
-                <b-row v-if="resources">
-                    <b-col cols="3">
-                        <span class="form-header">Computing Resources</span>
-                    </b-col>
-                    <b-col>
-                        <p v-if="preferred_resource"><small class="text-muted">This application can currently run on the following resources</small></p>
-                        <b-alert show variant="warning" v-if="!preferred_resource">
-                            This app currently can not run on any resource that you have access to.
-                        </b-alert>
-                        <b-table style="font-size: 90%;" :items="resource_table" :fields="['resource','status','score', 'detail']">
-                            <template slot="resource" slot-scope="data">
-                                <icon class="preferred-icon" v-if="data.item.preferred" name="thumbs-up"/>
-                                <b>{{data.value}}</b>
-                            </template>
-                            <template slot="status" slot-scope="data">
-                                <statustag :status="data.value"/>
-                            </template>
-                            <template slot="detail" slot-scope="data">
-                                <p class="text-muted">{{data.value}}</p>
-                            </template>
-                        </b-table>
-                    </b-col>
-                </b-row>
-                -->
 
                 <b-row v-if="resources">
                     <b-col cols="3">
@@ -190,18 +164,32 @@
                         <b-row>
                             <b-col cols="4" v-for="resource in resources" :key="resource._id">
                                 <div class="resource" v-b-popover.hover="resource.info.desc+'\n\n'+resource.detail+'\nstatus:'+resource.status" :title="null">
-                                    <icon name="server" scale="2" style="float: right; opacity: 0.5;"/>
-                                    <b>{{resource.name}}</b><br>
-                                    <small>{{resource.info.name}}</small>
-                                    <h5><b-badge pill variant="light">Score {{resource.score}}</b-badge></h5>
-                                    <div v-if="resource.status != 'ok'" class="resource-status bg-danger">Down</div>
-                                    <div v-else-if="resource.score == 0" class="resource-status bg-warning">Busy</div>
+                                    <p style="padding: 10px; margin-bottom: 0px;">
+                                        <!--TODO - show different icon for different type of vm-->
+                                        <icon name="server" style="opacity: 0.2; float: right"/>
+
+                                        <b>{{resource.name}}</b><br>
+                                        <small>{{resource.info.name}}</small>
+                                    </p>
+
+                                    <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
+                                        <icon name="exclamation" style="position: relative; top: -3px;"/>
+                                        {{resource.status}}
+                                        <span class="score">Score {{resource.score}}</span>
+                                    </div>
+                                    <div v-else-if="resource.score == 0" class="resource-status bg-warning">
+                                        <icon name="hourglass" style="position: relative; top: -3px;"/>
+                                        Busy
+                                        <span class="score">Score {{resource.score}}</span>
+                                    </div>
                                     <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
                                         <icon name="thumbs-up" style="position: relative; top: -3px;"/>
+                                        Best
+                                        <span class="score">Score {{resource.score}}</span>
                                     </div>
-                                    <!--
-                                    <p style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">{{resource.id}}</p>
-                                    -->
+                                    <div v-else class="resource-status" style="color: #888;">        
+                                        <span class="score">Score {{resource.score}}</span>
+                                    </div>
                                 </div>
                             </b-col>
                         </b-row>
@@ -481,24 +469,19 @@ background-color: #ddd;
 .resource {
 background-color: white;
 box-shadow: 2px 2px 5px #ddd;
-padding: 10px;
 margin-bottom: 10px;
 position: relative;
 }
 .resource-status {
-position: absolute;
-bottom: -5px;
-right: -8px;
 font-size: 10pt;
-text-align: center;
-padding-top: 13px;
 color: white;
 text-transform: uppercase;
-background-color: gray;
-width: 50px;
-height: 50px;
-border-radius: 50px;
-border: 3px solid white;
-box-shadow: 1px 1px 5px #999;
+background-color: #ddd;
+height: 30px;
+padding: 5px 10px;
+width: 100%;
+}
+.resource-status .score {
+float: right;
 }
 </style>

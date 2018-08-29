@@ -65,7 +65,7 @@ define({ "api": [
             "type": "Number",
             "optional": true,
             "field": "limit",
-            "description": "<p>Optional Maximum number of records to return - defaults to 0(no limit)</p>"
+            "description": "<p>Optional Maximum number of records to return</p>"
           },
           {
             "group": "Parameter",
@@ -535,17 +535,6 @@ define({ "api": [
   {
     "group": "Dataset",
     "type": "get",
-    "url": "/dataset/bibtex/:id",
-    "title": "Download BibTex JSON",
-    "description": "<p>Output BibTex JSON content for specified dataset ID</p>",
-    "version": "0.0.0",
-    "filename": "api/controllers/dataset.js",
-    "groupTitle": "Dataset",
-    "name": "GetDatasetBibtexId"
-  },
-  {
-    "group": "Dataset",
-    "type": "get",
     "url": "/dataset/distinct",
     "title": "Query distinct values",
     "description": "<p>Returns all dataset entries accessible to the user has access</p>",
@@ -723,56 +712,6 @@ define({ "api": [
   },
   {
     "group": "Dataset",
-    "type": "get",
-    "url": "/dataset/token",
-    "title": "Generate dataset access token",
-    "description": "<p>Issues warehouse jwt token that grants access to specified dataset IDs that user has access to</p>",
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "String[]",
-            "optional": false,
-            "field": "ids",
-            "description": "<p>List of dataset IDs to grant access</p>"
-          }
-        ]
-      }
-    },
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "String",
-            "optional": false,
-            "field": "authorization",
-            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
-          }
-        ]
-      }
-    },
-    "success": {
-      "fields": {
-        "Success 200": [
-          {
-            "group": "Success 200",
-            "type": "Object",
-            "optional": false,
-            "field": "Object",
-            "description": "<p>containing jwt: key</p>"
-          }
-        ]
-      }
-    },
-    "version": "0.0.0",
-    "filename": "api/controllers/dataset.js",
-    "groupTitle": "Dataset",
-    "name": "GetDatasetToken"
-  },
-  {
-    "group": "Dataset",
     "type": "post",
     "url": "/dataset",
     "title": "Create new dataset from wf service task",
@@ -796,17 +735,10 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "Object",
-            "optional": true,
-            "field": "app_id",
-            "description": "<p>Application used to generate this dataset (don't set if it's uploaded)</p>"
-          },
-          {
-            "group": "Parameter",
             "type": "String",
-            "optional": true,
+            "optional": false,
             "field": "output_id",
-            "description": "<p>Output ID of the app_id (not set if uploaded)</p>"
+            "description": "<p>App's output_id that generated this dataset</p>"
           },
           {
             "group": "Parameter",
@@ -890,6 +822,56 @@ define({ "api": [
     "filename": "api/controllers/dataset.js",
     "groupTitle": "Dataset",
     "name": "PostDataset"
+  },
+  {
+    "group": "Dataset",
+    "type": "post",
+    "url": "/dataset/token",
+    "title": "Generate dataset access token",
+    "description": "<p>Issues warehouse jwt token that grants access to specified dataset IDs that user has access to</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": false,
+            "field": "ids",
+            "description": "<p>List of dataset IDs to grant access</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "Object",
+            "description": "<p>containing jwt: key</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/dataset.js",
+    "groupTitle": "Dataset",
+    "name": "PostDatasetToken"
   },
   {
     "group": "Dataset",
@@ -1137,6 +1119,28 @@ define({ "api": [
   },
   {
     "group": "Pipeline_Rules",
+    "type": "get",
+    "url": "/rule/log/:ruleid",
+    "title": "Get the latest rule execution log",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "optional": false,
+            "field": "String",
+            "description": "<p>Return string containing the entire log</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/rule.js",
+    "groupTitle": "Pipeline_Rules",
+    "name": "GetRuleLogRuleid"
+  },
+  {
+    "group": "Pipeline_Rules",
     "type": "post",
     "url": "/rule/:pubid",
     "title": "Register new rule",
@@ -1206,13 +1210,6 @@ define({ "api": [
             "optional": false,
             "field": "config",
             "description": "<p>Application configuration</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Boolean",
-            "optional": false,
-            "field": "active",
-            "description": "<p>Activation flag</p>"
           }
         ]
       }
@@ -1326,13 +1323,6 @@ define({ "api": [
             "optional": false,
             "field": "removed",
             "description": "<p>If this is a removed publication</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Boolean",
-            "optional": false,
-            "field": "active",
-            "description": "<p>Activation flag</p>"
           }
         ]
       }
@@ -1520,6 +1510,13 @@ define({ "api": [
             "optional": false,
             "field": "members",
             "description": "<p>Members</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": false,
+            "field": "guests",
+            "description": "<p>Guest Members</p>"
           }
         ]
       }
@@ -1605,6 +1602,20 @@ define({ "api": [
             "optional": true,
             "field": "members",
             "description": "<p>List of admins (auth sub)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": true,
+            "field": "guests",
+            "description": "<p>List of guest users (auth sub)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": true,
+            "field": "agreemenets",
+            "description": "<p>List of data access agreemenets that user must check</p>"
           }
         ]
       }
@@ -1644,7 +1655,7 @@ define({ "api": [
     "group": "Publications",
     "type": "get",
     "url": "/pub",
-    "title": "Query registered publications",
+    "title": "Query registered publications (public)",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -1744,8 +1755,8 @@ define({ "api": [
   {
     "group": "Publications",
     "type": "get",
-    "url": "/pub/datasets-inventory/:pubid",
-    "title": "Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:pubid to get the actual list of datasets for each subject / datatypes / etc..",
+    "url": "/pub/datasets-inventory/:pubid Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:pubid to",
+    "title": "get the actual list of datasets for each subject / datatypes / etc..",
     "success": {
       "fields": {
         "Success 200": [
@@ -1762,7 +1773,7 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "api/controllers/pub.js",
     "groupTitle": "Publications",
-    "name": "GetPubDatasetsInventoryPubid"
+    "name": "GetPubDatasetsInventoryPubidGetCountsOfUniqueSubjectDatatypeDatatype_tagsYouCanThenUsePubDatasetsPubidTo"
   },
   {
     "group": "Publications",

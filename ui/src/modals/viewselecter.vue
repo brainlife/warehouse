@@ -121,8 +121,16 @@ export default {
             {
                 ui: "fslview",
                 name: "FSLView",
-                desc: "A 2d/3d brain volume viewer.",
+                desc: "An old 2d/3d brain volume viewer. Replaced by fsleyes",
                 avatar: "https://brainlife.io/images/ui-logos/fslview.png",
+                docker: true,
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
+            },
+            {
+                ui: "fsleyes",
+                name: "FSLeyes",
+                desc: "A 2d/3d brain volume viewer.",
+                avatar: "https://brainlife.io/images/ui-logos/fsleyes.png",
                 docker: true,
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
             },
