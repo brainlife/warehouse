@@ -445,8 +445,8 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
         },
 
         next=>{
-			logger.debug("registering new dataset record", req.body.meta);
-            new db.Datasets({
+			//logger.debug("registering new dataset record", req.body.meta);
+            let d = {
                 user_id: req.user.sub,
 
                 project: req.body.project,
@@ -457,7 +457,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 tags: req.body.tags||[],
 
                 prov: {
-                    task,
+                    task, //TODO - mongo doesn't allow key that contains ".".. I should do something about that.. 
 
                     //deprecated by prov.task (will be removed)
                     instance_id: task.instance_id,
@@ -467,8 +467,13 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                     subdir: req.body.subdir, //optional
                 },
                 meta: req.body.meta||{},
-            }).save((err, _dataset)=>{
+            };
+            console.log("registering new dataset.................");
+            console.dir(d);
+            new db.Datasets(d).save((err, _dataset)=>{
+                if(err) return next(err);
         		dataset = _dataset;
+                logger.debug("created dataset record......................", dataset.toObject());
                 res.json(dataset); //not respond back to the caller - but processing has just began
                 next(err);
             });

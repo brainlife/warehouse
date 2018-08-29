@@ -678,7 +678,7 @@ function handle_rule(rule, cb) {
                     body: {
                         instance_id: instance._id,
                         name: rule.app.name,
-                        desc: "running application:"+rule.app.name+" for rule:"+rule.name+" for subject:"+subject,
+                        //desc: "running application:"+rule.app.name+" for rule:"+rule.name+" for subject:"+subject,
                         service: rule.app.github,
                         service_branch: rule.app.github_branch,
                         retry: rule.app.retry,

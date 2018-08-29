@@ -458,15 +458,12 @@ exports.deref_contact = function(id) {
 }
 
 exports.populate_github_fields = function(repo, app, cb) {
-    //load github info
     exports.load_github_detail(repo, (err, repo, con_details)=>{
         if(err) return cb(err);
         app.desc = repo.description;
         app.tags = repo.topics;
-
         if(!app.stats) app.stats = {};
         app.stats.stars = repo.stargazers_count;
-
         app.contributors = con_details.map(con=>{
             //see https://api.github.com/users/francopestilli for other fields
             return {name: con.name, email: con.email};

@@ -68,7 +68,6 @@ function handle_app(app, cb) {
     }, (err, res, service)=>{
         if(err) return cb(err);
         if(res.statusCode != 200) return cb("couldn't obtain service stats "+res.statusCode);
-        //console.dir(service);
 
         //compute success rate
         let finished = service.counts.finished||0;
