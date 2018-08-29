@@ -69,7 +69,7 @@ function run() {
         async.eachSeries(rules, handle_rule, err=>{
             if(err) logger.error(err);
             logger.debug("done with all rules - sleeping for a while");
-            setTimeout(run, 1000*10);
+            setTimeout(run, 1000*3);
         });
 	});
 }
@@ -227,10 +227,111 @@ function handle_rule(rule, cb) {
             });
         },
 
+        //find all output datasets that this rule is looking for
+        next=>{
+            async.eachSeries(rule.app.outputs, (output, next_output)=>{
+                var query = {
+                    project: rule.project._id,
+                    datatype: output.datatype,
+                    //"meta.subject": subject,
+                    storage: { $exists: true },
+                    removed: false,
+                }
+                if(output.datatype_tags.length > 0) query.datatype_tags = { $all: output.datatype_tags };
+                if(rule.output_tags[output.id]) query.tags = { $all: rule.output_tags[output.id] }; 
+                db.Datasets.find(query)
+                .select('meta') 
+                .lean()
+                .exec((err, datasets)=>{
+                    if(err) return next_output(err);
+                    output._subjects = datasets.map(dataset=>dataset.meta.subject);
+                    next_output();
+                });
+            }, next);
+        },
+
+        //find all input datasets that this rule can use
+        next=>{
+            //var missing = false;
+            //var inputs = {};
+            logger.debug("finding inputs");
+            async.eachSeries(rule.app.inputs, (input, next_input)=>{
+                input._datasets = {}; //keyed by subject array of matchind datasets (should be sorted by "selection_method")
+
+                //defaults
+                var sort = "create_date";
+                var query = {
+                    project: rule.project._id,
+                    datatype: input.datatype,
+                    //"meta.subject": subject,
+                    storage: { $exists: true },
+                    removed: false,
+                }
+
+                /*
+                //see which selection method to usee
+                var selection_method = "latest";
+                if(rule.input_selection && rule.input_selection[input.id]) selection_method = rule.input_selection[input.id];
+                switch(selection_method) {
+                case "latest":
+                    sort = "create_date"; //find the latest
+                    break;
+                case "ignore": 
+                    //don't need to look for this input
+                    return next_input();
+                }
+                */
+                
+                //allow user to override which project to load input datasets from
+                if(rule.input_project_override && rule.input_project_override[input.id]) {
+                    query.project = rule.input_project_override[input.id];
+                } 
+                if(rule.input_tags[input.id]) {
+                    query.tags = { $all: rule.input_tags[input.id] }; 
+                }
+
+                db.Datasets.find(query)
+                .populate('datatype')
+                .sort(sort)
+                .lean()
+                .exec((err, datasets)=>{
+                    if(err) return next_input(err);
+
+                    //find first dataset that matches all tags
+                    //var matching_dataset = null;
+                    datasets.forEach(dataset=>{
+
+                        var match = true;
+                        input.datatype_tags.forEach(tag=>{
+                            if(tag[0] == "!") {
+                                //negative: make sure tag doesn't exist
+                                if(~dataset.datatype_tags.indexOf(tag.substring(1))) match = false;
+                            } else {
+                                //positive: make sure tag exists
+                                if(!~dataset.datatype_tags.indexOf(tag)) match = false;
+                            }
+                        });
+                        
+                        if(match) {
+                            if(!input._datasets[dataset.meta.subject]) input._datasets[dataset.meta.subject] = [];
+                            input._datasets[dataset.meta.subject].push(dataset);
+                        }
+                    });
+
+                    next_input(); 
+                });
+            }, next);
+        },
+
         //handle all subjects
         next=>{
             subjects.sort();
             async.eachSeries(subjects, handle_subject, next);
+        },
+
+        next=>{
+            logger.debug("done with this rule");
+            next();
         },
     ], err=>{
         if(err) return cb(err);
@@ -256,51 +357,60 @@ function handle_rule(rule, cb) {
         }
 
         rlogger.debug("handling subject", subject);
-
+        
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
-        var missing = false;
-        async.eachSeries(rule.app.outputs, (output, next_output)=>{
-            var query = {
-                project: rule.project._id,
-                datatype: output.datatype,
-                "meta.subject": subject,
-                storage: { $exists: true },
-                removed: false,
+        var output_missing = false;
+        rule.app.outputs.forEach(output=>{
+            if(!~output._subjects.indexOf(subject)) {
+                rlogger.debug("output dataset not yet created for id:", output.id);
+                output_missing = true;
             }
-            if(output.datatype_tags.length > 0) query.datatype_tags = { $all: output.datatype_tags };
-            if(rule.output_tags[output.id]) query.tags = { $all: rule.output_tags[output.id] }; 
-
-            db.Datasets.findOne(query)
-            .populate('datatype')
-            .exec((err, dataset)=>{
-                if(err) return next_output(err);
-                if(!dataset) {
-                    rlogger.debug("output dataset not yet created", output.id);
-                    missing = true;
-                }
-                next_output();
-            });
-        }, err=>{
-            if(err) return next_subject(err);
-            if(!missing) {
-                rlogger.info("all datasets accounted for.. skipping to next subject");
-                return next_subject();
-            }
-
-            //output datasets missing.. see if we can find all inputs
-            find_inputs(subject, (err, input_missing, inputs)=>{
-                if(err) return next_subject(err);
-                if(input_missing) {
-                    rlogger.info("Found the output datasets that need to be generated, but we can't find input datasets with specified datatype / tags to submit the task with.. skipping");
-                    next_subject();
-                } else {
-                    rlogger.info("Found the output datasets that need to be generated, and we have all the inputs! submitting tasks");
-                    submit_tasks(subject, inputs, next_subject);
-                }
-            });
         });
+        if(!output_missing) {
+            rlogger.info("all datasets accounted for.. skipping to next subject");
+            return next_subject();
+        }
+
+        //output datasets missing.. see if we can find all inputs
+        /*
+        find_inputs(subject, (err, input_missing, inputs)=>{
+            if(err) return next_subject(err);
+            if(input_missing) {
+                rlogger.info("Found the output datasets that need to be generated, but we can't find input datasets with specified datatype / tags to submit the task with.. skipping");
+                next_subject();
+            } else {
+                rlogger.info("Found the output datasets that need to be generated, and we have all the inputs! submitting tasks");
+                submit_tasks(subject, inputs, next_subject);
+            }
+        });
+        */
+
+        //make sure we have all datasets we need
+        let inputs = {};
+        let missing = false;
+        rule.app.inputs.forEach(input=>{
+            if(rule.input_selection && rule.input_selection[input.id]) {
+                let selection_method = rule.input_selection[input.id];
+                if(selection_method == "ignore") return; //we don't need this input
+            }
+            if(!input._datasets[subject]) {
+                missing = true;
+            } else {
+                inputs[input.id] = input._datasets[subject][0]; //use the first one for now.. (TODO for multiinput, we could grab all?)
+            }
+        });
+        if(missing) {
+            rlogger.info("Found the output datasets that need to be generated, but we can't find input datasets with specified datatype / tags to submit the task with.. skipping");
+            return next_subject();
+        }
+
+        //all good! 
+        rlogger.info("Found the output datasets that need to be generated, and we have all the inputs also! submitting tasks");
+        //console.dir(inputs);
+        submit_tasks(subject, inputs, next_subject);
     }
 
+    /*
     function find_inputs(subject, next) {
         var missing = false;
         var inputs = {};
@@ -372,6 +482,7 @@ function handle_rule(rule, cb) {
             else next(null, missing, inputs);
         });
     }
+    */
 
     function submit_tasks(subject, inputs, cb) {
         var instance = null;
@@ -611,7 +722,7 @@ function handle_rule(rule, cb) {
                     deps.push(task_stage._id);
 
                     rlogger.debug("submitted staging task");//, task_stage);
-                    console.log(JSON.stringify(_body, null, 4));
+                    //console.log(JSON.stringify(_body, null, 4));
                     next();
                 });
             },
@@ -690,7 +801,7 @@ function handle_rule(rule, cb) {
                 }, (err, res, _body)=>{
                     task_app = _body.task;
                     rlogger.debug("submitted app task", task_app._id);
-                    logger.debug("submitted app task", task_app);
+                    //logger.debug("submitted app task", task_app);
                     //console.log(JSON.stringify(_body, null, 4));
                     next(err);
                 });
