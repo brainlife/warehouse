@@ -149,7 +149,6 @@ export default {
         //subordiante of click method.. this and click methods are ugly..
         open_text: function(res, file, type) {
             res.text().then(c=>{
-
                 //reformat json content
                 if(type == "json") {
                     var j = JSON.parse(c);
@@ -158,25 +157,8 @@ export default {
 
                 if(c == "") c = "(empty)";
                 Vue.set(file, 'type', type);
-
                 Vue.set(file, 'content', c);
                 Vue.set(file, 'view', true);
-                /*
-                //TODO - can't get slideDown to work via css.. hack to animate height
-                //can't just transition with max-height?
-                var lines = c.trim().split("\n");
-                Vue.set(file, 'content', "");
-                Vue.set(file, 'view', true);
-                function addline() {
-                    file.content += lines.shift()+"\n";
-                    if(lines.length && file.content) {
-                        if(file.content.length < 2000) setTimeout(addline, 10);
-                        else file.content += lines.join("\n"); //add the rest all at once
-
-                    } 
-                }
-                setTimeout(addline, 10);
-                */
             });
         },
 
@@ -204,9 +186,7 @@ export default {
 
             //start downloading file to see what the file type is
             this.$http.get(url).then(res=>{
-                var mime = res.headers.get("Content-Type");
-
-                switch(mime) {
+                switch(res.headers.get("Content-Type")) {
                 case "application/json": 
                         this.open_text(res, file, "json");
                         return;
@@ -225,8 +205,9 @@ export default {
                         Vue.set(file, 'image_src', url);
                         Vue.set(file, 'view', true);
                         return;
+
+                case "application/octet-stream": //binary or unknown
                 case null:
-                    //for unknown content type, guess file type from extension
                     var tokens = file.filename.split(".");
                     var ext = tokens[tokens.length-1];
                     switch(ext) {
@@ -234,14 +215,16 @@ export default {
                     case "bvecs": 
                     case "err": 
                     case "jobid": 
+                    case "main": 
                         this.open_text(res, file, "text");
                         return;
                     }
                 }
 
-                //don't know how to open it..
-                console.log("opening new window - unknown file type", mime);
+                //don't know how to open it.. download.
                 document.location = url;
+            }).catch(err=>{
+                console.error(err);
             });
         }
     }
