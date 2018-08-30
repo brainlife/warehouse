@@ -27,7 +27,7 @@
                             <doibadge :doi="app.doi" v-if="app.doi" style="float: right; margin-bottom: 7px;"/>
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
-                        <appstats :app="app" style="clear: both;"/>
+                        <appstats :app="app" style="clear: both; border-top: 1px solid #f0f0f0; padding-top: 10px; margin-top: 5px;"/>
                     </b-col>
                 </b-row>
 

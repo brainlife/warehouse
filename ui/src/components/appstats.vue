@@ -10,7 +10,6 @@
     <b-col cols="2">
         <center>
             <p class="header">Status</p>
-
             <!-- TODO load from test status once we have it setup -->
             <statustag status="ok"/>
         </center>
@@ -120,12 +119,8 @@ export default {
 
 <style scoped>
 .appstats {
-padding: 5px;
-background-color: #f0f0f0;
-min-height: 50px;
-width: 100%;
 font-size: 90%;
-color: #666;
+color: #555;
 }
 .header {
 opacity: 0.5;
