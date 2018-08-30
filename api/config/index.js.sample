@@ -281,15 +281,40 @@ function get_wrangler_archive_path(dataset) {
 exports.storage_systems.wrangler = {
     need_backup: false,
     test: cb=>{
-        //TODO - I should do more checking?
-        //such as..
-        //    quota?
-        //    can I read / write? (and time?)
         connect_wrangler((err, sftp)=>{
             if(err) return cb(err);
-            cb();
+            console.log("loading quota.info from wrangler homedir.. should be created by cron..");
+            let stream = sftp.createReadStream("quota.info");
+            let content = "";
+            stream.on('readable', function() {
+                //could be called multiple times..
+                let chunk;
+                while (null !== (chunk = stream.read())) {
+                    content += chunk.toString();
+                }
+            });
+            stream.on('end', ()=>{
+                //console.dir(content);
+                
+                //parse quota content
+                let lines = content.split("\n");
+                if(lines[0] != "Disk quotas for usr hayashis (uid 833400):") {
+                    return cb("quota info looks odd.. "+content);
+                }
+                let stats = lines[3].trim().split(/[ ]+/);
+                let disk_used = parseInt(stats[0]);
+                let disk_quota = parseInt(stats[2]);
+                let files_used = parseInt(stats[4]);
+                let files_quota = parseInt(stats[6]);
+                //console.log(disk_used / disk_quota);
+                if(disk_used / disk_quota > 0.8) return cb("disk >80% used");
+                if(files_used / files_quota > 0.8) return cb("files >80% used");
+                //console.log("all good");
+                cb();
+            });
         });
     }, 
+
     stat: (dataset, cb)=>{
         connect_wrangler((err, sftp)=>{
             if(err) {

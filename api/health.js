@@ -9,7 +9,7 @@ const common = require('./common');
 common.redis.on('ready', ()=>{
     logger.info("health api");
     exports.health_check();
-    setInterval(exports.health_check, 1000*60); //post health status every minutes
+    setInterval(exports.health_check, 1000*60*5); //post health status every minutes
 });
 
 exports.health_check = function() {
@@ -19,6 +19,7 @@ exports.health_check = function() {
 		messages: [],
 		storages: {},
 		date: new Date(),
+        maxage: 1000*60*15, //15 min should be long enough..
 	}
 
     //check for storage system status
@@ -27,6 +28,7 @@ exports.health_check = function() {
         var system = config.storage_systems[system_id];
         system.test(err=>{
             if(err) {
+                logger.error("storage system:"+system_id+" failing "+err);
 				report.status = "failed";
 				report.messages.push(system_id+" "+err);
 				report.storages[system_id] = "failed";
