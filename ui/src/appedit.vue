@@ -231,6 +231,7 @@
                                 <b-col>
                                     <div class="text-muted">Datatype</div>
                                     <datatypeselecter v-model="output.datatype"></datatypeselecter>
+                                    <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype"/>
                                 </b-col>
                                 <b-col cols="7" v-if="output.datatype">
                                     <div class="text-muted">Datatype Tags</div>
@@ -464,12 +465,13 @@ import multiprojectselecter from '@/components/multiprojectselecter'
 import datatypeselecter from '@/components/datatypeselecter'
 import trueorfalse from '@/components/trueorfalse'
 import tageditor from '@/components/tageditor'
+import datatype from '@/components/datatype'
 
 export default {
     components: { 
         sidemenu, contactlist, 
         pageheader, multiprojectselecter,
-        datatypeselecter, trueorfalse, tageditor,
+        datatypeselecter, trueorfalse, tageditor, datatype,
 
         editor: require('vue2-ace-editor'),
     },

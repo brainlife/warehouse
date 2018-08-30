@@ -1,11 +1,11 @@
 <template>
-<div>
+<div style="display: inline-block; margin-right: 5px;">
     <span v-if="file.filename">
-        <icon name="file"></icon> 
+        <icon name="file" scale="0.8"></icon> 
         {{file.filename}}
     </span>
     <span v-if="file.dirname">
-        <icon name="folder"></icon> 
+        <icon name="folder" scale="0.8"></icon> 
         {{file.dirname}}
     </span>
     <span v-if="!file.required">(optional)</span>

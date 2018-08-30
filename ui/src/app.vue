@@ -140,7 +140,7 @@
 
                 <b-row v-if="app.retry">
                     <b-col cols="3">
-                        <b>Retry</b>
+                        <span class="form-header">Retry</span>
                     </b-col>
                     <b-col>
                         <p>If this app fails, it will automatically retry up to <b>{{app.retry}}</b> times</p>
@@ -152,14 +152,14 @@
                         <span class="form-header">Computing Resources</span>
                     </b-col>
                     <b-col>
-                        <b-alert show variant="danger" v-if="resources.length == 0">
+                        <b-alert show variant="danger" v-if="resources.length == 0" style="margin-bottom: 10px;">
                             This App is not registered to run on any resource that you have access to. If you are a developer of this App, please contact resource administrators and enable this App on more resources.
                         </b-alert>
-                        <b-alert show variant="warning" v-else-if="!preferred_resource">
+                        <b-alert show variant="warning" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
                             This App can not run on any registered resources that you have access to at this moment.
                         </b-alert>
                         <p v-else>
-                            <small class="text-muted">This App is registered to run on the following resources that you have access to.</small>
+                            <small class="text-muted">This App can run on the following resources.</small>
                         </p>
                         <b-row>
                             <b-col cols="4" v-for="resource in resources" :key="resource._id">

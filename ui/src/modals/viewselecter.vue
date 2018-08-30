@@ -124,7 +124,7 @@ export default {
                 desc: "An old 2d/3d brain volume viewer. Replaced by fsleyes",
                 avatar: "https://brainlife.io/images/ui-logos/fslview.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task" ],
             },
             {
                 ui: "fsleyes",
@@ -132,7 +132,7 @@ export default {
                 desc: "A 2d/3d brain volume viewer.",
                 avatar: "https://brainlife.io/images/ui-logos/fsleyes.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task" ],
             },
             {
                 ui: "mrview",
@@ -140,7 +140,7 @@ export default {
                 desc: "The MRtrix image viewer.",
                 avatar: "https://brainlife.io/images/ui-logos/mrview.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/track" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task" ],
             },
             {
                 ui: "mricrogl",
@@ -148,7 +148,7 @@ export default {
                 desc: "View 2D slices and renderings of your brain imaging data. It allows you to draw regions of interest which can aid lesion mapping and fMRI analysis.",
                 avatar: "https://brainlife.io/images/ui-logos/mricrogl.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task" ],
             },
             {
                 ui: "fibernavigator",
@@ -156,7 +156,7 @@ export default {
                 desc: "A tool designed for a fast and versatile visualization of streamline datasets.",
                 avatar: "https://brainlife.io/images/ui-logos/fibernavigator.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task" ],
             },
             {
                 ui: "freeview-gpu",

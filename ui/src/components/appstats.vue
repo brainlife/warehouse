@@ -1,15 +1,15 @@
 <template>
 <div class="appstats" v-if="app.stats">
 <b-row>
-    <b-col cols="2" style="border-right: 1px solid #ddd;">
+    <b-col cols="2">
         <center>
             <p class="header">Since</p>
             <span class="stat">{{new Date(app.create_date).toLocaleDateString()}}</span>
         </center>
     </b-col>
-    <b-col cols="2" style="border-right: 1px solid #ddd;">
+    <b-col cols="2">
         <center>
-            <p class="header">App&nbsp;Status</p>
+            <p class="header">Status</p>
 
             <!-- TODO load from test status once we have it setup -->
             <statustag status="ok"/>
@@ -41,7 +41,7 @@
             <p class="header">Success&nbsp;Rate</p>
         </center>
     </b-col>
-    <b-col cols="2" style="border-left: 1px solid #ddd;">
+    <b-col cols="2">
         <center>
             <!--
             <gh-btns-star :slug="app.github" show-count></gh-btns-star>

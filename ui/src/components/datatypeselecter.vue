@@ -2,6 +2,8 @@
 <div v-if='datatypes'>
     <v-select v-model="selected" :options="datatypes" label="name" placeholder="datatype">
         <template slot="option" slot-scope="datatype">
+            <datatype :datatype="datatype"/>
+            <!--
             <div class="item">
                 <div>
                     <datatypetag :datatype="datatype" :tags="[]" />
@@ -16,6 +18,7 @@
                     </small>
                 </div>
             </div>
+            -->
         </template>
     </v-select>
 </div>
@@ -25,11 +28,11 @@
 import Vue from 'vue'
 import vSelect from 'vue-select'
 
-import datatypetag from '@/components/datatypetag'
 import datatypefile from '@/components/datatypefile'
+import datatype from '@/components/datatype'
 
 export default {
-    components: { vSelect, datatypetag, datatypefile },
+    components: { vSelect, datatype},
     props: [ 'value' ],
     
     data () {
@@ -66,12 +69,3 @@ export default {
     },
 }
 </script>
-
-<style scoped>
-.item {
-    font-size:15px;
-    text-overflow:ellipsis;
-    overflow:hidden;
-    white-space:normal !important;
-}
-</style>

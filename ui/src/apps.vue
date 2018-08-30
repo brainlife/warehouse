@@ -22,6 +22,7 @@
     <div class="page-content" v-on:scroll="update_active" ref="scrolled">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div v-else>
+            <h3 show v-if="count == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
             <div v-for="tag in sorted_tags" :id="tag">
                 <h4 class="group-title">{{tag}}</h4> 
                 <div v-for="app in app_groups[tag]" :key="app._id" class="app">
@@ -39,7 +40,7 @@
 
             <br>
 
-            <p style="padding: 20px 20px; opacity: 0.5; border-top: solid 1px #ddd;">
+            <p style="padding: 20px 20px; opacity: 0.5; border-top: solid 1px #ddd;" v-if="count > 0">
                 <span style="float: right">
                     Showing {{count}} Apps
                 </span>
@@ -135,7 +136,7 @@ export default {
                     //lookup datatype ids that matches the query
                     let datatype_ids = [];
                     for(var id in this.datatypes) {
-                        if(this.datatypes[id].name.includes(q)) datatype_ids.push(id);
+                        if(this.datatypes[id].name.toLowerCase().includes(q.toLowerCase())) datatype_ids.push(id);
                     }
                     ands.push({$or: [
                         {"name": {$regex: q, $options: 'i'}},

@@ -1,15 +1,23 @@
 <template>
-<div v-if="datatype" class="datatype">
-    <div class="header">
-        <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id"/>
-        <small class="text-muted">{{datatype.desc}}</small>
+<div v-if="datatype">
+    <!--
+    <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id"/>
+    <small class="text-muted">{{datatype.desc}}</small>
+    <br>
+    
+    <span v-for="file in datatype.files" :key="file.id" :class="{'text-muted': !file.required}">
+        <datatypefile :file="file"/>
+    </span>
+    -->
+    <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id"/>
+    <div>
+        <small style="opacity:.7;">{{datatype.desc}}</small>
     </div>
-    <div class="body">
-        <b-row>
-            <b-col cols="4" v-for="file in datatype.files" :key="file.id" :class="{'text-muted': !file.required}">
-                <datatypefile :file="file"/>
-            </b-col>
-        </b-row>
+    <div>
+        <small v-for="(file, idx) in datatype.files" :key="file.id" style='opacity:.5;'>
+            {{ idx == 0 ? '' : '&bull;' }}
+            {{ file.filename || file.dirname + '/' }}
+        </small>
     </div>
 </div>
 </template>
@@ -22,7 +30,17 @@ import datatypefile from '@/components/datatypefile'
 
 export default {
     components: { tags, datatypetag, datatypefile },
-    props: ['datatype', 'datatype_tags', 'id'],
+    props: {
+        datatype: Object,
+        datatype_tags: Object,
+        id: String,
+        /*
+        showtag: {
+            type: Boolean,
+            default: true,
+        }
+        */
+    },
     data() {
         return {
             activeSections: ['files']
@@ -33,15 +51,9 @@ export default {
 
 <style scoped>
 .datatype {
-box-shadow: 1px 1px 2px rgba(0,0,0,0.10);
-}
-.header {
-padding: 10px;
-}
-.body {
-padding: 10px;
-background-color: white;
+    font-size:15px;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    white-space:normal !important;
 }
 </style>
-
-
