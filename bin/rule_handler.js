@@ -104,13 +104,13 @@ function handle_rule(rule, cb) {
             //if updated, go ahead and handle it
             if(rule.update_date > rule.handle_date) return next();
 
+            //see if any datasets that this rule uses as input got updates recently
             let projects = [ rule.project._id ];
             if(rule.input_project_override) {
                 for(var input_id in rule.input_project_override) {
                     projects.push(rule.input_project_override[input_id]); 
                 }
             }                
-
             db.Datasets.findOne({
                 project: { $in: projects }, 
                 update_date: { $exists: true } , 

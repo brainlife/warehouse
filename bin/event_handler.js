@@ -126,6 +126,9 @@ function handle_task(task, cb) {
             if(!output.archive) return next_output();
             archive_dataset(task, output, next_output);
         }, cb);
+    } else if(task.status == "removed" && task.config && task.config._rule) {
+        logger.info("rule submitted task is removed. updating update_date:"+task.config._rule.id);
+        db.Rules.findOneAndUpdate({_id: task.config._rule.id}, {$set: {update_date: new Date()}}, cb);
     } else {
         logger.debug("ignoring task", task._id, task.status, task.name);
         cb();
