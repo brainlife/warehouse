@@ -27,10 +27,6 @@
                         <div style="float: right; width: 150px;">
                             <contact :id="rule.user_id" size="tiny"/>
                         </div>
-                        <div class="rule-controls" style="float: right;">
-                            <div class="button" @click.stop="edit(rule)" v-if="ismember() || isadmin()"><icon name="edit"/></div>
-                            <div class="button" @click.stop="remove(rule)" v-if="ismember() || isadmin()"><icon name="trash"/></div>
-                        </div>
                         <div>
                             <!--
                             <div class="bg-dark" style="color: white; float:left; width: 60px" v-if="rule.removed" variant="danger">Removed</div>
@@ -47,10 +43,14 @@
                     <!--rule body-->
                     <div v-if="selected == rule" transition="expand">
                         <div v-if="rule.active">
-                            <p v-if="rule.active" class="text-muted" style="background-color: #f3f3f3; padding: 10px; margin-bottom: 0px;">
-                                <b-btn style="float: right; position: relative; top: -4px" @click="deactivate(rule)" variant="danger" size="sm"><icon name="times"/> Deactivate</b-btn>
+                            <div v-if="rule.active" class="text-muted" style="background-color: #f3f3f3; padding: 10px;">
+                                <div style="float: right; position: relative; top: -4px; right: 4px;">
+                                    <b-btn @click="deactivate(rule)" variant="danger" size="sm"><icon name="times"/> Deactivate</b-btn>
+                                    <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm" style="opacity: 0.5;"><icon name="edit"/></b-btn>
+                                    <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger" style="opacity: 0.5;"><icon name="trash"/></b-btn>
+                                </div>
                                 Rule Status
-                            </p>
+                            </div>
                             <!--
                             <div style="margin: 10px;">
                                 <b style="opacity: 0.5;">{{rule_task_count}} Tasks Submitted</b> 
@@ -60,10 +60,14 @@
                             <br>
                         </div>
                     
-                        <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">
-                            <b-btn @click="activate(rule)" style="float: right; position: relative; top: -4px" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Activate</b-btn>
+                        <div class="text-muted" style="background-color: #f3f3f3; padding: 10px; margin-bottom: 10px;">
+                            <div style="float: right; position: relative; top: -4px; right: 4px;">
+                                <b-btn @click="activate(rule)" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Activate</b-btn>
+                                <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></b-btn>
+                                <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger"><icon name="trash"/></b-btn>
+                            </div>
                             Submit the following App and archive all output datasets to this project
-                        </p>
+                        </div>
                         <b-row>
                             <b-col>
                                 <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 30px; margin-bottom: 10px;"/>
@@ -309,7 +313,7 @@ export default {
                 //scroll to the selected rule (TODO - I think I should delay until animation is over?)
                 if(this.selected) {
                     var elem = document.getElementById(this.selected._id);
-                    this.$refs.scrolled.scrollTop = elem.offsetTop;
+                    this.$refs.scrolled.scrollTop = elem.offsetTop-50;
                 }
             });
         },
@@ -431,6 +435,7 @@ transition: background-color 0.3s;
 padding: 7px;
 font-size: 88%;
 }
+/*
 .rule-header .rule-controls {
 opacity: 0;
 transition: opacity 0.2s;
@@ -447,6 +452,7 @@ opacity: 1;
 .rule.rule-active .rule-header:hover .rule-controls {
 opacity: 0.3;
 }
+*/
 
 .rule.rule-selected .rule-header {
 padding: 15px;
