@@ -1,100 +1,121 @@
 <template>
 <div v-if="ready">
-    <div class="page-header with-menu header">
+    <div v-if="!editing" class="page-header with-menu header">
         <div style="margin-top: 2px; margin-left: 10px;">
+            <div style="margin-right: 20px; padding: 0px 15px; opacity: 0.8; line-height: 200%;">
+                <div class="date">
+                    <small>Create Date</small>
+                </div>
+            </div>
             <b>{{rules.length}}</b> Pipeline Rules
         </div>
     </div>
     <div class="page-content with-menu content" ref="scrolled">
         <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
-        <div v-else>
+        <div v-else style="padding-top: 50px;">
             <!--list view-->
             <div class="margin20" v-if="rules.length == 0">
                 <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
                 <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brain-life.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
             </div>
-            <!--header-->
-            <div v-else style="margin-right: 20px; padding: 5px 15px; opacity: 0.8; line-height: 200%;">
-                <div class="date">
-                    <small>Create Date</small>
-                </div>
-            </div>
-            <br clear="both">
-            <div v-for="rule in rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-active': selected == rule}" class="rule" v-if="rule.removed == false">
-                <div class="rule-header" @click="toggle(rule)">
-                    <div style="float: right; width: 130px; text-align: right;">
-                        <timeago :since="rule.create_date" :auto-update="10"/>
+            <div class="rules">
+                <div v-for="rule in rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-active': rule.active}" class="rule" v-if="rule.removed == false">
+                    <div class="rule-header" @click="toggle(rule)">
+                        <div style="float: right; width: 130px; text-align: right;">
+                            <timeago :since="rule.create_date" :auto-update="10"/>
+                        </div>
+                        <div style="float: right; width: 150px;">
+                            <contact :id="rule.user_id" size="tiny"/>
+                        </div>
+                        <div class="rule-controls" style="float: right;">
+                            <div class="button" @click.stop="edit(rule)" v-if="ismember() || isadmin()"><icon name="edit"/></div>
+                            <div class="button" @click.stop="remove(rule)" v-if="ismember() || isadmin()"><icon name="trash"/></div>
+                        </div>
+                        <div>
+                            <!--
+                            <div class="bg-dark" style="color: white; float:left; width: 60px" v-if="rule.removed" variant="danger">Removed</div>
+                            -->
+                            <div class="bg-success" style="color: white; float:left; padding: 0px 5px;" v-if="rule.active">Active</div>
+                            <div class="bg-danger" style="color: white; float:left; padding: 0px 5px;" v-else>Inactive</div>
+                            <div style="margin-left: 80px">
+                                <span>{{rule.app.name}}</span>
+                                <small style="opacity: 0.5">{{rule.name}}</small>
+                            </div>
+                        </div>
                     </div>
-                    <div style="float: right; width: 150px;">
-                        <contact :id="rule.user_id" size="tiny"/>
-                    </div>
-                    <div class="rule-controls" style="float: right;">
-                        <div class="button" @click.stop="edit(rule)" v-if="ismember() || isadmin()"><icon name="edit"/></div>
-                        <div class="button" @click.stop="remove(rule)" v-if="ismember() || isadmin()"><icon name="trash"/></div>
-                    </div>
-                    <div>
-                        <b-badge v-if="rule.removed" variant="danger">Removed</b-badge>
-                        <b-badge variant="success" v-if="rule.active">ON</b-badge>
-                        <b-badge variant="danger" v-else>OFF</b-badge>
-                        <span>{{rule.app.name}}</span>
-                        <small style="opacity: 0.5">{{rule.name}}</small>
-                    </div>
-                </div>
 
-                <div class="rule-body" v-if="selected == rule" transition="expand">
-                    <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Submit the following app and archive output datasets to this project</p>
-                    <b-row>
-                        <b-col>
-                            <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 30px; margin-bottom: 10px;"/>
-                        </b-col>
-                        <b-col>
-                            <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
-                            <tbody>
-                                <tr v-for="(v,k) in rule.config" :key="k">
-                                    <th :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
-                                    <th v-if="typeof v == 'object'">
-                                        <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
-                                    </th>
-                                    <th v-else>{{v}}</th>
-                                </tr>
-                            </tbody>
-                            </table>
-                        </b-col>
-                    </b-row>
-
-                    <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">On subjects with the following set of archived datasets</p>
-                    <div style="padding-left: 30px;">
-                        <p v-if="rule.subject_match">
-                            <span class="text-muted">Only process subjects that matches regex</span> <b>{{rule.subject_match}}</b>
-                        </p>       
-                        <p v-for="input in rule.app.inputs" :key="input.id">
-                            <small style="float: right; margin-right: 10px;">{{input.id}}</small>
-                            <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" v-if="datatypes"/>
-                            <span v-if="rule.input_tags && rule.input_tags[input.id] && rule.input_tags[input.id].length > 0">
-                                <small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>
-                            </span>
-                            <span v-if="rule.input_project_override && rule.input_project_override[input.id] && projects[rule.input_project_override[input.id]]" class="text-muted">
-                                From <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
-                            </span>
-                            <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
+                    <!--rule body-->
+                    <div v-if="selected == rule" transition="expand">
+                        <div v-if="rule.active">
+                            <p v-if="rule.active" class="text-muted" style="background-color: #f3f3f3; padding: 10px; margin-bottom: 0px;">
+                                <b-btn style="float: right; position: relative; top: -4px" @click="deactivate(rule)" variant="danger" size="sm"><icon name="times"/> Deactivate</b-btn>
+                                Rule Status
+                            </p>
+                            <!--
+                            <div style="margin: 10px;">
+                                <b style="opacity: 0.5;">{{rule_task_count}} Tasks Submitted</b> 
+                            </div>
+                            -->
+                            <rulelog :id="rule._id"/>
+                            <br>
+                        </div>
+                    
+                        <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">
+                            <b-btn @click="activate(rule)" style="float: right; position: relative; top: -4px" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Activate</b-btn>
+                            Submit the following App and archive all output datasets to this project
                         </p>
-                    </div>
+                        <b-row>
+                            <b-col>
+                                <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 30px; margin-bottom: 10px;"/>
+                            </b-col>
+                            <b-col>
+                                <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
+                                <tbody>
+                                    <tr v-for="(v,k) in rule.config" :key="k">
+                                        <th :cols="3" style="font-size: 90%; opacity: 0.7">&nbsp;&nbsp;{{k}}</th>
+                                        <th v-if="typeof v == 'object'">
+                                            <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
+                                        </th>
+                                        <th v-else>{{v}}</th>
+                                    </tr>
+                                </tbody>
+                                </table>
+                            </b-col>
+                        </b-row>
 
-                    <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Only if the following output datasets aren't archived for the subject yet</p>
-                    <div style="margin-left: 30px;">
-                        <p v-for="output in rule.app.outputs" :key="output.id">
-                            <small style="float: right; margin-right: 10px">{{output.id}}</small>
-                            <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" v-if="datatypes"/>
-                            <span v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">
-                                <small class="text-muted">with dataset tags of</small> <tags :tags="rule.output_tags[output.id]"/>
-                            </span>
-                        </p>
-                    </div>
+                        <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">On subjects with the following set of archived datasets</p>
+                        <div style="padding-left: 30px;">
+                            <p v-if="rule.subject_match">
+                                <span class="text-muted">Only process subjects that matches regex</span> <b>{{rule.subject_match}}</b>
+                            </p>       
+                            <p v-for="input in rule.app.inputs" :key="input.id">
+                                <small style="float: right; margin-right: 10px;">{{input.id}}</small>
+                                <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" v-if="datatypes"/>
+                                <span v-if="rule.input_tags && rule.input_tags[input.id] && rule.input_tags[input.id].length > 0">
+                                    <small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>
+                                </span>
+                                <span v-if="rule.input_project_override && rule.input_project_override[input.id] && projects[rule.input_project_override[input.id]]" class="text-muted">
+                                    From <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
+                                </span>
+                                <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
+                            </p>
+                        </div>
 
-                    <p class="text-muted" style="background-color: #f3f3f3; padding: 10px; margin-bottom: 0px">Log</p>
-                    <rulelog :id="rule._id"/>
-                </div><!--rule-body-->
-            </div><!--rule-->
+                        <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Only if the following output datasets aren't archived for the subject yet</p>
+                        <div style="margin-left: 30px;">
+                            <p v-for="output in rule.app.outputs" :key="output.id">
+                                <small style="float: right; margin-right: 10px">{{output.id}}</small>
+                                <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" v-if="datatypes"/>
+                                <span v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">
+                                    <small class="text-muted">with dataset tags of</small> <tags :tags="rule.output_tags[output.id]"/>
+                                </span>
+                            </p>
+                        </div>
+
+                        <br>
+                    </div>
+                </div><!--rule-->
+            </div><!--rules-->
 
             <p style="padding-top: 100px;">&nbsp;</p>
             <b-button v-if="isadmin() || ismember()" @click="newrule" class="button-fixed" title="Create new rule">
@@ -116,6 +137,8 @@ import ruleform from '@/components/ruleform'
 import rulelog from '@/components/rulelog'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+
+const async = require("async");
 
 var debounce = null;
 
@@ -139,6 +162,9 @@ export default {
 
             //input_matches: {},
             //output_matches: {},
+
+            //task information for selected rule
+            //rule_task_count: null,
 
             config: Vue.config,
         }
@@ -179,6 +205,7 @@ export default {
                     this.editing = this.rules.find(rule=>rule._id == this.$route.params.subid);
                 }
 
+                //TODO - why is this needed?
                 if(this.selected) {
                     this.selected = this.rules.find(rule=>rule._id == this.selected._id); //need to reselect..
                 }
@@ -250,31 +277,32 @@ export default {
             return false;
         },
 
-        notify_error: function(err) {
+        notify_error(err) {
             console.error(err);
             console.error(err.status);
             this.$notify({type: 'error', text: err.body.message||err.status});
         },
 
-        newrule: function() {
+        newrule() {
             //set to default
             this.editing = {
                 name: "",
                 config: {},
-                active: false,
+                active: true,
                 removed: false,
             };
             this.$refs.scrolled.scrollTop = 0;
         },
 
-        edit: function(rule) {
+        edit(rule) {
+            if(rule.active) return alert("Please deactivate the rule before editing it");
             this.$router.push("/project/"+this.project._id+"/pipeline/"+rule._id);
             this.$refs.scrolled.scrollTop = 0;
             this.editing = rule;
             this.selected = rule; //I think it makes sense to select rule that user is editing?
         },
 
-        cancel_edit: function() {
+        cancel_edit() {
             this.editing = null;
             this.$router.push("/project/"+this.project._id+"/pipeline");
             Vue.nextTick(()=>{
@@ -286,7 +314,7 @@ export default {
             });
         },
 
-        submit: function(rule) {
+        submit(rule) {
             rule.project = this.project._id; //rule editor doesn't set project id.
             if(rule._id) {
                 //update
@@ -308,7 +336,8 @@ export default {
             }
         },
 
-        remove: function(rule) {
+        remove(rule) {
+            if(rule.active) return alert("Please deactivate the rule before removing it");
             if(confirm("Do you really want to remove this rule?")) {
                 this.$http.delete('rule/'+rule._id)
                 .then(res=>{
@@ -318,17 +347,66 @@ export default {
             }
         },
 
-        toggle: function(rule) {
-            if(this.selected == rule) this.selected = null;
-            else {
+        toggle(rule) {
+            if(this.selected == rule) {
+                this.selected = null;
+            } else {
                 this.selected = rule;
                 Vue.nextTick(()=>{
                     //scroll to the selected rule (TODO - I think I should delay until animation is over?)
                     var elem = document.getElementById(rule._id);
-                    this.$refs.scrolled.scrollTop = elem.offsetTop;
+                    this.$refs.scrolled.scrollTop = elem.offsetTop-50;
+                });
+
+                /*
+                //load task info for this rule
+                this.$http.get(Vue.config.amaretti_api+"/task", {params: {
+                    find: JSON.stringify({
+                        'config._rule.id': rule._id
+                    }),
+                    limit: 0, //I just need a count
+                }})
+                .then(res=>{
+                    this.rule_task_count = res.body.count;
+                });
+                */
+            }
+        },
+
+        activate(rule) {
+            this.$http.put('rule/'+rule._id, {active: true}).then(res=>{
+                rule.active = true;
+            }).catch(this.notify_error);
+        },
+
+        deactivate(rule) {
+            if(confirm("Deactivating rule will remove all active tasks submitted by this rule. Should we proceed?")) {
+                this.$http.get(Vue.config.amaretti_api+"/task", {params: {
+                    find: JSON.stringify({
+                        'config._rule.id': rule._id,
+                        status: {$ne: "removed"},
+                    }),
+                    limit: 5000, //big enough to grab all tasks?
+                }})
+                .then(res=>{
+                    this.$notify({ title: 'Removing Task', text: 'Removing'+res.body.count+' tasks', type: 'info', });
+                    async.eachSeries(res.body.tasks, (task, next_task)=>{
+                        console.log("removing", task._id);
+                        this.$http.delete(Vue.config.wf_api+'/task/'+task._id).then(res=>{
+                            next_task();
+                        }).catch(next_task);
+                    }, err=>{
+                        if(err) return this.notify_error(err);
+                        this.$notify({ title: 'Removing Task', text: 'Removed '+res.body.count+' tasks', type: 'success', });
+                        console.log("now deactivating rule");
+                        this.$http.put('rule/'+rule._id, {active: false}).then(res=>{
+                            rule.active = false;
+                        }).catch(this.notify_error);
+                    });
                 });
             }
         },
+
     },
 };
 
@@ -344,37 +422,52 @@ background-color: white;
 .rule:first-child {
 margin-top: 2px;
 }
-
-.rule.rule-active {
-margin: 20px 0px;
+.rule.rule-selected {
+margin: 0px;
 }
 .rule-header {
 cursor: pointer;
 transition: background-color 0.3s;
-padding: 10px;
-padding-top: 5px;
+padding: 7px;
 font-size: 88%;
-}
-.rule-header:hover {
-cursor: pointer;
-background-color: #ddd;
 }
 .rule-header .rule-controls {
 opacity: 0;
 transition: opacity 0.2s;
 display: inline-block;
 margin-right: 10px;
+position: relative;
+top: -4px;
 }
-.rule.rule-active .rule-controls,
+.rule.rule-selected .rule-controls,
 .rule-header:hover .rule-controls {
 opacity: 1;
 }
-.rule.rule-active .rule-header {
-padding: 20px;
+.rule.rule-selected.rule-active .rule-controls,
+.rule.rule-active .rule-header:hover .rule-controls {
+opacity: 0.3;
+}
+
+.rule.rule-selected .rule-header {
+padding: 15px;
 position: sticky;
 top: 0px;
 background-color: white;
-z-index: 2; /*make it on top of the most content*/
+z-index: 5; /*make it on top of the most content*/
+}
+.rule:not(.rule-active) .rule-header {
+background-color: #ccc;
+color: #999;
+}
+.rule.rule-selected:not(:first-child) .rule-header {
+margin-top: 20px;
+}
+.rule.rule-selected {
+margin-bottom: 20px;
+}
+.rule-header:hover {
+cursor: pointer;
+background-color: #ddd;
 }
 
 .expand-transition {
@@ -399,7 +492,7 @@ z-index: 1; /*needed to make sort order dropdown box to show up on top of page-c
 height: 40px;
 }
 .content {
-top: 100px;
+top: 50px;
 margin-top: 40px;
 overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
 }

@@ -175,7 +175,7 @@ export default {
 }
 .button-fixed {
 opacity: 0;
-left: 260px;
+left: 240px;
 }
 .projectmenu:hover .button-fixed {
 opacity: 0.8;

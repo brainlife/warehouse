@@ -325,6 +325,7 @@ export default {
 border-bottom: 1px solid #ccc;
 overflow: hidden;
 background-color: white;
+z-index: 1;
 }
 .page-content {
 margin-top: 50px;
