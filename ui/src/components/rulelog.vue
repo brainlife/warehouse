@@ -1,10 +1,12 @@
 <template>
 <div>
-    <div style="opacity: 0.5; padding: 10px">
-        <b style="float: right; margin-right: 30px">{{taskcount}} Active Tasks</b>
-        <div class="button" @click="load"><icon name="sync-alt"/></div>
-        <span v-if="err">Hasn't run yet</span>
-        <span v-if="stats"><timeago :since="stats.mtime" :auto-update="10"/></span>
+    <div style="opacity: 0.5; margin: 10px;">
+        <div style="float: right;">
+            <div class="button" @click="load"><icon name="sync-alt"/></div>
+            <span v-if="err">Hasn't run yet</span>
+            <span v-if="stats"><timeago :since="stats.mtime" :auto-update="10"/></span>
+        </div>
+        <b>{{taskcount}} Active Tasks</b>
     </div>
     <pre v-if="logs" v-highlightjs>{{logs}}</pre>
 </div>
@@ -81,7 +83,6 @@ pre {
 background-color: #f9f9f9;
 font-size: 75%;
 padding: 10px; 
-margin-right: 30px; 
 max-height: 350px; 
 overflow-y: auto;
 }

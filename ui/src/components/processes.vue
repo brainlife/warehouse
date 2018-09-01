@@ -258,7 +258,7 @@ export default {
         load() {
             this.check_agreements(this.project, ()=>{
                 let group_id = this.project.group_id;
-                this.order = window.localStorage.getItem("processes.order."+group_id)||"date";
+                this.order = window.localStorage.getItem("processes.order."+group_id)||"create_date";
                 this.show = window.localStorage.getItem("processes.show."+group_id)||null;
                 this.load_instances(err=>{
                     if(err) return this.notify_error(err);

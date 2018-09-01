@@ -2,75 +2,78 @@
 <div v-if="ready">
     <div v-if="!editing" class="page-header with-menu header">
         <div style="margin-top: 2px; margin-left: 10px;">
-            <div style="margin-right: 20px; padding: 0px 15px; opacity: 0.8; line-height: 200%;">
-                <div class="date">
-                    <small>Create Date</small>
+            <div v-if="rules.length > 0" style="float: right">
+                <div style="display: inline-block;">
+                    <small>Order by</small>
+                    <b-dropdown :text="order" size="sm" :variant="'light'">
+                        <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
+                        <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
+                        <b-dropdown-divider></b-dropdown-divider>
+                        <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
+                        <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
+                        <b-dropdown-divider></b-dropdown-divider>
+                        <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
+                        <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
+                    </b-dropdown>
                 </div>
+                <div class="date">Create Date</div>
+                <div class="date">Update Date</div>
             </div>
             <b>{{rules.length}}</b> Pipeline Rules
         </div>
     </div>
-    <div class="page-content with-menu content" ref="scrolled">
-        <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
-        <div v-else style="padding-top: 50px;">
-            <!--list view-->
-            <div class="margin20" v-if="rules.length == 0">
-                <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
-                <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brain-life.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
-            </div>
-            <div class="rules">
-                <div v-for="rule in rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-active': rule.active}" class="rule" v-if="rule.removed == false">
-                    <div class="rule-header" @click="toggle(rule)">
-                        <div style="float: right; width: 130px; text-align: right;">
-                            <timeago :since="rule.create_date" :auto-update="10"/>
-                        </div>
-                        <div style="float: right; width: 150px;">
-                            <contact :id="rule.user_id" size="tiny"/>
-                        </div>
-                        <div>
-                            <!--
-                            <div class="bg-dark" style="color: white; float:left; width: 60px" v-if="rule.removed" variant="danger">Removed</div>
-                            -->
-                            <div class="bg-success" style="color: white; float:left; padding: 0px 5px;" v-if="rule.active">Active</div>
-                            <div class="bg-danger" style="color: white; float:left; padding: 0px 5px;" v-else>Inactive</div>
-                            <div style="margin-left: 80px">
-                                <span>{{rule.app.name}}</span>
-                                <small style="opacity: 0.5">{{rule.name}}</small>
-                            </div>
+    <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
+    <div v-else class="page-content with-menu content" ref="scrolled">
+        <!--list view-->
+        <div class="margin20" v-if="rules.length == 0">
+            <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
+            <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brain-life.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
+        </div>
+        <div class="rules">
+            <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-active': rule.active}" class="rule" v-if="rule.removed == false">
+                <div class="rule-header" @click="toggle(rule)">
+                    <div style="float: right; width: 110px; text-align: right;">
+                        <timeago :since="rule.update_date" :auto-update="10"/>
+                    </div>
+                    <div style="float: right; width: 110px; text-align: right;">
+                        <timeago :since="rule.create_date" :auto-update="10"/>
+                    </div>
+                    <div style="float: right;">
+                        <contact :id="rule.user_id" size="tiny"/>
+                    </div>
+                    <div>
+                        <!--
+                        <div class="bg-dark" style="color: white; float:left; width: 60px" v-if="rule.removed" variant="danger">Removed</div>
+                        -->
+                        <div class="bg-success" style="color: white; float:left; padding: 0px 5px;" v-if="rule.active">Active</div>
+                        <div class="bg-danger" style="color: white; float:left; padding: 0px 5px;" v-else>Inactive</div>
+                        <div style="margin-left: 80px">
+                            <span>{{rule.app.name}}</span>
+                            <small style="opacity: 0.5">{{rule.name}}</small>
                         </div>
                     </div>
+                </div>
 
-                    <!--rule body-->
-                    <div v-if="selected == rule" transition="expand">
-                        <div v-if="rule.active">
-                            <div v-if="rule.active" class="text-muted" style="background-color: #f3f3f3; padding: 10px;">
-                                <div style="float: right; position: relative; top: -4px; right: 4px;">
-                                    <b-btn @click="deactivate(rule)" variant="danger" size="sm"><icon name="times"/> Deactivate</b-btn>
-                                    <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm" style="opacity: 0.5;"><icon name="edit"/></b-btn>
-                                    <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger" style="opacity: 0.5;"><icon name="trash"/></b-btn>
-                                </div>
-                                Rule Status
-                            </div>
-                            <!--
-                            <div style="margin: 10px;">
-                                <b style="opacity: 0.5;">{{rule_task_count}} Tasks Submitted</b> 
-                            </div>
-                            -->
-                            <rulelog :id="rule._id"/>
-                            <br>
-                        </div>
-                    
-                        <div class="text-muted" style="background-color: #f3f3f3; padding: 10px; margin-bottom: 10px;">
-                            <div style="float: right; position: relative; top: -4px; right: 4px;">
-                                <b-btn @click="activate(rule)" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Activate</b-btn>
-                                <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></b-btn>
-                                <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger"><icon name="trash"/></b-btn>
-                            </div>
+                <!--rule body-->
+                <div v-if="selected == rule" transition="expand">
+                    <div style="padding: 10px;">
+                        <span style="float: right; margin-right: 90px;">
+                            <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></b-btn>
+                            <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger"><icon name="trash"/></b-btn>
+                        </span>
+                        <span>
+                            <b-btn @click="deactivate(rule)" variant="danger" size="sm" v-if="rule.active"><icon name="times"/> Deactivate</b-btn>
+                            <b-btn @click="activate(rule)" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Activate</b-btn>
+                        </span>
+                    </div>
+
+                    <div style="margin-right: 100px; background-color: white; box-shadow: 1px 1px 2px #999">
+                        <div class="section-header">
                             Submit the following App and archive all output datasets to this project
                         </div>
                         <b-row>
                             <b-col>
-                                <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 30px; margin-bottom: 10px;"/>
+                                <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 10px; margin-bottom: 10px;"/>
                             </b-col>
                             <b-col>
                                 <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
@@ -87,7 +90,9 @@
                             </b-col>
                         </b-row>
 
-                        <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">On subjects with the following set of archived datasets</p>
+                        <div class="section-header">
+                            On subjects with the following set of archived datasets
+                        </div>
                         <div style="padding-left: 30px;">
                             <p v-if="rule.subject_match">
                                 <span class="text-muted">Only process subjects that matches regex</span> <b>{{rule.subject_match}}</b>
@@ -105,7 +110,9 @@
                             </p>
                         </div>
 
-                        <p class="text-muted" style="background-color: #f3f3f3; padding: 10px;">Only if the following output datasets aren't archived for the subject yet</p>
+                        <div class="section-header">
+                            Only if the following output datasets aren't archived for the subject yet
+                        </div>
                         <div style="margin-left: 30px;">
                             <p v-for="output in rule.app.outputs" :key="output.id">
                                 <small style="float: right; margin-right: 10px">{{output.id}}</small>
@@ -116,17 +123,19 @@
                             </p>
                         </div>
 
+                        <div class="section-header">Log</div>
+                        <rulelog :id="rule._id"/>
                         <br>
                     </div>
-                </div><!--rule-->
-            </div><!--rules-->
+                </div>
+            </div><!--rule-->
+        </div><!--rules-->
 
-            <p style="padding-top: 100px;">&nbsp;</p>
-            <b-button v-if="isadmin() || ismember()" @click="newrule" class="button-fixed" title="Create new rule">
-                <icon name="plus" scale="2"/>
-            </b-button>
-        </div>
-    </div>
+        <p style="padding-top: 100px;">&nbsp;</p>
+        <b-button v-if="isadmin() || ismember()" @click="newrule" class="button-fixed" title="Create new rule">
+            <icon name="plus" scale="2"/>
+        </b-button>
+    </div><!--page-content-->
 </div>
 </template>
 
@@ -157,18 +166,13 @@ export default {
         return {
             editing: null,
             selected: null,
+            order: 'create_date', //default (new > old)
 
             ready: false,
 
             rules: null, 
             datatypes: null,
             projects: null,
-
-            //input_matches: {},
-            //output_matches: {},
-
-            //task information for selected rule
-            //rule_task_count: null,
 
             config: Vue.config,
         }
@@ -188,10 +192,70 @@ export default {
             var subid = this.$route.params.subid;
             if(!subid) this.editing = null;
         },
+        order: function() {
+            let group_id = this.project.group_id;
+            window.localStorage.setItem("pipelines.order."+group_id, this.order);
+        },
+    },
+
+    computed: {
+        sorted_rules() {
+
+            /*
+            //apply filter
+            let filtered = this.instances.filter(i=>{
+                if(!this.show) return true; //show all
+                if(this.selected == i) return true; //always show selected one
+                if(i.status == this.show) return true;
+                return false;
+            });
+            */
+    
+            //then sort
+            let order = 1;
+            let field = this.order;
+            if(field[0] == "-") {
+                order = -1;
+                field = field.substring(1); 
+            } 
+            return this.rules.sort((a,b)=>{
+                switch(field) {
+                case "desc":
+                    a = a.name?a.name.toUpperCase():"";
+                    b = b.name?b.name.toUpperCase():"";
+                    break;
+
+                //deprecated
+                case "date": 
+                    a = a.create_date?new Date(a.create_date):null;
+                    b = b.create_date?new Date(b.create_date):null;
+                    break;
+
+                case "create_date": 
+                    a = a.create_date?new Date(a.create_date):null;
+                    b = b.create_date?new Date(b.create_date):null;
+                    break;
+
+                case "update_date": 
+                    a = a.update_date?new Date(a.update_date):null;
+                    b = b.update_date?new Date(b.update_date):null;
+                    break;
+
+                default: 
+                    throw("no such field");
+                }
+                if(a < b) return order;
+                if(a > b) return -(order);
+                return 0;
+            });
+        },
     },
 
     methods: {
         load: function(cb) {
+            let group_id = this.project.group_id;
+            this.order = window.localStorage.getItem("pipelines.order."+group_id)||"create_date";
+
             this.ready = false;
             this.$http.get('rule', {params: {
                 find: JSON.stringify({
@@ -313,7 +377,7 @@ export default {
                 //scroll to the selected rule (TODO - I think I should delay until animation is over?)
                 if(this.selected) {
                     var elem = document.getElementById(this.selected._id);
-                    this.$refs.scrolled.scrollTop = elem.offsetTop-50;
+                    this.$refs.scrolled.scrollTop = elem.offsetTop;
                 }
             });
         },
@@ -359,7 +423,7 @@ export default {
                 Vue.nextTick(()=>{
                     //scroll to the selected rule (TODO - I think I should delay until animation is over?)
                     var elem = document.getElementById(rule._id);
-                    this.$refs.scrolled.scrollTop = elem.offsetTop-50;
+                    this.$refs.scrolled.scrollTop = elem.offsetTop;
                 });
 
                 /*
@@ -426,8 +490,10 @@ background-color: white;
 .rule:first-child {
 margin-top: 2px;
 }
+.rule.rule-selected .rule-header,
 .rule.rule-selected {
 margin: 0px;
+background-color: #f0f0f0;
 }
 .rule-header {
 cursor: pointer;
@@ -458,13 +524,18 @@ opacity: 0.3;
 padding: 15px;
 position: sticky;
 top: 0px;
-background-color: white;
 z-index: 5; /*make it on top of the most content*/
 }
-.rule:not(.rule-active) .rule-header {
-background-color: #ccc;
-color: #999;
+/*
+.rule.rule-selected .rule-header {
+box-shadow: 2px 2px 2px #999;
 }
+*/
+/*
+.rule:not(.rule-active) .rule-header {
+background-color: #e0e0e0;
+}
+*/
 .rule.rule-selected:not(:first-child) .rule-header {
 margin-top: 20px;
 }
@@ -473,7 +544,7 @@ margin-bottom: 20px;
 }
 .rule-header:hover {
 cursor: pointer;
-background-color: #ddd;
+background-color: #eee;
 }
 
 .expand-transition {
@@ -498,7 +569,7 @@ z-index: 1; /*needed to make sort order dropdown box to show up on top of page-c
 height: 40px;
 }
 .content {
-top: 50px;
+top: 100px;
 margin-top: 40px;
 overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
 }
@@ -525,10 +596,19 @@ opacity: 1;
 background-color: #f9f9f9;
 }
 .date {
-float: right;
 width: 110px;
 text-align: right;
-font-size: 88%;
+font-size: 70%;
 line-height: 200%;
-}</style>
+display: inline-block;
+position: relative;
+right: 25px;
+}
+.section-header {
+background-color: #ccc; 
+clear: both; 
+padding: 10px; 
+margin-bottom: 10px;
+}
+</style>
 
