@@ -448,5 +448,6 @@ top: 60px;
 padding: 20px;
 bottom: 0px;
 overflow: auto;
+background-color: #f9f9f9;
 }
 </style>

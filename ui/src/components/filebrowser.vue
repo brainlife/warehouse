@@ -21,7 +21,7 @@
 
         <p v-if="files.length == 0" class="text-muted" :style="{marginLeft: offset}">Empty Directory</p>
 
-        <div v-for="file in files">
+        <div v-for="(file, idx) in files">
             <!--file/dir label-->
             <div class="fileitem" @click="click(file)" :class="{'fileitem-viewing': file.view}">
                 <span :style="{marginLeft: offset, opacity: '0.7'}">
@@ -50,7 +50,7 @@
                         <div class="button" @click="download_file(file)" title="Download"><icon name="download" scale="0.8"/></div>
                         <div class="button" @click="refresh_file(file)" title="Refresh"><icon name="sync-alt" scale="0.8"/></div>
                     </div>
-                    <pre v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
+                    <pre :ref="'file.'+idx" v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
                 </div>
                 <div v-if="file.image_src" style="margin-bottom: 20px;">
                     <a :href="file.image_src"><img style="max-width: 100%;" :src="file.image_src"/></a>
@@ -159,6 +159,13 @@ export default {
                 Vue.set(file, 'type', type);
                 Vue.set(file, 'content', c);
                 Vue.set(file, 'view', true);
+
+                //scroll to the buttom of the <pre>
+                this.$nextTick(()=>{
+                    let id = this.files.indexOf(file);
+                    let pre = this.$refs["file."+id][0];
+                    pre.scrollTop = pre.scrollTopMax;
+                });
             });
         },
 
@@ -239,7 +246,6 @@ padding: 2px 4px;
 font-size: 13px;
 }
 .fileitem:hover {
-/*color: #2185D0;*/
 cursor: pointer;
 background-color: #eee;
 }

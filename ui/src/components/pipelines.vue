@@ -62,12 +62,13 @@
                             <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger"><icon name="trash"/></b-btn>
                         </span>
                         <span>
-                            <b-btn @click="deactivate(rule)" variant="danger" size="sm" v-if="rule.active"><icon name="times"/> Deactivate</b-btn>
+                            <b-btn @click="deactivate(rule)" variant="danger" size="sm" v-if="rule.active && !deactivating"><icon name="times"/> Deactivate </b-btn>
+                            <b-btn variant="danger" size="sm" v-if="deactivating"><icon name="times"/> Deactivating <b-badge>{{deactivating_remain}}</b-badge></b-btn>
                             <b-btn @click="activate(rule)" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Activate</b-btn>
                         </span>
                     </div>
 
-                    <div style="margin-right: 100px; background-color: white; box-shadow: 1px 1px 2px #999">
+                    <div style="margin-right: 100px; background-color: white; box-shadow: 0px 2px 4px #ccc">
                         <div class="section-header">
                             Submit the following App and archive all output datasets to this project
                         </div>
@@ -125,8 +126,8 @@
 
                         <div class="section-header">Log</div>
                         <rulelog :id="rule._id"/>
-                        <br>
                     </div>
+                    <br>
                 </div>
             </div><!--rule-->
         </div><!--rules-->
@@ -173,6 +174,9 @@ export default {
             rules: null, 
             datatypes: null,
             projects: null,
+
+            deactivating: null,
+            deactivating_remain: null,
 
             config: Vue.config,
         }
@@ -448,33 +452,45 @@ export default {
         },
 
         deactivate(rule) {
-            if(confirm("Deactivating rule will remove all active tasks submitted by this rule. Should we proceed?")) {
-                this.$http.get(Vue.config.amaretti_api+"/task", {params: {
-                    find: JSON.stringify({
-                        'config._rule.id': rule._id,
-                        status: {$ne: "removed"},
-                    }),
-                    limit: 5000, //big enough to grab all tasks?
-                }})
-                .then(res=>{
-                    this.$notify({ title: 'Removing Task', text: 'Removing'+res.body.count+' tasks', type: 'info', });
-                    async.eachSeries(res.body.tasks, (task, next_task)=>{
-                        console.log("removing", task._id);
-                        this.$http.delete(Vue.config.wf_api+'/task/'+task._id).then(res=>{
-                            next_task();
-                        }).catch(next_task);
-                    }, err=>{
-                        if(err) return this.notify_error(err);
-                        this.$notify({ title: 'Removing Task', text: 'Removed '+res.body.count+' tasks', type: 'success', });
-                        console.log("now deactivating rule");
-                        this.$http.put('rule/'+rule._id, {active: false}).then(res=>{
-                            rule.active = false;
-                        }).catch(this.notify_error);
-                    });
-                });
-            }
-        },
+            //see if any tasks should be removed
+            this.$http.get(Vue.config.amaretti_api+"/task", {params: {
+                find: JSON.stringify({
+                    'config._rule.id': rule._id,
+                    status: {$ne: "removed"},
+                }),
+                limit: 5000, //big enough to grab all tasks?
+            }})
+            .then(res=>{
+                if(res.body.count > 0) {
+                    if(confirm("Deactivating rule will remove "+res.body.count+" active tasks submitted by this rule. Should we proceed?")) {
+                        this.deactivating = rule;
+                        this.deactivating_remain = res.body.count;
+                        this.$notify({ title: 'Removing Task', text: 'Removing'+res.body.count+' tasks', type: 'info', });
 
+                        async.eachSeries(res.body.tasks, (task, next_task)=>{
+                            console.log("removing", task._id);
+                            this.$http.delete(Vue.config.wf_api+'/task/'+task._id).then(res=>{
+                                this.deactivating_remain--;
+                                next_task();
+                            }).catch(next_task);
+                        }, err=>{
+                            if(err) return this.notify_error(err);
+                            this.$notify({ title: 'Removing Task', text: 'Removed '+res.body.count+' tasks', type: 'success', });
+                            //console.log("now deactivating rule");
+                            this.$http.put('rule/'+rule._id, {active: false}).then(res=>{
+                                rule.active = false;
+                                this.deactivating = null;
+                            }).catch(this.notify_error);
+                        });
+                    }
+                } else {
+                    this.$http.put('rule/'+rule._id, {active: false}).then(res=>{
+                        rule.active = false;
+                        this.$notify({ text: 'Rule has been deactivated', type: 'success'});
+                    }).catch(this.notify_error);
+                }
+            });
+        },
     },
 };
 
@@ -501,46 +517,18 @@ transition: background-color 0.3s;
 padding: 7px;
 font-size: 88%;
 }
-/*
-.rule-header .rule-controls {
-opacity: 0;
-transition: opacity 0.2s;
-display: inline-block;
-margin-right: 10px;
-position: relative;
-top: -4px;
-}
-.rule.rule-selected .rule-controls,
-.rule-header:hover .rule-controls {
-opacity: 1;
-}
-.rule.rule-selected.rule-active .rule-controls,
-.rule.rule-active .rule-header:hover .rule-controls {
-opacity: 0.3;
-}
-*/
-
 .rule.rule-selected .rule-header {
 padding: 15px;
 position: sticky;
 top: 0px;
 z-index: 5; /*make it on top of the most content*/
 }
-/*
-.rule.rule-selected .rule-header {
-box-shadow: 2px 2px 2px #999;
-}
-*/
-/*
-.rule:not(.rule-active) .rule-header {
-background-color: #e0e0e0;
-}
-*/
 .rule.rule-selected:not(:first-child) .rule-header {
 margin-top: 20px;
 }
 .rule.rule-selected {
 margin-bottom: 20px;
+box-shadow: none;
 }
 .rule-header:hover {
 cursor: pointer;
@@ -578,20 +566,6 @@ overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a 
 .content {
 min-width: 500px;
 }
-
-.pub {
-padding: 5px 15px;
-background-color: white;
-box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-cursor: pointer;
-}
-.pub-action {
-opacity: 0;
-transition: 0.3s opacity;
-}
-.pub:hover .pub-action {
-opacity: 1;
-}
 .config {
 background-color: #f9f9f9;
 }
@@ -605,7 +579,7 @@ position: relative;
 right: 25px;
 }
 .section-header {
-background-color: #ccc; 
+background-color: #eee; 
 clear: both; 
 padding: 10px; 
 margin-bottom: 10px;
