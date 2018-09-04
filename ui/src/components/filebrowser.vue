@@ -44,6 +44,9 @@
 
             <!-- inline file view-->
             <div v-if="file.view" :style="{paddingLeft: 0}" class="file-content">
+                <span v-if="file.downloading" :style="{marginLeft: offset}" style="padding: 10px;">
+                    <icon name="cog" spin></icon> Loading..
+                </span>
                 <!-- controls -->
                 <div v-if="file.content">
                     <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
@@ -192,7 +195,9 @@ export default {
             }
 
             //start downloading file to see what the file type is
+            Vue.set(file, 'downloading', true);
             this.$http.get(url).then(res=>{
+                file.downloading = false;
                 switch(res.headers.get("Content-Type")) {
                 case "application/json": 
                         this.open_text(res, file, "json");
@@ -232,6 +237,7 @@ export default {
                 document.location = url;
             }).catch(err=>{
                 console.error(err);
+                file.downloading = false;
             });
         }
     }
