@@ -1,5 +1,5 @@
 <template>
-<div>
+<div style="min-height: 35px;">
     <div style="opacity: 0.5; margin: 10px;">
         <div style="float: right;">
             <div class="button" @click="load"><icon name="sync-alt"/></div>

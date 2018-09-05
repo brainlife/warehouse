@@ -23,8 +23,10 @@
                     {{app.name}}
                 </template>
             </v-select>
-            <b-alert :show="!rule.app.github_branch" variant="danger">This App has no branch specified. Code might be modified while processing subjects</b-alert>
-            <app :app="rule.app" :compact="true" :clickable="false" style="margin-top: 5px;"/>
+            <div v-if="rule.app">
+                <b-alert :show="!rule.app.github_branch" variant="danger">This App has no branch specified. Code might be modified while processing subjects</b-alert>
+                <app :app="rule.app" :compact="true" :clickable="false" style="margin-top: 5px;"/>
+            </div>
         </b-form-group>
 
         <div v-if="rule.app">
@@ -135,6 +137,7 @@ export default {
 
         "rule.app": {
             handler: function(newv) {
+                if(!newv) return;
                 this.ensure_ids_exists();
                 this.ensure_config_exists();
                 this.load_dataset_tags();
