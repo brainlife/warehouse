@@ -121,14 +121,16 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     var untar = child_process.spawn("tar", ["xz"], {cwd: fullpath});
                     writestream = untar.stdin;
                     untar.on('close', code=>{
-                        if(code) return next_file("untar files with code:"+code);
+                        if(code) {
+                            if(file.required) return next_file({ message: "tar failed with code:"+code, file });
+                            logger.error("tar finished with code "+code);
+                        }
                         if(input_ok) {
                             logger.debug("download/tar complete");
                             filenames.push(file.dirname);
                             next_file();
                         } else {
                             if(file.required) return next_file({ message: "required input directory failed to download/untar", file });
-                            
                             //failed but not required.. remove the directory
                             fs.rmdir(fullpath, next_file);
                         }
