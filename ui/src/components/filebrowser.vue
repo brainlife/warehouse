@@ -21,7 +21,7 @@
 
         <p v-if="files.length == 0" class="text-muted" :style="{marginLeft: offset}">Empty Directory</p>
 
-        <div v-for="file in files">
+        <div v-for="(file, idx) in files">
             <!--file/dir label-->
             <div class="fileitem" @click="click(file)" :class="{'fileitem-viewing': file.view}">
                 <span :style="{marginLeft: offset, opacity: '0.7'}">
@@ -44,13 +44,16 @@
 
             <!-- inline file view-->
             <div v-if="file.view" :style="{paddingLeft: 0}" class="file-content">
+                <span v-if="file.downloading" :style="{marginLeft: offset}" style="padding: 10px;">
+                    <icon name="cog" spin></icon> Loading..
+                </span>
                 <!-- controls -->
                 <div v-if="file.content">
                     <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
                         <div class="button" @click="download_file(file)" title="Download"><icon name="download" scale="0.8"/></div>
                         <div class="button" @click="refresh_file(file)" title="Refresh"><icon name="sync-alt" scale="0.8"/></div>
                     </div>
-                    <pre v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
+                    <pre :ref="'file.'+idx" v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
                 </div>
                 <div v-if="file.image_src" style="margin-bottom: 20px;">
                     <a :href="file.image_src"><img style="max-width: 100%;" :src="file.image_src"/></a>
@@ -149,7 +152,6 @@ export default {
         //subordiante of click method.. this and click methods are ugly..
         open_text: function(res, file, type) {
             res.text().then(c=>{
-
                 //reformat json content
                 if(type == "json") {
                     var j = JSON.parse(c);
@@ -158,25 +160,15 @@ export default {
 
                 if(c == "") c = "(empty)";
                 Vue.set(file, 'type', type);
-
                 Vue.set(file, 'content', c);
                 Vue.set(file, 'view', true);
-                /*
-                //TODO - can't get slideDown to work via css.. hack to animate height
-                //can't just transition with max-height?
-                var lines = c.trim().split("\n");
-                Vue.set(file, 'content', "");
-                Vue.set(file, 'view', true);
-                function addline() {
-                    file.content += lines.shift()+"\n";
-                    if(lines.length && file.content) {
-                        if(file.content.length < 2000) setTimeout(addline, 10);
-                        else file.content += lines.join("\n"); //add the rest all at once
 
-                    } 
-                }
-                setTimeout(addline, 10);
-                */
+                //scroll to the buttom of the <pre>
+                this.$nextTick(()=>{
+                    let id = this.files.indexOf(file);
+                    let pre = this.$refs["file."+id][0];
+                    pre.scrollTop = pre.scrollTopMax;
+                });
             });
         },
 
@@ -203,10 +195,10 @@ export default {
             }
 
             //start downloading file to see what the file type is
+            Vue.set(file, 'downloading', true);
             this.$http.get(url).then(res=>{
-                var mime = res.headers.get("Content-Type");
-
-                switch(mime) {
+                file.downloading = false;
+                switch(res.headers.get("Content-Type")) {
                 case "application/json": 
                         this.open_text(res, file, "json");
                         return;
@@ -225,8 +217,9 @@ export default {
                         Vue.set(file, 'image_src', url);
                         Vue.set(file, 'view', true);
                         return;
+
+                case "application/octet-stream": //binary or unknown
                 case null:
-                    //for unknown content type, guess file type from extension
                     var tokens = file.filename.split(".");
                     var ext = tokens[tokens.length-1];
                     switch(ext) {
@@ -234,14 +227,17 @@ export default {
                     case "bvecs": 
                     case "err": 
                     case "jobid": 
+                    case "main": 
                         this.open_text(res, file, "text");
                         return;
                     }
                 }
 
-                //don't know how to open it..
-                console.log("opening new window - unknown file type", mime);
+                //don't know how to open it.. download.
                 document.location = url;
+            }).catch(err=>{
+                console.error(err);
+                file.downloading = false;
             });
         }
     }
@@ -256,7 +252,6 @@ padding: 2px 4px;
 font-size: 13px;
 }
 .fileitem:hover {
-/*color: #2185D0;*/
 cursor: pointer;
 background-color: #eee;
 }

@@ -9,21 +9,19 @@
         </div><div class="email" v-if="profile.email && size == 'full'">&lt;{{profile.email}}&gt;</div>
     </div>
     <b-popover :target="uuid" :title="null" triggers="hover click" @show="show">
-        <div v-if="!public || !public.bio">
-            <small style="opacity: 0.8">No bio..</small>
-        </div>
-        <div v-else>
-            <img :src="gurl(60)" style="float: left">
-            <div style="margin-left: 70px; min-height: 60px;">
-                <b>{{profile.fullname}}</b> <small style="opacity: 0.5">{{profile.username}}</small>
-                <p style="margin-top: 5px; opacity: 0.8; margin-bottom: 0px;">{{public.bio}}</p>
+        <img :src="gurl(60)" style="float: left">
+        <div style="margin-left: 70px; min-height: 60px;">
+            <b>{{profile.fullname}}</b> <small style="opacity: 0.5">{{profile.username}}</small>
+            <div v-if="public && public.bio">
+                <p style="margin-top: 5px; opacity: 0.8; margin-bottom: 0px;" v-if="public && public.bio">{{public.bio}}</p>
                 <small style="opacity: 0.5;" v-if="public.institution">
                     <icon name="university"/> {{public.institution}}
                 </small>
             </div>
-            <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee">
-                <small>{{profile.email}}</small>
-            </div>
+            <div v-else style="opacity: 0.5"><p style="opacity: 0.5">No bio..</p></div>
+        </div>
+        <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #eee">
+            <small>{{profile.email}}</small>
         </div>
     </b-popover>
 </div>

@@ -15,7 +15,7 @@
                 <div class="button" style="opacity: 0.7" v-if="editing_desc === null" @click="edit_desc" title="Edit Notes"><icon name="edit"/></div>
                 <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid"><icon name="info"/></div>
                 <b-popover :target="'popover'+task.config._tid" triggers="hover click focus">
-                    <template slot="title"><span class="text-muted">ID {{task._id}}</span></template>
+                    <template slot="title"><span class="text-muted"><small>ID</small> {{task._id}}</span></template>
                     <p>
                         <contact :id="task.user_id" size="small"/>
                     </p>
@@ -36,17 +36,24 @@
                         <th>Failed</th>
                         <td>{{new Date(this.task.fail_date).toLocaleString()}}</td>
                     </tr>
-                    <tr v-if="task.next_date">
-                        <th>Next Chk</th>
-                        <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
-                    </tr>
                     <tr v-if="task.nice">
                         <th>Nice</th>
                         <td>{{task.nice}} <small style="opacity: 0.5">yeilds to less nice tasks</small></td>
                     </tr>
-                   <tr v-if="resource">
+                    <tr v-if="task.config._rule">
+                        <th>Rule</th>
+                        <td>
+                            <small>This task was submitted by {{task.config._rule.id}}
+                            For subject:<b>{{task.config._rule.subject}}</b></small>
+                        </td>
+                    </tr>
+                    <tr v-if="resource">
                         <th>Resource</th>
                         <td>{{this.resource.name}}</td>
+                    </tr>
+                    <tr v-if="task.next_date" style="opacity: 0.6;">
+                        <th>Next&nbsp;Chk</th>
+                        <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
                     </tr>
                     </table>
                     <p v-if="task.status == 'finished'" style="opacity: 0.5;">

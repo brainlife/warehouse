@@ -5,10 +5,13 @@
         <b-form-group label="Name *" horizontal>
             <b-form-input required v-model="rule.name" type="text" placeholder="Please enter name for this rule (used for output dataset description)"></b-form-input>
         </b-form-group>
+
+        <!--
         <b-form-group horizontal>
             <b-form-checkbox v-model="rule.active">Active</b-form-checkbox>
             <small class="text-muted">Only the active rules are processed by the rule handler</small>
         </b-form-group>
+        -->
 
         <b-form-group label="App *" horizontal>
             <v-select required v-model="rule.app" label="name" :filterable="false" :options="apps" @search="search_app">
@@ -20,6 +23,10 @@
                     {{app.name}}
                 </template>
             </v-select>
+            <div v-if="rule.app">
+                <b-alert :show="!rule.app.github_branch" variant="danger">This App has no branch specified. Code might be modified while processing subjects</b-alert>
+                <app :app="rule.app" :compact="true" :clickable="false" style="margin-top: 5px;"/>
+            </div>
         </b-form-group>
 
         <div v-if="rule.app">
@@ -130,6 +137,7 @@ export default {
 
         "rule.app": {
             handler: function(newv) {
+                if(!newv) return;
                 this.ensure_ids_exists();
                 this.ensure_config_exists();
                 this.load_dataset_tags();
