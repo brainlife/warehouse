@@ -8,16 +8,29 @@
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
     <div class="group-list">
-        <h4>Categories</h4>
+        <h4>Apps</h4>
         <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)">
             {{tag}} <b-badge variant="dark">{{app_groups[tag].length}}</b-badge>
         </p>
         <br>
+
+        <!--
+        <h4>Datatypes</h4>
+        <p class="item" :class="{'active': active == 'datatype.neuro'}" @click="jump('datatype.neuro')">
+            neuro
+        </p>
+        <p class="item" :class="{'active': active == 'datatype.neuro'}" @click="jump('datatype.neuro')">
+            generic 
+        </p>
+        <br>
+        -->
+
         <div style="position: fixed; bottom: 0px;">
             <div class="button" style="margin: 5px; color: gray;" @click="go('/appsgraph')">
                 <icon name="code-branch"/>
             </div>
         </div>
+
     </div>
     <div class="page-content" v-on:scroll="update_active" ref="scrolled">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
