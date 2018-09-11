@@ -187,13 +187,6 @@ new Vue({
                 return;
             }
 
-            /*
-            if(Vue.config.debug) {
-                console.log("not refreshing token.. as this is running in debug mode");
-                return;
-            }
-            */
-
             //console.log("attemping to refresh token - mainly to detect expiration");
             this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{
                 if(!res.body.jwt) console.log("token refresh didn't work.. resetting jwt");
@@ -204,8 +197,6 @@ new Vue({
             }).catch(err=>{
                 console.error("failed to referesh token - redirecting to auth service");
                 console.error(err); 
-
-                //localStorage.removeItem("jwt"); //token refresh randomly failing on firefox?
                 sessionStorage.setItem('auth_redirect', document.location.href);
                 document.location = Vue.config.auth_signin;
             });
