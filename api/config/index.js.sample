@@ -221,37 +221,26 @@ function connect_wrangler(cb) {
 }
 */
 
-
 //TODO - I should implement some kind of connection queue otherwise
 //I could run out of concurrent connection
-let wrangler_sftp = null ;
 function connect_wrangler(cb) {
-    if(wrangler_sftp) {
-        console.log("reusing sftp for wrangler");
-        return cb(null, wrangler_sftp);
-    }
-    console.log("open new wrangler sftp connection");
     var conn = new ssh2.Client();
     conn.on('ready', function() {
-        console.log("connected");
+        console.log("connected to wrangler - opening sftp stream also");
         conn.sftp((err, sftp)=>{
             if(err) return cb(err);
-            wrangler_sftp = sftp;
-            if(cb) cb(null, sftp);
+            if(cb) cb(null, conn, sftp);
             cb = null;
         });
     });
     conn.on('end', function() {
-        console.log("wrangler sftp connection ended");
-        wrangler_sftp = null;
+        console.log("wrangler connection ended");
     });
     conn.on('close', function() {
-        console.log("wrangler sftp connection closed");
-        wrangler_sftp = null;
+        console.log("wrangler connection closed");
     });
     conn.on('error', function(err) {
-        console.error("wrangler sftp connectionn error");
-        wrangler_sftp = null;
+        console.error("wrangler connectionn error");
 
         //we want to return connection error to caller, but error could fire after ready event is called.
         //like timeout, or abnormal disconnect, etc..  need to prevent calling cb twice!
@@ -264,7 +253,6 @@ function connect_wrangler(cb) {
         host: "wrangler.iu.xsede.org",
         privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         //passphrase: "somepass",  //what's the point?
-
         keepaliveInterval: 10*1000, //default 0 (disabled)
         //keepaliveCountMax: 30, //default 3 (https://github.com/mscdex/ssh2/issues/367)
     });
@@ -281,7 +269,7 @@ function get_wrangler_archive_path(dataset) {
 exports.storage_systems.wrangler = {
     need_backup: false,
     test: cb=>{
-        connect_wrangler((err, sftp)=>{
+        connect_wrangler((err, conn, sftp)=>{
             if(err) return cb(err);
             console.log("loading quota.info from wrangler homedir.. should be created by cron..");
             let stream = sftp.createReadStream("quota.info");
@@ -295,6 +283,7 @@ exports.storage_systems.wrangler = {
             });
             stream.on('end', ()=>{
                 //console.dir(content);
+                conn.end();
                 
                 //parse quota content
                 let lines = content.split("\n");
@@ -316,15 +305,9 @@ exports.storage_systems.wrangler = {
     }, 
 
     stat: (dataset, cb)=>{
-        connect_wrangler((err, sftp)=>{
-            if(err) {
-                //conn.end();
-                return cb(err);
-            }
-            //console.log("getting stats");
+        connect_wrangler((err, conn, sftp)=>{
+            if(err) return cb(err);
             sftp.stat(get_wrangler_archive_path(dataset), (err,stat)=>{
-                //console.dir(err);
-                //console.dir(stat);
                 /*
                 Stats {
                   mode: 33206,
@@ -335,55 +318,77 @@ exports.storage_systems.wrangler = {
                   atime: 1533646596,
                   mtime: 1533646596 }
                 */
-                //conn.end();
+                conn.end();
                 cb(err, stat);
             });
         });
     },
     upload: (dataset, cb)=>{
-        connect_wrangler((err, sftp)=>{
-            if(err) {
-                //conn.end();
-                return cb(err);
-            }
+        connect_wrangler((err, conn, sftp)=>{
+            console.log("got wrangler streams for uplload");
+            if(err) return cb(err);
             let _path = get_wrangler_archive_path(dataset);
-            //console.log("creating dir", path.dirname(_path));
             sftp.mkdir(path.dirname(_path), err=>{
                 //if(err) console.dir(err); //maybe already exist? continue..
-                let stream = sftp.createWriteStream(_path);
+                //let stream = sftp.createWriteStream(_path);
                 let success = new Promise((resolve, reject)=>{
-                    stream.on('close', ()=>{
-                        //transfer finished successfully
-                        sftp.stat(_path, (err,stat)=>{
-                            if(err) reject(err);
-                            else resolve(stat);
+                    conn.exec("cat > "+_path, (err, stream)=>{
+                        if(err) return reject(err);
+                        /*
+                        stream.on('close', (code, signal)=>{
+                            console.log("I don't think conn stream generate close event");
+                            console.log("code:"+code);
+                            console.log("signal:"+signal);
                         });
-                    });
-                    stream.on('error', reject); //not testetd..
-                    stream.on('end', ()=>{
-                        //don't do "stream.on("close", conn.end); -- doesn't work for some reason
-                        //conn.end(); 
+                        stream.on('end', ()=>{
+                            console.log("I don't think this happens");
+                        });
+                        */
+                        //stream.on('finish', ()=>{
+                        stream.on('close', (code, signal)=>{
+                            console.log("stream finished");
+                            sftp.stat(_path, (err,stat)=>{
+                                conn.end(); 
+                                if(err) reject(err);
+                                else resolve(stat);
+                            });
+                        });
+                        stream.on('error', reject); //not testetd..
+
+                        //needed to raise close event.. I think
+                        stream.on('data', data=>{
+                            console.log(data.toString());
+                        });
+                        stream.stderr.on('data', data=>{
+                            console.error(data.toString());
+                        });
+                        cb(null, stream, success);
                     });
                 });
-                cb(null, stream, success);
             });
         });
     },
     download: (dataset, cb)=>{
-        connect_wrangler((err, sftp)=>{
+        connect_wrangler((err, conn, sftp)=>{
             if (err) {
-                //conn.end();
+                conn.end();
                 return cb(err);
             }
-            let stream = sftp.createReadStream(get_wrangler_archive_path(dataset));
-            stream.on('error', err=>{
-                console.error("stream failed but train has already left the station", err);
+            //let stream = sftp.createReadStream(get_wrangler_archive_path(dataset));
+            conn.exec("cat "+get_wrangler_archive_path(dataset), (err, stream)=>{
+                stream.on('error', err=>{
+                    console.error("stream failed but train has already left the station", err);
+                });
+                stream.on('close', code=>{
+                    //setTimeout(()=>{conn.end();}, 1000);
+                    conn.end();
+                    console.log("write stream closed");
+                });
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+                cb(null, stream, dataset._id+".tar");
             });
-            stream.on('close', code=>{
-                //conn.end();
-                console.log("write stream closed");
-            });
-            cb(null, stream, dataset._id+".tar");
         });
     },
 } 
