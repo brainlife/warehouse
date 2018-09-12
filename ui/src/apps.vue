@@ -58,6 +58,7 @@
             </p>
             <br>
 
+            <!--
             <div style="background-color: #159957; color: white;">
                 <h4 class="group-title" style="color: inherit; background-color: inherit;">Register New App</h4>
                 <div style="padding: 10px 20px; opacity: 0.8;">
@@ -69,6 +70,11 @@
                 <br>
                 <br>
             </div>
+            -->
+            <br>
+            <br>
+            <br>
+            <br>
         </div>
 
         <b-button v-if="config.user" class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
@@ -128,7 +134,7 @@ export default {
 
         load() {
             this.app_groups = {};
-            this.sorted_tags = ['_new'];
+            this.sorted_tags = [];
 
             let ands = [
                 {$or: [
@@ -183,13 +189,16 @@ export default {
                 });
                 this.sorted_tags.sort();
 
-                //find most recently created apps as *new apps*
-                res.body.apps.sort((a,b)=>{
-                    if(a.create_date < b.create_date) return 1; 
-                    if(a.create_date > b.create_date) return -1; 
-                    return 0; 
-                });
-                this.app_groups._new = res.body.apps.slice(0, 3);
+                if(!this.query) {
+                    //find most recently created apps as *new apps*
+                    res.body.apps.sort((a,b)=>{
+                        if(a.create_date < b.create_date) return 1; 
+                        if(a.create_date > b.create_date) return -1; 
+                        return 0; 
+                    });
+                    this.sorted_tags.unshift('_new');
+                    this.app_groups._new = res.body.apps.slice(0, 3);
+                }
 
                 this.$nextTick(()=>{
                     if(document.location.hash) {
