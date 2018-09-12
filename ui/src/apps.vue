@@ -34,9 +34,9 @@
                 </div>
                 <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
                     <p style="opacity: 0.7;">
-                        Do you have a code that you'd like to publish on Brainlife? You can publish it so that other users can execute your code!
+                        You can publish your code on Brainlife so that other users can run it online.
                     </p>
-                    <b-button variant="success" @click="go('/app/_/edit')" size="sm">Register New App</b-button> 
+                    <b-button variant="primary" @click="go('/app/_/edit')" size="sm">Register New App</b-button> 
                 </div>
                 <br clear="both">
             </div>
@@ -333,7 +333,8 @@ z-index: 2;
 .newapps {
 /*background-color: #bbb;*/
 /*background-image: linear-gradient(120deg, #007bff, #159957);*/
-background-color: #007bff;
+/*background-color: #007bff;*/
+background-color: #2693ff;
 }
 .newapps .group-title {
 background-color: inherit;
