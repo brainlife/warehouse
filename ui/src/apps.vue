@@ -7,12 +7,16 @@
         </div>
     </pageheader>
     <sidemenu active="/apps"></sidemenu>
-    <div class="group-list">
+    <div class="group-list" v-if="app_groups">
         <h4>Categories</h4>
+
         <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)">
-            {{tag}} <b-badge variant="dark">{{app_groups[tag].length}}</b-badge>
+            <span v-if="tag == '_new'">New Apps</span> 
+            <span v-else>{{tag}}</span> 
+            <b-badge variant="dark" v-if="app_groups[tag]">{{app_groups[tag].length}}</b-badge>
         </p>
         <br>
+
         <div style="position: fixed; bottom: 0px;">
             <div class="button" style="margin: 5px; color: gray;" @click="go('/appsgraph')">
                 <icon name="code-branch"/>
@@ -23,10 +27,17 @@
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div v-else>
             <h3 show v-if="count == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
-            <div v-for="tag in sorted_tags" :id="tag">
-                <h4 class="group-title">{{tag}}</h4> 
+            <div v-for="tag in sorted_tags" :id="tag" :class="{'newapps': tag == '_new'}">
+                <h4 class="group-title" v-if="tag == '_new'">New Apps</h4> 
+                <h4 class="group-title" v-else>{{tag}}</h4> 
                 <div v-for="app in app_groups[tag]" :key="app._id" class="app">
                     <app :app="app" height="246px"></app>
+                </div>
+                <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
+                    <p style="opacity: 0.7;">
+                        Do you have a code that you'd like to publish on Brainlife? You can publish it so that other users can execute your code!
+                    </p>
+                    <b-button variant="success" @click="go('/app/_/edit')" size="sm">Register New App</b-button> 
                 </div>
                 <br clear="both">
             </div>
@@ -47,12 +58,12 @@
             </p>
             <br>
 
-            <div style="background-color: #ddd; color: #666;">
-                <h4 class="group-title" style="color: #ccc; background-color: #888;">Register New App</h4>
-                <div style="padding: 10px 20px;">
+            <div style="background-color: #159957; color: white;">
+                <h4 class="group-title" style="color: inherit; background-color: inherit;">Register New App</h4>
+                <div style="padding: 10px 20px; opacity: 0.8;">
                     <p>Do you have a code that you'd like to publish on Brainlife?</p>
                     <p>You can publish it so that other users can execute your code!</p>
-                    <b-button variant="secondary" @click="go('/app/_/edit')">Register New App</b-button> 
+                    <b-button variant="success" @click="go('/app/_/edit')">Register New App</b-button> 
                 </div>
 
                 <br>
@@ -88,10 +99,8 @@ export default {
         };
     },
 
-    created: function() {
+    created() {
         this.load();
-
-
     },
 
     methods: {
@@ -118,8 +127,8 @@ export default {
         },
 
         load() {
-            this.app_groups = null;
-            this.sorted_tags = [];
+            this.app_groups = {};
+            this.sorted_tags = ['_new'];
 
             let ands = [
                 {$or: [
@@ -163,7 +172,6 @@ export default {
                 this.count = res.body.count;
 
                 //organize apps into various tags
-                this.app_groups = {};
                 res.body.apps.forEach(app=>{
                     var tags = [ 'miscellaneous' ];
                     if(app.tags && app.tags.length > 0) tags = app.tags;
@@ -174,6 +182,14 @@ export default {
                     });
                 });
                 this.sorted_tags.sort();
+
+                //find most recently created apps as *new apps*
+                res.body.apps.sort((a,b)=>{
+                    if(a.create_date < b.create_date) return 1; 
+                    if(a.create_date > b.create_date) return -1; 
+                    return 0; 
+                });
+                this.app_groups._new = res.body.apps.slice(0, 3);
 
                 this.$nextTick(()=>{
                     if(document.location.hash) {
@@ -186,13 +202,14 @@ export default {
             });
         },
 
-        go: function(path) {
+        go(path) {
             this.$router.push(path);
         },
-        jump: function(tag) {
+        jump(tag) {
             document.location="#"+tag;
         },
-        update_active: function() {
+
+        update_active() {
             var scrolltop = this.$refs.scrolled.scrollTop;
             var height = this.$refs.scrolled.clientHeight;
             this.active = false;
@@ -213,7 +230,6 @@ export default {
             document.location="#"; //clear hash
             this.load();
         },
-
     },
 }
 </script>
@@ -228,6 +244,7 @@ background-color: white;
 position: sticky;
 top: 0px;
 z-index: 1;
+opacity: 0.8;
 }
 .app {
 margin-left: 10px;
@@ -304,6 +321,15 @@ font-weight: bold;
 .input:focus ~ .search-icon {
 color: gray;
 z-index: 2;
+}
+.newapps {
+/*background-color: #bbb;*/
+/*background-image: linear-gradient(120deg, #007bff, #159957);*/
+background-color: #007bff;
+}
+.newapps .group-title {
+background-color: inherit;
+color: white;
 }
 
 </style>
