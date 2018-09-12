@@ -297,7 +297,14 @@ export default {
         appsubmit, datatypetag, datatypefile,
         appstats, projectavatar,
         doibadge, 
-     },
+    },
+
+    metaInfo: {
+        meta: [
+            { charset: 'utf-8' },
+            { name: 'here is my thing', content: 'appppp' }
+        ]
+    },
 
     data () {
         return {
