@@ -3,22 +3,6 @@
     <v-select v-model="selected" :options="datatypes" label="name" placeholder="datatype">
         <template slot="option" slot-scope="datatype">
             <datatype :datatype="datatype"/>
-            <!--
-            <div class="item">
-                <div>
-                    <datatypetag :datatype="datatype" :tags="[]" />
-                </div>
-                <div>
-                    <small style="opacity:.7;">{{datatype.desc}}</small>
-                </div>
-                <div>
-                    <small v-for="(file, idx) in datatype.files" :key="file.id" style='opacity:.5;'>
-                        {{ idx == 0 ? '' : '&bull;' }}
-                        {{ file.filename || file.dirname + '/' }}
-                    </small>
-                </div>
-            </div>
-            -->
         </template>
     </v-select>
 </div>
@@ -43,10 +27,11 @@ export default {
     },
     
     mounted () {
-        this.$http.get('datatype', {
+        this.$http.get('datatype', {params: {
             limit: 0,
-            skip: 0
-        })
+            skip: 0,
+            sort: 'name'
+        }})
         .then(res => {
             this.datatypes = res.body.datatypes;
             this.datatypes.forEach(datatype => {

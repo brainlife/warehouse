@@ -9,19 +9,18 @@
     <sidemenu active="/apps"></sidemenu>
     <div class="group-list" v-if="app_groups">
         <h4>Categories</h4>
-
         <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)">
             <span v-if="tag == '_new'">New Apps</span> 
             <span v-else>{{tag}}</span> 
             <b-badge variant="dark" v-if="app_groups[tag]">{{app_groups[tag].length}}</b-badge>
         </p>
         <br>
-
         <div style="position: fixed; bottom: 0px;">
             <div class="button" style="margin: 5px; color: gray;" @click="go('/appsgraph')">
                 <icon name="code-branch"/>
             </div>
         </div>
+
     </div>
     <div class="page-content" v-on:scroll="update_active" ref="scrolled">
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
@@ -35,9 +34,9 @@
                 </div>
                 <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
                     <p style="opacity: 0.7;">
-                        Do you have a code that you'd like to publish on Brainlife? You can publish it so that other users can execute your code!
+                        You can publish your code on Brainlife so that other users can run it online.
                     </p>
-                    <b-button variant="success" @click="go('/app/_/edit')" size="sm">Register New App</b-button> 
+                    <b-button variant="primary" @click="go('/app/_/edit')" size="sm">Register New App</b-button> 
                 </div>
                 <br clear="both">
             </div>
@@ -334,7 +333,8 @@ z-index: 2;
 .newapps {
 /*background-color: #bbb;*/
 /*background-image: linear-gradient(120deg, #007bff, #159957);*/
-background-color: #007bff;
+/*background-color: #007bff;*/
+background-color: #2693ff;
 }
 .newapps .group-title {
 background-color: inherit;
