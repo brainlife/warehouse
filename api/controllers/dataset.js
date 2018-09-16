@@ -241,14 +241,14 @@ router.get('/prov/:id', (req, res, next)=>{
             if(task.service == "soichih/sca-product-raw" || task.service == "soichih/sca-service-noop") { //TODO might change in the future
                 if(defer) {
                     add_node(defer.node);
-                    edges.push(defer.edge);
+                    if(defer.edge.to != defer.edge.from) edges.push(defer.edge);
                 }
                 if(dataset.prov.subdir) load_product_raw(to, dataset.prov.subdir, cb);
                 else load_product_raw(to, dataset._id, cb);
             } else if(task.service && task.service.indexOf("brain-life/validator-") === 0) { 
                 if(defer) {
                     add_node(defer.node);
-                    edges.push(defer.edge);
+                    if(defer.edge.to != defer.edge.from) edges.push(defer.edge);
                 }
                 cb(); //ignore validator
             } else {
@@ -275,7 +275,7 @@ router.get('/prov/:id', (req, res, next)=>{
             var found = false;
             var from = "dataset."+dataset_id;
             var found = edges.find(e=>(e.from == from && e.to == to));
-            if(!found) edges.push({ from, to, arrows: "to", });
+            if(to != from && !found) edges.push({ from, to, arrows: "to", });
             return cb();
         }
         datasets_analyzed.push(dataset_id.toString());
