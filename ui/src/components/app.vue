@@ -118,7 +118,7 @@ export default {
 .appcard {
 background-color: white;
 min-height: 80px;
-box-shadow: 1px 1px 2px rgba(0,0,0,0.10);
+box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
 transition: box-shadow 0.3s;
 }
 .appcard:hover {

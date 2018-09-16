@@ -33,9 +33,8 @@ import VueTimeago from 'vue-timeago'
 
 import SocialSharing from 'vue-social-sharing';
 
-Vue.config.productionTip = false
-
 import VueAnalytics from 'vue-analytics'
+import Meta from 'vue-meta'
 
 Vue.component('icon', Icon)
 
@@ -57,6 +56,7 @@ Vue.use(VueTimeago, {
         'en-US': require('vue-timeago/locales/en-US.json')
     }
 });
+Vue.use(Meta);
 
 var jwt_decode = require('jwt-decode');
 
@@ -110,6 +110,7 @@ Vue.config.event_api = apihost+"/api/event";
 Vue.config.profile_api = apihost+"/api/profile";
 Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
+Vue.config.productionTip = false
 
 Vue.http.options.root = Vue.config.api; //default root for $http
 

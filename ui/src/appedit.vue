@@ -151,6 +151,7 @@
                                 <b-col cols="5">
                                     <span class="text-muted">Datatype</span>
                                     <datatypeselecter v-model="input.datatype" @input="input_datatype_changed(idx)"></datatypeselecter>
+                                    <datatype :datatype="datatypes[input.datatype]" style="margin-top: 5px;" v-if="input.datatype"/>
                                 </b-col>
                                 <b-col cols="7">
                                     <div class="text-muted">Datatype Tags</div>
@@ -241,7 +242,7 @@
                                     <div class="text-muted">Tag Passthrough</div>
                                     <b-form-select v-model="output.datatype_tags_pass">
                                         <option :value="null">(No Pass)</option>
-                                        <option v-for="input in app.inputs" v-if="input.datatype == output.datatype" :key="input.id" :value="input.id">{{input.id}}</option>
+                                        <option v-for="input in app.inputs" v-if-dis="input.datatype == output.datatype" :key="input.id" :value="input.id">{{input.id}}</option>
                                     </b-form-select>
                                     <small class="text-muted">Add all datatype tags from the input dataset specified</small>
                                     
