@@ -523,7 +523,7 @@ cursor: pointer;
 background-color: #f7f7f7;
 }
 .toggler {
-padding: 4px;
+padding: 1px 4px;
 width: 100%;
 }
 .toggler:hover {

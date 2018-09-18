@@ -23,8 +23,11 @@
 
                     <div v-if="!file.uploaded && file.progress">
                         <div class="button" @click="cancelupload(file)" style="float: right; position: relative; top:-5px;"><icon name="times"/></div>
-                        Uploading {{file.local_filename}}
-                        <b-progress :value="Math.floor(file.progress.loaded*1000/file.progress.total)/10" show-value/>
+                        <p v-if="file.progress.loaded < file.progress.total">
+                            Uploading {{file.local_filename}}  <icon name="cog" spin/>
+                            <b-progress :value="Math.floor(file.progress.loaded*1000/file.progress.total)/10" show-value/>
+                        </p>
+                        <p v-else>Clearing buffer... <icon name="cog" spin/></p>
                     </div>
 
                     <div v-if="file.uploaded">

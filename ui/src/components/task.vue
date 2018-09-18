@@ -83,11 +83,11 @@
 
     <div class="note" v-if="task.desc || editing_desc !== null">
         <div v-if="task.desc && editing_desc == null" @click="edit_desc" class="note-text">
-            <vue-markdown :source="task.desc" class="readme"></vue-markdown>
+            <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px;"/>
         </div>
         <div v-if="editing_desc !== null" style="position: relative;">
             <b-form-textarea ref="desc_editor" v-model="editing_desc" placeholder="Enter Notes in Markdown" :rows="3" style="border: none; border-radius: 0; padding-right: 100px"/>
-            <div class="button" @click="update_desc" style="position: absolute; top: 0; right: 0px; background-color: #ddd; margin: 5px;"><icon name="check"/> Update</div>
+            <div class="button" @click="update_desc" style="position: absolute; top: 0; right: 0px; background-color: #ddd; margin: 5px;"><icon name="check"/> Save</div>
         </div>
     </div>
 
