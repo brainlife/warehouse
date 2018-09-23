@@ -112,14 +112,19 @@ exports.Projects = mongoose.model("Projects", projectSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+var releaseSchema = mongoose.Schema({
+    name: String, //"1", "2", etc..
+    create_date: { type: Date, default: Date.now }, //release date
+    removed: { type: Boolean, default: false },  //release should not removed.. but just in case
+});
+mongoose.model("Releases", releaseSchema);
+
 var publicationSchema = mongoose.Schema({
     
     //user who created this publication 
     user_id: {type: String, index: true}, 
 
-    //citation: String, //preferred citation
     license: String, //cc0, ccby.40, etc.
-
     doi: String, //doi for this dataset (we generate this)
     paper_doi: String, //doi for the paper (journal should publish this)
 
@@ -129,35 +134,20 @@ var publicationSchema = mongoose.Schema({
     project: {type: mongoose.Schema.Types.ObjectId, ref: "Projects"},
 
     authors: [ String ], //list of users who are the author/creator of this publicaions
-    //authors_ext: [new mongoose.Schema({name: 'string', email: 'string'})],
-
     contributors: [ String ], //list of users who contributed (PI, etc..)
-    //contributor_ext: [new mongoose.Schema({name: 'string', email: 'string'})],
 
-    //DOI metadata
-    publisher: String, //NatureScientificData
+    publisher: String, //NatureScientificData //TODO - is this used?
     
-    //contacts: [ String ], //list of users who can be used as contact
-
     name: String, //title of the publication
     desc: String, 
     tags: [String], //software, eeg, mri, etc..
     readme: String, //markdown (abstract in https://purl.stanford.edu/rt034xr8593)
 
-    /*
-    //list of app used to generated datasets
-    apps: [ new mongoose.Schema({
-        app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
-        service: String,
-        service_branch: String,
-        }) 
-    ], 
-    */
+    releases: [ releaseSchema ],
 
     create_date: { type: Date, default: Date.now },
-    //publish_date: { type: Date, default: Date.now }, //used for publication date
 
-    removed: { type: Boolean, default: false },
+    removed: { type: Boolean, default: false }, //only admin can remove publication for now (so that doi won't break)
 });
 exports.Publications = mongoose.model("Publications", publicationSchema);
 
@@ -222,9 +212,10 @@ var datasetSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false},
 
-    //list of publications that this datasets is published under
-    publications: [{type: mongoose.Schema.Types.ObjectId, ref: 'Publications'}],
+    //list of publications that this datasets is published under (point to releases ID under publications)
+    publications: [{type: mongoose.Schema.Types.ObjectId, ref: 'Releases'}],
 });
+
 datasetSchema.post('validate', function() {
     //normalize meta fields that needs to be in string 
     if(this.meta) {
@@ -233,6 +224,7 @@ datasetSchema.post('validate', function() {
         if(typeof this.meta.run == 'number') this.meta.run = this.meta.run.toString();
     }
 });
+
 datasetSchema.post('save', dataset_event);
 datasetSchema.post('findOneAndUpdate', dataset_event);
 datasetSchema.post('findOneAndRemove', dataset_event);

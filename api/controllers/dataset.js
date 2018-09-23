@@ -474,7 +474,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 if(err) return next(err);
         		dataset = _dataset;
                 logger.debug("created dataset record......................", dataset.toObject());
-                res.json(dataset); //not respond back to the caller - but processing has just began
+                //res.json(dataset); 
                 next(err);
             });
         },
@@ -486,7 +486,8 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 
     ], err=>{
         if(err) return cb(err);
-        else logger.debug("all done archiving");    
+        logger.debug("all done archiving");    
+        res.json(dataset); 
 	});
 });
 

@@ -59,7 +59,7 @@ function handle_app(app, cb) {
 
     logger.debug("querying service stats");
     request.get({
-        url: config.wf.api+"/task/stats", json: true,
+        url: config.amaretti.api+"/task/stats", json: true,
         headers: { authorization: "Bearer "+config.auth.jwt },
         qs: {
             service: app.github,

@@ -28,7 +28,7 @@ exports.amaretti = {
     //jwt used to query things from workflow service as admin
     jwt: fs.readFileSync(__dirname+'/amaretti.jwt', 'ascii').trim(),
 }
-exports.wf = exports.amaretti; //deprecated
+exports.wf = exports.amaretti; //deprecated (use amaretti)
 
 exports.auth = {
     api: "https://dev1.soichi.us/api/auth",
@@ -42,7 +42,6 @@ exports.warehouse = {
     api: "https://dev1.soichi.us/api/warehouse",
 
     //base url
-    //url: "https://localhost:8080",
     url: "https://localhost.brainlife.io", //to test datacite
 
     //used to issue warehouse token to allow dataset download

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node build/dev-server.js",
     "build": "node --max-old-space-size=4000 build/build.js",
-    "deploy-prod": "ssh root@brainlife.io \"cp -r ~/docker/nginx/static/warehouse ~/backup/warehouse.`date +%F.%T` \" && rsync --delete -avz -e ssh dist/ root@brainlife.io:~/docker/nginx/static/warehouse",
+    "deploy-prod-old": "ssh root@brainlife.io \"cp -r ~/docker/nginx/static/warehouse ~/backup/warehouse.`date +%F.%T` \" && rsync --delete -avz -e ssh dist/ root@brainlife.io:~/docker/nginx/static/warehouse-new && ssh root@brainlife.io \"./deploy.sh > ~/deploy.log\"",
+    "deploy-prod": "rsync --delete -avz -e ssh dist/ root@brainlife.io:~/docker/nginx/static/warehouse-new && ssh root@brainlife.io \"./deploy.sh > ~/deploy.log\"",
     "deploy": "rsync --delete -avz -e ssh dist/ root@test.brainlife.io:/root/docker/nginx/static/warehouse"
   },
   "dependencies": {

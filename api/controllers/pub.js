@@ -206,7 +206,6 @@ router.get('/datasets/:pubid', (req, res, next)=>{
     });
 });
 
-
 /**
  * @apiGroup Publications
  * @api {post} /pub                     Register new publication
@@ -223,6 +222,7 @@ router.get('/datasets/:pubid', (req, res, next)=>{
  * @apiParam {String} desc              Publication desc (short summary)
  * @apiParam {String} readme            Publication detail (paper abstract)
  * @apiParam {String[]} tags            Publication tags
+ * @apiParam {Object[]} releases        Release records
  *
  * @apiParam {Boolean} removed          If this is a removed publication
  *
@@ -246,7 +246,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         let override = {
             user_id: req.user.sub, 
         }
-        //new db.Publications(Object.assign(def, req.body, override)).save((err, pub)=>{
         let pub = new db.Publications(Object.assign(def, req.body, override));
 
         //mint new doi - get next doi id - use number of publication record with doi (brittle?)
@@ -268,7 +267,19 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     let url = config.warehouse.url+"/pub/"+pub._id;  //TODO make it configurable?
                     common.doi_put_url(pub.doi, url, logger.error);
                 });
-            }); 
+                
+                //I have to use req.body.releases which has "sets", but not release._id
+                //so let's set release._id on req.body.releases and use that list to 
+                //handle new publications
+                req.body.releases.forEach((release, idx)=>{
+                    release._id = pub.releases[idx]._id;
+                });
+                async.eachSeries(req.body.releases, (release, next_release)=>{
+                    handle_release(release, pub.project, next_release);
+                }, err=>{
+                    if(err) logger.error(err);
+                });
+           }); 
         });
     });
 });
@@ -284,13 +295,12 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiParam {String[]} authors         List of author IDs.
  * @apiParam {String[]} contributors    List of contributor IDs.
+ * @apiParam {Object[]} releases        Release records
  *
  * @apiParam {String} name              Publication title 
  * @apiParam {String} desc              Publication desc (short summary)
  * @apiParam {String} readme            Publication detail (paper abstract)
  * @apiParam {String[]} tags            Publication tags
- *
- * @apiParam {Boolean} removed          If this is a removed publication
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
@@ -322,14 +332,48 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 if(err) return next(err);
                 res.json(pub); 
 
-                if(pub.doi) { //old test pubs doesn't have doi
-                    let metadata = common.compose_pub_datacite_metadata(pub);
-                    common.doi_post_metadata(metadata, logger.error); 
-                }
+                //update doi meta
+                let metadata = common.compose_pub_datacite_metadata(pub);
+                common.doi_post_metadata(metadata, logger.error); 
+
+                //I have to use req.body.releases which has "sets", but not release._id
+                //so let's set release._id on req.body.releases and use that list to 
+                //handle new publications
+                req.body.releases.forEach((release, idx)=>{
+                    release._id = pub.releases[idx]._id;
+                });
+                async.eachSeries(req.body.releases, (release, next_release)=>{
+                    handle_release(release, pub.project, next_release);
+                }, err=>{
+                    if(err) logger.error(err);
+                });
             });
         });
     });
 });
+
+function handle_release(release, project, cb) {
+    async.eachSeries(release.sets, (set, next_set)=>{
+        if(!set.add) return next_set();
+        logger.debug("------------------need to add------------------------");
+        logger.debug(set);
+        
+        let find = {
+            project,
+            removed: false,
+            datatype: set.datatype._id,
+            datatype_tags: set.datatype_tags,
+        };
+
+        /*
+        db.Datasets.find(find, (err, datasets)=>{
+            if(err) throw err;
+            console.dir(datasets);
+        });
+        */
+        db.Datasets.update(find, {$addToSet: {publications: release._id}}, {multi: true}, next_set);
+    }, cb);
+}
 
 /**
  * @apiGroup Publications
@@ -343,6 +387,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiSuccess {Object}                 Number of published datasets, etc..
  */
+/*
 router.put('/:id/datasets', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var id = req.params.id;
     db.Publications.findById(id, (err, pub)=>{
@@ -371,6 +416,7 @@ router.put('/:id/datasets', jwt({secret: config.express.pubkey}), (req, res, nex
         });
     });
 }); 
+*/
 
 /**
  * @apiGroup Publications
