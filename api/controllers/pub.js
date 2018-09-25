@@ -332,9 +332,13 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 if(err) return next(err);
                 res.json(pub); 
 
-                //update doi meta
-                let metadata = common.compose_pub_datacite_metadata(pub);
-                common.doi_post_metadata(metadata, logger.error); 
+                if(!pub.doi) {
+                    logger.error("no doi set.. skippping metadata update");
+                } else {
+                    //update doi meta
+                    let metadata = common.compose_pub_datacite_metadata(pub);
+                    common.doi_post_metadata(metadata, logger.error); 
+                }
 
                 //I have to use req.body.releases which has "sets", but not release._id
                 //so let's set release._id on req.body.releases and use that list to 
@@ -355,7 +359,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 function handle_release(release, project, cb) {
     async.eachSeries(release.sets, (set, next_set)=>{
         if(!set.add) return next_set();
-        logger.debug("------------------need to add------------------------");
+        logger.debug("------------------need to add!------------------------");
         logger.debug(set);
         
         let find = {
