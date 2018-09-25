@@ -135,7 +135,7 @@
                                 </p>
                             </b-col>
                         </b-row>
-                        <b-row v-if-dis="dataset.download_count > 0">
+                        <b-row>
                             <b-col cols="3"><span class="form-header">Download Count</span></b-col>
                             <b-col>
                                 <p><b>{{dataset.download_count}}</b> times</p>
@@ -148,11 +148,11 @@
                             </b-col>
                         </b-row>
 
-                        <b-row v-if="dataset.publications && dataset.publications.length > 0">
+                        <b-row v-if="dataset._pubs && dataset._pubs.length > 0">
                             <b-col cols="3"><span class="form-header">Publications</span></b-col>
                             <b-col cols="9">
                                 <p><small class="text-muted">This dataset has been published on the following publications.</small></p>
-                                <p v-for="pub in dataset.publications" v-if="!pub.removed">
+                                <p v-for="pub in dataset._pubs" v-if="!pub.removed">
                                     <a href="javascript:void(0);" @click="openpub(pub)">
                                         <icon name="book" scale="0.8"/> {{pub.name||pub}}
                                     </a>
@@ -515,7 +515,7 @@ export default {
 
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                populate: "project datatype prov.deps.dataset publications",
+                populate: "project datatype prov.deps.dataset",
             }})
             .then(res=>{
                 if(res.body.count == 0) {
@@ -549,6 +549,14 @@ export default {
                 }});
             }).then(res=>{
                 this.alltags = res.body;
+
+                return this.$http.get('pub', {params: {
+                    find: JSON.stringify({"releases._id": {$in: this.dataset.publications}}),
+                    //select: 'releases',
+                }});
+            }).then(res=>{
+                this.$set(this.dataset, '_pubs', res.body.pubs);
+                
              }).catch(err=>{
                 console.error(err);
             });

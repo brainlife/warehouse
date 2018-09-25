@@ -36,7 +36,7 @@
         <div class="text-muted margin20" v-if="instances.length == 0">
             <p>Here, you can submit series of apps with shared input and output datasets.</p>
             <p>Output datasets will be removed within 25 days. Please archive any output dataset you'd like to keep.</p>
-            <p>To learn about how to submit processes, please refer to our <a href="https://brain-life.github.io/docs/user/process/" target="doc">Documentation</a>.</p>
+            <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.github.io/docs/user/process/" target="doc">Documentation</a>.</p>
         </div>
 
         <div v-if="instances.length > 0" style="clear: both;">

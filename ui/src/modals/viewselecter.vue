@@ -140,7 +140,7 @@ export default {
                 desc: "The MRtrix image viewer.",
                 avatar: "https://brainlife.io/images/ui-logos/mrview.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task", "neuro/track/tck" ],
             },
             {
                 ui: "mricrogl",

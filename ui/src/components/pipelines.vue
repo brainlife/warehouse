@@ -27,7 +27,7 @@
         <!--list view-->
         <div class="margin20" v-if="rules.length == 0">
             <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
-            <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brain-life.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
+            <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brainlife.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
         </div>
         <div class="rules">
             <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-active': rule.active}" class="rule" v-if="rule.removed == false">
