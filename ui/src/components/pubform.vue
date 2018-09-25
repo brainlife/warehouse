@@ -50,32 +50,34 @@
         <p>
             <small opacity="0.7">Release is where you can list datasets that you'd like to publish.</small>
         </p>
-        <b-card v-for="(release, idx) in pub.releases" v-if="!release.removed" :key="release._id||idx" style="margin-bottom: 3px;">
-            <b-row>
-                <b-col>
-                    <b-input-group prepend="Release Name">
-                        <b-form-input type="text" required v-model="release.name" placeholder=""/>
-                    </b-input-group>
-                </b-col>
-                <b-col>
-                    <b-input-group prepend="Release Date">
-                        <b-form-input type="date" required v-model="release._create_date" placeholder=""/>
-                    </b-input-group>
-                </b-col>
-                <b-col sm="1">
-                    <div class="button" @click="release.removed = true"><icon name="trash"/></div>
-                </b-col>
-            </b-row>
-            <br>
-            <p v-for="(set, idx) in release.sets">
-                <datatypetag :datatype="set.datatype" :tags="set.datatype_tags"/> 
-                {{set.count}} datasets ({{set.size|filesize}})
-                <span v-if="set.add" @click="remove_set(release, idx)" style="opacity: 0.5;">
-                    <icon name="trash" scale="0.9"/>
-                </span>
-            </p>
-            <b-button type="button" variant="outline-success" @click="add_datasets(release)" size="sm"><icon name="plus"/> Add Datasets</b-button>
-        </b-card>
+        <transition-group name="slideDown">
+            <b-card v-for="(release, idx) in pub.releases" v-if="!release.removed" :key="release._id||idx" style="margin-bottom: 5px;">
+                <b-row>
+                    <b-col>
+                        <b-input-group prepend="Release Name">
+                            <b-form-input type="text" required v-model="release.name" placeholder=""/>
+                        </b-input-group>
+                    </b-col>
+                    <b-col>
+                        <b-input-group prepend="Release Date">
+                            <b-form-input type="date" required v-model="release._create_date" placeholder=""/>
+                        </b-input-group>
+                    </b-col>
+                    <b-col sm="1">
+                        <div class="button" @click="release.removed = true"><icon name="trash"/></div>
+                    </b-col>
+                </b-row>
+                <br>
+                <p v-for="(set, idx) in release.sets">
+                    <datatypetag :datatype="set.datatype" :tags="set.datatype_tags"/> 
+                    {{set.count}} datasets ({{set.size|filesize}})
+                    <span v-if="set.add" @click="remove_set(release, idx)" style="opacity: 0.5;">
+                        <icon name="trash" scale="0.9"/>
+                    </span>
+                </p>
+                <b-button v-if="!release._id" type="button" variant="outline-success" @click="add_datasets(release)" size="sm"><icon name="plus"/> Add Datasets</b-button>
+            </b-card>
+        </transition-group>
         <b-button type="button" @click="new_release" size="sm"><icon name="plus"/> Add New Release</b-button>
     </b-form-group>
 

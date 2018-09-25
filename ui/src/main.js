@@ -11,6 +11,7 @@ import 'highlight.js/styles/default.css'
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
 import 'katex/dist/katex.min.css'
+import 'vue2-animate/dist/vue2-animate.min.css'
 
 import Vue from 'vue'
 

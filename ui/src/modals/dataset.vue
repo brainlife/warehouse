@@ -29,7 +29,7 @@
         <b-tabs class="brainlife-tab" v-model="tab_index">
             <b-tab title="Details">
                 <div class="dataset-detail">
-                    <b-alert :show="dataset.removed" variant="warning">This dataset has been removed</b-alert>
+                    <b-alert :show="dataset.removed" variant="secondary">This dataset has been removed</b-alert>
                     <!-- detail -->
                     <div class="margin20">
                         <b-row>

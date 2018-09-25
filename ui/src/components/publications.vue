@@ -232,6 +232,7 @@ background-color: white;
 box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 font-size: 88%;
 cursor: pointer;
+transition: background-color 0.5s;
 }
 .pub:hover {
 background-color: #eee;
