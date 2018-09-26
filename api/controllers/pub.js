@@ -55,7 +55,7 @@ router.get('/', (req, res, next)=>{
     .lean()
     .exec((err, pubs)=>{
         if(err) return next(err);
-        db.Datatypes.count(find).exec((err, count)=>{
+        db.Publications.count(find).exec((err, count)=>{
             if(err) return next(err);
 
             //dereference user ID to name/email
@@ -75,14 +75,14 @@ router.get('/', (req, res, next)=>{
 
 /**
  * @apiGroup Publications
- * @api {get} /pub/datasets-inventory/:pubid Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:pubid to 
+ * @api {get} /pub/datasets-inventory/:releaseid Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:releaseid to 
  *              get the actual list of datasets for each subject / datatypes / etc..
  * @apiSuccess {Object} Object containing counts
  */
 //WARNING: similar code in dataset.js
-router.get('/datasets-inventory/:pubid', (req, res, next)=>{
+router.get('/datasets-inventory/:releaseid', (req, res, next)=>{
     db.Datasets.aggregate()
-    .match({ publications: mongoose.Types.ObjectId(req.params.pubid) })
+    .match({ publications: mongoose.Types.ObjectId(req.params.releaseid) })
     .group({_id: {"subject": "$meta.subject", "datatype": "$datatype", "datatype_tags": "$datatype_tags"}, 
         count: {$sum: 1}, size: {$sum: "$size"} })
     .sort({"_id.subject":1})
@@ -94,22 +94,16 @@ router.get('/datasets-inventory/:pubid', (req, res, next)=>{
 
 /**
  * @apiGroup Publications
- * @api {get} /pub/apps/:pubid
+ * @api {get} /pub/apps/:releaseid
  *                              Enumerate applications used to generate datasets
  *
  * @apiSuccess {Object[]}       Application objects
  * 
  */
-router.get('/apps/:pubid', (req, res, next)=>{
-    /*
-    db.Datasets.find({
-        publications: mongoose.Types.ObjectId(req.params.pubid) 
-    })
-    .distinct("prov.task.config._app")
-    */
+router.get('/apps/:releaseid', (req, res, next)=>{
     db.Datasets.aggregate([
         {$match: {
-            publications: mongoose.Types.ObjectId(req.params.pubid) 
+            publications: mongoose.Types.ObjectId(req.params.releaseid) 
         }},
         {$group: {
             _id: {
@@ -172,7 +166,7 @@ router.get('/apps/:pubid', (req, res, next)=>{
 
 /**
  * @apiGroup Publications
- * @api {get} /pub/datasets/:pubid  
+ * @api {get} /pub/datasets/:releaseid  
  *                              Query published datasets
  *
  * @apiParam {Object} [find]    Optional Mongo find query - defaults to {}
@@ -184,12 +178,12 @@ router.get('/apps/:pubid', (req, res, next)=>{
  *
  * @apiSuccess {Object}         List of dataasets (maybe limited / skipped) and total count
  */
-router.get('/datasets/:pubid', (req, res, next)=>{
+router.get('/datasets/:releaseid', (req, res, next)=>{
     let find = {};
 	let skip = req.query.skip || 0;
 	let limit = req.query.limit || 100;
     if(req.query.find) find = JSON.parse(req.query.find);
-    let query = {$and: [ find, {publications: req.params.pubid}]};
+    let query = {$and: [ find, {publications: req.params.releaseid}]};
     db.Datasets.find(query)
     .populate(req.query.populate || '') //all by default
     .select(req.query.select)
@@ -378,93 +372,6 @@ function handle_release(release, project, cb) {
         db.Datasets.update(find, {$addToSet: {publications: release._id}}, {multi: true}, next_set);
     }, cb);
 }
-
-/**
- * @apiGroup Publications
- * @api {put} /pub/:pubid/datasets 
- *                              
- * @apiDescription                      Publish datasets
- *
- * @apiParam {Object} [find]            Mongo query to subset datasets (all datasets in the project by default)
- *
- * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
- *
- * @apiSuccess {Object}                 Number of published datasets, etc..
- */
-/*
-router.put('/:id/datasets', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-    var id = req.params.id;
-    db.Publications.findById(id, (err, pub)=>{
-        if(err) return next(err);
-        if(!pub) return res.status(404).end();
-        
-        can_publish(req, pub.project, (err, can)=>{
-            if(err) return next(err);
-            if(!can) return res.status(401).end("you can't publish this project");
-
-            let find = {};
-            if(req.body.find) find = JSON.parse(req.body.find);
-
-            //override to make sure user only publishes datasets from specific project
-            find.project = pub.project;
-            find.removed = false; //no point of publishing removed dataset right?
-
-            db.Datasets.update(
-                find,
-                {$addToSet: {publications: pub._id}}, 
-                {multi: true},
-            (err, _res)=>{
-                if(err) return next(err);
-                res.json(_res);
-            });
-        });
-    });
-}); 
-*/
-
-/**
- * @apiGroup Publications
- * @api {put} /pub/:pubid/doi
- *                              
- * @apiDescription                      Issue DOI for publication record (or update URL)
- *
- * @apiParam {String} url               URL to associate the minted DOI
- *
- * @apiHeader {String} authorization    A valid JWT token "Bearer: xxxxx"
- *
- * @apiSuccess {Object}                 Publication object with doi field
- */
-/*
-router.put('/:id/doi', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-    let id = req.params.id;
-    let url = req.body.url;
-    //logger.debug(id, url);
-
-    //TODO - maybe we shouldn't let user control the url?
-
-    db.Publications.findById(id, (err, pub)=>{
-        if(err) return next(err);
-        if(!pub) return res.status(404).end();
-        if(pub.doi) return res.status(404).end("doi already issued");
-        
-        can_publish(req, pub.project, (err, can)=>{
-            if(err) return next(err);
-            if(!can) return res.status(401).end("you can't publish on this project");
-
-            //register metadata and attach url to it
-            common.doi_post_metadata(pub, (err, doi)=>{
-                if(err) return next(err);
-                //let url = "https://brainlife.io/pub/"+pub._id; 
-                logger.debug("making request", doi, url);
-                common.doi_put_url(doi, url, err=>{
-                    if(err) return next(err);
-                    res.json(pub);
-                });
-            });
-        });
-    });
-}); 
-*/
 
 //proxy doi.org doi resolver
 router.get('/doi', (req, res, next)=>{
