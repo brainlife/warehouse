@@ -13,14 +13,8 @@
     <b-row>
         <b-col :cols="3">Process</b-col>
         <b-col>
-            <v-select v-model="instance" :options="instances" label="_label" placeholder="(Create New Process)"></v-select>
-        </b-col>
-    </b-row>
-    <br>
-    <b-row v-if="!instance">
-        <b-col :cols="3"></b-col>
-        <b-col>
-            <b-form-textarea v-model="desc" :rows="3" placeholder="Process Description"/>
+            <v-select v-if="instances.length > 0" v-model="instance" :options="instances" label="_label" placeholder="(Create New Process)" style="margin-bottom: 8px;"/>
+            <b-form-textarea v-if="!instance" v-model="desc" :rows="3" placeholder="Enter Description for New Process"/>
         </b-col>
     </b-row>
     <br>
@@ -34,11 +28,10 @@
 <script>
 import Vue from 'vue'
 
-import vSelect from 'vue-select'
 import projectselecter from '@/components/projectselecter'
 
 export default {
-    components: { projectselecter, vSelect },
+    components: { projectselecter },
 
     data() {
         return {

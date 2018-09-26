@@ -1,4 +1,4 @@
-tag=1.1.30
+tag=1.1.32
 
 #docker pull node:8
 

@@ -20,6 +20,7 @@
             </td>
         </tr>
     </table>
+    <!--<small style="opacity: 0.5" v-if="taskconfig == {}">No Configuration</small>-->
 </div>
 </template>
 

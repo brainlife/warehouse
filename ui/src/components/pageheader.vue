@@ -16,6 +16,7 @@
             <b-dropdown-item @click="go('/project/_/edit')">Project</b-dropdown-item>
         </b-nav-item-dropdown>
         -->
+        <b-nav-item @click="slack"><icon name="brands/slack" scale="1.25"/> Contact Us</b-nav-item>
         <b-nav-item-dropdown v-if="config.user">
             <span slot="button-content">
                 <img :src="gurl">
@@ -90,6 +91,9 @@ export default {
         },
         signup() {
             document.location = "/auth/#!/signup";
+        },
+        slack() {
+            document.location = "https://brainlife-inviter.herokuapp.com/";
         },
         md5, 
     }

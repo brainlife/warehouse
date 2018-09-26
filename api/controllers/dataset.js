@@ -166,8 +166,11 @@ router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired
                 //{removed: false, project: mongoose.Types.ObjectId("592dcc5b0188fd1eecf7b4ec")},
             ]
         })
-        .group({_id: {"subject": "$meta.subject", "datatype": "$datatype", "datatype_tags": "$datatype_tags"}, 
-            count: {$sum: 1}, size: {$sum: "$size"} })
+        .group({_id: {
+            "subject": "$meta.subject", 
+            "datatype": "$datatype", 
+            "datatype_tags": "$datatype_tags"
+        }, count: {$sum: 1}, size: {$sum: "$size"} })
         .sort({"_id.subject":1})
         .exec((err, stats)=>{
             if(err) return next(err);
@@ -241,14 +244,14 @@ router.get('/prov/:id', (req, res, next)=>{
             if(task.service == "soichih/sca-product-raw" || task.service == "soichih/sca-service-noop") { //TODO might change in the future
                 if(defer) {
                     add_node(defer.node);
-                    edges.push(defer.edge);
+                    if(defer.edge.to != defer.edge.from) edges.push(defer.edge);
                 }
                 if(dataset.prov.subdir) load_product_raw(to, dataset.prov.subdir, cb);
                 else load_product_raw(to, dataset._id, cb);
             } else if(task.service && task.service.indexOf("brain-life/validator-") === 0) { 
                 if(defer) {
                     add_node(defer.node);
-                    edges.push(defer.edge);
+                    if(defer.edge.to != defer.edge.from) edges.push(defer.edge);
                 }
                 cb(); //ignore validator
             } else {
@@ -275,7 +278,7 @@ router.get('/prov/:id', (req, res, next)=>{
             var found = false;
             var from = "dataset."+dataset_id;
             var found = edges.find(e=>(e.from == from && e.to == to));
-            if(!found) edges.push({ from, to, arrows: "to", });
+            if(to != from && !found) edges.push({ from, to, arrows: "to", });
             return cb();
         }
         datasets_analyzed.push(dataset_id.toString());
@@ -474,7 +477,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 if(err) return next(err);
         		dataset = _dataset;
                 logger.debug("created dataset record......................", dataset.toObject());
-                res.json(dataset); //not respond back to the caller - but processing has just began
+                //res.json(dataset); 
                 next(err);
             });
         },
@@ -486,7 +489,8 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 
     ], err=>{
         if(err) return cb(err);
-        else logger.debug("all done archiving");    
+        logger.debug("all done archiving");    
+        res.json(dataset); 
 	});
 });
 

@@ -137,7 +137,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     });
                 }
 
-                //now start feeding the writestream
+                //now start feeding the writestream (/tmp/archive-XXX/thing)
                 request({
                     url: config.amaretti.api+"/task/download/"+task._id,
                     qs: {
@@ -157,10 +157,15 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     if (err.file) dataset.desc = "Expected output " + (err.file.filename||err.file.dirname) + " not found";
                     else dataset.desc = "Failed to store all files under tmpdir";
                     dataset.status = "failed";
-                    return dataset.save(cb);
+                    //return dataset.save(cb);
+                    dataset.save(_err=>{
+                        if(_err) logger.error(_err); //ignore..?
+                        cb(dataset.desc);
+                    });
+                    return;
                 }
 
-                logger.debug(filenames);
+                //logger.debug(filenames);
                 
                 //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
                 var storage = config.storage_default();
@@ -180,6 +185,9 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                         }
                     });
 
+                    logger.debug("streaming to storage");
+                    tar.stdout.pipe(writestream);
+
                     //TODO - I am not sure if all writestream returnes file object (pkgcloud does.. but this makes it a bit less generic)
                     //maybe I should run system.stat()?
                     //writestream.on('success', file=>{
@@ -198,9 +206,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                             cb(err); //return error from streaming which is more interesting
                         });
                     });
-
-                    logger.debug("streaming to storage");
-                    tar.stdout.pipe(writestream);
                 });
             });
         });
@@ -272,18 +277,14 @@ exports.compose_app_datacite_metadata = function(app) {
             return;
         }
         //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
-        creators.push(`<creator> 
-            <creatorName>${xmlescape(contact.fullname)}</creatorName>
-            </creator>`);
+        creators.push(`<creator><creatorName>${xmlescape(contact.fullname)}</creatorName></creator>`);
     });
 
     let contributors = [];
-    app.contributors.forEach(contact=>{
+    if(app.contributors) app.contributors.forEach(contact=>{
         //contributorType can be ..
         //Value \'Contributor\' is not facet-valid with respect to enumeration \'[ContactPerson, DataCollector, DataCurator, DataManager, Distributor, Editor, HostingInstitution, Other, Producer, ProjectLeader, ProjectManager, ProjectMember, RegistrationAgency, RegistrationAuthority, RelatedPerson, ResearchGroup, RightsHolder, Researcher, Sponsor, Supervisor, WorkPackageLeader]\'. It must be a value from the enumeration.'
-        contributors.push(`<contributor contributorType="Other"> 
-            <contributorName>${xmlescape(contact.name)}</contributorName>
-            </contributor>`);
+        contributors.push(`<contributor contributorType="Other"><contributorName>${xmlescape(contact.name)}</contributorName></contributor>`);
     });
 
     let subjects = []; //aka "keyword"
@@ -295,13 +296,13 @@ exports.compose_app_datacite_metadata = function(app) {
     <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
       <identifier identifierType="DOI">${app.doi}</identifier>
       <creators>
-        ${creators.join("\n")}
+        ${creators.join('\n')}
       </creators>
       <contributors>
-        ${contributors.join("\n")}
+        ${contributors.join('\n')}
       </contributors>
       <subjects>
-        ${subjects.join("\n")}
+        ${subjects.join('\n')}
       </subjects>
       <titles>
         <title>${xmlescape(app.name)}</title>
@@ -324,9 +325,6 @@ exports.compose_pub_datacite_metadata = function(pub) {
     let year = pub.create_date.getFullYear();
     let publication_year = "<publicationYear>"+year+"</publicationYear>";
 
-    //creators
-    //let creators = cached_contacts[pub.user_id];
-
     //in case author is empty.. let's use submitter as author..
     //TODO - we need to make author required field
     if(pub.authors.length == 0) pub.authors.push(pub.user_id);
@@ -339,9 +337,7 @@ exports.compose_pub_datacite_metadata = function(pub) {
             return;
         }
         //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
-        creators.push(`<creator> 
-            <creatorName>${xmlescape(contact.fullname)}</creatorName>
-            </creator>`);
+        creators.push(`<creator><creatorName>${xmlescape(contact.fullname)}</creatorName></creator>`);
 
     });
 
@@ -356,9 +352,7 @@ exports.compose_pub_datacite_metadata = function(pub) {
         
         //contributorType can be ..
         //Value \'Contributor\' is not facet-valid with respect to enumeration \'[ContactPerson, DataCollector, DataCurator, DataManager, Distributor, Editor, HostingInstitution, Other, Producer, ProjectLeader, ProjectManager, ProjectMember, RegistrationAgency, RegistrationAuthority, RelatedPerson, ResearchGroup, RightsHolder, Researcher, Sponsor, Supervisor, WorkPackageLeader]\'. It must be a value from the enumeration.'
-        contributors.push(`<contributor contributorType="Other"> 
-            <contributorName>${xmlescape(contact.fullname)}</contributorName>
-            </contributor>`);
+        contributors.push(`<contributor contributorType="Other"><contributorName>${xmlescape(contact.fullname)}</contributorName></contributor>`);
         
     });
 
@@ -371,13 +365,13 @@ exports.compose_pub_datacite_metadata = function(pub) {
     <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
       <identifier identifierType="DOI">${pub.doi}</identifier>
       <creators>
-        ${creators.join("\n")}
+        ${creators.join('\n')}
       </creators>
       <contributors>
-        ${contributors.join("\n")}
+        ${contributors.join('\n')}
       </contributors>
       <subjects>
-        ${subjects.join("\n")}
+        ${subjects.join('\n')}
       </subjects>
       <titles>
         <title>${xmlescape(pub.name)}</title>
@@ -434,8 +428,7 @@ exports.doi_put_url = function(doi, url, cb) {
 }
 
 let cached_contacts = {};
-function cache_contact() {
-    logger.info("caching auth profiles");
+exports.cache_contact = function(cb) {
     request({
         url: config.auth.api+"/profile", json: true,
         qs: {
@@ -449,11 +442,12 @@ function cache_contact() {
             body.profiles.forEach(profile=>{
                 cached_contacts[profile.id.toString()] = profile;
             });
+            if(cb) cb();
         }
     });
 }
-cache_contact();
-setInterval(cache_contact, 1000*60*30); //cache every 30 minutes
+exports.cache_contact();
+setInterval(exports.cache_contact, 1000*60*30); //cache every 30 minutes
 
 exports.deref_contact = function(id) {
     return cached_contacts[id];

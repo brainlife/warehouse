@@ -116,6 +116,7 @@
                 <b-btn size="sm" @click="remove" variant="danger"><icon name="trash" scale="0.8"/> Remove</b-btn>
             </p>
         </div>
+        <p style="opacity: 0.5; margin: 10px">You can select multiple datasets by holding the shift key on first and last datasets that you'd like to select.</p>
         <br clear="both">
     </div>
 </div>

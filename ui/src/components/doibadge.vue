@@ -1,5 +1,5 @@
 <template>
-<img @click="show()" :src="'https://img.shields.io/badge/DOI-'+doi.replace('/', '\/')+'-lightgray.svg?style=flat-square'">
+<img v-if="doi" @click="show()" :src="'https://img.shields.io/badge/DOI-'+doi.replace('/', '\/')+'-lightgray.svg?style=flat-square'">
 </template>
 
 <script>

@@ -33,10 +33,8 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 
-import vSelect from 'vue-select'
-
 export default {
-    components: { sidemenu, pageheader, vSelect },
+    components: { sidemenu, pageheader },
     data () {
         return {
             service_running: [],

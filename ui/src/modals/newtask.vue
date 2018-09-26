@@ -126,7 +126,6 @@ import Vue from 'vue'
 import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
 import configform from '@/components/configform'
-import vSelect from 'vue-select'
 import advanced from '@/components/appadvanced'
 import tageditor from '@/components/tageditor'
 
@@ -134,8 +133,7 @@ const lib = require('../lib');
 
 export default {
     components: { 
-        app, datatypetag, configform, vSelect,
-        advanced, tageditor,
+        app, datatypetag, configform, advanced, tageditor,
     },
 
     data() {

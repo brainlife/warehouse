@@ -27,9 +27,12 @@
                 </b-row>
                 <br>
                 <b-tabs class="brainlife-tab" v-model="tab_index">
-                    <b-tab title="Details"/>
+                    <b-tab title="Detail"/>
+                    <!--
                     <b-tab title="Datasets"/>
                     <b-tab title="Apps"/>
+                    -->
+                    <b-tab v-for="release in pub.releases" :key="release._id" :title="'Release '+release.name"/>
                 </b-tabs>
             </b-container>
         </div><!--header-->
@@ -41,7 +44,6 @@
                     <el-alert v-if="pub.removed" title="This publication has been removed" type="warning" show-icon :closable="false"></el-alert>
                     <!-- detail -->
                     <div v-if="tab_index == 0">
-
                         <b-row>
                             <b-col cols="2">
                                 <span class="form-header">Created On</span>
@@ -108,7 +110,6 @@
                                 <br>
                             </b-col>
                        </b-row>  
-
 
                        <b-row v-if="pub.fundings.length > 0">
                             <b-col cols="2">
@@ -207,13 +208,15 @@
                             </b-col>
                         </b-row>
                     </div>
-                    <div v-if="tab_index == 1">
-                        <!-- datasets -->
-                        <p>
+
+                    <div v-if="tab_index > 0">
+                        <!-- release -->
+                        <p v-if="dataset_groups">
                             <b>{{ds.subjects}}</b> <span class="text-muted">Subjects</span> <span style="opacity: 0.2">|</span>
                             <b>{{ds.count}}</b> <span class="text-muted">Datasets</span>
-                            (<b>{{ds.size | filesize}}</b>)
+                            <b v-if="ds.size"> {{ds.size | filesize}}</b>
                         </p>
+                        <p style="opacity: 0.5" v-else>Loading ... <icon name="cog" spin/></p>
 
                         <div class="group" v-for="(group, subject) in dataset_groups" :key="subject">
                             <b-row>
@@ -231,7 +234,7 @@
                                                 <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)"/>
                                                 &nbsp;
                                                 <span class="text-muted">{{datatypes[datatype_id].desc}}</span>
-                                                <small class="text-muted" style="float: right;">{{block.count}} datasets {{block.size|filesize}}</small>
+                                                <small class="text-muted" style="float: right;">{{block.count}} datasets <span v-if="block.size">{{block.size|filesize}}</span></small>
                                             </div>
                                             <transition name="fadeHeight">
                                                 <b-list-group class="datasets" v-if="block.show && block.datasets">
@@ -251,17 +254,17 @@
                                 </b-col>
                             </b-row>
                         </div>
-                    </div>
-                    
-                    <div v-if="tab_index == 2">
-                        <p class="text-muted">Following Apps are used to generate published datasets.</p>
+
+                        <hr>
+                        <p style="opacity: 0.8;">Following Apps are used to generate published datasets.</p>
                         <b-row>
-                            <b-col cols="6" v-for="rec in apps" :key="rec.app._id" style="margin-bottom: 10px;">
+                            <b-col cols="6" v-for="(rec, idx) in apps" :key="idx" style="margin-bottom: 10px;">
                                 <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
                                 <div class="button" style="float: right;" @click="download_app(rec.service, rec.service_branch)"><icon name="download"/></div>
                             </b-col>
                         </b-row>
                     </div>
+                    
                 </b-col>
             </b-row>
         </b-container>
@@ -330,6 +333,51 @@ export default {
         }
     },
 
+    watch: {
+        tab_index() {
+            if(this.tab_index == 0) return; //not release view
+            this.dataset_groups = null;
+            this.apps = null;
+
+            let release = this.pub.releases[this.tab_index-1];
+
+            //load release
+            this.$http.get('pub/datasets-inventory/'+release._id).then(res=>{
+                let groups = {};
+                res.body.forEach(rec=>{
+                    let subject = rec._id.subject;
+                    let datatype = rec._id.datatype;
+                    let datatype_tags = rec._id.datatype_tags;
+                    let datatype_tags_s = JSON.stringify(rec._id.datatype_tags);
+                    if(!groups[subject]) {
+                        groups[subject] = { size: 0, count: 0, datatypes: {} };
+                    }
+                    if(!groups[subject].datatypes[datatype]) {
+                        groups[subject].datatypes[datatype] = { size: 0, count:0, datatype_tags: {}};
+                    }
+                    if(!groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s]) {
+                        groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s] = {size: 0, count: 0, show: false, datasets: null};
+                    }
+                    groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s].size += rec.size;
+                    groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s].count += rec.count;
+                    groups[subject].datatypes[datatype].size += rec.size;
+                    groups[subject].datatypes[datatype].count += rec.count;
+                    groups[subject].size += rec.size;
+                    groups[subject].count += rec.count;
+                });
+                this.dataset_groups = groups;
+
+                //load apps
+                return this.$http.get('pub/apps/'+release._id, {params: {
+                    //populate: 'inputs.datatype outputs.datatype contributors',
+                }});
+            })
+            .then(res=>{
+                this.apps = res.body;
+            });
+        }
+    },
+
     computed: {
         social_url: function() {
             if(this.pub.doi) return "http://doi.org/"+this.pub.doi;
@@ -359,6 +407,16 @@ export default {
 
             if(Vue.config.debug) this.pub.doi = "10.1038/nature.2014.14583";
 
+            //sort release by date (new first)
+            this.pub.releases.sort((a,b)=>{
+                if(a.create_date < b.create_date) return 1;
+                if(a.create_date > b.create_date) return -1;
+                return 0;
+            });
+
+            //remove removed release
+            this.pub.releases = this.pub.releases.filter(release=>!release.removed);
+
             //load all datatypes
             return this.$http.get('datatype');
         })
@@ -366,42 +424,6 @@ export default {
             res.body.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
             });
-
-            //load inventory..
-            return this.$http.get('pub/datasets-inventory/'+this.$route.params.id);
-        })
-        .then(res=>{
-            let groups = {};
-            res.body.forEach(rec=>{
-                let subject = rec._id.subject;
-                let datatype = rec._id.datatype;
-                let datatype_tags = rec._id.datatype_tags;
-                let datatype_tags_s = JSON.stringify(rec._id.datatype_tags);
-                if(!groups[subject]) {
-                    groups[subject] = { size: 0, count: 0, datatypes: {} };
-                }
-                if(!groups[subject].datatypes[datatype]) {
-                    groups[subject].datatypes[datatype] = { size: 0, count:0, datatype_tags: {}};
-                }
-                if(!groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s]) {
-                    groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s] = {size: 0, count: 0, show: false, datasets: null};
-                }
-                groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s].size += rec.size;
-                groups[subject].datatypes[datatype].datatype_tags[datatype_tags_s].count += rec.count;
-                groups[subject].datatypes[datatype].size += rec.size;
-                groups[subject].datatypes[datatype].count += rec.count;
-                groups[subject].size += rec.size;
-                groups[subject].count += rec.count;
-            });
-            this.dataset_groups = groups;
-
-            //load apps
-            return this.$http.get('pub/apps/'+this.$route.params.id, {params: {
-                //populate: 'inputs.datatype outputs.datatype contributors',
-            }});
-        })
-        .then(res=>{
-            this.apps = res.body;
 
             //open dataset previously selected
             if(document.location.hash) {
@@ -429,9 +451,10 @@ export default {
 
         toggle(block, subject, datatype, datatype_tags) {
             block.show = !block.show;
+            let release = this.pub.releases[this.tab_index-1];
             if(!block.datasets) {
                 //load datasets
-                this.$http.get('pub/datasets/'+this.$route.params.id, {params: {
+                this.$http.get('pub/datasets/'+release._id, {params: {
                     find: JSON.stringify({
                         'meta.subject': subject,
                         datatype: datatype,
@@ -523,7 +546,7 @@ cursor: pointer;
 background-color: #f7f7f7;
 }
 .toggler {
-padding: 4px;
+padding: 1px 4px;
 width: 100%;
 }
 .toggler:hover {

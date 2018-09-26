@@ -175,7 +175,7 @@ function handle_rule(rule, cb) {
         next=>{
             var limit = 5000;
             request.get({
-                url: config.wf.api+"/task", json: true,
+                url: config.amaretti.api+"/task", json: true,
                 headers: { authorization: "Bearer "+jwt },
                 qs: {
                     find: JSON.stringify({
@@ -506,7 +506,7 @@ function handle_rule(rule, cb) {
             //look for instance that we can use
             next=>{
                 request.get({
-                    url: config.wf.api+"/instance", json: true,
+                    url: config.amaretti.api+"/instance", json: true,
                     headers: { authorization: "Bearer "+jwt },
                     qs: {
                         find: JSON.stringify({
@@ -531,7 +531,7 @@ function handle_rule(rule, cb) {
                 if(instance) return next();
                 rlogger.debug("creating a new instance");
                 request.post({
-                    url: config.wf.api+'/instance', json: true, 
+                    url: config.amaretti.api+'/instance', json: true, 
                     headers: { authorization: "Bearer "+jwt },
                     body: {
                         name: instance_name,
@@ -551,7 +551,7 @@ function handle_rule(rule, cb) {
             //find next tid by counting number of tasks (including removed)
             next=>{
                 request.get({
-                    url: config.wf.api+"/task", json: true,
+                    url: config.amaretti.api+"/task", json: true,
                     headers: { authorization: "Bearer "+jwt },
                     qs: {
                         find: JSON.stringify({
@@ -691,7 +691,7 @@ function handle_rule(rule, cb) {
 
                 //need to submit download task first.
                 request.post({
-                    url: config.wf.api+'/task', json: true, 
+                    url: config.amaretti.api+'/task', json: true, 
                     headers: { authorization: "Bearer "+jwt },
                     body: {
                         instance_id: instance._id,
@@ -784,7 +784,7 @@ function handle_rule(rule, cb) {
                 });
 
                 request.post({
-                    url: config.wf.api+'/task', json: true, 
+                    url: config.amaretti.api+'/task', json: true, 
                     headers: { authorization: "Bearer "+jwt },
                     body: {
                         instance_id: instance._id,
