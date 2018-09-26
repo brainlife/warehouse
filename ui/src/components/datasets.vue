@@ -39,10 +39,10 @@
                             <strong>{{subject}}</strong>
                         </b-col>
                         <b-col cols="10">
-                            <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked}">
-                                <b-row v-if="!dataset.removed">
+                            <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked, removed: dataset.removed}">
+                                <b-row>
                                     <b-col cols="3" class="truncate">
-                                        <input type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
+                                        <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
                                         <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
                                         <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
@@ -86,6 +86,21 @@
             <icon name="check-square" style="position: relative; margin-right: 10px;"/> {{selected_count}} Selected 
         </h4>
 
+        <div class="select-action">
+            <p>
+                <b-btn size="sm" variant="outline-secondary" @click="download">
+                    <icon name="download" scale="0.8"/> Download (BIDS)
+                    <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
+                </b-btn>
+            </p>
+            <p>
+                <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="paper-plane" scale="0.8"/> Stage to process</b-btn>
+            </p>
+            <p>
+                <b-btn size="sm" @click="remove" variant="outline-danger"><icon name="trash" scale="0.8"/> Remove</b-btn>
+            </p>
+        </div>
+
         <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
             <datatypetag :datatype="datatypes[did]"/>
             <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open(id)">
@@ -102,20 +117,6 @@
             </div>
         </div>
 
-        <div class="select-action">
-            <p>
-                <b-btn size="sm" @click="download">
-                    <icon name="download" scale="0.8"/> Download (BIDS)
-                    <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
-                </b-btn>
-            </p>
-            <p>
-                <b-btn size="sm" @click="process"><icon name="paper-plane" scale="0.8"/> Stage to process</b-btn>
-            </p>
-            <p>
-                <b-btn size="sm" @click="remove" variant="danger"><icon name="trash" scale="0.8"/> Remove</b-btn>
-            </p>
-        </div>
         <p style="opacity: 0.5; margin: 10px">You can select multiple datasets by holding the shift key on first and last datasets that you'd like to select.</p>
         <br clear="both">
     </div>
@@ -408,7 +409,7 @@ export default {
                 params: {
                     find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,
-                    limit: 200, 
+                    limit: 250,  //needs to be bigger than the largest dataset per subject (bigger == slower for vue to render)
                     //select: '-prov',
                     sort: 'meta.subject meta.session -create_date'
                 }
@@ -446,6 +447,8 @@ export default {
                     this.page_info.push({top: prev, bottom: h, height: h-prev, visible: true});
                     this.loading = null;
                 });
+                console.log("done loading");
+                
             }, err=>{
                 console.error(err);
                 this.loading = null;
@@ -706,20 +709,22 @@ export default {
         remove() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 this.check_agreements(this.project, ()=>{
-                    async.forEach(this.selected, (dataset, next)=>{
+                    let ids = [];
+                    for(var id in this.selected) {
+                        var dataset = this.selected[id];
                         if(!dataset._canedit) {
                             this.$notify({type: "error", text: "You don't have permission to remove this dataset: "+dataset._id});
-                            return next();
-                        }
-                        this.$http.delete('dataset/'+dataset._id).then(res=>{
-                            next();
-                        }).catch(next);
-                    }, err=>{
-                        if(err) {
-                            this.$notify({type: "error", text: err.body.message});
                         } else {
-                            this.$notify({type: "success", text: "dataset(s) successfully removed"});
+                            ids.push(id);
+                            dataset.removed = true;
                         }
+                    }
+                    //this.$notify({type: "info", text: "Removing "+ids.length+" datasets.."});
+                    this.$http.post('dataset/delete', {id: ids}).then(res=>{
+                        this.clear_selected();
+                        this.$notify({type: "success", text: res.body.message});
+                    }).catch(err=>{
+                        this.$notify({type: "error", text: err.body.message});
                     });
                 });
             }
@@ -912,6 +917,12 @@ right: 250px;
     height: 20px;
     float: left;
     margin-right: 5px;
+}
+
+/*why don't I just *hide* removed datasets? because remove() doesn't recalculate page height to preseve the current scroll position*/
+.removed {
+background-color: #ccc;
+color: white;
 }
 .button-fixed.selected-view-open {
 right: 300px;

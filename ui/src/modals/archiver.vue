@@ -98,10 +98,8 @@ export default {
                 return;
             }
 
-            console.log("submitting dataset");
-            this.$http.post('dataset', {
+            let ds = {
                 project: this.project,                 
-                //app_id: this.task.config._app,
                 task_id: this.task._id,
                 output_id: this.output.id, 
                 subdir: this.output.subdir, //subdir that contains the actual content under the task
@@ -112,9 +110,24 @@ export default {
                 meta,
                 desc: this.output.desc,
                 tags: this.tags, 
-            }).then(res=>{
-                this.$root.$emit('archiver.submit', res.body);
-                this.$refs.archiver.hide();
+
+            };
+
+            //dataset post happens asynchronously now
+            this.$notify({text: "Submitted a request to archive dataset..", type: "info"});
+            this.$refs.archiver.hide();
+            this.$root.$emit('archiver.submit', Object.assign(ds, {
+                //UI wants these.. temporarily
+                create_date: new Date(),
+                status: "storing",
+                prov: {
+                    task_id: this.task._id,
+                    output_id: this.output.id,
+                }
+            }));
+            this.$http.post('dataset', ds).then(res=>{
+                for(var key in res.body) ds[key] = res.body[key]; //real info!
+                this.$notify({text: res.body.message, type: "success"});
             }).catch(err=>{
                 console.error(err);
                 this.$notify({text: err.body, type: "error"});

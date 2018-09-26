@@ -348,7 +348,7 @@ background-color: white;
 .v-select {
 font-family: inherit;
 }
-.v-select.dropdown .dropdown-toggle {
+.v-select.dropdown .dropdown-toggle::after {
 content: inherit; /*prevent bootstrap-vue css conflict*/
 }
 .v-select.dropdown .form-control {

@@ -256,11 +256,18 @@
                         </div>
 
                         <hr>
-                        <p style="opacity: 0.8;">Following Apps are used to generate published datasets.</p>
                         <b-row>
-                            <b-col cols="6" v-for="(rec, idx) in apps" :key="idx" style="margin-bottom: 10px;">
-                                <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
-                                <div class="button" style="float: right;" @click="download_app(rec.service, rec.service_branch)"><icon name="download"/></div>
+                            <b-col cols="2">
+                                <!--placeholder-->
+                            </b-col>
+                            <b-col>
+                                <p style="opacity: 0.8;">The Following Apps are used to generate published datasets.</p>
+                                <b-row>
+                                    <b-col cols="6" v-for="(rec, idx) in apps" :key="idx" style="margin-bottom: 10px;">
+                                        <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
+                                        <div class="button" style="float: right;" @click="download_app(rec.service, rec.service_branch)"><icon name="download"/></div>
+                                    </b-col>
+                                </b-row>
                             </b-col>
                         </b-row>
                     </div>

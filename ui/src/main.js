@@ -1,4 +1,20 @@
 
+/////////////////////////////////////// css /////////////////////////////////////
+
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap-vue/dist/bootstrap-vue.min.css'
+
+//is this for vue-element?
+import '../theme/index.css' 
+
+import 'select2/dist/css/select2.css'
+import 'highlight.js/styles/default.css'
+
+import 'katex/dist/katex.min.css'
+import 'vue2-animate/dist/vue2-animate.min.css'
+
+/////////////////////////////////////// js /////////////////////////////////////
+
 //3rd parties
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
@@ -50,21 +66,7 @@ Vue.use(VueTimeago, {
 });
 Vue.use(Meta);
 
-/////////////////////////////////////// css /////////////////////////////////////
-
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap-vue/dist/bootstrap-vue.min.css'
-
-//is this for vue-element?
-import '../theme/index.css' 
-
-import 'select2/dist/css/select2.css'
-import 'highlight.js/styles/default.css'
-
-import 'katex/dist/katex.min.css'
-import 'vue2-animate/dist/vue2-animate.min.css'
-
-/////////////////////////////////////// css /////////////////////////////////////
+/////////////////////////////////////// main /////////////////////////////////////
 
 var jwt_decode = require('jwt-decode');
 
