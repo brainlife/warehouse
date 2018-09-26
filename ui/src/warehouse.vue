@@ -348,6 +348,12 @@ background-color: white;
 .v-select {
 font-family: inherit;
 }
+.v-select.dropdown .dropdown-toggle {
+content: inherit; /*prevent bootstrap-vue css conflict*/
+}
+.v-select.dropdown .form-control {
+height: inherit; /*prevent bootstrap-vue css conflict*/
+}
 
 .select2-container--default .select2-selection--single {
 height: 36px;

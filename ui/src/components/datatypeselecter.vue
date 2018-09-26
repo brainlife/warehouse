@@ -4,6 +4,13 @@
         <datatype :datatype="datatype"/>
     </template>
 </v-select>
+<!--
+<el-select v-model="selected" placeholder="Select" v-if="datatypes">
+    <el-option v-for="datatype in datatypes" :key="datatype._id" :label="datatype.name" :value="datatype._id">
+        <datatype :datatype="datatype"/>
+    </el-option>
+</el-select>
+-->
 </template>
 
 <script>
