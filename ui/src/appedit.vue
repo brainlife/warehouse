@@ -7,7 +7,7 @@
             <div style="margin: 20px 0px;">
                 <p style="float: right; color: #999;">
                     If you are new to creating Apps for Brainlife, please read our
-                    <b-button size="sm" variant="outline-secondary" href="https://brain-life.github.io/docs/apps/introduction" target="doc">Documentation</b-button>
+                    <b-button size="sm" variant="outline-secondary" href="https://brainlife.github.io/docs/apps/introduction" target="doc">Documentation</b-button>
                 </p>
                 <h3 v-if="$route.params.id == '_'">New App</h3>
                 <h3 v-else>{{app.name}}</h3>
@@ -104,7 +104,7 @@
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
+                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
                 Input
             </h4>
             <div>
@@ -114,7 +114,7 @@
                             <b-row v-if="is_raw(input)">
                                 <b-col>
                                     <b-alert show variant="warning" style="margin-bottom: 10px;">
-                                        Warning: You have chosen a raw datatype as an input. We strongly recommend working with the developers of the App who is generating the raw datatype to register a new datatype so that it can used instead to pass dataset between Apps. Please refer to <a href="https://brain-life.github.io/docs/user/datatypes/">Datatypes</a>
+                                        Warning: You have chosen a raw datatype as an input. We strongly recommend working with the developers of the App who is generating the raw datatype to register a new datatype so that it can used instead to pass dataset between Apps. Please refer to <a href="https://brainlife.github.io/docs/user/datatypes/">Datatypes</a>
                                     </b-alert>
                                 </b-col>
                             </b-row>
@@ -200,7 +200,7 @@
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
+                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
                 Output
             </h4>
             <div>
@@ -259,7 +259,7 @@
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brain-life.github.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
+                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
                 Configuration</h4>
             <div>
                 <transition-group name="move-item" tag="p">

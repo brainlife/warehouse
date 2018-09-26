@@ -4,7 +4,6 @@
         <h3><icon name="paper-plane"></icon> {{task.name||task.service}}</h3>
     </slot>
 
-
     <!--status indicator-->
     <div class="status-card" :class="task.status" style="border: none;">
         <div style="float: left; padding: 6px 8px" @click="poke">

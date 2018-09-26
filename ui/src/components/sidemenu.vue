@@ -84,7 +84,7 @@ export default {
             this.$router.push(page);
         },
         doc() {
-            window.open("https://brain-life.github.io/docs/", "brainlife doc");
+            window.open("https://brainlife.github.io/docs/", "brainlife doc");
         },
         /*
         goraw: function(url) {

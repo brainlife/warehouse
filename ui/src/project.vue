@@ -135,6 +135,7 @@
     </div><!--page-content-->
 
     <newtask-modal/>
+    <datatypeselecter-modal/>
 </div>
 </template>
 
@@ -161,6 +162,7 @@ import agreements from '@/components/agreements'
 
 //modals
 import newtaskModal from '@/modals/newtask'
+import datatypeselecterModal from '@/modals/datatypeselecter'
 
 export default {
     components: { 
@@ -171,7 +173,7 @@ export default {
         processes, publications, pipelines,
         agreements,
 
-        newtaskModal,
+        newtaskModal, datatypeselecterModal,
     },
 
     data () {
