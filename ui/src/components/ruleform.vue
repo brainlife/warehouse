@@ -111,7 +111,6 @@
 <script>
 import Vue from 'vue'
 
-import vSelect from 'vue-select'
 import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 import tageditor from '@/components/tageditor'
@@ -126,8 +125,7 @@ export default {
     },
 
     components: { 
-        projectselecter, vSelect, datatypetag,
-        app, tageditor, configform,
+        projectselecter, datatypetag, app, tageditor, configform,
     },
 
     watch: {

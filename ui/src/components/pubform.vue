@@ -55,12 +55,12 @@
                 <b-row>
                     <b-col>
                         <b-input-group prepend="Release Name">
-                            <b-form-input type="text" required v-model="release.name" placeholder=""/>
+                            <b-form-input :disabled="!!release._id" type="text" required v-model="release.name" placeholder=""/>
                         </b-input-group>
                     </b-col>
                     <b-col>
                         <b-input-group prepend="Release Date">
-                            <b-form-input type="date" required v-model="release._create_date" placeholder=""/>
+                            <b-form-input :disabled="!!release._id" type="date" required v-model="release._create_date" placeholder=""/>
                         </b-input-group>
                     </b-col>
                     <b-col sm="1">

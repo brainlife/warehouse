@@ -414,6 +414,9 @@ export default {
                 return 0;
             });
 
+            //remove removed release
+            this.pub.releases = this.pub.releases.filter(release=>!release.removed);
+
             //load all datatypes
             return this.$http.get('datatype');
         })

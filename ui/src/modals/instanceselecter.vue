@@ -28,11 +28,10 @@
 <script>
 import Vue from 'vue'
 
-import vSelect from 'vue-select'
 import projectselecter from '@/components/projectselecter'
 
 export default {
-    components: { projectselecter, vSelect },
+    components: { projectselecter },
 
     data() {
         return {

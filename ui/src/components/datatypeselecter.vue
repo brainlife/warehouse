@@ -1,28 +1,25 @@
 <template>
-<div v-if='datatypes'>
-    <v-select v-model="selected" :options="datatypes" label="name" placeholder="datatype">
-        <template slot="option" slot-scope="datatype">
-            <datatype :datatype="datatype"/>
-        </template>
-    </v-select>
-</div>
+<v-select v-model="selected" :options="datatypes" label="name" v-if="datatypes">
+    <template slot="option" slot-scope="datatype">
+        <datatype :datatype="datatype"/>
+    </template>
+</v-select>
 </template>
 
 <script>
 import Vue from 'vue'
-import vSelect from 'vue-select'
 
 import datatypefile from '@/components/datatypefile'
 import datatype from '@/components/datatype'
 
 export default {
-    components: { vSelect, datatype},
+    components: { datatype },
     props: [ 'value' ],
     
     data () {
         return {
             selected: null,
-            datatypes: []
+            datatypes: null,
         };
     },
     

@@ -8,11 +8,10 @@
 </template>
 
 <script>
-import vSelect from 'vue-select'
 
 export default {
     props: ['options', 'value', 'placeholder', 'required'],
-    components: { vSelect },
+    //components: { },
     
     data: function() {
         return {

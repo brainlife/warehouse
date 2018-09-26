@@ -1,23 +1,13 @@
 
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
-
-import '../theme/index.css' 
-
-import 'select2/dist/css/select2.css'
-import 'highlight.js/styles/default.css'
-
 //3rd parties
 import 'jquery/dist/jquery.js'
 import 'select2/dist/js/select2.js'
-import 'katex/dist/katex.min.css'
-import 'vue2-animate/dist/vue2-animate.min.css'
-
 import Vue from 'vue'
 
+import vSelect from 'vue-select' 
 import VueResource from 'vue-resource'
 import VueHighlightJS from 'vue-highlightjs'
-import Vue2Filters from 'vue2-filters'
+//import Vue2Filters from 'vue2-filters' //conflicts with vue-select filterBy?
 
 import Element from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
@@ -37,6 +27,7 @@ import SocialSharing from 'vue-social-sharing';
 import VueAnalytics from 'vue-analytics'
 import Meta from 'vue-meta'
 
+Vue.component('v-select', vSelect)
 Vue.component('icon', Icon)
 
 import VueDisqus from 'vue-disqus'
@@ -48,7 +39,7 @@ Vue.use(Element, {locale})
 Vue.use(Notifications);
 Vue.use(VueLazyload)
 Vue.use(BootstrapVue);
-Vue.use(Vue2Filters)
+//Vue.use(Vue2Filters)
 Vue.use(SocialSharing);
 Vue.use(VueTimeago, {
     name: 'timeago',
@@ -58,6 +49,22 @@ Vue.use(VueTimeago, {
     }
 });
 Vue.use(Meta);
+
+/////////////////////////////////////// css /////////////////////////////////////
+
+//import 'bootstrap/dist/css/bootstrap.min.css'
+//import 'bootstrap-vue/dist/bootstrap-vue.min.css'
+
+//is this for vue-element?
+import '../theme/index.css' 
+
+import 'select2/dist/css/select2.css'
+import 'highlight.js/styles/default.css'
+
+import 'katex/dist/katex.min.css'
+import 'vue2-animate/dist/vue2-animate.min.css'
+
+/////////////////////////////////////// css /////////////////////////////////////
 
 var jwt_decode = require('jwt-decode');
 

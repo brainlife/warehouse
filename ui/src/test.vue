@@ -1,6 +1,7 @@
 <template>
 <div>
     <h1>Test</h1>
+    <v-select :options="['aaa', 'bbb']" style="margin: 20px;"/>
     <!--
     <b-form>
         <b-form-checkbox id="checkbox1"
@@ -11,8 +12,8 @@
         </b-form-checkbox>
         <div class='altmetric-embed' data-badge-type='donut' data-doi="10.1038/nature.2012.9872"></div>
     </b-form>
-    -->
     <vue-plotly :data="data" :layout="layout"/>
+    -->
     <!--<div ref="plot"/>-->
 </div>
 </template>
