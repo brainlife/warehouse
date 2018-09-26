@@ -729,14 +729,14 @@ router.get('/download/safe/:id', jwt({
 });
 
 /**
- * @apiGroup Dataset
- * @api {delete} /dataset/:id
- *                              Hide dataset from dataset results
- * @apiDescription              Logically remove dataset by setting "removed" to true
+ * @apiGroup Dataset 
+ * @api {delete} /dataset/:id   Hide dataset from dataset results (DEPRECATED USE (post)/delete)
+ * @apiDescription              Logically remove dataset by setting "removed" to true 
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
+//DEPRECATED!
 router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
     const id = req.params.id;
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
@@ -755,5 +755,37 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
         });
     });
 });
+
+/**
+ * @apiGroup Dataset
+ * @api {post} /dataset/delete
+ *                              Remove (hide) dataset from dataset results (async)
+ * @apiParam {String[]} id      Dataset ID to remove (could be an array)
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ */
+router.post('/delete', jwt({secret: config.express.pubkey}), function(req, res, next) {
+    let ids = req.body.id;
+    if(!Array.isArray(ids)) ids = [ ids ];
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return next(err);
+        db.Datasets.find({_id: {$in: ids}}, (err, datasets)=>{
+            if(err) return next(err);
+            res.json({status: "ok", "message": "removing "+datasets.length+" datasets"});
+            async.eachSeries(datasets, (dataset, next_dataset)=>{
+                if(canedit(req.user, dataset, canwrite_project_ids)) {
+                    dataset.remove_date = new Date();
+                    dataset.removed = true;
+                    dataset.save(next_dataset);
+                }
+            }, err=>{
+                if(err) return next(err);
+                logger.debug("done removing datasets");
+            });
+        });
+    });
+});
+
 
 module.exports = router;
