@@ -26,11 +26,11 @@
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div v-else>
             <h3 show v-if="count == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
-            <div v-for="tag in sorted_tags" :id="tag" :class="{'newapps': tag == '_new'}">
+            <div v-for="tag in sorted_tags" :id="tag" :class="{'newapps': tag == '_new'}" style="position: relative;">
                 <h4 class="group-title" v-if="tag == '_new'">New Apps</h4> 
                 <h4 class="group-title" v-else>{{tag}}</h4> 
                 <div v-for="app in app_groups[tag]" :key="app._id" class="app">
-                    <app :app="app" height="246px"></app>
+                    <app :app="app" height="246px"/>
                 </div>
                 <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
                     <p style="opacity: 0.7;">
@@ -260,6 +260,12 @@ margin-bottom: 10px;
 width: 350px;
 float: left;
 }
+/*
+.app:hover {
+transition: transform .2s;
+transform: scale(1.5);
+}
+*/
 .page-content {
 margin-left: 240px;
 }
