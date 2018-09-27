@@ -408,6 +408,15 @@ margin-bottom: 0px;
 background-color: inherit;
 }
 
+/*default vue-animate.css effect is too slow*/
+.fade-enter-active, .fadeIn,
+.fade-leave-active, .fadeOut {
+  -webkit-animation-duration: 0.2s;
+          animation-duration: 0.2s;
+  -webkit-animation-fill-mode: both;
+          animation-fill-mode: both; 
+}
+
+
+
 </style>
-
-

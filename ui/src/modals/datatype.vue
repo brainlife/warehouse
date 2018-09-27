@@ -142,10 +142,12 @@ box-shadow: 0 0 20px #000;
 position: relative;
 }
 
+/*
 .fade-enter-active, .fade-leave-active {
 transition: opacity .3s;
 }
 .fade-enter, .fade-leave-to {
 opacity: 0;
 }
+*/
 </style>
