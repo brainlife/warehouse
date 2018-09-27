@@ -91,10 +91,12 @@
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                     </mute>
                     <div v-if="output.archive" style="display: inline-block;">
-                        <icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/>
-                        <small style="background-color: gray; color: white; padding: 3px 5px;">
-                            <b>Archive to</b>
-                        </small><small v-if="project._id != output.archive.project" style="background-color: #ddd; padding: 3px 5px;">{{projectname(output.archive.project)}}</small><small v-else style="background-color: #ddd; padding: 3px 5px;">This Project</small>
+                        <small style="opacity: 0.4">
+                            <icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Archive to
+                        </small>
+                        <icon name="shield-alt"/>
+                        <small v-if="project._id != output.archive.project">{{projectname(output.archive.project)}}</small>
+                        <small v-else style="opacity: 0.5">This Project</small>
                     </div>
 
                     <!--foreign project-->
