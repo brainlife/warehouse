@@ -80,7 +80,7 @@
                                     :branch="dataset.prov.task.service_branch||'master'" 
                                     :clickable="false" 
                                     @click.native="openapp(dataset.prov.task.config._app)">
-                                    <taskconfig style="margin: 10px;" :task="dataset.prov.task"/>
+                                    <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
                                 </app>
                                 <br>
                             </b-col>
