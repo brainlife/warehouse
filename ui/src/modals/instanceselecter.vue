@@ -13,7 +13,7 @@
     <b-row>
         <b-col :cols="3">Process</b-col>
         <b-col>
-            <b-form-radio-group id="radios2" v-model="createnew" style="margin-bottom: 5px;">
+            <b-form-radio-group v-model="createnew" style="margin-bottom: 5px;">
                 <b-form-radio :value="true">Create New Process</b-form-radio>
                 <b-form-radio :value="false" v-if="instances.length > 0">Use Existing Process</b-form-radio>
             </b-form-radio-group>
@@ -122,7 +122,7 @@ export default {
             this.submit_cb({
                 project_id: this.project,
                 group_id: this.projects[this.project].group_id,
-                instance: this.instance,
+                instance: (this.createnew?null:this.instance),
                 desc: this.desc.trim(),
             });
             this.$refs.modal.hide()
