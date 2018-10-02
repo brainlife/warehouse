@@ -30,6 +30,7 @@
     "express": "^4.16.2",
     "express-jwt": "^5.3.1",
     "express-winston": "^2.6.0",
+    "gunzip-stream": "^1.0.1",
     "istanbul": "^0.4.5",
     "mkdirp": "^0.5.1",
     "mongoose": "^5.2.17",

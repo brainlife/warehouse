@@ -6,6 +6,7 @@ const fs = require('fs');
 const tar = require('tar');
 const winston = require('winston');
 const ssh2 = require('ssh2');
+const gunzip = require('gunzip-stream');
 
 const config = require('../../api/config');
 const logger = new winston.Logger(config.logger.winston);
@@ -51,18 +52,21 @@ function run(cb) {
                 //then open source
                 config.storage_systems.jetstream.download(dataset, (err, read, filename)=>{
                     if(err) throw err;
-                    if(~filename.indexOf(".tar.gz")) {
-                        console.log(".tar.gz (old) dataset shouldbe un-zipped.. skipping");
-                        return next_dataset();
-                    }
 
-                    //start transfer
-                    console.log("piping");
-                    read.pipe(write);
+                    if(~filename.indexOf(".tar.gz")) {
+                        //console.log(".tar.gz (old) dataset shouldbe un-zipped.. skipping");
+                        //return next_dataset();
+                        console.log("piping through gunzip");
+                        read.pipe(gunzip.createGunzip()).pipe(write);
+                    } else {
+                        console.log("piping");
+                    	read.pipe(write);
+		            }
+
                     success.then(stat=>{
                         if(dataset.size > stat.size) throw new Error("couldn't download all data");
                         if(dataset.size < stat.size) {
-                            console.error("dataset.size is smaller than stat.size.. resetting dataset");
+                            console.error("dataset.size is smaller than stat.size.. resetting dataset - expected for .tar.gz data");
                             dataset.size = stat.size;
                         }
 

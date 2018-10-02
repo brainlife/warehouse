@@ -381,7 +381,7 @@ exports.storage_systems.wrangler = {
                 stream.on('close', code=>{
                     //setTimeout(()=>{conn.end();}, 1000);
                     conn.end();
-                    console.log("write stream closed");
+                    console.log("read stream closed");
                 });
                 stream.stderr.on('data', data=>{
                     console.error(data.toString());
