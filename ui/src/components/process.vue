@@ -90,7 +90,14 @@
                     <mute>
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                     </mute>
-                    <b-badge v-if="output.archive" variant="primary">Auto Archive: {{projectname(output.archive.project)}}</b-badge>
+                    <div v-if="output.archive" style="display: inline-block;">
+                        <small style="opacity: 0.4">
+                            <icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Archive to
+                        </small>
+                        <icon name="shield-alt"/>
+                        <small v-if="project._id != output.archive.project">{{projectname(output.archive.project)}}</small>
+                        <small v-else style="opacity: 0.5">This Project</small>
+                    </div>
 
                     <!--foreign project-->
                     <span class="text-muted" v-if="output.dataset_id && output.project != project._id">

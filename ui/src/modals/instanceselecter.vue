@@ -13,8 +13,12 @@
     <b-row>
         <b-col :cols="3">Process</b-col>
         <b-col>
-            <v-select v-if="instances.length > 0" v-model="instance" :options="instances" label="_label" placeholder="(Create New Process)" style="margin-bottom: 8px;"/>
-            <b-form-textarea v-if="!instance" v-model="desc" :rows="3" placeholder="Enter Description for New Process"/>
+            <b-form-radio-group v-model="createnew" style="margin-bottom: 5px;">
+                <b-form-radio :value="true">Create New Process</b-form-radio>
+                <b-form-radio :value="false" v-if="instances.length > 0">Use Existing Process</b-form-radio>
+            </b-form-radio-group>
+            <b-form-input v-if="createnew" type="text" v-model="desc" placeholder="Enter Description for New Process"/>
+            <v-select v-if="!createnew" v-model="instance" :options="instances" label="_label" required placeholder="(Choose Process)"/>
         </b-col>
     </b-row>
     <br>
@@ -42,6 +46,8 @@ export default {
             desc: "",
             projects: {},
             instances: [],
+
+            createnew: true, //for toggle button
         }
     },
 
@@ -70,11 +76,11 @@ export default {
                 limit: 1000,
                 sort: '-create_date',
             }}).then(res=>{
-                console.dir(res.body.instances);
                 res.body.instances.forEach(instance=>{
                     instance._label = instance.desc||'('+instance._id+')';
                     this.instances.push(instance);
                 });
+                this.instance = this.instances[0];//might be empty
             });
         },
     },
@@ -116,7 +122,7 @@ export default {
             this.submit_cb({
                 project_id: this.project,
                 group_id: this.projects[this.project].group_id,
-                instance: this.instance,
+                instance: (this.createnew?null:this.instance),
                 desc: this.desc.trim(),
             });
             this.$refs.modal.hide()

@@ -53,7 +53,7 @@
                             <b-col cols="3"><span class="form-header">User Tags</span></b-col>
                             <b-col cols="9">
                                 <div v-if="dataset._canedit && alltags">
-                                    <tageditor :value="dataset.tags" v-model="dataset.tags" @input="dataset._tags_dirty = true" />
+                                    <tageditor :value="dataset.tags" v-model="dataset.tags" @input="dataset._tags_dirty = true" :options="alltags"/>
                                     <div v-if="dataset._tags_dirty" style="text-align:right;margin-top:10px;">
                                         <b-button variant="primary" @click="save_tags()">Save Tags</b-button>
                                     </div>
@@ -682,12 +682,14 @@ overflow: auto;
 padding: 20px;
 }
 
+/*
 .fade-enter-active, .fade-leave-active {
     transition: opacity .3s
 }
 .fade-enter, .fade-leave-to {
     opacity: 0
 }
+*/
 </style>
 
 
