@@ -91,12 +91,10 @@
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                     </mute>
                     <div v-if="output.archive" style="display: inline-block;">
-                        <small style="opacity: 0.4">
-                            <icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Archive to
-                        </small>
-                        <icon name="shield-alt"/>
+                        <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Archive to</small>
+                        <icon style="opacity: 0.5; margin-left: 3px;" name="shield-alt" scale="1.0"/>
                         <small v-if="project._id != output.archive.project">{{projectname(output.archive.project)}}</small>
-                        <small v-else style="opacity: 0.5">This Project</small>
+                        <small v-else style="opacity: 0.6">This Project</small>
                     </div>
 
                     <!--foreign project-->
@@ -554,6 +552,7 @@ export default {
         newtask() {
             this.$root.$emit("newtask.open", {
                 datasets: this._datasets, 
+                project: this.project,
             });
         },
         newdataset() {

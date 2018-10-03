@@ -156,14 +156,14 @@
                             This App is not registered to run on any resource that you have access to. If you are a developer of this App, please contact resource administrators and enable this App on more resources.
                         </b-alert>
                         <b-alert show variant="warning" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
-                            This App can not run on any registered resources that you have access to at this moment.
+                            This App cannot run on any registered resources that you have access to at this moment.
                         </b-alert>
                         <p v-else>
                             <small class="text-muted">This App can run on the following resources.</small>
                         </p>
                         <b-row>
                             <b-col cols="4" v-for="resource in resources" :key="resource._id">
-                                <div class="resource" v-b-popover.hover="resource.info.desc+'\n\n'+resource.detail+'\nstatus:'+resource.status" :title="null">
+                                <div class="resource" v-b-popover.hover="resource.info.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
                                     <p style="padding: 10px; margin-bottom: 0px;">
                                         <!--TODO - show different icon for different type of vm-->
                                         <icon name="server" style="opacity: 0.2; float: right"/>
@@ -319,33 +319,6 @@ export default {
 
             config: Vue.config,
         }
-    },
-
-    computed: {
-        /*
-        resource_table: function() {
-            let items = [];
-            if(this.resources) {
-                this.resources.forEach(resource=>{
-                    var item = {
-                        resource: resource.name,
-                        status: resource.status,
-                        score: resource.score,
-                        detail: resource.detail,
-                        //_rowVariant: "success",
-                    };
-
-                    //b-table shows _rowVariant as column..
-                    if(this.preferred_resource && resource.id == this.preferred_resource._id) {
-                        //item._rowVariant = 'success';
-                        item.preferred = true;
-                    }
-                    items.push(item);
-                });
-            }
-            return items;
-        },
-        */
     },
 
     mounted: function() {
