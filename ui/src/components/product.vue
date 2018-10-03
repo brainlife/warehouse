@@ -13,7 +13,7 @@
     </div>
     <b-tabs class="brainlife-tab" v-model="tab">
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
-            <vue-plotly :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true"/>
+            <vue-plotly v-if="tab == $idx" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true"/>
         </b-tab>
         <b-tab title="JSON" v-if="Object.keys(others).length > 0">
             <pre v-highlightjs="JSON.stringify(others, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
