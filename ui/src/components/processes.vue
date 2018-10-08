@@ -597,7 +597,6 @@ position: relative;
 margin-right: 2px;
 font-size: 65%;
 top: -2px;
-border-radius: 2px;
 display: inline-block;
 }
 .summary-running {
