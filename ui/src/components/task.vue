@@ -9,7 +9,7 @@
         <div style="float: left; padding: 6px 8px" @click="poke">
             <statusicon :status="task.status" scale="1.5"/>
         </div>
-        <div style="margin-left: 45px;">
+        <div style="margin-left: 45px; margin-right: 5px; margin-bottom: 5px;">
             <div style="float: right;">
                 <div class="button" style="opacity: 0.7" v-if="editing_desc === null" @click="edit_desc" title="Edit Notes"><icon name="edit"/></div>
                 <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid"><icon name="info"/></div>
@@ -78,57 +78,59 @@
             </h4>
             <i>{{task.status_msg.trim()||'...'}}</i>
         </div>
-    </div>
 
-    <div class="note" v-if="task.desc || editing_desc !== null">
-        <div v-if="task.desc && editing_desc == null" @click="edit_desc" class="note-text">
-            <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px;"/>
-        </div>
-        <div v-if="editing_desc !== null" style="position: relative;">
-            <b-form-textarea ref="desc_editor" v-model="editing_desc" placeholder="Enter Notes in Markdown" :rows="3" style="border: none; border-radius: 0; padding-right: 100px"/>
-            <div class="button" @click="update_desc" style="position: absolute; top: 0; right: 0px; background-color: #ddd; margin: 5px;"><icon name="check"/> Save</div>
-        </div>
-    </div>
-
-    <div v-if="task.service != 'soichih/sca-product-raw'">
-        <taskconfig :task="task" style="padding: 10px;"/>
-    </div>
-
-
-    <div v-if="has_input_slot">
-        <div @click="toggle('input')" class="toggler">
-            <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
-        </div>
-        <transition name="fadeHeight">
-            <div v-if="activeSections.input">
-                <slot name="input"></slot>
+        <div style="background-color: #fafafa; color: #555;">
+            <div class="note" v-if="task.desc || editing_desc !== null">
+                <div v-if="task.desc && editing_desc == null" @click="edit_desc" class="note-text">
+                    <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px;"/>
+                </div>
+                <div v-if="editing_desc !== null" style="position: relative;">
+                    <b-form-textarea ref="desc_editor" v-model="editing_desc" placeholder="Enter Notes in Markdown" :rows="3" style="border: none; border-radius: 0; padding-right: 100px"/>
+                    <div class="button" @click="update_desc" style="position: absolute; top: 0; right: 0px; background-color: #666; margin: 5px;"><icon name="check"/> Save</div>
+                </div>
             </div>
-        </transition>
+
+            <div v-if="task.service != 'soichih/sca-product-raw'">
+                <taskconfig :task="task" style="padding: 10px;"/>
+            </div>
+
+            <div v-if="has_input_slot">
+                <div @click="toggle('input')" class="toggler">
+                    <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.input}"/> Input
+                </div>
+                <transition name="fadeHeight">
+                    <div v-if="activeSections.input">
+                        <slot name="input"></slot>
+                    </div>
+                </transition>
+            </div>
+
+            <div v-if="has_output_slot">
+                <div @click="toggle('output')" class="toggler">
+                    <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output 
+                    <small v-if="remove_in_days < 7" class="text-danger" style="float: right;">Will be removed in <b>{{remove_in_days.toFixed(0)}} days</b></small>
+                </div>
+                <transition name="fadeHeight">
+                    <div v-if="activeSections.output">
+                        <slot name="output"></slot>
+                    </div>
+                </transition>
+            </div>
+
+            <div v-if="task.resource_ids.length > 0">
+                <div @click="toggle('rawoutput')" class="toggler">
+                    <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
+                </div>
+                <transition name="fadeHeight">
+                    <div v-if="activeSections.rawoutput" style="background-color: #fafafa;">
+                        <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
+                        <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
+                    </div>
+                </transition>
+            </div>
+        </div>
     </div>
 
-    <div v-if="has_output_slot">
-        <div @click="toggle('output')" class="toggler">
-            <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output 
-            <small v-if="remove_in_days < 7" class="text-danger" style="float: right;">Will be removed in <b>{{remove_in_days.toFixed(0)}} days</b></small>
-        </div>
-        <transition name="fadeHeight">
-            <div v-if="activeSections.output">
-                <slot name="output"></slot>
-            </div>
-        </transition>
-    </div>
-
-    <div v-if="task.resource_ids.length > 0">
-        <div @click="toggle('rawoutput')" class="toggler">
-            <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.rawoutput}"/> Raw Output
-        </div>
-        <transition name="fadeHeight">
-            <div v-if="activeSections.rawoutput" style="background-color: #fafafa;">
-                <filebrowser v-if="task.resource_id" :task="task"></filebrowser>
-                <b-alert show v-else title="Not yet submitted to computing resource" :variant="warning"></b-alert>
-            </div>
-        </transition>
-    </div>
 
 </div>
 </template>
@@ -295,7 +297,7 @@ export default {
 background-color: #fafafa;
 }
 .status-card {
-padding: 5px;
+padding: 5px 0 0 5px;
 }
 .status-card.finished {
 color: white;
@@ -376,15 +378,16 @@ opacity: 0;
 max-height: 0px;
 }
 .note {
-color: #666;
+color: #333;
 border-bottom: 1px solid #eee;
 }
 .note-text {
 padding: 5px; 
 font-size: 90%;
+background-color: white;
 }
 .note-text:hover {
-background-color: #eee;
+background-color: #fafafa;
 cursor: pointer;
 }
 </style>
