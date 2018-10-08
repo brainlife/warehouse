@@ -73,15 +73,14 @@
                         <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
                         &nbsp;
                         <div v-if="instance.config && instance.config.summary" style="display: contents; opacity: 0.8;">
-                            <span v-for="summary in instance.config.summary" 
-                                v-if="summary.service != 'soichih/sca-product-raw' && summary.name" 
-                                :class="summary_class(summary)" :title="summary.name">
+                            <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw' && summary.name" 
+                                :class="summary_class(summary)" :title="summary.name" @click.stop="select_task(instance, summary)">
                                 {{summary.name.substring(0,4).trim()}}
                             </span>
                         </div>
                     </div>
                 </div>
-                <process v-if="instance == selected" :project="project" :instance="instance" class="process" ref="process" />
+                <process v-if="instance == selected" :project="project" :instance="instance" :selected_task="selected_task" class="process" ref="process" />
             </div>
         </div>
         <br>
@@ -117,6 +116,7 @@ export default {
             show: null, //null == all
             
             selected: null,
+            selected_task: null,
 
             query: "",
             apps: null, //keyed by _id
@@ -305,6 +305,7 @@ export default {
                     this.scrollto(instance);
                 });
             } else {
+                //close!
                 this.$router.push("/project/"+this.project._id+"/process");
                 this.$nextTick(()=>{
                     //if process header is outside or view, scroll back to it
@@ -317,6 +318,14 @@ export default {
                 });
                 this.selected = null;
             }
+        },
+
+        select_task(instance, summary) {
+            if(this.selected != instance) {
+                //not selected.. so let's open it first
+                this.toggle_instance(instance);
+            }
+            this.selected_task = summary.task_id;
         },
 
         editdesc(instance) {
@@ -599,6 +608,10 @@ font-size: 65%;
 top: -2px;
 display: inline-block;
 }
+.summary:hover {
+background-color: white;
+color: black;
+}
 .summary-running {
 background-color: #007bff;
 }
@@ -615,6 +628,7 @@ background-color: #50bfff;
 .summary-finished {
 background-color: #28a745;
 }
+
 .date {
 float: right;
 width: 110px;

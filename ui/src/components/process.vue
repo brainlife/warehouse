@@ -1,5 +1,7 @@
 <template>
 <div v-if="projects && instance">
+
+    <!--task list to show on the right hand side-->
     <div class="task-tabs">
         <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
             <div class="task-tab-title">
@@ -91,12 +93,10 @@
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                     </mute>
                     <div v-if="output.archive" style="display: inline-block;">
-                        <small style="opacity: 0.4">
-                            <icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Archive to
-                        </small>
-                        <icon name="shield-alt"/>
+                        <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Archive to</small>
+                        <icon style="opacity: 0.5; margin-left: 3px;" name="shield-alt" scale="1.0"/>
                         <small v-if="project._id != output.archive.project">{{projectname(output.archive.project)}}</small>
-                        <small v-else style="opacity: 0.5">This Project</small>
+                        <small v-else style="opacity: 0.6">This Project</small>
                     </div>
 
                     <!--foreign project-->
@@ -188,7 +188,7 @@ let cache_datatypes = null;
 let cache_projects = null;
 
 export default {
-    props: [ 'project', 'instance' ],
+    props: [ 'project', 'instance', 'selected_task' ],
 
     components: { 
         sidemenu, task, 
@@ -294,11 +294,13 @@ export default {
 
     watch: {
         instance: function() {
-            console.log("instance updated");
             this.load();
         },
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
+        },
+        selected_task(task_id) {
+            this.scrollto(task_id);
         },
     },
 
@@ -328,7 +330,6 @@ export default {
             this.loading = true;
             if(this.ws) this.ws.close();
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
-            //console.log("connecting to task updates", url);
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
                 console.log("ws open");
@@ -427,6 +428,7 @@ export default {
                 this.tasks = res.body.tasks;
                 this.loading = false;
 
+
                 //loading archived datasets for all tasks
                 var task_ids = this.tasks.map(task=>task._id); 
                 this.$http.get('dataset', {params: {
@@ -437,6 +439,12 @@ export default {
                     limit: 300,
                 }}).then(res=>{
                     this.archived = res.body.datasets;
+
+                    if(this.selected_task) {
+                        this.$nextTick(()=>{
+                            this.scrollto(this.selected_task);
+                        });
+                    }
                 });
             });
         },
@@ -554,6 +562,7 @@ export default {
         newtask() {
             this.$root.$emit("newtask.open", {
                 datasets: this._datasets, 
+                project: this.project,
             });
         },
         newdataset() {

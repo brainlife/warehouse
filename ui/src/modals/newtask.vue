@@ -92,7 +92,7 @@
                             </p>
                             <p>
                                 <b>Dataset Tags</b>
-                                <tageditor placeholder="Optional" v-model="tags" :options="available_tags"/>
+                                <tageditor placeholder="Optional" v-model="tags" :options="alltags"/>
                                 <small style="opacity: 0.8">Description / tags will be applied to all output datasets</small>
                             </p>
                         </b-card>
@@ -144,8 +144,7 @@ export default {
             app: null, //selected
             tags: [],
 
-            //TODO - newtask doesn't know the project it's opened for.. so I am not sure how I should load tags
-            available_tags: [], 
+            alltags: [], 
 
             config: null,
             inputs: null,
@@ -183,6 +182,15 @@ export default {
             var datatype_ids = [];
             this.datasets.forEach(dataset=>{
                 if(!~datatype_ids.indexOf(dataset.datatype)) datatype_ids.push(dataset.datatype);
+            });
+
+            //load all tags
+            //load tags from other datasets in this project
+            this.$http.get('dataset/distinct', {params: {
+                find: JSON.stringify({"project": info.project._id}),
+                distinct: 'tags',
+            }}).then(res=>{
+                this.alltags = res.body;
             });
 
             //now find apps that user can submit
