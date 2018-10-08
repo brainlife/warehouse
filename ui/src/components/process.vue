@@ -418,6 +418,7 @@ export default {
                 sort: 'create_date',
             }})
             .then(res=>{
+
                 //load show/hide status
                 res.body.tasks.forEach(task=>{
                     task.show = true;
@@ -428,18 +429,20 @@ export default {
                 this.tasks = res.body.tasks;
                 this.loading = false;
 
+                console.log("loading archived datasets");
 
                 //loading archived datasets for all tasks
                 var task_ids = this.tasks.map(task=>task._id); 
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify({
-                        "prov.instance_id": this.instance._id,
+                        project: this.project._id,
                         removed: false,
+                        "prov.task.instance_id": this.instance._id,
                     }),
                     limit: 300,
                 }}).then(res=>{
                     this.archived = res.body.datasets;
-
+                    console.log("done loading datasets");
                     if(this.selected_task) {
                         this.$nextTick(()=>{
                             this.scrollto(this.selected_task);

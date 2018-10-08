@@ -7,6 +7,7 @@
     <dataset/>
     <datatype/>
     <agreements/>
+    <downscript/>
 
     <!--models only used by project page (TODO - move to project page eventually -->
     <div v-if="config.user">
@@ -32,12 +33,13 @@ import uploader from '@/modals/uploader'
 import instanceselecter from '@/modals/instanceselecter'
 import archiver from '@/modals/archiver'
 import agreements from '@/modals/agreements'
+import downscript from '@/modals/downscript'
 
 export default {
     components: {
         viewselecter, dataset, datatype, 
         uploader, datasetselecter, instanceselecter, 
-        archiver, agreements,
+        archiver, agreements, downscript,
     },
     data() {
         return {

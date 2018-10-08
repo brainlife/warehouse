@@ -18,7 +18,7 @@
                 <!--everything under subject is grouped, thus a odd layout-->
                 <b-col cols="10">
                     <b-row>
-                        <b-col cols="3"><h4>Datatype</h4></b-col>
+                        <b-col cols="3"><h4 style="margin-left: 27px;">Datatype</h4></b-col>
                         <b-col cols="3"><h4>Description</h4></b-col>
                         <b-col cols="3"><h4>Create&nbsp;Date</h4></b-col>
                         <b-col cols="3"><h4>Tags</h4></b-col>
@@ -92,6 +92,9 @@
                     <icon name="download" scale="0.8"/> Download (BIDS)
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
                 </b-btn>
+            </p>
+            <p>
+                <b-btn size="sm" variant="outline-secondary" @click="downscript"><icon name="download" scale="0.8"/> Download</b-btn>
             </p>
             <p>
                 <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="paper-plane" scale="0.8"/> Stage to process</b-btn>
@@ -703,6 +706,16 @@ export default {
                         })
                     }
                 });
+            });
+        },
+
+        downscript() {
+            let ids = [];
+            for(let id in this.selected) {
+                ids.push(id);
+            }
+            this.$http.post('dataset/ds/issue', {ids}).then(res=>{
+                this.$root.$emit("downscript.open", res.body);
             });
         },
 

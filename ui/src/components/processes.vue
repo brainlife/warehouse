@@ -608,6 +608,7 @@ font-size: 65%;
 top: -2px;
 border-radius: 2px;
 display: inline-block;
+transition: background-color 0.3s;
 }
 .summary:hover {
 background-color: white;
