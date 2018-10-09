@@ -26,8 +26,10 @@
 
 <script>
 import Vue from 'vue'
+import appcache from '@/mixins/appcache'
 
 export default {
+    mixins: [ appcache ],
     props: {
         //one of the following needs to be set
         task: Object,
@@ -70,6 +72,8 @@ export default {
         },
 
         load_config: function(config) {
+            this.appcache(config._app, (err, app)=>{
+            /*
             this.$http.get('app', { params: {
                 find: JSON.stringify({
                     _id: config._app,
@@ -77,14 +81,15 @@ export default {
                 }),
             } })
             .then(res => {
+            */
                 //create key/value of scalar config
                 this.taskconfig = {};
                 this.appconfig = {};
                 
-                if (res.body.apps[0]) this.appconfig = res.body.apps[0].config;
+                if (app) this.appconfig = app.config;
                 for(let id in config) {
                     if(id[0] == "_") continue;
-                    
+
                     let v = config[id];
                     if(v === null) {
                         this.taskconfig[id] = null;

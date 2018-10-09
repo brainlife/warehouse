@@ -18,7 +18,7 @@
                 <!--everything under subject is grouped, thus a odd layout-->
                 <b-col cols="10">
                     <b-row>
-                        <b-col cols="3"><h4>Datatype</h4></b-col>
+                        <b-col cols="3"><h4 style="margin-left: 27px;">Datatype</h4></b-col>
                         <b-col cols="3"><h4>Description</h4></b-col>
                         <b-col cols="3"><h4>Create&nbsp;Date</h4></b-col>
                         <b-col cols="3"><h4>Tags</h4></b-col>
@@ -87,9 +87,17 @@
         </h4>
 
         <div class="select-action">
+            <!--
             <p>
                 <b-btn size="sm" variant="outline-secondary" @click="download">
                     <icon name="download" scale="0.8"/> Download (BIDS)
+                    <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
+                </b-btn>
+            </p>
+            -->
+            <p v-if="config.debug">
+                <b-btn size="sm" variant="outline-secondary" @click="downscript">
+                    <icon name="download" scale="0.8"/> Download
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
                 </b-btn>
             </p>
@@ -706,6 +714,21 @@ export default {
             });
         },
 
+        downscript() {
+            let ids = [];
+            for(let id in this.selected) {
+                ids.push(id);
+            }
+            let query = {_id: ids};
+            /*
+            this.$http.post('dataset/downscript', {find: JSON.stringify(query)}).then(res=>{
+                console.log(res.body);
+                alert(res.body);
+            })
+            */
+            this.$root.$emit("downscript.open", {find: query});
+        },
+
         remove() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 this.check_agreements(this.project, ()=>{
@@ -913,10 +936,16 @@ right: 250px;
     opacity: 0.5;  
 }
 .dataset-checker {
-    width: 20px;
-    height: 20px;
     float: left;
+    margin:3px;
     margin-right: 5px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    transform: scale(1.5);
+}
+.dataset:hover .dataset-checker,
+.dataset.selected .dataset-checker {
+    opacity: inherit; 
 }
 
 /*why don't I just *hide* removed datasets? because remove() doesn't recalculate page height to preseve the current scroll position*/

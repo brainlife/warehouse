@@ -67,7 +67,10 @@ import appavatar from '@/components/appavatar'
 import tags from '@/components/tags'
 import datatypetag from '@/components/datatypetag'
 
+import appcache from '@/mixins/appcache'
+
 export default {
+    mixins: [appcache],
     components: { contact, appavatar, tags, datatypetag },
     props: {
         app: Object,
@@ -97,13 +100,27 @@ export default {
     },
     methods: {
         load_app() {
-            this.$http.get('app', {params: {
-                find: JSON.stringify({_id: this.appid}),
-                populate: 'inputs.datatype outputs.datatype',
-            }}).then(res=>{
-                this.app_ = res.body.apps[0];
+            /*
+            let cached_app = this.get_cache(this.appid);
+            //console.log("from cache", cached_app)
+            if(cached_app) {
+                this.app_ = cached_app;
+            } else {
+                //console.log("no cache.. loading new");
+                this.$http.get('app', {params: {
+                    find: JSON.stringify({_id: this.appid}),
+                    populate: 'inputs.datatype outputs.datatype',
+                }}).then(res=>{
+                    this.app_ = res.body.apps[0];
+                    this.set_cache(this.appid, this.app_);
+                });
+            }
+            */
+            this.appcache(this.appid, (err, app)=>{
+                this.app_ = app;
             });
         },
+
         click() {
             if(this.clickable) {
                 this.$router.push('/app/'+this.app_._id);
