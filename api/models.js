@@ -236,7 +236,7 @@ datasetSchema.pre('save', function(next) {
 });
 
 datasetSchema.index({'$**': 'text'}) //make all text fields searchable
-//taskSchema.index({project: 1, next_date: 1});
+datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1});
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +350,7 @@ exports.Apps = mongoose.model('Apps', appSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// App rating submitte by user
+// App rating submitte by user (DEPRECATED?)
 //
 
 var apprateSchema = mongoose.Schema({
@@ -421,3 +421,20 @@ var ruleSchema = mongoose.Schema({
 }, {minimize: false}); //to keep empty config{} from disappearing
 exports.Rules = mongoose.model('Rules', ruleSchema);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Downtoken just stores list of dataset ids to allow downloading of the dataset
+//
+/*
+var downtokenSchema = mongoose.Schema({
+    user_id: {type: String, index: true}, 
+
+    ids: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}], 
+
+    count: {type: Number, default: 0 }, //number of time accessed?
+
+    //exp_date: { type: Date },
+    create_date: { type: Date, default: Date.now },
+});
+exports.Downtokens = mongoose.model('Downtokens', downtokenSchema);
+*/

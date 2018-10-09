@@ -197,29 +197,6 @@ function connect_dc(cb) {
     }
 }
 
-/*
-function connect_wrangler(cb) {
-    var conn = new ssh2.Client();
-    conn.on('ready', ()=>{
-        cb(null, conn); 
-    });
-    conn.on('error', err=>{
-        cb(err);
-    });
-    try {
-        console.log("connecting to wrangler.io");
-        conn.connect({
-            username: "hayashis",
-            host: "wrangler.iu.xsede.org",
-            privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
-            //passphrase: "somepass",  //what's the point?
-        });
-    } catch(err) {
-        cb(err);
-    }
-}
-*/
-
 //TODO - I should implement some kind of connection queue otherwise
 //I could run out of concurrent connection
 function connect_wrangler(cb) {
@@ -240,7 +217,6 @@ function connect_wrangler(cb) {
     });
     conn.on('error', function(err) {
         console.error("wrangler connectionn error");
-
         //we want to return connection error to caller, but error could fire after ready event is called.
         //like timeout, or abnormal disconnect, etc..  need to prevent calling cb twice!
         if(cb) cb(err);
@@ -281,7 +257,6 @@ exports.storage_systems.wrangler = {
                 }
             });
             stream.on('end', ()=>{
-                //console.dir(content);
                 conn.end();
                 
                 //parse quota content
@@ -294,10 +269,8 @@ exports.storage_systems.wrangler = {
                 let disk_quota = parseInt(stats[2]);
                 let files_used = parseInt(stats[4]);
                 let files_quota = parseInt(stats[6]);
-                //console.log(disk_used / disk_quota);
                 if(disk_used / disk_quota > 0.8) return cb("disk >80% used");
                 if(files_used / files_quota > 0.8) return cb("files >80% used");
-                //console.log("all good");
                 cb();
             });
         });
@@ -328,22 +301,9 @@ exports.storage_systems.wrangler = {
             if(err) return cb(err);
             let _path = get_wrangler_archive_path(dataset);
             sftp.mkdir(path.dirname(_path), err=>{
-                //if(err) console.dir(err); //maybe already exist? continue..
-                //let stream = sftp.createWriteStream(_path);
                 let success = new Promise((resolve, reject)=>{
                     conn.exec("cat > "+_path, (err, stream)=>{
                         if(err) return reject(err);
-                        /*
-                        stream.on('close', (code, signal)=>{
-                            console.log("I don't think conn stream generate close event");
-                            console.log("code:"+code);
-                            console.log("signal:"+signal);
-                        });
-                        stream.on('end', ()=>{
-                            console.log("I don't think this happens");
-                        });
-                        */
-                        //stream.on('finish', ()=>{
                         stream.on('close', (code, signal)=>{
                             console.log("stream finished");
                             sftp.stat(_path, (err,stat)=>{

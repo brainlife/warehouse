@@ -30,6 +30,31 @@ function canedit(user, rec, canwrite_project_ids) {
     return false;
 }
 
+function construct_dataset_query(query, canread_project_ids) {
+    var ands = [];
+
+    //just pass find query (safe?)
+    if(query.find) ands.push(JSON.parse(query.find));
+
+    //handle datatype_tags
+    if(query.datatype_tags) {
+        query.datatype_tags.forEach(tag=>{ 
+            if(tag[0] == "!") {
+                ands.push({datatype_tags: {$ne: tag.substring(1)}});
+            } else {
+                ands.push({datatype_tags: tag});
+            }
+        });
+    }
+    
+    //put things together
+    ands.push({$or: [
+        {project: {$in: canread_project_ids}},
+        {publications: {$gt:[]}}, //allow access for published dataset
+    ]});
+    return { $and: ands };
+}
+
 /**
  * @apiGroup Dataset
  * @api {get} /dataset          Query Datasets
@@ -39,7 +64,7 @@ function canedit(user, rec, canwrite_project_ids) {
  * @apiParam {Object} [sort]    Mongo sort object - defaults to _id. Enter in string format like "-name%20desc"
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter (default all)
  * @apiParam {String[]} [datatype_tags]  
- *                              List of datatype tags to filter (you can use exlusion tags also)
+ *                              List of datatype tags to filter (you can use exclusion tags also)
  * @apiParam {Number} [limit]   Maximum number of records to return - defaults to 100
  * @apiParam {Number} [skip]    Record offset for pagination (default to 0)
  * @apiParam {String} [populate] Fields to populate - default to "project datatype"
@@ -50,32 +75,11 @@ function canedit(user, rec, canwrite_project_ids) {
  */
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var skip = req.query.skip||0;
-
     let limit = req.query.limit||100; //this means if user set it to "0", no limit
-
-    var ands = [];
-    if(req.query.find) ands.push(JSON.parse(req.query.find));
-    if(req.query.datatype_tags) {
-        req.query.datatype_tags.forEach(tag=>{ 
-            if(tag[0] == "!") {
-                ands.push({datatype_tags: {$ne: tag.substring(1)}});
-            } else {
-                ands.push({datatype_tags: tag});
-            }
-        });
-    }
-    
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
-        ands.push({$or: [
-            {project: {$in: canread_project_ids}},
-            {publications: {$gt:[]}}, //allow access for published dataset
-        ]});
-
-        //logger.debug(JSON.stringify(ands, null, 4));
-
-        //then look for dataset
-        db.Datasets.find({ $and: ands })
+        let query = construct_dataset_query(req.query, canread_project_ids);
+        db.Datasets.find(query)
         .populate(req.query.populate || '') //all by default
         .select(req.query.select)
         .limit(+limit)
@@ -84,7 +88,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
-            db.Datasets.count({$and: ands}).exec((err, count)=>{
+            db.Datasets.count(query).exec((err, count)=>{
                 if(err) return next(err);
                 datasets.forEach(rec=>{
                     rec._canedit = canedit(req.user, rec, canwrite_project_ids);
@@ -149,7 +153,7 @@ function cast_mongoid(node) {
  * @apiSuccess {Object}         Object containing counts
  * 
  */
-//similar code in pub.js
+//warning.. similar code in pub.js
 router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var find = {};
     if(req.query.find) {
@@ -189,8 +193,6 @@ router.get('/prov/:id', (req, res, next)=>{
     let datatypes = {};
     let nodes = [];
     let edges = [];
-
-    //logger.debug("prov requested", req.params.id);
 
     //starting from the dataset ID specified, walk back through dataset prov & task deps all the way to the 
     //original input datasets
@@ -662,7 +664,8 @@ router.get('/download/:id', jwt({
     }
 }), function(req, res, next) {
     var id = req.params.id;
-    logger.debug("streaming dataset "+id);
+    logger.debug("download requested dataset "+id);
+    if(!req.user) logger.warn("no auth request");
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
         db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
@@ -681,6 +684,7 @@ router.get('/download/:id', jwt({
                 } 
             }
             
+            logger.debug("streaming");
             stream_dataset(dataset, res, next);
         });
     });
@@ -787,5 +791,193 @@ router.post('/delete', jwt({secret: config.express.pubkey}), function(req, res, 
     });
 });
 
+/*
+router.post('/ds/issue', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+        if(err) return next(err);
+        console.dir(req.body.ids);
+        db.Datasets.find({
+            $and: [
+                {project: {$in: canread_project_ids}},
+                {_id: {$in: req.body.ids}},
+            ]
+        })
+        .select('_id')
+		.exec((err, datasets)=>{
+            if(err) return next(err);
+            let ids = [];
+            datasets.forEach(dataset=>{
+                ids.push(dataset._id);
+            });
+            new db.Downscripts({ids}).save((err, _ds)=>{
+                if(err) return next(err);
+                res.json({id: _ds._id});
+            });
+        });
+    });
+});
+*/ 
+
+/**
+ * @apiGroup Dataset
+ * @api {post} /dataset/ds/:id  Generate dataset download script
+ * @apiDescription              Generate shell script that can download specified set of datasets.
+ *                              It g
+ *
+ * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
+ * @apiParam {String[]} [datatype_tags]  
+ *                              List of datatype tags to filter (you can use exclusion tags also)
+ *
+ * @apiSuccess {String}         generated bash shell script
+*/
+/*
+router.post('/downscript', jwt({
+    secret: config.express.pubkey,
+    getToken: function(req) { 
+        //load token from req.headers as well as query.at
+        if(req.body.at) return req.body.at; 
+        if(req.headers.authorization) {
+            var auth_head = req.headers.authorization;
+            if(auth_head.indexOf("Bearer") === 0) return auth_head.substr(7);
+        }
+        return null;
+    }
+}), function(req, res, next) {
+*/
+router.post('/downscript', jwt({secret: config.express.pubkey}), function(req, res, next) {
+//    var skip = req.query.skip||0;
+//    let limit = req.query.limit||100; //this means if user set it to "0", no limit
+    common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
+        if(err) return next(err);
+        db.Datasets.find(construct_dataset_query(req.body, canread_project_ids))
+        .populate('datatype')
+//        .populate(req.query.populate || '') //all by default
+//        .select(req.query.select)
+//        .limit(+limit)
+//        .skip(+skip)
+//        .sort(req.query.sort || '_id')
+		.lean()
+		.exec((err, datasets)=>{
+            if(err) return next(err);
+            let script = "#!/bin/bash\n";
+            script += "auth=\"Authorization: "+req.headers.authorization+"\"\n"
+            datasets.forEach(dataset=>{
+                //construct a path to put the datasets in
+                let path=".";
+                if(dataset.meta.subject) path += "/sub-"+dataset.meta.subject;
+                if(dataset.meta.session) path += "/sess-"+dataset.meta.session;
+                path+="/"+dataset.datatype.name.replace(/\//g, '-');
+                dataset.datatype_tags.forEach(tag=>{
+                    path+="."+tag;
+                });
+
+                //create mix id and run together.. to make sure each dataset is unique
+                path += "/id-"+dataset._id;
+                if(dataset.meta.run) path += "_run-"+dataset.meta.run;
+
+                script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
+                script += "mkdir -p "+path+"\n";
+                script += "echo \""+JSON.stringify(dataset).replace().replace(/\"/g, '\\"')+"\" > "+path+"/_dataset.json\n";
+                script += "curl -H \"$auth\" "+config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C "+path+" -x\n";
+
+                //Create BIDS symlinks
+                let bidspath = "bids/derivatives";
+                let pipeline = null;
+                if(dataset.prov && dataset.prov.task) pipeline = dataset.prov.task.service;
+                //TODO this seems very brittle..
+                if(pipeline == "soichih/sca-product-raw" || pipeline == "soichih/sca-service-noop" || ~pipeline.indexOf("brain-life/validator-")) {
+                    pipeline = "upload";
+                } else {
+                    pipeline = pipeline.replace(/\//g, '.');
+                }
+                logger.debug("pipeline................", pipeline);
+                bidspath += "/"+pipeline;
+                if(dataset.meta.subject) bidspath += "/sub-"+dataset.meta.subject;
+                if(dataset.meta.session) bidspath += "/ses-"+dataset.meta.session;
+
+                let modality = null;
+                let maps = null; //null means just link the entire directory
+                
+                //TODO I will store this info on datatype record once I know what I need to store
+                switch(dataset.datatype.name) {
+                case "neuro/dtiinit":
+                    modality = "dwi";
+                    maps = [
+                        {"src": "dwi_aligned*.nii.gz", "dest": "dwi.nii.gz"},
+                        {"src": "dwi_aligned*.bvecs", "dest": "dwi.bvecs"},
+                        {"src": "dwi_aligned*.bvals", "dest": "dwi.bvals"},
+                        {"json": "dwi.json"},
+                    ];
+                    break;
+                case "neuro/dwi":
+                    modality = "dwi";
+                    maps = [
+                        {"src": "dwi.nii.gz", "dest": "dwi.nii.gz"},
+                        {"src": "dwi.bvecs", "dest": "dwi.bvecs"},
+                        {"src": "dwi.bvals", "dest": "dwi.bvals"},
+                        {"json": "dwi.json"},
+                    ];
+                    break;
+                case "neuro/track":
+                    modality = "dwi";
+                    maps = [
+                        { "src": "track.tck", "dest": "tractography.tck",},
+                        {"json": "tractography.json" },
+                    ];
+                    break;
+                case "neuro/anat/t1w":
+                    modality = "anat";
+                    maps = [
+                        {"src": "t1.nii.gz", "dest": "t1.nii.gz"},
+                        {"json": "t1.json" },
+                    ];
+                    break;
+                case "neuro/recon":
+                    modality = "dwi";
+                    maps = [
+                        {"src": "fa.nii.gz", "dest": "type-fa_mask.nii.gz"},
+                        {"json": "recon.json" },
+                    ];
+                    break;
+                }
+
+                //figure out how to get out of bids directory and point back to the root
+                let symlink_recovery="";
+                path.split("/").forEach(depth=>{
+                    symlink_recovery += "../";
+                });
+                symlink_recovery+=path;
+
+                if(!maps) {
+                    /* let's output only datatypes that are defined in BIDS spec - rest can be accessed natively
+                    //just link the entire raw path under datatype derived name
+                    let fakemodality = dataset.datatype.name.replace(/\//g, '-');
+                    if(dataset.meta.run) fakemodality += "_run-"+dataset.meta.run;
+                    script += "mkdir -p "+bidspath+"\n";
+                    script += "ln -s "+symlink_recovery+" "+bidspath+"/"+fakemodality+"\n"; //link the whole directory (can windows do this?)
+                    */
+                } else {
+                    bidspath+="/"+modality;
+                    script += "mkdir -p "+bidspath+"\n";
+                    maps.forEach(map=>{
+                        if(map.json) {
+                            let json = {
+                                config: dataset.prov.task.config, //TODO always wants configs?
+                            };
+                            script += "echo \""+JSON.stringify(json).replace().replace(/\"/g, '\\"')+"\" > "+bidspath+"/"+map.json+"\n";
+                        } else {
+                            script += "ln -s "+"../"+symlink_recovery+"/"+map.src+" "+bidspath+"/"+map.dest+"\n";
+                        }
+                    });
+                }
+
+                script+="\n";
+            });
+            res.send(script);
+        });
+    });
+});
 
 module.exports = router;
+
+

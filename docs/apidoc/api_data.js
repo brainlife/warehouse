@@ -409,7 +409,7 @@ define({ "api": [
     "group": "Dataset",
     "type": "delete",
     "url": "/dataset/:id",
-    "title": "Hide dataset from dataset results",
+    "title": "Hide dataset from dataset results (DEPRECATED USE (post)/delete)",
     "description": "<p>Logically remove dataset by setting &quot;removed&quot; to true</p>",
     "header": {
       "fields": {
@@ -822,6 +822,42 @@ define({ "api": [
     "filename": "api/controllers/dataset.js",
     "groupTitle": "Dataset",
     "name": "PostDataset"
+  },
+  {
+    "group": "Dataset",
+    "type": "post",
+    "url": "/dataset/delete",
+    "title": "Remove (hide) dataset from dataset results (async)",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": false,
+            "field": "id",
+            "description": "<p>Dataset ID to remove (could be an array)</p>"
+          }
+        ]
+      }
+    },
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "authorization",
+            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/dataset.js",
+    "groupTitle": "Dataset",
+    "name": "PostDatasetDelete"
   },
   {
     "group": "Dataset",
@@ -1323,6 +1359,13 @@ define({ "api": [
             "optional": false,
             "field": "removed",
             "description": "<p>If this is a removed publication</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "optional": false,
+            "field": "active",
+            "description": "<p>active/deactive</p>"
           }
         ]
       }
@@ -1732,7 +1775,7 @@ define({ "api": [
   {
     "group": "Publications",
     "type": "get",
-    "url": "/pub/apps/:pubid",
+    "url": "/pub/apps/:releaseid",
     "title": "Enumerate applications used to generate datasets",
     "success": {
       "fields": {
@@ -1750,12 +1793,12 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "api/controllers/pub.js",
     "groupTitle": "Publications",
-    "name": "GetPubAppsPubid"
+    "name": "GetPubAppsReleaseid"
   },
   {
     "group": "Publications",
     "type": "get",
-    "url": "/pub/datasets-inventory/:pubid Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:pubid to",
+    "url": "/pub/datasets-inventory/:releaseid Get counts of unique subject/datatype/datatype_tags. You can then use /pub/datasets/:releaseid to",
     "title": "get the actual list of datasets for each subject / datatypes / etc..",
     "success": {
       "fields": {
@@ -1773,12 +1816,12 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "api/controllers/pub.js",
     "groupTitle": "Publications",
-    "name": "GetPubDatasetsInventoryPubidGetCountsOfUniqueSubjectDatatypeDatatype_tagsYouCanThenUsePubDatasetsPubidTo"
+    "name": "GetPubDatasetsInventoryReleaseidGetCountsOfUniqueSubjectDatatypeDatatype_tagsYouCanThenUsePubDatasetsReleaseidTo"
   },
   {
     "group": "Publications",
     "type": "get",
-    "url": "/pub/datasets/:pubid",
+    "url": "/pub/datasets/:releaseid",
     "title": "Query published datasets",
     "parameter": {
       "fields": {
@@ -1844,7 +1887,7 @@ define({ "api": [
     "version": "0.0.0",
     "filename": "api/controllers/pub.js",
     "groupTitle": "Publications",
-    "name": "GetPubDatasetsPubid"
+    "name": "GetPubDatasetsReleaseid"
   },
   {
     "group": "Publications",
@@ -1917,6 +1960,13 @@ define({ "api": [
             "optional": false,
             "field": "tags",
             "description": "<p>Publication tags</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Object[]",
+            "optional": false,
+            "field": "releases",
+            "description": "<p>Release records</p>"
           },
           {
             "group": "Parameter",
@@ -1998,6 +2048,13 @@ define({ "api": [
           },
           {
             "group": "Parameter",
+            "type": "Object[]",
+            "optional": false,
+            "field": "releases",
+            "description": "<p>Release records</p>"
+          },
+          {
+            "group": "Parameter",
             "type": "String",
             "optional": false,
             "field": "name",
@@ -2023,13 +2080,6 @@ define({ "api": [
             "optional": false,
             "field": "tags",
             "description": "<p>Publication tags</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Boolean",
-            "optional": false,
-            "field": "removed",
-            "description": "<p>If this is a removed publication</p>"
           }
         ]
       }
@@ -2064,105 +2114,5 @@ define({ "api": [
     "filename": "api/controllers/pub.js",
     "groupTitle": "Publications",
     "name": "PutPubPubid"
-  },
-  {
-    "group": "Publications",
-    "type": "put",
-    "url": "/pub/:pubid/datasets",
-    "title": "",
-    "description": "<p>Publish datasets</p>",
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "Object",
-            "optional": true,
-            "field": "find",
-            "description": "<p>Mongo query to subset datasets (all datasets in the project by default)</p>"
-          }
-        ]
-      }
-    },
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "String",
-            "optional": false,
-            "field": "authorization",
-            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
-          }
-        ]
-      }
-    },
-    "success": {
-      "fields": {
-        "Success 200": [
-          {
-            "group": "Success 200",
-            "type": "Object",
-            "optional": false,
-            "field": "Number",
-            "description": "<p>of published datasets, etc..</p>"
-          }
-        ]
-      }
-    },
-    "version": "0.0.0",
-    "filename": "api/controllers/pub.js",
-    "groupTitle": "Publications",
-    "name": "PutPubPubidDatasets"
-  },
-  {
-    "group": "Publications",
-    "type": "put",
-    "url": "/pub/:pubid/doi",
-    "title": "",
-    "description": "<p>Issue DOI for publication record (or update URL)</p>",
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": "url",
-            "description": "<p>URL to associate the minted DOI</p>"
-          }
-        ]
-      }
-    },
-    "header": {
-      "fields": {
-        "Header": [
-          {
-            "group": "Header",
-            "type": "String",
-            "optional": false,
-            "field": "authorization",
-            "description": "<p>A valid JWT token &quot;Bearer: xxxxx&quot;</p>"
-          }
-        ]
-      }
-    },
-    "success": {
-      "fields": {
-        "Success 200": [
-          {
-            "group": "Success 200",
-            "type": "Object",
-            "optional": false,
-            "field": "Publication",
-            "description": "<p>object with doi field</p>"
-          }
-        ]
-      }
-    },
-    "version": "0.0.0",
-    "filename": "api/controllers/pub.js",
-    "groupTitle": "Publications",
-    "name": "PutPubPubidDoi"
   }
 ] });

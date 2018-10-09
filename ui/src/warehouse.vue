@@ -56,7 +56,6 @@ export default {
 
 </script>
 
-
 <style>
 
 /*@import url('https://fonts.googleapis.com/css?family=Cabin|Inconsolata|Nunito|Nunito+Sans|Pacifico|Quicksand|Rubik|VT323');
@@ -416,7 +415,5 @@ background-color: inherit;
   -webkit-animation-fill-mode: both;
           animation-fill-mode: both; 
 }
-
-
 
 </style>

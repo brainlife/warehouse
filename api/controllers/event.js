@@ -12,7 +12,6 @@ const logger = new winston.Logger(config.logger.winston);
 
 router.get("/checkaccess/project/:project_id", jwt({secret: config.express.pubkey}), function(req, res, next) {
     //load project requested and check
-    //console.log("checking access for ", req.user.sub, req.params.project_id);
     db.Projects.find({
         _id: req.params.project_id,
         $or: [

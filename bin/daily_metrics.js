@@ -36,14 +36,6 @@ function count_dataset(d) {
 
 db.init(async function(err) {
     if(err) throw err;
-    /*
-    let d = new Date("2017-01-01");
-    let today = new Date();
-    while(d.getTime() < today.getTime()) {
-        await count_apps(d); 
-        d.setDate(d.getDate()+7);
-    }
-    */
     let today = new Date();
     await count_apps(today); 
     await count_dataset(today); 
