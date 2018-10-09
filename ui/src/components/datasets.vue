@@ -87,14 +87,19 @@
         </h4>
 
         <div class="select-action">
+            <!--
             <p>
                 <b-btn size="sm" variant="outline-secondary" @click="download">
                     <icon name="download" scale="0.8"/> Download (BIDS)
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
                 </b-btn>
             </p>
-            <p>
-                <b-btn size="sm" variant="outline-secondary" @click="downscript"><icon name="download" scale="0.8"/> Download</b-btn>
+            -->
+            <p v-if="config.debug">
+                <b-btn size="sm" variant="outline-secondary" @click="downscript">
+                    <icon name="download" scale="0.8"/> Download
+                    <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
+                </b-btn>
             </p>
             <p>
                 <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="paper-plane" scale="0.8"/> Stage to process</b-btn>
@@ -714,9 +719,14 @@ export default {
             for(let id in this.selected) {
                 ids.push(id);
             }
-            this.$http.post('dataset/ds/issue', {ids}).then(res=>{
-                this.$root.$emit("downscript.open", res.body);
-            });
+            let query = {_id: ids};
+            /*
+            this.$http.post('dataset/downscript', {find: JSON.stringify(query)}).then(res=>{
+                console.log(res.body);
+                alert(res.body);
+            })
+            */
+            this.$root.$emit("downscript.open", {find: query});
         },
 
         remove() {
@@ -926,10 +936,16 @@ right: 250px;
     opacity: 0.5;  
 }
 .dataset-checker {
-    width: 20px;
-    height: 20px;
     float: left;
+    margin:3px;
     margin-right: 5px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    transform: scale(1.5);
+}
+.dataset:hover .dataset-checker,
+.dataset.selected .dataset-checker {
+    opacity: inherit; 
 }
 
 /*why don't I just *hide* removed datasets? because remove() doesn't recalculate page height to preseve the current scroll position*/

@@ -41,7 +41,7 @@ import VueTimeago from 'vue-timeago'
 import SocialSharing from 'vue-social-sharing';
 
 import VueAnalytics from 'vue-analytics'
-import Meta from 'vue-meta'
+//import Meta from 'vue-meta'
 
 Vue.component('v-select', vSelect)
 Vue.component('icon', Icon)
@@ -64,7 +64,7 @@ Vue.use(VueTimeago, {
         'en-US': require('vue-timeago/locales/en-US.json')
     }
 });
-Vue.use(Meta);
+//Vue.use(Meta);
 
 /////////////////////////////////////// main /////////////////////////////////////
 
