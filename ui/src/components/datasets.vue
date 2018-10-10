@@ -14,7 +14,7 @@
             <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <b-row class="list-header">
-                <b-col cols="2"><h4>Subject</h4></b-col>
+                <b-col cols="2"><h4>Subject <small style="opacity: 0.5">/ Ses</small></h4></b-col>
                 <!--everything under subject is grouped, thus a odd layout-->
                 <b-col cols="10">
                     <b-row>
@@ -431,7 +431,7 @@ export default {
                     dataset.checked = this.selected[dataset._id];
                     var subject = "nosub"; //not all datasets has subject tag
                     if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
-                    if(dataset.meta.session) subject += " session " + dataset.meta.session;
+                    if(dataset.meta.session) subject += " / " + dataset.meta.session;
                     last_subject = subject;
                     if(!groups[subject]) groups[subject] = [];
                     groups[subject].push(dataset);

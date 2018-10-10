@@ -297,7 +297,7 @@ export default {
 background-color: #fafafa;
 }
 .status-card {
-padding: 5px 0 0 5px;
+padding: 5px 0 0 4px;
 }
 .status-card.finished {
 color: white;
