@@ -550,11 +550,17 @@ export default {
             }).then(res=>{
                 this.alltags = res.body;
 
+                //load publications (releases)
+                let find = {};
+                if(this.dataset.publications) {
+                    find["releases._id"] = {$in: this.dataset.publications};
+                }
+                console.dir(find);
                 return this.$http.get('pub', {params: {
-                    find: JSON.stringify({"releases._id": {$in: this.dataset.publications}}),
-                    //select: 'releases',
+                    find: JSON.stringify(find),
                 }});
             }).then(res=>{
+                console.dir(res.body.pubs);
                 this.$set(this.dataset, '_pubs', res.body.pubs);
                 
              }).catch(err=>{
