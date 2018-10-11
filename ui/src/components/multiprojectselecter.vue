@@ -38,6 +38,7 @@ export default {
                 ],
                 removed: false,
             }),
+            limit: 500,
             sort: 'name',
         }}).then(res=>{
             var option_groups = {} 
