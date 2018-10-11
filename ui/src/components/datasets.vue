@@ -95,7 +95,7 @@
                 </b-btn>
             </p>
             -->
-            <p v-if="config.debug">
+            <p>
                 <b-btn size="sm" variant="outline-secondary" @click="downscript">
                     <icon name="download" scale="0.8"/> Download
                     <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>

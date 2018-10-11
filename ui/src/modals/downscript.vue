@@ -1,8 +1,8 @@
 <template>
 <b-modal :no-close-on-backdrop='true' title="Download Selected Datasets" ref="modal" size="lg">
-    <p class="text-muted">Please copy and paste the following command on your terminal to download your datasets.</p>
+    <p class="text-muted">Please copy and paste the following command on your bash terminal to download your datasets.</p>
     <br>
-    <pre style="white-space: pre-wrap; font-size: 70%">curl -H "Authorization: Bearer {{jwt}}" -H "Content-Type: application/json" -d '{{json}}' -X POST https://dev1.soichi.us/api/warehouse/dataset/downscript | bash</pre>
+    <pre style="white-space: pre-wrap; font-size: 70%">curl -H "Authorization: Bearer {{config.jwt}}" -H "Content-Type: application/json" -d '{{json}}' -X POST {{config.api}}/dataset/downscript | bash</pre>
     <br>
     <div slot="modal-footer">
         <b-button variant="primary" @click="close">Close</b-button>
@@ -19,7 +19,7 @@ export default {
     data() {
         return {
             query: null,
-            jwt: Vue.config.jwt,
+            config: Vue.config,
         }
     },
 
