@@ -98,7 +98,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
 
     delete req.body._id; //shouldn't be set
-    req.body.user_id = req.user.sub;//override
+    req.body.user_id = req.user.sub;//override (TODO - toString()?)
 
     //TODO - I should make sure req.user.sub is listed in admin?
     //TODO - should I validate admins/members? how?
