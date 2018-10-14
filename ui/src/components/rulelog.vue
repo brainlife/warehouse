@@ -6,7 +6,7 @@
             <span v-if="err">No log</span>
             <span v-if="stats"><timeago :since="stats.mtime" :auto-update="10"/></span>
         </div>
-        <b>{{taskcount}} Active Tasks</b>
+        <!--<b>{{taskcount}} Active Tasks</b>-->
     </div>
     <pre v-if="logs" v-highlightjs>{{logs}}</pre>
 </div>
@@ -33,9 +33,8 @@ export default {
             stats: null,
             logs: null,
             err: null,
-            //intv: null,
 
-            taskcount: null,
+            //taskcount: null,
         }
     },
     destroyed() {
@@ -62,7 +61,8 @@ export default {
                 console.error(res);
                 this.err = res.body.err;
             });
-
+    
+            /*
             //load number of tasks submitted by this rule
             this.$http.get(Vue.config.amaretti_api+"/task", {params: {
                 find: JSON.stringify({
@@ -74,6 +74,7 @@ export default {
             .then(res=>{
                 this.taskcount = res.body.count;
             });
+            */
         },
     }
 }

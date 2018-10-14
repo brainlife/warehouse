@@ -30,7 +30,7 @@
             <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brainlife.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
         </div>
         <div class="rules">
-            <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-active': rule.active}" class="rule" v-if="rule.removed == false">
+            <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}" class="rule" v-if="rule.removed == false">
                 <div class="rule-header" @click="toggle(rule)">
                     <div style="float: right; width: 110px; text-align: right;">
                         <timeago :since="rule.update_date" :auto-update="10"/>
@@ -56,19 +56,22 @@
 
                 <!--rule body-->
                 <div v-if="selected == rule" transition="expand">
-                    <div style="padding: 10px;">
-                        <span style="float: right; margin-right: 90px;">
-                            <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></b-btn>
-                            <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger"><icon name="trash"/></b-btn>
-                        </span>
-                        <span>
+                    <div style="float: right; margin-right: 100px;">
                             <b-btn @click="deactivate(rule)" variant="danger" size="sm" v-if="rule.active && !deactivating"><icon name="times"/> Deactivate </b-btn>
                             <b-btn variant="danger" size="sm" v-if="deactivating"><icon name="times"/> Deactivating <b-badge>{{deactivating_remain}}</b-badge></b-btn>
                             <b-btn @click="activate(rule)" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Activate</b-btn>
-                        </span>
-                    </div>
 
-                    <div style="margin-right: 100px; background-color: white; box-shadow: 0px 2px 4px #ccc">
+                            <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></b-btn>
+                            <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger"><icon name="trash"/></b-btn>
+                    </div>
+                    <p style="margin-left: 10px" v-if="rule.active">
+                        <icon name="cog" :spin="true" scale="1.25"/> Monitored by the rule handler. See the log below for more information. <small>({{rule.taskcount}} active tasks)</small>
+                    </p>
+                    <p style="margin-left: 10px" v-else>
+                        Deactivated
+                    </p>
+
+                    <div style="margin-right: 100px; background-color: white; box-shadow: 0px 2px 4px #ccc; clear: both;">
                         <div class="section-header">
                             Submit the following App and archive all output datasets to this project
                         </div>
@@ -200,21 +203,28 @@ export default {
             let group_id = this.project.group_id;
             window.localStorage.setItem("pipelines.order."+group_id, this.order);
         },
+
+        selected: function() {
+            if(!this.selected) return;
+
+            //load number of tasks submitted by this rule
+            this.$http.get(Vue.config.amaretti_api+"/task", {params: {
+                find: JSON.stringify({
+                    'config._rule.id': this.selected._id,
+                    status: {$ne: "removed"},
+                }),
+                limit: 0, //I just need a count.
+            }})
+            .then(res=>{
+                console.log(res.body);
+                this.selected.taskcount = res.body.count;
+            });            
+        },
     },
 
     computed: {
         sorted_rules() {
 
-            /*
-            //apply filter
-            let filtered = this.instances.filter(i=>{
-                if(!this.show) return true; //show all
-                if(this.selected == i) return true; //always show selected one
-                if(i.status == this.show) return true;
-                return false;
-            });
-            */
-    
             //then sort
             let order = 1;
             let field = this.order;
@@ -509,7 +519,13 @@ margin-top: 2px;
 .rule.rule-selected .rule-header,
 .rule.rule-selected {
 margin: 0px;
-background-color: #f0f0f0;
+background-color: white;
+margin-bottom: 20px;
+box-shadow: none;
+}
+.rule.rule-inactive .rule-header,
+.rule.rule-inactive {
+background-color: #bbb;
 }
 .rule-header {
 cursor: pointer;
@@ -525,10 +541,6 @@ z-index: 5; /*make it on top of the most content*/
 }
 .rule.rule-selected:not(:first-child) .rule-header {
 margin-top: 20px;
-}
-.rule.rule-selected {
-margin-bottom: 20px;
-box-shadow: none;
 }
 .rule-header:hover {
 cursor: pointer;
