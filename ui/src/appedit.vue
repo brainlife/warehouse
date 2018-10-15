@@ -435,12 +435,7 @@
                 </b-dropdown>
             </p>
         </b-form>
-        
-        <div class="form-action" style="padding-right: 20px;">
-            <b-button @click="cancel">Cancel</b-button>
-            <b-button @click="submit" variant="primary">Submit</b-button>
-        </div>
-        
+
         <b-card v-if="config.debug">
             <div slot="header">Debug</div>
             <h3>input_datasets</h3>
@@ -452,6 +447,12 @@
             <h3>app</h3>
             <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
         </b-card>
+        
+        <div class="form-action" style="padding-right: 20px;">
+            <b-button @click="cancel">Cancel</b-button>
+            <b-button @click="submit" variant="primary">Submit</b-button>
+        </div>
+        
     </div>
 </div>
 </template>

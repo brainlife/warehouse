@@ -720,12 +720,6 @@ export default {
                 ids.push(id);
             }
             let query = {_id: ids};
-            /*
-            this.$http.post('dataset/downscript', {find: JSON.stringify(query)}).then(res=>{
-                console.log(res.body);
-                alert(res.body);
-            })
-            */
             this.$root.$emit("downscript.open", {find: query});
         },
 

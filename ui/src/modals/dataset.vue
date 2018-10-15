@@ -95,10 +95,11 @@
                                 </p>
                             </b-col>
                         </b-row>                 
-                       <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.product">
+                        <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.product">
                             <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
                             <b-col cols="9">
                                 <product :product="dataset.prov.task.product"/>
+                                <br>
                             </b-col>
                         </b-row>
 

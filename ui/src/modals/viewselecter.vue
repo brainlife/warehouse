@@ -143,6 +143,14 @@ export default {
                 datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task", "neuro/track/tck" ],
             },
             {
+                ui: "trackvis",
+                name: "trackvis",
+                desc: "A software tool that can visualize and analyze fiber track data from diffusion MR imaging (DTI/DSI/HARDI/Q-Ball) tractography",
+                avatar: "https://brainlife.io/images/ui-logos/trackvis.jpg",
+                docker: true,
+                datatypes: [ "neuro/track/trk" ],
+            },
+            {
                 ui: "mricrogl",
                 name: "MRIcroGL",
                 desc: "View 2D slices and renderings of your brain imaging data. It allows you to draw regions of interest which can aid lesion mapping and fMRI analysis.",

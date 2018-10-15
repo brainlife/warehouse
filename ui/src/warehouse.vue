@@ -349,11 +349,13 @@ background-color: white;
 .v-select {
 font-family: inherit;
 }
+
+/*prevent bootstrap-vue css conflict*/
 .v-select.dropdown .dropdown-toggle::after {
-content: inherit; /*prevent bootstrap-vue css conflict*/
+display: none;
 }
 .v-select.dropdown .form-control {
-height: inherit; /*prevent bootstrap-vue css conflict*/
+height: inherit; 
 }
 
 .select2-container--default .select2-selection--single {
