@@ -54,15 +54,6 @@
                     </b-row> 
                     <div v-if="rule.input_selection[input.id] != 'ignore'">
                         <b-row>
-                            <b-col>Dataset Tags</b-col>
-                            <b-col :cols="9">
-                                <p>
-                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="dataset_tags[input.datatype_id]"/>
-                                    <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
-                                </p>
-                            </b-col>
-                        </b-row> 
-                        <b-row>
                             <b-col>Project</b-col>
                             <b-col :cols="9">
                                 <p>
@@ -71,6 +62,17 @@
                                 </p>
                             </b-col>
                         </b-row> 
+                        <b-row>
+                            <b-col>Dataset Tags</b-col>
+                            <b-col :cols="9">
+                                <p>
+                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="dataset_tags[input.datatype_id]"/>
+                                    <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
+                                </p>
+                            </b-col>
+                        </b-row> 
+                        <b-alert :show="!rule.input_match[input.id]" variant="warning">Currently, there are no input datasets that matches the specified project/tag to run this App.</b-alert>
+                        <b-alert :show="rule.input_match[input.id]" variant="secondary">Currently {{rule.input_match[input.id]}} datasets matches this criteria</b-alert>
                     </div>
                 </b-card>
             </b-form-group>
@@ -133,15 +135,28 @@ export default {
             this.load_value();
         },
 
-        "rule.app": {
-            handler: function(newv) {
-                if(!newv) return;
-                this.ensure_ids_exists();
-                this.ensure_config_exists();
-                this.load_dataset_tags();
+        rule: {
+            handler: function() {
+                if(this.rule.app) {
+                    console.log("checking app config");
+                    this.ensure_ids_exists();
+                    this.ensure_config_exists();
+                    this.load_dataset_tags();
+                }
+                for(let id in this.rule.input_tags) {
+                    this.$http.get('dataset', {params: {
+                        find: JSON.stringify({
+                            project: this.rule.input_project_override[id] || this.rule.project._id,
+                            tags: this.rule.input_tags[id],
+                        }),
+                        limit: 0, //I just need count
+                    }}).then(res=>{
+                        this.rule.input_match[id] = res.body.count;
+                    }); 
+                }
             },
             deep: true,
-        },
+        }
     },
 
     data() {
@@ -165,6 +180,8 @@ export default {
             this.rule = Object.assign({
                 //should be set to empty object by default
                 input_tags: {},
+                input_match: {}, //number of matching input datasets for each input
+
                 output_tags: {}, 
                 input_project_override: {},
                 input_selection: {},
@@ -247,8 +264,6 @@ export default {
                 output_tags,
                 input_project_override,
             });
-            //console.log("submit-----------------------");
-            //console.dir(rule);
             this.$emit("submit", rule);
         },
 
