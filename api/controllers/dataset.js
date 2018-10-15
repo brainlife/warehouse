@@ -32,9 +32,7 @@ function canedit(user, rec, canwrite_project_ids) {
 
 function construct_dataset_query(query, canread_project_ids) {
     var ands = [];
-
-    //just pass find query (safe?)
-    if(query.find) ands.push(JSON.parse(query.find));
+    if(query.find) ands.push(query.find);
 
     //handle datatype_tags
     if(query.datatype_tags) {
@@ -76,6 +74,8 @@ function construct_dataset_query(query, canread_project_ids) {
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var skip = req.query.skip||0;
     let limit = req.query.limit||100; //this means if user set it to "0", no limit
+    if(req.query.find) req.query.find = JSON.parse(req.query.find);
+
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         let query = construct_dataset_query(req.query, canread_project_ids);
