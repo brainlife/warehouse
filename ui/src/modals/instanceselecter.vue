@@ -102,6 +102,7 @@ export default {
                 ],
                 removed: false,
             }),
+            limit: 500,
             select: 'group_id',
         }})
         .then(res=>{

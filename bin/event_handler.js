@@ -190,6 +190,11 @@ function archive_dataset(task, output, cb) {
                 });
             }
 
+            let meta = output.meta||{};
+            if(task.product && task.product.meta) {
+                Object.assign(meta, task.product.meta);
+            }
+
             new db.Datasets({
                 user_id: task.user_id,
 
@@ -199,6 +204,7 @@ function archive_dataset(task, output, cb) {
 
                 desc: output.archive.desc,
                 tags,
+                meta,
 
                 prov: {
                     task,
@@ -210,7 +216,6 @@ function archive_dataset(task, output, cb) {
                     output_id: output.id, 
                     subdir: output.subdir, //optional
                 },
-                meta: output.meta||{},
             }).save((err, _dataset)=>{
                 dataset = _dataset;
                 next(err);

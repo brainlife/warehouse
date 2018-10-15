@@ -92,7 +92,8 @@ export default {
         if(this.$route.params.id !== '_') {
             //load project to edit
             this.$http.get('project', {params: {
-                find: JSON.stringify({_id: this.$route.params.id})
+                find: JSON.stringify({_id: this.$route.params.id}),
+                limit: 500,
             }})
             .then(res=>{
                 this.project = res.body.projects[0];

@@ -245,11 +245,11 @@ exports.Datasets = mongoose.model('Datasets', datasetSchema);
 //
 
 var datatypeSchema = mongoose.Schema({
-    name: String,
+    name: String, //"neuro/anat/t1w"
     desc: String, 
     
     //user who submitted this datatype (also the maintainer?)
-    user_id: {type: String, index: true}, 
+    //user_id: {type: String, index: true}, 
 
     //file inventory for this datatype
     //files: [ mongoose.Schema.Types.Mixed ],
@@ -266,11 +266,24 @@ var datatypeSchema = mongoose.Schema({
     //if not set, it will default to "soichih/sca-service-conneval-validate" (still true?)
     validator: String, 
 
+    //spec used to export this datatype to bids
+    bids: {
+        modality: String, //dwi/func/anat
+        map: [ {
+            src: String, //file pattern "dwi_aligned*.nii.gz"
+            dest: String, //bids file suffix.ext (dwi.nii.gz)
+            json: String, //bids sidecar filename (dwi.json)
+        }],
+    },
+
+    /*
     meta: [ new mongoose.Schema({
         id: String,
         type: String,
         required: Boolean,
     })],
+    */
+
 });
 exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 

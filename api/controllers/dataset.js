@@ -32,9 +32,7 @@ function canedit(user, rec, canwrite_project_ids) {
 
 function construct_dataset_query(query, canread_project_ids) {
     var ands = [];
-
-    //just pass find query (safe?)
-    if(query.find) ands.push(JSON.parse(query.find));
+    if(query.find) ands.push(query.find);
 
     //handle datatype_tags
     if(query.datatype_tags) {
@@ -76,6 +74,8 @@ function construct_dataset_query(query, canread_project_ids) {
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     var skip = req.query.skip||0;
     let limit = req.query.limit||100; //this means if user set it to "0", no limit
+    if(req.query.find) req.query.find = JSON.parse(req.query.find);
+
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         let query = construct_dataset_query(req.query, canread_project_ids);
@@ -690,7 +690,6 @@ router.get('/download/:id', jwt({
     });
 });
 
-//this API allows user to download any files under user's workflow directory
 //TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
 //doing so increases the chance of user misusing the token, but unless I use HTML5 File API
 //there isn't a good way to let user download files..
@@ -859,114 +858,81 @@ router.post('/downscript', jwt({secret: config.express.pubkey}), function(req, r
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
-            let script = "#!/bin/bash\n";
+            let script = `#!/bin/bash\n
+set +x #show all commands running
+set +e #stop the script if anything fails
+
+`;
             script += "auth=\"Authorization: "+req.headers.authorization+"\"\n"
             datasets.forEach(dataset=>{
                 //construct a path to put the datasets in
                 let path=".";
                 if(dataset.meta.subject) path += "/sub-"+dataset.meta.subject;
-                if(dataset.meta.session) path += "/sess-"+dataset.meta.session;
-                path+="/"+dataset.datatype.name.replace(/\//g, '-');
+                if(dataset.meta.session) path += "/ses-"+dataset.meta.session;
+                //if(dataset.meta.run) path += "/run-"+dataset.meta.run;
+                //if(dataset.meta.acq) path += "/acq-"+dataset.meta.acq;
+
+                path+="/";
+                path+= dataset._id;
+                path+="."+dataset.datatype.name.replace(/\//g, '-');
                 dataset.datatype_tags.forEach(tag=>{
                     path+="."+tag;
                 });
 
-                //create mix id and run together.. to make sure each dataset is unique
-                path += "/id-"+dataset._id;
-                if(dataset.meta.run) path += "_run-"+dataset.meta.run;
-
-                script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
                 script += "mkdir -p "+path+"\n";
+                script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
                 script += "echo \""+JSON.stringify(dataset).replace().replace(/\"/g, '\\"')+"\" > "+path+"/_dataset.json\n";
                 script += "curl -H \"$auth\" "+config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C "+path+" -x\n";
 
-                //Create BIDS symlinks
-                let bidspath = "bids/derivatives";
-                let pipeline = null;
-                if(dataset.prov && dataset.prov.task) pipeline = dataset.prov.task.service;
-                //TODO this seems very brittle..
-                if(pipeline == "soichih/sca-product-raw" || pipeline == "soichih/sca-service-noop" || ~pipeline.indexOf("brain-life/validator-")) {
-                    pipeline = "upload";
-                } else {
-                    pipeline = pipeline.replace(/\//g, '.');
-                }
-                logger.debug("pipeline................", pipeline);
-                bidspath += "/"+pipeline;
-                if(dataset.meta.subject) bidspath += "/sub-"+dataset.meta.subject;
-                if(dataset.meta.session) bidspath += "/ses-"+dataset.meta.session;
+                if(dataset.datatype.bids) {
+                    console.dir(dataset.datatype.bids);
 
-                let modality = null;
-                let maps = null; //null means just link the entire directory
-                
-                //TODO I will store this info on datatype record once I know what I need to store
-                switch(dataset.datatype.name) {
-                case "neuro/dtiinit":
-                    modality = "dwi";
-                    maps = [
-                        {"src": "dwi_aligned*.nii.gz", "dest": "dwi.nii.gz"},
-                        {"src": "dwi_aligned*.bvecs", "dest": "dwi.bvecs"},
-                        {"src": "dwi_aligned*.bvals", "dest": "dwi.bvals"},
-                        {"json": "dwi.json"},
-                    ];
-                    break;
-                case "neuro/dwi":
-                    modality = "dwi";
-                    maps = [
-                        {"src": "dwi.nii.gz", "dest": "dwi.nii.gz"},
-                        {"src": "dwi.bvecs", "dest": "dwi.bvecs"},
-                        {"src": "dwi.bvals", "dest": "dwi.bvals"},
-                        {"json": "dwi.json"},
-                    ];
-                    break;
-                case "neuro/track":
-                    modality = "dwi";
-                    maps = [
-                        { "src": "track.tck", "dest": "tractography.tck",},
-                        {"json": "tractography.json" },
-                    ];
-                    break;
-                case "neuro/anat/t1w":
-                    modality = "anat";
-                    maps = [
-                        {"src": "t1.nii.gz", "dest": "t1.nii.gz"},
-                        {"json": "t1.json" },
-                    ];
-                    break;
-                case "neuro/recon":
-                    modality = "dwi";
-                    maps = [
-                        {"src": "fa.nii.gz", "dest": "type-fa_mask.nii.gz"},
-                        {"json": "recon.json" },
-                    ];
-                    break;
-                }
+                    //Create BIDS symlinks
+                    let bidspath = "bids/derivatives";
+                    let pipeline = "upload"; //default
+                    if(dataset.prov && dataset.prov.task) {
+                        pipeline = dataset.prov.task.service;
+                        if(dataset.prov.task.service_branch) pipeline += "."+dataset.prov.task.service_branch;
+                    }
+                    if(!(pipeline == "soichih/sca-product-raw" || pipeline == "soichih/sca-service-noop" || ~pipeline.indexOf("brain-life/validator-"))) { //TODO this seems very brittle..
+                        pipeline = pipeline.replace(/\//g, '.');
+                    }
 
-                //figure out how to get out of bids directory and point back to the root
-                let symlink_recovery="";
-                path.split("/").forEach(depth=>{
-                    symlink_recovery += "../";
-                });
-                symlink_recovery+=path;
-
-                if(!maps) {
-                    /* let's output only datatypes that are defined in BIDS spec - rest can be accessed natively
-                    //just link the entire raw path under datatype derived name
-                    let fakemodality = dataset.datatype.name.replace(/\//g, '-');
-                    if(dataset.meta.run) fakemodality += "_run-"+dataset.meta.run;
+                    bidspath += "/"+pipeline;
+                    if(dataset.meta.subject) bidspath += "/sub-"+dataset.meta.subject;
+                    if(dataset.meta.session) bidspath += "/ses-"+dataset.meta.session;
+                    bidspath+="/"+dataset.datatype.bids.derivatives;
                     script += "mkdir -p "+bidspath+"\n";
-                    script += "ln -s "+symlink_recovery+" "+bidspath+"/"+fakemodality+"\n"; //link the whole directory (can windows do this?)
-                    */
-                } else {
-                    bidspath+="/"+modality;
-                    script += "mkdir -p "+bidspath+"\n";
-                    maps.forEach(map=>{
-                        if(map.json) {
-                            let json = {
-                                config: dataset.prov.task.config, //TODO always wants configs?
-                            };
-                            script += "echo \""+JSON.stringify(json).replace().replace(/\"/g, '\\"')+"\" > "+bidspath+"/"+map.json+"\n";
+                    dataset.datatype.bids.maps.forEach(map=>{
+                        //construct source keywords
+                        let source_keywords = "sub-"+dataset.meta.subject;
+                        if(dataset.meta.session) source_keywords += "_ses-"+dataset.meta.session;
+                        if(dataset.meta.Space) source_keywords += "_space-"+dataset.meta.Space; 
+                        if(dataset.meta.run) source_keywords += "_run-"+dataset.meta.run;
+                        if(dataset.meta.acq) source_keywords += "_acq-"+dataset.meta.acq;
+                        source_keywords += "_desc-"+dataset._id; //not sure if this is BIDS.. but this makes it all dataset unique
+
+                        //func has TaskName as part of source keywords..
+                        if(dataset.meta.TaskName) {
+                            let taskname = dataset.meta.TaskName.replace(/[^0-9a-zA-Z]/gi, '');
+                            source_keywords += "_task-"+taskname;
+                        }
+
+                        let dest = source_keywords+"_"+map.dest;
+                        if(map.src == "_meta_") {
+                            //request for metadata!
+                            if(dataset.prov) {
+                                script += "echo \""+JSON.stringify(dataset.meta).replace().replace(/\"/g, '\\"')+"\" > "+bidspath+"/"+dest+"\n";
+                            } else {
+                                //can't output json.. as we have no prov
+                            }
                         } else {
-                            script += "ln -s "+"../"+symlink_recovery+"/"+map.src+" "+bidspath+"/"+map.dest+"\n";
+                            //normal file / dir (will this work on windows?)
+                            
+                            //figure out how to get out of bids directory and point back to the root
+                            let bidspath_exit=bidspath.split("/").reduce((ap, p)=>ap+"../", ""); 
+                            //then resolve the src(could be glob pattern) and link it to bidspath
+                            script += "ln -sf "+bidspath_exit+"$(ls "+path+"/"+map.src+") "+bidspath+"/"+dest+"\n";
                         }
                     });
                 }

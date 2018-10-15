@@ -113,6 +113,7 @@ export default {
         query_projects(find) {
             this.$http.get('project', {params: {
                 find: JSON.stringify(find),
+                limit: 500,
                 sort: 'name',
             }}).then(res=>{
                 this.options = [];

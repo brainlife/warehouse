@@ -9,7 +9,9 @@
                 <span v-if="task.service!='soichih/sca-product-raw'">{{task.service}}</span>
             </div>
             <div v-for="(output, idx) in task.config._outputs" :key="idx">
-                <b>{{output.meta.subject}}</b> <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
+                <b>{{output.meta.subject}}</b>
+                <small v-if="output.meta.session" style="opacity: 0.8">/ {{output.meta.session}}</small>
+                <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
             </div>
         </div>
     </div>
@@ -62,6 +64,7 @@
                     </div>
                     <div v-else>
                         <b v-if="input.meta.subject">{{input.meta.subject}}</b>
+                        <small v-if="input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <mute>
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
@@ -88,6 +91,7 @@
                     </div>
 
                     <b v-if="output.meta.subject">{{output.meta.subject}}</b>
+                    <small v-if="output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
                     <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
                     <mute>
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
@@ -237,6 +241,7 @@ export default {
 
             return this.$http.get('project', {params: {
                 select: 'name desc',
+                limit: 500,
             }});
         }).then(res=>{
             this.projects = {};

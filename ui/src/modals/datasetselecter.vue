@@ -115,6 +115,7 @@ export default {
                 find: JSON.stringify({
                    _id: {$in : project_ids}
                 }),
+                limit: 500,
                 select: 'name agreements',
             }}).then(res=>{
                 async.eachSeries(res.body.projects, this.check_agreements, err=>{
@@ -196,26 +197,27 @@ export default {
                     // create catalog of all datasets
                     this.alldatasets[dataset._id] = dataset;
                     
-                    var subject = "(non-existing)";
-                    if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+                    let text = "(non-existing)";
+                    if (dataset.meta.subject) text = dataset.meta.subject;
+                    if (dataset.meta.session) text += " / "+dataset.meta.session;
                     
                     // dropdown menu item to add
-                    var item = {
+                    let item = {
                         id: dataset._id,
-                        text: subject,
+                        text,
                         date: dataset.create_date,
                         datatype: this.datatypes[dataset.datatype],
                         datatype_tags: dataset.datatype_tags,
                         tags: dataset.tags,
                     };
 
-                    if (!this.datasets_groups[subject]) {
+                    if (!this.datasets_groups[text]) {
                         // first time
-                        this.datasets_groups[subject] = true;
+                        this.datasets_groups[text] = true;
                         
                         // append - select2 allows me to append item by doing following crap
                         dropdown_items.push({
-                            text: subject,
+                            text,
                             children: [item]
                         });
                     } else {

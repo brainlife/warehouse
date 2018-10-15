@@ -229,8 +229,9 @@ export default {
 
     mounted: function() {
         //load all projects that user has summary access (including removed ones so we can open it)
-        this.$http.get('project')
-        .then(res=>{
+        this.$http.get('project', {params: {
+            limit: 500,
+        }}).then(res=>{
             this.projects = {};
             res.body.projects.forEach((p)=>{
                 this.projects[p._id] = p;
