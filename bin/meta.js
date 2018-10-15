@@ -150,6 +150,9 @@ function handle_pub(pub, cb) {
             citation_doi: pub.doi,
             citation_title: pub.name,
             citation_date: format_date(pub.create_date),
+
+            keywords: pub.tags.join(", "),
+            copyright: pub.license,
         }
     };
     info.meta.citation_author = pub.authors.map(sub=>{ 
