@@ -48,8 +48,8 @@ export default new Router({
         {path: '/app/:id', component: app, meta: {public: true}},
         {path: '/app/:id/edit', component: appedit},
 
-        {path: '/view/:instanceid/:taskid/:type/:subdir?', component: view, props: true},
-        {path: '/novnc/:instanceid/:taskid/:type/:subdir?', component: novnc, props: true},
+        {path: '/view/:instanceid/:taskid/:type/:datatype64/:subdir?', component: view, props: true},
+        {path: '/novnc/:instanceid/:taskid/:type/:datatype64/:subdir?', component: novnc, props: true},
 
         {path: '/project', component: project},
         {path: '/project/:id', component: project},

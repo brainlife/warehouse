@@ -239,7 +239,7 @@
                                     <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
                                     <small class="text-muted">Set these datatype tags on this output dataset</small>
 
-                                    <div class="text-muted">Tag Passthrough</div>
+                                    <div class="text-muted">Datatype Tags Passthrough</div>
                                     <b-form-select v-model="output.datatype_tags_pass">
                                         <option :value="null">(No Pass)</option>
                                         <option v-for="input in input_datasets" :key="input.id" :value="input.id">{{input.id}}</option>

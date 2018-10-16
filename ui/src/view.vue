@@ -1,23 +1,19 @@
 <template>
 <div style="height: 100%; margin: 0px; padding: 0px;">
     <div v-if="task && task.status == 'finished'" style="height: 100%;">
-        <!--I might conver this into freesurfer post processing output view
-        <freesurfer v-else-if="type == 'neuro.freesurfer'" :task="task" :subdir="subdir"></freesurfer>-->
-
-        <dtiinit v-if="type == 't1pdd'" :task="task" :subdir="subdir"></dtiinit>
-        <tractview v-else-if="type == 'tractview'" :task="task" :subdir="subdir"></tractview>
-        <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir"></surfaces>
-        <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir"></lifeview>
-        <life v-else-if="type == 'lifestats'" :task="task" :subdir="subdir"></life>
-        <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir"></evaluator>
-        <images v-else-if="type == 'images'" :task="task" :subdir="subdir"></images>
-        <volumeviewer v-else-if="type == 'volumeviewer'" :task="task" :subdir="subdir"></volumeviewer>
+        <dtiinit v-if="type == 't1pdd'" :task="task" :subdir="subdir" :datatype="datatype"></dtiinit>
+        <tractview v-else-if="type == 'tractview'" :task="task" :subdir="subdir" :datatype="datatype"></tractview>
+        <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir" :datatype="datatype"></surfaces>
+        <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir" :datatype="datatype"></lifeview>
+        <life v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"></life>
+        <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"></evaluator>
+        <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"></images>
+        <volumeviewer v-else-if="type == 'volumeviewer'" :task="task" :subdir="subdir" :datatype="datatype"></volumeviewer>
         <div v-else-if="type == 'raw'" style="padding: 10px 0px; background-color: white; height: 100%; overflow: auto;">
             <filebrowser :task="task" :path="(subdir||'')" style="margin-right: 50px;"></filebrowser>
         </div>
     </div>
     <div v-else style="padding: 20px; height: 100%; overflow: auto;">
-        <h4>Staging Data</h4>
         <task :task="task"/>
     </div>
 </div>
@@ -42,7 +38,7 @@ import task from '@/components/task'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 export default {
-    props: [ 'instanceid', 'taskid', 'type', 'subdir' ],
+    props: [ 'instanceid', 'taskid', 'type', 'datatype64', 'subdir' ],
     components: { 
         dtiinit, freesurfer, tractview, 
         life, evaluator, images, 
@@ -50,7 +46,7 @@ export default {
         lifeview, surfaces,
     },
 
-    data () {
+    data() {
         return {
             instance: null,
             error: null,
@@ -60,17 +56,22 @@ export default {
         }
     },
 
-    mounted: function() {
+    mounted() {
         this.wait();
+    },
+    computed: {
+        datatype() {
+            return atob(this.datatype64);
+        }
     },
 
     methods: {
-        go: function(path) {
+        go(path) {
             this.$router.push(path);
         },
 
-        //wait for the data task to finish
-        wait: function(cb) {
+        //wait for the staging task to finish
+        wait(cb) {
             if(!cb) cb = ()=>{};
 
             this.$http.get(Vue.config.wf_api+'/task', {params: {
@@ -83,7 +84,7 @@ export default {
                 else if(this.task.status == 'removed') {
                     this.rerun();
                     setTimeout(()=>{this.wait(cb)}, 5000);
-                } else setTimeout(()=>{this.wait(cb)}, 1000);
+                } else setTimeout(()=>{this.wait(cb)}, 500);
             });
         },
 

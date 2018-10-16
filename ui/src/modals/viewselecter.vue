@@ -45,7 +45,7 @@ export default {
         return {
             //set by viewselecter.open
             datatype_name: null,
-            datatype_names: null,
+            //datatype_names: null,
 
             task: null, 
             task_cb: null, 
@@ -58,7 +58,7 @@ export default {
     mounted() {
         this.$root.$on("viewselecter.open", (opt)=>{
             this.datatype_name = opt.datatype_name;
-            this.datatype_names = opt.datatype_names;
+            //this.datatype_names = opt.datatype_names;
             this.task = opt.task;
             this.task_cb = opt.task_cb;
             this.subdir = opt.subdir;
@@ -172,7 +172,7 @@ export default {
                 desc: "A freesurfer program used to view and work with structural, anatomical scans.",
                 avatar: "https://brainlife.io/images/ui-logos/freeview.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/freesurfer" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/freesurfer", "neuro/track/trk" ],
             },
 
             {
@@ -213,7 +213,7 @@ export default {
     computed: {
         views() {
             if(this.datatype_name) return this.list_views_single();
-            if(this.datatype_names) return this.list_views_multi();
+            //if(this.datatype_names) return this.list_views_multi();
             return [];
         }
     },
@@ -234,6 +234,7 @@ export default {
             return views;
         },
 
+        /*
         list_views_multi() {
             var views = [];
             views.push(this.view_catalog["raw"]); //we can always use raw view
@@ -260,6 +261,7 @@ export default {
 
             return views;
         },
+        */
 
         select(view) {
             this.$refs.modal.hide(); 
@@ -270,13 +272,9 @@ export default {
         },
 
         openview(view, task, subdir) {
-            //console.log("openview", view, task);
-            let path;
-            if(view.docker) {
-                path = "/novnc/"+task.instance_id+"/"+task._id+'/'+view.ui;
-            } else {
-                path = "/view/"+task.instance_id+"/"+task._id+'/'+view.ui;
-            }
+            let path = "/view/"
+            if(view.docker) path = "/novnc/";
+            path += task.instance_id+"/"+task._id+'/'+view.ui+'/'+btoa(this.datatype_name);
             if(subdir) path += '/'+subdir;
             window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
         }
