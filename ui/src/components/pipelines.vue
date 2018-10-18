@@ -370,6 +370,7 @@ export default {
             this.editing = {
                 name: "",
                 config: {},
+                project: this.project,
                 active: true,
                 removed: false,
             };
