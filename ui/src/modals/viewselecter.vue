@@ -74,6 +74,8 @@ export default {
                 avatar: "https://brainlife.io/images/ui-logos/raw.png",
                 datatypes: [], //supported by all
             },
+
+            /*
             {   
                 ui: "lifeview",
                 name: "Life Tract View",
@@ -81,6 +83,7 @@ export default {
                 avatar: "https://brainlife.io/images/ui-logos/ui-lifeview.png",
                 datatypes: [ "neuro/life" ],
             },
+            */
 
             {
                 ui: "lifestats",
