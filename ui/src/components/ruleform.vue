@@ -66,13 +66,13 @@
                             <b-col>Dataset Tags</b-col>
                             <b-col :cols="9">
                                 <p>
-                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="dataset_tags[input.datatype_id]"/>
+                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="input_dataset_tags[input.id]"/>
                                     <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
                                 </p>
+                                <small v-if="rule.input_match[input.id]">{{rule.input_match[input.id]}} datasets matches this criteria</small>
                             </b-col>
                         </b-row> 
-                        <b-alert :show="!rule.input_match[input.id]" variant="warning">Currently, there are no input datasets that matches the specified project/tag to run this App.</b-alert>
-                        <b-alert :show="rule.input_match[input.id]" variant="secondary">Currently {{rule.input_match[input.id]}} datasets matches this criteria</b-alert>
+                        <b-alert :show="!rule.input_match[input.id]" variant="warning">There are no input datasets that matches the specified criteria.</b-alert>
                     </div>
                 </b-card>
             </b-form-group>
@@ -87,7 +87,7 @@
                     <b-row>
                         <b-col>Dataset Tags</b-col>
                         <b-col :cols="9">
-                            <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="dataset_tags[output.datatype]"/>
+                            <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
                             <small class="text-muted">Output tags allows you can easily query for specific set of datasets on subsequent rules.</small>
                         </b-col>
                     </b-row>
@@ -138,20 +138,31 @@ export default {
         rule: {
             handler: function() {
                 if(this.rule.app) {
-                    console.log("checking app config");
                     this.ensure_ids_exists();
                     this.ensure_config_exists();
                     this.load_dataset_tags();
                 }
+
+                console.log("rule updated");
+                //console.dir(this.rule);
+
                 for(let id in this.rule.input_tags) {
+                    let input = this.rule.app.inputs.find(i=>i.id == id);
+                    let find = {
+                        project: this.rule.input_project_override[id] || this.rule.project,
+                        datatype: input.datatype_id,
+                        removed: false,
+                    }
+                    if(this.rule.input_tags[id].length > 0) find.tags = {$all: this.rule.input_tags[id]},
+                    console.log("looking for", id, find, input.datatype_tags);
                     this.$http.get('dataset', {params: {
-                        find: JSON.stringify({
-                            project: this.rule.input_project_override[id] || this.rule.project._id,
-                            tags: this.rule.input_tags[id],
-                        }),
+                        find: JSON.stringify(find),
+                        datatype_tags: input.datatype_tags,
                         limit: 0, //I just need count
                     }}).then(res=>{
-                        this.rule.input_match[id] = res.body.count;
+                        console.log("query returned ", res.body.count);
+                        //this.rule.input_match[id] = res.body.count;
+                        Vue.set(this.rule.input_match, id, res.body.count);
                     }); 
                 }
             },
@@ -164,7 +175,8 @@ export default {
             rule: {},
             apps: [],
             ready: false,
-            dataset_tags: {},
+            input_dataset_tags: {},
+            output_dataset_tags: {},
         }
     },
     
@@ -295,25 +307,35 @@ export default {
         },
 
         load_dataset_tags: function() {
+            console.log("project", this.rule.project);
             this.rule.app.inputs.forEach(input=>{
+            console.log(this.rule.input_project_override[input.id]);
                 input.datatype_id = input.datatype._id || input.datatype; //parent component passes app.input without populating datatype sometimes?
-                let project = this.rule.input_project_override[input.id] || this.rule.project;
-
                 this.$http.get('dataset/distinct', {params: {
                     distinct: 'tags',
-                    find: JSON.stringify({project, datatype: input.datatype_id}),
+                    find: JSON.stringify({
+                        project: this.rule.input_project_override[input.id] || this.rule.project, 
+                        datatype: input.datatype_id,
+                        removed: false,
+                    }),
+                    datatype_tags: input.datatype_tags,
                 }}).then(res=>{
-                    Vue.set(this.dataset_tags, input.datatype_id, res.body);
+                    Vue.set(this.input_dataset_tags, input.id, res.body);
                 }); 
+            });
 
-                /*
+            this.rule.app.outputs.forEach(output=>{
                 this.$http.get('dataset/distinct', {params: {
-                    distinct: 'datatype_tags',
-                    find: JSON.stringify({project, datatype}),
+                    distinct: 'tags',
+                    find: JSON.stringify({
+                        project: this.rule.project, 
+                        datatype: output.datatype,
+                        removed: false,
+                    }),
+                    datatype_tags: output.datatype_tags,
                 }}).then(res=>{
-                    Vue.set(this.datatype_tags, input.id, res.body);
+                    Vue.set(this.output_dataset_tags, output.id, res.body);
                 }); 
-                */
             });
         },
     }

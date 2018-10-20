@@ -71,7 +71,7 @@
                         Deactivated
                     </p>
 
-                    <div style="margin-right: 100px; background-color: white; box-shadow: 0px 2px 4px #ccc; clear: both;">
+                    <div class="rule-body">
                         <div class="section-header">
                             Submit the following App and archive all output datasets to this project
                         </div>
@@ -129,6 +129,7 @@
 
                         <div class="section-header">Log</div>
                         <rulelog :id="rule._id"/>
+                        <br>
                     </div>
                     <br>
                 </div>
@@ -370,6 +371,7 @@ export default {
             this.editing = {
                 name: "",
                 config: {},
+                project: this.project,
                 active: true,
                 removed: false,
             };
@@ -545,6 +547,14 @@ margin-top: 20px;
 .rule-header:hover {
 cursor: pointer;
 background-color: #eee;
+}
+.rule-body {
+margin-right: 100px; 
+background-color: white; 
+clear: both;
+}
+.rule.rule-selected .rule-body {
+box-shadow: 0 0 4px rgba(0,0,0,0.3);
 }
 
 .expand-transition {

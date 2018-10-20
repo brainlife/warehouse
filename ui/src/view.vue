@@ -4,7 +4,9 @@
         <dtiinit v-if="type == 't1pdd'" :task="task" :subdir="subdir" :datatype="datatype"></dtiinit>
         <tractview v-else-if="type == 'tractview'" :task="task" :subdir="subdir" :datatype="datatype"></tractview>
         <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir" :datatype="datatype"></surfaces>
+        <!--
         <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir" :datatype="datatype"></lifeview>
+        -->
         <life v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"></life>
         <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"></evaluator>
         <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"></images>
@@ -27,7 +29,7 @@ import dtiinit from '@/datauis/dtiinit'
 import freesurfer from '@/datauis/freesurfer'
 import tractview from '@/datauis/tractview'
 import surfaces from '@/datauis/surfaces'
-import lifeview from '@/datauis/lifeview'
+//import lifeview from '@/datauis/lifeview'
 import life from '@/datauis/life'
 import evaluator from '@/datauis/evaluator'
 import images from '@/datauis/images'
@@ -43,7 +45,7 @@ export default {
         dtiinit, freesurfer, tractview, 
         life, evaluator, images, 
         volumeviewer, filebrowser, task,
-        lifeview, surfaces,
+        surfaces,
     },
 
     data() {

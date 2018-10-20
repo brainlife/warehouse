@@ -96,6 +96,10 @@ Vue.filter('filesize', function (num) {
 	return (neg ? '-' : '') + num + ' ' + unit;
 });
 
+Vue.filter('capitalize', v=>{
+    return v.toUpperCase();
+});
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // config

@@ -231,6 +231,7 @@ export default {
                     if(this.tasks.upload && task._id == this.tasks.upload._id) {
                         this.tasks.upload = task;
                     }
+                    //TODO - could we use event_handler to the archiving?
                     if(this.tasks.validation && task._id == this.tasks.validation._id) {
                         this.tasks.validation = task;
                         if(task.status == "finished") {
