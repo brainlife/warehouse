@@ -285,7 +285,7 @@ export default {
 
         notify_error(err) {
             console.error(err);
-            this.$notify({type: 'error', text: err.body.message});
+            this.$notify({type: 'error', text: JSON.stringify(err)});
         },
 
         scrollto(instance) {
@@ -353,10 +353,7 @@ export default {
                 let instance = res.body;
                 this.instances.unshift(instance);
                 this.toggle_instance(instance);
-            }).catch(err=>{
-                console.error(err);
-                this.$notify({type: 'error', text: err.body.message});
-            });
+            }).catch(this.notify_error);
         },
 
         remove(instance) {
@@ -375,7 +372,7 @@ export default {
                     //failed to remove it.. put it back to UI
                     this.instances.push(instance); 
                     console.error(err);
-                    this.$notify({type: 'error', text: err.body.message});
+                    this.notify_error(err);
                 });
             }
         },
@@ -437,7 +434,7 @@ export default {
                 } 
                 if(event.error) {   
                     console.error("failed to subscribe to instance event:", event.error);
-                    this.$notify({type: 'error', text: event.error});
+                    this.notify_error(event.error);
                 }
             }
         },

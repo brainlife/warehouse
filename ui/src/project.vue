@@ -227,10 +227,11 @@ export default {
 
     },
 
-    mounted: function() {
+    mounted() {
         //load all projects that user has summary access (including removed ones so we can open it)
         this.$http.get('project', {params: {
             limit: 500,
+            select: '-readme'
         }}).then(res=>{
             this.projects = {};
             res.body.projects.forEach((p)=>{
@@ -271,7 +272,7 @@ export default {
     },
 
     methods: {
-        edit: function() {
+        edit() {
             this.$router.push('/project/'+this.selected._id+'/edit');
         },
 
@@ -293,7 +294,7 @@ export default {
             return false;
         },
 
-        remove: function() {
+        remove() {
             if(confirm("Do you really want to remove this project?")) {
                 this.$http.delete('project/'+this.selected._id)
                 .then(res=>{
@@ -303,21 +304,32 @@ export default {
             }
         },
 
-        change_project: function(project) {
+        change_project(project) {
             this.$router.push('/project/'+project._id+'/'+this.$route.params.tab);
             this.open_project(project);
         },
 
-        open_project: function(project) {
+        open_project(project) {
             if(this.selected == project) return; //no point of opening project if it's already opened
-            this.selected = project;
-            localStorage.setItem("last_projectid_used", project._id);
 
-            //https://github.com/ktquez/vue-disqus/issues/11#issuecomment-354023326
-            if(this.$refs.disqus) {
-                console.log("resetting disqus", this.selected._id);
-                this.$refs.disqus.reset(window.DISQUS);
-            }
+            this.selected = project;
+            this.$http.get('project', {params: {
+                find: JSON.stringify({
+                    _id: project._id,
+                }),
+            }}).then(res=>{
+                let full_project = res.body.projects[0];
+                for(var key in full_project) {
+                    this.selected[key] = full_project[key];
+                }
+                localStorage.setItem("last_projectid_used", project._id);
+
+                //https://github.com/ktquez/vue-disqus/issues/11#issuecomment-354023326
+                if(this.$refs.disqus) {
+                    console.log("resetting disqus", this.selected._id);
+                    this.$refs.disqus.reset(window.DISQUS);
+                }
+            });
         },
     },
 }
