@@ -363,12 +363,6 @@ function handle_release(release, project, cb) {
             datatype_tags: set.datatype_tags,
         };
 
-        /*
-        db.Datasets.find(find, (err, datasets)=>{
-            if(err) throw err;
-            console.dir(datasets);
-        });
-        */
         db.Datasets.update(find, {$addToSet: {publications: release._id}}, {multi: true}, next_set);
     }, cb);
 }

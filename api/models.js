@@ -195,6 +195,9 @@ var datasetSchema = mongoose.Schema({
         subdir: String, //(optional) subdir that contained the actual output. often output_id == subdir
     },
 
+    //product.json content for this dataset (new) - might be subset of task.product
+    product: mongoose.Schema.Types.Mixed,
+
     //storing (default)
     //stored dataset is stored on storage system
     //failed failed to store to storage system

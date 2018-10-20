@@ -11,7 +11,6 @@ const config = require('../api/config');
 const logger = new winston.Logger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
-//const prov = require('../api/prov');
 
 // TODO  Look for failed tasks and report to the user/dev?
 
@@ -36,6 +35,7 @@ rcon.on('error', logger.error);
 rcon.on('ready', ()=>{
     logger.info("connected to redis");
 });
+
 
 function subscribe() {
     async.series([
@@ -89,13 +89,11 @@ var _counts = {
 }
 
 function health_check() {
-    //logger.debug("health check");
     var report = {
         status: "ok",
         messages: [],
         date: new Date(),
         counts: _counts,
-        //_health,
         maxage: 1000*60*20,  //should be double the check frequency to avoid going stale while development
     }
 
@@ -114,18 +112,14 @@ function health_check() {
 function handle_task(task, cb) {
     _counts.tasks++;
 
-    /*
-    prov.register_task(task, err=>{
-        if(err) return logger.error(err);
-    });
-    */
-
     if(task.status == "finished" && task.config && task.config._outputs) {
-        logger.info("handling task", task._id, task.status, task.name);
+        logger.info("handling finished task (archive)", task._id, task.status, task.name);
+        let products = common.split_product(task.product||{}, task.config._outputs);
         async.eachSeries(task.config._outputs, (output, next_output)=>{
             if(!output.archive) return next_output();
-            archive_dataset(task, output, next_output);
+            archive_dataset(task, output, products[output.id], next_output);
         }, cb);
+
     } else if(task.status == "removed" && task.config && task.config._rule) {
         logger.info("rule submitted task is removed. updating update_date:"+task.config._rule.id);
         db.Rules.findOneAndUpdate({_id: task.config._rule.id}, {$set: {update_date: new Date()}}, cb);
@@ -135,7 +129,7 @@ function handle_task(task, cb) {
     }
 }
 
-function archive_dataset(task, output, cb) {
+function archive_dataset(task, output, product, cb) {
     logger.debug("archive request made", output);
 
     var dataset = null;
@@ -147,7 +141,6 @@ function archive_dataset(task, output, cb) {
             logger.debug("see if this dataset is already archived");
             db.Datasets.findOne({
                 "prov.task_id": task._id,
-
                 "prov.output_id": output.id,
                 
                 //ignore failed and removed ones
@@ -171,40 +164,44 @@ function archive_dataset(task, output, cb) {
         },
 
         next=>{
-            logger.debug("registering dataset now");
+            /*
+            //add things set in product
+            if(product.tags) tags = tags.concat(product.tags).unique();
+            if(product.datatype_tags) datatype_tags = datatype_tags.concat(product.datatype_tags).unique();
+            Object.assign(meta, product.meta);
+            */
 
-            //add tags specified in task.product.tags to dataset tags
-            let tags = output.tags||[];
-            if(task.product && task.product.tags) {
-                task.product.tags.forEach(tag=>{
-                    if(!~tags.indexOf(tag)) tags.push(tag);
-                });
-            }
-
-            //TODO - I don't think I should be mucking with datatype_tags.. as it will break the logical consistency
-            //but.. importer sets normalized, single_shell, etc.. maybe we keep it undocumented?
-            let datatype_tags = output.datatype_tags||[];
-            if(task.product && task.product.datatype_tags) {
-                task.product.datatype_tags.forEach(tag=>{
-                    if(!~datatype_tags.indexOf(tag)) datatype_tags.push(tag);
-                });
-            }
-
-            let meta = output.meta||{};
-            if(task.product && task.product.meta) {
+            //pull things set on root ... for backward compatibility 
+            /*
+            if(task.product) {
+                if(task.product.tags) tags = tags.concat(task.product.tags).unique();
+                if(task.product.datatype_tags) datatype_tags = datatype_tags.concat(task.product.datatype_tags).unique();
                 Object.assign(meta, task.product.meta);
             }
 
+            //use things set specifically for this output
+            if(task.product && task.product[output.id]) {
+                let pro = task.product[output.id];
+                if(pro.tags) tags = tags.concat(pro.tags).unique();
+                if(pro.datatype_tags) datatype_tags = datatype_tags.concat(pro.datatype_tags).unique();
+                Object.assign(meta, pro.meta);
+            }
+            */
+
+            //WARNING - similar code exists in controller/dataset
+            //logger.debug("registering dataset now");
             new db.Datasets({
                 user_id: task.user_id,
+                desc: output.archive.desc,
 
                 project: output.archive.project,
                 datatype: output.datatype,
-                datatype_tags,
 
-                desc: output.archive.desc,
-                tags,
-                meta,
+                datatype_tags: product.datatype_tags,
+                tags: product.tags,
+                meta: product.meta,
+
+                product,
 
                 prov: {
                     task,

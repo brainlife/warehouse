@@ -19,9 +19,7 @@ const common = require('../common');
 
 function canedit(user, rec, canwrite_project_ids) {
     if(!rec.user_id) return false;  //TODO - can this really happen?
-    
     if(user) {
-        //if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
         if(rec.user_id == user.sub.toString()) return true;
         let canwrite_project_ids_str = canwrite_project_ids.map(id=>id.toString());
         let project_id = rec.project._id || rec.project; //could be populated.. 
@@ -79,6 +77,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         let query = construct_dataset_query(req.query, canread_project_ids);
+        console.log(JSON.stringify(query, null, 4));
         db.Datasets.find(query)
         .populate(req.query.populate || '') //all by default
         .select(req.query.select)
@@ -450,16 +449,29 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
         },
 
         next=>{
+            //WARNING - similar code exists in event_handler
 			//logger.debug("registering new dataset record", req.body.meta);
+            let outputs = [{
+                id: req.body.output_id,
+                datatype_tags: req.body.datatype_tags||[],
+                tags: req.body.tags||[],
+                meta: req.body.meta||{},
+            }]
+            let products = common.split_product(task.product, outputs);
+            let product = products[req.body.output_id];
+
             let d = {
                 user_id: req.user.sub,
 
                 project: req.body.project,
                 datatype: req.body.datatype,
-                datatype_tags: req.body.datatype_tags,
+                datatype_tags: product.datatype_tags,
 
                 desc: req.body.desc,
-                tags: req.body.tags||[],
+                tags: product.tags,
+                meta: product.meta,
+
+                product,
 
                 prov: {
                     task, //TODO - mongo doesn't allow key that contains ".".. I should do something about that.. 
@@ -471,10 +483,9 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                     output_id: req.body.output_id,
                     subdir: req.body.subdir, //optional
                 },
-                meta: req.body.meta||{},
             };
-            console.log("registering new dataset.................");
-            console.dir(d);
+            //console.log("registering new dataset.................");
+            //console.dir(d);
             new db.Datasets(d).save((err, _dataset)=>{
                 if(err) return next(err);
         		dataset = _dataset;

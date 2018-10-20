@@ -468,4 +468,53 @@ exports.populate_github_fields = function(repo, app, cb) {
     });
 }
 
+//for split_product
+Array.prototype.unique = function() {
+    var a = this.concat();
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j])
+                a.splice(j--, 1);
+        }
+    }
+    return a;
+};
 
+//split the task product into separate dataset products. flatten structure so that we merge *global* (applies to all dataset) product.json info
+//to output for each datasets - for convenience and for backward compatibility
+exports.split_product = function(task_product, outputs) {
+    //create global product (everything except output.id keys)
+    let global_product = Object.assign({}, task_product); //copy
+    outputs.forEach(output=>{
+        delete global_product[output.id]; //remove dataset specific output
+    });
+
+    function merge(dest, src) {
+        for(let key in src) {
+            if(!dest[key]) dest[key] = src[key];
+            if(Array.isArray(src[key])) {
+                dest[key] = dest[key].concat(src[key]).unique(); //merge array
+            } else if(typeof src[key] == 'object') {
+                Object.assign(dest[key], src[key]);
+            } else {
+                //must be primitive
+                dest[key] = src[key];
+            }
+        }
+    }
+
+    //put everything together - output specific data takes precedence over global
+    let products = {};
+    outputs.forEach(output=>{
+        //pull things from config output
+        products[output.id] = {
+            tags: output.tags||[],
+            datatype_tags: output.datatype_tags||[],
+            meta: output.meta||{},
+        };
+        merge(products[output.id], global_product);
+        merge(products[output.id], task_product[output.id])
+    });
+
+    return products;
+}
