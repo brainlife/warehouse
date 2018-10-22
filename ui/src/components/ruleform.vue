@@ -42,6 +42,8 @@
                         <small class="text-muted" style="float: right">{{input.id}}</small>
                         <datatypetag :datatype="input.datatype_id" :tags="input.datatype_tags"/>
                         <span class="text-muted" v-if="input.optional">(optional)</span>
+
+                        <tageditor v-model="rule.extra_datatype_tags[input.id]" placeholder="(add extra datatype tags)" style="margin-top: 2px;"/>
                     </div>
                     <b-row v-if="input.optional">
                         <b-col></b-col>
@@ -75,6 +77,13 @@
                         <b-alert :show="!rule.input_match[input.id]" variant="warning">There are no input datasets that matches the specified criteria.</b-alert>
                     </div>
                 </b-card>
+
+                <br>
+                <b-input-group prepend="Subject Filter" title="Only process subjects that matches this regex">
+                    <b-form-input v-model="rule.subject_match" type="text" placeholder="regex to match subject name"></b-form-input>
+                </b-input-group>
+                <small class="text-muted">For example, <b>^100</b> will make this rule to only process subjects that starts with 100.</small>
+
             </b-form-group>
 
             <b-form-group label="Outputs" horizontal>
@@ -94,15 +103,15 @@
                 </b-card>
             </b-form-group>
         </div>
-        <b-form-group label="Subject Filtering" horizontal>
-            <p class="text-muted">Only process subjects that match following regex</p>
-            <b-form-input v-model="rule.subject_match" type="text" placeholder="regex to match subject name"></b-form-input>
-            <small class="text-muted">For example, <b>^100</b> will make this rule to only process subjects that starts with 100.</small>
-        </b-form-group>
     </div>
     <br>
     <br>
     <br>
+
+    <div v-if="config.debug">
+        <pre>{{rule}}</pre>
+    </div>
+
     <div class="page-footer with-menu">
         <b-button type="button" @click="cancel">Cancel</b-button>
         <b-button type="submit" variant="primary">Submit</b-button>
@@ -130,6 +139,18 @@ export default {
         projectselecter, datatypetag, app, tageditor, configform,
     },
 
+    data() {
+        return {
+            rule: {},
+            apps: [],
+            ready: false,
+            input_dataset_tags: {},
+            output_dataset_tags: {},
+
+            config: Vue.config,
+        }
+    },
+
     watch: {
         value: function() {
             this.load_value();
@@ -154,7 +175,7 @@ export default {
                         removed: false,
                     }
                     if(this.rule.input_tags[id].length > 0) find.tags = {$all: this.rule.input_tags[id]},
-                    console.log("looking for", id, find, input.datatype_tags);
+                    //console.log("looking for", id, find, input.datatype_tags);
                     this.$http.get('dataset', {params: {
                         find: JSON.stringify(find),
                         datatype_tags: input.datatype_tags,
@@ -170,15 +191,6 @@ export default {
         }
     },
 
-    data() {
-        return {
-            rule: {},
-            apps: [],
-            ready: false,
-            input_dataset_tags: {},
-            output_dataset_tags: {},
-        }
-    },
     
     mounted() {
         this.load_value();
@@ -197,6 +209,7 @@ export default {
                 output_tags: {}, 
                 input_project_override: {},
                 input_selection: {},
+                extra_datatype_tags: {},
                 config: {},
             }, this.value);
             this.ensure_ids_exists();
@@ -208,6 +221,7 @@ export default {
                 this.rule.app.inputs.forEach(input=>{
                     if(!this.rule.input_tags[input.id]) Vue.set(this.rule.input_tags, input.id, []);
                     if(!this.rule.input_project_override[input.id]) Vue.set(this.rule.input_project_override, input.id, null);
+                    if(!this.rule.extra_datatype_tags[input.id]) Vue.set(this.rule.extra_datatype_tags, input.id, []);
                 });
                 this.rule.app.outputs.forEach(output=>{
                     if(!this.rule.output_tags[output.id]) Vue.set(this.rule.output_tags, output.id, []);
@@ -231,19 +245,6 @@ export default {
 
         submit: function(evt) {
             evt.preventDefault();
-
-            /* let's not make this *required* yet
-            //validate
-            let valid = true;
-            for(let id in this.rule.output_tags) {
-                let tags = this.rule.output_tags[id];
-                if(tags.length == 0) {
-                    this.$notify({type: "error", text: "Please enter tags for each output dataset"});
-                    valid = false;
-                }
-            }
-            if(!valid) return;
-            */
 
             //clean up _tags, and input_project_override that shouldn't exist
             var input_ids = this.rule.app.inputs.map(it=>it.id);

@@ -1,5 +1,5 @@
 <template>
-<div v-if="ready" class="dt" v-b-popover.hover.d500.html="'<small>'+_datatype.desc+'</small>'" :title="'<small><b>'+_datatype.name+'</b></small>'">
+<div v-if="ready" class="dt" v-b-popover.hover.top.d500.html="'<small>'+_datatype.desc+'</small>'" :title="'<small><b>'+_datatype.name+'</b></small>'">
     <div class="dot" :style="{backgroundColor: color}">{{name}}</div
     ><div class="tags" v-for="tag in tags" :key="tag">
         <span v-if="tag[0] == '!'" class="text-danger"><b-badge variant="danger">not</b-badge> {{tag.substring(1)}}</span>
