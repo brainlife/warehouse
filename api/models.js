@@ -418,6 +418,9 @@ var ruleSchema = mongoose.Schema({
     //scalar configs (input configs are used to detect new datasets)
     config: mongoose.Schema.Types.Mixed, 
 
+    //datatype tags to add to each input datatype (keyed by input id, then array of tags)
+    extra_datatype_tags: mongoose.Schema.Types.Mixed,
+
     //any tags to set for each output id (object with key(output id)=>array(tags))
     output_tags: mongoose.Schema.Types.Mixed,
 

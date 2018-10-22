@@ -492,13 +492,15 @@ exports.split_product = function(task_product, outputs) {
     function merge(dest, src) {
         for(let key in src) {
             if(!dest[key]) dest[key] = src[key];
-            if(Array.isArray(src[key])) {
-                dest[key] = dest[key].concat(src[key]).unique(); //merge array
-            } else if(typeof src[key] == 'object') {
-                Object.assign(dest[key], src[key]);
-            } else {
-                //must be primitive
-                dest[key] = src[key];
+            else {
+                if(Array.isArray(src[key])) {
+                    dest[key] = dest[key].concat(src[key]).unique(); //merge array
+                } else if(typeof src[key] == 'object') {
+                    Object.assign(dest[key], src[key]);
+                } else {
+                    //must be primitive
+                    dest[key] = src[key];
+                }
             }
         }
     }

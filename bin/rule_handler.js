@@ -300,9 +300,10 @@ function handle_rule(rule, cb) {
                     //find first dataset that matches all tags
                     //var matching_dataset = null;
                     datasets.forEach(dataset=>{
-
-                        var match = true;
-                        input.datatype_tags.forEach(tag=>{
+                        let match = true;
+                        let tags = input.datatype_tags;
+                        if(rule.extra_datatype_tags) tags = tags.concat(rule.extra_datatype_tags[input.id]);
+                        tags.forEach(tag=>{
                             if(tag[0] == "!") {
                                 //negative: make sure tag doesn't exist
                                 if(~dataset.datatype_tags.indexOf(tag.substring(1))) match = false;
