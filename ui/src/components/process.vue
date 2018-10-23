@@ -50,13 +50,9 @@
                     <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
-                        <mute>
-                            <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                        </mute>
-                        <mute v-if="findtask(input.task_id).status != 'finished'">
-                            <statusicon :status="findtask(input.task_id).status"></statusicon> 
-                        </mute>
                         <span style="opacity: 0.5;">
+                            <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
+                            <statusicon v-if="findtask(input.task_id).status != 'finished'" :status="findtask(input.task_id).status"/>
                             <icon style="margin: 0 5px" name="arrow-left" scale="0.8"/> 
                             <b>t.{{findtask(input.task_id).config._tid}}</b>
                             {{findtask(input.task_id).name}}
@@ -66,9 +62,9 @@
                         <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                         <small v-if="input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
-                        <mute>
+                        <span style="opacity: 0.5;">
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                        </mute>
+                        </span>
                         <b-badge variant="danger">Removed</b-badge>
                     </div>
                 </div>
@@ -178,7 +174,7 @@ import appname from '@/components/appname'
 import projectselecter from '@/components/projectselecter'
 import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
-import mute from '@/components/mute'
+import mute from '@/components/mute' //deprecate?
 import datatypetag from '@/components/datatypetag'
 import product from '@/components/product'
 
@@ -324,6 +320,7 @@ export default {
             document.getElementById("scrolled-area").scrollTop = top;
         },
         open_dataset: function(id) {
+            console.log("opening datset", id);
             this.$root.$emit('dataset.view', {id});
         },
 
@@ -433,8 +430,6 @@ export default {
 
                 this.tasks = res.body.tasks;
                 this.loading = false;
-
-                console.log("loading archived datasets");
 
                 //loading archived datasets for all tasks
                 var task_ids = this.tasks.map(task=>task._id); 

@@ -41,12 +41,15 @@
                     <div style="float: right;">
                         <contact :id="rule.user_id" size="tiny"/>
                     </div>
+                    <div style="float: right; margin-right: 15px;" v-if="rule.subject_match" title="Only handle subjects that matches this regex">
+                        <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
+                    </div>
                     <div>
                         <!--
                         <div class="bg-dark" style="color: white; float:left; width: 60px" v-if="rule.removed" variant="danger">Removed</div>
                         -->
-                        <div class="bg-success" style="color: white; float:left; padding: 0px 5px;" v-if="rule.active">Active</div>
-                        <div class="bg-danger" style="color: white; float:left; padding: 0px 5px;" v-else>Inactive</div>
+                        <div class="bg-success" style="color: white; float:left; padding: 0px 5px;" v-if="rule.active">Running</div>
+                        <div class="bg-danger" style="color: white; float:left; padding: 0px 5px;" v-else>Stopped</div>
                         <div style="margin-left: 80px">
                             <span>{{rule.app.name}}</span>
                             <small style="opacity: 0.5">{{rule.name}}</small>
@@ -57,23 +60,31 @@
                 <!--rule body-->
                 <div v-if="selected == rule" transition="expand">
                     <div style="float: right; margin-right: 100px;">
-                            <b-btn @click="deactivate(rule)" variant="danger" size="sm" v-if="rule.active && !deactivating"><icon name="times"/> Deactivate </b-btn>
-                            <b-btn variant="danger" size="sm" v-if="deactivating"><icon name="times"/> Deactivating <b-badge>{{deactivating_remain}}</b-badge></b-btn>
-                            <b-btn @click="activate(rule)" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Activate</b-btn>
+                            <b-btn @click="deactivate(rule)" variant="danger" size="sm" v-if="rule.active && !deactivating"><icon name="times"/> Stop </b-btn>
+                            <b-btn variant="danger" size="sm" v-if="deactivating"><icon name="times"/> Stopping <b-badge>{{deactivating_remain}}</b-badge></b-btn>
+                            <b-btn @click="activate(rule)" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Run </b-btn>
 
-                            <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></b-btn>
-                            <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger"><icon name="trash"/></b-btn>
+                            <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/> Edit </b-btn>
+                            <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger"><icon name="trash"/> Remove </b-btn>
                     </div>
-                    <p style="margin-left: 10px" v-if="rule.active">
-                        <icon name="cog" :spin="true" scale="1.25"/> Monitored by the rule handler. See the log below for more information. <small>({{rule.taskcount}} active tasks)</small>
-                    </p>
-                    <p style="margin-left: 10px" v-else>
-                        Deactivated
-                    </p>
+                    <div v-if="rule.active" style="margin-left: 10px;">
+                        <icon name="cog" :spin="true" scale="1.25" style="float: left;"/>
+                        <div style="margin-left: 30px;">
+                            Running<br>
+                            <small>Monitored by the rule handler. See the log below for more information. ({{rule.taskcount||0}} active tasks)</small>
+                        </div>
+                    </div>
+                    <div v-else style="margin-left: 10px;" class="text-danger">
+                        <icon name="hand-paper" scale="1.25" style="float: left;"/> 
+                        <div style="margin-left: 30px;">
+                            Stopped<br>
+                        </div>
+                    </div>
+                    <br>
 
                     <div class="rule-body">
                         <div class="section-header">
-                            Submit the following App and archive all output datasets to this project
+                            Submit the following App <span style="opacity: 0.5;">and archive all output datasets to this project</span>
                         </div>
                         <b-row>
                             <b-col>
@@ -95,35 +106,45 @@
                         </b-row>
 
                         <div class="section-header">
-                            On subjects with the following set of archived datasets
-                        </div>
-                        <div style="padding-left: 30px;">
-                            <p v-if="rule.subject_match">
-                                <span class="text-muted">Only process subjects that matches regex</span> <b>{{rule.subject_match}}</b>
-                            </p>       
+                            On
+                            <div style="display: inline-block; width: 300px;">
+                                <b-input-group prepend="Subjects" size="sm" title="Only process subjects that matches this regex">
+                                    <b-form-input v-model="rule.subject_match_edit" type="text" placeholder="(All)"></b-form-input>
+                                    <b-input-group-append v-if="rule.subject_match != rule.subject_match_edit">
+                                        <b-btn variant="primary" @click="update_subject_match(rule)"><icon name="check"/></b-btn>
+                                        <!-- <b-btn variant="secondary" @click="rule.subject_match_edit = rule.subject_match;">Cancel</b-btn> -->
+                                    </b-input-group-append>
+                                </b-input-group>
+                            </div>
+                            <small style="opacity: 0.5">(regex)</small>
+                            that have the following set of archived datasets
+                      </div>
+                        <div style="margin-left: 30px;">
                             <p v-for="input in rule.app.inputs" :key="input.id">
                                 <small style="float: right; margin-right: 10px;">{{input.id}}</small>
-                                <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" v-if="datatypes"/>
-                                <span v-if="rule.input_tags && rule.input_tags[input.id] && rule.input_tags[input.id].length > 0">
-                                    <small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>
-                                </span>
+                                <datatypetag :datatype="datatypes[input.datatype]" :tags="all_datatype_tags(rule, input)" v-if="datatypes"/>
+                                <mute v-if="rule.input_tags && rule.input_tags[input.id] && rule.input_tags[input.id].length > 0">
+                                    <!--<small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>-->
+                                    <small v-for="(tag,idx) in rule.input_tags[input.id]" :key="idx"> | {{tag}}</small>
+                                </mute>
                                 <span v-if="rule.input_project_override && rule.input_project_override[input.id] && projects[rule.input_project_override[input.id]]" class="text-muted">
-                                    From <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
+                                    <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
                                 </span>
                                 <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
                             </p>
                         </div>
 
                         <div class="section-header">
-                            Only if the following output datasets aren't archived for the subject yet
+                            If the following output datasets are missing
                         </div>
                         <div style="margin-left: 30px;">
                             <p v-for="output in rule.app.outputs" :key="output.id">
                                 <small style="float: right; margin-right: 10px">{{output.id}}</small>
                                 <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" v-if="datatypes"/>
-                                <span v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">
-                                    <small class="text-muted">with dataset tags of</small> <tags :tags="rule.output_tags[output.id]"/>
-                                </span>
+                                <mute v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">
+                                    <!--<small class="text-muted">with dataset tags of</small> <tags :tags="rule.output_tags[output.id]"/>-->
+                                    <small v-for="(tag,idx) in rule.output_tags[output.id]" :key="idx"> | {{tag}}</small>
+                                </mute>
                             </p>
                         </div>
 
@@ -208,6 +229,8 @@ export default {
         selected: function() {
             if(!this.selected) return;
 
+            Vue.set(this.selected, 'subject_match_edit', this.selected.subject_match);
+
             //load number of tasks submitted by this rule
             this.$http.get(Vue.config.amaretti_api+"/task", {params: {
                 find: JSON.stringify({
@@ -264,6 +287,7 @@ export default {
                 return 0;
             });
         },
+
     },
 
     methods: {
@@ -379,11 +403,18 @@ export default {
         },
 
         edit(rule) {
-            if(rule.active) return alert("Please deactivate the rule before editing it");
+            if(rule.active) return alert("Please stop the rule before editing it");
             this.$router.push("/project/"+this.project._id+"/pipeline/"+rule._id);
             this.$refs.scrolled.scrollTop = 0;
             this.editing = rule;
             this.selected = rule; //I think it makes sense to select rule that user is editing?
+        },
+
+        update_subject_match(rule) {
+            Vue.set(rule, 'subject_match', rule.subject_match_edit);
+            this.$http.put('rule/'+rule._id, rule).then(res=>{
+                this.$notify({type: "success", text: "Updated filter"});
+            }).catch(this.notify_error);
         },
 
         cancel_edit() {
@@ -400,6 +431,8 @@ export default {
 
         submit(rule) {
             rule.project = this.project._id; //rule editor doesn't set project id.
+            console.log("submitting rule");
+            console.dir(rule);
             if(rule._id) {
                 //update
                 this.$http.put('rule/'+rule._id, rule).then(res=>{
@@ -421,7 +454,7 @@ export default {
         },
 
         remove(rule) {
-            if(rule.active) return alert("Please deactivate the rule before removing it");
+            if(rule.active) return alert("Please stop the rule before removing it");
             if(confirm("Do you really want to remove this rule?")) {
                 this.$http.delete('rule/'+rule._id)
                 .then(res=>{
@@ -474,7 +507,7 @@ export default {
             }})
             .then(res=>{
                 if(res.body.count > 0) {
-                    if(confirm("Deactivating rule will remove "+res.body.count+" active tasks submitted by this rule. Should we proceed?")) {
+                    if(confirm("Stopping rule will remove "+res.body.count+" active tasks submitted by this rule. Should we proceed?")) {
                         this.deactivating = rule;
                         this.deactivating_remain = res.body.count;
                         this.$notify({ title: 'Removing Task', text: 'Removing'+res.body.count+' tasks', type: 'info', });
@@ -503,7 +536,13 @@ export default {
                 }
             });
         },
-    },
+
+        all_datatype_tags(rule, input) {
+            let tags = input.datatype_tags;
+            if(rule.extra_datatype_tags) tags = tags.concat(rule.extra_datatype_tags[input.id]);
+            return tags;
+        } 
+   },
 };
 
 </script>
@@ -525,9 +564,11 @@ background-color: white;
 margin-bottom: 20px;
 box-shadow: none;
 }
-.rule.rule-inactive .rule-header,
-.rule.rule-inactive {
+.rule.rule-inactive .rule-header {
 background-color: #bbb;
+}
+.rule.rule-inactive {
+background-color: #ddd;
 }
 .rule-header {
 cursor: pointer;
@@ -554,7 +595,7 @@ background-color: white;
 clear: both;
 }
 .rule.rule-selected .rule-body {
-box-shadow: 0 0 4px rgba(0,0,0,0.3);
+box-shadow: 2px 2px 3px rgba(0,0,0,0.2);
 }
 
 .expand-transition {

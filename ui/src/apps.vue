@@ -9,7 +9,7 @@
     <sidemenu active="/apps"></sidemenu>
     <div class="group-list" v-if="app_groups">
         <h4>Categories</h4>
-        <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)">
+        <p v-for="(tag, idx) in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)" :key="idx">
             <span v-if="tag == '_new'">New Apps</span> 
             <span v-else>{{tag}}</span> 
             <b-badge variant="dark" v-if="app_groups[tag]">{{app_groups[tag].length}}</b-badge>
@@ -26,11 +26,11 @@
         <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
         <div v-else>
             <h3 show v-if="count == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
-            <div v-for="tag in sorted_tags" :id="tag" :class="{'newapps': tag == '_new'}" style="position: relative;">
+            <div v-for="(tag, idx) in sorted_tags" :id="tag" :class="{'newapps': tag == '_new'}" style="position: relative;" :key="idx">
                 <h4 class="group-title" v-if="tag == '_new'">New Apps</h4> 
                 <h4 class="group-title" v-else>{{tag}}</h4> 
                 <div v-for="app in app_groups[tag]" :key="app._id" class="app">
-                    <app :app="app" height="246px"/>
+                    <app :app="app" height="246px" class="app-shadow"/>
                 </div>
                 <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
                     <p style="opacity: 0.7;">
@@ -345,6 +345,9 @@ background-color: #2693ff;
 .newapps .group-title {
 background-color: inherit;
 color: white;
+}
+.app-shadow:hover {
+box-shadow: 3px 3px 6px rgba(0,0,0,0.25);
 }
 
 </style>
