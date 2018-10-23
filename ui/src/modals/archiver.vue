@@ -71,8 +71,10 @@ export default {
                 });
             }
             this._meta = JSON.stringify(this.output.meta, null, 4);
-
-
+            if(!this.$refs.archiver) {
+                console.error("archiver ref is missing!... happens after debug refresh?");
+                return;
+            }
             this.$refs.archiver.show();
         });
     },
@@ -111,26 +113,25 @@ export default {
                 desc: this.output.desc,
                 tags: this.tags, 
 
-            };
-
-            //dataset post happens asynchronously now
-            this.$notify({text: "Submitted a request to archive dataset..", type: "info"});
-            this.$refs.archiver.hide();
-            this.$root.$emit('archiver.submit', Object.assign(ds, {
                 //UI wants these.. temporarily
-                create_date: new Date(),
-                status: "storing",
+                /*
+                //create_date: new Date(),
+                //status: "storing",
                 prov: {
                     task_id: this.task._id,
                     output_id: this.output.id,
-                }
-            }));
+                },
+                */
+                await: false, //request to not wait for dataset to be archived before returning
+            };
+
             this.$http.post('dataset', ds).then(res=>{
-                for(var key in res.body) ds[key] = res.body[key]; //real info!
-                this.$notify({text: res.body.message, type: "success"});
+                this.$root.$emit('archiver.submit', res.body);
+                this.$notify({text: "Archiving requested.."});
+                this.$refs.archiver.hide();
             }).catch(err=>{
                 console.error(err);
-                this.$notify({text: err.body, type: "error"});
+                this.$notify({text: err, type: "error"});
             });
         },
         editorInit() {

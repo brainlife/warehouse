@@ -265,6 +265,7 @@ export default {
     created() {
         console.log("modal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", opt=>{
+            console.log("opening dataset", opt);
             this.back = opt.back;
             this.load(opt.id);
         });
@@ -475,6 +476,7 @@ export default {
                 this.check_agreements(this.dataset.project, ()=>{
                     this.$http.delete('dataset/'+this.dataset._id)
                     .then(res=>{
+                        this.$notify({type: "success", text: "Removed dataset"});
                         this.close();
                     });
                 });

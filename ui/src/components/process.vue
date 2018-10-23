@@ -174,7 +174,7 @@ import appname from '@/components/appname'
 import projectselecter from '@/components/projectselecter'
 import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
-import mute from '@/components/mute'
+import mute from '@/components/mute' //deprecate?
 import datatypetag from '@/components/datatypetag'
 import product from '@/components/product'
 
@@ -320,6 +320,7 @@ export default {
             document.getElementById("scrolled-area").scrollTop = top;
         },
         open_dataset: function(id) {
+            console.log("opening datset", id);
             this.$root.$emit('dataset.view', {id});
         },
 
@@ -429,8 +430,6 @@ export default {
 
                 this.tasks = res.body.tasks;
                 this.loading = false;
-
-                console.log("loading archived datasets");
 
                 //loading archived datasets for all tasks
                 var task_ids = this.tasks.map(task=>task._id); 

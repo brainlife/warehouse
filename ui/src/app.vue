@@ -56,13 +56,13 @@
                         <b-alert show variant="secondary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
                         <!--<p v-else class="text-primary">This App runs with the following input dataset.</p>-->
                         <b-row v-if="app.inputs" style="border-left: 4px solid #007bff;">
-                            <b-col cols="6" v-for="input in app.inputs">
-                                <div style="padding: 5px; background-color: white; margin-bottom: 5px;">
+                            <b-col cols="6" v-for="input in app.inputs" :key="input.id">
+                                <div style="padding: 5px; background-color: white; margin-bottom: 5px; min-height: 80px;">
                                     <span style="opacity: 0.5; float: right;">{{input.id}}</span><!--internal output id-->
                                     <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                                     <span v-if="input.optional" class="text-muted">(optional)</span>
                                     <span class="text-muted" v-if="input.multi">(multi)</span>
-                                    <p style="color: #222;">
+                                    <p style="color: #222; margin-top: 5px;">
                                         <small>{{input.datatype.desc}}</small>
                                     </p>
                                 </div>
@@ -98,8 +98,8 @@
                         <b-alert show variant="secondary" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
                         <!--<p v-else class="text-success">This App produces the following output dataset.</p>-->
                         <b-row v-if="app.outputs" style="border-left: 4px solid #28a745;">
-                            <b-col cols="6" v-for="output in app.outputs">
-                                <div style="padding: 5px; background-color: white; margin-bottom: 5px;">
+                            <b-col cols="6" v-for="output in app.outputs" :key="output.id">
+                                <div style="padding: 5px; background-color: white; margin-bottom: 5px; min-height: 80px;">
                                     <span style="opacity: 0.5; float: right;">{{output.id}}</span><!--internal output id-->
                                     <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                                     <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ {{output.datatype_tags_pass}}</span>
@@ -108,7 +108,7 @@
                                         <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
                                     </div>
                                     -->
-                                    <p style="color: #222;">
+                                    <p style="color: #222; margin-top: 5px;">
                                         <small>{{output.datatype.desc}}</small>
                                     </p>
                                 </div>

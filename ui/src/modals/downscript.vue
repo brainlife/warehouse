@@ -5,6 +5,9 @@
     <div slot="modal-footer">
         <b-button variant="primary" @click="close">Close</b-button>
     </div>
+    <p class="text-muted">
+        The above command will download selected dataets to your local directory with sub directories for each subject. 
+        The command will also creates <pre>bids</pre> directory containing symlinks to files in <a href="http://bids.neuroimaging.io/">BIDS derivative structure</a></p>
 </b-modal>
 </template>
 
