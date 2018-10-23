@@ -21,7 +21,7 @@
 
         <p v-if="files.length == 0" class="text-muted" :style="{marginLeft: offset}">Empty Directory</p>
 
-        <div v-for="(file, idx) in files">
+        <div v-for="(file, idx) in files" :key="idx">
             <!--file/dir label-->
             <div class="fileitem" @click="click(file)" :class="{'fileitem-viewing': file.view}">
                 <span :style="{marginLeft: offset, opacity: '0.7'}">
@@ -102,7 +102,7 @@ export default {
     },
     
     methods: {
-        subpath: function(file) {
+        subpath(file) {
             let subpath = "";
             if(this.path) subpath += this.path;
             if(file) {
@@ -111,18 +111,18 @@ export default {
             }
             return subpath;
         },
-        get_download_url: function(file) {
+        get_download_url(file) {
             var url = Vue.config.wf_api+'/task/download/'+this.task._id+'?at='+Vue.config.jwt;
             var p = this.subpath(file);
             if(p) url += "&p="+encodeURIComponent(p);
             return url;
         },
-        download: function() {
+        download() {
             this.$notify({text: "Downloading Requested.. Please wait."});
             var url = this.get_download_url();
             document.location = url;
         },
-        load: function() {
+        load() {
             var url = Vue.config.wf_api+'/task/ls/'+this.task._id;
             if(this.path) url += '?p='+encodeURIComponent(this.path);
             this.$http.get(url).then(res=>{
@@ -140,17 +140,17 @@ export default {
             })
         },
 
-        download_file: function(file) {
+        download_file(file) {
             document.location = this.get_download_url(file);
         },
 
-        refresh_file: function(file) {
+        refresh_file(file) {
             file.view = false;
             this.click(file);
         },
 
         //subordiante of click method.. this and click methods are ugly..
-        open_text: function(res, file, type) {
+        open_text(res, file, type) {
             res.text().then(c=>{
                 //reformat json content
                 if(type == "json") {
@@ -172,7 +172,7 @@ export default {
             });
         },
 
-        click: function(file){
+        click(file){
             //just close file view if it's open
             if(file.view) {
                 file.view = false;
@@ -263,13 +263,14 @@ background-color: #fff;
 color: #222;
 }
 .file-content pre {
-overflow: auto;
 font-family: 'monospace';
 margin-bottom: 5px;
 padding: 0px;
-max-height: 400px;
 box-shadow: 1px 1px 4px #aaa;
 border-left: 15px solid #ddd;
+}
+.file-content .text.hljs {
+max-height: 400px;
 }
 .file-content {
 position: relative;
