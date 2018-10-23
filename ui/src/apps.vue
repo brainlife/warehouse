@@ -30,7 +30,7 @@
                 <h4 class="group-title" v-if="tag == '_new'">New Apps</h4> 
                 <h4 class="group-title" v-else>{{tag}}</h4> 
                 <div v-for="app in app_groups[tag]" :key="app._id" class="app">
-                    <app :app="app" height="246px"/>
+                    <app :app="app" height="246px" class="app-shadow"/>
                 </div>
                 <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
                     <p style="opacity: 0.7;">
@@ -345,6 +345,9 @@ background-color: #2693ff;
 .newapps .group-title {
 background-color: inherit;
 color: white;
+}
+.app-shadow:hover {
+box-shadow: 3px 3px 6px rgba(0,0,0,0.25);
 }
 
 </style>

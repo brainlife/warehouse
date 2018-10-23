@@ -35,22 +35,22 @@
             <div class="desc">{{app_.desc_override||app_.desc||'no description..'}}</div>
             <slot/>
             <div class="stats" v-if="app_.stats && app_.stats.service">
-                <span class="stat" v-b-tooltip.hover title="number of time this App was requested">
+                <span class="stat" v-b-tooltip.hover.d500 title="Number of time this App was requested">
                     <icon name="play" scale="0.8"/> {{app_.stats.service.counts.requested}}
                     &nbsp;
                     &nbsp;
                 </span>
-                <span class="stat" v-b-tooltip.hover title="number of unique users who requested this App">
+                <span class="stat" v-b-tooltip.hover.d500 title="Number of unique users who requested this App">
                     <icon name="user" scale="0.8"/> {{app_.stats.service.users}}
                     &nbsp;
                     &nbsp;
                 </span>
-                <span class="stat" v-b-tooltip.hover title="github stars" v-if="app_.stats.stars">
+                <span class="stat" v-b-tooltip.hover.d500 title="github stars" v-if="app_.stats.stars">
                     <icon name="star" scale="0.8"/> {{app_.stats.stars}}
                     &nbsp;
                     &nbsp;
                 </span>
-                <span class="stat" style="float: right;" v-b-tooltip.hover title="success rate  = finished/(failed+finished)">
+                <span class="stat" style="float: right;" v-b-tooltip.hover.d500 title="success rate  = finished/(failed+finished)">
                     <icon name="check-circle" scale="0.8"/> {{app_.stats.success_rate.toFixed(1)}}%
                 </span>
             </div>
@@ -100,22 +100,6 @@ export default {
     },
     methods: {
         load_app() {
-            /*
-            let cached_app = this.get_cache(this.appid);
-            //console.log("from cache", cached_app)
-            if(cached_app) {
-                this.app_ = cached_app;
-            } else {
-                //console.log("no cache.. loading new");
-                this.$http.get('app', {params: {
-                    find: JSON.stringify({_id: this.appid}),
-                    populate: 'inputs.datatype outputs.datatype',
-                }}).then(res=>{
-                    this.app_ = res.body.apps[0];
-                    this.set_cache(this.appid, this.app_);
-                });
-            }
-            */
             this.appcache(this.appid, (err, app)=>{
                 this.app_ = app;
             });
@@ -138,12 +122,10 @@ min-height: 80px;
 box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
 transition: box-shadow 0.3s;
 }
-.appcard:hover {
-box-shadow: 3px 3px 6px rgba(0,0,0,0.25);
-}
 
 .appcard.clickable:hover {
 cursor: pointer;
+/*box-shadow: 3px 3px 6px rgba(0,0,0,0.25);*/
 }
 
 .appcard.clickable:hover .name,

@@ -518,7 +518,7 @@ color: white;
 background-color: white;
 margin-bottom: 30px;
 padding: 30px 0px 0px 0px;
-border-bottom: 1px solid #ccc;
+border-bottom: 1px solid #eee;
 }
 .topic {
 padding: 6px; 

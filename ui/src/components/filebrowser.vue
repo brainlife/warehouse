@@ -260,6 +260,7 @@ color: #2185d0;
 }
 .hljs {
 background-color: #fff;
+color: #222;
 }
 .file-content pre {
 overflow: auto;

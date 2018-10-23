@@ -84,7 +84,7 @@
 
                     <div class="rule-body">
                         <div class="section-header">
-                            Submit the following App and archive all output datasets to this project
+                            Submit the following App <span style="opacity: 0.5;">and archive all output datasets to this project</span>
                         </div>
                         <b-row>
                             <b-col>
@@ -108,7 +108,7 @@
                         <div class="section-header">
                             On
                             <div style="display: inline-block; width: 300px;">
-                                <b-input-group prepend="Subjects (Regex)" size="sm" title="Only process subjects that matches this regex">
+                                <b-input-group prepend="Subjects" size="sm" title="Only process subjects that matches this regex">
                                     <b-form-input v-model="rule.subject_match_edit" type="text" placeholder="(All)"></b-form-input>
                                     <b-input-group-append v-if="rule.subject_match != rule.subject_match_edit">
                                         <b-btn variant="primary" @click="update_subject_match(rule)"><icon name="check"/></b-btn>
@@ -116,6 +116,7 @@
                                     </b-input-group-append>
                                 </b-input-group>
                             </div>
+                            <small style="opacity: 0.5">(regex)</small>
                             that have the following set of archived datasets
                       </div>
                         <div style="margin-left: 30px;">
@@ -134,7 +135,7 @@
                         </div>
 
                         <div class="section-header">
-                            Only if the following output datasets are missing
+                            If the following output datasets are missing
                         </div>
                         <div style="margin-left: 30px;">
                             <p v-for="output in rule.app.outputs" :key="output.id">
@@ -594,7 +595,7 @@ background-color: white;
 clear: both;
 }
 .rule.rule-selected .rule-body {
-box-shadow: 0 0 4px rgba(0,0,0,0.3);
+box-shadow: 2px 2px 3px rgba(0,0,0,0.2);
 }
 
 .expand-transition {

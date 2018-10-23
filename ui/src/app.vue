@@ -48,71 +48,72 @@
 
             <!-- detail -->
             <div v-if="tab_index == 0">
-                <!--input/output header-->
                 <b-row>
                     <b-col cols="3">
                         <span class="form-header">Input</span>
                     </b-col>
                     <b-col>
-                        <b-row style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 90%; margin-bottom: 10px;">
-                            <b-col cols="2">ID</b-col>
-                            <b-col cols="3">config.json key</b-col>
-                            <b-col cols="3">Datatype</b-col>
-                            <b-col cols="4">File Mapping</b-col>
-                        </b-row>
-                        <b-alert show variant="secondary" v-if="app.inputs.length == 0">No Inputs</b-alert>
-                    </b-col>
-                </b-row>
-                <b-row>
-                    <b-col cols="3">
-                    </b-col>
-                    <b-col>
-                        <div v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'" style="margin-bottom: 5px;">
-                            <b-row>
-                                <b-col cols="2">
-                                    <span style="opacity: 0.5;">{{con.input_id}}</span><!--internal input id-->
-                                </b-col>
-                                <b-col cols="3">
-                                    <b>{{key}} <span class="text-muted" v-if="find_by_id(app.inputs, con.input_id).multi">(multi)</span></b>
-                                </b-col>
-                                <b-col cols="3" v-if="app.inputs">
+                        <b-alert show variant="secondary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
+                        <!--<p v-else class="text-primary">This App runs with the following input dataset.</p>-->
+                        <b-row v-if="app.inputs" style="border-left: 4px solid #007bff;">
+                            <b-col cols="6" v-for="input in app.inputs">
+                                <div style="padding: 5px; background-color: white; margin-bottom: 5px;">
+                                    <span style="opacity: 0.5; float: right;">{{input.id}}</span><!--internal output id-->
+                                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                                    <span v-if="input.optional" class="text-muted">(optional)</span>
+                                    <span class="text-muted" v-if="input.multi">(multi)</span>
+                                    <p style="color: #222;">
+                                        <small>{{input.datatype.desc}}</small>
+                                    </p>
+                                </div>
+                            </b-col>
+        
+                            <!--
+                            <b-col cols="6" v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'">
+                                <div style="padding: 5px; background-color: white; margin-bottom: 5px;">
+                                    <small style="opacity: 0.5; float: right;">{{con.input_id}}</small>
                                     <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
                                     <span v-if="find_by_id(app.inputs, con.input_id).optional" class="text-muted">(optional)</span>
-                                </b-col>
-                                <b-col cols="4">
-                                    <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
-                                </b-col>
-                            </b-row>
-                        </div>
-                        <!--<icon name="arrow-down"/>-->
-                        <hr>
+                                    <span class="text-muted" v-if="find_by_id(app.inputs, con.input_id).multi">(multi)</span>
+                                    <b>config.json key: {{key}}</b>
+                                    <p style="color: #222;">
+                                        <small>{{find_by_id(app.inputs, con.input_id).datatype.desc}}</small>
+                                    </p>
+                                    <p>
+                                        <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
+                                    </p>
+                                </div>
+                            </b-col>
+                            -->
+                        </b-row>
+                        <br>
                     </b-col>
                 </b-row>
+
                 <b-row>
                     <b-col cols="3">
                         <span class="form-header">Output</span>
                     </b-col>
                     <b-col>
-                        <div class="item" v-for="output in app.outputs" style="margin-bottom: 5px;">
-                            <b-row>
-                                <b-col cols="2">
-                                    <span style="opacity: 0.5;">{{output.id}}</span><!--internal output id-->
-                                </b-col>
-                                <b-col cols="3">
-                                </b-col>
-                                <b-col cols="3">
+                        <b-alert show variant="secondary" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
+                        <!--<p v-else class="text-success">This App produces the following output dataset.</p>-->
+                        <b-row v-if="app.outputs" style="border-left: 4px solid #28a745;">
+                            <b-col cols="6" v-for="output in app.outputs">
+                                <div style="padding: 5px; background-color: white; margin-bottom: 5px;">
+                                    <span style="opacity: 0.5; float: right;">{{output.id}}</span><!--internal output id-->
                                     <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                                     <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ {{output.datatype_tags_pass}}</span>
-                                </b-col>
-                                <b-col cols="4">
+                                    <!--
                                     <div style="position: relative"> 
                                         <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
                                     </div>
-                                </b-col>
-                            </b-row>
-                        </div>
-                        <b-alert show variant="secondary" v-if="app.outputs.length == 0">No Outputs</b-alert>
-                        <br>
+                                    -->
+                                    <p style="color: #222;">
+                                        <small>{{output.datatype.desc}}</small>
+                                    </p>
+                                </div>
+                            </b-col>
+                        </b-row>
                         <br>
                     </b-col>
                 </b-row>
@@ -143,7 +144,7 @@
                         <span class="form-header">Retry</span>
                     </b-col>
                     <b-col>
-                        <p>If this app fails, it will automatically retry up to <b>{{app.retry}}</b> times</p>
+                        <p>If this app fails, it will automatically be rerun up to <b>{{app.retry}}</b> times</p>
                     </b-col>
                 </b-row>
 
@@ -184,7 +185,7 @@
                                     </div>
                                     <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
                                         <icon name="thumbs-up" style="position: relative; top: -3px;"/>
-                                        Best
+                                        <!--Best-->
                                         <span class="score">Score {{resource.score}}</span>
                                     </div>
                                     <div v-else class="resource-status" style="color: #888;">        
@@ -420,7 +421,7 @@ export default {
 background-color: white;
 margin-bottom: 30px;
 padding: 30px 0px 0px 0px;
-border-bottom: 1px solid #ccc;
+border-bottom: 1px solid #eee;
 z-index: 2;
 }
 .topic {
