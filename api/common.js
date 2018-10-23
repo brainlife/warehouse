@@ -515,7 +515,7 @@ exports.split_product = function(task_product, outputs) {
             meta: output.meta||{},
         };
         merge(products[output.id], global_product);
-        merge(products[output.id], task_product[output.id])
+        if(task_product) merge(products[output.id], task_product[output.id])
     });
 
     return products;

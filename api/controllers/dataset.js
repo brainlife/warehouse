@@ -401,6 +401,8 @@ router.get('/prov/:id', (req, res, next)=>{
  * @apiParam {String} [desc]            Description for this crate
  * @apiParam {String[]} [tags]          List of tags associated with this dataset
  *
+ * @apiParam {Boolean} await            Wait for dataset to be fully achived before returning (default true)
+ *
  * @apiHeader {String} authorization 
  *                                      A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}                 Dataset created
@@ -412,6 +414,9 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     if(!req.body.task_id) return cb("task_id not set");
     if(!req.body.output_id) return cb("output_id not set");
 	if(!req.body.files) req.body.files = {};
+
+    let await = true;
+    if(req.body.await === false) await = false;
     
 	//TODO - files (especially file.dirname) should be validated.
 
@@ -451,15 +456,14 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
         next=>{
             //WARNING - similar code exists in event_handler
 			//logger.debug("registering new dataset record", req.body.meta);
-            let outputs = [{
+            let products = common.split_product(task.product, [{
                 id: req.body.output_id,
                 datatype_tags: req.body.datatype_tags||[],
                 tags: req.body.tags||[],
                 meta: req.body.meta||{},
-            }]
-            let products = common.split_product(task.product, outputs);
-            let product = products[req.body.output_id];
+            }]);
 
+            let product = products[req.body.output_id];
             let d = {
                 user_id: req.user.sub,
 
@@ -490,7 +494,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 if(err) return next(err);
         		dataset = _dataset;
                 logger.debug("created dataset record......................", dataset.toObject());
-                //res.json(dataset); 
+                if(!await) res.json(dataset); 
                 next(err);
             });
         },
@@ -503,7 +507,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     ], err=>{
         if(err) return cb(err);
         logger.debug("all done archiving");    
-        res.json(dataset); 
+        if(await) res.json(dataset); 
 	});
 });
 
@@ -878,17 +882,19 @@ set +e #stop the script if anything fails
             datasets.forEach(dataset=>{
                 //construct a path to put the datasets in
                 let path=".";
+                path += "/proj-"+dataset.project;
+
                 if(dataset.meta.subject) path += "/sub-"+dataset.meta.subject;
-                if(dataset.meta.session) path += "/ses-"+dataset.meta.session;
-                //if(dataset.meta.run) path += "/run-"+dataset.meta.run;
-                //if(dataset.meta.acq) path += "/acq-"+dataset.meta.acq;
+                if(dataset.meta.session) path += ".ses-"+dataset.meta.session;
+                //if(dataset.meta.acq) path += ".acq-"+dataset.meta.acq;
 
                 path+="/";
-                path+= dataset._id;
-                path+="."+dataset.datatype.name.replace(/\//g, '-');
+                path+="dt-"+dataset.datatype.name.replace(/\//g, '-');
                 dataset.datatype_tags.forEach(tag=>{
-                    path+="."+tag;
+                    path+=".tag-"+tag;
                 });
+                if(dataset.meta.run) path += ".run-"+dataset.meta.run;
+                path+= ".id-"+dataset._id;
 
                 script += "mkdir -p "+path+"\n";
                 script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
