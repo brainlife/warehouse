@@ -844,32 +844,11 @@ router.post('/ds/issue', jwt({secret: config.express.pubkey}), (req, res, next)=
  *
  * @apiSuccess {String}         generated bash shell script
 */
-/*
-router.post('/downscript', jwt({
-    secret: config.express.pubkey,
-    getToken: function(req) { 
-        //load token from req.headers as well as query.at
-        if(req.body.at) return req.body.at; 
-        if(req.headers.authorization) {
-            var auth_head = req.headers.authorization;
-            if(auth_head.indexOf("Bearer") === 0) return auth_head.substr(7);
-        }
-        return null;
-    }
-}), function(req, res, next) {
-*/
-router.post('/downscript', jwt({secret: config.express.pubkey}), function(req, res, next) {
-//    var skip = req.query.skip||0;
-//    let limit = req.query.limit||100; //this means if user set it to "0", no limit
+router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         db.Datasets.find(construct_dataset_query(req.body, canread_project_ids))
         .populate('datatype')
-//        .populate(req.query.populate || '') //all by default
-//        .select(req.query.select)
-//        .limit(+limit)
-//        .skip(+skip)
-//        .sort(req.query.sort || '_id')
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
