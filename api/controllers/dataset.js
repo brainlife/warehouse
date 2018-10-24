@@ -885,13 +885,22 @@ set +e #stop the script if anything fails
 
                     //Create BIDS symlinks
                     let bidspath = "bids/derivatives";
-                    let pipeline = "upload"; //default
+                    let pipeline = "upload";
                     if(dataset.prov && dataset.prov.task) {
-                        pipeline = dataset.prov.task.service;
+                        switch(dataset.prov.task.service) {
+                        case "soichih/sca-product-raw":
+                        case "soichih/sca-service-noop":
+                            break;
+                        default:
+                            if(~pipeline.indexOf("brain-life/validator-")) {
+                                pipeline = "upload";
+                            } else {
+                                pipeline = dataset.prov.task.service.replace(/\//g, '.');
+                            }
+                        }
+                        
+                        //add branch at the end of pipeline name
                         if(dataset.prov.task.service_branch) pipeline += "."+dataset.prov.task.service_branch;
-                    }
-                    if(!(pipeline == "soichih/sca-product-raw" || pipeline == "soichih/sca-service-noop" || ~pipeline.indexOf("brain-life/validator-"))) { //TODO this seems very brittle..
-                        pipeline = pipeline.replace(/\//g, '.');
                     }
 
                     bidspath += "/"+pipeline;
