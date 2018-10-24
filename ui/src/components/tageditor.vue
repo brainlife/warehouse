@@ -1,6 +1,6 @@
 <template>
 <!--vue-select doesn't support required attribute yet (https://github.com/sagalbot/vue-select/issues/477)-->
-<v-select multiple taggable v-model='tags' :options='options' :placeholder='placeholder' :close-on-select="false" :required="required">
+<v-select multiple taggable v-model='tags' :options='options' :placeholder='placeholder' :required="required">
     <span slot="no-options">
         <!-- Don't show anything if there are no options -->
     </span>
