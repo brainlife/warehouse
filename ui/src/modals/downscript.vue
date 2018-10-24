@@ -1,7 +1,7 @@
 <template>
 <b-modal :no-close-on-backdrop='true' title="Download Datasets" ref="modal" size="lg">
     <p>Please copy and paste the following command on your bash terminal to download your datasets.</p>
-    <pre class="code">curl -H "Authorization: Bearer {{config.jwt}}" -H "Content-Type: application/json" -d '{{json}}' -X POST {{config.api}}/dataset/downscript | bash</pre>
+    <pre class="code">curl {{headers}} -d '{{json}}' -X POST {{config.api}}/dataset/downscript | bash</pre>
     <div slot="modal-footer">
         <b-button variant="primary" @click="close">Close</b-button>
     </div>
@@ -35,7 +35,12 @@ export default {
             let json = {find: this.query.find};
             //if(this.query.find) json.find = JSON.stringify(this.query.find);
             return JSON.stringify(json);
-        }
+        },
+        headers() {
+            let headers = "-H 'Content-Type: application/json'";
+            if(Vue.config.jwt) headers += " -H 'Authorization: Bearer "+Vue.config.jwt+"'";
+            return headers;
+        },
     },
 
     mounted() {

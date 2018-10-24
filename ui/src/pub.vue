@@ -211,14 +211,13 @@
 
                     <div v-if="tab_index > 0">
                         <!-- release -->
-                        <p v-if="dataset_groups" style="opacity: 0.8; margin-bottom: 0px; float: right;">
+                        <p v-if="dataset_groups">
                             <span class="button" @click="downscript({})">
                                 {{total.subjects}} Subjects <span style="opacity: 0.2">|</span> {{total.count}} Datasets <span v-if="total.size"> {{total.size|filesize}}</span>
                                 <icon name="download" scale="0.9"/> 
                             </span>
                         </p>
                         <p style="opacity: 0.5" v-else>Loading ... <icon name="cog" spin/></p>
-                        <br clear="both">
 
                         <div class="group" v-for="(group, subject) in dataset_groups" :key="subject">
                             <b-row>
