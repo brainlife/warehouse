@@ -1,13 +1,14 @@
 <template>
-<b-modal :no-close-on-backdrop='true' title="Download Selected Datasets" ref="modal" size="lg">
-    <p class="text-muted">Please copy and paste the following command on your bash terminal to download your datasets.</p>
-    <p class="code">curl -H "Authorization: Bearer {{config.jwt}}" -H "Content-Type: application/json" -d '{{json}}' -X POST {{config.api}}/dataset/downscript | bash</p>
+<b-modal :no-close-on-backdrop='true' title="Download Datasets" ref="modal" size="lg">
+    <p>Please copy and paste the following command on your bash terminal to download your datasets.</p>
+    <pre class="code">curl -H "Authorization: Bearer {{config.jwt}}" -H "Content-Type: application/json" -d '{{json}}' -X POST {{config.api}}/dataset/downscript | bash</pre>
     <div slot="modal-footer">
         <b-button variant="primary" @click="close">Close</b-button>
     </div>
     <p class="text-muted">
-        The above command will download selected dataets to your local directory with sub directories for each subject. 
-        The command will also creates <pre>bids</pre> directory containing symlinks to files in <a href="http://bids.neuroimaging.io/">BIDS derivative structure</a></p>
+        The above command will download selected datasets inside sub directories for each subject. 
+        The command will also creates <a href="http://bids.neuroimaging.io">BIDS derivative</a> directory (/bids) containing symlinks to data files according to BIDS standard.
+    </p>
 </b-modal>
 </template>
 
