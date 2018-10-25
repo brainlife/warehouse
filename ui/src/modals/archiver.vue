@@ -71,6 +71,7 @@ export default {
                 });
             }
             this._meta = JSON.stringify(this.output.meta, null, 4);
+
             if(!this.$refs.archiver) {
                 console.error("archiver ref is missing!... happens after debug refresh?");
                 return;
