@@ -45,8 +45,6 @@ export default {
         return {
             //set by viewselecter.open
             datatype_name: null,
-            //datatype_names: null,
-
             task: null, 
             task_cb: null, 
             subdir: null,
@@ -58,10 +56,10 @@ export default {
     mounted() {
         this.$root.$on("viewselecter.open", (opt)=>{
             this.datatype_name = opt.datatype_name;
-            //this.datatype_names = opt.datatype_names;
             this.task = opt.task;
             this.task_cb = opt.task_cb;
             this.subdir = opt.subdir;
+
             this.$refs.modal.show();
         });
 

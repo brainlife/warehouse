@@ -702,7 +702,8 @@ export default {
                             config: {
                                 brainlife: true,
                             },
-                            group_id: opt.group_id,
+                            //I can't use this.project.group_id because user might be running it on another project
+                            group_id: opt.group_id, 
                         }).then(res=>{
                             this.submit_process(opt.project_id, res.body);
                         }).catch(err=>{

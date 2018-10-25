@@ -424,7 +424,8 @@ export default {
                             config: {
                                 brainlife: true,
                             },
-                            group_id: opt.group_id,
+                            //can't use this.dataset.project.group_id because user could be selecting another project
+                            group_id: opt.group_id, 
                         }).then(res=>{
                             this.submit_process(opt.project_id, res.body);
                         }).catch(err=>{
@@ -582,6 +583,7 @@ export default {
             });;
         },
 
+        /*
         get_instance() {
             //first create an instance to download things to
             return this.$http.post(Vue.config.amaretti_api+'/instance', {
@@ -591,6 +593,7 @@ export default {
                 }
             }).then(res=>res.body);
         },
+        */
 
         start_viewer(datatype_name) {
             this.check_agreements(this.dataset.project, ()=>{
@@ -613,9 +616,16 @@ export default {
                 if(res.body.count == 1) {
                     cb(res.body.tasks[0]);
                 } else {
-                    var download_instance = null;
-                    this.get_instance().then(instance=>{
-                        download_instance = instance;
+
+                    //create instance to download dataset to
+                    this.$http.post(Vue.config.amaretti_api+'/instance', {
+                        name: "brainlife.download",
+                        config: {
+                            selected: this.selected,
+                        },
+                        group_id: this.dataset.project.group_id,
+                    }).then(res=>{
+                        let instance_id = res.body._id;
 
                         var download = [];
                         download.push({
@@ -629,15 +639,13 @@ export default {
                         remove_date.setDate(remove_date.getDate()+2);
 
                         return this.$http.post(Vue.config.amaretti_api+'/task', {
-                            instance_id: download_instance._id,
+                            instance_id,
                             name,
                             service: "soichih/sca-product-raw",
                             config: { download },
                             remove_date: remove_date,
                         }).then(res=>res.body.task);
-                        return this.stage_selected(download_instance);
                     }).then(task=>{
-                        //console.log("created task", task); 
                         cb(task);
                     }).catch(console.error);
                 }

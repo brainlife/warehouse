@@ -224,7 +224,7 @@
                                 <b-col cols="2">
                                     <span class="button" @click="downscript({'meta.subject': subject})">
                                         <b>{{subject}}</b>
-                                        <icon name="download" style="opacity: 0.7" scale="0.8"/>
+                                        <icon name="download" class="download-subject" scale="0.8"/>
                                     </span>
                                 </b-col>
                                 <b-col>
@@ -582,6 +582,13 @@ color: #007bff;
 margin-top: 10px;
 padding-top: 10px;
 border-top: 1px solid #eee;
+}
+.download-subject {
+opacity: 0.7;
+display: none;
+}
+.group .button:hover .download-subject {
+display: inherit;
 }
 </style>
 

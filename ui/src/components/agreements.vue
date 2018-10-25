@@ -55,7 +55,7 @@ export default {
 
 <style scoped>
 .agreement {
-border: 1px solid #eee;
+background-color: #f0f0f0;
 padding: 10px;
 margin-bottom: 10px;
 color: #666;
