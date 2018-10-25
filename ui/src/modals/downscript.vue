@@ -2,13 +2,21 @@
 <b-modal :no-close-on-backdrop='true' title="Download Datasets" ref="modal" size="lg">
     <p>Please copy and paste the following command on your bash terminal to download your datasets.</p>
     <pre class="code">curl {{headers}} -d '{{json}}' -X POST {{config.api}}/dataset/downscript | bash</pre>
+
+    <p class="text-muted">
+        The above command will download selected datasets inside sub directories for each subject. 
+        The command will also create <a href="http://bids.neuroimaging.io">BIDS</a> a directory (/bids) containing symlinks to organize files according to BIDS derivative standard.
+    </p>
+
+    <!--
+    <p class="text-muted">
+        For Windows users, please launch <b>bash</b> terminal from the command prompt.
+    </p>
+    -->
+
     <div slot="modal-footer">
         <b-button variant="primary" @click="close">Close</b-button>
     </div>
-    <p class="text-muted">
-        The above command will download selected datasets inside sub directories for each subject. 
-        The command will also creates <a href="http://bids.neuroimaging.io">BIDS derivative</a> directory (/bids) containing symlinks to data files according to BIDS standard.
-    </p>
 </b-modal>
 </template>
 
@@ -66,5 +74,6 @@ white-space: pre-wrap;
 font-size: 70%;
 padding: 10px;
 overflow: auto;
+margin-bottom: 10px;
 }
 </style>
