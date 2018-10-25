@@ -163,34 +163,13 @@ export default {
                     this.ensure_config_exists();
                     this.load_dataset_tags();
                 }
-
-                console.log("rule updated");
-                //console.dir(this.rule);
-
-                for(let id in this.rule.input_tags) {
-                    let input = this.rule.app.inputs.find(i=>i.id == id);
-                    let find = {
-                        project: this.rule.input_project_override[id] || this.rule.project,
-                        datatype: input.datatype_id,
-                        removed: false,
-                    }
-                    if(this.rule.input_tags[id].length > 0) find.tags = {$all: this.rule.input_tags[id]},
-                    //console.log("looking for", id, find, input.datatype_tags);
-                    this.$http.get('dataset', {params: {
-                        find: JSON.stringify(find),
-                        datatype_tags: input.datatype_tags,
-                        limit: 0, //I just need count
-                    }}).then(res=>{
-                        console.log("query returned ", res.body.count);
-                        //this.rule.input_match[id] = res.body.count;
-                        Vue.set(this.rule.input_match, id, res.body.count);
-                    }); 
-                }
+                this.query_matching_datasets();
             },
             deep: true,
-        }
-    },
+        },
 
+        
+    },
     
     mounted() {
         this.load_value();
@@ -198,7 +177,30 @@ export default {
     },
     
     methods: {
-        load_value: function() {
+        query_matching_datasets() {
+            console.log("querying matching datasets");
+            for(let id in this.rule.input_tags) {
+                let input = this.rule.app.inputs.find(i=>i.id == id);
+                let find = {
+                    project: this.rule.input_project_override[id] || this.rule.project,
+                    datatype: input.datatype_id,
+                    removed: false,
+                }
+                if(this.rule.input_tags[id].length > 0) find.tags = {$all: this.rule.input_tags[id]};
+                let datatype_tags = input.datatype_tags.concat(this.rule.extra_datatype_tags[id]);
+                if(datatype_tags.length == 0) datatype_tags = null; //suppress setting it at all
+                this.$http.get('dataset', {params: {
+                    find: JSON.stringify(find),
+                    datatype_tags,
+                    limit: 0, //I just need count
+                }}).then(res=>{
+                    console.log("query returned ", res.body.count);
+                    Vue.set(this.rule.input_match, id, res.body.count);
+                }); 
+            }
+        },
+
+        load_value() {
             if(!this.value) return; //no value specified yet
 
             this.rule = Object.assign({

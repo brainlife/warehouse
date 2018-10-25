@@ -43,7 +43,7 @@
                         <span class="form-header">Agreements</span>
                     </b-col>
                     <b-col cols="10">
-                        <p> <small class="text-muted">You must consent to the following agreement before accessing datasets on this project.</small> </p>
+                        <p> <small class="text-muted">You must consent to the following agreement(s) before accessing datasets on this project.</small> </p>
                         <agreements :agreements="selected.agreements"/>
                     </b-col>
                 </b-row>

@@ -485,8 +485,6 @@ export default {
         },
 
         submit_stage: function(datasets) {
-            //console.log("received datasets", datasets);
-
             //issue jwt to allow access
             this.$http.post('dataset/token', {
                 ids: Object.keys(datasets),

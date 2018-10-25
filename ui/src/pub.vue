@@ -212,16 +212,20 @@
                     <div v-if="tab_index > 0">
                         <!-- release -->
                         <p v-if="dataset_groups">
-                            <b>{{ds.subjects}}</b> <span class="text-muted">Subjects</span> <span style="opacity: 0.2">|</span>
-                            <b>{{ds.count}}</b> <span class="text-muted">Datasets</span>
-                            <b v-if="ds.size"> {{ds.size | filesize}}</b>
+                            <span class="button" @click="downscript({})">
+                                {{total.subjects}} Subjects <span style="opacity: 0.2">|</span> {{total.count}} Datasets <span v-if="total.size"> {{total.size|filesize}}</span>
+                                <icon name="download" scale="0.9"/> 
+                            </span>
                         </p>
                         <p style="opacity: 0.5" v-else>Loading ... <icon name="cog" spin/></p>
 
                         <div class="group" v-for="(group, subject) in dataset_groups" :key="subject">
                             <b-row>
                                 <b-col cols="2">
-                                    <b>{{subject}}</b>
+                                    <span class="button" @click="downscript({'meta.subject': subject})">
+                                        <b>{{subject}}</b>
+                                        <icon name="download" class="download-subject" scale="0.8"/>
+                                    </span>
                                 </b-col>
                                 <b-col>
                                     <div v-for="(datatype, datatype_id) in group.datatypes" :key="datatype_id">
@@ -255,19 +259,13 @@
                             </b-row>
                         </div>
 
-                        <hr>
+
+                        <br>
+                        <p style="opacity: 0.8;">The Following Apps are used to generate this release.</p>
                         <b-row>
-                            <b-col cols="2">
-                                <!--placeholder-->
-                            </b-col>
-                            <b-col>
-                                <p style="opacity: 0.8;">The Following Apps are used to generate published datasets.</p>
-                                <b-row>
-                                    <b-col cols="6" v-for="(rec, idx) in apps" :key="idx" style="margin-bottom: 10px;">
-                                        <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
-                                        <div class="button" style="float: right;" @click="download_app(rec.service, rec.service_branch)"><icon name="download"/></div>
-                                    </b-col>
-                                </b-row>
+                            <b-col cols="6" v-for="(rec, idx) in apps" :key="idx" style="margin-bottom: 10px;">
+                                <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
+                                <div class="button" style="float: right;" @click="download_app(rec.service, rec.service_branch)"><icon name="download"/></div>
                             </b-col>
                         </b-row>
                     </div>
@@ -329,6 +327,7 @@ export default {
     data () {
         return {
             pub: null, //publication detail
+            release: null, //currently opened release
             dataset_groups: null, //datasets inventory grouped 
             apps: null, //list of apps
 
@@ -346,10 +345,10 @@ export default {
             this.dataset_groups = null;
             this.apps = null;
 
-            let release = this.pub.releases[this.tab_index-1];
+            this.release = this.pub.releases[this.tab_index-1];
 
             //load release
-            this.$http.get('pub/datasets-inventory/'+release._id).then(res=>{
+            this.$http.get('pub/datasets-inventory/'+this.release._id).then(res=>{
                 let groups = {};
                 res.body.forEach(rec=>{
                     let subject = rec._id.subject;
@@ -375,7 +374,7 @@ export default {
                 this.dataset_groups = groups;
 
                 //load apps
-                return this.$http.get('pub/apps/'+release._id, {params: {
+                return this.$http.get('pub/apps/'+this.release._id, {params: {
                     //populate: 'inputs.datatype outputs.datatype contributors',
                 }});
             })
@@ -391,7 +390,7 @@ export default {
             return document.location;
         },
 
-        ds: function() {
+        total: function() {
             let stats = {subjects: 0, count: 0, size: 0};
             for(var subject in this.dataset_groups) {
                 stats.subjects++; 
@@ -458,10 +457,10 @@ export default {
 
         toggle(block, subject, datatype, datatype_tags) {
             block.show = !block.show;
-            let release = this.pub.releases[this.tab_index-1];
+            this.release = this.pub.releases[this.tab_index-1];
             if(!block.datasets) {
                 //load datasets
-                this.$http.get('pub/datasets/'+release._id, {params: {
+                this.$http.get('pub/datasets/'+this.release._id, {params: {
                     find: JSON.stringify({
                         'meta.subject': subject,
                         datatype: datatype,
@@ -480,6 +479,11 @@ export default {
         download_app(service, branch) {
             if(!branch) branch = "master";
             document.location = "https://github.com/"+service+"/archive/"+branch+".zip";
+        },
+
+        downscript(query) {
+            query.publications = this.release._id;
+            this.$root.$emit("downscript.open", {find: query});
         },
     }
 }
@@ -578,6 +582,13 @@ color: #007bff;
 margin-top: 10px;
 padding-top: 10px;
 border-top: 1px solid #eee;
+}
+.download-subject {
+opacity: 0.7;
+display: none;
+}
+.group .button:hover .download-subject {
+display: inherit;
 }
 </style>
 
