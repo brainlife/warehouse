@@ -1,4 +1,4 @@
-# Brainlife Warehouse
+# brainlife.io warehouse
 
 The brainlife.io warehouse provides most of the user interface functionality and API services that are unique to https://brainlife.io.
 
@@ -8,7 +8,7 @@ For more information, please read [Brainlife Doc](https://brain-life.github.io/d
 
 For Warehouse API doc, please read [Warehouse API Doc](https://brain-life.github.io/warehouse/apidoc/)
 
-### Authors
+### Author
 - Soichi Hayashi (hayashis@iu.edu)
 
 ### Project director
