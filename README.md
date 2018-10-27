@@ -1,6 +1,6 @@
 # Brainlife Warehouse
 
-Brainlife warehouse provides most of web UI hosted under https://brainlife.io and the API services that are unique to Brainlife.
+The brainlife.io warehouse provides most of the user interface functionality and API services that are unique to https://brainlife.io.
 
 ![architecture](https://docs.google.com/drawings/d/e/2PACX-1vSbxpvxhckYT5rUJReexZdbaL4xZpMDiebDP-yQAxrcy1VwKCAHYQQTWE8mMQ4lBgQg9qpcZcZmaEr1/pub?w=960&amp;h=551)
 
@@ -11,7 +11,7 @@ For Warehouse API doc, please read [Warehouse API Doc](https://brain-life.github
 ### Authors
 - Soichi Hayashi (hayashis@iu.edu)
 
-### Project directors
+### Project director
 - Franco Pestilli (franpest@indiana.edu)
 
 ### Funding 
