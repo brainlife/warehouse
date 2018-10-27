@@ -93,7 +93,7 @@
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                     </mute>
                     <div v-if="output.archive" style="display: inline-block;">
-                        <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> Archive to</small>
+                        <small style="opacity: 0.5"><icon name="arrow-right" scale="0.8" style="position: relative; top: -2px;"/> will archive to</small>
                         <icon style="opacity: 0.5; margin-left: 3px;" name="shield-alt" scale="1.0"/>
                         <small v-if="project._id != output.archive.project">{{projectname(output.archive.project)}}</small>
                         <small v-else style="opacity: 0.6">This Project</small>
@@ -219,7 +219,7 @@ export default {
         //don't forget to add remove listener on destroyed (debug loader won't destroy parent.. so you will end up with bunch of the same event firing)
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
-        this.$root.$on("archiver.submit", this.submit_archive);
+        //this.$root.$on("archiver.submit", this.submit_archive);
 
         //load full list of datatypes and projects
         if(cache_datatypes && cache_projects) {
@@ -254,7 +254,7 @@ export default {
     destroyed() {
         this.$root.$off('datasetselecter.submit');
         this.$root.$off('newtask.submit');
-        this.$root.$off('archiver.submit');
+        //this.$root.$off('archiver.submit');
 
         if(this.ws) {
             console.log("disconnecting from ws - process");
@@ -334,22 +334,18 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
-                console.log("ws open");
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "wf.task",
                         key: this.instance._id+".#",
                     }
                 }));
-
-                //console.log("binding to dataset updates", this.project._id);
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse.dataset",
                         key: this.project._id+".#",
                     }
                 }));
-
                 this.ws.onmessage = (json)=>{
                     var event = null;
                     try {
@@ -400,11 +396,12 @@ export default {
                         break;
                     case "warehouse.dataset":
                         //see if we care..
-                        this.archived.forEach(dataset=>{
-                            if(dataset._id == event.msg._id) {
-                                for(var k in event.msg) dataset[k] = event.msg[k]; //update 
-                            }
-                        });
+                        let archived_dataset = this.archived.find(d=>d._id == event.msg._id);
+                        if(archived_dataset) {
+                            for(var k in event.msg) archived_dataset[k] = event.msg[k]; //update 
+                        } else {
+                            this.archived.push(event.msg);
+                        }
                         break;
                     }
                 };
@@ -442,7 +439,6 @@ export default {
                     limit: 300,
                 }}).then(res=>{
                     this.archived = res.body.datasets;
-                    console.log("done loading datasets");
                     if(this.selected_task) {
                         this.$nextTick(()=>{
                             this.scrollto(this.selected_task);
@@ -480,9 +476,12 @@ export default {
             this.$notify({type: 'error', text: err.body.message});
         },
 
+        /*
+        //should receive event now
         submit_archive: function(dataset) {
             this.archived.push(dataset);
         },
+        */
 
         submit_stage: function(datasets) {
             //issue jwt to allow access

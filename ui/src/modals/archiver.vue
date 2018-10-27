@@ -1,22 +1,22 @@
 <template>
-<b-modal :no-close-on-backdrop='true' title="Archive Dataset" ref="archiver" size="lg" @ok="submit">
-    <div v-if="output && task">
-        <b-form-group label="Description">
-            <b-form-textarea v-model="output.desc" placeholder="Dataset Desc" :rows="3" style="width: 100%;"></b-form-textarea>
-        </b-form-group>
+<b-modal v-if="output" :no-close-on-backdrop='true' title="Archive Dataset" ref="archiver" size="lg" @ok="submit">
+    <h5><datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/></h5>
 
-        <b-form-group label="Project">
-            <projectselecter :required="true" :canwrite="true" v-model="project" placeholder="Project to archive this dataset to"/>
-        </b-form-group>
+    <b-form-group>
+        <b-form-textarea v-model="output.desc" placeholder="Enter Description" :rows="2" style="width: 100%;"></b-form-textarea>
+    </b-form-group>
 
-        <b-form-group label="Dataset Tags">
-            <tageditor placeholder="optional" v-model="tags" :options="other_tags"/>
-        </b-form-group>
+    <b-form-group label="Project">
+        <projectselecter :required="true" :canwrite="true" v-model="project" placeholder="Project to archive this dataset to"/>
+    </b-form-group>
 
-        <b-form-group label="Metadata">
-            <editor v-model="_meta" @init="editorInit" lang="json" height="100"></editor>
-        </b-form-group>
-    </div>
+    <b-form-group label="Dataset Tags">
+        <tageditor placeholder="Optional" v-model="tags" :options="other_tags"/>
+    </b-form-group>
+
+    <b-form-group label="Metadata">
+        <editor v-model="_meta" @init="editorInit" lang="json" height="100"></editor>
+    </b-form-group>
 </b-modal>
 </template>
 
@@ -26,11 +26,12 @@ import Vue from 'vue'
 import projectaccess from '@/components/projectaccess'
 import projectselecter from '@/components/projectselecter'
 import tageditor from '@/components/tageditor'
+import datatypetag from '@/components/datatypetag'
 
 export default {
 
     components: { 
-        projectaccess, projectselecter, tageditor,
+        projectaccess, projectselecter, tageditor, datatypetag, 
         editor: require('vue2-ace-editor'),
     },
 
@@ -43,7 +44,7 @@ export default {
             other_tags: [],
             tags: [],
 
-            _meta: null,
+            _meta: "",
 
             config: Vue.config,
         }
@@ -59,7 +60,9 @@ export default {
     },
     
     created: function() {
-        this.$root.$on("archiver.show", (opt)=>{
+        //{task, output}}
+        this.$root.$on("archiver.show", opt=>{
+
             this.task = opt.task;
             this.output = Object.assign({}, opt.output);
 
@@ -72,12 +75,16 @@ export default {
             }
             this._meta = JSON.stringify(this.output.meta, null, 4);
 
-            if(!this.$refs.archiver) {
-                console.error("archiver ref is missing!... happens after debug refresh?");
-                return;
-            }
-            this.$refs.archiver.show();
+            //wait for b-modal v-if flag to be triggered
+            this.$nextTick(()=>{
+                this.$refs.archiver.show();
+            });
         });
+    },
+
+    destroyed() {
+        //to prevent wierd things from happening during debugging?
+        this.$root.$off("archiver.show");
     },
 
     methods: {
@@ -101,32 +108,25 @@ export default {
                 return;
             }
 
-            let ds = {
+            console.dir(this.task.config);
+
+            this.$http.post('dataset', {
                 project: this.project,                 
                 task_id: this.task._id,
+                //app_id: this.task.config._app,
                 output_id: this.output.id, 
                 subdir: this.output.subdir, //subdir that contains the actual content under the task
 
-                datatype: this.output.datatype,
-                datatype_tags: this.output.datatype_tags,
-                files: this.output.files,
+                //datatype: this.output.datatype,
+                //datatype_tags: this.output.datatype_tags,
+                //files: this.output.files,
+
                 meta,
                 desc: this.output.desc,
                 tags: this.tags, 
 
-                //UI wants these.. temporarily
-                /*
-                //create_date: new Date(),
-                //status: "storing",
-                prov: {
-                    task_id: this.task._id,
-                    output_id: this.output.id,
-                },
-                */
                 await: false, //request to not wait for dataset to be archived before returning
-            };
-
-            this.$http.post('dataset', ds).then(res=>{
+            }).then(res=>{
                 this.$root.$emit('archiver.submit', res.body);
                 this.$notify({text: "Archiving requested.."});
                 this.$refs.archiver.hide();

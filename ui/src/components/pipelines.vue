@@ -123,10 +123,10 @@
                             <p v-for="input in rule.app.inputs" :key="input.id">
                                 <small style="float: right; margin-right: 10px;">{{input.id}}</small>
                                 <datatypetag :datatype="datatypes[input.datatype]" :tags="all_datatype_tags(rule, input)" v-if="datatypes"/>
-                                <mute v-if="rule.input_tags && rule.input_tags[input.id] && rule.input_tags[input.id].length > 0">
+                                <span v-if="rule.input_tags && rule.input_tags[input.id] && rule.input_tags[input.id].length > 0" style="opacity: 0.8">
                                     <!--<small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>-->
                                     <small v-for="(tag,idx) in rule.input_tags[input.id]" :key="idx"> | {{tag}}</small>
-                                </mute>
+                                </span>
                                 <span v-if="rule.input_project_override && rule.input_project_override[input.id] && projects[rule.input_project_override[input.id]]" class="text-muted">
                                     <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
                                 </span>
@@ -141,10 +141,10 @@
                             <p v-for="output in rule.app.outputs" :key="output.id">
                                 <small style="float: right; margin-right: 10px">{{output.id}}</small>
                                 <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" v-if="datatypes"/>
-                                <mute v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">
+                                <span class="opacity: 0.7" v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">
                                     <!--<small class="text-muted">with dataset tags of</small> <tags :tags="rule.output_tags[output.id]"/>-->
                                     <small v-for="(tag,idx) in rule.output_tags[output.id]" :key="idx"> | {{tag}}</small>
-                                </mute>
+                                </span>
                             </p>
                         </div>
 
@@ -240,8 +240,7 @@ export default {
                 limit: 0, //I just need a count.
             }})
             .then(res=>{
-                console.log(res.body);
-                this.selected.taskcount = res.body.count;
+                Vue.set(this.selected, 'taskcount', res.body.count);
             });            
         },
     },

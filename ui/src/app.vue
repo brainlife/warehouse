@@ -59,7 +59,7 @@
                             <b-row v-if="app.inputs">
                                 <b-col cols="6" v-for="input in app.inputs" :key="input.id">
                                     <div style="padding: 5px; background-color: white; margin-bottom: 5px; min-height: 80px;">
-                                        <span style="opacity: 0.5; float: right;">{{input.id}}</span><!--internal output id-->
+                                        <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
                                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                                         <span v-if="input.optional" class="text-muted">(optional)</span>
                                         <span class="text-muted" v-if="input.multi">(multi)</span>
@@ -102,17 +102,15 @@
                             <b-row v-if="app.outputs">
                                 <b-col cols="6" v-for="output in app.outputs" :key="output.id">
                                     <div style="padding: 5px; background-color: white; margin-bottom: 5px; min-height: 80px;">
-                                        <span style="opacity: 0.5; float: right;">{{output.id}}</span><!--internal output id-->
+                                        <small style="opacity: 0.5; float: right;">{{output.id}}</small><!--internal output id-->
                                         <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                                         <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ {{output.datatype_tags_pass}}</span>
-                                        <!--
-                                        <div style="position: relative"> 
-                                            <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
-                                        </div>
-                                        -->
                                         <p style="color: #222; margin-top: 5px;">
                                             <small>{{output.datatype.desc}}</small>
                                         </p>
+                                        <small style="position: relative" v-if="output.files"> 
+                                            <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
+                                        </small>
                                     </div>
                                 </b-col>
                             </b-row>
@@ -159,10 +157,10 @@
                             This App is not enabled to run on any resource that you have access to. 
                         </b-alert>
                         <b-alert show variant="secondary" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
-                            This App is not enabled on any resources that you have access to at this moment.
+                            This App can not run on any resources that you have access to at the moment.
                         </b-alert>
                         <b-alert show variant="secondary" v-else-if="shared_resources.length == 0" style="margin-bottom: 10px;">
-                            This App is only enabled on your private resources. Other users may not be able to run this App.
+                            This App is only enabled on your private resource(s). Other users may not be able to run this App.
                         </b-alert>
                         <p v-else>
                             <small class="text-muted">This App can run on the following resources.</small>

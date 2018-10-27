@@ -107,7 +107,7 @@
                 <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
                 Input
             </h4>
-            <div>
+            <div style="border-left: 4px solid #007bff; padding-left: 10px;">
                 <transition-group name="move-item" tag="p">
                     <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="margin-bottom: 10px;">
                         <b-card style="position: relative;">
@@ -203,7 +203,7 @@
                 <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
                 Output
             </h4>
-            <div>
+            <div style="border-left: 4px solid #28a745; padding-left: 10px;">
                 <transition-group name="move-item" tag="p">
                     <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
                         <b-card>
