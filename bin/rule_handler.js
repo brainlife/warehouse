@@ -124,7 +124,6 @@ function handle_rule(rule, cb) {
                 if(rule.handle_date > dataset.update_date) return cb(); //no new dataset to handle
 
                 //has new input dataset to handle.. proceed
-                //logger.debug("processinng", rule.handle_date, dataset.update_date, dataset._id.toString());
                 next();
             });
         },
@@ -219,7 +218,6 @@ function handle_rule(rule, cb) {
                 project: { $in: projects }, 
                 removed: false,
             })
-            //.sort("meta.subject") //sort can't be used with distinct
             .distinct("meta.subject", (err, _subjects)=>{
                 if(err) return next(err);
                 subjects = _subjects;        
@@ -233,7 +231,6 @@ function handle_rule(rule, cb) {
                 var query = {
                     project: rule.project._id,
                     datatype: output.datatype,
-                    //"meta.subject": subject,
                     storage: { $exists: true },
                     removed: false,
                 }
@@ -252,8 +249,6 @@ function handle_rule(rule, cb) {
 
         //find all input datasets that this rule can use
         next=>{
-            //var missing = false;
-            //var inputs = {};
             logger.debug("finding inputs");
             async.eachSeries(rule.app.inputs, (input, next_input)=>{
                 input._datasets = {}; //keyed by subject array of matchind datasets (should be sorted by "selection_method")
@@ -263,25 +258,10 @@ function handle_rule(rule, cb) {
                 var query = {
                     project: rule.project._id,
                     datatype: input.datatype,
-                    //"meta.subject": subject,
                     storage: { $exists: true },
                     removed: false,
                 }
 
-                /*
-                //see which selection method to usee
-                var selection_method = "latest";
-                if(rule.input_selection && rule.input_selection[input.id]) selection_method = rule.input_selection[input.id];
-                switch(selection_method) {
-                case "latest":
-                    sort = "create_date"; //find the latest
-                    break;
-                case "ignore": 
-                    //don't need to look for this input
-                    return next_input();
-                }
-                */
-                
                 //allow user to override which project to load input datasets from
                 if(rule.input_project_override && rule.input_project_override[input.id]) {
                     query.project = rule.input_project_override[input.id];
@@ -372,20 +352,6 @@ function handle_rule(rule, cb) {
             return next_subject();
         }
 
-        //output datasets missing.. see if we can find all inputs
-        /*
-        find_inputs(subject, (err, input_missing, inputs)=>{
-            if(err) return next_subject(err);
-            if(input_missing) {
-                rlogger.info("Found the output datasets that need to be generated, but we can't find input datasets with specified datatype / tags to submit the task with.. skipping");
-                next_subject();
-            } else {
-                rlogger.info("Found the output datasets that need to be generated, and we have all the inputs! submitting tasks");
-                submit_tasks(subject, inputs, next_subject);
-            }
-        });
-        */
-
         //make sure we have all datasets we need
         let inputs = {};
         let missing = false;
@@ -407,83 +373,8 @@ function handle_rule(rule, cb) {
 
         //all good! 
         rlogger.info("Found the output datasets that need to be generated, and we have all the inputs also! submitting tasks");
-        //console.dir(inputs);
         submit_tasks(subject, inputs, next_subject);
     }
-
-    /*
-    function find_inputs(subject, next) {
-        var missing = false;
-        var inputs = {};
-        async.eachSeries(rule.app.inputs, (input, next_input)=>{
-
-            //defaults
-            var sort = "create_date";
-            var query = {
-                project: rule.project._id,
-                datatype: input.datatype,
-                "meta.subject": subject,
-                storage: { $exists: true },
-                removed: false,
-            }
-
-            //see which selection method to usee
-            var selection_method = "latest";
-            if(rule.input_selection && rule.input_selection[input.id]) selection_method = rule.input_selection[input.id];
-            switch(selection_method) {
-            case "latest":
-                sort = "create_date"; //find the latest
-                break;
-            case "ignore": 
-                //don't need to look for this input
-                return next_input();
-            }
-            
-            //allow user to override which project to load input datasets from
-            if(rule.input_project_override && rule.input_project_override[input.id]) {
-                query.project = rule.input_project_override[input.id];
-            } 
-            if(rule.input_tags[input.id]) {
-                query.tags = { $all: rule.input_tags[input.id] }; 
-            }
-
-            db.Datasets.find(query)
-            .populate('datatype')
-            .sort(sort)
-            .lean()
-            .exec((err, datasets)=>{
-                if(err) return next_input(err);
-
-                //find first dataset that matches all tags
-                var matching_dataset = null;
-                datasets.forEach(dataset=>{
-                    var match = true;
-                    input.datatype_tags.forEach(tag=>{
-                        if(tag[0] == "!") {
-                            //negative: make sure tag doesn't exist
-                            if(~dataset.datatype_tags.indexOf(tag.substring(1))) match = false;
-                        } else {
-                            //positive: make sure tag exists
-                            if(!~dataset.datatype_tags.indexOf(tag)) match = false;
-                        }
-                    });
-                    if(match) matching_dataset = dataset;
-                });
-
-                if(!matching_dataset) {
-                    missing = true;
-                    rlogger.debug("no matching input", input.id);
-                } 
-
-                inputs[input.id] = matching_dataset;
-                next_input(); 
-            });
-        }, err=>{
-            if(err) return next(err);
-            else next(null, missing, inputs);
-        });
-    }
-    */
 
     function submit_tasks(subject, inputs, cb) {
         var instance = null;
@@ -540,7 +431,6 @@ function handle_rule(rule, cb) {
                         group_id: rule.project.group_id, 
                         config: {
                             brainlife: true,
-                            //type: "v2",
                         }
                     },
                 }, (err, res, body)=>{
@@ -616,8 +506,6 @@ function handle_rule(rule, cb) {
                             let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
                             deps.push(task._id); 
 
-                            //console.log(JSON.stringify(output_detail, null, 4));
-
                             //TODO I should only put stuff that I need output input..
                             _app_inputs.push(Object.assign({}, input, {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
@@ -683,7 +571,7 @@ function handle_rule(rule, cb) {
                             prov: null, //remove dataset prov
                         });
                         _outputs.push(output);
-                        _app_inputs.push(Object.assign({/*output_id: input.id,*/ keys}, output)); 
+                        _app_inputs.push(Object.assign({keys}, output)); 
                     }
                 }
 
@@ -697,7 +585,6 @@ function handle_rule(rule, cb) {
                     body: {
                         instance_id: instance._id,
                         name: "Staging Input",
-                        //desc: "staging input for rule:"+rule._id+" subject:"+subject,
                         service: "soichih/sca-product-raw",
 
                         config: {
@@ -722,8 +609,7 @@ function handle_rule(rule, cb) {
                     });
                     deps.push(task_stage._id);
 
-                    rlogger.debug("submitted staging task");//, task_stage);
-                    //console.log(JSON.stringify(_body, null, 4));
+                    rlogger.debug("submitted staging task");
                     next();
                 });
             },
@@ -790,7 +676,6 @@ function handle_rule(rule, cb) {
                     body: {
                         instance_id: instance._id,
                         name: rule.app.name,
-                        //desc: "running application:"+rule.app.name+" for rule:"+rule.name+" for subject:"+subject,
                         service: rule.app.github,
                         service_branch: rule.app.github_branch,
                         retry: rule.app.retry,
@@ -802,8 +687,6 @@ function handle_rule(rule, cb) {
                 }, (err, res, _body)=>{
                     task_app = _body.task;
                     rlogger.debug("submitted app task", task_app._id);
-                    //logger.debug("submitted app task", task_app);
-                    //console.log(JSON.stringify(_body, null, 4));
                     next(err);
                 });
             },

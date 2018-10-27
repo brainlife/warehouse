@@ -187,20 +187,65 @@ var datasetSchema = mongoose.Schema({
     //not set if user uploaded it. 
     prov: {
         task: mongoose.Schema.Types.Mixed, //task document at the time of archival
-
-        instance_id: String,  //deprecated by prov.task.instance_id
-        task_id: String, //deprecated by prov.task._id
-
         output_id: String, 
         subdir: String, //(optional) subdir that contained the actual output. often output_id == subdir
+
+        ///////////////////////////////////////
+        // DEPRECATED .. don't use these
+        instance_id: String,  //deprecated by prov.task.instance_id
+        task_id: String, //deprecated by prov.task._id
+        //
+        ///////////////////////////////////////
+
+        /* task.config sample..
+        "_app": "5a21bf932adf297d2e3afa29",
+        "_tid": 1,
+        "_inputs": [
+            {
+                "keys": [
+                    "t1"
+                ],
+                "id": "anat",
+                "subdir": "5bcf676af36818213e17e5b3",
+                "dataset_id": "5bcf676af36818213e17e5b3",
+                "task_id": "5bd34be2e04a503518838804",
+                "datatype": "58c33bcee13a50849b25879a",
+                "datatype_tags": [
+                    "acpc_aligned"
+                ],
+                "tags": [
+                    "soichi"
+                ],
+                "meta": {
+                    "subject": "0001"
+                },
+                "project": "58eeceaabb2e2e2bd70d4682"
+            }
+        ],
+        "_outputs": [
+            {
+                "id": "out",
+                "datatype": "58c33bcee13a50849b25879a",
+                "desc": "out from ACPC alignment via ART",
+                "meta": {
+                    "subject": "0001"
+                },
+                "files": null,
+                "datatype_tags": [
+                    "acpc_aligned"
+                ]
+            }
+        ]
+        */
+
     },
 
     //product.json content for this dataset (new) - might be subset of task.product
     product: mongoose.Schema.Types.Mixed,
 
-    //storing (default)
+    //storing - dataset is currently being archived (default)
     //stored dataset is stored on storage system
-    //failed failed to store to storage system
+    //failed failed to archive to storage system
     //removed dataset is removed from storage system
     status: { type: String, default: "storing" },
     status_msg: String,
