@@ -117,7 +117,8 @@ function handle_task(task, cb) {
         let products = common.split_product(task.product||{}, task.config._outputs);
         async.eachSeries(task.config._outputs, (output, next_output)=>{
             if(!output.archive) return next_output();
-            archive_dataset(task, output, products[output.id], next_output);
+            //archive_dataset(task, output, products[output.id], next_output);
+            acon.publish('warehouse.archive', {task, output, product: products[output.id]}, next_output);
         }, cb);
 
     } else if(task.status == "removed" && task.config && task.config._rule) {
@@ -127,116 +128,6 @@ function handle_task(task, cb) {
         logger.debug("ignoring task", task._id, task.status, task.name);
         cb();
     }
-}
-
-function archive_dataset(task, output, product, cb) {
-    logger.debug("archive request made", output);
-
-    var dataset = null;
-    var datatype = null;
-	var auth = null;
-
-    async.series([
-        next=>{
-            logger.debug("see if this dataset is already archived");
-            db.Datasets.findOne({
-                "prov.task_id": task._id,
-                "prov.output_id": output.id,
-                
-                //ignore failed and removed ones
-                //TODO - very strange query indeed.. but it should work
-                $or: [
-                    { removed: false }, //already archived!
-                    
-                    //or.. if archived but removed and not failed, user must have a good reason to remove it.. 
-                    { removed: true, status: {$ne: "failed"} }, 
-                ]
-                
-            }).exec((err,_dataset)=>{
-                if(err) return cb(err);
-                if(_dataset) {
-                    logger.info("already archived", _dataset._id.toString());
-                    return cb();
-                }
-                logger.debug("not yet archived.. proceeding", task._id, output.id);
-                next();
-            });
-        },
-
-        next=>{
-            /*
-            //add things set in product
-            if(product.tags) tags = tags.concat(product.tags).unique();
-            if(product.datatype_tags) datatype_tags = datatype_tags.concat(product.datatype_tags).unique();
-            Object.assign(meta, product.meta);
-            */
-
-            //pull things set on root ... for backward compatibility 
-            /*
-            if(task.product) {
-                if(task.product.tags) tags = tags.concat(task.product.tags).unique();
-                if(task.product.datatype_tags) datatype_tags = datatype_tags.concat(task.product.datatype_tags).unique();
-                Object.assign(meta, task.product.meta);
-            }
-
-            //use things set specifically for this output
-            if(task.product && task.product[output.id]) {
-                let pro = task.product[output.id];
-                if(pro.tags) tags = tags.concat(pro.tags).unique();
-                if(pro.datatype_tags) datatype_tags = datatype_tags.concat(pro.datatype_tags).unique();
-                Object.assign(meta, pro.meta);
-            }
-            */
-
-            //WARNING - similar code exists in controller/dataset
-            //logger.debug("registering dataset now");
-            new db.Datasets({
-                user_id: task.user_id,
-                desc: output.archive.desc,
-
-                project: output.archive.project,
-                datatype: output.datatype,
-
-                datatype_tags: product.datatype_tags,
-                tags: product.tags,
-                meta: product.meta,
-
-                product,
-
-                prov: {
-                    task,
-
-                    //deprecated by prov.task._id and prov.task.instance_id (will be removed once all use of these are removed)
-                    instance_id: task.instance_id,
-                    task_id: task._id,
-
-                    output_id: output.id, 
-                    subdir: output.subdir, //optional
-                },
-            }).save((err, _dataset)=>{
-                dataset = _dataset;
-                next(err);
-            });
-        },
-
-		next=>{
-			logger.debug("issue jwt to download dataset");
-			request.get({
-				url: config.auth.api+"/jwt/"+task.user_id, json: true,
-				headers: { authorization: "Bearer "+config.auth.jwt },
-			}, (err, res, body)=>{
-				if(err) return next(err);
-				if(res.statusCode != 200) return cb("couldn't obtain user jwt code:"+res.statusCode);
-				auth = "Bearer "+body.jwt;
-				next();
-			});
-		},
-
-		next=>{
-            logger.debug("transfering data from task");
-            common.archive_task(task, dataset, output.files, auth, next);
-		},
-    ], cb);
 }
 
 function handle_instance(instance, cb) {
