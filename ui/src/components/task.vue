@@ -9,7 +9,7 @@
         <div style="float: left; padding: 6px 8px" @click="poke">
             <statusicon :status="task.status" scale="1.5"/>
         </div>
-        <div style="margin-left: 45px; margin-right: 5px; margin-bottom: 5px;">
+        <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 5px;">
             <div style="float: right;">
                 <div class="button" style="opacity: 0.7" v-if="editing_desc === null" @click="edit_desc" title="Edit Notes"><icon name="edit"/></div>
                 <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid"><icon name="info"/></div>
