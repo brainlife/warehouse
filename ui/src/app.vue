@@ -148,15 +148,6 @@
                     </b-col>
                 </b-row>
 
-                <b-row v-if="info">
-                    <b-col cols="3">
-                        <span class="form-header">Info</span>
-                    </b-col>
-                    <b-col>
-                        {{info}}
-                    </b-col>
-                </b-row>
-
 
                 <b-row v-if="resources">
                     <b-col cols="3">
@@ -238,6 +229,16 @@
                     </b-col>
                 </b-row>
 
+                <b-row v-if="info">
+                    <b-col cols="3">
+                        <span class="form-header">Past Executions</span>
+                    </b-col>
+                    <b-col>
+                        <vue-plotly :data="hist_data" :layout="hist_layout" :autoResize="true"/>
+                    </b-col>
+                </b-row>
+
+
                 <hr>
                 <b-row>
                     <b-col cols="3">
@@ -303,6 +304,7 @@ import appsubmit from '@/components/appsubmit'
 import appstats from '@/components/appstats'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
+import VuePlotly from '@statnett/vue-plotly'
 
 export default {
     components: { 
@@ -311,7 +313,7 @@ export default {
         VueMarkdown, statustag, 
         appsubmit, datatypetag, datatypefile,
         appstats, projectavatar,
-        doibadge, 
+        doibadge, VuePlotly,
     },
 
     metaInfo: {
@@ -375,7 +377,43 @@ export default {
         shared_resources() {
             if(!this.resources) return [];
             return this.resources.filter(r=>r.gids.length > 0);
-        }
+        },
+
+        hist_data() {
+            let dstart = new Date(new Date().getTime() - 3600*1000*24*90);
+            let days = [];
+            for(let i = 0;i < this.info.hist.failed.length;++i) {
+                days.push(new Date(dstart.getTime() + 3600*1000*24*i));
+            }
+            return [
+                {
+                    x: days,
+                    y: this.info.hist.finished,
+                    type: 'scatter',
+                    name: 'Finished',
+                    marker: {
+                        color: 'green',
+                    }
+                },
+                {
+                    x: days,
+                    y: this.info.hist.failed,
+                    type: 'scatter',
+                    name: 'Failed',
+                    marker: {
+                        color: '#dc3545',
+                    }
+                },
+            ];
+        },
+
+        hist_layout() {
+            return {
+                //title: 'Execution History',
+                //barmode: 'stack',
+                height: 300,
+            }
+        }, 
     },
 
     methods: {
