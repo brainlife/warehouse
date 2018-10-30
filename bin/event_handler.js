@@ -101,6 +101,10 @@ function health_check() {
         report.status = "failed";
         report.messages.push("task event counts is low");
     }
+    if(_counts.instances == 0) {
+        report.status = "failed";
+        report.messages.push("instance event counts is low");
+    }
 
     rcon.set("health.warehouse.event."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
 
@@ -111,29 +115,135 @@ function health_check() {
 
 function handle_task(task, cb) {
     _counts.tasks++;
+    logger.debug("task", task._id, task.status);
 
     if(task.status == "finished" && task.config && task.config._outputs) {
         logger.info("handling finished task (archive)", task._id, task.status, task.name);
         let products = common.split_product(task.product||{}, task.config._outputs);
         async.eachSeries(task.config._outputs, (output, next_output)=>{
             if(!output.archive) return next_output();
-            //archive_dataset(task, output, products[output.id], next_output);
-            acon.publish('warehouse.archive', {task, output, product: products[output.id]}, next_output);
+            handle_archive(task, output, products[output.id], next_output);
         }, cb);
 
     } else if(task.status == "removed" && task.config && task.config._rule) {
         logger.info("rule submitted task is removed. updating update_date:"+task.config._rule.id);
         db.Rules.findOneAndUpdate({_id: task.config._rule.id}, {$set: {update_date: new Date()}}, cb);
     } else {
-        logger.debug("ignoring task", task._id, task.status, task.name);
+        //logger.debug("ignoring task", task._id, task.status, task.name);
         cb();
     }
 }
 
+function handle_archive(task, output, product, cb) {
+
+    logger.debug("archive request made", output);
+
+    //var dataset = null;
+    var datatype = null;
+	var auth = null;
+
+    async.series([
+        next=>{
+            logger.debug("see if this dataset is already archived");
+            db.Datasets.findOne({
+                "prov.task_id": task._id,
+                "prov.output_id": output.id,
+                
+                //ignore failed and removed ones
+                //TODO - very strange query indeed.. but it should work
+                $or: [
+                    { removed: false }, //already archived!
+                    
+                    //or.. if archived but removed and not failed, user must have a good reason to remove it.. (don't rearchive)
+                    { removed: true, status: {$ne: "failed"} }, 
+                ]
+                
+            }).exec((err,_dataset)=>{
+                if(err) return cb(err);
+                if(_dataset) {
+                    logger.info("already archived or removed by user", _dataset._id.toString());
+                    return cb();
+                }
+                logger.debug("not yet archived.. proceeding", task._id, output.id);
+                next();
+            });
+        },
+
+        /*
+        next=>{
+            //query the current task status and make sure it's still finished (not removed)
+			request.get({
+				url: config.amaretti.api+"/task/"+task._id, json: true,
+				headers: { authorization: "Bearer "+config.auth.jwt },
+			}, (err, res, task)=>{
+				if(err) return next(err);
+                if(task.status != "finished") {
+                    logger.warn("task status is no longer finished.. removing this request");
+                    return cb();
+                }
+                next();
+			});
+        },
+        */
+
+        next=>{
+            //WARNING - similar code exists in controller/dataset
+            //logger.debug("registering dataset now");
+            new db.Datasets({
+                user_id: task.user_id,
+                desc: output.archive.desc,
+
+                project: output.archive.project,
+                datatype: output.datatype,
+
+                datatype_tags: product.datatype_tags,
+                tags: product.tags,
+                meta: product.meta,
+
+                product,
+
+                //status: "waiting",
+                status_msg: "Waiting for the archive handler..",
+                
+                prov: {
+                    task, 
+                    output_id: output.id, 
+                    subdir: output.subdir, //optional
+
+                    instance_id: task.instance_id, //deprecated use prov.task.instance_id
+                    task_id: task._id, //deprecated. use prov.task._id
+
+                },
+            }).save((err, dataset)=>{
+                if(err) return next(err);
+                logger.debug("publishing to archive queue");
+                acon.publish('warehouse.archive', {dataset_id: dataset._id});
+                next(); //TODO - I can't get cb to fire from acon.publish..
+            });
+        },
+
+        /*
+		next=>{
+			//issue jwt to download dataset from a given task
+			request.get({
+				url: config.auth.api+"/jwt/"+task.user_id, json: true,
+				headers: { authorization: "Bearer "+config.auth.jwt },
+			}, (err, res, body)=>{
+				if(err) return next(err);
+				if(res.statusCode != 200) return cb("couldn't obtain user jwt code:"+res.statusCode);
+				auth = "Bearer "+body.jwt;
+				next();
+			});
+		},
+
+        */
+
+    ], cb);
+}
+
 function handle_instance(instance, cb) {
     _counts.instances++;
-
-    logger.debug("instance evevnt handling TODO",instance);
+    //logger.debug("instance handling TODO",instance);
     cb();
 }
 

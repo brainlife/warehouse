@@ -52,8 +52,12 @@ exports.getprojects = function(user, cb) {
     });
 }
 
-exports.archive_task = function(task, dataset, files_override, auth, cb) {
-    if(!files_override) files_override = {};
+exports.archive_task = function(dataset, auth, cb) {
+
+    //find output file override
+    let output_id = dataset.prov.output_id;
+    let output = dataset.prov.task.config._outputs.find(o=>o.id == output_id);
+    let files_override = output.files || {}
 
     //start by pulling datatype detail
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
@@ -139,7 +143,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
 
                 //now start feeding the writestream (/tmp/archive-XXX/thing)
                 request({
-                    url: config.amaretti.api+"/task/download/"+task._id,
+                    url: config.amaretti.api+"/task/download/"+dataset.prov.task._id,
                     qs: {
                         p: srcpath,
                     },
@@ -147,7 +151,7 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                 })
                 .on('response', function(r) {
                     if(r.statusCode != 200) {
-                        logger.debug("/task/download failed "+r.statusCode+" path:"+srcpath+" auth:"+auth, file.required); 
+                        logger.debug("/task/download failed "+r.statusCode+" path:"+srcpath, file.required); 
                         input_ok = false;
                     }
                 }).pipe(writestream);
@@ -157,7 +161,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     if (err.file) dataset.desc = "Expected output " + (err.file.filename||err.file.dirname) + " not found";
                     else dataset.desc = "Failed to store all files under tmpdir";
                     dataset.status = "failed";
-                    //return dataset.save(cb);
                     dataset.save(_err=>{
                         if(_err) logger.error(_err); //ignore..?
                         cb(dataset.desc);
@@ -165,8 +168,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
                     return;
                 }
 
-                //logger.debug(filenames);
-                
                 //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
                 var storage = config.storage_default();
                 var system = config.storage_systems[storage];
@@ -190,7 +191,6 @@ exports.archive_task = function(task, dataset, files_override, auth, cb) {
 
                     //TODO - I am not sure if all writestream returnes file object (pkgcloud does.. but this makes it a bit less generic)
                     //maybe I should run system.stat()?
-                    //writestream.on('success', file=>{
                     done.then(file=>{
                         logger.debug("streaming success", JSON.stringify(file));
                         dataset.storage = storage;

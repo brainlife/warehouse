@@ -475,7 +475,7 @@
             "type": "String[]",
             "optional": true,
             "field": "datatype_tags",
-            "description": "<p>List of datatype tags to filter (you can use exlusion tags also)</p>"
+            "description": "<p>List of datatype tags to filter (you can use exclusion tags also)</p>"
           },
           {
             "group": "Parameter",
@@ -738,7 +738,7 @@
             "type": "String",
             "optional": false,
             "field": "output_id",
-            "description": "<p>App's output_id that generated this dataset</p>"
+            "description": "<p>output_id to archive</p>"
           },
           {
             "group": "Parameter",
@@ -749,31 +749,17 @@
           },
           {
             "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": "datatype",
-            "description": "<p>Data type ID for this dataset (from Datatypes)</p>"
+            "type": "Object",
+            "optional": true,
+            "field": "meta",
+            "description": "<p>Metadata - to override</p>"
           },
           {
             "group": "Parameter",
             "type": "String[]",
-            "optional": false,
-            "field": "datatype_tags",
-            "description": "<p>Datatype tags to set</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Object",
             "optional": true,
-            "field": "files",
-            "description": "<p>File mapping to override default file path given by datatype</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Object",
-            "optional": true,
-            "field": "meta",
-            "description": "<p>Metadata - as prescribed in datatype.meta</p>"
+            "field": "tags",
+            "description": "<p>List of tags to add</p>"
           },
           {
             "group": "Parameter",
@@ -784,10 +770,10 @@
           },
           {
             "group": "Parameter",
-            "type": "String[]",
-            "optional": true,
-            "field": "tags",
-            "description": "<p>List of tags associated with this dataset</p>"
+            "type": "Boolean",
+            "optional": false,
+            "field": "await",
+            "description": "<p>Wait for dataset to be fully achived before returning (default true)</p>"
           }
         ]
       }
@@ -858,6 +844,50 @@
     "filename": "api/controllers/dataset.js",
     "groupTitle": "Dataset",
     "name": "PostDatasetDelete"
+  },
+  {
+    "group": "Dataset",
+    "type": "post",
+    "url": "/dataset/ds/:id",
+    "title": "Generate dataset download script",
+    "description": "<p>Generate shell script that can download specified set of datasets. It g</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": true,
+            "field": "find",
+            "description": "<p>Optional Mongo query to perform (you need to JSON.stringify)</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": true,
+            "field": "datatype_tags",
+            "description": "<p>List of datatype tags to filter (you can use exclusion tags also)</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "generated",
+            "description": "<p>bash shell script</p>"
+          }
+        ]
+      }
+    },
+    "version": "0.0.0",
+    "filename": "api/controllers/dataset.js",
+    "groupTitle": "Dataset",
+    "name": "PostDatasetDsId"
   },
   {
     "group": "Dataset",
@@ -1338,6 +1368,13 @@
             "optional": false,
             "field": "app",
             "description": "<p>Application ID</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": false,
+            "field": "extra_datatype_tags",
+            "description": "<p>Datatype tags to add to each inputs</p>"
           },
           {
             "group": "Parameter",

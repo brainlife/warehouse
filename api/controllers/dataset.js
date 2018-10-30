@@ -390,16 +390,12 @@ router.get('/prov/:id', (req, res, next)=>{
  *
  * @apiParam {String} project           Project ID used to store this dataset under
  * @apiParam {String} task_id           WF service Task ID (of output task)
- * @apiParam {String} output_id         App's output_id that generated this dataset
+ * @apiParam {String} output_id         output_id to archive
  * @apiParam {String} [subdir]          Subdirectory where all files are actually stored under the task output
  *
- * @apiParam {String} datatype          Data type ID for this dataset (from Datatypes)
- * @apiParam {String[]} datatype_tags   Datatype tags to set
- * @apiParam {Object} [files]           File mapping to override default file path given by datatype
- *
- * @apiParam {Object} [meta]            Metadata - as prescribed in datatype.meta
+ * @apiParam {Object} [meta]            Metadata - to override
+ * @apiParam {String[]} [tags]          List of tags to add
  * @apiParam {String} [desc]            Description for this crate
- * @apiParam {String[]} [tags]          List of tags associated with this dataset
  *
  * @apiParam {Boolean} await            Wait for dataset to be fully achived before returning (default true)
  *
@@ -410,21 +406,17 @@ router.get('/prov/:id', (req, res, next)=>{
  */
 router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     if(!req.body.project) return cb("project id not set");
-    if(!req.body.datatype) return cb("datatype id not set");
     if(!req.body.task_id) return cb("task_id not set");
     if(!req.body.output_id) return cb("output_id not set");
-	if(!req.body.files) req.body.files = {};
 
     let await = true;
     if(req.body.await === false) await = false;
     
-	//TODO - files (especially file.dirname) should be validated.
-
+    //to be loaded..
     var task = null;
-    var datatype = null;
-    var dataset = null;
-	var tmpdir = null;
-	var cleantmp = null;
+    var output = null;
+
+    logger.debug("posting new dataset");
 
     async.series([
         next=>{
@@ -453,57 +445,77 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             });
         },
 
+        /*
+        next=>{
+            //find specified app
+            db.Apps.findById(req.body.app_id, (err, _app)=>{
+                if(err) return next(err);
+                //I should find private app that user doesn't have access to?
+                if(!_app) return next("no such app");
+                app = _app;
+                next();
+            });
+        },
+        */
+
+        next=>{
+            //find output
+            console.dir(task.config);
+            output = task.config._outputs.find(o=>o.id == req.body.output_id);
+            if(!output) return next("no such output_id");
+            next();
+        },
+
         next=>{
             //WARNING - similar code exists in event_handler
 			//logger.debug("registering new dataset record", req.body.meta);
-            let products = common.split_product(task.product, [{
+            let products = common.split_product(task.product, task.config._outputs);
+            /*[{
                 id: req.body.output_id,
-                datatype_tags: req.body.datatype_tags||[],
+                datatype_tags,
                 tags: req.body.tags||[],
                 meta: req.body.meta||{},
-            }]);
+            }]);*/
 
             let product = products[req.body.output_id];
-            let d = {
+            if(!product) return next("no such output_id in app");
+
+            //merge stuff that user requested at the last minute
+            if(req.body.meta) Object.assign(product.meta, req.body.meta);
+            if(req.body.tags) product.tags = product.tags.concat(req.body.tags).unique();
+
+            new db.Datasets({
                 user_id: req.user.sub,
-
                 project: req.body.project,
-                datatype: req.body.datatype,
-                datatype_tags: product.datatype_tags,
-
                 desc: req.body.desc,
+
                 tags: product.tags,
                 meta: product.meta,
+                datatype: output.datatype,
+                datatype_tags: product.datatype_tags,
+
+                status: "storing",
+                //status_msg: "", //anything to say?
 
                 product,
 
                 prov: {
                     task, //TODO - mongo doesn't allow key that contains ".".. I should do something about that.. 
-
-                    //deprecated by prov.task (will be removed)
-                    instance_id: task.instance_id,
-                    task_id: task._id,
-                    
                     output_id: req.body.output_id,
                     subdir: req.body.subdir, //optional
+
+                    instance_id: task.instance_id, //deprecated
+                    task_id: task._id, //deprecated
                 },
-            };
-            //console.log("registering new dataset.................");
-            //console.dir(d);
-            new db.Datasets(d).save((err, _dataset)=>{
+            }).save((err, dataset)=>{
                 if(err) return next(err);
-        		dataset = _dataset;
                 logger.debug("created dataset record......................", dataset.toObject());
                 if(!await) res.json(dataset); 
-                next(err);
+
+                logger.debug("running archive_task now");
+                common.archive_task(dataset, /*req.body.files,*/ req.headers.authorization, next);
             });
         },
-
-        next=>{
-            logger.debug("transfering data");
-            common.archive_task(task, dataset, req.body.files, req.headers.authorization, next);
-        },
-
     ], err=>{
         if(err) return cb(err);
         logger.debug("all done archiving");    
