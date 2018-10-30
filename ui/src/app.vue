@@ -27,7 +27,7 @@
                             <doibadge :doi="app.doi" v-if="app.doi" style="float: right; margin-bottom: 7px;"/>
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
-                        <appstats :app="app" style="clear: both; border-top: 1px solid #f0f0f0; padding-top: 10px; margin-top: 5px;"/>
+                        <appstats :create_date="app.create_date" :info="info" style="clear: both; border-top: 1px solid #f0f0f0; padding-top: 10px; margin-top: 5px;"/>
                     </b-col>
                 </b-row>
 
@@ -147,6 +147,16 @@
                         <p>If this app fails, it will automatically be rerun up to <b>{{app.retry}}</b> times</p>
                     </b-col>
                 </b-row>
+
+                <b-row v-if="info">
+                    <b-col cols="3">
+                        <span class="form-header">Info</span>
+                    </b-col>
+                    <b-col>
+                        {{info}}
+                    </b-col>
+                </b-row>
+
 
                 <b-row v-if="resources">
                     <b-col cols="3">
@@ -317,6 +327,7 @@ export default {
             preferred_resource: null,
             resources: null,
             readme: null,
+            info: null,
 
             selfurl: document.location.href,
 
@@ -340,6 +351,13 @@ export default {
             this.app = res.body.apps[0];
             if(this.config.user) this.find_resources(this.app.github);
 
+            //then load service info
+            return this.$http.get(Vue.config.wf_api+'/service/info', {params: {
+                service: this.app.github,
+            }});
+        }).then(res=>{
+            this.info = res.body;
+
             //then load github README
             var branch = this.app.github_branch||"master";
             return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
@@ -347,6 +365,7 @@ export default {
             if(res.status == "200") return res.text()
         }).then(readme=>{
             this.readme = readme;
+
         }).catch(err=>{
             console.error(err);
         });

@@ -34,14 +34,14 @@
             </div>
             <div class="desc">{{app_.desc_override||app_.desc||'no description..'}}</div>
             <slot/>
-            <div class="stats" v-if="app_.stats && app_.stats.service">
+            <div class="stats" v-if="app_.stats">
                 <span class="stat" v-b-tooltip.hover.d500 title="Number of time this App was requested">
-                    <icon name="play" scale="0.8"/> {{app_.stats.service.counts.requested}}
+                    <icon name="play" scale="0.8"/> {{app_.stats.requested}}
                     &nbsp;
                     &nbsp;
                 </span>
                 <span class="stat" v-b-tooltip.hover.d500 title="Number of unique users who requested this App">
-                    <icon name="user" scale="0.8"/> {{app_.stats.service.users}}
+                    <icon name="user" scale="0.8"/> {{app_.stats.users}}
                     &nbsp;
                     &nbsp;
                 </span>
