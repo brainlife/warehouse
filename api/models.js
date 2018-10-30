@@ -102,7 +102,7 @@ var projectSchema = mongoose.Schema({
     listed: { type: Boolean, default: false},
 
     //list of agreemenets that user must agree before accessing datasets
-    agreements: [ new mongoose.Schema({agreement: "string"}) ], 
+    agreements: [ new mongoose.Schema({agreement: String}) ], 
     
     create_date: { type: Date, default: Date.now },
 
@@ -128,7 +128,7 @@ var publicationSchema = mongoose.Schema({
     doi: String, //doi for this dataset (we generate this)
     paper_doi: String, //doi for the paper (journal should publish this)
 
-    fundings: [ new mongoose.Schema({funder: "string", id: "string"}) ], 
+    fundings: [ new mongoose.Schema({funder: String, id: String}) ], 
     
     //project that this data belongs to
     project: {type: mongoose.Schema.Types.ObjectId, ref: "Projects"},
@@ -347,7 +347,7 @@ var appSchema = mongoose.Schema({
 
     //TODO - citation / references can easily be part of README.md on github..
     citation: String,
-    references: [ new mongoose.Schema({text: 'string'}) ], 
+    references: [ new mongoose.Schema({text: String}) ], 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -363,7 +363,7 @@ var appSchema = mongoose.Schema({
     desc_override: String, //if user wants to override the githut desc
 
     tags: [String], //pulled from github/repo topics
-    contributors: [ new mongoose.Schema({name: 'string', email: 'string'}) ], //TODO - pull from github
+    contributors: [ {name: String, email: String} ], //populated by appinfo from github
     //
     //
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -399,8 +399,13 @@ var appSchema = mongoose.Schema({
         
     //_rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
 
-    //various stats for this app (aggregated by app.js)
-    stats: mongoose.Schema.Types.Mixed, 
+    //basic stats for this app (aggregated by bin/appinfo.js - most info comes from amaretti/service/info)
+    stats: {
+        requested: Number, //number of times this app was requested
+        users: Number, //number of users who used this app
+        stars: Number, //github stars
+        success_rate: Number, 
+    },
     
     removed: { type: Boolean, default: false} ,
 

@@ -251,16 +251,12 @@ exports.load_github_detail = function(service_name, cb) {
                         logger.error(_res.body);
                         return next_con("failed to load user detail:"+_res.statusCode);
                     }
-                    //console.dir(detail);
                     con_details.push(detail);
                     next_con();
                 });
             }, err=>{
-                //console.dir(con_details);
                 cb(null, git, con_details);
             });
-            //load collaborators (developers)
-            //cb(null, git, cons);
         });
     });
 }
@@ -453,6 +449,7 @@ exports.deref_contact = function(id) {
     return cached_contacts[id];
 }
 
+/* bad pattern..
 exports.populate_github_fields = function(repo, app, cb) {
     exports.load_github_detail(repo, (err, repo, con_details)=>{
         if(err) return cb(err);
@@ -464,9 +461,11 @@ exports.populate_github_fields = function(repo, app, cb) {
             //see https://api.github.com/users/francopestilli for other fields
             return {name: con.name, email: con.email};
         });
+        console.dir(app.contributors.toObject());
         cb();
     });
 }
+*/
 
 //for split_product
 Array.prototype.unique = function() {

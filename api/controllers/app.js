@@ -37,23 +37,6 @@ function validate_projects(user, projects_ids, cb) {
     });
 }
 
-/*
-function populate_github_fields(repo, app, cb) {
-    //load github info
-    common.load_github_detail(repo, (err, repo, con_details)=>{
-        if(err) return cb(err);
-
-        app.desc = repo.description;
-        app.tags = repo.topics;
-        app.contributors = con_details.map(con=>{
-            //see https://api.github.com/users/francopestilli for other fields
-            return {name: con.name, email: con.email};
-        });
-        cb();
-    });
-}
-*/
-
 /**
  * @apiGroup App
  * @api {get} /app              Query apps
@@ -111,55 +94,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
 });
 
-/**
- * @apiGroup App
- * @api {post} /app/:id/rate    Rate app
- * @apiDescription              Rate app in 1-5 scale with given app id
- *
- * @apiParam {Number} rate      1-5
- *
- * @apiHeader {String} authorization 
- *                              A valid JWT token "Bearer: xxxxx"
- *
- * @apiSuccess {Number}         Aggregated rating of the app after this update
- */
-/*
-router.post('/:id/rate', jwt({secret: config.express.pubkey}), function(req, res, next) {
-    //first, find the app
-    db.Apps.findById(req.params.id, function(err, app) {
-        if (err) return next(err); 
-        if(!app) return next(new Error("can't find the app with id:"+req.params.id));
-
-        //then upsert new rate 
-        db.Apprates.findOneAndUpdate({app: req.params.id, user_id: req.user.sub}, {
-            app: req.params.id,
-            user_id: req.user.sub,
-            rate: req.body.rate,
-        }, {upsert:true}, function(err, rate){
-            if (err) return next(err);
-
-            //aggregate rate from all users
-            db.Apprates.aggregate([
-                { $match: { app: app._id }},
-                { $group: {
-                    _id: "$app",
-                    avgRate: {$avg: "$rate" }
-                }}
-            ]).exec((err, avgret)=>{
-                if(err) return next(err);
-
-                //update the app._rate
-                app._rate = avgret[0].avgRate;
-                app.save();
-                //console.log("new _rate", app._rate);
-
-                res.json({_rate: app._rate});
-            });
-        });
-    });
-});   
-*/
-
 function mint_doi(cb) {
     db.Apps.count({doi: {$exists: true}}).exec((err, count)=>{
         if(err) return cb(err);
@@ -204,30 +138,30 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 
         //create app record and load github info into
         let app = new db.Apps(req.body);
-        common.populate_github_fields(req.body.github, app, err=>{
-            if (err) return next(err); 
-            mint_doi((err, doi)=>{
+        //common.populate_github_fields(req.body.github, app, err=>{
+        //    if (err) return next(err); 
+        mint_doi((err, doi)=>{
+            if(err) return next(err);
+            app.doi = doi;
+            app.save((err, _app)=>{
                 if(err) return next(err);
-                app.doi = doi;
-                app.save((err, _app)=>{
+                app = JSON.parse(JSON.stringify(_app));
+                app._canedit = canedit(req.user, app);
+                res.json(app);
+                
+                //post metadata and set url
+                let metadata = common.compose_app_datacite_metadata(_app);
+                common.doi_post_metadata(metadata, err=>{
                     if(err) return next(err);
-                    app = JSON.parse(JSON.stringify(_app));
-                    app._canedit = canedit(req.user, app);
-                    res.json(app);
-                    
-                    //post metadata and set url
-                    let metadata = common.compose_app_datacite_metadata(_app);
-                    common.doi_post_metadata(metadata, err=>{
-                        if(err) return next(err);
-                        //then attach url to it (to "mint" it!)
-                        let url = config.warehouse.url+"/app/"+app._id;  
-                        common.doi_put_url(app.doi, url, err=>{
-                            if(err) logger.error(err);
-                        });
+                    //then attach url to it (to "mint" it!)
+                    let url = config.warehouse.url+"/app/"+app._id;  
+                    common.doi_put_url(app.doi, url, err=>{
+                        if(err) logger.error(err);
                     });
                 });
             });
         });
+        //});
     });
 });
 
@@ -269,65 +203,65 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 delete req.body.user_id;
                 delete req.body.create_date;
                 for(var k in req.body) app[k] = req.body[k];
-                common.populate_github_fields(req.body.github, app, err=>{
-                    if(err) return next(err);
-                    if(app.doi) {
-                        logger.debug("has doi !!!!!!!!!!!", app.doi);
-                        app.save((err)=>{
+                //common.populate_github_fields(req.body.github, app, err=>{
+                //    if(err) return next(err);
+                if(app.doi) {
+                    logger.debug("has doi !!!!!!!!!!!", app.doi);
+                    app.save((err)=>{
+                        if(err) return next(err);
+                        app = JSON.parse(JSON.stringify(app));
+                        app._canedit = canedit(req.user, app);
+                        res.json(app);
+                    });
+                    
+                    //update datacite info
+                    let metadata = common.compose_app_datacite_metadata(app);
+                    logger.debug("updating doi inffo", metadata);
+                    common.doi_post_metadata(metadata, err=>{
+                        if(err) logger.error(err);
+                        //shouldn't need to be updated but just in case..
+                        let url = config.warehouse.url+"/app/"+app._id; 
+                        logger.debug("setting url", url, app.doi);
+                        common.doi_put_url(app.doi, url, err=>{
+                            if(err) logger.error(err);
+                        });
+                    });
+
+                } else {
+                    
+                    //////////////////////////////////////////////////////////////////////
+                    //
+                    //old app? let's mint doi (deprecate this eventually..)
+                    //
+                    mint_doi((err, doi)=>{
+                        if(err) return next(err);
+                        logger.debug("minting doi", doi);
+                        app.doi = doi;
+                        app.save((err, _app)=>{
                             if(err) return next(err);
-                            app = JSON.parse(JSON.stringify(app));
+                            app = JSON.parse(JSON.stringify(_app));
                             app._canedit = canedit(req.user, app);
                             res.json(app);
-                        });
-                        
-                        //update datacite info
-                        let metadata = common.compose_app_datacite_metadata(app);
-                        logger.debug("updating doi inffo", metadata);
-                        common.doi_post_metadata(metadata, err=>{
-                            if(err) logger.error(err);
-                            //shouldn't need to be updated but just in case..
-                            let url = config.warehouse.url+"/app/"+app._id; 
-                            logger.debug("setting url", url, app.doi);
-                            common.doi_put_url(app.doi, url, err=>{
-                                if(err) logger.error(err);
-                            });
-                        });
-
-                    } else {
-                        
-                        //////////////////////////////////////////////////////////////////////
-                        //
-                        //old app? let's mint doi (deprecate this eventually..)
-                        //
-                        mint_doi((err, doi)=>{
-                            if(err) return next(err);
-                            logger.debug("minting doi", doi);
-                            app.doi = doi;
-                            app.save((err, _app)=>{
+                            
+                            //post metadata and set url
+                            let metadata = common.compose_app_datacite_metadata(_app);
+                            common.doi_post_metadata(metadata, err=>{
                                 if(err) return next(err);
-                                app = JSON.parse(JSON.stringify(_app));
-                                app._canedit = canedit(req.user, app);
-                                res.json(app);
-                                
-                                //post metadata and set url
-                                let metadata = common.compose_app_datacite_metadata(_app);
-                                common.doi_post_metadata(metadata, err=>{
-                                    if(err) return next(err);
-                                    //then attach url to it (to "mint" it!)
-                                    let url = config.warehouse.url+"/app/"+_app._id; 
-                                    logger.debug("setting url", url, app.doi);
-                                    common.doi_put_url(app.doi, url, err=>{
-                                        if(err) logger.error(err);
-                                    });
+                                //then attach url to it (to "mint" it!)
+                                let url = config.warehouse.url+"/app/"+_app._id; 
+                                logger.debug("setting url", url, app.doi);
+                                common.doi_put_url(app.doi, url, err=>{
+                                    if(err) logger.error(err);
                                 });
                             });
-                            
                         });
-                        //
-                        //
-                        //////////////////////////////////////////////////////////////////////
-                    }
-                });
+                        
+                    });
+                    //
+                    //
+                    //////////////////////////////////////////////////////////////////////
+                }
+                //});
             }
         });
     });
@@ -362,29 +296,6 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
         } else return res.status(401).end();
     });
 });
-
-/**
- * @apiGroup Dataset
- * @api {get} /app/bibtex/:id   Download BibTex JSON for BrainLife Application
- * @apiDescription              Output BibTex JSON content for specified application ID
- */
-/*
-router.get('/bibtex/:id', (req, res, next)=>{
-    db.Apps.findById(req.params.id, function(err, app) {
-        if(err) return next(err);
-        res.set('Content-Type', 'application/x-bibtex');
-        res.write("@misc{https://brain-life.org/warehouse/#/app/"+app._id+",\n")
-        //res.write(" doi = {11.1111/b.ds."+app._id+"},\n");
-        res.write(" author = {Hayashi, Soichi},\n");
-        res.write(" keywords = {},\n");
-        res.write(" title = {brainlife application "+app._id+"},\n");
-        res.write(" publisher = {BrainLife},\n");
-        res.write(" year = {"+(app.create_date.getYear()+1900)+"},\n");
-        res.write("}");
-        res.end();
-    });
-});
-*/
 
 module.exports = router;
 

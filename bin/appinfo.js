@@ -24,16 +24,14 @@ db.init(function(err) {
     });
 });
 
-let app_counts = 0;
+var report = {
+    status: "ok",
+    maxage: 1000*60*30,
+    app_counts: 0,
+}
 
 function health_check() {
-    var report = {
-        status: "ok",
-        date: new Date(),
-        maxage: 1000*60*30,
-        app_counts,
-    }
-
+    report.date = new Date();
     rcon.set("health.warehouse.appinfo.0", JSON.stringify(report));
 }
 
@@ -44,44 +42,50 @@ function run() {
     //.populate('app project')
     .exec((err, apps)=>{
 		if(err) throw err;
-        app_counts = 0;
+        report.app_counts = apps.length;
         async.eachSeries(apps, handle_app, err=>{
             if(err) logger.error(err);
-            logger.debug("done with all apps - sleeping for an hour");
-            setTimeout(run, 1000*60*60);
+            logger.debug("done with all apps - sleeping for 3 hours");
+            setTimeout(run, 1000*3600*3);
         });
 	});
 }
 
 function handle_app(app, cb) {
-    app_counts++;
     logger.debug("......................................", app.name, app._id.toString());
 
-    logger.debug("querying service stats");
+    logger.debug("caching serviceinfo");
     request.get({
-        url: config.amaretti.api+"/task/stats", json: true,
+        url: config.amaretti.api+"/service/info", json: true,
         headers: { authorization: "Bearer "+config.auth.jwt },
         qs: {
             service: app.github,
             //service_branch: app.github_branch,  //let's not group by branch for now.
         }
-    }, (err, res, service)=>{
+    }, (err, res, info)=>{
         if(err) return cb(err);
         if(res.statusCode != 200) return cb("couldn't obtain service stats "+res.statusCode);
 
-        //compute success rate
-        let finished = service.counts.finished||0;
-        let failed = service.counts.failed||1;
-        let success_rate = (finished / (failed+finished))*100;
-
-        common.populate_github_fields(app.github, app, err=>{
+        common.load_github_detail(app.github, (err, repo, con_details)=>{
             if(err) return cb(err);
-            //app.stats = {service, success_rate, stars: app.stats.stars}
-            app.stats.service = service;
-            app.stats.success_rate = success_rate;
+
+            if(!app.stats) app.stats = {};
+            app.stats.stars = repo.stargazers_count;
+            if(info) {
+                app.stats.requested = info.counts.requested;
+                app.stats.users = info.users;
+                app.stats.success_rate = info.success_rate;
+            }
+
+            //see https://api.github.com/users/francopestilli for other fields
+            app.contributors = con_details.map(con=>{
+                return {name: con.name, email: con.email};
+            });
+            
             //done.. save it
+            //app.markModified('stats');
+            //app.markModified('contributors');
             console.dir(app.stats);
-            app.markModified('stats');
             app.save(cb);
         });
     });

@@ -18,6 +18,9 @@ app.use(cors());
 app.use(compression());
 app.use(nocache());
 
+app.disable('etag'); //to speed things up, but I really haven't noticed much difference
+app.disable('x-powered-by'); //for better security?
+
 //parse application/json
 app.use(bodyParser.json({limit: '2mb'}));  //default is 100kb
 app.use(bodyParser.urlencoded({ extended: false }));
