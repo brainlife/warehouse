@@ -107,7 +107,7 @@
                             <b-col>
                                 <p>
                                     <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                                        <icon name="cog" :spin="true"/> <b>Storing ... </b> 
+                                        <icon name="cog" :spin="true"/> <b>{{dataset.status_msg||'Storing ...'}}</b> 
                                         <!--Please wait before you download / process this dataset.-->
                                     </span> 
                                     <span v-if="dataset.status == 'stored'">
@@ -642,7 +642,7 @@ export default {
                             instance_id,
                             name,
                             service: "soichih/sca-product-raw",
-                            config: { download },
+                            config: { download, _tid: -1 },
                             remove_date: remove_date,
                         }).then(res=>res.body.task);
                     }).then(task=>{
