@@ -7,7 +7,7 @@
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.25"/>
                 </div>
-                <div class="button" @click="start_viewer(dataset.datatype.name)" v-if="config.user && dataset.storage" title="View Dataset">
+                <div class="button" @click="start_viewer(dataset.datatype)" v-if="config.user && dataset.storage" title="View Dataset">
                     <icon name="eye" scale="1.25"/>
                 </div>
                 <div class="button" @click="download" v-if="dataset.storage" title="Download Dataset">
@@ -22,7 +22,8 @@
             </div>
             <h4>
                 <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
-                    <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div><datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+                    <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div>
+                    <datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
                 </div>
             </h4>
         </div><!--header-->
@@ -444,7 +445,7 @@ export default {
                 name: "Staged Datasets - "+this.dataset.datatype.name,
                 service: "soichih/sca-product-raw",
                 config: { 
-                    _tid: 0 ,
+                    _tid: 0,
                     download: [
                         {
                             url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
@@ -595,28 +596,31 @@ export default {
         },
         */
 
-        start_viewer(datatype_name) {
+        start_viewer(datatype) {
             this.check_agreements(this.dataset.project, ()=>{
-                //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
-                this.$root.$emit("viewselecter.open", {
-                    datatype_name,
-                    task_cb: this.create_view_task, 
-                    subdir: "output",
+                //go ahead and create task before user selecting view (if user cancel, they might change their mind)
+                this.create_view_task((err, task, subdir)=>{
+                    if(err) return this.$notify(err);
+                    this.$root.$emit("viewselecter.open", { datatype, task, subdir });
                 });
             });
         },
 
         create_view_task(cb) {
             //first, query for the viewing task to see if it already exist
-            var name = "brainlife.view "+this.dataset._id;
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
-                find: JSON.stringify({ name, status: { $ne: "removed" } })
+                find: JSON.stringify({ 
+                    status: { $ne: "removed" },
+                    service: "soichih/sca-product-raw", 
+                    "config.download.dir": this.dataset._id,
+                })
             }})
             .then(res=>{
                 if(res.body.count == 1) {
-                    cb(res.body.tasks[0]);
+                    //find the dataset
+                    let task = res.body.tasks[0];
+                    cb(null, res.body.tasks[0], this.dataset._id);
                 } else {
-
                     //create instance to download dataset to
                     this.$http.post(Vue.config.amaretti_api+'/instance', {
                         name: "brainlife.download",
@@ -631,22 +635,23 @@ export default {
                         download.push({
                             url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
                             untar: "auto",
-                            dir: "output",
+                            dir: this.dataset._id,
                         });
 
                         //remove in 48 hours (abcd-novnc should terminate in 24 hours)
                         var remove_date = new Date();
                         remove_date.setDate(remove_date.getDate()+2);
 
+                        console.log("submitting staging task");
                         return this.$http.post(Vue.config.amaretti_api+'/task', {
                             instance_id,
-                            name,
+                            name: "brainlife.download",
                             service: "soichih/sca-product-raw",
                             config: { download },
                             remove_date: remove_date,
                         }).then(res=>res.body.task);
                     }).then(task=>{
-                        cb(task);
+                        cb(null, task, this.dataset._id);
                     }).catch(console.error);
                 }
             });

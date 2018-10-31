@@ -2,21 +2,8 @@
 <div id="warehouse">
     <router-view/>
     <notifications position="bottom right"/>
+    <modals/>
 
-    <!--modal that can be called from any view -->
-    <dataset/>
-    <datatype/>
-    <agreements/>
-    <downscript/>
-
-    <!--models only used by project page (TODO - move to project page eventually -->
-    <div v-if="config.user">
-        <viewselecter/>
-        <datasetselecter/>
-        <uploader/>
-        <instanceselecter/>
-        <archiver/>
-    </div>
 </div>
 </template>
 
@@ -24,22 +11,11 @@
 
 import Vue from 'vue'
 
-//modals
-import viewselecter from '@/modals/viewselecter'
-import dataset from '@/modals/dataset'
-import datatype from '@/modals/datatype'
-import datasetselecter from '@/modals/datasetselecter'
-import uploader from '@/modals/uploader'
-import instanceselecter from '@/modals/instanceselecter'
-import archiver from '@/modals/archiver'
-import agreements from '@/modals/agreements'
-import downscript from '@/modals/downscript'
+import modals from '@/components/modals'
 
 export default {
     components: {
-        viewselecter, dataset, datatype, 
-        uploader, datasetselecter, instanceselecter, 
-        archiver, agreements, downscript,
+        modals,
     },
     data() {
         return {
@@ -51,8 +27,6 @@ export default {
         setInterval(()=>{
             this.$root.$emit("refresh_jwt");
         }, 1000*1800);  //refresh in half an hour
-    },
-    methods: { 
     },
 }
 

@@ -16,6 +16,7 @@
         </div>
     </div>
     <div v-else style="padding: 20px; height: 100%; overflow: auto;">
+        <!--still staging-->
         <task :task="task"/>
     </div>
 </div>
@@ -29,7 +30,6 @@ import dtiinit from '@/datauis/dtiinit'
 import freesurfer from '@/datauis/freesurfer'
 import tractview from '@/datauis/tractview'
 import surfaces from '@/datauis/surfaces'
-//import lifeview from '@/datauis/lifeview'
 import life from '@/datauis/life'
 import evaluator from '@/datauis/evaluator'
 import images from '@/datauis/images'
@@ -39,8 +39,11 @@ import filebrowser from '@/components/filebrowser'
 import task from '@/components/task'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
+import wait from '@/mixins/wait'
+
 export default {
-    props: [ 'instanceid', 'taskid', 'type', 'datatype64', 'subdir' ],
+    mixins: [ wait ],
+    props: [ /*'instanceid',*/ 'taskid', 'type', 'datatype64', 'subdir' ],
     components: { 
         dtiinit, freesurfer, tractview, 
         life, evaluator, images, 
@@ -50,16 +53,25 @@ export default {
 
     data() {
         return {
-            instance: null,
-            error: null,
+            //task: null, //input task
+        }
+    },
 
-            task: null, //input task
-            novnc_task: null, //novnc task for novnc based views
+    watch: {
+        taskid: function() {
+            console.log("taskid modified.. what should I do");
         }
     },
 
     mounted() {
-        this.wait();
+        console.log("view mounted", this.taskid);
+        console.log("taskid", this.taskid);
+        if(!this.taskid) return;
+        this.wait(this.taskid, task=>{
+            console.log("done waiting");
+            //this.task = task;
+        });
+        
     },
     computed: {
         datatype() {
@@ -72,21 +84,22 @@ export default {
             this.$router.push(path);
         },
 
-        //wait for the staging task to finish
-        wait(cb) {
-            if(!cb) cb = ()=>{};
-
+        //poll task status until it becomes finished
+        /*
+        wait() {
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({ _id: this.taskid, })
             }})
             .then(res=>{
                 this.task = res.body.tasks[0];
-                console.log("polling", this.task.status, this.task.status_msg);
-                if(this.task.status == 'finished') cb();
-                else if(this.task.status == 'removed') {
+                if(this.task.status == 'finished') return; //ready to show!
+                if(this.task.status == 'removed') {
+                    console.debug("rerunning");
                     this.rerun();
-                    setTimeout(()=>{this.wait(cb)}, 5000);
-                } else setTimeout(()=>{this.wait(cb)}, 500);
+                }
+
+                console.debug("polling task status.."+this.taskid);
+                setTimeout(()=>{this.wait()}, 300);
             });
         },
 
@@ -99,6 +112,7 @@ export default {
                 console.error(err); 
             });
         },
+        */
     }
 }
 </script>

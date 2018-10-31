@@ -19,9 +19,11 @@ import Vue from 'vue'
 
 import task from '@/components/task'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+import wait from '@/mixins/wait'
 
 export default {
-    props: [ 'instanceid', 'taskid', 'type', 'subdir' ],
+    mixins: [ wait ],
+    props: [ /*'instanceid',*/ 'taskid', 'type', 'subdir' ],
     components: { 
         task
     },
@@ -30,30 +32,29 @@ export default {
         return {
             instance: null,
             error: null,
-
-            task: null, //input task
             novnc_task: null, //novnc task for novnc based views
         }
     },
 
     mounted: function() {
-        this.wait(this.open_novnc);
+        this.wait(this.taskid, ()=>{
+            this.open_novnc();
+        });
     },
 
     methods: {
-        //wait for the data task to finish
+        //wait for the staging task to finish
+        /*
         wait: function(cb) {
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({ _id: this.taskid, })
             }})
             .then(res=>{
                 this.task = res.body.tasks[0];
+                if(this.task.status == 'finished') return cb();
+                if(this.task.status == 'removed') this.rerun();
                 console.log("polling", this.task.status, this.task.status_msg);
-                if(this.task.status == 'finished') cb();
-                else if(this.task.status == 'removed') {
-                    this.rerun();
-                    setTimeout(()=>{this.wait(cb)}, 5000);
-                } else setTimeout(()=>{this.wait(cb)}, 1000);
+                setTimeout(()=>{this.wait(cb)}, 300);
             });
         },
 
@@ -66,6 +67,7 @@ export default {
                 console.error(err); 
             });
         },
+        */
 
         open_novnc() {
             this.get_instance_singleton("novnc").then((instance)=>{
@@ -76,10 +78,10 @@ export default {
                     find: JSON.stringify({
                         instance_id: instance._id,
                         name: task_name,
-                        "config.input_instance_id": this.instanceid,
+                        //"config.input_instance_id": this.instanceid,
+                        "config.input_instance_id": this.task.instance_id,
                         "config.input_task_id": this.taskid,
                         "config.type": this.type,
-                        //"create_date": { $gte: hourago },
                     })
                 }})
                 .then(res=>{
@@ -92,7 +94,9 @@ export default {
                             service: "soichih/abcd-novnc",
                             max_runtime: 3600*1000, //1 hour should be enough?
                             config: {
-                                "input_instance_id": this.instanceid,
+                                _tid: -1,
+                                //"input_instance_id": this.instanceid,
+                                "input_instance_id": this.task.instance_id,
                                 "input_task_id": this.taskid,
                                 "type": this.type,
                                 "subdir": this.subdir,
@@ -175,7 +179,6 @@ export default {
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
             var ws = new ReconnectingWebSocket(url, null, {debug: Vue.config.debug, reconnectInterval: 3000});
             ws.onopen = (e)=>{
-                //var key = Vue.config.user.sub+"."+instanceid+"."+taskid;
                 var key = instanceid+"."+taskid;
                 console.log("websocket opened: binding to ", key);
                 ws.send(JSON.stringify({

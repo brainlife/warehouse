@@ -234,7 +234,7 @@
                         <span class="form-header">Past Executions</span>
                     </b-col>
                     <b-col>
-                        <vue-plotly :data="hist_data" :layout="hist_layout" :autoResize="true"/>
+                        <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true"/>
                     </b-col>
                 </b-row>
 
@@ -393,6 +393,9 @@ export default {
                     name: 'Finished',
                     marker: {
                         color: 'green',
+                    },
+                    line: {
+                        width: 1,
                     }
                 },
                 {
@@ -402,6 +405,9 @@ export default {
                     name: 'Failed',
                     marker: {
                         color: '#dc3545',
+                    },
+                    line: {
+                        width: 1,
                     }
                 },
             ];
@@ -411,7 +417,13 @@ export default {
             return {
                 //title: 'Execution History',
                 //barmode: 'stack',
-                height: 300,
+                height: 150,
+                margin: {
+                    l: 30,
+                    r: 10,
+                    b: 20,
+                    t: 10,
+                },
             }
         }, 
     },

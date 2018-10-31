@@ -78,7 +78,6 @@
                 <small>Dataset tags is used to help organize datasets and make searching easier. It can be edited by users anytime.</small>
             </b-form-group>
             <b-form-group horizontal label="Datatype Tags">
-                <!--<datatypetag :datatype="datatype_id" :tags="datatype_tags"/>-->
                 <tageditor v-model="datatype_tags" :options="available_dt_tags"/>
                 <small>Datatype tags add context to the datatype. It can not be changed once archived.</small>
             </b-form-group>
@@ -109,14 +108,14 @@ import projectselecter from '@/components/projectselecter'
 import task from '@/components/task'
 import tageditor from '@/components/tageditor'
 import product from '@/components/product'
-import datatypetag from '@/components/datatypetag'
+//import datatypetag from '@/components/datatypetag'
 
 //singleton instance to handle upload request
 export default {
     components: { 
         sidemenu, pageheader, projectselecter, 
         task, tageditor, product,
-        datatypetag,
+        //datatypetag,
     },
     data () {
         return {

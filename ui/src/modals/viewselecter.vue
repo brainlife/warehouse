@@ -1,6 +1,6 @@
 <template>
-<b-modal :no-close-on-backdrop='true' title="Select Viewer" ref="modal" id="viewSelecter" size="lg" hide-footer>
-    {{datatype_name}}
+<b-modal :no-close-on-backdrop='true' title="Select Viewer" ref="selmodal" id="viewSelecter" size="lg" hide-footer>
+    <!--<datatypetag :datatype="datatype" :tags="[]"/>-->
     <b-card-group deck class="mb-1" style="padding-bottom: 10px;" v-for="(group, gidx) in views.chunk_inefficient(3)" :key="gidx">
         <b-card 
             v-for="(view, idx) in group" :key="idx"
@@ -14,8 +14,8 @@
             <p class="card-text">{{view.desc}}</p>
         </b-card>
     </b-card-group>
-    <div style="opacity: 0.7">
-        <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+datatype_name+' datatype'" target="_blank" style="float: right;">Suggest a new visualization tool</a>
+    <div style="opacity: 0.7" v-if="datatype">
+        <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+datatype.name+' datatype'" target="_blank" style="float: right;">Suggest a new visualization tool</a>
         <h4>
             <b-badge variant="dark">Web UI</b-badge>
             <b-badge variant="success">Docker</b-badge>
@@ -23,8 +23,12 @@
     </div>
 </b-modal>
 </template>
+
 <script>
+
 import Vue from 'vue'
+
+//import datatypetag from '@/components/datatypetag'
 
 //from stackoverflow somewhere
 if(![].chunk_inefficient) {
@@ -41,12 +45,12 @@ if(![].chunk_inefficient) {
 }
 
 export default {
+    //components: [ datatypetag ], 
     data () {
         return {
             //set by viewselecter.open
-            datatype_name: null,
+            datatype: null,
             task: null, 
-            task_cb: null, 
             subdir: null,
 
             config: Vue.config,
@@ -54,13 +58,11 @@ export default {
         } 
     },
     mounted() {
-        this.$root.$on("viewselecter.open", (opt)=>{
-            this.datatype_name = opt.datatype_name;
+        this.$root.$on("viewselecter.open", opt=>{
+            this.datatype = opt.datatype;
             this.task = opt.task;
-            this.task_cb = opt.task_cb;
             this.subdir = opt.subdir;
-
-            this.$refs.modal.show();
+            this.$refs.selmodal.show();
         });
 
         //TODO - move to db (part of datatype?)
@@ -213,8 +215,7 @@ export default {
 
     computed: {
         views() {
-            if(this.datatype_name) return this.list_views_single();
-            //if(this.datatype_names) return this.list_views_multi();
+            if(this.datatype.name) return this.list_views_single();
             return [];
         }
     },
@@ -227,7 +228,7 @@ export default {
             //find views that support specified datatype
             for(var ui in this.view_catalog) {
                 var view = this.view_catalog[ui];
-                if(~view.datatypes.indexOf(this.datatype_name)) {
+                if(~view.datatypes.indexOf(this.datatype.name)) {
                     views.push(view);
                 }
             }
@@ -235,47 +236,20 @@ export default {
             return views;
         },
 
-        /*
-        list_views_multi() {
-            var views = [];
-            views.push(this.view_catalog["raw"]); //we can always use raw view
-
-            var sorted_names = this.datatype_names.sort();
-
-            //if all t1, use freeview (and others?)
-            var all_t1 = true;
-            sorted_names.forEach(name=>{
-                if(name != "neuro/anat/t1w") all_t1 = false;
-            });
-            if(all_t1) views.push(this.view_catalog["freeview"]);
-
-            //dtiinit and wmc can be combined to show a single tractview
-            if(JSON.stringify(sorted_names) == JSON.stringify(["neuro/dtiinit", "neuro/wmc"])) {
-                views.push(this.view_catalog["tractview"]);
-            }
-            if(JSON.stringify(sorted_names) == JSON.stringify(["neuro/dwi/recon", "neuro/wmc"])) {
-                views.push(this.view_catalog["tractview"]);
-            }
-            if(JSON.stringify(sorted_names) == JSON.stringify(["neuro/wmc", "raw"])) {
-                views.push(this.view_catalog["tractview"]);
-            }
-
-            return views;
-        },
-        */
-
         select(view) {
-            this.$refs.modal.hide(); 
+            this.$refs.selmodal.hide(); 
             if(this.task) this.openview(view, this.task, this.subdir);
+            /*
             if(this.task_cb) this.task_cb(task=>{
                 this.openview(view, task, this.subdir);
             });
+            */
         },
 
         openview(view, task, subdir) {
             let path = "/view/"
             if(view.docker) path = "/novnc/";
-            path += task.instance_id+"/"+task._id+'/'+view.ui+'/'+btoa(this.datatype_name);
+            path += task._id+'/'+view.ui+'/'+btoa(this.datatype.name);
             if(subdir) path += '/'+subdir;
             window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
         }

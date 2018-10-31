@@ -78,7 +78,7 @@
                             <icon name="cubes"/>
                         </div>
                         <div v-if="task.status == 'finished'" style="display: inline-block;">
-                            <div class="button" title="View" @click="set_viewsel_options(task, datatypes[output.datatype].name, output.subdir)">
+                            <div class="button" title="View" @click="set_viewsel_options(datatypes[output.datatype], task, output.subdir)">
                                 <icon name="eye"/>
                             </div>
                             <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
@@ -552,11 +552,8 @@ export default {
             localStorage.setItem("task.show."+task._id, task.show);
         },
 
-        set_viewsel_options: function(task, datatype_name, subdir) {
-            //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
-            this.$root.$emit("viewselecter.open", {
-                datatype_name, task, subdir
-            });
+        set_viewsel_options: function(datatype, task, subdir) {
+            this.$root.$emit("viewselecter.open", { datatype, task, subdir });
         },
 
         newtask() {

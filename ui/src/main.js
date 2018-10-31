@@ -180,7 +180,7 @@ new Vue({
     template: '<warehouse/>',
     components: { warehouse },
 
-    async mounted() {
+    mounted() {
         //console.log("starting jwt token interval");
         setInterval(()=>{
             this.refresh_jwt();
@@ -197,12 +197,8 @@ new Vue({
 
     methods: {
         refresh_jwt(cb) {
-            if(!Vue.config.jwt) {
-                //console.log("no jwt.. not refreshing");
-                return;
-            }
-
-            //console.log("attemping to refresh token - mainly to detect expiration");
+            if(!Vue.config.jwt) return;
+            console.log("refreshing token");
             this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{
                 if(!res.body.jwt) console.log("token refresh didn't work.. resetting jwt");
                 console.log("refreshed token!");
@@ -219,9 +215,9 @@ new Vue({
 
         load_profile() {
             if(!Vue.config.jwt) return;
+            console.log("loading private profile");
             this.$http.get(Vue.config.profile_api+"/private").then(res=>{
                 Vue.config.profile = res.body;
-                //console.dir(Vue.config.profile);
             }).catch(err=>{
                 console.error(err); 
             });

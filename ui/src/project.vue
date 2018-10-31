@@ -160,6 +160,7 @@ import publications from '@/components/publications'
 import pipelines from '@/components/pipelines'
 import agreements from '@/components/agreements'
 
+
 //modals
 import newtaskModal from '@/modals/newtask'
 import datatypeselecterModal from '@/modals/datatypeselecter'
