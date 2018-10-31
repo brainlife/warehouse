@@ -653,7 +653,7 @@ export default {
                             instance_id,
                             name: "brainlife.download",
                             service: "soichih/sca-product-raw",
-                            config: { download, _tid: -1 },
+                            config: { download, _tid: -2 },
                             remove_date: remove_date,
                         }).then(res=>res.body.task);
                     }).then(task=>{

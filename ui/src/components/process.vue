@@ -188,7 +188,7 @@ let cache_datatypes = null;
 let cache_projects = null;
 
 export default {
-    props: [ 'project', 'instance', 'selected_task' ],
+    props: [ 'project', 'instance' ],
 
     components: { 
         sidemenu, task, 
@@ -206,6 +206,8 @@ export default {
             datatypes: {}, 
             archived: [], //archived datasets from this process
             projects: null,
+
+            selected_task_id: null,
             
             //archiving: null, 
             ws: null, //websocket
@@ -220,6 +222,11 @@ export default {
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
         //this.$root.$on("archiver.submit", this.submit_archive);
+        this.$root.$on('showtask', id=>{
+            console.log("showtask received", id);
+            this.selected_task_id = id;
+            this.scrollto(id);
+        }); 
 
         //load full list of datatypes and projects
         if(cache_datatypes && cache_projects) {
@@ -254,7 +261,7 @@ export default {
     destroyed() {
         this.$root.$off('datasetselecter.submit');
         this.$root.$off('newtask.submit');
-        //this.$root.$off('archiver.submit');
+        this.$root.$off('showtask');
 
         if(this.ws) {
             console.log("disconnecting from ws - process");
@@ -300,9 +307,11 @@ export default {
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
         },
+        /*
         selected_task(task_id) {
             this.scrollto(task_id);
         },
+        */
     },
 
     methods: {
@@ -316,6 +325,7 @@ export default {
         scrollto: function(id) {
             var header = document.getElementsByClassName("instance-active")[0];
             var elem = document.getElementById(id);
+            if(!elem) return; //maybe not loaded yet?
             var top = elem.offsetTop-header.clientHeight;
             document.getElementById("scrolled-area").scrollTop = top;
         },
@@ -439,18 +449,22 @@ export default {
                     limit: 300,
                 }}).then(res=>{
                     this.archived = res.body.datasets;
-                    if(this.selected_task) {
-                        this.$nextTick(()=>{
-                            this.scrollto(this.selected_task);
-                        });
-                    }
+                    this.$nextTick(()=>{
+                        console.log("trying to scroll to", this.selected_task_id);
+                        this.scrollto(this.selected_task_id);
+                    });
                 });
             });
         },
 
         findarchived: function(task, output) {
             return this.archived.filter(dataset=>{
-                return (!dataset.removed && dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
+                if(dataset.removed) return false;
+                if(!dataset.prov) return false;
+                if(dataset.prov.task_id != task._id) return false;
+                if(dataset.prov.output_id != output.id) return false;
+                return true;
+                //return (dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
             });
         },
 

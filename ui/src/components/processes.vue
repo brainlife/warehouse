@@ -74,13 +74,13 @@
                         &nbsp;
                         <div v-if="instance.config && instance.config.summary" style="display: contents; opacity: 0.8;">
                             <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw' && summary.name" 
-                                :class="summary_class(summary)" :title="summary.name" @click.stop="select_task(instance, summary)" :key="summary.task_id">
+                                :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" @click.stop="select_task(instance, summary)" :key="summary.task_id">
                                 {{summary.name.substring(0,4).trim()}}
                             </span>
                         </div>
                     </div>
                 </div>
-                <process v-if="instance == selected" :project="project" :instance="instance" :selected_task="selected_task" class="process" ref="process" />
+                <process v-if="instance == selected" :project="project" :instance="instance" class="process" ref="process" />
             </div>
         </div>
         <br>
@@ -116,7 +116,6 @@ export default {
             show: null, //null == all
             
             selected: null,
-            selected_task: null,
 
             query: "",
             apps: null, //keyed by _id
@@ -325,7 +324,10 @@ export default {
                 //not selected.. so let's open it first
                 this.toggle_instance(instance);
             }
-            this.selected_task = summary.task_id;
+            this.$nextTick(()=>{
+                //console.log("showtask", summary.task_id);
+                this.$root.$emit('showtask', summary.task_id);
+            });
         },
 
         editdesc(instance) {
