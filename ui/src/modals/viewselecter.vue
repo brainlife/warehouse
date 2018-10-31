@@ -1,20 +1,20 @@
 <template>
-<b-modal :no-close-on-backdrop='true' title="Select Viewer" ref="selmodal" id="viewSelecter" size="lg" hide-footer>
-    <!--<datatypetag :datatype="datatype" :tags="[]"/>-->
-    <b-card-group deck class="mb-1" style="padding-bottom: 10px;" v-for="(group, gidx) in views.chunk_inefficient(3)" :key="gidx">
-        <b-card 
-            v-for="(view, idx) in group" :key="idx"
-            :header-bg-variant="view.docker?'success':'dark'" 
-            header-text-variant="white" 
-            :header="view.name" 
-            @click="select(view)" 
-            class="card" 
-            style="max-width: 25rem;"
-            :img-src="view.avatar"> 
-            <p class="card-text">{{view.desc}}</p>
-        </b-card>
-    </b-card-group>
-    <div style="opacity: 0.7" v-if="datatype">
+<b-modal :no-close-on-backdrop='true' title="Select Viewer" ref="modal" id="viewSelecter" size="lg" hide-footer>
+    <b-row>
+        <b-col cols="4" v-for="(view, idx) in views" :key="idx" style="margin-bottom: 20px;">
+            <b-card 
+                :header-bg-variant="view.docker?'success':'dark'" 
+                header-text-variant="white" 
+                :header="view.name" 
+                @click="select(view)" 
+                class="card" 
+                style="max-width: 25rem;"
+                :img-src="view.avatar"> 
+                <p class="card-text">{{view.desc}}</p>
+            </b-card>
+        </b-col>
+    </b-row>
+    <div v-if="datatype" style="opacity: 0.7">
         <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+datatype.name+' datatype'" target="_blank" style="float: right;">Suggest a new visualization tool</a>
         <h4>
             <b-badge variant="dark">Web UI</b-badge>
@@ -30,6 +30,7 @@ import Vue from 'vue'
 
 //import datatypetag from '@/components/datatypetag'
 
+/*
 //from stackoverflow somewhere
 if(![].chunk_inefficient) {
     Object.defineProperty(Array.prototype, 'chunk_inefficient', {
@@ -43,6 +44,7 @@ if(![].chunk_inefficient) {
         }
     });
 }
+*/
 
 export default {
     //components: [ datatypetag ], 
@@ -62,7 +64,7 @@ export default {
             this.datatype = opt.datatype;
             this.task = opt.task;
             this.subdir = opt.subdir;
-            this.$refs.selmodal.show();
+            this.$refs.modal.show();
         });
 
         //TODO - move to db (part of datatype?)
@@ -215,13 +217,7 @@ export default {
 
     computed: {
         views() {
-            if(this.datatype.name) return this.list_views_single();
-            return [];
-        }
-    },
-
-	methods: {
-        list_views_single() {
+            if(!this.datatype || !this.datatype.name) return [];
             var views = [];
             views.push(this.view_catalog["raw"]); //everyone gets this by default
 
@@ -232,18 +228,14 @@ export default {
                     views.push(view);
                 }
             }
-
             return views;
-        },
+        }
+    },
 
+	methods: {
         select(view) {
-            this.$refs.selmodal.hide(); 
-            if(this.task) this.openview(view, this.task, this.subdir);
-            /*
-            if(this.task_cb) this.task_cb(task=>{
-                this.openview(view, task, this.subdir);
-            });
-            */
+            this.$refs.modal.hide(); 
+            this.openview(view, this.task, this.subdir);
         },
 
         openview(view, task, subdir) {

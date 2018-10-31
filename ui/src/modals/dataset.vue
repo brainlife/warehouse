@@ -108,7 +108,7 @@
                             <b-col>
                                 <p>
                                     <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                                        <icon name="cog" :spin="true"/> <b>Storing ... </b> 
+                                        <icon name="cog" :spin="true"/> <b>{{dataset.status_msg||'Storing ...'}}</b> 
                                         <!--Please wait before you download / process this dataset.-->
                                     </span> 
                                     <span v-if="dataset.status == 'stored'">
@@ -584,18 +584,6 @@ export default {
             });;
         },
 
-        /*
-        get_instance() {
-            //first create an instance to download things to
-            return this.$http.post(Vue.config.amaretti_api+'/instance', {
-                name: "brainlife.download",
-                config: {
-                    selected: this.selected,
-                }
-            }).then(res=>res.body);
-        },
-        */
-
         start_viewer(datatype) {
             this.check_agreements(this.dataset.project, ()=>{
                 //go ahead and create task before user selecting view (if user cancel, they might change their mind)
@@ -607,30 +595,48 @@ export default {
         },
 
         create_view_task(cb) {
-            //first, query for the viewing task to see if it already exist
+            //first, query for the staging task to see if it already staged
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({ 
                     status: { $ne: "removed" },
                     service: "soichih/sca-product-raw", 
                     "config.download.dir": this.dataset._id,
-                })
-            }})
-            .then(res=>{
-                if(res.body.count == 1) {
-                    //find the dataset
-                    let task = res.body.tasks[0];
-                    cb(null, res.body.tasks[0], this.dataset._id);
-                } else {
-                    //create instance to download dataset to
-                    this.$http.post(Vue.config.amaretti_api+'/instance', {
+                }),
+                sort: '-create_date', //pick the latest one
+                limit: 1,
+            }}).then(res=>{
+                if(res.body.tasks[0]) {
+                    console.log("found staging task!");
+                    return cb(null, res.body.tasks[0], this.dataset._id);
+                }
+
+                //ok.. let's see if a task that produced the dataset still exists
+                return this.$http.get(Vue.config.amaretti_api+'/task', {params: {
+                    find: JSON.stringify({ 
+                        _id: this.dataset.prov.task._id,
+                        status: "finished",
+                    }),
+                }}).then(res=>{
+                    if(res.body.tasks[0]) {
+                        console.log("task that produced this dataset still exists... using it");
+                        return cb(null, res.body.tasks[0], this.dataset.prov.subdir);
+                    }
+
+                    //it hasn't been staged.. create a new instance to download dataset to
+                    let instance = {
                         name: "brainlife.download",
                         config: {
                             selected: this.selected,
                         },
-                        group_id: this.dataset.project.group_id,
-                    }).then(res=>{
-                        let instance_id = res.body._id;
+                    };
 
+                    //set group_id so that we can share it with other group members
+                    //but.. user might not have write access to the project (probably a guest)
+                    if(~Vue.config.user.gids.indexOf(this.dataset.project.group_id)) {
+                        instance.group_id = this.dataset.project.group_id;
+                    }
+                    this.$http.post(Vue.config.amaretti_api+'/instance', instance).then(res=>{
+                        let instance_id = res.body._id;
                         var download = [];
                         download.push({
                             url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
@@ -647,13 +653,13 @@ export default {
                             instance_id,
                             name: "brainlife.download",
                             service: "soichih/sca-product-raw",
-                            config: { download },
+                            config: { download, _tid: -1 },
                             remove_date: remove_date,
                         }).then(res=>res.body.task);
                     }).then(task=>{
                         cb(null, task, this.dataset._id);
                     }).catch(console.error);
-                }
+                });
             });
         },
 
