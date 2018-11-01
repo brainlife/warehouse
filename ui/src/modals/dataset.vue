@@ -286,7 +286,6 @@ export default {
     
     watch: {
         tab_index: function() {
-            //console.log("tab_index changed", this.prov);
             if(this.tab_index == 1 && this.prov == null) {
                 this.load_prov();
             }
@@ -586,15 +585,19 @@ export default {
 
         start_viewer(datatype) {
             this.check_agreements(this.dataset.project, ()=>{
-                //go ahead and create task before user selecting view (if user cancel, they might change their mind)
-                this.create_view_task((err, task, subdir)=>{
-                    if(err) return this.$notify(err);
-                    this.$root.$emit("viewselecter.open", { datatype, task, subdir });
+                this.find_staged_task((task, subdir)=>{
+                    if(task) {
+                        this.$root.$emit("viewselecter.open", { datatype, task, subdir });
+                    } else {
+                        this.create_stage_task((task, subdir)=>{
+                            this.$root.$emit("viewselecter.open", { datatype, task, subdir });
+                        });
+                    }
                 });
             });
         },
 
-        create_view_task(cb) {
+        find_staged_task(cb) {
             //first, query for the staging task to see if it already staged
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({ 
@@ -607,10 +610,11 @@ export default {
             }}).then(res=>{
                 if(res.body.tasks[0]) {
                     console.log("found staging task!");
-                    return cb(null, res.body.tasks[0], this.dataset._id);
+                    return cb(res.body.tasks[0], this.dataset._id);
                 }
 
                 //ok.. let's see if a task that produced the dataset still exists
+                if(!this.dataset.prov) return cb(null);
                 return this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                     find: JSON.stringify({ 
                         _id: this.dataset.prov.task._id,
@@ -619,48 +623,54 @@ export default {
                 }}).then(res=>{
                     if(res.body.tasks[0]) {
                         console.log("task that produced this dataset still exists... using it");
-                        return cb(null, res.body.tasks[0], this.dataset.prov.subdir);
+                        return cb(res.body.tasks[0], this.dataset.prov.subdir);
                     }
 
-                    //it hasn't been staged.. create a new instance to download dataset to
-                    let instance = {
-                        name: "brainlife.download",
-                        config: {
-                            selected: this.selected,
-                        },
-                    };
+                    //didn't find it
+                    cb(null);
 
-                    //set group_id so that we can share it with other group members
-                    //but.. user might not have write access to the project (probably a guest)
-                    if(~Vue.config.user.gids.indexOf(this.dataset.project.group_id)) {
-                        instance.group_id = this.dataset.project.group_id;
-                    }
-                    this.$http.post(Vue.config.amaretti_api+'/instance', instance).then(res=>{
-                        let instance_id = res.body._id;
-                        var download = [];
-                        download.push({
-                            url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
-                            untar: "auto",
-                            dir: this.dataset._id,
-                        });
-
-                        //remove in 48 hours (abcd-novnc should terminate in 24 hours)
-                        var remove_date = new Date();
-                        remove_date.setDate(remove_date.getDate()+2);
-
-                        console.log("submitting staging task");
-                        return this.$http.post(Vue.config.amaretti_api+'/task', {
-                            instance_id,
-                            name: "brainlife.download",
-                            service: "soichih/sca-product-raw",
-                            config: { download, _tid: -2 },
-                            remove_date: remove_date,
-                        }).then(res=>res.body.task);
-                    }).then(task=>{
-                        cb(null, task, this.dataset._id);
-                    }).catch(console.error);
                 });
             });
+        },
+
+        create_stage_task(cb) {
+            //it hasn't been staged.. create a new instance to download dataset to
+            let instance = {
+                name: "brainlife.download",
+                config: {
+                    selected: this.selected,
+                },
+            };
+
+            //set group_id so that we can share it with other group members
+            //but.. user might not have write access to the project (probably a guest)
+            if(~Vue.config.user.gids.indexOf(this.dataset.project.group_id)) {
+                instance.group_id = this.dataset.project.group_id;
+            }
+            this.$http.post(Vue.config.amaretti_api+'/instance', instance).then(res=>{
+                let instance_id = res.body._id;
+                var download = [];
+                download.push({
+                    url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
+                    untar: "auto",
+                    dir: this.dataset._id,
+                });
+
+                //remove in 48 hours (abcd-novnc should terminate in 24 hours)
+                var remove_date = new Date();
+                remove_date.setDate(remove_date.getDate()+2);
+
+                console.log("submitting staging task");
+                return this.$http.post(Vue.config.amaretti_api+'/task', {
+                    instance_id,
+                    name: "brainlife.download",
+                    service: "soichih/sca-product-raw",
+                    config: { download, _tid: -2 },
+                    remove_date: remove_date,
+                }).then(res=>res.body.task);
+            }).then(task=>{
+                cb(task, this.dataset._id);
+            }).catch(console.error);
         },
 
         save_desc() {
