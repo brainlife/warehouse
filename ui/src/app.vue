@@ -394,8 +394,9 @@ export default {
                     marker: {
                         color: 'green',
                     },
+                    fill: 'tozeroy',
                     line: {
-                        width: 1,
+                        width: 0,
                     }
                 },
                 {
@@ -406,8 +407,9 @@ export default {
                     marker: {
                         color: '#dc3545',
                     },
+                    fill: 'tozeroy',
                     line: {
-                        width: 1,
+                        width: 0,
                     }
                 },
             ];
@@ -421,7 +423,7 @@ export default {
                 margin: {
                     l: 30,
                     r: 10,
-                    b: 20,
+                    b: 30,
                     t: 10,
                 },
             }
