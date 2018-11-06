@@ -187,7 +187,7 @@ export default {
             for(let id in this.rule.input_tags) {
                 let input = this.rule.app.inputs.find(i=>i.id == id);
                 let find = {
-                    project: this.rule.input_project_override[id] || this.rule.project._id,
+                    project: this.rule.input_project_override[id] || this.rule.project,
                     datatype: input.datatype_id,
                     removed: false,
                 }
@@ -197,6 +197,8 @@ export default {
                 let datatype_tags = input.datatype_tags.concat(this.rule.extra_datatype_tags[id]);
                 if(datatype_tags.length == 0) datatype_tags = null; //suppress setting it at all
 
+                console.log("querying dataset:"+id);
+                console.dir(find);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify(find),
                     datatype_tags,

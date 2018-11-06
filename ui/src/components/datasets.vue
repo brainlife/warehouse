@@ -272,6 +272,12 @@ export default {
             let subid = this.$route.params.subid;
             this.$root.$emit('dataset.view', {id: subid, back: './'});
         },
+
+        /*
+        selected: function() {
+            localStorage.setItem('datasets.selected', JSON.stringify(this.selected));
+        },
+        */
     },
 
 	methods: {
@@ -517,11 +523,13 @@ export default {
                     this.last_dataset_checked = dataset;
                 }
             }
-            this.persist_selected();
+            //this.persist_selected();
         },
+        /*
         persist_selected() {
             localStorage.setItem('datasets.selected', JSON.stringify(this.selected));
         },
+        */
         clear_selected() {
             //unselect all 
             this.pages.forEach(page=>{
@@ -532,7 +540,7 @@ export default {
                 }
             });
             this.selected = {};
-            this.persist_selected();
+            //this.persist_selected();
         },
         remove_selected(dataset) {
             //NOTE - selected[] contains clone of the datasets selected - not the same object so I can't just do "dataset.checked = false"
@@ -545,7 +553,7 @@ export default {
             });
             dataset.checked = false;
             Vue.delete(this.selected, dataset._id);
-            this.persist_selected();
+            //this.persist_selected();
         },
 
         get_instance() {
@@ -727,6 +735,7 @@ export default {
         remove() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 this.check_agreements(this.project, ()=>{
+                    /* bulk remove
                     let ids = [];
                     for(var id in this.selected) {
                         var dataset = this.selected[id];
@@ -737,12 +746,31 @@ export default {
                             dataset.removed = true;
                         }
                     }
-                    //this.$notify({type: "info", text: "Removing "+ids.length+" datasets.."});
                     this.$http.post('dataset/delete', {id: ids}).then(res=>{
                         this.clear_selected();
                         this.$notify({type: "success", text: res.body.message});
                     }).catch(err=>{
                         this.$notify({type: "error", text: err.body.message});
+                    });
+                    */
+
+                    let count = 0;
+                    this.$notify({type: "info", text: "Removing all selected datasets.."});
+
+                    //TODO - it's the UI update that's slowing things down.. (also the ws messaging)
+                    async.eachOfLimit(this.selected, 1, (dataset, id, next_dataset)=>{
+                        dataset.checked = false;
+                        if(!dataset._canedit) { 
+                            this.$notify({type: "error", text: "You don't have permission to remove this dataset: "+dataset._id});
+                            next_dataset();
+                        }
+                        this.$http.delete('dataset/'+id).then(res=>{
+                            count++;
+                            next_dataset();
+                        });
+                    }, err=>{
+                        this.$notify({type: "success", text: "Removed "+count+" datasets"});
+                        this.clear_selected();
                     });
                 });
             }

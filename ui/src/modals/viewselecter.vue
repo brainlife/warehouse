@@ -137,7 +137,7 @@ export default {
                 desc: "A 2d/3d brain volume viewer.",
                 avatar: "https://brainlife.io/images/ui-logos/fsleyes.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task", "neuro/noddi" ],
             },
             {
                 ui: "mrview",
@@ -161,7 +161,7 @@ export default {
                 desc: "View 2D slices and renderings of your brain imaging data. It allows you to draw regions of interest which can aid lesion mapping and fMRI analysis.",
                 avatar: "https://brainlife.io/images/ui-logos/mricrogl.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task", "neuro/noddi" ],
             },
             {
                 ui: "fibernavigator",
@@ -177,7 +177,7 @@ export default {
                 desc: "A freesurfer program used to view and work with structural, anatomical scans.",
                 avatar: "https://brainlife.io/images/ui-logos/freeview.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/freesurfer", "neuro/track/trk" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/freesurfer", "neuro/track/trk", "neuro/noddi" ],
             },
 
             {

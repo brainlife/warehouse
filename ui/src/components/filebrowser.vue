@@ -269,7 +269,7 @@ padding: 0px;
 box-shadow: 1px 1px 4px #aaa;
 border-left: 15px solid #ddd;
 }
-.file-content .text.hljs {
+.file-content .hljs {
 max-height: 400px;
 }
 .file-content {

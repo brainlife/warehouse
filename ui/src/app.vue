@@ -380,7 +380,7 @@ export default {
         },
 
         hist_data() {
-            let dstart = new Date(new Date().getTime() - 3600*1000*24*90);
+            let dstart = new Date(new Date().getTime() - 3600*1000*24*this.info.hist.failed.length);
             let days = [];
             for(let i = 0;i < this.info.hist.failed.length;++i) {
                 days.push(new Date(dstart.getTime() + 3600*1000*24*i));

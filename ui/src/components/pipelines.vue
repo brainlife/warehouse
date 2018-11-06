@@ -39,7 +39,7 @@
                     <b-row :no-gutters="true">
                         <b-col :cols="2">
                             <span class="text-primary" v-if="rule.active">
-                                <icon name="cog" spin="true" scale="0.8" style="margin: 0px 5px"/> Online
+                                <icon name="cog" :spin="true" scale="0.8" style="margin: 0px 5px"/> Online
                             </span>
                             <span class="text-secondary" v-else>
                                 <icon name="stop" scale="0.8" style="margin: 0px 5px"/> Offline
