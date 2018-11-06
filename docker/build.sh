@@ -1,10 +1,8 @@
-
+#!/usr/bin/bash
 set -e
 set -x
 
-#docker pull node:8
-
-tag=1.1.40
+tag=1.1.42
 
 docker build -t soichih/warehouse ..
 docker tag soichih/warehouse soichih/warehouse:$tag
