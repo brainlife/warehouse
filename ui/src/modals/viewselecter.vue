@@ -129,7 +129,7 @@ export default {
                 desc: "An old 2d/3d brain volume viewer. Replaced by fsleyes",
                 avatar: "https://brainlife.io/images/ui-logos/fslview.png",
                 docker: true,
-                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task" ],
+                datatypes: [ "neuro/anat/t2w", "neuro/anat/t1w", "neuro/dwi", "neuro/func/task", "neuro/noddi" ],
             },
             {
                 ui: "fsleyes",

@@ -1,26 +1,30 @@
 <template>
 <div v-if="ready">
-    <div v-if="!editing" class="page-header with-menu header">
-        <div style="margin-top: 2px; margin-left: 10px;">
-            <div v-if="rules.length > 0" style="float: right">
-                <div style="display: inline-block;">
-                    <small>Order by</small>
-                    <b-dropdown :text="order" size="sm" :variant="'light'">
-                        <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
-                        <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
-                        <b-dropdown-divider></b-dropdown-divider>
-                        <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
-                        <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
-                        <b-dropdown-divider></b-dropdown-divider>
-                        <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
-                        <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
-                    </b-dropdown>
-                </div>
+    <div v-if="!editing && rules.length > 0" class="page-header with-menu header">
+        <b-row :no-gutters="true">
+            <b-col :cols="5">
+                <b>{{rules.length}}</b> Pipeline Rules
+            </b-col>
+            <b-col :cols="3" style="position: relative; top: -5px; text-align: right;">
+                <small>Order by</small>
+                <b-dropdown :text="order" size="sm" :variant="'light'">
+                    <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
+                    <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
+                    <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
+                    <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
+                </b-dropdown>
+            </b-col>
+            <b-col :cols="2" style="text-align: right;">
                 <div class="date">Create Date</div>
+            </b-col>
+            <b-col :cols="2" style="text-align: right;">
                 <div class="date">Update Date</div>
-            </div>
-            <b>{{rules.length}}</b> Pipeline Rules
-        </div>
+            </b-col>
+        </b-row>
     </div>
     <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
     <div v-else class="page-content with-menu content" ref="scrolled">
@@ -32,59 +36,69 @@
         <div class="rules">
             <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}" class="rule" v-if="rule.removed == false">
                 <div class="rule-header" @click="toggle(rule)">
-                    <div style="float: right; width: 110px; text-align: right;">
-                        <timeago :since="rule.update_date" :auto-update="10"/>
-                    </div>
-                    <div style="float: right; width: 110px; text-align: right;">
-                        <timeago :since="rule.create_date" :auto-update="10"/>
-                    </div>
-                    <div style="float: right;">
-                        <contact :id="rule.user_id" size="tiny"/>
-                    </div>
-                    <div style="float: right; margin-right: 15px;" v-if="rule.subject_match" title="Only handle subjects that matches this regex">
-                        <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
-                    </div>
-                    <div>
-                        <!--
-                        <div class="bg-dark" style="color: white; float:left; width: 60px" v-if="rule.removed" variant="danger">Removed</div>
-                        -->
-                        <div class="bg-success" style="color: white; float:left; padding: 0px 5px;" v-if="rule.active">Running</div>
-                        <div class="bg-danger" style="color: white; float:left; padding: 0px 5px;" v-else>Stopped</div>
-                        <div style="margin-left: 80px">
+                    <b-row :no-gutters="true">
+                        <b-col :cols="2">
+                            <span class="text-primary" v-if="rule.active">
+                                <icon name="cog" spin="true" scale="0.8" style="margin: 0px 5px"/> Online
+                            </span>
+                            <span class="text-secondary" v-else>
+                                <icon name="stop" scale="0.8" style="margin: 0px 5px"/> Offline
+                            </span>
+                        </b-col>
+                        <b-col :cols="4">
                             <span>{{rule.app.name}}</span>
                             <small style="opacity: 0.5">{{rule.name}}</small>
-                        </div>
-                    </div>
+                        </b-col>
+                        <b-col :cols="2">
+                            <!--<contact :id="rule.user_id" size="tiny"/>-->
+                            <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
+                                <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
+                            </span>
+                        </b-col>
+                        <b-col :cols="2" style="text-align: right;">
+                            <timeago :since="rule.create_date" :auto-update="10"/>
+                        </b-col>
+                        <b-col :cols="2" style="text-align: right;">
+                            <timeago :since="rule.update_date" :auto-update="10"/>
+                        </b-col>
+                    </b-row>
                 </div>
 
                 <!--rule body-->
                 <div v-if="selected == rule" transition="expand">
                     <div style="float: right; margin-right: 100px;">
-                            <b-btn @click="deactivate(rule)" variant="danger" size="sm" v-if="rule.active && !deactivating"><icon name="times"/> Stop </b-btn>
-                            <b-btn variant="danger" size="sm" v-if="deactivating"><icon name="times"/> Stopping <b-badge>{{deactivating_remain}}</b-badge></b-btn>
-                            <b-btn @click="activate(rule)" variant="success" size="sm" v-if="!rule.active"><icon name="play"/> Run </b-btn>
-
-                            <b-btn @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/> Edit </b-btn>
-                            <b-btn @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" variant="danger"><icon name="trash"/> Remove </b-btn>
+                            <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></div>
+                            <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="trash"/></div>
                     </div>
-                    <div v-if="rule.active" style="margin-left: 10px;">
+
+
+                    <div v-if="rule.active" style="margin: 0px 10px;">
+                        <b-btn @click="deactivate(rule)" variant="outline-danger" size="sm" v-if="!deactivating"><icon name="times"/> Deactivate </b-btn>
+                        <b-btn variant="outline-danger" size="sm" v-if="deactivating"><icon name="times"/> Deactivating <b-badge>{{deactivating_remain}}</b-badge></b-btn>
+                        <small style="opacity: 0.8">{{rule.taskcount||0}} active tasks</small>
+                        <!--
                         <icon name="cog" :spin="true" scale="1.25" style="float: left;"/>
                         <div style="margin-left: 30px;">
                             Running<br>
                             <small>Monitored by the rule handler. See the log below for more information. ({{rule.taskcount||0}} active tasks)</small>
                         </div>
+                        -->
                     </div>
-                    <div v-else style="margin-left: 10px;" class="text-danger">
+                    <div v-else style="margin: 0px 10px;">
+                        <!--
                         <icon name="hand-paper" scale="1.25" style="float: left;"/> 
                         <div style="margin-left: 30px;">
                             Stopped<br>
                         </div>
+                        -->
+                        <b-btn @click="activate(rule)" variant="outline-success" size="sm" v-if="!rule.active"><icon name="play"/> Activate </b-btn>
+                        <!--<small>Not monitored by the rule handler.</small>-->
                     </div>
                     <br>
 
                     <div class="rule-body">
                         <div class="section-header">
-                            Submit the following App <span style="opacity: 0.5;">and archive all output datasets to this project</span>
+                            Submit the following App <small style="opacity: 0.5;">and archive all output datasets to this project</small>
                         </div>
                         <b-row>
                             <b-col>
@@ -506,7 +520,7 @@ export default {
             }})
             .then(res=>{
                 if(res.body.count > 0) {
-                    if(confirm("Stopping rule will remove "+res.body.count+" active tasks submitted by this rule. Should we proceed?")) {
+                    if(confirm("Deactivating this rule will remove "+res.body.count+" active tasks submitted by this rule. Should we proceed?")) {
                         this.deactivating = rule;
                         this.deactivating_remain = res.body.count;
                         this.$notify({ title: 'Removing Task', text: 'Removing'+res.body.count+' tasks', type: 'info', });
@@ -556,18 +570,21 @@ background-color: white;
 .rule:first-child {
 margin-top: 2px;
 }
-.rule.rule-selected .rule-header,
 .rule.rule-selected {
 margin: 0px;
-background-color: white;
+background-color: #f0f0f0;
 margin-bottom: 20px;
 box-shadow: none;
 }
+.rule.rule-selected .rule-header {
+margin-bottom: 10px;
+background-color: #f0f0f0;
+}
 .rule.rule-inactive .rule-header {
-background-color: #bbb;
+background-color: #ddd;
 }
 .rule.rule-inactive {
-background-color: #ddd;
+background-color: #eee;
 }
 .rule-header {
 cursor: pointer;
@@ -583,10 +600,6 @@ z-index: 5; /*make it on top of the most content*/
 }
 .rule.rule-selected:not(:first-child) .rule-header {
 margin-top: 20px;
-}
-.rule-header:hover {
-cursor: pointer;
-background-color: #eee;
 }
 .rule-body {
 margin-right: 100px; 
@@ -609,10 +622,15 @@ box-shadow: 2px 2px 3px rgba(0,0,0,0.2);
   padding: 0 10px;
   opacity: 0;
 }
+.rule-header:hover {
+cursor: pointer;
+background-color: #eee;
+}
 
 .header {
 top: 100px;
-padding: 6px 10px;
+padding: 10px;
+margin: 0px 20px;
 color: #999;
 background-color: #f9f9f9;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
@@ -632,16 +650,10 @@ min-width: 500px;
 background-color: #f9f9f9;
 }
 .date {
-width: 110px;
-text-align: right;
-font-size: 70%;
-line-height: 200%;
-display: inline-block;
-position: relative;
-right: 25px;
+font-size: 80%;
 }
 .section-header {
-background-color: #eee; 
+background-color: #ddd; 
 clear: both; 
 padding: 10px; 
 margin-bottom: 10px;
