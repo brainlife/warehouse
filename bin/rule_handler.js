@@ -231,7 +231,13 @@ function handle_rule(rule, cb) {
                 var query = {
                     project: rule.project._id,
                     datatype: output.datatype,
-                    storage: { $exists: true },
+
+                    //TODO - does this exist in case archiving fails? 
+                    //I thought this could cause duplicate submission if there is an output dataset that's currently archived?
+                    //but I think already submitted task should prevent it from re-submitted.. so it's ok?
+                    //if I do remove this, remove it from ui>components/ruleform also.
+                    storage: { $exists: true }, 
+
                     removed: false,
                 }
                 if(output.datatype_tags.length > 0) query.datatype_tags = { $all: output.datatype_tags };
@@ -449,6 +455,7 @@ function handle_rule(rule, cb) {
                             "instance_id": instance._id,
                             //need to include removed ones for correrct tid
                         }),
+                        limit: 1000, //big enough right?
                     },
                 }, (err, res, body)=>{
                     if(err) return next(err);
@@ -484,6 +491,7 @@ function handle_rule(rule, cb) {
                 var downloads = [];
                 for(var input_id in inputs) {
                     var input = inputs[input_id];
+                    rlogger.debug("looking for source/staged dataset "+input._id+" for input "+input_id);
 
                     //although we need to construct _outputs for product_raw, we are reusing most of the info
                     //for the main app's input. since product-raw doesn't really have id anyway, so let's just use
@@ -500,7 +508,7 @@ function handle_rule(rule, cb) {
                         var task = null;
                         if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
                         if(task && task.status != 'removed') {
-                            rlogger.debug("found the task generated the input dataset");
+                            rlogger.debug("found the task generated the input dataset for output:"+input.prov.output_id);
 
                             //find output from task
                             let output_detail = task.config._outputs.find(it=>it.id == input.prov.output_id);
@@ -511,7 +519,7 @@ function handle_rule(rule, cb) {
                                 datatype: input.datatype._id, //unpopulate datatype to keep it clean
                                 task_id: task._id,
                                 subdir: input.prov.subdir,
-                                dataset_id: input._id, //TODO not sure if this is right?
+                                dataset_id: input._id,
                                 prov: null, //remove dataset prov
                                 keys,
 
@@ -529,7 +537,6 @@ function handle_rule(rule, cb) {
                         for(var task_id in tasks) {
                             task = tasks[task_id];
                             if(task.service == "soichih/sca-product-raw" && task.status != 'removed') {
-                                rlogger.debug("checking for already staged output", input.id, input._id.toString());
                                 output = task.config._outputs.find(o=>o._id == input._id);
                                 if(output) {
                                     rlogger.debug("found it", output);
@@ -556,7 +563,7 @@ function handle_rule(rule, cb) {
                     
                     if(!canuse_source() && !canuse_staged()) {
                         //we don't have it.. we need to stage from warehouse
-                        rlogger.debug("couldn't find staged dataset.. need to load from warehouse");
+                        rlogger.debug("couldn't find source task/staged dataset.. need to load from warehouse");
                         downloads.push({
                             url: config.warehouse.api+"/dataset/download/safe/"+input._id+"?at="+safe_jwt,
                             untar: "auto",
@@ -670,6 +677,7 @@ function handle_rule(rule, cb) {
                     _config._outputs.push(output_req);
                 });
 
+                //now submit the app task!
                 request.post({
                     url: config.amaretti.api+'/task', json: true, 
                     headers: { authorization: "Bearer "+jwt },
