@@ -27,7 +27,7 @@
     </b-col>
     <b-col cols="2" v-b-tooltip.hover title="finished/(failed+finished). Same request could be re-submitted / rerun.">
         <center>
-            <span class="stat" :class="success_rate_color">{{info.success_rate.toFixed(1)}}%</span>
+            <span class="stat" :class="success_rate_color" v-if="info.success_rate">{{info.success_rate.toFixed(1)}}%</span>
             <p class="header">Success&nbsp;Rate</p>
         </center>
     </b-col>

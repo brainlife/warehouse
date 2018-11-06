@@ -50,8 +50,8 @@
                     &nbsp;
                     &nbsp;
                 </span>
-                <span class="stat" style="float: right;" v-b-tooltip.hover.d500 title="success rate  = finished/(failed+finished)">
-                    <icon name="check-circle" scale="0.8"/> {{app_.stats.success_rate.toFixed(1)}}%
+                <span class="stat" style="float: right;" v-b-tooltip.hover.d500 title="success rate = finished/(failed+finished)" v-if="app_.stats.success_rate">
+                    <icon name="check-circle" scale="0.8" /> {{app_.stats.success_rate.toFixed(1)}}%
                 </span>
             </div>
         </div>
