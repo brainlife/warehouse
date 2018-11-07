@@ -145,6 +145,7 @@ function handle_archive(task, output, product, cb) {
     async.series([
         next=>{
             logger.debug("see if this dataset is already archived");
+            //TODO - some reason, this query is super slow... ??
             db.Datasets.findOne({
                 "prov.task_id": task._id,
                 "prov.output_id": output.id,

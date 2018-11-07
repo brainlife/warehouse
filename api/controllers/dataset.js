@@ -760,25 +760,31 @@ router.get('/download/safe/:id', jwt({
 
 /**
  * @apiGroup Dataset 
- * @api {delete} /dataset/:id   Hide dataset from dataset results (DEPRECATED USE (post)/delete)
+ * @api {delete} /dataset/:id   Hide dataset from dataset results 
  * @apiDescription              Logically remove dataset by setting "removed" to true 
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
-//DEPRECATED!
 router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
+    //res.json({stauts: "skip"});
+    //return;
+
     const id = req.params.id;
+    logger.debug("getting project");
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
+        logger.debug("getting dataset");
         db.Datasets.findById(id, function(err, dataset) {
             if(err) return next(err);
             if(!dataset) return next(new Error("can't find the dataset with id:"+id));
             if(canedit(req.user, dataset, canwrite_project_ids)) {
                 dataset.remove_date = new Date();
                 dataset.removed = true;
+                logger.debug("updating");
                 dataset.save(function(err) {
                     if(err) return next(err);
+                    logger.debug("respoinding");
                     res.json({status: "ok"});
                 }); 
             } else return res.status(401).end();
@@ -786,7 +792,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
     });
 });
 
-/**
+/** 
  * @apiGroup Dataset
  * @api {post} /dataset/delete
  *                              Remove (hide) dataset from dataset results (async)
@@ -795,6 +801,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
+//DEPRECATED - delete one dataset at a time with (delete)/dataset/:id api
 router.post('/delete', jwt({secret: config.express.pubkey}), function(req, res, next) {
     let ids = req.body.id;
     if(!Array.isArray(ids)) ids = [ ids ];
@@ -893,8 +900,6 @@ set +e #stop the script if anything fails
                 script += "curl -H \"$auth\" "+config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C "+path+" -x\n";
 
                 if(dataset.datatype.bids) {
-                    console.dir(dataset.datatype.bids);
-
                     //Create BIDS symlinks
                     let bidspath = "bids/derivatives";
                     let pipeline = "upload";
