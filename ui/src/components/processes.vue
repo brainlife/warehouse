@@ -57,10 +57,10 @@
 
                     <timeago :since="instance.update_date" :auto-update="10" class="date"/>
                     <timeago :since="instance.create_date" :auto-update="10" class="date"/>
-                    <div style="float: right; text-align: right;" v-if="instance.config && instance.config.summary">
+                    <div v-if="instance == selected" style="float: right; text-align: right;">
                         <contact v-for="id in unique_user_ids(instance)" :key="id" :id="id" size="tiny"/>
                     </div>
-                    <div class="process-action instance-info" style="float: right; position: relative; top: -3px; margin-right: 5px;">
+                    <div v-if="instance == selected" class="process-action instance-info" style="float: right; position: relative; top: -3px; margin-right: 5px;">
                         <div @click.stop="editdesc(instance)" class="button">
                             <icon name="edit"/>
                         </div>
@@ -399,7 +399,10 @@ export default {
                 }),
                 limit: 3000,
             }}).then(res=>{
+                //debug.. 
+                //this.instances = res.body.instances.concat(res.body.instances).concat(res.body.instances);
                 this.instances = res.body.instances;
+
                 this.selected = this.instances.find(it=>it._id == this.$route.params.subid);
                 if(this.selected) {
                     this.$nextTick(()=>{

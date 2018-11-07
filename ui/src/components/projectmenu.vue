@@ -1,7 +1,6 @@
 <template>
 <div class="projectmenu">
     <p class="group-header">
-        <icon name="caret-down" scale="1.5"/>&nbsp;
         Private <icon name="lock" scale="0.8"></icon> 
     </p>
     <div class="project" v-for="project in sorted_projects('private')" :id="project._id" :key="project._id"
@@ -14,7 +13,6 @@
     </div>
 
     <p class="group-header">
-        <icon name="caret-down" scale="1.5"/>&nbsp;
         Public 
     </p>
     <div class="project" v-for="project in sorted_projects('public')" :id="project._id" :key="project._id"
@@ -80,12 +78,12 @@ export default {
             var area = this.$el;
             if(area.clientHeight + area.scrollTop < active_elem.offsetTop) {
                 //this.$refs.scrollbar.scrollToY(active_elem.offsetTop - area.clientHeight/2);
-                this.$el.scrollTop = active_elem.offsetTop - area.clientHeight/2;
+                area.scrollTop = active_elem.offsetTop - area.clientHeight/2;
             }
 
             //I also need to scroll back to top if area is above..
             if(active_elem.offsetTop < area.scrollTop) {
-                this.$el.scrollTop = active_elem.offsetTop - 300;
+                area.scrollTop = active_elem.offsetTop - 300;
             }
         },
         change: function(project) {
@@ -144,9 +142,9 @@ export default {
     font-size: 16px;
     font-weight: bold;
     padding: 10px 15px;
-    opacity: 0.3;
     text-transform: uppercase;
     margin-bottom: 0px;
+    color: #777;
 }
 .name {
     font-size: 13px;

@@ -13,7 +13,16 @@
 import Vue from 'vue'
 
 export default {
-    props: [ 'datatype', 'tags' ],
+    props: {
+        datatype: [String, Object],
+        tags: {
+            type: Array,
+        }, 
+        trimname: {
+            type: Boolean,
+            default: true,
+        }
+    },
     
     data() {
         return {
@@ -63,13 +72,13 @@ export default {
         post_init: function(datatype) {
             this._datatype = datatype;
 
-            //trim fist token
             if(!this._datatype) return "unknown";
             if(!this._datatype.name) {
                 console.error("name not set", this._datatype);
             }
+
             var tokens = this._datatype.name.split("/");
-            if(tokens.length > 1) tokens = tokens.splice(1);
+            if(this.trimname && tokens.length > 1) tokens = tokens.splice(1);
             this.name = tokens.join("/");
 
             //map datatype.name to 0 - 360

@@ -5,9 +5,9 @@
     <div class="fixed-top">
         <b-container>
             <p style="float: right">
-                <a href="https://brainlife.github.io/docs/user/project/">Help</a>
+                <a href="https://brainlife.github.io/docs/user/project/"><icon name="book"/></a>
             </p>
-            <h2>{{project.name||'No name'}}</h2>
+            <h3>{{project.name||'No name'}}</h3>
         </b-container>
     </div>
 
@@ -263,6 +263,9 @@ right: 0px;
 height: 80px;
 z-index: 1;
 border-bottom: 1px solid #eee;
+}
+.fixed-top h3 {
+opacity: 0.8;
 }
 .form-action {
 text-align: right;

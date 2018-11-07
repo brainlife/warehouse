@@ -32,7 +32,9 @@
                     <b-tab title="Datasets"/>
                     <b-tab title="Apps"/>
                     -->
-                    <b-tab v-for="release in pub.releases" :key="release._id" :title="'Release '+release.name"/>
+                    <b-tab v-for="release in pub.releases" :key="release._id">
+                         <template slot="title"><!--<icon name="file" scale="0.9"/>--> Release {{release.name}}</template>
+                    </b-tab>
                 </b-tabs>
             </b-container>
         </div><!--header-->

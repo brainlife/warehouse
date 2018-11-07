@@ -58,8 +58,6 @@ export default new Router({
 
         {path: '/datatypes', component: datatypes},
         {path: '/datatypes/:id', component: datatypes},
-        {path: '/datatype/:id', component: datatype},
-        {path: '/datatype/:id/edit', component: datatypeedit},
 
         {path: '/pubs', component: pubs, meta: {public: true}},
         {path: '/pub/:id', component: pub, meta: {public: true}},

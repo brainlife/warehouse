@@ -310,9 +310,8 @@ opacity: 0.7;
 }
 .form-header {
 text-transform: uppercase;
-opacity: 0.4;
+opacity: 0.6;
 font-weight: bold;
-font-size: 90%;
 }
 div.readme p, p.text {
 line-height: 175%;
@@ -344,6 +343,7 @@ margin: 3px 0px;
 border: 1px solid #ced4da;
 }
 
+/*
 .ps__rail-x:hover, .ps__rail-y:hover, .ps__rail-x:focus, .ps__rail-y:focus {
 background-color: rgba(0,0,0,0);
 opacity: 1;
@@ -354,6 +354,7 @@ width: 6px;
 .ps__rail-y:hover > .ps__thumb-y, .ps__rail-y:focus > .ps__thumb-y {
 width: 6px;
 }
+*/
 .js-plotly-plot .plotly .modebar {
 z-index: inherit;
 }
@@ -392,6 +393,12 @@ background-color: inherit;
           animation-duration: 0.2s;
   -webkit-animation-fill-mode: both;
           animation-fill-mode: both; 
+}
+.github {
+opacity: 0.7;
+font-size: 90%;
+transition: color 0.5s;
+margin-bottom: 2px;
 }
 
 </style>

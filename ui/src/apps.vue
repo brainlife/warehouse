@@ -223,7 +223,7 @@ export default {
             this.active = false;
             this.sorted_tags.forEach(tag=>{
                 var e = document.getElementById(tag);
-                if(e.offsetTop-height/2 <= scrolltop) this.active = tag;
+                if(e.offsetTop-height/4 <= scrolltop) this.active = tag;
             });
         },
 
@@ -279,10 +279,11 @@ background-color: #444;
 }
 .group-list h4 {
 font-size: 18px;
+font-weight: bold;
 padding: 20px 10px;
 text-transform: uppercase;
 margin-bottom: 0px;
-color: #999;
+color: #777;
 }
 .group-list .item {
 text-transform: uppercase;

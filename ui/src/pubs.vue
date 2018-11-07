@@ -7,6 +7,15 @@
     </pageheader>
     <sidemenu active="/pubs"></sidemenu>
     <div class="page-content">
+        <div class="header">
+            <b-container>
+                <a href="https://brainlife.github.io/docs/user/publication/" target="doc" style="float: right;"><icon name="book"/></a>
+                <h2>Publications</h2>
+                <p>
+                    Publicly accessible research results (datasets/Apps)
+                </p>
+            </b-container>
+        </div>
         <b-container>
             <div v-if="!pubs" style="margin: 40px;"><h3>Loading ..</h3></div>
             <div v-else class="margin20">
@@ -58,5 +67,11 @@ export default {
 <style scoped>
 .pub {
 margin-bottom: 10px;
+}
+.header {
+background-color: white;
+padding: 20px;
+color: #999;
+border-bottom: 1px solid #eee;
 }
 </style>

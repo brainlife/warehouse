@@ -79,7 +79,7 @@ export default {
         appid: String,
         branch: String, //branch to show instead of current app github_branch
         clickable: {type: Boolean, default: true},
-        height: String,
+        height: String, //"200px"
     },
     watch: {
         appid() {
@@ -148,12 +148,6 @@ padding: 0px;
 padding-top: 10px;
 margin-bottom: 0px;
 transition: color 0.5s;
-}
-.github {
-opacity: 0.7;
-font-size: 85%;
-transition: color 0.5s;
-margin-bottom: 2px;
 }
 .desc {
 opacity: 0.8;
