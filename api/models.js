@@ -108,6 +108,7 @@ var projectSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false },
 });
+//projectSchema.index({admins: 1, members: 1, guest: 1});
 exports.Projects = mongoose.model("Projects", projectSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -295,12 +296,11 @@ exports.Datasets = mongoose.model('Datasets', datasetSchema);
 var datatypeSchema = mongoose.Schema({
     name: String, //"neuro/anat/t1w"
     desc: String, 
-    
-    //user who submitted this datatype (also the maintainer?)
-    //user_id: {type: String, index: true}, 
+    readme: String,  //in markdown
 
+    admins: [ String ], //list of users who can administer this datatype
+    
     //file inventory for this datatype
-    //files: [ mongoose.Schema.Types.Mixed ],
     files: [ new mongoose.Schema({
         id: String,
         filename: String,
@@ -310,28 +310,30 @@ var datatypeSchema = mongoose.Schema({
         required: Boolean
     })],
 
+    //list of *official* datatypes
+    datatype_tags: [
+        {
+            datatype_tag: String,
+            desc: String,
+        }
+    ],
+
     //name of ABCD service that is used to validate this data
     //if not set, it will default to "soichih/sca-service-conneval-validate" (still true?)
     validator: String, 
 
     //spec used to export this datatype to bids
     bids: {
-        modality: String, //dwi/func/anat
-        map: [ {
+        //should I move derivatives to maps - so that 1 dataset can output files for more than 1 modality?
+        derivatives: String, //dwi/func/anat (meaningless if maps is empty)
+        maps: [ {
             src: String, //file pattern "dwi_aligned*.nii.gz"
             dest: String, //bids file suffix.ext (dwi.nii.gz)
-            json: String, //bids sidecar filename (dwi.json)
+            json: String, //bids sidecar filename (dwi.json) (optional)
         }],
     },
 
-    /*
-    meta: [ new mongoose.Schema({
-        id: String,
-        type: String,
-        required: Boolean,
-    })],
-    */
-
+    create_date: { type: Date, default: Date.now },
 });
 exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 

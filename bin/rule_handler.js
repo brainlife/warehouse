@@ -74,6 +74,23 @@ function run() {
 	});
 }
 
+/*
+//check to see if task will be removed soon
+function isremoving(task) {
+    if(!task.remove_date) return false;
+    let now = new Date().getTime();
+    let ttl = now - task.remove_date.getTime();
+    if(ttl > 
+}
+*/
+
+function isalive(task) {
+    if(!task) return false;
+    let dead_states = ["failed", "stop_requested", "stopped", "removed"];
+    if(~dead_states.indexOf(task.status)) return false;
+    return true;    
+}
+
 function handle_rule(rule, cb) {
     _counts.rules++;
 
@@ -507,7 +524,7 @@ function handle_rule(rule, cb) {
                     function canuse_source() {
                         var task = null;
                         if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
-                        if(task && task.status != 'removed') {
+                        if(isalive(task)) {
                             rlogger.debug("found the task generated the input dataset for output:"+input.prov.output_id);
 
                             //find output from task
@@ -536,7 +553,7 @@ function handle_rule(rule, cb) {
                         var output = null;
                         for(var task_id in tasks) {
                             task = tasks[task_id];
-                            if(task.service == "soichih/sca-product-raw" && task.status != 'removed') {
+                            if(task.service == "soichih/sca-product-raw" && isalive(task)) {
                                 output = task.config._outputs.find(o=>o._id == input._id);
                                 if(output) {
                                     rlogger.debug("found it", output);
