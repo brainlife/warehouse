@@ -400,5 +400,17 @@ font-size: 90%;
 transition: color 0.5s;
 margin-bottom: 2px;
 }
+.io-tab {
+position: absolute;
+Width: 30px;
+color: white;
+font-weight: bold;
+font-size: 10px;
+padding: 2px 5px;
+border-radius: 4px;
+text-align: center;
+display: inline-block;
+margin-left: -40px;
+}
 
 </style>

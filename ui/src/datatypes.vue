@@ -15,13 +15,16 @@
         <div v-else>
             <h5>neuro/</h5>
             <p v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" :id="datatype._id" class="item" :class="{'selected': selected == datatype}" @click="select(datatype)">
-                <datatypetag :datatype="datatype"/><br>
+                <!--<datatypetag :datatype="datatype"/><br>-->
+                <icon name="cube" :style="{color: gethsl(datatype.name)}" style="margin-right: 5px;"/> {{trim(datatype.name)}}
                 <small>{{datatype.desc}}</small>
             </p>
             <br>
             <h5>Others</h5>
             <p v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" :id="datatype._id" class="item" :class="{'selected': selected == datatype}" @click="select(datatype)">
-                <datatypetag :datatype="datatype" :trimname="false"/><br>
+                <!--<datatypetag :datatype="datatype" :trimname="false"/><br>-->
+                <icon name="cube" :style="{color: gethsl(datatype.name)}" style="margin-right: 5px;"/>
+                {{datatype.name}}
                 <small>{{datatype.desc}}</small>
             </p>
         </div>
@@ -42,8 +45,12 @@
                     <div style="float: right;">
                         <span class="button" @click="edit" v-if="canedit && !editing" title="Edit"><icon name="edit" scale="1.25"/></span>
                     </div>
-                    <h3><datatypetag :datatype="selected" :trimname="!!(~selected.name.indexOf('neuro/'))"/></h3>
-                    <p style="opacity: 0.8">{{selected.desc}}</p>
+                    <h3>
+                        <b-form-input v-if="editing" type="text" v-model="selected.name" placeholder="neuro/somename"></b-form-input>
+                        <datatypetag v-else :datatype="selected" :trimname="!!(~selected.name.indexOf('neuro/'))"/>
+                    </h3>
+                    <b-form-textarea v-if="editing" v-model="selected.desc" :rows="2"></b-form-textarea>
+                    <p v-else style="opacity: 0.8">{{selected.desc}}</p>
                 </b-container>
             </div>
             <br>
@@ -54,8 +61,11 @@
                         <span class="form-header">README</span>
                     </b-col>
                     <b-col>
-                        <p v-if="!selected.readme" style="opacity: 0.5">No README</p>
-                        <vue-markdown :source="selected.readme" class="readme"/>
+                        <b-form-textarea v-if="editing" v-model="selected.readme" :rows="2"></b-form-textarea>
+                        <div v-else>
+                            <p v-if="!selected.readme" style="opacity: 0.5">No README</p>
+                            <vue-markdown v-else :source="selected.readme" class="readme"/>
+                        </div>
                         <br>
                     </b-col>
                 </b-row>
@@ -66,10 +76,13 @@
                     </b-col>
                     <b-col>
                         <p><small style="opacity: 0.5">Users who are responsible for this datatype.</small></p>
-                        <p v-for="admin in selected.admins" :key="admin._id">
-                            <contact :id="admin"/>
-                        </p>
-                        <p v-if="!selected.admins || selected.admins.length == 0" style="opacity: 0.8">No admins.</p>
+                        <contactlist v-if="editing" v-model="selected.admins"></contactlist>
+                        <div v-else>
+                            <p v-if="!selected.admins || selected.admins.length == 0" style="opacity: 0.8">No admins.</p>
+                            <p v-for="admin in selected.admins" :key="admin._id">
+                                <contact :id="admin"/>
+                            </p>
+                        </div>
                         <br>
                     </b-col>
                 </b-row>
@@ -136,7 +149,8 @@
                         <p>
                             <small style="opacity: 0.5">The following Apps uses this datatype for input.</small>
                         </p>
-                        <div class="apps-container" style="border-left: 4px solid #007bff; padding-left: 10px;">
+                        <div v-if="input_apps.length > 0" class="apps-container" style="border-left: 4px solid #007bff; padding-left: 10px;">
+                            <span class="io-tab" style="background-color: #007bff">IN</span>
                             <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
                         </div>
                         <p v-if="input_apps.length == 0" style="opacity: 0.8">No App uses this datatype as input.</p>
@@ -145,7 +159,8 @@
                         <p>
                             <small style="opacity: 0.5">The following Apps uses this datatype for output.</small>
                         </p>
-                        <div class="apps-container" style="border-left: 4px solid #28a745; padding-left: 10px;">
+                        <div v-if="output_apps.length > 0" class="apps-container" style="border-left: 4px solid #28a745; padding-left: 10px;">
+                            <span class="io-tab" style="background-color: #28a745">OUT</span>
                             <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
                         </div>
                         <p v-if="output_apps.length == 0" style="opacity: 0.8">No App uses this datatype as output.</p>
@@ -169,9 +184,11 @@
             </b-container>
         </div>
 
-        <div v-if="editing" class="form-action" style="padding-right: 20px;">
-            <b-button @click="cancel">Cancel</b-button>
-            <b-button @click="submit" variant="primary">Submit</b-button>
+        <div v-if="editing" class="form-action">
+            <b-container>
+                <b-button @click="cancel">Cancel</b-button>
+                <b-button @click="submit" variant="primary">Submit</b-button>
+            </b-container>
         </div>
 
     </div><!--page-content-->
@@ -192,10 +209,10 @@ import datatypetag from '@/components/datatypetag'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import app from '@/components/app'
-
+import contactlist from '@/components/contactlist'
 
 export default {
-    components: { sidemenu, pageheader, datatypetag, app, VueMarkdown, contact } ,
+    components: { sidemenu, pageheader, datatypetag, app, VueMarkdown, contact, contactlist } ,
 
     data () {
         return {
@@ -395,7 +412,19 @@ export default {
             }
             this.editing = false; 
         },
+        
+        submit() {
+        },
 
+        trim(n) {
+            return n.split("/").splice(1).join("/");
+        },
+
+        gethsl(n) {
+            let hash = n.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+            let numhash = Math.abs(hash+120)%360;
+            return "hsl("+(numhash%360)+", 50%, 60%)";
+        },
     },
 
     destroyed() {
@@ -540,6 +569,6 @@ bottom:0;
 right:0;
 left:350px;
 background-color: rgba(100,100,100,0.4);
-padding:10px;
+padding: 10px;
 }
 </style>

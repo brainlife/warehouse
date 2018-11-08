@@ -55,7 +55,8 @@
                     <b-col>
                         <b-alert show variant="secondary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
                         <!--<p v-else class="text-primary">This App runs with the following input dataset.</p>-->
-                        <div style="border-left: 4px solid #007bff; margin-bottom: 15px; padding-left: 10px;">
+                        <div style="border-left: 4px solid #007bff; margin-bottom: 15px; padding-left: 10px; position: relative;">
+                            <span v-if="app.inputs.length > 0" class="io-tab" style="background-color: #007bff">IN</span>
                             <b-row v-if="app.inputs">
                                 <b-col cols="6" v-for="input in app.inputs" :key="input.id">
                                     <div style="padding: 5px; background-color: white; margin-bottom: 5px; min-height: 80px;">
@@ -97,8 +98,8 @@
                     </b-col>
                     <b-col>
                         <b-alert show variant="secondary" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
-                        <!--<p v-else class="text-success">This App produces the following output dataset.</p>-->
                         <div style="border-left: 4px solid #28a745; margin-bottom: 15px; padding-left: 10px;">
+                            <span v-if="app.outputs.length > 0" class="io-tab" style="background-color: #28a745">OUT</span>
                             <b-row v-if="app.outputs">
                                 <b-col cols="6" v-for="output in app.outputs" :key="output.id">
                                     <div style="padding: 5px; background-color: white; margin-bottom: 5px; min-height: 80px;">

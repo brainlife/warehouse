@@ -12,8 +12,8 @@
         <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 5px;">
             <div style="float: right;">
                 <div class="button" style="opacity: 0.7" v-if="editing_desc === null" @click="edit_desc" title="Edit Notes"><icon name="edit"/></div>
-                <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid"><icon name="info"/></div>
-                <b-popover :target="'popover'+task.config._tid" triggers="hover click focus">
+                <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid" @click="openinfo"><icon name="info"/></div>
+                <b-popover :target="'popover'+task.config._tid" triggers="hover">
                     <template slot="title"><span class="text-muted"><small>ID</small> {{task._id}}</span></template>
                     <p>
                         <contact :id="task.user_id" size="small"/>
@@ -59,7 +59,6 @@
                         <icon name="exclamation-circle" scale="0.8"/> will be removed on {{remove_date.toLocaleDateString()}}
                     </p>
                 </b-popover>
-                <div v-if="config.debug" class="button" style="opacity: 0.7" @click="openinfo"><icon name="info"/>2</div>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="redo"/>
                 </div>
