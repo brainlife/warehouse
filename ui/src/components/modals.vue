@@ -13,6 +13,7 @@
         <uploader/>
         <instanceselecter/>
         <archiver/>
+        <taskinfo/>
     </div>
 </div>
 </template>
@@ -30,12 +31,13 @@ import instanceselecter from '@/modals/instanceselecter'
 import archiver from '@/modals/archiver'
 import agreements from '@/modals/agreements'
 import downscript from '@/modals/downscript'
+import taskinfo from '@/modals/taskinfo'
 
 export default {
     components: {
         viewselecter, dataset, datatype, 
         uploader, datasetselecter, instanceselecter, 
-        archiver, agreements, downscript,
+        archiver, agreements, downscript, taskinfo,
     },
     data() {
         return {

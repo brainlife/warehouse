@@ -150,6 +150,7 @@ background-color: #333;
 position: fixed;
 top: 50px;
 bottom: 0px;
+width: 100%;
 }
 </style>
 

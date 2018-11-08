@@ -452,8 +452,7 @@
             <b-button @click="cancel">Cancel</b-button>
             <b-button @click="submit" variant="primary">Submit</b-button>
         </div>
-        
-    </div>
+    </div><!--page-content-->
 </div>
 </template>
 

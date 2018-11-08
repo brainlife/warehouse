@@ -59,6 +59,7 @@
                         <icon name="exclamation-circle" scale="0.8"/> will be removed on {{remove_date.toLocaleDateString()}}
                     </p>
                 </b-popover>
+                <div v-if="config.debug" class="button" style="opacity: 0.7" @click="openinfo"><icon name="info"/>2</div>
                 <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
                     <icon name="redo"/>
                 </div>
@@ -108,7 +109,7 @@
             <div v-if="has_output_slot">
                 <div @click="toggle('output')" class="toggler">
                     <icon name="chevron-right" class="caret" :class="{'caret-open': activeSections.output}"/> Output 
-                    <small v-if="remove_in_days < 7" class="text-danger" style="float: right;">Will be removed in <b>{{remove_in_days.toFixed(0)}} days</b></small>
+                    <small v-if="remove_in_days < 7" style="float: right;">Will be removed in <b>{{remove_in_days}} days</b></small>
                 </div>
                 <transition name="fadeHeight">
                     <div v-if="activeSections.output">
@@ -164,6 +165,8 @@ export default {
             desc: null,
 
             resource: null,
+
+            config: Vue.config,
         }
     },
 
@@ -200,7 +203,7 @@ export default {
         remove_in_days() {
             var d = new Date();
             var i = this.remove_date.getTime() - d.getTime();
-            return i/(3600*24*1000);
+            return Math.round(i/(3600*24*1000));
         }
     },
 
@@ -287,6 +290,9 @@ export default {
             }).catch(err=>{
                 console.error(err); 
             });
+        },
+        openinfo() {
+            this.$root.$emit("taskinfo.open", this.task);
         },
     },
 }

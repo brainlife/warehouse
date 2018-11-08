@@ -56,8 +56,8 @@ export default new Router({
         {path: '/project/:id/edit', component: projectedit},
         {path: '/project/:id/:tab?/:subid?', component: project},
 
-        {path: '/datatypes', component: datatypes},
-        {path: '/datatypes/:id', component: datatypes},
+        {path: '/datatypes', component: datatypes, meta: {public: true}},
+        {path: '/datatypes/:id', component: datatypes, meta: {public: true}},
 
         {path: '/pubs', component: pubs, meta: {public: true}},
         {path: '/pub/:id', component: pub, meta: {public: true}},

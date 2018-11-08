@@ -30,15 +30,18 @@
         <br>
         <br>
         <br>
-        <b-button class="button-fixed" @click="go('/datatype/_/edit')" title="New Datatype">
+        <b-button class="button-fixed" @click="newdatatype" title="New Datatype">
             <icon name="plus" scale="2"/>
         </b-button>
     </div>
     <div class="page-content">
         <p v-if="!selected" style="margin: 20px; opacity: 0.5">Please select a datatype to show.</p>
-        <div v-else>
+        <div v-if="selected">
             <div class="header">
                 <b-container>
+                    <div style="float: right;">
+                        <span class="button" @click="edit" v-if="canedit && !editing" title="Edit"><icon name="edit" scale="1.25"/></span>
+                    </div>
                     <h3><datatypetag :datatype="selected" :trimname="!!(~selected.name.indexOf('neuro/'))"/></h3>
                     <p style="opacity: 0.8">{{selected.desc}}</p>
                 </b-container>
@@ -47,7 +50,7 @@
             <b-container>
 
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <span class="form-header">README</span>
                     </b-col>
                     <b-col>
@@ -58,11 +61,11 @@
                 </b-row>
 
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <span class="form-header">Admins</span>
                     </b-col>
                     <b-col>
-                        <p style="opacity: 0.5">Users who are responsible for this datatype.</p>
+                        <p><small style="opacity: 0.5">Users who are responsible for this datatype.</small></p>
                         <p v-for="admin in selected.admins" :key="admin._id">
                             <contact :id="admin"/>
                         </p>
@@ -72,23 +75,23 @@
                 </b-row>
 
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <span class="form-header">Files/Dirs</span>
                     </b-col>
                     <b-col>
-                        <p style="opacity: 0.5">The following files/dirs are expected to be part of this datatype</p>
+                        <p><small style="opacity: 0.5">The following files/dirs are expected to be part of this datatype</small></p>
                         <pre v-highlightjs="JSON.stringify(selected.files, null, 4)"><code class="json hljs"></code></pre>
                         <br>
                     </b-col>
                 </b-row>
 
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <span class="form-header">Datatype Tags</span>
                     </b-col>
                     <b-col>
-                        <p v-if="selected.datatype_tags.length > 0" style="opacity: 0.5">The following datatype tags are used for this datatype.</p>
-                        <p v-else style="opacity: 0.5">No officially registered datatype tags</p>
+                        <p v-if="selected.datatype_tags.length > 0"><small style="opacity: 0.5">The following datatype tags are used for this datatype.</small></p>
+                        <p v-else><small style="opacity: 0.5">No officially registered datatype tags</small></p>
                         <b-row v-for="(entry, idx) in selected.datatype_tags" :key="idx" style="margin-bottom: 5px;">
                             <b-col cols="3">
                                 <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
@@ -98,7 +101,7 @@
                             </b-col>
                         </b-row>
 
-                        <p v-if="adhoc_datatype_tags.length > 0" style="opacity: 0.5">The following adhoc datatype tags are used for some datasets.</p>
+                        <p v-if="adhoc_datatype_tags.length > 0"><small style="opacity: 0.5">The following adhoc datatype tags are used for some datasets.</small></p>
                         <b-row v-for="tag in adhoc_datatype_tags" :key="tag" style="margin-bottom: 5px;">
                             <b-col cols="3">
                                 <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{tag}}</span>
@@ -114,11 +117,11 @@
 
 
                 <b-row v-if="selected.bids.maps.length > 0">
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <span class="form-header">BIDS Export</span>
                     </b-col>
                     <b-col>
-                        <p style="opacity: 0.5">The following file mapping is used to generate BIDS derivative exports.</p>
+                        <p><small style="opacity: 0.5">The following file mapping is used to generate BIDS derivative exports.</small></p>
                         <b>{{selected.bids.derivatives}}</b>
                         <pre v-highlightjs="JSON.stringify(selected.bids.maps, null, 4)"><code class="json hljs"></code></pre>
                         <br>
@@ -126,25 +129,37 @@
                 </b-row>
 
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <span class="form-header">Apps</span>
                     </b-col>
                     <b-col>
-                        <p style="opacity: 0.5">The following Apps uses this datatype for input/output.</p>
-                        <div class="apps-container">
-                            <app v-for="app in apps" :key="app._id" :app="app" class="app" height="270px"/>
+                        <p>
+                            <small style="opacity: 0.5">The following Apps uses this datatype for input.</small>
+                        </p>
+                        <div class="apps-container" style="border-left: 4px solid #007bff; padding-left: 10px;">
+                            <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
                         </div>
-                        <p v-if="apps.length == 0" style="opacity: 0.8">No App is using this datatype.</p>
+                        <p v-if="input_apps.length == 0" style="opacity: 0.8">No App uses this datatype as input.</p>
                         <br>
+
+                        <p>
+                            <small style="opacity: 0.5">The following Apps uses this datatype for output.</small>
+                        </p>
+                        <div class="apps-container" style="border-left: 4px solid #28a745; padding-left: 10px;">
+                            <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
+                        </div>
+                        <p v-if="output_apps.length == 0" style="opacity: 0.8">No App uses this datatype as output.</p>
+                        <br>
+
                     </b-col>
                 </b-row>
 
                 <b-row v-if="selected.validator">
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <span class="form-header">Validator</span>
                     </b-col>
                     <b-col>
-                        <p style="opacity: 0.5">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</p>
+                        <p><small style="opacity: 0.5">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
                         <p><a :href="'https://github.com/'+selected.validator"><b>{{selected.validator}}</b></a></p>
                         <!--<p v-else style="opacity: 0.8">No validator</p>-->
                         <br>
@@ -153,6 +168,12 @@
 
             </b-container>
         </div>
+
+        <div v-if="editing" class="form-action" style="padding-right: 20px;">
+            <b-button @click="cancel">Cancel</b-button>
+            <b-button @click="submit" variant="primary">Submit</b-button>
+        </div>
+
     </div><!--page-content-->
 </div>
 </template>
@@ -205,9 +226,29 @@ export default {
             },
             */
 
+            editing: false, 
+
             //query: "",
 
             config: Vue.config,
+        }
+    },
+
+    computed: {
+        input_apps() {
+            if(!this.apps) return [];
+            return this.apps.filter(a=>{
+                return a.inputs.find(it=>it.datatype == this.selected._id);
+            });
+        },
+        output_apps() {
+            if(!this.apps) return [];
+            return this.apps.filter(a=>{
+                return a.outputs.find(it=>it.datatype == this.selected._id);
+            });
+        },
+        canedit() {
+            return ~this.selected.admins.indexOf(Vue.config.user.sub);
         }
     },
 
@@ -270,9 +311,6 @@ export default {
         },
         */
 
-        newdatatype() {
-            //this.$router.push('/datatype/_/edit');
-        },
         
         select(datatype) {
             this.selected = datatype;
@@ -323,6 +361,41 @@ export default {
             return this.selected.datatype_tags.find(d=>d.datatype_tag == tag);
         },
 
+        edit() {
+            this.editing = true;
+        },
+
+        newdatatype() {
+            this.selected = {
+                name: "tbd",
+                desc: "tbd desc",
+                readme: "tdb readme",
+                admins: [ Vue.config.user.sub ],
+                files: [],
+                datatype_tags: [],
+                bids: {
+                    derivatives: "",
+                    maps: [],
+                },
+            }
+            this.editing = true;
+        },
+
+        cancel() {
+            if(this.selected._id) {
+                //revert by loading previous state
+                this.$http.get('datatype', {params: {
+                    sort: 'name',
+                    find: JSON.stringify({_id: this.selected._id}),
+                }}).then(res=>{
+                    Object.assign(this.selected, res.body.datatypes[0]);
+                });
+            } else {
+                this.selected = null;
+            }
+            this.editing = false; 
+        },
+
     },
 
     destroyed() {
@@ -333,6 +406,7 @@ export default {
     watch: {
         selected() {
             if(!this.selected) return; 
+            if(!this.selected._id) return; //editing new
 
             //load apps that uses this datatype
             this.$http.get('app', {params: {
@@ -409,6 +483,7 @@ padding: 5px 10px;
 margin-bottom: 0px;
 color: white;
 transition: background-color 0.5s;
+font-size: 95%;
 }
 .datatype-list .item:hover {
 cursor: pointer;
@@ -457,5 +532,14 @@ box-sizing: border-box;
 }
 code.json {
 background-color: white;
+}
+.form-action {
+text-align: right;
+position: fixed;
+bottom:0;
+right:0;
+left:350px;
+background-color: rgba(100,100,100,0.4);
+padding:10px;
 }
 </style>
