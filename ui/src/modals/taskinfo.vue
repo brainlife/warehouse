@@ -20,7 +20,7 @@
                 <div style="padding: 10px;">
                     <b-row>
                         <b-col cols="6">
-                            <h5>Task Info</h5>
+                            <h5>Task</h5>
                             <!--dates table-->
                             <table class="table table-sm">
                             <tr>
@@ -60,6 +60,10 @@
                                 <th>Next&nbsp;Chk</th>
                                 <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
                             </tr>
+                            <tr v-if="resource">
+                                <th>Resource</th>
+                                <td>{{resource.name}} <small>{{resource.desc}}</small></td>
+                            </tr>
                             </table>
                             <!--
                             <p v-if="task.status == 'finished'" style="opacity: 0.5;">
@@ -68,19 +72,6 @@
                             -->
                         </b-col>
                         <b-col cols="6">
-                            <h5>Resource Info</h5>
-                            <span style="opacity: 0.5">TODO..</span>
-                        </b-col>
-                    </b-row>
-                    <hr>
-                </div><!--padding-->
-
-                <h5 v-if="loading" style="opacity: 0.8; padding: 10px;"><icon name="cog" :spin="true"/> Loading runtime info .. </h5>
-
-                <div v-if="!loading && smon.info" style="padding: 10px;">
-                    <b-row>
-                        <b-col cols="6">
-                            <!--ce info-->
                             <h5>Compute Node</h5>
                             <!--<p><small style="opacity: 0.5">This task rans on the following compute node</small></p>-->
                             <table class="table table-sm">
@@ -113,13 +104,12 @@
                             </tr>
                             </table>
                         </b-col>
-                        <b-col cols="6">
-                            <h5>Job ENVs</h5>
-                            <p style="opacity: 0.8; margin: 5px 0px">
-                                <b-badge v-for="(v, k) in smon.info.env" :key="k" variant="light"><b>{{k}}</b> {{v}}</b-badge>
-                            </p>
-                        </b-col>
                     </b-row>
+                </div><!--padding-->
+
+                <h5 v-if="loading" style="opacity: 0.8; padding: 10px;"><icon name="cog" :spin="true"/> Loading runtime info .. </h5>
+
+                <div v-if="!loading && smon.info" style="padding: 10px;">
 
                     <h5>Resouce Utilization</h5>
                     <p style="opacity: 0.7"><small>
@@ -145,11 +135,14 @@
                         <vue-plotly :data="smon.disk.data" :layout="smon.disk.layout" :autoResize="true"/>
                     </div>
                     <br>
- 
-                    <hr>
+
+                    <h5>Job ENVs</h5>
+                    <p style="opacity: 0.8; margin: 5px 0px">
+                        <b-badge v-for="(v, k) in smon.info.env" :key="k" variant="light"><b>{{k}}</b> {{v}}</b-badge>
+                    </p>
                 </div> <!-- smon-->
                 <div style="padding: 10px;">
-                    <h5>Task Config</h5>
+                    <h5>Config</h5>
                     <pre v-highlightjs="JSON.stringify(task.config, null, 4)" style="background-color: white;"><code class="json hljs"></code></pre>
                 </div>
             </div>
@@ -182,6 +175,7 @@ export default {
         return {
             open: false,
             task: null,
+            resource: null,
             smon: {
                 info: null,
 
@@ -205,9 +199,10 @@ export default {
     },
 
     created() {
-        this.$root.$on("taskinfo.open", task=>{
-            console.log("opening taskinfo", task._id);
-            this.task = task;
+        this.$root.$on("taskinfo.open", opt=>{
+            console.log("opening taskinfo", opt.task._id);
+            this.task = opt.task;
+            this.resource = opt.resource;
             this.open = true;
             this.load_smon();
         });

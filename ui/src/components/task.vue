@@ -291,7 +291,7 @@ export default {
             });
         },
         openinfo() {
-            this.$root.$emit("taskinfo.open", this.task);
+            this.$root.$emit("taskinfo.open", {task: this.task, resource: this.resource});
         },
     },
 }

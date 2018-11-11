@@ -89,6 +89,16 @@
 
                 <b-row>
                     <b-col cols="2">
+                        <span class="form-header">Visualizer</span>
+                    </b-col>
+                    <b-col>
+                        {{uis}}
+                        <!--TODO-->
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
                         <span class="form-header">Files/Dirs</span>
                     </b-col>
                     <b-col>
@@ -127,7 +137,6 @@
                         <br>
                     </b-col>
                 </b-row>
-
 
                 <b-row v-if="selected.bids.maps.length > 0">
                     <b-col cols="2">
@@ -224,6 +233,8 @@ export default {
             //for selected item
             apps: [], //apps that uses selected datatype
             adhoc_datatype_tags: [], //datatype tags associated with selected datatype
+
+            uis: [],  //ui catalog
             
             //view_datatype_id: null,
             //count: 0, //total counts of datatypes (not paged)
@@ -271,6 +282,11 @@ export default {
 
     mounted: function() {
         this.ps = new PerfectScrollbar(this.$refs.scrollable);
+        this.$http.get('datatype/ui', {params: {}})
+        .then(res=>{
+            this.uis = res.body.uis;    
+        });
+
         this.$http.get('datatype', {params: {
             sort: 'name'
         }})
@@ -321,13 +337,6 @@ export default {
     },
 
     methods: {
-        /*
-        changemember(list, uids) {
-            if(!uids) return;
-            this.edit[list] = uids;
-        },
-        */
-
         
         select(datatype) {
             this.selected = datatype;
@@ -349,12 +358,6 @@ export default {
             }
         },
         
-        /*
-        handle_route_params() {
-            if (this.$route.params.id) this.$root.$emit('datatype.view', this.$route.params.id);
-        },
-        */
-
         get_datatypes(prefix) {
             return this.datatypes.filter(d=>{
                 if(~d.name.indexOf(prefix)) {
@@ -430,7 +433,6 @@ export default {
     destroyed() {
         this.ps.destroy();
     },
-
   
     watch: {
         selected() {
