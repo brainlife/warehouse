@@ -303,6 +303,10 @@
                                         <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
                                     </b-form-group>
 
+                                    <b-form-group v-if="param.type == 'string'">
+                                        <b-form-checkbox v-model="param.multiline">Multiline</b-form-checkbox>
+                                    </b-form-group>
+
                                     <div v-if="!param.readonly && (param.type == 'number' || param.type == 'integer')">
                                         <b-input-group prepend="Min">
                                             <b-form-input type="number" :step="0.01" v-model.number="param.min" placeholder="(No min)" @mousewheel.native="$event.preventDefault()"/>
@@ -449,8 +453,10 @@
         </b-card>
         
         <div class="form-action" style="padding-right: 20px;">
-            <b-button @click="cancel">Cancel</b-button>
-            <b-button @click="submit" variant="primary">Submit</b-button>
+            <b-container>
+                <b-button @click="cancel">Cancel</b-button>
+                <b-button @click="submit" variant="primary">Submit</b-button>
+            </b-container>
         </div>
     </div><!--page-content-->
 </div>

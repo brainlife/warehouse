@@ -10,8 +10,12 @@
                     v-model.number="value[v.id]" :placeholder="v.placeholder"/>
 
                 <!--string-->
-                <b-form-input type="text" v-if="v.type == 'string'"
+                <b-form-input type="text" v-if="v.type == 'string' && !v.multiline"
                     :readonly="v.readonly" :required="!v.optional"
+                    v-model="value[v.id]" :placeholder="v.placeholder"/>
+
+                <b-form-textarea v-if="v.type == 'string' && v.multiline" :rows="3"
+                    :readonly="v.readonly" :required="!v.optional" 
                     v-model="value[v.id]" :placeholder="v.placeholder"/>
 
                 <!--boolean-->

@@ -15,7 +15,7 @@
             </div><!--header-->
 
             <div class="scrolled" style="background-color: #fcfcfc;">
-                <b-alert variant="secondary" :show="!loading && !smon.info" style="opacity: 0.8">Couldn't load runtime info (_smon.out). Maybe not yet executed?</b-alert>
+                <b-alert variant="secondary" :show="!loading && !smon.info" style="opacity: 0.8">Runtime info (_smon.out) not available</b-alert>
 
                 <div style="padding: 10px;">
                     <b-row>
@@ -65,13 +65,8 @@
                                 <td>{{resource.name}} <small>{{resource.desc}}</small></td>
                             </tr>
                             </table>
-                            <!--
-                            <p v-if="task.status == 'finished'" style="opacity: 0.5;">
-                                <icon name="exclamation-circle" scale="0.8"/> will be removed on {{computed_remove_date.toLocaleDateString()}}
-                            </p>
-                            -->
                         </b-col>
-                        <b-col cols="6">
+                        <b-col cols="6" v-if="smon.info">
                             <h5>Compute Node</h5>
                             <!--<p><small style="opacity: 0.5">This task rans on the following compute node</small></p>-->
                             <table class="table table-sm">
@@ -92,14 +87,20 @@
                                 <th>CPUs</th>
                                 <td>
                                     {{smon.info.cpu_total}} Total
-                                    <span style="opacity: 0.7" v-if="smon.info.cpu_total != smon.info.cpu_avail">({{smon.info.cpu_avail}} requested)</span>
+                                    <span style="opacity: 0.7" v-if="smon.info.cpu_total != smon.info.cpu_avail">({{smon.info.cpu_requested}} requested)</span>
                                 </td>
                             </tr>
                             <tr>
                                 <th>Memory</th>
                                 <td>
                                     {{smon.info.memory_total|memory}} Total
-                                    <span style="opacity: 0.7" v-if="smon.info.memory_total != smon.info.memory_avail">({{smon.info.memory_avail|memory}} requested)</span>
+                                    <span style="opacity: 0.7" v-if="smon.info.memory_total != smon.info.memory_avail">({{smon.info.memory_requested|memory}} requested)</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Requested Walltime</th>
+                                <td>
+                                    {{smon.info.walltime_requested}} secs
                                 </td>
                             </tr>
                             </table>

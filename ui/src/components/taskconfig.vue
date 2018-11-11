@@ -11,7 +11,7 @@
             <td v-else-if="typeof v == 'object'" width="25%">
                 <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
             </td>
-            <td v-else width="25%">{{v}}</td>
+            <td v-else width="25%"><pre>{{v}}</pre></td>
             
             <td style="font-size: 85%;">
                 <div v-if="appconfig[k]">

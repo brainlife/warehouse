@@ -35,7 +35,7 @@
                     <b-tab title="Detail"/>
                     <b-tab title="Readme"/>
                     <b-tab>
-                        <template slot="title"><icon name="paper-plane"/> Execute</template>
+                        <template slot="title"><!--<icon name="paper-plane"/>-->Execute</template>
                     </b-tab>
                     <!--<b-tab title="Test Status"/>-->
                     <!--<b-tab title="Citation / References"/>-->

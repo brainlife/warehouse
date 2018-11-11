@@ -75,7 +75,9 @@
     <br>
     <br>
     <div class="page-footer">
-        <b-button variant="primary" type="submit">Submit</b-button>
+        <b-container>
+            <b-button variant="primary" type="submit">Submit</b-button>
+        </b-container>
     </div>
 
 </b-form>
