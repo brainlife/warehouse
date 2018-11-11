@@ -117,20 +117,12 @@
                         The App should be using close to all requested CPU cores / memory.
                     </small></p>
                
-                    <b-row>
-                        <b-col>
-                            <div v-if="smon.cpu.data">
-                                <vue-plotly :data="smon.cpu.data" :layout="smon.cpu.layout" :autoResize="true"/>
-                            </div>
-                        </b-col>
-                        <b-col>
-                            <div v-if="smon.memory.data">
-                                <vue-plotly :data="smon.memory.data" :layout="smon.memory.layout" :autoResize="true"/>
-                            </div>
-                        </b-col>
-                    </b-row>
-                    <br>
-
+                    <div v-if="smon.cpu.data">
+                        <vue-plotly :data="smon.cpu.data" :layout="smon.cpu.layout" :autoResize="true"/>
+                    </div>
+                    <div v-if="smon.memory.data">
+                        <vue-plotly :data="smon.memory.data" :layout="smon.memory.layout" :autoResize="true"/>
+                    </div>
                     <div v-if="smon.disk.data">
                         <vue-plotly :data="smon.disk.data" :layout="smon.disk.layout" :autoResize="true"/>
                     </div>
@@ -236,16 +228,17 @@ export default {
                 let end_date = null;
 
                 function shorten(long) {
-                    if(long.length < 60) return long;
+                    if(long.length < 40) return long;
                     let tokens = long.split(" ");
                     let short = "";
                     tokens.forEach(t=>{
-                        if(t.length < 30) {
+                        if(t.length < 15) {
                             short+=t+" ";
                             return;
                         }
-                        short+=".."+t.substring(t.length-30)+" ";
+                        short+=".."+t.substring(t.length-15)+" ";
                     });
+                    if(short.length > 40) short = short.substring(0, 40)+"...";
                     return short;
                 }
 
@@ -313,6 +306,7 @@ export default {
 
                         //deal with process
                         if(record.processes) record.processes.forEach(p=>{
+                            if(p.cmd.indexOf("ps ") == 0) return;
                             if(!pcpus[p.pid]) pcpus[p.pid] = {x: [], y: [], name: shorten(p.cmd), mode: 'lines', stackgroup: 'pcpu', line: {width: 0} }
                             pcpus[p.pid].x.push(time);
                             pcpus[p.pid].y.push(p.pcpu);
@@ -331,7 +325,7 @@ export default {
                 this.smon.disk.data = [disk];
                 this.smon.disk.layout = {
                     title: "Disk Usage",
-                    height: 300,
+                    height: 350,
                     margin: {
                         //l: 50, 
                         //r: 10, 
@@ -339,7 +333,7 @@ export default {
                     },
                     showlegend: true,
                     legend: {
-                        orientation: "h",
+                        //orientation: "h",
                     },
                     yaxis: {
                         title: 'MB',
@@ -366,7 +360,7 @@ export default {
                     },
                     showlegend: true,
                     legend: {
-                        orientation: "h",
+                        //orientation: "h",
                         font: {
                           //family: 'sans-serif',
                           size: 10,
@@ -411,7 +405,9 @@ export default {
                     showlegend: true,
                     //paper_bgcolor: "#000",
                     legend: {
-                        orientation: "h",
+                        //orientation: "h",
+                        //x: -.1, 
+                        //y: 1.2,
                         font: {
                           //family: 'sans-serif',
                           size: 10,

@@ -59,7 +59,7 @@
                             <span v-if="app.inputs.length > 0" class="io-tab" style="background-color: #007bff">IN</span>
                             <b-row v-if="app.inputs">
                                 <b-col cols="6" v-for="input in app.inputs" :key="input.id">
-                                    <div style="padding: 5px; background-color: white; margin-bottom: 5px; min-height: 80px;">
+                                    <div class="io-card">
                                         <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
                                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                                         <span v-if="input.optional" class="text-muted">(optional)</span>
@@ -102,7 +102,7 @@
                             <span v-if="app.outputs.length > 0" class="io-tab" style="background-color: #28a745">OUT</span>
                             <b-row v-if="app.outputs">
                                 <b-col cols="6" v-for="output in app.outputs" :key="output.id">
-                                    <div style="padding: 5px; background-color: white; margin-bottom: 5px; min-height: 80px;">
+                                    <div class="io-card">
                                         <small style="opacity: 0.5; float: right;">{{output.id}}</small><!--internal output id-->
                                         <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                                         <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ {{output.datatype_tags_pass}}</span>
@@ -271,6 +271,10 @@
             <div v-if="tab_index == 3">
                 <p class="text-muted">No test status available yet</p>
             </div>
+            <br>
+            <br>
+            <br>
+            <br>
             <br>
         </b-container>
 
@@ -532,7 +536,7 @@ background-color: #ddd;
 }
 .resource {
 background-color: white;
-box-shadow: 2px 2px 5px #ddd;
+box-shadow: 2px 2px 3px #ddd;
 margin-bottom: 10px;
 position: relative;
 }
@@ -548,4 +552,17 @@ width: 100%;
 .resource-status .score {
 float: right;
 }
+.readme {
+background-color: white;
+padding: 30px;
+box-shadow: 2px 2px 5px #ddd;
+}
+.io-card {
+padding: 8px; 
+background-color: white; 
+box-shadow: 2px 2px 3px #ddd; 
+margin-bottom: 5px; 
+min-height: 80px;
+}
+
 </style>
