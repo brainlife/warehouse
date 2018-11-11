@@ -300,10 +300,6 @@ z-index: 20;
 height: 60px;
 position: relative;
 }
-.readme pre {
-background-color: white;
-padding: 10px;
-}
 small {
 font-size: 85%;
 opacity: 0.7;
@@ -312,9 +308,6 @@ opacity: 0.7;
 text-transform: uppercase;
 opacity: 0.6;
 font-weight: bold;
-}
-div.readme p, p.text {
-line-height: 175%;
 }
 .v-select .dropdown-toggle {
 background-color: white;
@@ -364,6 +357,16 @@ color: black;
 opacity: 0.35;
 }
 
+div.readme p, p.text {
+line-height: 175%;
+}
+.readme img {
+max-width: 100%;
+}
+.readme pre {
+background-color: #f6f8fa;
+padding: 10px;
+}
 .readme h1 {
 font-size: 1.5rem;
 }
