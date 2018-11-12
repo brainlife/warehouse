@@ -73,8 +73,8 @@
 
 
                     <div v-if="rule.active" style="margin: 0px 10px;">
-                        <b-btn @click="deactivate(rule)" variant="outline-danger" size="sm" v-if="!deactivating"><icon name="times"/> Deactivate </b-btn>
-                        <b-btn variant="outline-danger" size="sm" v-if="deactivating"><icon name="times"/> Deactivating <b-badge>{{deactivating_remain}}</b-badge></b-btn>
+                        <b-btn @click="deactivate(rule)" variant="outline-danger" size="sm" v-if="!rule.deactivating_remain"><icon name="times"/> Deactivate </b-btn>
+                        <b-btn variant="outline-danger" size="sm" v-if="rule.deactivating_remain > 0"><icon name="times"/> Deactivating <b-badge>{{rule.deactivating_remain}}</b-badge></b-btn>
                         <small style="opacity: 0.8">{{rule.taskcount||0}} active tasks</small>
                         <!--
                         <icon name="cog" :spin="true" scale="1.25" style="float: left;"/>
@@ -214,8 +214,8 @@ export default {
             datatypes: null,
             projects: null,
 
-            deactivating: null,
-            deactivating_remain: null,
+            //deactivating: null,
+            //deactivating_remain: null,
 
             config: Vue.config,
         }
@@ -521,23 +521,23 @@ export default {
             .then(res=>{
                 if(res.body.count > 0) {
                     if(confirm("Deactivating this rule will remove "+res.body.count+" active tasks submitted by this rule. Should we proceed?")) {
-                        this.deactivating = rule;
-                        this.deactivating_remain = res.body.count;
+                        //this.deactivating = rule;
+                        //this.deactivating_remain = res.body.count;
+                        Vue.set(rule, 'deactivating_remain', res.body.count);
                         this.$notify({ title: 'Removing Task', text: 'Removing'+res.body.count+' tasks', type: 'info', });
 
                         async.eachSeries(res.body.tasks, (task, next_task)=>{
                             console.log("removing", task._id);
                             this.$http.delete(Vue.config.wf_api+'/task/'+task._id).then(res=>{
-                                this.deactivating_remain--;
+                                rule.deactivating_remain--;
                                 next_task();
                             }).catch(next_task);
                         }, err=>{
                             if(err) return this.notify_error(err);
                             this.$notify({ title: 'Removing Task', text: 'Removed '+res.body.count+' tasks', type: 'success', });
-                            //console.log("now deactivating rule");
                             this.$http.put('rule/'+rule._id, {active: false}).then(res=>{
                                 rule.active = false;
-                                this.deactivating = null;
+                                //rule.deactivating = null;
                             }).catch(this.notify_error);
                         });
                     }
