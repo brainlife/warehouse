@@ -221,7 +221,6 @@ export default {
         //don't forget to add remove listener on destroyed (debug loader won't destroy parent.. so you will end up with bunch of the same event firing)
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
-        //this.$root.$on("archiver.submit", this.submit_archive);
         this.$root.$on('showtask', id=>{
             console.log("showtask received", id);
             this.selected_task_id = id;
@@ -544,9 +543,11 @@ export default {
             //set last minutes stuff
             task.instance_id = this.instance._id;
             task.config._tid = this.next_tid();
+            /*
             task.config._outputs.forEach(output=>{
                 if(output.archive) output.archive.project = this.project._id;
             });
+            */
 
             this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
                 var _task = res.body.task;

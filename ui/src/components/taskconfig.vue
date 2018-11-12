@@ -1,19 +1,19 @@
 <template>
 <div v-if="taskconfig && appconfig">
     <span style="opacity: 0.4;" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
-    <table width="100%:">
+    <table width="100%">
         <tr v-for="(v,k) in taskconfig" :key="k" :class="{ default: is_default(k) }">
-            <th width="25%">{{k}}</th>
-            <td v-if="v === null" width="25%">
+            <th>{{k}}</th>
+            <td v-if="v === null">
                 <pre class="text-muted" style="margin-bottom: 0">null</pre>
             </td>
-            <td v-else-if="v === ''" width="25%">(empty)</td>
-            <td v-else-if="typeof v == 'object'" width="25%">
+            <td v-else-if="v === ''">(empty)</td>
+            <td v-else-if="typeof v == 'object'">
                 <pre v-highlightjs style="margin-bottom: 0px;"><code class="json hljs">{{v}}</code></pre>
             </td>
-            <td v-else width="25%"><pre>{{v}}</pre></td>
+            <td v-else width="30%"><pre style="white-space: pre-wrap;">{{v}}</pre></td>
             
-            <td style="font-size: 85%;">
+            <td style="font-size: 85%;" width="50%">
                 <div v-if="appconfig[k]">
                     {{ appconfig[k].desc }} <span style="opacity: 0.6;">default={{get_default(k)}}</span>
                 </div>

@@ -84,7 +84,7 @@
                         <div v-if="!archive.enable">
                             <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
                         </div>
-                        <b-card v-if="archive.enable">
+                        <b-card v-if="archive.enable" style="margin-bottom: 10px;">
                             <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
                             <p>
                                 <b>Dataset Description</b>
@@ -155,6 +155,7 @@ export default {
             },
 
             datasets: null,
+            project: null, 
 
             deps: null,
             advanced: {},
@@ -167,6 +168,7 @@ export default {
         this.$root.$on("newtask.open", info=>{
             //receive info from client
             this.datasets = info.datasets;
+            this.project = info.project;
 
             console.log("requested to open newtask modal");
             this.open = true;
@@ -175,8 +177,8 @@ export default {
             this.app = null;
             this.valid = false;
             this.archive.desc = "";
-            this.tags = [];
             this.archive.enable = false;
+            this.tags = [];
 
             //create list of all datatypes that user has staged / generated
             var datatype_ids = [];
@@ -187,7 +189,7 @@ export default {
             //load all tags
             //load tags from other datasets in this project
             this.$http.get('dataset/distinct', {params: {
-                find: JSON.stringify({"project": info.project._id}),
+                find: JSON.stringify({"project": this.project._id}),
                 distinct: 'tags',
             }}).then(res=>{
                 this.alltags = res.body;
@@ -396,6 +398,7 @@ export default {
                     tags: this.tags,
                 };
                 if(this.archive.enable) output_req.archive = {
+                    project: this.project._id,
                     desc: this.archive.desc,
                 }
 
