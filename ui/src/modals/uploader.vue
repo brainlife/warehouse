@@ -53,15 +53,9 @@
     <div v-if="mode == 'validate' && tasks.validation">
         <task :task="tasks.validation" v-if="!tasks.validation.product"/>
         <div v-else>
-            <b-form-group>
-                <!--
-                <b-alert show variant="danger" v-for="(msg, $idx) in tasks.validation.product.errors" :key="$idx">{{msg}}</b-alert>
-                <b-alert show variant="warning" v-for="(msg, $idx) in tasks.validation.product.warnings" :key="$idx">{{msg}}</b-alert>
-                -->
-                <b-alert show variant="success" v-if="tasks.validation.product.errors.length == 0 && tasks.validation.product.warnings.length == 0">
-                    Your data looks good! Please check information below and click Archive button.
-                </b-alert>
-            </b-form-group>
+            <b-alert show variant="success" v-if="tasks.validation.product.errors.length == 0 && tasks.validation.product.warnings.length == 0">
+                Your data looks good! Please check information below and click Archive button.
+            </b-alert>
             <product :product="tasks.validation.product"/>
 
             <!--show info-->
@@ -332,13 +326,18 @@ export default {
             this.tasks.validation = null;
 
             //create validator config
-            var config = {};
+            var config = {
+                _outputs: [{
+                    id: "output",
+                    datatype: this.datatype_id,
+                    datatype_tags: this.datatype_tags,
+                }]
+            };
             var datatype = this.datatypes[this.datatype_id];
             datatype.files.forEach(file=>{
                 if(!file.local_filename) return; //not set.. optional?
                 config[file.id] = "../"+this.tasks.upload._id+"/"+file.filename;
             });
-            //and submit
 
             this.$http.post(Vue.config.wf_api+'/task', {
                 instance_id: this.instance._id,
@@ -367,8 +366,8 @@ export default {
                 task_id: this.tasks.validation._id, 
                 output_id: "output", //validation service isn't realy BL app, so I just have to come up with something
 
-                datatype: this.datatype_id,
-                datatype_tags: this.datatype_tags,
+                //datatype: this.datatype_id,
+                //datatype_tags: this.datatype_tags,
 
                 meta: this.meta,
                 desc: this.desc,
