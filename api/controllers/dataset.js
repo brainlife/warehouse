@@ -413,8 +413,9 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     if(req.body.await === false) await = false;
     
     //to be loaded..
-    var task = null;
-    var output = null;
+    let task = null;
+    let output = null;
+    let dataset = null;
 
     logger.debug("posting new dataset");
 
@@ -460,9 +461,14 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 
         next=>{
             //find output
-            console.dir(task.config);
-            output = task.config._outputs.find(o=>o.id == req.body.output_id);
-            if(!output) return next("no such output_id");
+            //console.dir(task.config);
+            if(task.config._outputs) {
+                output = task.config._outputs.find(o=>o.id == req.body.output_id);
+            }
+            if(!output) {
+                logger.info("no config_outputs for ", req.body.output_id);
+                console.dir(task.config);
+            }
             next();
         },
 
@@ -470,13 +476,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             //WARNING - similar code exists in event_handler
 			//logger.debug("registering new dataset record", req.body.meta);
             let products = common.split_product(task.product, task.config._outputs);
-            /*[{
-                id: req.body.output_id,
-                datatype_tags,
-                tags: req.body.tags||[],
-                meta: req.body.meta||{},
-            }]);*/
-
             let product = products[req.body.output_id];
             if(!product) return next("no such output_id in app");
 
@@ -507,13 +506,15 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                     instance_id: task.instance_id, //deprecated
                     task_id: task._id, //deprecated
                 },
-            }).save((err, dataset)=>{
+            }).save((err, _dataset)=>{
                 if(err) return next(err);
-                logger.debug("created dataset record......................", dataset.toObject());
-                if(!await) res.json(dataset); 
+                dataset = _dataset;
+
+                logger.debug("created dataset record......................", _dataset.toObject());
+                if(!await) res.json(_dataset); 
 
                 logger.debug("running archive_task now");
-                common.archive_task(dataset, /*req.body.files,*/ req.headers.authorization, next);
+                common.archive_task(_dataset, /*req.body.files,*/ req.headers.authorization, next);
             });
         },
     ], err=>{

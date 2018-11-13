@@ -290,6 +290,18 @@ exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
+// UI Catalog
+//
+var UISchema = mongoose.Schema({
+    ui: String, //maybe to be deprecated?
+    name: String, 
+    desc: String, 
+    avatar: String, //url of avatar
+});
+exports.UIs = mongoose.model('UIs', UISchema);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
 // defines data type entry points (allowing user to upload)
 //
 
@@ -303,10 +315,13 @@ var datatypeSchema = mongoose.Schema({
     //file inventory for this datatype
     files: [ new mongoose.Schema({
         id: String,
+
+        //either filename or dirname should be set
         filename: String,
-        dirname: String, //should use filename instead?
+        dirname: String, 
+
         desc: String,
-        ext: String,
+        ext: String, //ui accept filter (for datatypes with validator)
         required: Boolean
     })],
 
@@ -332,6 +347,8 @@ var datatypeSchema = mongoose.Schema({
             json: String, //bids sidecar filename (dwi.json) (optional)
         }],
     },
+
+    uis: [{type: mongoose.Schema.Types.ObjectId, ref: 'UIs'}],
 
     create_date: { type: Date, default: Date.now },
 });

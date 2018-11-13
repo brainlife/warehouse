@@ -48,4 +48,15 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     });
 });
 
+//get all uis registered
+router.get('/ui', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    logger.debug("ui query");
+    db.UIs.find({})
+    .lean()
+    .exec((err, uis)=>{
+        if(err) return next(err);
+        res.json({uis, count: uis.length});
+    });
+});
+
 module.exports = router;
