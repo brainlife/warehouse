@@ -307,6 +307,8 @@ export default {
                 distinct: 'meta.subject'
             }}).then(res=>{
                 this.total_subjects = res.body.length;
+            }).catch(res=>{
+                this.$notify({type: 'error', text: res.body.message || JSON.stringify(res.body)});
             });
 
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -378,6 +380,7 @@ export default {
 
             if(this.query) {
                 let ands = [];
+
                 //split query into each token and allow for regex search on each token
                 //so that we can query against multiple fields simultanously
                 this.query.split(" ").forEach(q=>{
@@ -388,13 +391,21 @@ export default {
                     for(var id in this.datatypes) {
                         if(this.datatypes[id].name.includes(q)) datatype_ids.push(id);
                     }
-                    ands.push({$or: [
+
+                    let ors = [
                         {"meta.subject": {$regex: q, $options: 'i'}},
                         {"desc": {$regex: q, $options: 'i'}},
                         {"tags": {$regex: q, $options: 'i'}},
                         {"datatype_tags": {$regex: q, $options: 'i'}},
                         {"datatype": {$in: datatype_ids}},
-                    ]});
+                    ];
+                    if(q[0] == "!") {
+                        //negative query!
+                        q = q.substring(1);
+                        ands.push({$nor: ors}); //need to use $nor and perform query on all fields together..
+                    } else {
+                        ands.push({$or: ors});
+                    }
                 });
                 finds.push({$and: ands});
             }
