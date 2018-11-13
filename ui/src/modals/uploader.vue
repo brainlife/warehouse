@@ -3,7 +3,7 @@
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
             <el-select v-model="datatype_id" placeholder="Please select" @change="change_datatype" style="width: 100%;">
-                <el-option v-for="(type,id) in datatypes_with_validator" :key="id" :value="id" :label="type.desc"></el-option>
+                <el-option v-for="type in datatypes_with_validator" :key="type.id" :value="type.id" :label="type.desc"></el-option>
             </el-select>
         </b-form-group>
 
@@ -44,7 +44,17 @@
 
             <b-form-group horizontal label="Description">
                 <b-form-textarea v-model="desc" :rows="4" placeholder="(optional)"></b-form-textarea>
-             </b-form-group>
+            </b-form-group>
+
+            <b-form-group horizontal label="Datatype Tags" v-if="available_dt_tags">
+                <tageditor v-model="datatype_tags" :options="available_dt_tags" placeholder="(optional)"/>
+                <small>Datatype tags add context to the datatype. It can not be changed once archived.</small>
+            </b-form-group>
+
+            <b-form-group horizontal label="Dataset Tags" v-if="available_tags">
+                <tageditor v-model="tags" :options="available_tags" placeholder="(optional)"/>
+                <small>Dataset tags is used to help organize datasets and make searching easier. It can be edited by users anytime.</small>
+            </b-form-group>
 
         </div><!--datatype_id set -->
         <small>To bulk upload your datasets, you can use <a href="https://github.com/brain-life/cli" target="_blank">Brainlife CLI</a></small>
@@ -67,14 +77,6 @@
                 </div>
             </b-form-group>
 
-            <b-form-group horizontal label="Dataset Tags">
-                <tageditor v-model="tags" :options="available_tags"/>
-                <small>Dataset tags is used to help organize datasets and make searching easier. It can be edited by users anytime.</small>
-            </b-form-group>
-            <b-form-group horizontal label="Datatype Tags">
-                <tageditor v-model="datatype_tags" :options="available_dt_tags"/>
-                <small>Datatype tags add context to the datatype. It can not be changed once archived.</small>
-            </b-form-group>
         </div>
     </div>
 
@@ -143,7 +145,9 @@ export default {
 
     mounted() {
         //load all datatypes
-        this.$http.get('datatype').then(res=>{
+        this.$http.get('datatype', {params: {
+            sort: 'name', 
+        }}).then(res=>{
             this.datatypes = {};
             res.body.datatypes.forEach((type)=>{
                 this.datatypes[type._id] = type;
@@ -170,10 +174,11 @@ export default {
             return this.datatypes[this.datatype_id].files;
         },
         datatypes_with_validator: function() {
-            var types = {};
+            var types = [];
             for(var id in this.datatypes) { 
                 var type = this.datatypes[id];
-                if(type.validator) types[id] = type;
+                type.id = id;
+                if(type.validator) types.push(type);
             }
             return types;
         },
@@ -366,12 +371,11 @@ export default {
                 task_id: this.tasks.validation._id, 
                 output_id: "output", //validation service isn't realy BL app, so I just have to come up with something
 
-                //datatype: this.datatype_id,
-                //datatype_tags: this.datatype_tags,
-
                 meta: this.meta,
-                desc: this.desc,
                 tags: this.tags,
+                desc: this.desc,
+
+                await: false,
             }).then(res=>{
                 console.log("submitted dataset request");
                 var dataset = res.body;
