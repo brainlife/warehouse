@@ -375,9 +375,9 @@ export default {
                             type: 'rect',
                             xref: 'paper',
                             x0: 0,
-                            y0: 100.0*this.smon.info.cpu_avail*0.95,
+                            y0: 100.0*this.smon.info.cpu_requested*0.95,
                             x1: 1,
-                            y1: 100.0*this.smon.info.cpu_avail,
+                            y1: 100.0*this.smon.info.cpu_requested,
                             fillcolor: 'rgba(255, 0, 0, 0.5)',
                             line: {
                                 width: 0,
@@ -422,9 +422,9 @@ export default {
                             type: 'rect',
                             //xref: 'paper',
                             x0: begin_date,
-                            y0: this.smon.info.memory_avail/(1000*1000)*0.95,
+                            y0: this.smon.info.memory_requested/(1000*1000)*0.95,
                             x1: end_date,
-                            y1: this.smon.info.memory_avail/(1000*1000),
+                            y1: this.smon.info.memory_requested/(1000*1000),
                             fillcolor: 'rgba(255, 0, 0, 0.5)',
                             line: {
                                 width: 0,
