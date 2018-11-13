@@ -484,15 +484,10 @@ Array.prototype.unique = function() {
 exports.split_product = function(task_product, outputs) {
     //create global product (everything except output.id keys)
     let global_product = Object.assign({}, task_product); //copy
-    //console.dir(outputs);
     if(!Array.isArray(outputs)) {
         logger.error("broken outputs info");
         return null;
     }
-    console.log("-------------------");
-    console.dir(outputs);
-    console.log("-------------------");
-
     outputs.forEach(output=>{
         delete global_product[output.id]; //remove dataset specific output
     });
