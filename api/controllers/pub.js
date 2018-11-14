@@ -45,7 +45,9 @@ router.get('/', (req, res, next)=>{
     let find = {};
 	let skip = req.query.skip || 0;
 	let limit = req.query.limit || 100;
-    if(req.query.find) find = JSON.parse(req.query.find);
+    if(req.query.find) {
+        find = JSON.parse(req.query.find);
+    }
     db.Publications.find(find)
     .populate(req.query.populate || '') //all by default
     .select(req.query.select)
