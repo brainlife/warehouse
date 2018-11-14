@@ -308,6 +308,7 @@ opacity: 0.7;
 text-transform: uppercase;
 opacity: 0.6;
 font-weight: bold;
+font-size: 90%;
 }
 .v-select .dropdown-toggle {
 background-color: white;

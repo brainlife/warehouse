@@ -50,8 +50,8 @@
                         <small class="text-muted" style="float: right">{{input.id}}</small>
                         <datatypetag :datatype="input.datatype_id" :tags="input.datatype_tags"/>
                         <span class="text-muted" v-if="input.optional">(optional)</span>
-
-                        <tageditor v-model="rule.extra_datatype_tags[input.id]" placeholder="(add extra datatype tags)" style="margin-top: 2px;"/>
+                        <div class="button" v-if="!input.edit_extra_tags" @click="edit_etag(input)" style="position: absolute; top: 7px;"><icon name="plus" scale="0.8"/></div>
+                        <tageditor v-if="input.edit_extra_tags" v-model="rule.extra_datatype_tags[input.id]" placeholder="(enter extra datatype tags)" style="margin-top: 2px;"/>
                     </div>
                     <p v-if="input.optional">
                         <b-form-checkbox v-model="rule.input_selection[input.id]" value="ignore">Do not use this input</b-form-checkbox>
@@ -146,7 +146,14 @@ export default {
 
     data() {
         return {
-            rule: {},
+            rule: {
+                app: {
+                    inputs: [],
+                    outputs: [],
+                },
+                input_tags: {},
+                output_tags: {},
+            },
             apps: [],
             ready: false,
             input_dataset_tags: {},
@@ -172,8 +179,6 @@ export default {
             },
             deep: true,
         },
-
-        
     },
     
     mounted() {
@@ -197,8 +202,7 @@ export default {
                 let datatype_tags = input.datatype_tags.concat(this.rule.extra_datatype_tags[id]);
                 if(datatype_tags.length == 0) datatype_tags = null; //suppress setting it at all
 
-                console.log("querying dataset:"+id);
-                console.dir(find);
+                console.log("querying datasets", find);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify(find),
                     datatype_tags,
@@ -249,13 +253,14 @@ export default {
                     find: JSON.stringify(find),
                     distinct: "meta.subject", 
                 }}).then(res=>{
-                    console.dir(res.body);
+                    //console.dir(res.body);
                     Vue.set(this.rule.output_tags_neg_count, id, res.body.length);
                 }); 
             }
             */
         },
 
+        //update with value from the parent component
         load_value() {
             if(!this.value) return; //no value specified yet
 
@@ -278,35 +283,37 @@ export default {
             this.ensure_ids_exists();
         },
 
-        ensure_ids_exists: function() {
-            if(this.rule.app) {
-                //ensure input.id exists on various objects (if not set)
-                this.rule.app.inputs.forEach(input=>{
-                    if(!this.rule.input_tags[input.id]) Vue.set(this.rule.input_tags, input.id, []);
-                    if(!this.rule.input_project_override[input.id]) Vue.set(this.rule.input_project_override, input.id, null);
-                    if(!this.rule.extra_datatype_tags[input.id]) Vue.set(this.rule.extra_datatype_tags, input.id, []);
-                });
-                this.rule.app.outputs.forEach(output=>{
-                    if(!this.rule.output_tags[output.id]) Vue.set(this.rule.output_tags, output.id, []);
-                });
-            }
+        ensure_ids_exists() {
+            if(!this.rule.app) return;
+
+            //ensure input.id exists on various objects (if not set)
+            this.rule.app.inputs.forEach(input=>{
+                if(!this.rule.input_tags[input.id]) Vue.set(this.rule.input_tags, input.id, []);
+                if(!this.rule.input_project_override[input.id]) Vue.set(this.rule.input_project_override, input.id, null);
+                if(!this.rule.extra_datatype_tags[input.id]) Vue.set(this.rule.extra_datatype_tags, input.id, []);
+
+                input.edit_extra_tags = (this.rule.extra_datatype_tags[input.id].length > 0);
+            });
+            this.rule.app.outputs.forEach(output=>{
+                if(!this.rule.output_tags[output.id]) Vue.set(this.rule.output_tags, output.id, []);
+            });
         },
 
-        ensure_config_exists: function() {
-            if(this.rule.app) {
-                for(var k in this.rule.app.config) {
-                    if(this.rule.config[k] === undefined) {
-                        Vue.set(this.rule.config, k ,this.rule.app.config[k].default);
-                    }
+        ensure_config_exists() {
+            if(!this.rule.app) return;
+
+            for(var k in this.rule.app.config) {
+                if(this.rule.config[k] === undefined) {
+                    Vue.set(this.rule.config, k ,this.rule.app.config[k].default);
                 }
             }
         },
 
-        cancel: function() {
+        cancel() {
             this.$emit("cancel");
         },
 
-        submit: function(evt) {
+        submit(evt) {
             evt.preventDefault();
 
             //clean up _tags, and input_project_override that shouldn't exist
@@ -343,7 +350,7 @@ export default {
             this.$emit("submit", rule);
         },
 
-        search_app: function(search, loading) {
+        search_app(search, loading) {
             loading(true);
             clearTimeout(debounce);
             debounce = setTimeout(()=>{
@@ -370,10 +377,9 @@ export default {
             }, 300);
         },
 
-        load_dataset_tags: function() {
-            console.log("project", this.rule.project);
+        load_dataset_tags() {
             this.rule.app.inputs.forEach(input=>{
-            console.log(this.rule.input_project_override[input.id]);
+                //console.log(this.rule.input_project_override[input.id]);
                 input.datatype_id = input.datatype._id || input.datatype; //parent component passes app.input without populating datatype sometimes?
                 this.$http.get('dataset/distinct', {params: {
                     distinct: 'tags',
@@ -402,6 +408,19 @@ export default {
                 }); 
             });
         },
+        
+        /*
+        edit_tags(io) {
+            //Vue.set(io, 'edit_extra_tags', true);
+            io.edit_extra_tags = true;
+            console.dir(io);
+        },
+        */
+
+        edit_etag(input) {
+            input.edit_extra_tags = true;
+            this.$forceUpdate();
+        }
     }
 }
 </script>
