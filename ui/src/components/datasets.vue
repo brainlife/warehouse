@@ -3,7 +3,15 @@
     <div :class="{rightopen: selected_count}">
         <div class="page-header with-menu header">
             <div style="float: right; position: relative; top: -3px;">
-                <b-form-input class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
+                <b-form-input id="filter" class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
+                <b-popover triggers="hover" target="filter" placement="bottom" title="Hint">
+                    <p>
+                        Enter terms to filter datasets. Terms will be applied for subject, datatype, description, and tags.
+                    </p>
+                    <p>
+                        You can prefix search terms with <b>!</b> to look for items that do not include the term. For example, entering <b>!acpc</b> will find all datasets that have no "acpc".
+                    </p>
+                </b-popover>
             </div>
             <div style="margin-top: 4px;">
                 <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
@@ -307,6 +315,8 @@ export default {
                 distinct: 'meta.subject'
             }}).then(res=>{
                 this.total_subjects = res.body.length;
+            }).catch(res=>{
+                this.$notify({type: 'error', text: res.body.message || JSON.stringify(res.body)});
             });
 
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -378,6 +388,7 @@ export default {
 
             if(this.query) {
                 let ands = [];
+
                 //split query into each token and allow for regex search on each token
                 //so that we can query against multiple fields simultanously
                 this.query.split(" ").forEach(q=>{
@@ -388,16 +399,26 @@ export default {
                     for(var id in this.datatypes) {
                         if(this.datatypes[id].name.includes(q)) datatype_ids.push(id);
                     }
-                    ands.push({$or: [
-                        {"meta.subject": {$regex: q, $options: 'i'}},
-                        {"desc": {$regex: q, $options: 'i'}},
-                        {"tags": {$regex: q, $options: 'i'}},
-                        {"datatype_tags": {$regex: q, $options: 'i'}},
-                        {"datatype": {$in: datatype_ids}},
-                    ]});
+
+                    function compose_ors(q) {
+                        return [
+                            {"meta.subject": {$regex: q, $options: 'i'}},
+                            {"desc": {$regex: q, $options: 'i'}},
+                            {"tags": {$regex: q, $options: 'i'}},
+                            {"datatype_tags": {$regex: q, $options: 'i'}},
+                            {"datatype": {$in: datatype_ids}},
+                        ];
+                    }
+                    if(q[0] == "!") {
+                        //negative query!
+                        ands.push({$nor: compose_ors(q.substring(1))}); //need to use $nor and perform query on all fields together..
+                    } else {
+                        ands.push({$or: compose_ors(q)});
+                    }
                 });
                 finds.push({$and: ands});
             }
+            console.dir(finds);
             return finds;
         },
 
