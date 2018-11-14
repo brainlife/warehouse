@@ -168,13 +168,17 @@ exports.archive_task = function(dataset, auth, cb) {
                     return;
                 }
 
+                fs.writeFileSync(tmpdir+"/.brainlife.json", JSON.stringify(dataset, null, 4));
+                filenames.push(".brainlife.json");
+                console.dir(filenames);
+
                 //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
                 var storage = config.storage_default();
                 var system = config.storage_systems[storage];
                 logger.debug("obtaining upload stream for", storage);
                 system.upload(dataset, (err, writestream, done)=>{
                     if(err) return cb(err);
-                    filenames.unshift("hc");
+                    filenames.unshift("hc"); //inject tar command..
                     var tar = child_process.spawn("tar", filenames, {cwd: tmpdir});
                     tar.on('close', code=>{
                         logger.debug("tar finished", code);
@@ -484,15 +488,10 @@ Array.prototype.unique = function() {
 exports.split_product = function(task_product, outputs) {
     //create global product (everything except output.id keys)
     let global_product = Object.assign({}, task_product); //copy
-    //console.dir(outputs);
     if(!Array.isArray(outputs)) {
         logger.error("broken outputs info");
         return null;
     }
-    console.log("-------------------");
-    console.dir(outputs);
-    console.log("-------------------");
-
     outputs.forEach(output=>{
         delete global_product[output.id]; //remove dataset specific output
     });

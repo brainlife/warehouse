@@ -897,7 +897,7 @@ set +e #stop the script if anything fails
 
                 script += "mkdir -p "+path+"\n";
                 script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
-                script += "echo \""+JSON.stringify(dataset).replace().replace(/\"/g, '\\"')+"\" > "+path+"/_dataset.json\n";
+                //script += "echo \""+JSON.stringify(dataset).replace().replace(/\"/g, '\\"')+"\" > "+path+"/.brainlife.json\n";
                 script += "curl -H \"$auth\" "+config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C "+path+" -x\n";
 
                 if(dataset.datatype.bids) {
