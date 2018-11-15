@@ -55,7 +55,7 @@ font-family: 'Montserrat', sans-serif;
 height: 100%;
 background-color: #f9f9f9;
 color: #555;
-font-size: 11pt;
+font-size: 14px;
 }
 
 /*adjust bootstrap font sizes*/
@@ -306,9 +306,9 @@ opacity: 0.7;
 }
 .form-header {
 text-transform: uppercase;
-opacity: 0.6;
+opacity: 0.9;
 font-weight: bold;
-font-size: 90%;
+font-size: 95%;
 }
 .v-select .dropdown-toggle {
 background-color: white;
@@ -404,17 +404,4 @@ font-size: 90%;
 transition: color 0.5s;
 margin-bottom: 2px;
 }
-.io-tab {
-position: absolute;
-Width: 30px;
-color: white;
-font-weight: bold;
-font-size: 10px;
-padding: 2px 5px;
-border-radius: 4px;
-text-align: center;
-display: inline-block;
-margin-left: -40px;
-}
-
 </style>

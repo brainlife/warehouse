@@ -951,7 +951,6 @@ right: 250px;
 .list .dataset {
     transition: background-color 0.3s;
     margin: 1px;
-    padding: 1px;
 }
 .list .dataset.clickable:hover {
     background-color: #ccc;

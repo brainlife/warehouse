@@ -76,10 +76,9 @@
                         <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.config && dataset.prov.task.config._app">
                             <b-col cols="3"><span class="form-header">Produced by</span></b-col>
                             <b-col>
-                                <app slot="header" 
+                                <app slot="header"
                                     :appid="dataset.prov.task.config._app" 
-                                    :branch="dataset.prov.task.service_branch||'master'" 
-                                    :clickable="false">
+                                    :branch="dataset.prov.task.service_branch||'master'">
                                     <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
                                 </app>
                                 <br>
@@ -323,7 +322,6 @@ export default {
                     node.shape = "box"; //all box..
                     if(node.id.indexOf("task.") === 0) {
                         node.color = "#fff";
-                        //node.color = "rgba(h55,255,255,0.5)";
                         node.font = {size: 11};
                     }
                     if(node.id.indexOf("dataset.") === 0) {
@@ -352,17 +350,18 @@ export default {
                             */
                             //physics:{barnesHut:{/*gravitationalConstant:-3500, springConstant: 0.01, avoidOverlap: 0.02*/}},
                             physics:{
+                                //enabled: true, //default true
                                 barnesHut:{
                                     //springConstant: 0.20,
                                     //springLength: 150,
                                     //avoidOverlap: 0.2,
                                     //damping: 0.3,
-                                    gravitationalConstant: -6000,
+                                    gravitationalConstant: -6500,
                                 }
                             },
 
                             nodes: {
-                                shadow: true,
+                                shadow: true, //TODO - shadow is too string..
                                 borderWidth: 0,
                             },
                         });
