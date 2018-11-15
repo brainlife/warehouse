@@ -3,6 +3,7 @@
     <pageheader/>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
+        <b-alert :show="app.removed" variant="secondary">This App has been removed.</b-alert>
         <div class="header">
             <b-container>
                 <b-row>
@@ -31,7 +32,7 @@
 
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
-                    <b-tab title="Readme"/>
+                    <!--<b-tab title="Readme"/>-->
                     <b-tab>
                         <template slot="title"><!--<icon name="paper-plane"/>-->Execute</template>
                     </b-tab>
@@ -42,13 +43,20 @@
         </div><!--header-->
 
         <b-container>
-            <b-alert :show="app.removed" variant="warning">This app has been removed.</b-alert>
 
             <!-- detail -->
             <div v-if="tab_index == 0">
                 <b-row>
                     <b-col cols="3">
-                        <appstats :create_date="app.create_date" :info="info"/>
+                        <span class="form-header">Registered At</span>
+                        <p>
+                            {{new Date(app.create_date).toLocaleDateString()}}
+                        </p>
+                        <p>
+                            <contact :id="app.user_id" size="small"/>
+                        </p>
+
+                        <appstats :info="info"/>
                         <p>
                             <doibadge :doi="app.doi" v-if="app.doi"/>
                         </p>
@@ -62,7 +70,7 @@
                                 <!--input-->
                                 <b-col>
                                     <!--<p v-else class="text-primary">This App runs with the following input dataset.</p>-->
-                                    <div style="border-left: 4px solid #007bff; height: 100%; background-color: rgba(0, 123, 255, 0.3);">
+                                    <div style="height: 100%; background-color: rgba(0, 123, 255, 0.2);">
                                         <div style="background-color: #007bff; color: white; padding: 5px; font-weight: bold;">Input</div>
                                         <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
                                         <div v-if="app.inputs" style="padding: 5px">
@@ -109,7 +117,7 @@
                                 <!--output-->
                                 <b-col>
                                     <icon name="arrow-right" style="position: absolute; top: 50%; left: -10px; opacity: 0.5" scale="1.5"/>
-                                    <div style="border-left: 4px solid #28a745; height: 100%; background-color: rgba(40, 167, 69, 0.3)">
+                                    <div style="height: 100%; background-color: rgba(40, 167, 69, 0.2)">
                                         <div style="background-color: #28a745; color: white; padding: 5px; font-weight: bold">Output</div>
                                         <b-alert show variant="success" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
                                         <div v-if="app.outputs" style="padding: 5px;">
@@ -222,7 +230,7 @@
                             <br>
                         </div>
 
-                        <div>
+                        <div v-if="app.contributors.length > 0">
                             <span class="form-header">Contributors</span>
                             <p><small class="text-muted">The following people have contributed to the source code ({{app.github}}).</small></p>
                             <p v-for="dev in app.contributors" :key="dev._id">
@@ -236,6 +244,12 @@
                             <p><small class="text-muted">Showing activities during the last 180 days.</small></p>
                             <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true"/>
                             <br>
+                        </div>
+
+                        <div v-if="readme">
+                            <span class="form-header">README</span>
+                            <p><small class="text-muted">From github repo / README.md</small></p>
+                            <vue-markdown :source="readme" class="readme"></vue-markdown>
                         </div>
 
                         <hr>
@@ -256,17 +270,21 @@
                 -->
             </div>
 
+            <!--
             <div v-if="tab_index == 1">
                 <p><small class="text-muted">From github repo / README.md</small></p>
                 <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
             </div>
-            <div v-if="tab_index == 2">
+            -->
+            <div v-if="tab_index == 1">
                 <appsubmit v-if="config.user" :id="app._id"/>
                 <p v-else class="text-muted">Please login first to execute App.</p>
             </div>
+            <!--
             <div v-if="tab_index == 3">
                 <p class="text-muted">No test status available yet</p>
             </div>
+            -->
             <br>
             <br>
             <br>

@@ -6,7 +6,7 @@
         </div>
     </div>
     <div class="page-content with-menu content">
-        <div v-if="editing" style="background-color: white; padding: 20px;">
+        <div v-if="editing" style="background-color: white; padding: 20px; padding-top: 10px;">
             <pubform :pub="editing" :project="project" @submit="save" @cancel="cancel"/>
         </div>
         <div v-else>
@@ -204,17 +204,14 @@ export default {
 
 <style scoped>
 .header {
-top: 100px;
+top: 90px;
 padding: 6px 10px;
 color: #999;
 background-color: #f9f9f9;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
-height: 40px;
 }
 .content {
-top: 100px;
-margin-top: 40px;
-padding-top: 10px;
+margin-top: 80px;
 }
 
 .header, 

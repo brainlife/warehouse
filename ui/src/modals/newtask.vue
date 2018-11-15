@@ -75,7 +75,17 @@
         </b-row>
         
         <configform :spec="app.config" v-model="config"/>
-        
+
+        <advanced :app='app' v-model='advanced'></advanced>
+
+        <b-row>
+            <b-col cols="3">Notes</b-col>
+            <b-col>
+                <b-form-textarea placeholder="Optional" v-model="desc" :rows="2"/>
+                <br>
+            </b-col>
+        </b-row>
+
         <b-row>
             <b-col cols="3"></b-col>
             <b-col>
@@ -100,9 +110,7 @@
                 </b-row>
             </b-col>
         </b-row>
-        
-        <advanced :app='app' v-model='advanced'></advanced>
-        
+
         <hr>
         <b-row>
             <b-col cols="3"></b-col>
@@ -160,6 +168,8 @@ export default {
             deps: null,
             advanced: {},
 
+            desc: "",
+
             valid: false, //form is ready to submit or not
         }
     },
@@ -179,6 +189,7 @@ export default {
             this.archive.desc = "";
             this.archive.enable = false;
             this.tags = [];
+            this.desc = "";
 
             //create list of all datatypes that user has staged / generated
             var datatype_ids = [];
@@ -247,7 +258,7 @@ export default {
 
     methods: {
 
-        selectapp: function(app) {
+        selectapp(app) {
             this.app = app;
             this.github_branch = this.app.github_branch || 'master';
             this.config = {};
@@ -261,26 +272,21 @@ export default {
                 this.preselect_single_items(input_copy);
             });
 
-            /* I might use it if I decide to set desk/tag for each output
-            this.app.outputs.forEach(output=>{
-            });
-            */
-
             this.validate(); //for preselect
         },
 
-        back: function() {
+        back() {
             this.app = null;
         },
 
-        preselect_single_items: function(input) {
+        preselect_single_items(input) {
             if (input.options.length == 1) {
                 //TODO - for multi inputs, what should I do?
                 this.inputs[input.id].selected[0] = input.options[0];
             }
         },
 
-        validate: function() {
+        validate() {
             var valid = true; //innocent until proven guilty
 
             if(!this.app) {
@@ -297,7 +303,7 @@ export default {
             this.valid = valid;
         },
 
-        process_input_config: function(config) {
+        process_input_config(config) {
             for(var k in this.app.config) { 
                 var node = this.app.config[k];
                 if(node.type && node.type == "input") {
@@ -332,17 +338,17 @@ export default {
         },
 
         //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name
-        filter_datasets: function(input) {
+        filter_datasets(input) {
             return lib.filter_datasets(this.datasets, input);
         },
 
-        vsel: function(datasets) {
+        vsel(datasets) {
             return datasets.map(dataset=>{
                 return { label: this.compose_label(dataset), dataset };
             });
         },
 
-        submit: function(evt) {
+        submit(evt) {
             evt.preventDefault();
 
             //prevent double submit
@@ -435,7 +441,7 @@ export default {
             this.$root.$emit("newtask.submit", task);
         },
 
-        compose_label: function(dataset) {
+        compose_label(dataset) {
             var label = "";
             if(dataset.task.status != 'finished') label += "("+dataset.task.status+") ";
             label += dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject;

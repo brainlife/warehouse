@@ -705,7 +705,7 @@ export default {
 .dataset-provenance {
 background-color: #f9f9f9;
 position: absolute;
-top: 110px;
+top: 90px;
 left: 0;
 right: 0;
 bottom: 0px;
@@ -717,15 +717,6 @@ overflow: auto;
 overflow: auto;
 padding: 20px;
 }
-
-/*
-.fade-enter-active, .fade-leave-active {
-    transition: opacity .3s
-}
-.fade-enter, .fade-leave-to {
-    opacity: 0
-}
-*/
 </style>
 
 

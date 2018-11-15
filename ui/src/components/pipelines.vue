@@ -66,7 +66,7 @@
 
                 <!--rule body-->
                 <div v-if="selected == rule" transition="expand">
-                    <div style="float: right; margin-right: 100px;">
+                    <div style="float: right; margin-right: 90px;">
                             <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></div>
                             <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="trash"/></div>
                     </div>
@@ -171,7 +171,7 @@
             </div><!--rule-->
         </div><!--rules-->
 
-        <p style="padding-top: 100px;">&nbsp;</p>
+        <p style="padding-top: 90px;">&nbsp;</p>
         <b-button v-if="isadmin() || ismember()" @click="newrule" class="button-fixed" title="Create new rule">
             <icon name="plus" scale="2"/>
         </b-button>
@@ -628,7 +628,7 @@ background-color: #eee;
 }
 
 .header {
-top: 100px;
+top: 90px;
 padding: 10px;
 margin: 0px 20px;
 color: #999;
@@ -637,7 +637,7 @@ z-index: 1; /*needed to make sort order dropdown box to show up on top of page-c
 height: 40px;
 }
 .content {
-top: 100px;
+top: 90px;
 margin-top: 40px;
 overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
 }

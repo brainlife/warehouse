@@ -40,7 +40,6 @@ export default {
         return {
             pubs: [],
             config: Vue.config,
-            //query: "",
         }
     },
 
@@ -70,7 +69,6 @@ margin-bottom: 10px;
 }
 .header {
 background-color: white;
-padding: 20px;
 color: #999;
 border-bottom: 1px solid #eee;
 }

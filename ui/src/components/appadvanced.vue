@@ -25,6 +25,7 @@
                 <b-form-select style="width:100%;" :options="github_branches" v-model='github_branch'></b-form-select>
             </b-col>
         </b-row>
+        <br>
     </div>
 </div>
 </template>

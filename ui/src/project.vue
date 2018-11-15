@@ -344,7 +344,7 @@ background-color: white;
 z-index: 1;
 }
 .page-content {
-margin-top: 50px;
+margin-top: 40px;
 }
 
 .datasets_link {

@@ -158,8 +158,7 @@
                         <p>
                             <small style="opacity: 0.5">The following Apps uses this datatype for input.</small>
                         </p>
-                        <div v-if="input_apps.length > 0" class="apps-container" style="border-left: 4px solid #007bff; padding-left: 10px;">
-                            <span class="io-tab" style="background-color: #007bff">IN</span>
+                        <div class="apps-container">
                             <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
                         </div>
                         <p v-if="input_apps.length == 0" style="opacity: 0.8">No App uses this datatype as input.</p>
@@ -168,8 +167,7 @@
                         <p>
                             <small style="opacity: 0.5">The following Apps uses this datatype for output.</small>
                         </p>
-                        <div v-if="output_apps.length > 0" class="apps-container" style="border-left: 4px solid #28a745; padding-left: 10px;">
-                            <span class="io-tab" style="background-color: #28a745">OUT</span>
+                        <div class="apps-container">
                             <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
                         </div>
                         <p v-if="output_apps.length == 0" style="opacity: 0.8">No App uses this datatype as output.</p>

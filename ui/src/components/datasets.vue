@@ -13,7 +13,7 @@
                     </p>
                 </b-popover>
             </div>
-            <div style="margin-top: 4px;">
+            <div style="margin-top: 2px;">
                 <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
             </div>
         </div>
@@ -865,7 +865,7 @@ export default {
 <style scoped>
 
 .header {
-margin-top: 50px;
+margin-top: 40px;
 padding: 10px;
 color: #999;
 overflow: hidden;
@@ -894,7 +894,7 @@ top: 95px;
 overflow-x: hidden;
 font-size: 12px;
 padding-left: 10px;
-margin-top: 50px;
+margin-top: 40px;
 background-color: white;
 }
 
@@ -950,7 +950,8 @@ right: 250px;
 }
 .list .dataset {
     transition: background-color 0.3s;
-    margin: 1px;
+    padding: 1px;
+    margin-bottom: 1px;
 }
 .list .dataset.clickable:hover {
     background-color: #ccc;
