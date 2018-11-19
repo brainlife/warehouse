@@ -9,20 +9,19 @@
         -->
     </pageheader>
     <sidemenu active="/datatypes"></sidemenu>
+    <!--
     <div class="datatype-list" ref="scrollable">
         <h4>Datatypes</h4>
         <p v-if="!datatypes" style="margin: 20px;">Loading ..</p>
         <div v-else>
             <h5>neuro/</h5>
             <p v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" :id="datatype._id" class="item" :class="{'selected': selected == datatype}" @click="select(datatype)">
-                <!--<datatypetag :datatype="datatype"/><br>-->
                 <icon name="cube" :style="{color: gethsl(datatype.name)}" style="margin-right: 5px;"/> {{trim(datatype.name)}}
                 <small>{{datatype.desc}}</small>
             </p>
             <br>
             <h5>Others</h5>
             <p v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" :id="datatype._id" class="item" :class="{'selected': selected == datatype}" @click="select(datatype)">
-                <!--<datatypetag :datatype="datatype" :trimname="false"/><br>-->
                 <icon name="cube" :style="{color: gethsl(datatype.name)}" style="margin-right: 5px;"/>
                 {{datatype.name}}
                 <small>{{datatype.desc}}</small>
@@ -37,18 +36,52 @@
             <icon name="plus" scale="2"/>
         </b-button>
     </div>
+    -->
+
+
+    <!--
+    <div class="datatype-list">
+    </div>
+    -->
+
     <div class="page-content">
-        <p v-if="!selected" style="margin: 20px; opacity: 0.5">Please select a datatype to show.</p>
+        <!--<p v-if="!selected" style="margin: 20px; opacity: 0.5">Please select a datatype to show.</p>-->
+        <div v-if="!selected">
+            <!--
+            <div class="datatypes-container">
+                <datatype v-for="datatype in get_datatypes('neuro/')" :datatype="datatype" class="datatype"/>
+            </div>
+            -->
+            <h3>Datatypes</h3>
+            <h4>Neuro/</h4> 
+            <b-card-group columns style="margin: 10px;">
+                <b-card no-body v-for="datatype in get_datatypes('neuro/')" @click="select(datatype)" class="datatype-card">
+                    <datatype :datatype="datatype"/>
+                </b-card>
+            </b-card-group>
+            <h4>Other</h4> 
+            <b-card-group columns style="margin: 10px;">
+                <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" @click="select(datatype)" class="datatype-card">
+                    <datatype :datatype="datatype"/>
+                </b-card>
+            </b-card-group>
+
+
+            <b-button class="button-fixed" @click="newdatatype" title="New Datatype">
+                <icon name="plus" scale="2"/>
+            </b-button>
+        </div>
+
         <div v-if="selected">
             <div class="header">
                 <b-container>
                     <div style="float: right;">
                         <span class="button" @click="edit" v-if="canedit && !editing" title="Edit"><icon name="edit" scale="1.25"/></span>
                     </div>
-                    <h3>
+                    <h2>
                         <b-form-input v-if="editing" type="text" v-model="selected.name" placeholder="neuro/somename"></b-form-input>
                         <datatypetag v-else :datatype="selected" :trimname="!!(~selected.name.indexOf('neuro/'))"/>
-                    </h3>
+                    </h2>
                     <b-form-textarea v-if="editing" v-model="selected.desc" :rows="2"></b-form-textarea>
                     <p v-else style="opacity: 0.8">{{selected.desc}}</p>
                 </b-container>
@@ -189,14 +222,15 @@
                 </b-row>
 
             </b-container>
+
+            <div v-if="editing" class="form-action">
+                <b-container>
+                    <b-button @click="cancel">Cancel</b-button>
+                    <b-button @click="submit" variant="primary">Submit</b-button>
+                </b-container>
+            </div>
         </div>
 
-        <div v-if="editing" class="form-action">
-            <b-container>
-                <b-button @click="cancel">Cancel</b-button>
-                <b-button @click="submit" variant="primary">Submit</b-button>
-            </b-container>
-        </div>
 
     </div><!--page-content-->
 </div>
@@ -212,6 +246,7 @@ import PerfectScrollbar from 'perfect-scrollbar'
 import VueMarkdown from 'vue-markdown'
 
 import sidemenu from '@/components/sidemenu'
+import datatype from '@/components/datatype'
 import datatypetag from '@/components/datatypetag'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
@@ -219,13 +254,12 @@ import app from '@/components/app'
 import contactlist from '@/components/contactlist'
 
 export default {
-    components: { sidemenu, pageheader, datatypetag, app, VueMarkdown, contact, contactlist } ,
+    components: { sidemenu, pageheader, datatype, datatypetag, app, VueMarkdown, contact, contactlist } ,
 
     data () {
         return {
-            ps: null,
+            //ps: null,
             datatypes: null,
-            //datatype_tags: null,
             selected: null, //selected datatype
 
             //for selected item
@@ -234,28 +268,7 @@ export default {
 
             uis: [],  //ui catalog
             
-            //view_datatype_id: null,
-            //count: 0, //total counts of datatypes (not paged)
-
-            //user: Vue.config.user, //see if user is logged in
-
-            /*
-            //placeholder for dialog
-            edit: {
-                _id: null, //set if editing
-                name: "",
-                desc: "",
-                access: "",
-
-                admins: [],
-                members: [],
-            },
-            */
-
             editing: false, 
-
-            //query: "",
-
             config: Vue.config,
         }
     },
@@ -279,7 +292,7 @@ export default {
     },
 
     mounted: function() {
-        this.ps = new PerfectScrollbar(this.$refs.scrollable);
+        //this.ps = new PerfectScrollbar(this.$refs.scrollable);
         this.$http.get('datatype/ui', {params: {}})
         .then(res=>{
             this.uis = res.body.uis;    
@@ -290,48 +303,11 @@ export default {
         }})
         .then(res=>{
             this.datatypes = res.body.datatypes;
-            //this.count = res.body.count;
-
-            //select datatype selected by url
             this.selected = this.datatypes.find(d=>d._id == this.$route.params.id);
-            //Vue.set(this.selected, "bids", JSON.stringify(this.selected.bids));
             this.$nextTick(()=>{
                 this.scroll_to_selected();
             });
-            
-            /*
-            //load datatype_tags from all apps
-            //from appedit
-            // could return this promise or just have it all here...leaving it as is for now
-            this.$http.get('app', {params: {
-                select: 'inputs outputs',
-                order: 'name',
-            }}).then(res=>{
-                var v = this;
-                v.datatype_tags = {};
-                v.datatypes.forEach(type=>{
-                    v.datatype_tags[type._id] = [];
-                });
-                
-                function aggregate_tags(dataset) {
-                    if(!dataset.datatype_tags) return;
-                    dataset.datatype_tags.forEach(tag=>{
-                        if (!~v.datatype_tags[dataset.datatype].indexOf(tag)) v.datatype_tags[dataset.datatype].push(tag);
-                    });
-                }
-                res.body.apps.forEach(app=>{
-                    app.inputs.forEach(aggregate_tags);
-                    app.outputs.forEach(aggregate_tags);
-                });
-                
-                this.handle_route_params();
-                
-                // console.log(v.datatype_tags);
-            });
-            */
         }).catch(console.error);
-
-        //this.scroll_to_active();
     },
 
     methods: {
@@ -341,6 +317,7 @@ export default {
             this.$router.push(`/datatypes/${datatype._id}`);
         },
 
+        /*
         scroll_to_selected: function() {
             if(!this.selected) return;
             //scroll to selected datatype if it's out the scroll window
@@ -355,6 +332,7 @@ export default {
                 area.scrollTop = e.offsetTop - 300;
             }
         },
+        */
         
         get_datatypes(prefix) {
             return this.datatypes.filter(d=>{
@@ -415,6 +393,7 @@ export default {
         },
         
         submit() {
+            alert('todo');
         },
 
         trim(n) {
@@ -433,6 +412,9 @@ export default {
     },
   
     watch: {
+        '$route': function() {
+            this.selected = this.datatypes.find(d=>d._id == this.$route.params.id);
+        },
         selected() {
             if(!this.selected) return; 
             if(!this.selected._id) return; //editing new
@@ -446,7 +428,6 @@ export default {
                         {'outputs.datatype': this.selected._id},
                     ]
                 }),
-                //populate: 'projects',
                 select: 'name desc inputs outputs stats github',
             }}).then(res=>{
                 this.apps = res.body.apps;
@@ -467,11 +448,6 @@ export default {
             });
 
         },
-        /*
-        '$route': function() {
-            this.handle_route_params();
-        }
-        */
     }
 }
 </script>
@@ -483,6 +459,30 @@ box-shadow: none;
 </style>
 
 <style scoped>
+.page-content h2 {
+background-color: white;
+color: gray;
+margin-bottom: 0px;
+padding: 10px 0px;
+}
+.page-content h3 {
+background-color: white;
+color: gray;
+padding: 20px;
+margin-bottom: 0px;
+}
+.page-content h4 {
+padding: 15px 20px;
+background-color: #999;
+position: sticky;
+top: 0px;
+z-index: 1;
+opacity: 0.8;
+color: white;
+font-size: 17pt;
+font-weight: bold;
+}
+/*
 .datatype-list {
 position: fixed;
 top: 50px;
@@ -520,14 +520,6 @@ background-color: black;
 }
 .datatype-list .item.selected {
 background-color: #007bff;
-/*
-background-color: white;
-color: #000;
-*/
-}
-.button-fixed {
-opacity: 0;
-left: 250px;
 }
 .datatype-list:hover .button-fixed {
 opacity: 0.8;
@@ -535,15 +527,7 @@ opacity: 0.8;
 .datatype-list:hover .button-fixed:hover {
 opacity: 1;
 }
-.page-content {
-margin-left: 300px;
-}
-.page-content h4 {
-text-transform: uppercase;
-color: gray;
-font-size: 17pt;
-font-weight: bold;
-}
+*/
 .header {
 padding: 20px;
 background-color: white;
@@ -567,8 +551,14 @@ text-align: right;
 position: fixed;
 bottom:0;
 right:0;
-left:350px;
+left:50px;
 background-color: rgba(100,100,100,0.4);
 padding: 10px;
+}
+.datatype-card {
+cursor: pointer;
+padding: 10px;
+border: none;
+box-shadow: 2px 2px 4px rgba(0,0,0,0.03);
 }
 </style>

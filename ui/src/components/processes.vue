@@ -473,7 +473,7 @@ font-size: 170%;
 }
 
 .header {
-top: 90px;
+top: 95px;
 padding: 6px 10px;
 color: #999;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/

@@ -27,18 +27,20 @@
                         <p>
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
+                        <p style="float: right;">
+                            <b-btn @click="execute" variant="primary"><icon name="paper-plane"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
+                        </p>
                     </b-col>
                 </b-row>
 
+                <!--
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
-                    <!--<b-tab title="Readme"/>-->
                     <b-tab>
-                        <template slot="title"><!--<icon name="paper-plane"/>-->Execute</template>
+                        <template slot="title">Execute</template>
                     </b-tab>
-                    <!--<b-tab title="Test Status"/>-->
-                    <!--<b-tab title="Citation / References"/>-->
                 </b-tabs>
+                -->
             </b-container>
         </div><!--header-->
 
@@ -275,12 +277,10 @@
                 <p><small class="text-muted">From github repo / README.md</small></p>
                 <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
             </div>
-            -->
             <div v-if="tab_index == 1">
                 <appsubmit v-if="config.user" :id="app._id"/>
                 <p v-else class="text-muted">Please login first to execute App.</p>
             </div>
-            <!--
             <div v-if="tab_index == 3">
                 <p class="text-muted">No test status available yet</p>
             </div>
@@ -319,7 +319,6 @@ import datatypetag from '@/components/datatypetag'
 import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
-import appsubmit from '@/components/appsubmit'
 import appstats from '@/components/appstats'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
@@ -330,7 +329,7 @@ export default {
         sidemenu, pageheader, contact, 
         tags, datatype, appavatar,
         VueMarkdown, statustag, 
-        appsubmit, datatypetag, datatypefile,
+        datatypetag, datatypefile,
         appstats, projectavatar,
         doibadge, VuePlotly,
     },
@@ -466,7 +465,13 @@ export default {
         go_github() {
             document.location = "https://github.com/"+this.app.github;
         },
-        
+        execute() {
+            if(Vue.config.user) {
+                this.$root.$emit("appsubmit.open", this.app._id);
+            } else {
+                alert("Please sign up / login first to execute Apps.");
+            }
+        },
         find_resources(service) {
             this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
                 service,
@@ -574,7 +579,6 @@ box-shadow: 2px 2px 5px #ddd;
 .io-card {
 padding: 8px; 
 background-color: white; 
-box-shadow: 2px 2px 3px #ddd; 
 margin-bottom: 5px; 
 }
 

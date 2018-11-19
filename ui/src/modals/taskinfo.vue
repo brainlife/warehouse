@@ -58,11 +58,7 @@
                             </tr>
                             <tr v-if="task.next_date" style="opacity: 0.6;">
                                 <th>Next&nbsp;Chk</th>
-                                <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
-                            </tr>
-                            <tr v-if="resource">
-                                <th>Resource</th>
-                                <td>{{resource.name}} <small>{{resource.desc}}</small></td>
+                                <td>in {{((new Date(this.task.next_date).getTime() - new Date().getTime())/1000).toFixed(0)}} secs</td>
                             </tr>
                             </table>
                         </b-col>
@@ -70,10 +66,20 @@
                             <h5>Compute Node</h5>
                             <!--<p><small style="opacity: 0.5">This task rans on the following compute node</small></p>-->
                             <table class="table table-sm">
+                            <tr v-if="resource">
+                                <th>Resource</th>
+                                <td>{{resource.name}} <small>{{resource.desc}}</small></td>
+                            </tr>
                             <tr>
                                 <th>Host</th>
                                 <td>
                                     {{smon.info.uname[1]}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Session ID</th>
+                                <td>
+                                    {{smon.info.sid}}
                                 </td>
                             </tr>
                             <tr>
@@ -97,7 +103,7 @@
                                     <span style="opacity: 0.7" v-if="smon.info.memory_total != smon.info.memory_avail">({{smon.info.memory_requested|memory}} requested)</span>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr v-if="smon.info.walltime_requested">
                                 <th>Requested Walltime</th>
                                 <td>
                                     {{smon.info.walltime_requested}} secs

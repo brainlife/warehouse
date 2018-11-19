@@ -4,33 +4,38 @@
         <!-- currently being developped -->
         <li v-if="config.debug" 
             @click="go('/dashboard')"
-            :class="{active: active == '/dashboard'}" v-b-popover.hover="'Your homepage for Brainlife'" title="Dashboard">
-            <icon name="home" scale="1.3"/>
+            :class="{active: active == '/dashboard'}">
+            <icon name="home" scale="1.3"/> <h4>Dashboard</h4>
         </li>
         <li v-if="config.debug" class="divider"></li>
 
         <!-- for everyone -->
         <li @click="go('/apps')"
-            :class="{active: active == '/apps'}" v-b-popover.hover="'A list of registered Apps that you can execute.'" title="Apps">
+            :class="{active: active == '/apps'}">
             <icon name="th-large" scale="1.3"/>
+            <h4>Apps</h4>
         </li>
         <li @click="go('/pubs');"
-            :class="{active: active == '/pubs'}" v-b-popover.hover="'A list of registered publications with links to datasets, apps, and DOI.'" title="Publications">
+            :class="{active: active == '/pubs'}">
             <icon name="brands/leanpub" scale="1.3"/>
+            <h4>Publications</h4>
         </li>
 
         <!-- only for authenticated users -->
         <li v-if="config.user" @click="go('/project')"
-            :class="{active: active == '/projects'}" v-b-popover.hover="'Project is where you can upload / archive your dataset and run Apps.'" title="Projects">
+            :class="{active: active == '/projects'}">
             <icon name="shield-alt" scale="1.3"/>
+            <h4>Projects</h4>
         </li>
         <li v-if="config.user && config.debug" @click="go('/datatypes')"
-            :class="{active: active == '/datatypes'}" v-b-popover.hover="'A list of registered datatypes that you can use as input/output for your Apps.'" title="Datatypes">
+            :class="{active: active == '/datatypes'}">
             <icon name="cube" scale="1.3"/>
+            <h4>Datatypes</h4>
         </li>
         
-        <li v-if="config.user" @click="setting" v-b-popover.hover="'Access your account / profile settings'" title="Settings">
+        <li v-if="config.user" @click="setting">
             <icon name="cog" scale="1.3"/>
+            <h4>Settings</h4>
         </li>
     </ul>
 
@@ -38,15 +43,17 @@
     <ul class="items" v-if="is_admin">
         <li class="divider"></li>
         <li @click="go('/admin')"
-            :class="{active: active == '/admin'}" v-b-popover.hover="'Admin Only'" title="Administration">
+            :class="{active: active == '/admin'}">
             <icon name="wrench" scale="1.3"/>
+            <h4>Administration</h4>
         </li>
     </ul>
 
     <!--bottom-->
     <ul class="items items-bottom">
-        <li @click="doc" v-b-popover.hover="'Open Brainlife documentation'" title="Documentation">
+        <li @click="doc">
             <icon name="book" scale="1.3"/>
+            <h4>Documentation</h4>
         </li>
     </ul>
 </div>
@@ -105,18 +112,33 @@ export default {
     background-color: #222;
     color: #888;
     font-size: 8pt;
+    transition: width 0.3s;
+    z-index: 1;
+    overflow: hidden;
+}
+.sidemenu:hover {
+    transition-delay:0.5s;
+    width: 200px;
 }
 .items {
     list-style: none;
     margin: 0px;
     padding: 5px 0px;
+    width: 200px;
 }
 .items li {
-    text-align: center;
+    text-align: left;
     margin: 0px;
     padding: 10px 0px;
     transition: background-color 0.2s, color 0.2s;
-    padding-left: 3px;
+    padding-left: 16px;
+}
+.items li h4 {
+    display: inline-block;
+    font-size: 15px;
+    margin-left: 12px;
+    position: relative;
+    top: 2px;
 }
 .items li:hover {
     background-color: #1c1c1c;
@@ -127,7 +149,7 @@ export default {
     color: white;
     background-color: #222;
     border-left: 3px solid #007bff;
-    padding-left: 0px;
+    padding-left: 12px;
 }
 .items li.divider {
     border-bottom: 1px solid #444;
@@ -137,9 +159,7 @@ export default {
     margin-bottom: 5px;
 }
 .items-bottom {
-    position: fixed;
+    position: absolute;
     bottom: 0px;
-    left: 0px;
-    width: 50px;
 }
 </style>

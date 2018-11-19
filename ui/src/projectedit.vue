@@ -138,8 +138,10 @@
             </b-row>
 
             <div class="form-action">
-                <b-button type="button" variant="secondary" @click="cancel">Cancel</b-button>
-                <b-button type="submit" variant="primary">Submit</b-button>
+                <b-container>
+                    <b-button type="button" variant="secondary" @click="cancel">Cancel</b-button>
+                    <b-button type="submit" variant="primary">Submit</b-button>
+                </b-container>
             </div>
                 
             <br>

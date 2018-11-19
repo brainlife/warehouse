@@ -100,167 +100,12 @@
                         <br>
                     </b-col>
                 </b-row>
-
             </div>
-            
-            <h4>
-                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
-                Input
-            </h4>
-            <div style="border-left: 4px solid #007bff; padding-left: 10px;">
-                <transition-group name="move-item" tag="p">
-                    <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="margin-bottom: 10px;">
-                        <b-card style="position: relative;">
-                            <b-row v-if="is_raw(input)">
-                                <b-col>
-                                    <b-alert show variant="warning" style="margin-bottom: 10px;">
-                                        Warning: You have chosen a raw datatype as an input. We strongly recommend working with the developers of the App who is generating the raw datatype to register a new datatype so that it can used instead to pass dataset between Apps. Please refer to <a href="https://brainlife.github.io/docs/user/datatypes/">Datatypes</a>
-                                    </b-alert>
-                                </b-col>
-                            </b-row>
-                            <b-row>
-                                <b-col cols="5">
-                                    <b-input-group prepend="ID">
-                                        <b-form-input type="text" v-model="input.id" required />
-                                    </b-input-group>
-                                </b-col>
-                                <b-col cols="7">
-                                    <div style="float: right;">
-                                        <div class="button" v-if="idx > 0 && input_datasets.length > 1" @click="swap_inputs(idx, idx - 1)">
-                                            <icon name="arrow-up" />
-                                        </div>
-                                        <div class="button" v-if="idx < input_datasets.length - 1 && input_datasets.length > 1" @click="swap_inputs(idx, idx + 1)">
-                                            <icon name="arrow-down" />
-                                        </div>
-                                        <div class="button button-danger" @click="input_datasets.splice(idx, 1)">
-                                            <icon name="trash"/>
-                                        </div>
-                                    </div>
-                                    <b-form-checkbox v-model="input.optional">
-                                        Optional 
-                                        <small class="text-muted">user can submit this App without this input specified</small>
-                                    </b-form-checkbox>
-                                    <b-form-checkbox v-model="input.multi">
-                                        Multi
-                                        <small class="text-muted">Allow user to select multiple datasets in an array</small>
-                                    </b-form-checkbox>
-                                </b-col>
-                            </b-row>
-                            <hr>
-                            <b-row>
-                                <b-col cols="5">
-                                    <span class="text-muted">Datatype</span>
-                                    <datatypeselecter v-model="input.datatype" @input="input_datatype_changed(idx)"></datatypeselecter>
-                                    <datatype :datatype="datatypes[input.datatype]" style="margin-top: 5px;" v-if="input.datatype"/>
-                                </b-col>
-                                <b-col cols="7">
-                                    <div class="text-muted">Datatype Tags</div>
-                                    <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags" :options="datatypes[input.datatype]._tags" />
-                                    <small class="text-muted">Only allow user to select datasets with these tags. You can prefix tags with ! for negative tags</small>
-                                </b-col>
-                            </b-row>
 
-                            <span class="text-muted">Description (optional)</span>
-                            <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"/>
-
-                            <div v-if="input.datatype">
-                                <br><b>File Mapping</b><br>
-                                <p class="text-muted">Please choose keys used to specify the input files/directories inside config.json</p>
-                                <transition-group name="file-transition" tag="div">
-                                    <div v-for="(file, fidx) in input.files" :key="fidx" class="file-map">
-                                        <div class="button" @click="remove_file(idx, fidx)" style="float: right">
-                                            <icon name="trash"/>
-                                        </div>
-                                        <b-row>
-                                            <b-col v-if="input.datatype" cols="6">
-                                                <b-input-group prepend="file/dir">
-                                                    <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="file.file_id" required/>
-                                                </b-input-group>
-                                            </b-col>
-                                            <b-col cols="1">
-                                                <icon name="arrow-right"/>
-                                            </b-col>
-                                            <b-col cols="5">
-                                                <b-input-group prepend="key">
-                                                    <b-form-input type="text" v-model="file.id" required/>
-                                                </b-input-group>
-                                            </b-col>
-                                        </b-row>
-                                    </div>
-                                </transition-group>
-                                <br>
-                                <b-button v-if="input.datatype" @click="add_file(idx)" size="sm">Add File Mapping</b-button>
-                            </div>
-                        </b-card>
-                    </div>
-                </transition-group>
-                <p>
-                    <b-button size="sm" @click="add_dataset(input_datasets)" variant="primary">Add Input</b-button>
-                </p>
-            </div>
-            
-            <h4>
-                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
-                Output
-            </h4>
-            <div style="border-left: 4px solid #28a745; padding-left: 10px;">
-                <transition-group name="move-item" tag="p">
-                    <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
-                        <b-card>
-                               <b-row>
-                                <b-col>
-                                    <b-input-group prepend="ID">
-                                        <b-form-input type="text" v-model="output.id" required />
-                                    </b-input-group>
-                                    <small class="text-muted">Internal ID used to identify this output</small>
-                                </b-col>
-                                <b-col cols="7">
-                                     <div style="float: right;">
-                                        <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
-                                            <icon name="arrow-up" />
-                                        </div>
-                                        <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
-                                            <icon name="arrow-down" />
-                                        </div>
-                                        <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
-                                            <icon name="trash"/>
-                                        </div>
-                                    </div>
-                                </b-col>
-                            </b-row>
-                            <b-row>
-                                <b-col>
-                                    <div class="text-muted">Datatype</div>
-                                    <datatypeselecter v-model="output.datatype"></datatypeselecter>
-                                    <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype"/>
-                                </b-col>
-                                <b-col cols="7" v-if="output.datatype">
-                                    <div class="text-muted">Datatype Tags</div>
-                                    <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
-                                    <small class="text-muted">Set these datatype tags on this output dataset</small>
-
-                                    <div class="text-muted">Datatype Tags Passthrough</div>
-                                    <b-form-select v-model="output.datatype_tags_pass">
-                                        <option :value="null">(No Pass)</option>
-                                        <option v-for="input in input_datasets" :key="input.id" :value="input.id">{{input.id}}</option>
-                                    </b-form-select>
-                                    <small class="text-muted">Add all datatype tags from the input dataset specified</small>
-                                    
-                                </b-col>
-                            </b-row>
-                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>(Optional JSON)</small></div>
-                            <b-form-textarea v-model="output._files" :rows="3"></b-form-textarea>
-                        </b-card>
-                    </div>
-                </transition-group>
-                <p>
-                    <b-button size="sm" @click="add_dataset(output_datasets)" variant="success">Add Output</b-button>
-                </p>
-            </div>
-            
             <h4>
                 <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
-                Configuration</h4>
+                Configuration
+            </h4>
             <div>
                 <transition-group name="move-item" tag="p">
                     <div v-for="(param, idx) in config_params" v-if="param.pid" :key="param.pid" style="margin:5px;">
@@ -438,6 +283,162 @@
                     <!--integer is deprecated-->
                 </b-dropdown>
             </p>
+            
+            <h4>
+                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
+                Input
+            </h4>
+            <div style="border-left: 4px solid #007bff; padding-left: 10px;">
+                <transition-group name="move-item" tag="p">
+                    <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="margin-bottom: 10px;">
+                        <b-card style="position: relative;">
+                            <b-row v-if="is_raw(input)">
+                                <b-col>
+                                    <b-alert show variant="warning" style="margin-bottom: 10px;">
+                                        Warning: You have chosen a raw datatype as an input. We strongly recommend working with the developers of the App who is generating the raw datatype to register a new datatype so that it can used instead to pass dataset between Apps. Please refer to <a href="https://brainlife.github.io/docs/user/datatypes/">Datatypes</a>
+                                    </b-alert>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="5">
+                                    <b-input-group prepend="ID">
+                                        <b-form-input type="text" v-model="input.id" required />
+                                    </b-input-group>
+                                </b-col>
+                                <b-col cols="7">
+                                    <div style="float: right;">
+                                        <div class="button" v-if="idx > 0 && input_datasets.length > 1" @click="swap_inputs(idx, idx - 1)">
+                                            <icon name="arrow-up" />
+                                        </div>
+                                        <div class="button" v-if="idx < input_datasets.length - 1 && input_datasets.length > 1" @click="swap_inputs(idx, idx + 1)">
+                                            <icon name="arrow-down" />
+                                        </div>
+                                        <div class="button button-danger" @click="input_datasets.splice(idx, 1)">
+                                            <icon name="trash"/>
+                                        </div>
+                                    </div>
+                                    <b-form-checkbox v-model="input.optional">
+                                        Optional 
+                                        <small class="text-muted">user can submit this App without this input specified</small>
+                                    </b-form-checkbox>
+                                    <b-form-checkbox v-model="input.multi">
+                                        Multi
+                                        <small class="text-muted">Allow user to select multiple datasets in an array</small>
+                                    </b-form-checkbox>
+                                </b-col>
+                            </b-row>
+                            <hr>
+                            <b-row>
+                                <b-col cols="5">
+                                    <span class="text-muted">Datatype</span>
+                                    <datatypeselecter v-model="input.datatype" @input="input_datatype_changed(idx)"></datatypeselecter>
+                                    <datatype :datatype="datatypes[input.datatype]" style="margin-top: 5px;" v-if="input.datatype"/>
+                                </b-col>
+                                <b-col cols="7">
+                                    <div class="text-muted">Datatype Tags</div>
+                                    <tageditor placeholder="Tags" v-if="input.datatype" v-model="input.datatype_tags" :options="datatypes[input.datatype]._tags" />
+                                    <small class="text-muted">Only allow user to select datasets with these tags. You can prefix tags with ! for negative tags</small>
+                                </b-col>
+                            </b-row>
+
+                            <span class="text-muted">Description (optional)</span>
+                            <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"/>
+
+                            <div v-if="input.datatype">
+                                <br><b>File Mapping</b><br>
+                                <p class="text-muted">Please choose keys used to specify the input files/directories inside config.json</p>
+                                <transition-group name="file-transition" tag="div">
+                                    <div v-for="(file, fidx) in input.files" :key="fidx" class="file-map">
+                                        <div class="button" @click="remove_file(idx, fidx)" style="float: right">
+                                            <icon name="trash"/>
+                                        </div>
+                                        <b-row>
+                                            <b-col v-if="input.datatype" cols="6">
+                                                <b-input-group prepend="file/dir">
+                                                    <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="file.file_id" required/>
+                                                </b-input-group>
+                                            </b-col>
+                                            <b-col cols="1">
+                                                <icon name="arrow-right"/>
+                                            </b-col>
+                                            <b-col cols="5">
+                                                <b-input-group prepend="key">
+                                                    <b-form-input type="text" v-model="file.id" required/>
+                                                </b-input-group>
+                                            </b-col>
+                                        </b-row>
+                                    </div>
+                                </transition-group>
+                                <br>
+                                <b-button v-if="input.datatype" @click="add_file(idx)" size="sm">Add File Mapping</b-button>
+                            </div>
+                        </b-card>
+                    </div>
+                </transition-group>
+                <p>
+                    <b-button size="sm" @click="add_dataset(input_datasets)" variant="primary">Add Input</b-button>
+                </p>
+            </div>
+            
+            <h4>
+                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
+                Output
+            </h4>
+            <div style="border-left: 4px solid #28a745; padding-left: 10px;">
+                <transition-group name="move-item" tag="p">
+                    <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
+                        <b-card>
+                               <b-row>
+                                <b-col>
+                                    <b-input-group prepend="ID">
+                                        <b-form-input type="text" v-model="output.id" required />
+                                    </b-input-group>
+                                    <small class="text-muted">Internal ID used to identify this output</small>
+                                </b-col>
+                                <b-col cols="7">
+                                     <div style="float: right;">
+                                        <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
+                                            <icon name="arrow-up" />
+                                        </div>
+                                        <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
+                                            <icon name="arrow-down" />
+                                        </div>
+                                        <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
+                                            <icon name="trash"/>
+                                        </div>
+                                    </div>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col>
+                                    <div class="text-muted">Datatype</div>
+                                    <datatypeselecter v-model="output.datatype"></datatypeselecter>
+                                    <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype"/>
+                                </b-col>
+                                <b-col cols="7" v-if="output.datatype">
+                                    <div class="text-muted">Datatype Tags</div>
+                                    <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
+                                    <small class="text-muted">Set these datatype tags on this output dataset</small>
+
+                                    <div class="text-muted">Datatype Tags Passthrough</div>
+                                    <b-form-select v-model="output.datatype_tags_pass">
+                                        <option :value="null">(No Pass)</option>
+                                        <option v-for="input in input_datasets" :key="input.id" :value="input.id">{{input.id}}</option>
+                                    </b-form-select>
+                                    <small class="text-muted">Add all datatype tags from the input dataset specified</small>
+                                    
+                                </b-col>
+                            </b-row>
+                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>(Optional JSON)</small></div>
+                            <b-form-textarea v-model="output._files" :rows="3"></b-form-textarea>
+                        </b-card>
+                    </div>
+                </transition-group>
+                <p>
+                    <b-button size="sm" @click="add_dataset(output_datasets)" variant="success">Add Output</b-button>
+                </p>
+            </div>
+            
         </b-form>
 
         <b-card v-if="config.debug">

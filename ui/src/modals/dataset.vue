@@ -705,7 +705,7 @@ export default {
 .dataset-provenance {
 background-color: #f9f9f9;
 position: absolute;
-top: 90px;
+top: 105px;
 left: 0;
 right: 0;
 bottom: 0px;
