@@ -237,6 +237,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 add_node(defer.node);
                 edges.push(defer.edge);
             }
+            datasets_analyzed.push(dataset._id.toString());
             return cb();
         } 
 
@@ -282,7 +283,7 @@ router.get('/prov/:id', (req, res, next)=>{
             if(to != from && !found) edges.push({ from, to, arrows: "to", });
             return cb();
         }
-        datasets_analyzed.push(dataset_id.toString());
+        //datasets_analyzed.push(dataset_id.toString());
         
         db.Datasets
         .findById(dataset_id)
@@ -447,8 +448,10 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
         },
 
         next=>{
+            if(!task.config) task.config = {};
+            
             //find output
-            if(task.config && task.config._outputs) {
+            if(task.config._outputs) {
                 output = task.config._outputs.find(o=>o.id == req.body.output_id);
             }
             if(!output) {

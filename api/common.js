@@ -490,7 +490,7 @@ exports.split_product = function(task_product, outputs) {
     let global_product = Object.assign({}, task_product); //copy
     if(!Array.isArray(outputs)) {
         logger.error("broken outputs info");
-        return null;
+        return {};
     }
     outputs.forEach(output=>{
         delete global_product[output.id]; //remove dataset specific output
