@@ -348,7 +348,12 @@ var datatypeSchema = mongoose.Schema({
         }],
     },
 
-    uis: [{type: mongoose.Schema.Types.ObjectId, ref: 'UIs'}],
+    //registered UIs for this datatype
+    uis: [{type: mongoose.Schema.Types.ObjectId, ref: 'UIs'}], 
+
+    //published datasets that can be used as sample datasets
+    //in the future, all sample datasets will be permanently staged and allows quick access
+    samples: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}],
 
     create_date: { type: Date, default: Date.now },
 });

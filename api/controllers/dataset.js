@@ -237,6 +237,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 add_node(defer.node);
                 edges.push(defer.edge);
             }
+            datasets_analyzed.push(dataset._id.toString());
             return cb();
         } 
 
@@ -282,7 +283,7 @@ router.get('/prov/:id', (req, res, next)=>{
             if(to != from && !found) edges.push({ from, to, arrows: "to", });
             return cb();
         }
-        datasets_analyzed.push(dataset_id.toString());
+        //datasets_analyzed.push(dataset_id.toString());
         
         db.Datasets
         .findById(dataset_id)
@@ -446,22 +447,10 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             });
         },
 
-        /*
         next=>{
-            //find specified app
-            db.Apps.findById(req.body.app_id, (err, _app)=>{
-                if(err) return next(err);
-                //I should find private app that user doesn't have access to?
-                if(!_app) return next("no such app");
-                app = _app;
-                next();
-            });
-        },
-        */
-
-        next=>{
+            if(!task.config) task.config = {};
+            
             //find output
-            //console.dir(task.config);
             if(task.config._outputs) {
                 output = task.config._outputs.find(o=>o.id == req.body.output_id);
             }
@@ -474,7 +463,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
 
         next=>{
             //WARNING - similar code exists in event_handler
-			//logger.debug("registering new dataset record", req.body.meta);
             let products = common.split_product(task.product, task.config._outputs);
             let product = products[req.body.output_id];
             if(!product) return next("no such output_id in app");
@@ -494,8 +482,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 datatype_tags: product.datatype_tags,
 
                 status: "storing",
-                //status_msg: "", //anything to say?
-
                 product,
 
                 prov: {
