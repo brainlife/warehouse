@@ -55,7 +55,7 @@ font-family: 'Montserrat', sans-serif;
 height: 100%;
 background-color: #f9f9f9;
 color: #555;
-font-size: 11pt;
+font-size: 14px;
 }
 
 /*adjust bootstrap font sizes*/
@@ -91,7 +91,7 @@ margin: 10px;
 }
 
 .page-header {
-height: 50px;
+height: 40px;
 }
 .page-header,
 .page-content {
@@ -214,31 +214,7 @@ border-top: none;
 /*------------------------------------------------------------*/
 /* update bootstrap default tab */
 
-.brainlife-tab-dark .nav-tabs {
-padding-top: 10px;
-border: none;
-background-color: #444;
-color:white;
-}
-.brainlife-tab-dark .nav-item a {
-color: inherit;
-opacity: 0.5;
-border: none;
-transition: color 0.5s, opacity 0.5s;
-font-weight: bold;
-}
-.brainlife-tab-dark .nav-item a:hover {
-opacity: 1;
-}
-.brainlife-tab-dark .nav-item a[aria-selected="true"] {
-color: #fff;
-background:none;
-opacity: 1;
-border-bottom: 3px solid #aaa;
-}
-
 .brainlife-tab .nav-tabs {
-padding-top: 9px;
 border: none;
 background-color: white;
 }
@@ -306,8 +282,9 @@ opacity: 0.7;
 }
 .form-header {
 text-transform: uppercase;
-opacity: 0.6;
+opacity: 0.9;
 font-weight: bold;
+font-size: 95%;
 }
 .v-select .dropdown-toggle {
 background-color: white;
@@ -403,17 +380,4 @@ font-size: 90%;
 transition: color 0.5s;
 margin-bottom: 2px;
 }
-.io-tab {
-position: absolute;
-Width: 30px;
-color: white;
-font-weight: bold;
-font-size: 10px;
-padding: 2px 5px;
-border-radius: 4px;
-text-align: center;
-display: inline-block;
-margin-left: -40px;
-}
-
 </style>

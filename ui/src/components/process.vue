@@ -168,7 +168,6 @@ import task from '@/components/task'
 import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
 import pageheader from '@/components/pageheader'
-import appavatar from '@/components/appavatar'
 import app from '@/components/app'
 import appname from '@/components/appname'
 import projectselecter from '@/components/projectselecter'
@@ -194,7 +193,7 @@ export default {
         sidemenu, task, 
         message, tags, 
         filebrowser, pageheader, 
-        appavatar, app, 
+        app, 
         projectselecter, statusicon, mute,
         datatypetag, appname, statustag,
         product, 
@@ -610,7 +609,7 @@ margin: 0px;
 }
 .task-header {
 margin: 0px;
-padding: 15px;
+padding: 10px;
 background-color: #fff;
 }
 .task {

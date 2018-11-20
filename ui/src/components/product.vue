@@ -16,7 +16,7 @@
             <vue-plotly v-if="tab == $idx" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true"/>
         </b-tab>
         <b-tab title="JSON" v-if="Object.keys(others).length > 0">
-            <pre v-highlightjs="JSON.stringify(others, null, 4)" style="max-height: 150px;"><code class="json hljs"></code></pre>
+            <pre v-highlightjs="JSON.stringify(others, null, 4)" style="max-height: 150px; background-color: white;"><code class="json hljs"></code></pre>
         </b-tab>
     </b-tabs>
 </div>

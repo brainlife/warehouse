@@ -52,7 +52,7 @@
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
                     <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
-                        <statusicon :status="instance.status"/>
+                        <statusicon :status="instance.status" :scale="0.8"/>
                     </div>
 
                     <timeago :since="instance.update_date" :auto-update="10" class="date"/>
@@ -467,21 +467,21 @@ export default {
 <style scoped>
 
 .loading {
-margin: 50px;
+margin: 40px;
 opacity: 0.5;
 font-size: 170%;
 }
 
 .header {
-top: 100px;
+top: 90px;
 padding: 6px 10px;
 color: #999;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 height: 45px;
 }
 .content {
-top: 95px;
-margin-top: 50px;
+top: 90px;
+margin-top: 40px;
 }
 
 .header, 
@@ -490,12 +490,12 @@ min-width: 700px;
 }
 
 .instance-header {
-padding: 5px 15px;
+padding: 3px 15px;
 background-color: white;
 box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 margin-left: 20px;
 margin-right: 20px;
-min-height: 35px;
+min-height: 32px;
 z-index: 1; /*app desc/github name shows up on top without it*/
 transition: margin 0.3s, background-color 0.3s;
 }
@@ -564,7 +564,7 @@ opacity: 1;
 width: 24px;
 height: 24px;
 text-align: center;
-border-radius: 15px;
+border-radius: 12px;
 display: inline-block;
 margin-right: 10px;
 background-color: gray;

@@ -1,6 +1,8 @@
 <template>
 <div v-if="datatype">
-    <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id"/> <small style="opacity:.7;">{{datatype.desc}}</small>
+    <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id"/> 
+    <slot name="tag_extra"/>
+    <p style="margin-bottom: 0px;"><small style="opacity:.7;">{{datatype.desc}}</small></p>
     <div>
         <small v-for="(file, idx) in datatype.files" :key="file.id" style='opacity:.5;'>
             {{ idx == 0 ? '' : '&bull;' }}

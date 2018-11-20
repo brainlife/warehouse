@@ -3,6 +3,7 @@
     <pageheader/>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
+        <b-alert :show="app.removed" variant="secondary">This App has been removed.</b-alert>
         <div class="header">
             <b-container>
                 <b-row>
@@ -24,16 +25,14 @@
                             {{app.desc_override||app.desc}}
                         </p>
                         <p>
-                            <doibadge :doi="app.doi" v-if="app.doi" style="float: right; margin-bottom: 7px;"/>
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
-                        <appstats :create_date="app.create_date" :info="info" style="clear: both; border-top: 1px solid #f0f0f0; padding-top: 10px; margin-top: 5px;"/>
                     </b-col>
                 </b-row>
 
                 <b-tabs class="brainlife-tab" v-model="tab_index">
                     <b-tab title="Detail"/>
-                    <b-tab title="Readme"/>
+                    <!--<b-tab title="Readme"/>-->
                     <b-tab>
                         <template slot="title"><!--<icon name="paper-plane"/>-->Execute</template>
                     </b-tab>
@@ -44,210 +43,221 @@
         </div><!--header-->
 
         <b-container>
-            <b-alert :show="app.removed" variant="warning">This app has been removed.</b-alert>
 
             <!-- detail -->
             <div v-if="tab_index == 0">
                 <b-row>
                     <b-col cols="3">
-                        <span class="form-header">Input</span>
-                    </b-col>
-                    <b-col>
-                        <b-alert show variant="secondary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
-                        <!--<p v-else class="text-primary">This App runs with the following input dataset.</p>-->
-                        <div style="border-left: 4px solid #007bff; margin-bottom: 15px; padding-left: 10px; position: relative;">
-                            <span v-if="app.inputs.length > 0" class="io-tab" style="background-color: #007bff">IN</span>
-                            <b-row v-if="app.inputs">
-                                <b-col cols="6" v-for="input in app.inputs" :key="input.id">
-                                    <div class="io-card">
-                                        <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
-                                        <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
-                                        <span v-if="input.optional" class="text-muted">(optional)</span>
-                                        <span class="text-muted" v-if="input.multi">(multi)</span>
-                                        <p style="color: #222; margin-top: 5px;">
-                                            <small>{{input.datatype.desc}}</small>
-                                        </p>
-                                    </div>
-                                </b-col>
-            
-                                <!--
-                                <b-col cols="6" v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'">
-                                    <div style="padding: 5px; background-color: white; margin-bottom: 5px;">
-                                        <small style="opacity: 0.5; float: right;">{{con.input_id}}</small>
-                                        <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
-                                        <span v-if="find_by_id(app.inputs, con.input_id).optional" class="text-muted">(optional)</span>
-                                        <span class="text-muted" v-if="find_by_id(app.inputs, con.input_id).multi">(multi)</span>
-                                        <b>config.json key: {{key}}</b>
-                                        <p style="color: #222;">
-                                            <small>{{find_by_id(app.inputs, con.input_id).datatype.desc}}</small>
-                                        </p>
-                                        <p>
-                                            <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
-                                        </p>
-                                    </div>
-                                </b-col>
-                                -->
-                            </b-row>
-                        </div>
-                    </b-col>
-                </b-row>
+                        <span class="form-header">Registered At</span>
+                        <p>
+                            {{new Date(app.create_date).toLocaleDateString()}}
+                        </p>
+                        <p>
+                            <contact :id="app.user_id" size="small"/>
+                        </p>
 
-                <b-row>
-                    <b-col cols="3">
-                        <span class="form-header">Output</span>
+                        <appstats :info="info"/>
+                        <p>
+                            <doibadge :doi="app.doi" v-if="app.doi"/>
+                        </p>
                     </b-col>
-                    <b-col>
-                        <b-alert show variant="secondary" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
-                        <div style="border-left: 4px solid #28a745; margin-bottom: 15px; padding-left: 10px;">
-                            <span v-if="app.outputs.length > 0" class="io-tab" style="background-color: #28a745">OUT</span>
-                            <b-row v-if="app.outputs">
-                                <b-col cols="6" v-for="output in app.outputs" :key="output.id">
-                                    <div class="io-card">
-                                        <small style="opacity: 0.5; float: right;">{{output.id}}</small><!--internal output id-->
-                                        <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
-                                        <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ {{output.datatype_tags_pass}}</span>
-                                        <p style="color: #222; margin-top: 5px;">
-                                            <small>{{output.datatype.desc}}</small>
-                                        </p>
-                                        <small style="position: relative" v-if="output.files"> 
-                                            <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
-                                        </small>
-                                    </div>
-                                </b-col>
-                            </b-row>
-                        </div>
-                    </b-col>
-                </b-row>
-
-                <b-row v-if="app.projects && app.projects.length > 0">
-                    <b-col cols="3">
-                        <span class="form-header">Projects</span>
-                    </b-col>
-                    <b-col>
-                        <p><small class="text-muted"><icon name="lock" /> Only the members of the following project(s) can view/execute this app.</small></p>
-                        <div v-for="project in app.projects" :key="project._id" class="project-card" @click="go('/project/'+project._id)">
+                    <b-col cols="9">
+                        <!--input/output-->
+                        <span class="form-header">Input/Output</span>
+                        <p><small class="text-muted">This app uses the following input/output datatypes</small></p>
+                        <div style="position: relative;">
                             <b-row>
-                                <b-col cols="2">
-                                    <projectavatar :project="project" :height="50" :width="50"/>
-                                </b-col>
+                                <!--input-->
                                 <b-col>
-                                    <b>{{project.name}}</b>
-                                    <p style="margin-bottom: 0px; color: gray;" class="text">{{project.desc}}</p>
+                                    <!--<p v-else class="text-primary">This App runs with the following input dataset.</p>-->
+                                    <div style="height: 100%; background-color: rgba(0, 123, 255, 0.2);">
+                                        <div style="background-color: #007bff; color: white; padding: 5px; font-weight: bold;">Input</div>
+                                        <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
+                                        <div v-if="app.inputs" style="padding: 5px">
+                                            <div v-for="input in app.inputs" :key="input.id" class="io-card">
+                                                <!--
+                                                <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                                                <p style="color: #222; margin-top: 5px; margin-bottom: 0px;">
+                                                    <small>{{input.datatype.desc}}</small>
+                                                </p>
+                                                <small style="position: relative" v-if="input.datatype.files"> 
+                                                    <pre v-highlightjs v-if="input.datatype.files"><code class="json hljs">{{input.datatype.files}}</code></pre>
+                                                </small>
+                                                -->
+                                                <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
+                                                <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags">
+                                                    <template slot="tag_extra">
+                                                        <span v-if="input.multi" style="opacity: 0.8">(multi)</span>
+                                                        <span v-if="input.optional" style="opacity: 0.8">(optional)</span>
+                                                    </template>
+                                                </datatype>
+                                            </div>
+                        
+                                            <!--
+                                            <b-col cols="6" v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'">
+                                                <div style="padding: 5px; background-color: white; margin-bottom: 5px;">
+                                                    <small style="opacity: 0.5; float: right;">{{con.input_id}}</small>
+                                                    <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
+                                                    <span v-if="find_by_id(app.inputs, con.input_id).optional" class="text-muted">(optional)</span>
+                                                    <span class="text-muted" v-if="find_by_id(app.inputs, con.input_id).multi">(multi)</span>
+                                                    <b>config.json key: {{key}}</b>
+                                                    <p style="color: #222;">
+                                                        <small>{{find_by_id(app.inputs, con.input_id).datatype.desc}}</small>
+                                                    </p>
+                                                    <p>
+                                                        <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
+                                                    </p>
+                                                </div>
+                                            </b-col>
+                                            -->
+                                        </div>
+                                    </div>
+                                </b-col>
+
+                                <!--output-->
+                                <b-col>
+                                    <icon name="arrow-right" style="position: absolute; top: 50%; left: -10px; opacity: 0.5" scale="1.5"/>
+                                    <div style="height: 100%; background-color: rgba(40, 167, 69, 0.2)">
+                                        <div style="background-color: #28a745; color: white; padding: 5px; font-weight: bold">Output</div>
+                                        <b-alert show variant="success" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
+                                        <div v-if="app.outputs" style="padding: 5px;">
+                                            <div v-for="output in app.outputs" :key="output.id" class="io-card">
+                                                <small style="opacity: 0.5; float: right;">{{output.id}}</small><!--internal output id-->
+                                                <!--
+                                                <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
+                                                <p style="color: #222; margin-top: 5px; margin-bottom: 0px">
+                                                    <small>{{output.datatype.desc}}</small>
+                                                </p>
+                                                -->
+                                                <datatype :datatype="output.datatype" 
+                                                        :datatype_tags="output.datatype_tags" 
+                                                        :tag_pass="output.datatype_tags_pass">
+                                                    <template slot="tag_extra">
+                                                        <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ <b>{{output.datatype_tags_pass}}</b></span>
+                                                    </template>
+                                                </datatype>
+                                                <small style="position: relative" v-if="output.files"> 
+                                                    <b>Output Mapping</b>
+                                                    <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </b-col>
                             </b-row>
+                            <br>
+                        </div><!--input/ouput-->
+
+                        <div v-if="app.projects && app.projects.length > 0">
+                            <span class="form-header">Projects</span>
+                            <p><small class="text-muted"><icon name="lock" /> Only the members of the following project(s) can view/execute this app.</small></p>
+                            <div v-for="project in app.projects" :key="project._id" class="project-card" @click="go('/project/'+project._id)">
+                                <b-row>
+                                    <b-col cols="2">
+                                        <projectavatar :project="project" :height="50" :width="50"/>
+                                    </b-col>
+                                    <b-col>
+                                        <b>{{project.name}}</b>
+                                        <p style="margin-bottom: 0px; color: gray;" class="text">{{project.desc}}</p>
+                                    </b-col>
+                                </b-row>
+                            </div>
+                            <br>
                         </div>
-                        <br>
-                    </b-col>
-                </b-row>
 
-                <b-row v-if="app.retry">
-                    <b-col cols="3">
-                        <span class="form-header">Retry</span>
-                    </b-col>
-                    <b-col>
-                        <p>If this app fails, it will automatically be rerun up to <b>{{app.retry}}</b> times</p>
-                    </b-col>
-                </b-row>
+                        <div v-if="app.retry">
+                            <span class="form-header">Retry</span>
+                            <p>If this app fails, it will automatically be rerun up to <b>{{app.retry}}</b> times</p>
+                            <br>
+                        </div>
 
+                        <div v-if="resources">
+                            <span class="form-header">Computing Resources</span>
+                            <b-alert show variant="danger" v-if="resources.length == 0" style="margin-bottom: 10px;">
+                                This App is not enabled to run on any resource that you have access to. 
+                            </b-alert>
+                            <b-alert show variant="secondary" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
+                                This App can not run on any resources that you have access to at the moment.
+                            </b-alert>
+                            <b-alert show variant="secondary" v-else-if="shared_resources.length == 0" style="margin-bottom: 10px;">
+                                This App is only enabled on your private resource(s). Other users may not be able to run this App.
+                            </b-alert>
+                            <p v-else>
+                                <small class="text-muted">This App can run on the following resources.</small>
+                            </p>
 
-                <b-row v-if="resources">
-                    <b-col cols="3">
-                        <span class="form-header">Computing Resources</span>
-                    </b-col>
-                    <b-col>
-                        <b-alert show variant="danger" v-if="resources.length == 0" style="margin-bottom: 10px;">
-                            This App is not enabled to run on any resource that you have access to. 
-                        </b-alert>
-                        <b-alert show variant="secondary" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
-                            This App can not run on any resources that you have access to at the moment.
-                        </b-alert>
-                        <b-alert show variant="secondary" v-else-if="shared_resources.length == 0" style="margin-bottom: 10px;">
-                            This App is only enabled on your private resource(s). Other users may not be able to run this App.
-                        </b-alert>
-                        <p v-else>
-                            <small class="text-muted">This App can run on the following resources.</small>
-                        </p>
+                            <b-row>
+                                <b-col cols="4" v-for="resource in resources" :key="resource._id">
+                                    <div class="resource" v-b-popover.hover="resource.info.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
+                                        <p style="padding: 10px; margin-bottom: 0px;">
+                                            <icon v-if="resource.gids.length > 0" name="users" style="opacity: 0.4; float: right"/>
+                                            <icon v-else name="lock" class="text-danger" style="float: right" title="Private resource"/>
 
-                        <b-row>
-                            <b-col cols="4" v-for="resource in resources" :key="resource._id">
-                                <div class="resource" v-b-popover.hover="resource.info.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
-                                    <p style="padding: 10px; margin-bottom: 0px;">
-                                        <icon v-if="resource.gids.length > 0" name="users" style="opacity: 0.4; float: right"/>
-                                        <icon v-else name="lock" class="text-danger" style="float: right" title="Private resource"/>
+                                            <b>{{resource.name}}</b><br>
+                                            <small>{{resource.info.name}}</small>
+                                        </p>
 
-                                        <b>{{resource.name}}</b><br>
-                                        <small>{{resource.info.name}}</small>
-                                    </p>
-
-                                    <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
-                                        <icon name="exclamation" style="position: relative; top: -3px;"/>
-                                        {{resource.status}}
-                                        <span class="score">Score {{resource.score}}</span>
+                                        <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
+                                            <icon name="exclamation" style="position: relative; top: -3px;"/>
+                                            {{resource.status}}
+                                            <span class="score">Score {{resource.score}}</span>
+                                        </div>
+                                        <div v-else-if="resource.score == 0" class="resource-status bg-warning">
+                                            <icon name="hourglass" style="position: relative; top: -3px;"/>
+                                            Busy
+                                            <span class="score">Score {{resource.score}}</span>
+                                        </div>
+                                        <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
+                                            <icon name="thumbs-up" style="position: relative; top: -3px;"/>
+                                            <!--Best-->
+                                            <span class="score">Score {{resource.score}}</span>
+                                        </div>
+                                        <div v-else class="resource-status" style="color: #888;">        
+                                            <span class="score">Score {{resource.score}}</span>
+                                        </div>
                                     </div>
-                                    <div v-else-if="resource.score == 0" class="resource-status bg-warning">
-                                        <icon name="hourglass" style="position: relative; top: -3px;"/>
-                                        Busy
-                                        <span class="score">Score {{resource.score}}</span>
-                                    </div>
-                                    <div v-else-if="resource.id == preferred_resource._id" class="resource-status bg-success" title="This resource will be used to execute this App.">
-                                        <icon name="thumbs-up" style="position: relative; top: -3px;"/>
-                                        <!--Best-->
-                                        <span class="score">Score {{resource.score}}</span>
-                                    </div>
-                                    <div v-else class="resource-status" style="color: #888;">        
-                                        <span class="score">Score {{resource.score}}</span>
-                                    </div>
-                                </div>
-                            </b-col>
-                        </b-row>
-                    </b-col>
-                </b-row>
+                                </b-col>
+                            </b-row>
+                            <br>
+                        </div>
 
+                        <div v-if="config.user">
+                            <span class="form-header">Administrators</span>
+                            <p><small class="text-muted">The following users can administer this App registration.</small></p>
+                            <p v-for="c in app.admins" :key="c._id">
+                                <contact :id="c"/>
+                            </p>
+                            <br>
+                        </div>
 
-                <!--detail table-->
-                <b-row v-if="config.user">
-                    <b-col cols="3">
-                        <span class="form-header">Administrators</span>
-                    </b-col>
-                    <b-col>
-                        <p><small class="text-muted">The following users can administer this application registration.</small></p>
-                        <p v-for="c in app.admins" :key="c._id">
-                            <contact :id="c"/>
-                        </p>
-                    </b-col>
-                </b-row>
-                <br>
+                        <div v-if="app.contributors.length > 0">
+                            <span class="form-header">Contributors</span>
+                            <p><small class="text-muted">The following people have contributed to the source code ({{app.github}}).</small></p>
+                            <p v-for="dev in app.contributors" :key="dev._id">
+                                <contact :fullname="dev.name" :email="dev.email"/>
+                            </p>
+                            <br>
+                        </div>
+ 
+                        <div v-if="info">
+                            <span class="form-header">Past Executions</span>
+                            <p><small class="text-muted">Showing activities during the last 180 days.</small></p>
+                            <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true"/>
+                            <br>
+                        </div>
 
-                <b-row>
-                    <b-col cols="3">
-                        <span class="form-header">Contributors</span>
-                    </b-col>
-                    <b-col>
-                        <p><small class="text-muted">The following people have contributed to the source code ({{app.github}}).</small></p>
-                        <p v-for="dev in app.contributors" :key="dev._id">
-                            <contact :fullname="dev.name" :email="dev.email"/>
-                        </p>
-                    </b-col>
-                </b-row>
+                        <div v-if="readme">
+                            <span class="form-header">README</span>
+                            <p><small class="text-muted">From github repo / README.md</small></p>
+                            <vue-markdown :source="readme" class="readme"></vue-markdown>
+                        </div>
 
-                <b-row v-if="info">
-                    <b-col cols="3">
-                        <span class="form-header">Past Executions</span>
-                    </b-col>
-                    <b-col>
-                        <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true"/>
-                    </b-col>
-                </b-row>
-
-
-                <hr>
-                <b-row>
-                    <b-col cols="3">
-                    </b-col>
-                    <b-col>
+                        <hr>
                         <vue-disqus shortname="brain-life" :identifier="app._id"/>
+
                     </b-col>
                 </b-row>
+
                 <!--
                 <div class="side-card">
                     <center>
@@ -260,17 +270,21 @@
                 -->
             </div>
 
+            <!--
             <div v-if="tab_index == 1">
                 <p><small class="text-muted">From github repo / README.md</small></p>
                 <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
             </div>
-            <div v-if="tab_index == 2">
+            -->
+            <div v-if="tab_index == 1">
                 <appsubmit v-if="config.user" :id="app._id"/>
-                <p v-else class="text-muted">Please login first to execute application.</p>
+                <p v-else class="text-muted">Please login first to execute App.</p>
             </div>
+            <!--
             <div v-if="tab_index == 3">
                 <p class="text-muted">No test status available yet</p>
             </div>
+            -->
             <br>
             <br>
             <br>
@@ -562,7 +576,6 @@ padding: 8px;
 background-color: white; 
 box-shadow: 2px 2px 3px #ddd; 
 margin-bottom: 5px; 
-min-height: 80px;
 }
 
 </style>

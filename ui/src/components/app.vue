@@ -2,8 +2,8 @@
 <div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
     <div @click="click">
         <div v-if="compact">
-            <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="80" :height="80"/>
-            <div style="max-height: 80px; overflow: hidden;">
+            <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="78" :height="78"/>
+            <div style="max-height: 75px; overflow: hidden;">
                 <h4 class="name">
                     <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
                     {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
@@ -139,8 +139,6 @@ background-color: inherit;
 .header {
 margin-right: 10px;
 margin-left: 10px;
-/* min-height: 90px; */
-/* overflow: hidden; */
 }
 .name {
 color: #666;
@@ -214,7 +212,6 @@ padding: 0px 10px;
 padding-top: 9px;
 color: #bbb;
 height: 32px;
-/*border-top: 1px solid #f0f0f0;*/
 background-color: #f7f7f7;
 line-height: 100%;
 }
