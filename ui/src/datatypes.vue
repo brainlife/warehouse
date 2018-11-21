@@ -9,49 +9,9 @@
         -->
     </pageheader>
     <sidemenu active="/datatypes"></sidemenu>
-    <!--
-    <div class="datatype-list" ref="scrollable">
-        <h4>Datatypes</h4>
-        <p v-if="!datatypes" style="margin: 20px;">Loading ..</p>
-        <div v-else>
-            <h5>neuro/</h5>
-            <p v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" :id="datatype._id" class="item" :class="{'selected': selected == datatype}" @click="select(datatype)">
-                <icon name="cube" :style="{color: gethsl(datatype.name)}" style="margin-right: 5px;"/> {{trim(datatype.name)}}
-                <small>{{datatype.desc}}</small>
-            </p>
-            <br>
-            <h5>Others</h5>
-            <p v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" :id="datatype._id" class="item" :class="{'selected': selected == datatype}" @click="select(datatype)">
-                <icon name="cube" :style="{color: gethsl(datatype.name)}" style="margin-right: 5px;"/>
-                {{datatype.name}}
-                <small>{{datatype.desc}}</small>
-            </p>
-        </div>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-        <b-button class="button-fixed" @click="newdatatype" title="New Datatype">
-            <icon name="plus" scale="2"/>
-        </b-button>
-    </div>
-    -->
 
-
-    <!--
-    <div class="datatype-list">
-    </div>
-    -->
-
-    <div class="page-content">
-        <!--<p v-if="!selected" style="margin: 20px; opacity: 0.5">Please select a datatype to show.</p>-->
+    <div class="page-content" ref="scrolled">
         <div v-if="!selected">
-            <!--
-            <div class="datatypes-container">
-                <datatype v-for="datatype in get_datatypes('neuro/')" :datatype="datatype" class="datatype"/>
-            </div>
-            -->
             <h3>Datatypes</h3>
             <h4>Neuro/</h4> 
             <b-card-group columns style="margin: 10px;">
@@ -65,8 +25,6 @@
                     <datatype :datatype="datatype"/>
                 </b-card>
             </b-card-group>
-
-
             <b-button class="button-fixed" @click="newdatatype" title="New Datatype">
                 <icon name="plus" scale="2"/>
             </b-button>
@@ -230,8 +188,6 @@
                 </b-container>
             </div>
         </div>
-
-
     </div><!--page-content-->
 </div>
 </template>
@@ -304,9 +260,11 @@ export default {
         .then(res=>{
             this.datatypes = res.body.datatypes;
             this.selected = this.datatypes.find(d=>d._id == this.$route.params.id);
+            /*
             this.$nextTick(()=>{
                 this.scroll_to_selected();
             });
+            */
         }).catch(console.error);
     },
 
@@ -314,6 +272,9 @@ export default {
         
         select(datatype) {
             this.selected = datatype;
+            this.$nextTick(()=>{
+                this.$refs.scrolled.scrollTo(0, 0);
+            });
             this.$router.push(`/datatypes/${datatype._id}`);
         },
 
@@ -335,6 +296,7 @@ export default {
         */
         
         get_datatypes(prefix) {
+            if(!this.datatypes) return false;
             return this.datatypes.filter(d=>{
                 if(~d.name.indexOf(prefix)) {
                     return true;
@@ -344,6 +306,7 @@ export default {
         },
 
         get_not_datatypes(prefix) {
+            if(!this.datatypes) return false;
             return this.datatypes.filter(d=>{
                 if(!~d.name.indexOf(prefix)) {
                     return true;
@@ -408,7 +371,7 @@ export default {
     },
 
     destroyed() {
-        this.ps.destroy();
+        //this.ps.destroy();
     },
   
     watch: {
@@ -473,12 +436,12 @@ margin-bottom: 0px;
 }
 .page-content h4 {
 padding: 15px 20px;
-background-color: #999;
+background-color: white;
 position: sticky;
 top: 0px;
 z-index: 1;
 opacity: 0.8;
-color: white;
+color: #999;
 font-size: 17pt;
 font-weight: bold;
 }
@@ -560,5 +523,9 @@ cursor: pointer;
 padding: 10px;
 border: none;
 box-shadow: 2px 2px 4px rgba(0,0,0,0.03);
+transition: box-shadow 1s;
+}
+.datatype-card:hover {
+box-shadow: 4px 4px 8px rgba(0,0,0,0.2);
 }
 </style>

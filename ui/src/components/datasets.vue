@@ -267,6 +267,15 @@ export default {
 
         let subid = this.$route.params.subid;
         if(subid) this.$root.$emit('dataset.view', {id: subid, back: './'});
+
+        if(Vue.config.debug) {
+            document.addEventListener('keydown', (event) => {
+                const keyName = event.key;
+                if(keyName == 'd') {
+                    this.$root.$emit('dsimport.open', {});
+                }
+            });
+        }
     },
 
     watch: {

@@ -404,10 +404,10 @@ export default {
                         range: [begin_date, end_date],
                     },
                     yaxis: {
-                        title: 'MB',
+                        title: 'GB',
                         overlaying: "y",
                         //side: "right",
-                        //type: 'log',
+                        type: 'log',
                     },
                     showlegend: true,
                     //paper_bgcolor: "#000",
@@ -439,8 +439,6 @@ export default {
                 
                     ]
                 };
-                //console.dir(this.smon.info);
-
                 this.loading = false;
             }).catch(err=>{
                 this.loading = false;
