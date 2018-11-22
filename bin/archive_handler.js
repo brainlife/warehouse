@@ -14,12 +14,6 @@ const common = require('../api/common');
 
 logger.info("starting event handler");
 
-/*
-let _counts = {
-    archive: 0,
-}
-*/
-
 setInterval(health_check, 1000*60*10); 
 setTimeout(health_check, 1000*5); //check after 5 secs
 
@@ -41,30 +35,8 @@ rcon.on('ready', ()=>{
     logger.info("connected to redis");
 });
 
-
 function subscribe() {
     async.series([
-        /*
-        //ensure queues/binds and subscribe to instance events
-        next=>{
-            logger.debug("subscribing to instance event");
-            acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
-                logger.debug("binding wf.instance > warehouse.instance");
-                instance_q.bind('wf.instance', '#');
-                instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
-                    handle_instance(instance, err=>{
-                        if(err) {
-                            logger.error(err)
-                            //continue .. TODO - maybe I should report the failed event to failed queue?
-                        }
-                        instance_q.shift();
-                    });
-                });
-                next();
-            });
-        },
-        */
-     
         //ensure queues/binds and subscribe to task events
         next=>{
             logger.debug("subscribing to archive requests");
@@ -84,7 +56,6 @@ function subscribe() {
                 next();
             });
         },
-        
     ], err=>{
         if(err) throw err;
         logger.info("done subscribing");
@@ -100,23 +71,13 @@ function health_check() {
         maxage: 1000*60*20,  //should be double the check frequency to avoid going stale while development
     }
 
-    /*
-    if(_counts.archive == 0) {
-        report.status = "failed";
-        report.messages.push("archive counts is low");
-    }
-    */
-
     acon.queue('warehouse.archive', {passive: true}, (q, message_count, consumer_count)=>{
-        if(message_count > 20) { //too low?
+        if(message_count > 50) {
             report.status = "failed";
             report.messages.push("too many archive request:"+message_count);
         }
         rcon.set("health.warehouse.archive."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
     });
-        
-    //reset counter
-    //_counts.archive = 0;
 }
 
 function archive_dataset(msg, cb) {
@@ -155,7 +116,6 @@ function archive_dataset(msg, cb) {
 
 		next=>{
             logger.debug("running archive_task ");
-            //output.files should be found from output_id
             common.archive_task(dataset, auth, next);
 		},
     ], cb);
