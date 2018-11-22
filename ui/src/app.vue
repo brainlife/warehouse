@@ -45,7 +45,6 @@
         </div><!--header-->
 
         <b-container>
-
             <!-- detail -->
             <div v-if="tab_index == 0">
                 <b-row>
@@ -581,5 +580,4 @@ padding: 8px;
 background-color: white; 
 margin-bottom: 5px; 
 }
-
 </style>

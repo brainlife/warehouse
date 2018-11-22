@@ -52,7 +52,7 @@
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
                     <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
-                        <statusicon :status="instance.status" :scale="0.8"/>
+                        <statusicon :status="instance.status" :scale="0.75"/>
                     </div>
 
                     <timeago :since="instance.update_date" :auto-update="10" class="date"/>
@@ -561,10 +561,10 @@ opacity: 1;
 }
 
 .instance-status {
-width: 24px;
-height: 24px;
+width: 22px;
+height: 22px;
 text-align: center;
-border-radius: 12px;
+border-radius: 11px;
 display: inline-block;
 margin-right: 10px;
 background-color: gray;

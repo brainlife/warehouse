@@ -7,19 +7,21 @@
     </p>
     -->
 
-    <span class="form-header">Total Runs</span>
-    <p v-b-tooltip.hover title="Number of time this App was requested.">
+    <span class="form-header" v-b-tooltip.hover="'Number of time this App was requested by all users.'">Total Runs</span>
+    <p>
         {{info.counts.requested||0}}
     </p>
 
-    <span class="form-header">Users</span>
-    <p v-b-tooltip.hover title="Number of unique users who ran this App.">
+    <span class="form-header" v-b-tooltip.hover title="Number of unique users who ran this App.">Users</span>
+    <p>
         {{info.users}}
     </p>
 
     <div v-if="info.success_rate">
-        <span class="form-header">Success Rate</span>
-        <p v-b-tooltip.hover title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+        <span class="form-header" v-b-tooltip.hover title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+            Success Rate
+        </span>
+        <p>
             <svg width="50px" height="50px">
                 <circle :r="100/(2*Math.PI)" cx="25" cy="25" fill="transparent" stroke="#dc3545" stroke-width="9"/>
                 <circle :r="100/(2*Math.PI)" cx="25" cy="25" fill="transparent" stroke="#28a745" stroke-width="10" :stroke-dasharray="info.success_rate+' '+(100-info.success_rate)" stroke-dashoffset="25"/>
