@@ -91,7 +91,7 @@ margin: 10px;
 }
 
 .page-header {
-height: 40px;
+height: 45px;
 }
 .page-header,
 .page-content {
@@ -214,6 +214,10 @@ border-top: none;
 /*------------------------------------------------------------*/
 /* update bootstrap default tab */
 
+.brainlife-tab {
+min-height: 45px;
+padding-top: 5px;
+}
 .brainlife-tab .nav-tabs {
 border: none;
 background-color: white;
@@ -276,6 +280,17 @@ z-index: 20;
 height: 60px;
 position: relative;
 }
+/*
+.brainlife-modal-footer {
+background-color: white;
+padding: 10px 20px;
+height: 60px;
+position: fixed;
+bottom: 30px;
+box-shadow: inset 0 2px 2px rgba(0,0,0,0.1);
+width: 100%;
+}
+*/
 small {
 font-size: 85%;
 opacity: 0.7;

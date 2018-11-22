@@ -14,6 +14,8 @@
         <instanceselecter/>
         <archiver/>
         <taskinfo/>
+        <appsubmit/>
+        <dsimport/>
     </div>
 </div>
 </template>
@@ -32,12 +34,14 @@ import archiver from '@/modals/archiver'
 import agreements from '@/modals/agreements'
 import downscript from '@/modals/downscript'
 import taskinfo from '@/modals/taskinfo'
+import appsubmit from '@/modals/appsubmit'
+import dsimport from '@/modals/dsimport'
 
 export default {
     components: {
         viewselecter, dataset, datatype, 
         uploader, datasetselecter, instanceselecter, 
-        archiver, agreements, downscript, taskinfo,
+        archiver, agreements, downscript, taskinfo, appsubmit, dsimport,
     },
     data() {
         return {

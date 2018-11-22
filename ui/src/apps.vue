@@ -190,7 +190,11 @@ export default {
 
                 if(!this.query) {
                     //find most recently created apps as *new apps*
-                    res.body.apps.sort((a,b)=>{
+                    res.body.apps.filter(a=>{
+                        //only find apps that has non-0 success rate
+                        if(a.stats && a.stats.success_rate > 0) return true;
+                        return false;
+                    }).sort((a,b)=>{
                         if(a.create_date < b.create_date) return 1; 
                         if(a.create_date > b.create_date) return -1; 
                         return 0; 

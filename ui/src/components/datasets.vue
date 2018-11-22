@@ -267,6 +267,15 @@ export default {
 
         let subid = this.$route.params.subid;
         if(subid) this.$root.$emit('dataset.view', {id: subid, back: './'});
+
+        if(Vue.config.debug) {
+            document.addEventListener('keydown', (event) => {
+                const keyName = event.key;
+                if(keyName == 'd') {
+                    this.$root.$emit('dsimport.open', {});
+                }
+            });
+        }
     },
 
     watch: {
@@ -865,7 +874,7 @@ export default {
 <style scoped>
 
 .header {
-margin-top: 40px;
+margin-top: 45px;
 padding: 10px;
 color: #999;
 overflow: hidden;
@@ -890,7 +899,7 @@ color: #999;
 
 .content {
 transition: 0.2s right, 0.2s bottom, 0.2s left;
-top: 95px;
+top: 100px;
 overflow-x: hidden;
 font-size: 12px;
 padding-left: 10px;

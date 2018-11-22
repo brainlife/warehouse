@@ -628,7 +628,7 @@ background-color: #eee;
 }
 
 .header {
-top: 90px;
+top: 95px;
 padding: 10px;
 margin: 0px 20px;
 color: #999;
@@ -637,7 +637,7 @@ z-index: 1; /*needed to make sort order dropdown box to show up on top of page-c
 height: 40px;
 }
 .content {
-top: 90px;
+top: 95px;
 margin-top: 40px;
 overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
 }

@@ -1,86 +1,115 @@
 <template>
-<b-form @submit="submit" v-if="app">
-    <b-alert :show="this.no_resource" style="margin-bottom: 10px;">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
+<transition name="fade">
+<div v-if="open" class="brainlife-modal-overlay">
+<b-container class="brainlife-modal">
+    <div class="brainlife-modal-header">
+        <div style="float: right;">
+            <div class="button" @click="open = false" style="margin-left: 20px; opacity: 0.8;">
+                <icon name="times" scale="1.5"/>
+            </div>
+        </div>
+        <h4 style="margin-top: 8px;">Execute App</h4>
+    </div><!--header-->
 
-    <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
-        <b-col cols="3">
-            <small style="float: right;" class="text-muted">{{input.id}}</small>
-            <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+    <b-form v-if="app" class="submit-form" @submit="submit">
+        <b-alert :show="this.no_resource" style="margin-bottom: 10px;">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
 
-            <span v-if="!input.optional">*</span>
-            <span class="text-muted" v-else>(optional)</span>
-        </b-col>
-        <b-col>
-            <b-row v-for="(item, idx) in form.inputs[input.id]" :key="idx" style="margin-bottom: 5px;">
-                <b-col cols="5">
-                    <projectselecter 
-                        v-model="form.projects[input.id]" 
-                        :datatype="input.datatype"
-                        :datatype_tags="input.datatype_tags"
-                        :required="true"
-                        placeholder="Select Project" 
-                        @input="form.inputs[input.id][idx] = null"/>
-                </b-col>
-                <b-col cols="6">
-                    <select2 
-                        v-if="form.projects[input.id]"
-                        v-model="form.inputs[input.id][idx]" 
-                        :dataAdapter="debounce_fetch_datasets(input)" 
-                        :allowClear="input.optional"
-                        :multiple="false" 
-                        :placeholder="'Select Input Dataset'" 
-                        :options="form.options[input.id]"/>
-                </b-col>
-                <b-col cols="1" v-if="input.multi">
-                    <div class="button button-danger" @click="form.inputs[input.id].splice(idx, 1)" size="sm"><icon name="trash"/></div>
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col cols="5">
-                    <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
-                </b-col>
-                <b-col cols="6" style="text-align:right;">
-                    <b-button :size="'sm'" :variant="'secondary'" @click="form.inputs[input.id].push(null)" v-if="input.multi">Add Dataset</b-button>
-                </b-col>
-            </b-row>
-        </b-col>
-    </b-row>
+        <p>
+            <app :app="app" :clickable="false" style="margin: -20px; margin-bottom: 0px;"/>
+        </p>
+        <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
+            <b-col cols="3">
+                <small style="float: right;" class="text-muted">{{input.id}}</small>
+                <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+
+                <span v-if="!input.optional">*</span>
+                <span class="text-muted" v-else>(optional)</span>
+            </b-col>
+            <b-col>
+                <b-row v-for="(item, idx) in form.inputs[input.id]" :key="idx" style="margin-bottom: 5px;">
+                    <b-col cols="5">
+                        <projectselecter 
+                            v-model="form.projects[input.id]" 
+                            :datatype="input.datatype"
+                            :datatype_tags="input.datatype_tags"
+                            :required="true"
+                            placeholder="Select Project" 
+                            @input="form.inputs[input.id][idx] = null"/>
+                    </b-col>
+                    <b-col cols="6">
+                        <select2 
+                            v-if="form.projects[input.id]"
+                            v-model="form.inputs[input.id][idx]" 
+                            :dataAdapter="debounce_fetch_datasets(input)" 
+                            :allowClear="input.optional"
+                            :multiple="false" 
+                            :placeholder="'Select Input Dataset'" 
+                            :options="form.options[input.id]"/>
+                    </b-col>
+                    <b-col cols="1" v-if="input.multi">
+                        <div class="button button-danger" @click="form.inputs[input.id].splice(idx, 1)" size="sm"><icon name="trash"/></div>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col cols="5">
+                        <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
+                    </b-col>
+                    <b-col cols="6" style="text-align:right;">
+                        <b-button :size="'sm'" :variant="'secondary'" @click="form.inputs[input.id].push(null)" v-if="input.multi">Add Dataset</b-button>
+                    </b-col>
+                </b-row>
+            </b-col>
+        </b-row>
+        
+        <configform :spec="app.config" v-model="form.config"/>
+        <hr>
+
+        <b-row>
+            <b-col class="text-muted" cols="3">Project *</b-col>
+            <b-col>
+                <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in" :required="true"/> 
+                <small class="text-muted">Project where you want to create a new process to execute this App.</small>
+            </b-col>
+        </b-row>
+        <br>
+
+        <b-row>
+            <b-col cols="3" class="text-muted">Description</b-col>
+            <b-col>
+                <b-form-textarea v-model="form.desc"
+                     placeholder="Optional description for this processing"
+                     :rows="3"
+                     :max-rows="6"/>
+                <br>
+            </b-col>
+        </b-row>
+        
+        <advanced :app='app' v-model='form.advanced'></advanced>
     
-    <configform :spec="app.config" v-model="form.config"/>
-    <hr>
+        <hr>
+        <b-row>
+            <b-col cols="3" class="text-muted"></b-col>
+            <b-col>
+                <b-button variant="primary" type="submit" style="float: right;">Submit</b-button>
+            </b-col>
+        </b-row>
+        <!--
+        <hr>
+        <b-row>
+            <b-col cols="3"></b-col>
+            <b-col>
+                <div style="float: right">
+                    <b-button variant="primary" type="submit">Submit</b-button>
+                </div>
+            </b-col>
+        </b-row>
+        <br>
+        -->
+    </b-form>
 
-    <b-row>
-        <b-col class="text-muted" cols="3">Project *</b-col>
-        <b-col>
-            <projectselecter canwrite="true" v-model="project" placeholder="Project you'd like to run this process in" :required="true"/> 
-            <small class="text-muted">Project where you want to create a new process to execute this App.</small>
-        </b-col>
-    </b-row>
-    <br>
-
-    <b-row>
-        <b-col cols="3" class="text-muted">Description</b-col>
-        <b-col>
-            <b-form-textarea v-model="form.desc"
-                 placeholder="Optional description for this processing"
-                 :rows="3"
-                 :max-rows="6"/>
-            <br>
-        </b-col>
-    </b-row>
-    
-    <advanced :app='app' v-model='form.advanced'></advanced>
-
-    <br>
-    <br>
-    <br>
-    <div class="page-footer">
-        <b-container>
-            <b-button variant="primary" type="submit">Submit</b-button>
-        </b-container>
-    </div>
-
-</b-form>
+</b-container>
+</div>
+</transition>
 </template>
 
 <script>
@@ -113,12 +142,13 @@ export default {
         app, datatypetag, configform, advanced
     },
 
-    props: [ "id" ], //appid
+    //props: [ "id" ], //appid
 
     data () {
         return {
-            project: null,
+            open: false,
 
+            project: null,
             app: null,
             no_resource: false,
 
@@ -140,34 +170,46 @@ export default {
         }
     },
 
-    mounted: function() {
-        console.log("mounted");
+    created() {
+        this.$root.$on("appsubmit.open", _id=>{
+            //load app detail
+            return this.$http.get('app', {params: {
+                find: JSON.stringify({_id}),
+                populate: 'inputs.datatype outputs.datatype',
+            }})
+            .then(res=>{
+                this.app = res.body.apps[0];
+                this.github_branch = this.app.github_branch || 'master';
 
-        //load app detail
-        return this.$http.get('app', {params: {
-            find: JSON.stringify({_id: this.id}),
-            populate: 'inputs.datatype outputs.datatype',
-        }})
-        .then(res=>{
-            this.app = res.body.apps[0];
-            this.github_branch = this.app.github_branch || 'master';
+                //initialize input datasets array (with null as first item)
+                for(var idx in this.app.inputs) {
+                    var input = this.app.inputs[idx];
+                    Vue.set(this.form.inputs, input.id, [null]);
+                }
 
-            //initialize input datasets array (with null as first item)
-            for(var idx in this.app.inputs) {
-                var input = this.app.inputs[idx];
-                Vue.set(this.form.inputs, input.id, [null]);
-            }
-
-            return this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
-                service: this.app.github
-            }});
-        })
-        .then(res => {
-            this.no_resource = !res.body.resource;
-        })
-        .catch(err=>{
-            console.error(err);
+                return this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
+                    service: this.app.github
+                }});
+            })
+            .then(res => {
+                this.no_resource = !res.body.resource;
+                this.open = true;
+            })
+            .catch(err=>{
+                console.error(err);
+            });
         });
+
+        //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
+        document.addEventListener("keydown", e => {
+            if (e.keyCode == 27) {
+                this.open = false;
+            }
+        });
+    },
+
+    destroyed() {
+        this.$root.$off("appsubmit.open");
     },
 
     methods: {
@@ -343,6 +385,10 @@ export default {
         submit: function(evt) {
             evt.preventDefault();
             if(!this.validate()) return;
+
+            //prevent double submit
+            if(!this.open) return; 
+            this.open = false;
 
             //remove null inputs 
             this.app.inputs.forEach(input=>{
@@ -541,6 +587,7 @@ export default {
 </script>
 
 <style scoped>
+/*
 h4 {
 margin-top: 20px;
 opacity: 0.6;
@@ -548,5 +595,16 @@ padding-bottom: 10px;
 border-bottom: 1px solid #ddd;
 font-size: 18px;
 font-weight: bold;
+}
+*/
+.submit-form {
+position: absolute;
+left: 0px;
+right: 0px;
+top: 60px;
+padding: 20px;
+bottom: 0px;
+overflow: auto;
+background-color: #f9f9f9;
 }
 </style>
