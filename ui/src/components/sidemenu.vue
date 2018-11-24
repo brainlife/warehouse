@@ -20,17 +20,17 @@
             <icon name="brands/leanpub" scale="1.3"/>
             <h4>Publications</h4>
         </li>
+        <li @click="go('/datatypes')"
+            :class="{active: active == '/datatypes'}">
+            <icon name="cube" scale="1.3"/>
+            <h4>Datatypes</h4>
+        </li>
 
         <!-- only for authenticated users -->
         <li v-if="config.user" @click="go('/project')"
             :class="{active: active == '/projects'}">
             <icon name="shield-alt" scale="1.3"/>
             <h4>Projects</h4>
-        </li>
-        <li v-if="config.user && config.debug" @click="go('/datatypes')"
-            :class="{active: active == '/datatypes'}">
-            <icon name="cube" scale="1.3"/>
-            <h4>Datatypes</h4>
         </li>
         
         <li v-if="config.user" @click="setting">
@@ -40,7 +40,7 @@
     </ul>
 
     <!--admin items-->
-    <ul class="items" v-if="is_admin">
+    <ul class="items" v-if="config.is_admin">
         <li class="divider"></li>
         <li @click="go('/admin')"
             :class="{active: active == '/admin'}">
@@ -74,6 +74,7 @@ export default {
 	mounted: function() {
 	},
     computed: {
+        /*
         is_admin: function() {
             if( Vue.config.user && 
                 Vue.config.user.scopes.warehouse && 
@@ -82,6 +83,7 @@ export default {
                 ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
             return false;
         }
+        */
     },
     methods: {
         setting() {

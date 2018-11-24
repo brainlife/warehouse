@@ -11,7 +11,7 @@
             <div v-for="(output, idx) in task.config._outputs" :key="idx">
                 <b>{{output.meta.subject}}</b>
                 <small v-if="output.meta.session" style="opacity: 0.8">/ {{output.meta.session}}</small>
-                <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
+                <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" :clickable="false"/>
             </div>
         </div>
     </div>

@@ -427,7 +427,7 @@ export default {
                 });
                 finds.push({$and: ands});
             }
-            console.dir(finds);
+            //console.dir(finds);
             return finds;
         },
 
@@ -491,7 +491,7 @@ export default {
                     this.page_info.push({top: prev, bottom: h, height: h-prev, visible: true});
                     this.loading = null;
                 });
-                console.log("done loading");
+                //console.log("done loading");
                 
             }, err=>{
                 console.error(err);

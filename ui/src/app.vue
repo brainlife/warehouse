@@ -71,7 +71,7 @@
                                 <!--input-->
                                 <b-col>
                                     <!--<p v-else class="text-primary">This App runs with the following input dataset.</p>-->
-                                    <div style="height: 100%; background-color: rgba(0, 123, 255, 0.2);">
+                                    <div style="height: 100%; background-color: #cce5ff;">
                                         <div style="background-color: #007bff; color: white; padding: 5px; font-weight: bold;">Input</div>
                                         <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
                                         <div v-if="app.inputs" style="padding: 5px">
@@ -118,7 +118,7 @@
                                 <!--output-->
                                 <b-col>
                                     <icon name="arrow-right" style="position: absolute; top: 50%; left: -10px; opacity: 0.5" scale="1.5"/>
-                                    <div style="height: 100%; background-color: rgba(40, 167, 69, 0.2)">
+                                    <div style="height: 100%; background-color: #d4edda">
                                         <div style="background-color: #28a745; color: white; padding: 5px; font-weight: bold">Output</div>
                                         <b-alert show variant="success" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
                                         <div v-if="app.outputs" style="padding: 5px;">
@@ -253,7 +253,6 @@
                             <vue-markdown :source="readme" class="readme"></vue-markdown>
                         </div>
 
-                        <hr>
                         <vue-disqus shortname="brain-life" :identifier="app._id"/>
 
                     </b-col>
