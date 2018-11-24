@@ -85,27 +85,6 @@
 
                 <b-row>
                     <b-col cols="2">
-                        <span class="form-header">Visualizer</span>
-                    </b-col>
-                    <b-col>
-                        <p v-if="selected.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
-                        <div class="ui" v-for="ui in selected.uis" :keys="ui._id">
-                            <b-card 
-                                :header-bg-variant="ui.docker?'success':'dark'" 
-                                header-text-variant="white" 
-                                :header="ui.name" 
-                                class="card" 
-                                style="max-width: 25rem;"
-                                :img-src="ui.avatar"> 
-                                <p class="card-text">{{ui.desc}}</p>
-                            </b-card>
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row>
-                    <b-col cols="2">
                         <span class="form-header">Files/Dirs</span>
                     </b-col>
                     <b-col>
@@ -141,6 +120,29 @@
                             </b-col>
                         </b-row>
 
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Visualizer</span>
+                    </b-col>
+                    <b-col>
+                        <p v-if="selected.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
+                        <b-row>
+                            <b-col :cols="4" class="ui" v-for="ui in selected.uis" :keys="ui._id">
+                                <b-card 
+                                    :header-bg-variant="ui.docker?'success':'dark'" 
+                                    header-text-variant="white" 
+                                    :header="ui.name" 
+                                    class="card" 
+                                    style="max-width: 25rem; margin-bottom: 20px;"
+                                    :img-src="ui.avatar"> 
+                                    <p class="card-text">{{ui.desc}}</p>
+                                </b-card>
+                            </b-col>
+                        </b-row>
                         <br>
                     </b-col>
                 </b-row>
