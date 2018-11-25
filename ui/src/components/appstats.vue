@@ -6,37 +6,42 @@
         <statustag status="ok"/>
     </p>
     -->
-
-    <span class="form-header" v-b-tooltip.hover="'Number of time this App was requested by all users.'">Total Runs</span>
     <p>
-        {{info.counts.requested||0}}
-    </p>
-
-    <span class="form-header" v-b-tooltip.hover title="Number of unique users who ran this App.">Users</span>
-    <p>
-        {{info.users}}
-    </p>
-
-    <div v-if="info.success_rate">
-        <span class="form-header" v-b-tooltip.hover title="finished/(failed+finished). Same request could be re-submitted / rerun.">
-            Success Rate
+        <span v-b-tooltip.hover="'Number of time this App was requested by all users.'" style="margin-right: 5px;">
+            <icon name="paper-plane"/>&nbsp;
+            {{info.counts.requested||0}}
         </span>
-        <p>
-            <svg width="50px" height="50px">
-                <circle :r="100/(2*Math.PI)" cx="25" cy="25" fill="transparent" stroke="#dc3545" stroke-width="9"/>
-                <circle :r="100/(2*Math.PI)" cx="25" cy="25" fill="transparent" stroke="#28a745" stroke-width="10" :stroke-dasharray="info.success_rate+' '+(100-info.success_rate)" stroke-dashoffset="25"/>
+    </p>
+    <p>
+
+        <span v-b-tooltip.hover title="Number of unique users who ran this App." style="margin-right: 5px;">
+            <icon name="user"/>&nbsp;
+            {{info.users}}
+        </span>
+    </p>
+    <p>
+
+        <!--<span class="form-header">Avg. Runtime</span>-->
+        <span title="Avg. Runtime">
+            <icon name="clock"/>
+            {{Math.round(info.runtime_mean/(1000*60))}} <small style="opacity: 0.8">(&plusmn;{{Math.round(info.runtime_std/(1000*60))}})</small> mins
+        </span>
+    </p>
+    <p>
+
+        <span v-if="info.success_rate" style="position: relative" v-b-tooltip.hover title="Success Rate. finished/(failed+finished). Same request could be re-submitted / rerun.">
+            <svg width="20" height="20">
+                <circle :r="40/(2*Math.PI)" cx="10" cy="10" fill="transparent" stroke="#dc3545" stroke-width="3"/>
+                <circle :r="40/(2*Math.PI)" cx="10" cy="10" fill="transparent" stroke="#28a745" stroke-width="3" :stroke-dasharray="info.success_rate*(40/100)+' '+(100-info.success_rate)*(40/100)" stroke-dashoffset="0"/>
             </svg>
             {{info.success_rate.toFixed(1)}}%
             <!--
                 <span :class="success_rate_color" v-if="info.success_rate">{{info.success_rate.toFixed(1)}}%</span>
             -->
-        </p>
-    </div>
-
-    <span class="form-header">Avg. Runtime</span>
-    <p>
-        {{Math.round(info.runtime_mean/(1000*60))}} <small style="opacity: 0.8">(&plusmn;{{Math.round(info.runtime_std/(1000*60))}})</small> mins
+        </span>
     </p>
+
+
 </div>
 </template>
 

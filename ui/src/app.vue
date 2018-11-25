@@ -49,18 +49,19 @@
             <div v-if="tab_index == 0">
                 <b-row>
                     <b-col cols="3">
-                        <span class="form-header">Registered At</span>
-                        <p>
-                            {{new Date(app.create_date).toLocaleDateString()}}
-                        </p>
-                        <p>
-                            <contact :id="app.user_id" size="small"/>
-                        </p>
-
-                        <appstats :info="info"/>
                         <p>
                             <doibadge :doi="app.doi" v-if="app.doi"/>
                         </p>
+                        <p> 
+                            <icon name="calendar"/> {{new Date(app.create_date).toLocaleDateString()}}
+                        </p>
+                        <!--
+                        <p>
+                            <contact :id="app.user_id" size="small"/> 
+                        </p>
+                        -->
+                        <appstats :info="info"/>
+
                     </b-col>
                     <b-col cols="9">
                         <!--input/output-->

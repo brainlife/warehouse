@@ -20,13 +20,13 @@
             </div>
             <h4>neuro/</h4> 
             <b-card-group columns style="margin: 10px;">
-                <b-card no-body v-for="datatype in get_datatypes('neuro/')" @click="select(datatype)" class="datatype-card">
+                <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
                     <datatype :datatype="datatype"/>
                 </b-card>
             </b-card-group>
             <h4>other</h4> 
             <b-card-group columns style="margin: 10px;">
-                <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" @click="select(datatype)" class="datatype-card">
+                <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
                     <datatype :datatype="datatype"/>
                 </b-card>
             </b-card-group>
