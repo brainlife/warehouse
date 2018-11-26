@@ -271,7 +271,7 @@ export default {
         if(Vue.config.debug) {
             document.addEventListener('keydown', (event) => {
                 const keyName = event.key;
-                if(keyName == 'd') {
+                if(keyName == 'z') {
                     this.$root.$emit('dsimport.open', {});
                 }
             });
