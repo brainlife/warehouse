@@ -404,7 +404,7 @@ export default {
                         range: [begin_date, end_date],
                     },
                     yaxis: {
-                        title: 'GB',
+                        title: 'MB',
                         overlaying: "y",
                         //side: "right",
                         type: 'log',

@@ -1,25 +1,27 @@
 <template>
 <b-modal :no-close-on-backdrop='true' title="Select Viewer" ref="modal" id="viewSelecter" size="lg" hide-footer>
-    <b-row>
-        <b-col cols="4" v-for="(view, idx) in views" :key="idx" style="margin-bottom: 20px;">
-            <b-card 
-                :header-bg-variant="view.docker?'success':'dark'" 
-                header-text-variant="white" 
-                :header="view.name" 
-                @click="select(view)" 
-                class="card" 
-                style="max-width: 25rem;"
-                :img-src="view.avatar"> 
-                <p class="card-text">{{view.desc}}</p>
-            </b-card>
-        </b-col>
-    </b-row>
-    <div v-if="datatype" style="opacity: 0.7">
-        <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+datatype.name+' datatype&body=Hello. Please add ??? UI to handle this datatype.'" target="_blank" style="float: right;">Suggest a new visualization tool</a>
-        <h4>
-            <b-badge variant="dark">Web UI</b-badge>
-            <b-badge variant="success">Docker</b-badge>
-        </h4>
+    <div v-if="datatype">
+        <b-row>
+            <b-col cols="4" v-for="(view, idx) in datatype.uis" :key="idx" style="margin-bottom: 20px;">
+                <b-card 
+                    :header-bg-variant="view.docker?'success':'dark'" 
+                    header-text-variant="white" 
+                    :header="view.name" 
+                    @click="select(view)" 
+                    class="card" 
+                    style="max-width: 25rem;"
+                    :img-src="view.avatar"> 
+                    <p class="card-text">{{view.desc}}</p>
+                </b-card>
+            </b-col>
+        </b-row>
+        <div style="opacity: 0.7">
+            <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+datatype.name+' datatype&body=Hello. Please add ??? UI to handle this datatype.'" target="_blank" style="float: right;">Suggest a new visualization tool</a>
+            <h4>
+                <b-badge variant="dark">Web UI</b-badge>
+                <b-badge variant="success">Docker</b-badge>
+            </h4>
+        </div>
     </div>
 </b-modal>
 </template>
@@ -54,9 +56,8 @@ export default {
             datatype: null,
             task: null, 
             subdir: null,
-
             config: Vue.config,
-            view_catalog: {}, 
+            //view_catalog: {}, 
         } 
     },
     mounted() {
@@ -68,6 +69,7 @@ export default {
         });
 
         //TODO - move to db (part of datatype?)
+        /*
         var catalog = [
             {
                 ui: "raw",
@@ -77,16 +79,6 @@ export default {
                 datatypes: [], //supported by all
             },
 
-            /*
-            {   
-                ui: "lifeview",
-                name: "Life Tract View",
-                desc: "Show non-0 weight tracts with varying colors based on weight.",
-                avatar: "https://brainlife.io/images/ui-logos/ui-lifeview.png",
-                datatypes: [ "neuro/life" ],
-            },
-            */
-
             {
                 ui: "lifestats",
                 name: "Life Stats",
@@ -94,7 +86,6 @@ export default {
                 avatar: "https://brainlife.io/images/ui-logos/lifestat.png",
                 datatypes: [ "neuro/life" ],
             },
-
             {
                 ui: "t1pdd",
                 name: "dtiInit T1PDD",
@@ -188,17 +179,6 @@ export default {
                 datatypes: [ "neuro/conneval" ],
             },
 
-            /*
-            {
-                ui: "conn",
-                name: "CONN",
-                desc: "A Matlab-based cross-platform software for the computation, display, and analysis of functional connectivity in fMRI (fcMRI).",
-                avatar: "https://brainlife.io/images/ui-logos/conn.png",
-                docker: true,
-                datatypes: [ "raw" ], 
-            },
-            */
-
             {
                 ui: "surfaces",
                 name: "3D Surfaces",
@@ -206,16 +186,17 @@ export default {
                 avatar: "https://brainlife.io/images/ui-logos/surfaces.png",
                 datatypes: [ "neuro/3Dsurfaces" ], 
             },
-
         ];
         
         //organize into object so that I can lookup via ui name
         catalog.forEach(view=>{
             this.view_catalog[view.ui] = view;
         });
+        */
     },
 
     computed: {
+        /*
         views() {
             if(!this.datatype || !this.datatype.name) return [];
             var views = [];
@@ -230,6 +211,7 @@ export default {
             }
             return views;
         }
+        */
     },
 
 	methods: {

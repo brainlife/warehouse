@@ -126,6 +126,7 @@ Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.productionTip = false
 
+
 Vue.http.options.root = Vue.config.api; //default root for $http
 
 if (process.env.NODE_ENV == "development") {
@@ -140,6 +141,18 @@ function jwt_decode_brainlife(jwt) {
     //let's just covert it to string 
     Vue.config.user.sub = Vue.config.user.sub.toString();
     Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
+
+    Vue.config.is_admin = isadmin();
+    if(Vue.config.is_admin) console.log("user is admin!");
+}
+
+function isadmin() {
+    if( Vue.config.user && 
+        Vue.config.user.scopes.warehouse && 
+        ~Vue.config.user.scopes.warehouse.indexOf('admin') &&
+        Vue.config.user.scopes.amaretti && 
+        ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
+    return false;
 }
 
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user

@@ -23,11 +23,11 @@
                 <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
                 <div class="datatypes">
                     <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id">
-                        <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                        <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false"/>
                     </div>
                     <icon scale="0.7" name="arrow-right"/>
                     <div class="datatype" v-for="output in app_.outputs" :key="'output.'+output.id">
-                        <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
+                        <datatypetag :datatype="output.datatype" :tags="output.datatype_tags" :clickable="false"/>
                     </div>
                     <span style="opacity: 0.7" v-if="app_.outputs.length == 0">(no output)</span>
                 </div>

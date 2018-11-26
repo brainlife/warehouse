@@ -190,17 +190,14 @@ export default {
 
                 if(!this.query) {
                     //find most recently created apps as *new apps*
-                    res.body.apps.filter(a=>{
+                    let apps = res.body.apps.filter(a=>{
                         //only find apps that has non-0 success rate
                         if(a.stats && a.stats.success_rate > 0) return true;
                         return false;
-                    }).sort((a,b)=>{
-                        if(a.create_date < b.create_date) return 1; 
-                        if(a.create_date > b.create_date) return -1; 
-                        return 0; 
                     });
+                    apps.sort((a,b)=>new Date(b.create_date) - new Date(a.create_date));
                     this.sorted_tags.unshift('_new');
-                    this.app_groups._new = res.body.apps.slice(0, 3);
+                    this.app_groups._new = apps.slice(0, 3);
                 }
 
                 this.$nextTick(()=>{

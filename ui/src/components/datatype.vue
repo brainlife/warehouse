@@ -35,15 +35,16 @@ export default {
         return {
             activeSections: ['files']
         }
+    },
+    /*
+    methods: {
+        click() {
+            this.$router.push('/datatypes/'+this.datatype._id);
+        },
     }
+    */
 }
 </script>
 
 <style scoped>
-.datatype {
-    font-size:15px;
-    text-overflow:ellipsis;
-    overflow:hidden;
-    white-space:normal !important;
-}
 </style>

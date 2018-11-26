@@ -265,7 +265,7 @@ export default {
     created() {
         console.log("modal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", opt=>{
-            console.log("opening dataset", opt);
+            //console.log("opening dataset", opt);
             this.back = opt.back;
             this.load(opt.id);
         });
@@ -517,7 +517,13 @@ export default {
 
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
-                populate: "project datatype prov.deps.dataset",
+                populate: JSON.stringify({
+                    path: "project datatype prov.deps.dataset",
+                    populate: {
+                        path: "uis",
+                        model: "UIs",
+                    }
+                }),
             }})
             .then(res=>{
                 if(res.body.count == 0) {
@@ -525,6 +531,8 @@ export default {
                     return;
                 }
                 this.dataset = res.body.datasets[0];
+                console.log("dataset loaded");
+                console.dir(this.dataset);
                 if(this.dataset.status == "storing") this.load_status(id);
 
                 Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
@@ -557,12 +565,12 @@ export default {
                 if(this.dataset.publications) {
                     find["releases._id"] = {$in: this.dataset.publications};
                 }
-                console.dir(find);
+                //console.dir(find);
                 return this.$http.get('pub', {params: {
                     find: JSON.stringify(find),
                 }});
             }).then(res=>{
-                console.dir(res.body.pubs);
+                //console.dir(res.body.pubs);
                 this.$set(this.dataset, '_pubs', res.body.pubs);
                 
              }).catch(err=>{
@@ -583,6 +591,7 @@ export default {
         },
 
         start_viewer(datatype) {
+            //console.dir(datatype);
             this.check_agreements(this.dataset.project, ()=>{
                 this.find_staged_task((task, subdir)=>{
                     if(task) {
@@ -608,7 +617,7 @@ export default {
                 limit: 1,
             }}).then(res=>{
                 if(res.body.tasks[0]) {
-                    console.log("found staging task!");
+                    //console.log("found staging task!");
                     return cb(res.body.tasks[0], this.dataset._id);
                 }
 

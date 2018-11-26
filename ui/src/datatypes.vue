@@ -12,20 +12,25 @@
 
     <div class="page-content" ref="scrolled">
         <div v-if="!selected">
-            <h3>Datatypes</h3>
-            <h4>Neuro/</h4> 
+            <div class="header">
+                <h2>Datatypes</h2>
+                <p style="opacity: 0.7;">
+                    Datatypes allows Apps to exchange data. Currently only the administrator can register new datatypes.
+                </p>
+            </div>
+            <h4>neuro/</h4> 
             <b-card-group columns style="margin: 10px;">
-                <b-card no-body v-for="datatype in get_datatypes('neuro/')" @click="select(datatype)" class="datatype-card">
+                <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
                     <datatype :datatype="datatype"/>
                 </b-card>
             </b-card-group>
-            <h4>Other</h4> 
+            <h4>other</h4> 
             <b-card-group columns style="margin: 10px;">
-                <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" @click="select(datatype)" class="datatype-card">
+                <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
                     <datatype :datatype="datatype"/>
                 </b-card>
             </b-card-group>
-            <b-button class="button-fixed" @click="newdatatype" title="New Datatype">
+            <b-button v-if="config.is_admin" class="button-fixed" @click="newdatatype" title="New Datatype">
                 <icon name="plus" scale="2"/>
             </b-button>
         </div>
@@ -69,22 +74,12 @@
                         <p><small style="opacity: 0.5">Users who are responsible for this datatype.</small></p>
                         <contactlist v-if="editing" v-model="selected.admins"></contactlist>
                         <div v-else>
-                            <p v-if="!selected.admins || selected.admins.length == 0" style="opacity: 0.8">No admins.</p>
+                            <p v-if="!selected.admins || selected.admins.length == 0" style="opacity: 0.8">No admins</p>
                             <p v-for="admin in selected.admins" :key="admin._id">
                                 <contact :id="admin"/>
                             </p>
                         </div>
                         <br>
-                    </b-col>
-                </b-row>
-
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Visualizer</span>
-                    </b-col>
-                    <b-col>
-                        {{uis}}
-                        <!--TODO-->
                     </b-col>
                 </b-row>
 
@@ -129,6 +124,29 @@
                     </b-col>
                 </b-row>
 
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Visualizer</span>
+                    </b-col>
+                    <b-col>
+                        <p v-if="selected.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
+                        <b-row>
+                            <b-col :cols="4" class="ui" v-for="ui in selected.uis" :keys="ui._id">
+                                <b-card 
+                                    :header-bg-variant="ui.docker?'success':'dark'" 
+                                    header-text-variant="white" 
+                                    :header="ui.name" 
+                                    class="card" 
+                                    style="max-width: 25rem; margin-bottom: 20px;"
+                                    :img-src="ui.avatar"> 
+                                    <p class="card-text">{{ui.desc}}</p>
+                                </b-card>
+                            </b-col>
+                        </b-row>
+                        <br>
+                    </b-col>
+                </b-row>
+
                 <b-row v-if="selected.bids.maps.length > 0">
                     <b-col cols="2">
                         <span class="form-header">BIDS Export</span>
@@ -156,7 +174,7 @@
                         <br>
 
                         <p>
-                            <small style="opacity: 0.5">The following Apps uses this datatype for output.</small>
+                            <small style="opacity: 0.5">The following Apps outputs this datatype.</small>
                         </p>
                         <div class="apps-container">
                             <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
@@ -222,7 +240,7 @@ export default {
             apps: [], //apps that uses selected datatype
             adhoc_datatype_tags: [], //datatype tags associated with selected datatype
 
-            uis: [],  //ui catalog
+            //uis: [],  //ui catalog
             
             editing: false, 
             config: Vue.config,
@@ -233,38 +251,36 @@ export default {
         input_apps() {
             if(!this.apps) return [];
             return this.apps.filter(a=>{
-                return a.inputs.find(it=>it.datatype == this.selected._id);
+                return a.inputs.find(it=>it.datatype._id == this.selected._id);
             });
         },
         output_apps() {
             if(!this.apps) return [];
             return this.apps.filter(a=>{
-                return a.outputs.find(it=>it.datatype == this.selected._id);
+                return a.outputs.find(it=>it.datatype._id == this.selected._id);
             });
         },
         canedit() {
+            if(!Vue.config.user) return false;
             return ~this.selected.admins.indexOf(Vue.config.user.sub);
         }
     },
 
     mounted: function() {
+        /*
         //this.ps = new PerfectScrollbar(this.$refs.scrollable);
         this.$http.get('datatype/ui', {params: {}})
         .then(res=>{
             this.uis = res.body.uis;    
         });
+        */
 
         this.$http.get('datatype', {params: {
-            sort: 'name'
+            sort: 'name',
         }})
         .then(res=>{
             this.datatypes = res.body.datatypes;
             this.selected = this.datatypes.find(d=>d._id == this.$route.params.id);
-            /*
-            this.$nextTick(()=>{
-                this.scroll_to_selected();
-            });
-            */
         }).catch(console.error);
     },
 
@@ -336,6 +352,7 @@ export default {
                     derivatives: "",
                     maps: [],
                 },
+                uis: [],
             }
             this.editing = true;
         },
@@ -392,6 +409,7 @@ export default {
                     ]
                 }),
                 select: 'name desc inputs outputs stats github',
+                populate: 'inputs.datatype outputs.datatype', //<app> likes datatypes populated
             }}).then(res=>{
                 this.apps = res.body.apps;
             })
