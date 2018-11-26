@@ -297,6 +297,7 @@ var UISchema = mongoose.Schema({
     name: String, 
     desc: String, 
     avatar: String, //url of avatar
+    docker: { type: Boolean, default: false}, //UI runs on docker container
 });
 exports.UIs = mongoose.model('UIs', UISchema);
 

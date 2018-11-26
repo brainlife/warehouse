@@ -101,10 +101,13 @@ function health_check() {
         report.status = "failed";
         report.messages.push("task event counts is low");
     }
+
+    /* 
     if(_counts.instances == 0) {
         report.status = "failed";
         report.messages.push("instance event counts is low");
     }
+    */
 
     rcon.set("health.warehouse.event."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
 

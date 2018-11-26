@@ -36,6 +36,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     if(req.query.find) find = JSON.parse(req.query.find);
     db.Datatypes.find(find)
     .select(req.query.select)
+    .populate('uis')
     .limit(+limit)
     .skip(+skip)
     .sort(req.query.sort || '_id')
@@ -50,7 +51,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
 //get all uis registered
 router.get('/ui', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
-    logger.debug("ui query");
     db.UIs.find({})
     .lean()
     .exec((err, uis)=>{
