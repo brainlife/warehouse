@@ -891,13 +891,20 @@ router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequir
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         db.Datasets.find(construct_dataset_query(req.body, canread_project_ids))
-        .populate('datatype project', 'name admins')
+        .populate('datatype project', 'name desc readme admins bids') //mixed in with datatype/project model fields...
         //.select('meta prov tags datatype datatype_tags project.name')
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
+
+            let script = `#!/bin/bash\n
+set +x #show all commands running
+set +e #stop the script if anything fails
+
+`;
+            script += "auth=\"Authorization: "+req.headers.authorization+"\"\n"
             
-            //aggregate all projects used 
+            //find unique projects
             let projects = {};
             datasets.forEach(d=>{
                 if(!projects[d.project._id]) projects[d.project._id] = d.project;
@@ -916,47 +923,43 @@ router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequir
 "DatasetDOI": "10.0.2.3/dfjj.10"
 }*/
 
-            //construct list of all unique authors from all projects
-            let authors = [];
-            for(let project_id in projects) {
-                projects[project_id].admins.forEach(id=>{
-                    if(!~authors.indexOf(id)) authors.push(common.deref_contact(id));
-                });
-            }
-
-            let dataset_description = {
-                BIDSVersion:  "1.0.1",
-                Name: "",
-                //License: "",
-                Authors: authors.map(a=>a.fullname||a.email),
-                //Acknowledgements: "",
-                //HowToAcknowledge: "Please cite this paper: ",
-                //Funding: [],
-                ReferencesAndLinks: [],
-                //DatasetDOI: "",
-            };
-            let delim = "";
+            //construct project info
             for(let project_id in projects) {
                 let p = projects[project_id];
-                dataset_description.Name += delim + p.name;
-                dataset_description.ReferencesAndLinks.push("https://brainlife.io/project/"+project_id);
+                let authors = p.admins.map(id=>common.deref_contact(id)).map(a=>a.fullname||a.email);
 
-                delim = " - ";
+                //write README and bids/dataset_description.json
+                let root = "./proj-"+project_id;
+                script += "mkdir -p "+root+"/bids\n";
+                let readme = `${p.name}
+
+${p.desc}
+
+${p.readme}`;
+
+                script += "echo \""+readme.replace(/\"/g, '\\"')+"\" > "+root+"/README\n";
+
+                let dataset_description = {
+                    BIDSVersion:  "1.0.1",
+                    Name: p.name,
+                    //License: "",
+                    Authors: authors,
+                    //Acknowledgements: "",
+                    //HowToAcknowledge: "Please cite this paper: ",
+                    //Funding: [],
+                    ReferencesAndLinks: [
+                        config.warehouse.url+"/project/"+project_id
+                    ],
+                    //DatasetDOI: "",
+                };
+                script += "echo \""+JSON.stringify(dataset_description, null, 4).replace().replace(/\"/g, '\\"')+"\" > "+root+"/bids/dataset_description.json\n";
             }
-            console.dir(dataset_description);
             
-            let script = `#!/bin/bash\n
-set +x #show all commands running
-set +e #stop the script if anything fails
-
-`;
-            script += "echo \""+JSON.stringify(dataset_description).replace().replace(/\"/g, '\\"')+"\" > dataset_description.json\n";
-            script += "auth=\"Authorization: "+req.headers.authorization+"\"\n"
             datasets.forEach(dataset=>{
                 //construct a path to put the datasets in
-                let path=".";
-                path += "/proj-"+dataset.project._id;
+                let root = "./proj-"+dataset.project._id;
 
+                let path = root;
                 if(dataset.meta.subject) path += "/sub-"+dataset.meta.subject;
                 if(dataset.meta.session) path += ".ses-"+dataset.meta.session;
 
@@ -974,7 +977,7 @@ set +e #stop the script if anything fails
 
                 if(dataset.datatype.bids) {
                     //Create BIDS symlinks
-                    let bidspath = "bids/derivatives";
+                    let bidspath = root+"/bids/derivatives";
                     let pipeline = "upload";
                     if(dataset.prov && dataset.prov.task) {
                         switch(dataset.prov.task.service) {
@@ -1006,12 +1009,9 @@ set +e #stop the script if anything fails
                         if(dataset.meta.run) source_keywords += "_run-"+dataset.meta.run;
                         if(dataset.meta.acq) source_keywords += "_acq-"+dataset.meta.acq;
 
-                        source_keywords += "_desc-"+dataset._id; //not sure if this is BIDS.. but this makes it all dataset unique
-
                         //franco/paolo wants to add tags to desc
                         dataset.datatype_tags.forEach(tag=>{
                             source_keywords+="_tag-"+tag.replace(/_/g, ''); //_ is delimiter
-                            //source_keywords+="+"+tag.replace(/_/g, ''); //_ is delimiter
                         });
                         /* dataset tags are entered by user, so there is higher risk of invalid char corrupting the filename..
                         dataset.tags.forEach(tag=>{
@@ -1025,24 +1025,29 @@ set +e #stop the script if anything fails
                             source_keywords += "_task-"+taskname;
                         }
 
+                        source_keywords += "_desc-"+dataset._id; //not sure if this is BIDS.. but this makes it all dataset unique
+
                         let dest = source_keywords+"_"+map.dest;
                         if(map.src == "_meta_") {
                             //request for metadata!
                             if(dataset.prov) {
-                                script += "echo \""+JSON.stringify(dataset.meta).replace().replace(/\"/g, '\\"')+"\" > "+bidspath+"/"+dest+"\n";
+                                dataset.meta.BrainlifeProvURL = config.warehouse.url+"/project/"+dataset.project._id+"/dataset/"+dataset._id;
+                                script += "echo \""+JSON.stringify(dataset.meta, null, 4).replace().replace(/\"/g, '\\"')+"\" > "+bidspath+"/"+dest+"\n";
                             } else {
                                 //can't output json.. as we have no prov
                             }
                         } else {
                             //normal file / dir (will this work on windows?)
-                            
                             //figure out how to get out of bids directory and point back to the root
-                            let bidspath_exit=bidspath.split("/").reduce((ap, p)=>ap+"../", ""); 
+                            let bidspath_exit = "";
+                            for(let i = 0; i < bidspath.split("/").length-1;i++) {
+                                bidspath_exit += "../";
+                            }
                             //then resolve the src(could be glob pattern) and link it to bidspath
                             script += "ln -sf "+bidspath_exit+"$(ls "+path+"/"+map.src+") "+bidspath+"/"+dest+"\n";
                         }
                     });
-                }
+                } else script+="#no bids mapping\n";
 
                 script+="\n";
             });
