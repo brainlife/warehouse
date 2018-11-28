@@ -891,7 +891,7 @@ router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequir
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         db.Datasets.find(construct_dataset_query(req.body, canread_project_ids))
-        .populate('datatype project', 'name desc readme admins bids') //mixed in with datatype/project model fields...
+        .populate('datatype project', 'name desc readme admins members bids') //mixed in with datatype/project model fields...
         //.select('meta prov tags datatype datatype_tags project.name')
 		.lean()
 		.exec((err, datasets)=>{
@@ -926,18 +926,23 @@ set +e #stop the script if anything fails
             //construct project info
             for(let project_id in projects) {
                 let p = projects[project_id];
-                let authors = p.admins.map(id=>common.deref_contact(id)).map(a=>a.fullname||a.email);
+                let authors = [...p.admins, ...p.members];
+                authors = authors.filter((v,idx,self)=>self.indexOf(v) === idx); //uniq
+                authors = authors.map(id=>common.deref_contact(id)).map(a=>a.fullname||a.email);
 
                 //write README and bids/dataset_description.json
                 let root = "./proj-"+project_id;
                 script += "mkdir -p "+root+"/bids\n";
-                let readme = `${p.name}
+                script += "cat << '__ENDREADME__' > "+root+"/README\n";
+                script += `${p.name}
+
+${config.warehouse.url}/project/${project_id}
 
 ${p.desc}
 
-${p.readme}`;
-
-                script += "echo \""+readme.replace(/\"/g, '\\"')+"\" > "+root+"/README\n";
+${p.readme||''}`;
+                
+                script += "\n__ENDREADME__\n";
 
                 let dataset_description = {
                     BIDSVersion:  "1.0.1",
@@ -1031,7 +1036,7 @@ ${p.readme}`;
                         if(map.src == "_meta_") {
                             //request for metadata!
                             if(dataset.prov) {
-                                dataset.meta.BrainlifeProvURL = config.warehouse.url+"/project/"+dataset.project._id+"/dataset/"+dataset._id;
+                                dataset.meta.BrainlifeURL = config.warehouse.url+"/project/"+dataset.project._id+"/dataset/"+dataset._id;
                                 script += "echo \""+JSON.stringify(dataset.meta, null, 4).replace().replace(/\"/g, '\\"')+"\" > "+bidspath+"/"+dest+"\n";
                             } else {
                                 //can't output json.. as we have no prov
@@ -1044,7 +1049,7 @@ ${p.readme}`;
                                 bidspath_exit += "../";
                             }
                             //then resolve the src(could be glob pattern) and link it to bidspath
-                            script += "ln -sf "+bidspath_exit+"$(ls "+path+"/"+map.src+") "+bidspath+"/"+dest+"\n";
+                            script += "ln -sf "+bidspath_exit+"$(ls -d "+path+"/"+map.src+") "+bidspath+"/"+dest+"\n";
                         }
                     });
                 } else script+="#no bids mapping\n";
