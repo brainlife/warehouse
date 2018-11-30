@@ -81,10 +81,16 @@ function handle_app(app, cb) {
             app.contributors = con_details.map(con=>{
                 return {name: con.name, email: con.email};
             });
+
+            /*
+            //all existing app should have this set to true for now
+            app.outputs.forEach(output=>{
+                //console.dir(JSON.stringify(output, null, 4));
+                output.output_on_root = true;
+            });
+            */
             
             //done.. save it
-            //app.markModified('stats');
-            //app.markModified('contributors');
             console.dir(app.stats);
             app.save(cb);
         });

@@ -413,13 +413,13 @@ var appSchema = mongoose.Schema({
     //output files for this application
     //TODO right now, we can only deal with a single output data types per task
     outputs: [ new mongoose.Schema({
-        id: String,
+        id: String, //output files should be stored on a directory that matches this id (unless output_on_root is true)
         datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes'},
         datatype_tags: [ String ], //add specifificity to datatype (like "acpc-aligned")
         datatype_tags_pass: String, //add all datatype tags of input dataset with specified ID
 
-        //optional output file/dir mapping to datatype file_id
-        files: mongoose.Schema.Types.Mixed,
+        output_on_root: { type: Boolean, default: false},  //output files are stored on the root of workdir
+        files: mongoose.Schema.Types.Mixed, //(when output_on_root is true) optional output file/dir mapping to datatype file_id
     })],
         
     //_rate: {type: Number, default: 0}, //1-5 scale rating of this app - precomputed (0 means not set)
