@@ -78,7 +78,7 @@
                             <icon name="cubes"/>
                         </div>
                         <div v-if="task.status == 'finished'" style="display: inline-block;">
-                            <div class="button" title="View" @click="set_viewsel_options(datatypes[output.datatype], task, output.subdir)">
+                            <div class="button" title="View" @click="set_viewsel_options(task, output)">
                                 <icon name="eye"/>
                             </div>
                             <div class="button" @click="download(task, output)" title="Download"><icon name="download"/></div>
@@ -313,26 +313,26 @@ export default {
     },
 
     methods: {
-        findtask: function(id) {
+        findtask(id) {
             var found = null;
             this.tasks.forEach(task=>{
                 if(task._id == id) found = task;
             });
             return found;
         },
-        scrollto: function(id) {
+        scrollto(id) {
             var header = document.getElementsByClassName("instance-active")[0];
             var elem = document.getElementById(id);
             if(!elem) return; //maybe not loaded yet?
             var top = elem.offsetTop-header.clientHeight;
             document.getElementById("scrolled-area").scrollTop = top;
         },
-        open_dataset: function(id) {
+        open_dataset(id) {
             console.log("opening datset", id);
             this.$root.$emit('dataset.view', {id});
         },
 
-        open_archiver: function(task, output) {
+        open_archiver(task, output) {
             this.$root.$emit('archiver.show', {task, output});
         },
 
@@ -455,7 +455,7 @@ export default {
             });
         },
 
-        findarchived: function(task, output) {
+        findarchived(task, output) {
             return this.archived.filter(dataset=>{
                 if(dataset.removed) return false;
                 if(!dataset.prov) return false;
@@ -466,36 +466,29 @@ export default {
             });
         },
 
-        projectname: function(project) {
+        projectname(project) {
             var project = this.projects[project];
             if(!project) return "(private project)"; //user don't have access to this project
             return project.name; 
         },
 
         //select all datasets that meets datatype requirement of 'input', that comes from task with name:task_name
-        filter_datasets: function(input) {
+        filter_datasets(input) {
             return lib.filter_datasets(this._datasets, input);
         },
 
-        download: function(task, dataset) {
+        download(task, dataset) {
             var url = Vue.config.wf_api+'/task/download/'+task._id+'?at='+Vue.config.jwt;
             if(dataset.subdir) url+='&p='+encodeURIComponent(dataset.subdir);
             document.location = url;
         },
 
-        notify_error: function(err) {
+        notify_error(err) {
             console.error(err);
             this.$notify({type: 'error', text: err.body.message});
         },
 
-        /*
-        //should receive event now
-        submit_archive: function(dataset) {
-            this.archived.push(dataset);
-        },
-        */
-
-        submit_stage: function(datasets) {
+        submit_stage(datasets) {
             //issue jwt to allow access
             this.$http.post('dataset/token', {
                 ids: Object.keys(datasets),
@@ -538,16 +531,10 @@ export default {
 
         },
 
-        submit_task: function(task) {
+        submit_task(task) {
             //set last minutes stuff
             task.instance_id = this.instance._id;
             task.config._tid = this.next_tid();
-            /*
-            task.config._outputs.forEach(output=>{
-                if(output.archive) output.archive.project = this.project._id;
-            });
-            */
-
             this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
                 var _task = res.body.task;
             }).catch(this.notify_error);
@@ -561,13 +548,14 @@ export default {
             return next;
         },
 
-        toggle_task: function(task) {
+        toggle_task(task) {
             task.show = !task.show;
             localStorage.setItem("task.show."+task._id, task.show);
         },
 
-        set_viewsel_options: function(datatype, task, subdir) {
-            this.$root.$emit("viewselecter.open", { datatype, task, subdir });
+        set_viewsel_options(task, output) {
+            let datatype = this.datatypes[output.datatype];
+            this.$root.$emit("viewselecter.open", { datatype, task, subdir: output.subdir });
         },
 
         newtask() {

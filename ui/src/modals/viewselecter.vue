@@ -217,14 +217,10 @@ export default {
 	methods: {
         select(view) {
             this.$refs.modal.hide(); 
-            this.openview(view, this.task, this.subdir);
-        },
-
-        openview(view, task, subdir) {
             let path = "/view/"
             if(view.docker) path = "/novnc/";
-            path += task._id+'/'+view.ui+'/'+btoa(this.datatype.name);
-            if(subdir) path += '/'+subdir;
+            path += this.task._id+'/'+view.ui+'/'+btoa(this.datatype.name);
+            if(this.subdir) path += '/'+this.subdir;
             window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
         }
     }
