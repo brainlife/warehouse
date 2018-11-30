@@ -144,18 +144,17 @@ export default {
         },
     },
     methods: {
-        go: function(path) {
+        go(path) {
             this.$router.push(path);
         },
 
-        remove: function() {
+        remove() {
             this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
                 this.$router.push('/processes');
             });
         },
 
-        download: function() {
-            console.log(this.url);
+        download() {
             document.location = this.url;
         },
     }

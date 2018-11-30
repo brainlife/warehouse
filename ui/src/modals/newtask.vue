@@ -223,6 +223,7 @@ export default {
                     app.inputs.forEach(input=>{
                         if(input.optional) return; //optional 
                         var matching_dataset = this.datasets.find(dataset=>{
+                            if(!input.datatype) return false; //only happens on dev?
                             if(dataset.datatype != input.datatype._id) return false;
                             var match_tag = true;
                             input.datatype_tags.forEach(tag=>{
@@ -348,6 +349,11 @@ export default {
             });
         },
 
+        //Similar code alert...
+        //modals/newtask.vue::submit()
+        //modals/appsubmit.vuew::submit()
+        //(bin)/rule_handler.js
+        //cli
         submit(evt) {
             evt.preventDefault();
 
@@ -400,12 +406,17 @@ export default {
                     datatype: output.datatype._id,
                     desc: output.id+ " from "+this.app.name,
                     meta,
-                    files: output.files,
                     tags: this.tags,
                 };
                 if(this.archive.enable) output_req.archive = {
                     project: this.project._id,
                     desc: this.archive.desc,
+                }
+
+                if(output.output_on_root) {
+                    output_req.files = output.files; //optional
+                } else {
+                    output_req.subdir = output.id;
                 }
 
                 //handle datatype tag passthrough

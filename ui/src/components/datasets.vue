@@ -454,7 +454,6 @@ export default {
                     find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,
                     limit: 250,  //needs to be bigger than the largest dataset per subject (bigger == slower for vue to render)
-                    //select: '-prov',
                     sort: 'meta.subject meta.session -create_date'
                 }
             })

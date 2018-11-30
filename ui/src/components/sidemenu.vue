@@ -115,7 +115,7 @@ export default {
     color: #888;
     font-size: 8pt;
     transition: width 0.3s;
-    z-index: 1;
+    z-index: 2; /*1 would conflict with some page headers*/
     overflow: hidden;
 }
 .sidemenu:hover {

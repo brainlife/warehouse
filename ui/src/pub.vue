@@ -262,8 +262,10 @@
                         </div>
 
 
-                        <br>
-                        <p style="opacity: 0.8;">The Following Apps are used to generate this release.</p>
+                        <hr>
+                        <p style="opacity: 0.8;">
+                            The following Apps were used to generate the files in this release. Apps are preserved and can be downloaded with the appropriate version number.
+</p>
                         <b-row>
                             <b-col cols="6" v-for="(rec, idx) in apps" :key="idx" style="margin-bottom: 10px;">
                                 <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>

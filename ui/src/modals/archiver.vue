@@ -108,18 +108,11 @@ export default {
                 return;
             }
 
-            console.dir(this.task.config);
-
             this.$http.post('dataset', {
                 project: this.project,                 
                 task_id: this.task._id,
-                //app_id: this.task.config._app,
                 output_id: this.output.id, 
                 subdir: this.output.subdir, //subdir that contains the actual content under the task
-
-                //datatype: this.output.datatype,
-                //datatype_tags: this.output.datatype_tags,
-                //files: this.output.files,
 
                 meta,
                 desc: this.output.desc,

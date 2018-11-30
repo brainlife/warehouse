@@ -393,7 +393,6 @@
                                     <b-input-group prepend="ID">
                                         <b-form-input type="text" v-model="output.id" required />
                                     </b-input-group>
-                                    <small class="text-muted">Internal ID used to identify this output</small>
                                 </b-col>
                                 <b-col cols="7">
                                      <div style="float: right;">
@@ -409,6 +408,7 @@
                                     </div>
                                 </b-col>
                             </b-row>
+                            <small class="text-muted">You should output files in a subdirectory with this ID as the directory name (unless you set "Output on root" below.)</small>
                             <b-row>
                                 <b-col>
                                     <div class="text-muted">Datatype</div>
@@ -429,8 +429,13 @@
                                     
                                 </b-col>
                             </b-row>
-                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>(Optional JSON)</small></div>
-                            <b-form-textarea v-model="output._files" :rows="3"></b-form-textarea>
+                            
+                            <br>
+                            <b-form-checkbox v-model="output.output_on_root">(DEPRECATED) Output files on the root of workdir (instead of inside the subdirectory with ID of this output as the directory name)</b-form-checkbox>
+                            <div v-if="output.output_on_root">
+                                <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/direcory name to avoid more than 1 output to collide.</small></div>
+                                <b-form-textarea v-model="output._files" :rows="3" :placeholder="default_outmap(output.datatype)"></b-form-textarea>
+                            </div>
                         </b-card>
                     </div>
                 </transition-group>
@@ -867,6 +872,15 @@ export default {
                     return dtype.name == "raw";
                 }
             }
+        },
+
+        default_outmap(datatype_id) {
+            let datatype = this.datatypes[datatype_id];
+            let def = {};
+            datatype.files.forEach(file=>{
+                def[file.id] = file.filename||file.dirname;
+            });
+            return JSON.stringify(def, null, 4);
         },
     }
 }

@@ -358,6 +358,7 @@ max-width: 100%;
 .readme pre {
 background-color: #f6f8fa;
 padding: 10px;
+margin-bottom: 15px;
 }
 .readme h1 {
 font-size: 1.5rem;

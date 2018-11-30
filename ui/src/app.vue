@@ -48,12 +48,12 @@
             <!-- detail -->
             <div v-if="tab_index == 0">
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="3" style="opacity: 0.8;">
                         <p>
                             <doibadge :doi="app.doi" v-if="app.doi"/>
                         </p>
                         <p> 
-                            <icon name="calendar"/> {{new Date(app.create_date).toLocaleDateString()}}
+                            <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
                         </p>
                         <!--
                         <p>
@@ -65,7 +65,7 @@
                     </b-col>
                     <b-col cols="9">
                         <!--input/output-->
-                        <span class="form-header">Input/Output</span>
+                        <!-- <span class="form-header">Input/Output</span>-->
                         <p><small class="text-muted">This app uses the following input/output datatypes</small></p>
                         <div style="position: relative;">
                             <b-row>

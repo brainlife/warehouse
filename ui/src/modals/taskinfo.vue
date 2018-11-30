@@ -17,7 +17,7 @@
             <div class="scrolled" style="background-color: #fcfcfc;">
                 <b-alert variant="secondary" :show="!loading && !smon.info" style="opacity: 0.8">Runtime info (_smon.out) not available</b-alert>
 
-                <div style="padding: 10px;">
+                <div style="padding: 20px;">
                     <b-row>
                         <b-col cols="6">
                             <h5>Task</h5>
@@ -114,9 +114,9 @@
                     </b-row>
                 </div><!--padding-->
 
-                <h5 v-if="loading" style="opacity: 0.8; padding: 10px;"><icon name="cog" :spin="true"/> Loading runtime info .. </h5>
+                <h5 v-if="loading" style="opacity: 0.8; padding: 20px;"><icon name="cog" :spin="true"/> Loading runtime info .. </h5>
 
-                <div v-if="!loading && smon.info" style="padding: 10px;">
+                <div v-if="!loading && smon.info" style="padding: 20px;">
 
                     <h5>Resouce Utilization</h5>
                     <p style="opacity: 0.7"><small>
@@ -136,11 +136,11 @@
                     <br>
 
                     <h5>Job ENVs</h5>
-                    <p style="opacity: 0.8; margin: 5px 0px">
+                    <p style="opacity: 0.8; margin: 5px 0px; overflow: auto;">
                         <b-badge v-for="(v, k) in smon.info.env" :key="k" variant="light"><b>{{k}}</b> {{v}}</b-badge>
                     </p>
                 </div> <!-- smon-->
-                <div style="padding: 10px;">
+                <div style="padding: 20px;">
                     <h5>Config</h5>
                     <pre v-highlightjs="JSON.stringify(task.config, null, 4)" style="background-color: white;"><code class="json hljs"></code></pre>
                 </div>

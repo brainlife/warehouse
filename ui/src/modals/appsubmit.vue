@@ -521,11 +521,15 @@ export default {
                     var output_req = {
                         id: output.id,
                         datatype: output.datatype._id,
-                        //datatype_tags: output.datatype_tags,
                         desc: output.id+ " from "+this.app.name,
                         meta,
-                        files: output.files,
                     };
+
+                    if(output.output_on_root) {
+                        output_req.files = output.files; //optional
+                    } else {
+                        output_req.subdir = output.id;
+                    }
 
                     //handle tag passthrough
 					var tags = [];
