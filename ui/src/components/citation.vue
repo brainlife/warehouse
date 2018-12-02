@@ -2,7 +2,7 @@
 <div class="citation">
     <p v-if="!citation" class="text-muted">Loading.. <icon name="cog" spin/></p>
     <pre v-if="accept == 'application/x-bibtex'">{{citation}}</pre>
-    <i v-else>{{citation}}</i>
+    <i v-else v-html="citation"></i>
 </div>
 </template>
 
@@ -29,9 +29,9 @@ export default {
         */
 
         this.$http.get('pub/doi', {params: {
+            //doi: "10.25663/bl.p.3",
             doi: this.doi,
             accept: this.accept,
-
         }}).then(res=>{
             this.citation = res.body;
         }).catch(res=>{
