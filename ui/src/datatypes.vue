@@ -59,7 +59,7 @@
                     <b-col>
                         <b-form-textarea v-if="editing" v-model="selected.readme" :rows="2"></b-form-textarea>
                         <div v-else>
-                            <p v-if="!selected.readme" style="opacity: 0.5">No README</p>
+                            <p v-if="!selected.readme" style="opacity: 0.7">No README</p>
                             <vue-markdown v-else :source="selected.readme" class="readme"/>
                         </div>
                         <br>
@@ -71,7 +71,7 @@
                         <span class="form-header">Admins</span>
                     </b-col>
                     <b-col>
-                        <p><small style="opacity: 0.5">Users who are responsible for this datatype.</small></p>
+                        <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
                         <contactlist v-if="editing" v-model="selected.admins"></contactlist>
                         <div v-else>
                             <p v-if="!selected.admins || selected.admins.length == 0" style="opacity: 0.8">No admins</p>
@@ -88,7 +88,7 @@
                         <span class="form-header">Files/Dirs</span>
                     </b-col>
                     <b-col>
-                        <p><small style="opacity: 0.5">The following files/dirs are expected to be part of this datatype</small></p>
+                        <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
                         <pre v-highlightjs="JSON.stringify(selected.files, null, 4)"><code class="json hljs"></code></pre>
                         <br>
                     </b-col>
@@ -99,8 +99,8 @@
                         <span class="form-header">Datatype Tags</span>
                     </b-col>
                     <b-col>
-                        <p v-if="selected.datatype_tags.length > 0"><small style="opacity: 0.5">The following datatype tags are used for this datatype.</small></p>
-                        <p v-else><small style="opacity: 0.5">No officially registered datatype tags</small></p>
+                        <p v-if="selected.datatype_tags.length > 0"><small style="opacity: 0.7">The following datatype tags are used for this datatype.</small></p>
+                        <p v-else><small style="opacity: 0.7">No officially registered datatype tags</small></p>
                         <b-row v-for="(entry, idx) in selected.datatype_tags" :key="idx" style="margin-bottom: 5px;">
                             <b-col cols="3">
                                 <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
@@ -110,7 +110,7 @@
                             </b-col>
                         </b-row>
 
-                        <p v-if="adhoc_datatype_tags.length > 0"><small style="opacity: 0.5">The following adhoc datatype tags are used for some datasets.</small></p>
+                        <p v-if="adhoc_datatype_tags.length > 0"><small style="opacity: 0.7">The following adhoc datatype tags are used for some datasets.</small></p>
                         <b-row v-for="tag in adhoc_datatype_tags" :key="tag" style="margin-bottom: 5px;">
                             <b-col cols="3">
                                 <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{tag}}</span>
@@ -130,8 +130,9 @@
                     </b-col>
                     <b-col>
                         <p v-if="selected.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
+                        <p v-else><small style="opacity: 0.7">The following visualizers can be used to visualize this datatype on Brainlife.</small></p>
                         <b-row>
-                            <b-col :cols="4" class="ui" v-for="ui in selected.uis" :keys="ui._id">
+                            <b-col :cols="4" class="ui" v-for="ui in selected.uis" :key="ui._id">
                                 <b-card 
                                     :header-bg-variant="ui.docker?'success':'dark'" 
                                     header-text-variant="white" 
@@ -152,7 +153,7 @@
                         <span class="form-header">BIDS Export</span>
                     </b-col>
                     <b-col>
-                        <p><small style="opacity: 0.5">The following file mapping is used to generate BIDS derivative exports.</small></p>
+                        <p><small style="opacity: 0.7">The following file mapping is used to generate BIDS derivative exports.</small></p>
                         <b>{{selected.bids.derivatives}}</b>
                         <pre v-highlightjs="JSON.stringify(selected.bids.maps, null, 4)"><code class="json hljs"></code></pre>
                         <br>
@@ -165,7 +166,7 @@
                     </b-col>
                     <b-col>
                         <p>
-                            <small style="opacity: 0.5">The following Apps uses this datatype for input.</small>
+                            <small style="opacity: 0.7">The following Apps uses this datatype for input.</small>
                         </p>
                         <div class="apps-container">
                             <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
@@ -174,7 +175,7 @@
                         <br>
 
                         <p>
-                            <small style="opacity: 0.5">The following Apps outputs this datatype.</small>
+                            <small style="opacity: 0.7">The following Apps outputs this datatype.</small>
                         </p>
                         <div class="apps-container">
                             <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
@@ -190,7 +191,7 @@
                         <span class="form-header">Validator</span>
                     </b-col>
                     <b-col>
-                        <p><small style="opacity: 0.5">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
+                        <p><small style="opacity: 0.7">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
                         <p><a :href="'https://github.com/'+selected.validator"><b>{{selected.validator}}</b></a></p>
                         <!--<p v-else style="opacity: 0.8">No validator</p>-->
                         <br>

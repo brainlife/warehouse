@@ -877,6 +877,10 @@ export default {
         default_outmap(datatype_id) {
             let datatype = this.datatypes[datatype_id];
             let def = {};
+            if(!datatype.files) {
+                console.error("datatype", datatype_id, "doesn't have files?");
+                return "";
+            }
             datatype.files.forEach(file=>{
                 def[file.id] = file.filename||file.dirname;
             });

@@ -168,8 +168,8 @@ export default {
     opacity: 1;
 }
 .project .desc {
-    opacity: 0.6;
-    font-size: 80%;
+    opacity: 0.7;
+    font-size: 85%;
     line-height: 140%;
 }
 .button-fixed {

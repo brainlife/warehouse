@@ -49,6 +49,10 @@ font-size: 11pt; font-family: muli;
 
 @import url('//fonts.googleapis.com/css?family=Montserrat');
 font-family: 'Montserrat', sans-serif;
+
+@import url('//fonts.googleapis.com/css?family=IBM+Plex+Sans');
+@import url('//fonts.googleapis.com/css?family=Roboto');
+
 */
 
 #warehouse {

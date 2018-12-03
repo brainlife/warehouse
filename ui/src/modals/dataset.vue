@@ -321,15 +321,20 @@ export default {
                 this.prov.nodes.forEach(node=>{
                     node.shape = "box"; //all box..
                     if(node.id.indexOf("task.") === 0) {
-                        node.color = "#fff";
+                        node.color = "#fff"; 
+                        //node.color = "rgba(255,255,255, 0.5)";
                         node.font = {size: 11};
+                        node.mass = 1+0.2*node.label.trim().split("\n").length;
                     }
                     if(node.id.indexOf("dataset.") === 0) {
                         node.color = "#159957";
+                        node.font = {size: 12, color: "#fff"};
+                        node.y = 0;
                     }
                     if(node.id == "dataset."+this.dataset._id) {
                         node.label = "This Dataset";
-                        node.color = "#2693ff";
+                        //node.color = "#2693ff";
+                        //node.color = "rgba(255,0,0,0.5)";
                         node.y = 1500;
                         node.margin = 10;
                         node.font = {color: "#fff"};
@@ -356,7 +361,8 @@ export default {
                                     //springLength: 150,
                                     //avoidOverlap: 0.2,
                                     //damping: 0.3,
-                                    gravitationalConstant: -6500,
+                                    gravitationalConstant: -2500,
+                                    //gravitationalConstant: -6500,
                                 }
                             },
 

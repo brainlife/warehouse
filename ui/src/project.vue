@@ -120,17 +120,18 @@
         </div>
 
         <div v-if="tabs[tab].id == 'process'">
-            <b-alert show v-if="!(ismember()||isadmin())">Only the admins or members of this project can access processes.</b-alert>
+            <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access processes. Please contact the project admins to give you access.</b-alert>
             <processes :project="selected" v-else/>
         </div>
 
         <div v-if="tabs[tab].id == 'pipeline'">
-            <b-alert show v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines.</b-alert>
+            <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access pipelines. Please contact the project admin to give you access.</b-alert>
             <pipelines :project="selected" v-else/>
         </div>
 
         <div v-if="tabs[tab].id == 'pub'">
-            <publications :project="selected"/>
+            <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access publications. Please contact the project admin to give you access.</b-alert>
+            <publications :project="selected" v-else/>
          </div>
     </div><!--page-content-->
 

@@ -69,8 +69,8 @@ export default {
             //add tags specified in task.product.tags to dataset tags
             this.tags = opt.output.tags||[];
             if(this.task.product && this.task.product.tags) {
-                this.task.product_tags.forEach(tag=>{
-                    if(!~tags.indexOf(tag)) tags.push(tag);
+                this.task.product.tags.forEach(tag=>{
+                    if(!~this.tags.indexOf(tag)) this.tags.push(tag);
                 });
             }
             this._meta = JSON.stringify(this.output.meta, null, 4);
