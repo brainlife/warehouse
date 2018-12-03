@@ -490,6 +490,8 @@ var ruleSchema = mongoose.Schema({
 
     //app to submit
     app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
+    branch: String, //branch to use (required for new rules)
+    
     //scalar configs (input configs are used to detect new datasets)
     config: mongoose.Schema.Types.Mixed, 
 
