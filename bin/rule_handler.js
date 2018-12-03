@@ -649,6 +649,11 @@ function handle_rule(rule, cb) {
                 next();
             },
 
+            //Similar code alert...
+            //modals/newtask.vue::submit()
+            //modals/appsubmit.vuew::submit()
+            //(bin)/rule_handler.js
+            //cli
             //submit the app task!
             next=>{
                 var _config = Object.assign(
@@ -673,11 +678,18 @@ function handle_rule(rule, cb) {
                         desc: output.desc,
                         meta: meta,
                         tags: rule.output_tags[output.id], 
-                        files: output.files,
                         archive: {
                             project: rule.project._id,  
                             desc: rule.name,
                         }
+                    }
+
+                    if(output.output_on_root) {
+                        //old apps used to store things under workdir.. files can be used to avoid file conflicts
+                        output_req.files = output.files; //optional
+                    } else {
+                        //all new Apps should create subdirectory matching output.id and store all outputs there (no more .files needed)
+                        output_req.subdir = output.id; 
                     }
 
                     //handle tag passthrough

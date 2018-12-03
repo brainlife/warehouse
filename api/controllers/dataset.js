@@ -460,7 +460,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     async.series([
         next=>{
             //get the task to archive
-            console.log(config.amaretti.api, req.body.task_id);
+            //console.log(config.amaretti.api, req.body.task_id);
             request.get({
                 url: config.amaretti.api+"/task/"+req.body.task_id, json: true,
                 headers: { authorization: req.headers.authorization, }
