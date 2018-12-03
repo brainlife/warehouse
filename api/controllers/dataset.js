@@ -336,10 +336,11 @@ router.get('/prov/:id', (req, res, next)=>{
             let defer = {
                 node: {
                     id: "dataset."+dataset_id, 
-                    font: {size: 12, color: "#fff"},
+                    //font: {size: 12, color: "#fff"},
                     label:  dataset.project.name+" / "+ 
                             dataset.meta.subject + "\n"+
-                            datatype_name
+                            datatype_name + "\n"+
+                            dataset.tags.join(" ")
                 },
                 edge: {
                     from: "dataset."+dataset_id,
@@ -892,7 +893,6 @@ router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequir
         if(err) return next(err);
         db.Datasets.find(construct_dataset_query(req.body, canread_project_ids))
         .populate('datatype project', 'name desc readme admins members bids') //mixed in with datatype/project model fields...
-        //.select('meta prov tags datatype datatype_tags project.name')
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
@@ -902,7 +902,7 @@ set +x #show all commands running
 set +e #stop the script if anything fails
 
 `;
-            script += "auth=\"Authorization: "+req.headers.authorization+"\"\n"
+            if(req.headers.authorization) script += "auth=\"Authorization: "+req.headers.authorization+"\"\n"
             
             //find unique projects
             let projects = {};
@@ -978,7 +978,9 @@ ${p.readme||''}`;
 
                 script += "mkdir -p "+path+"\n";
                 script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
-                script += "curl -H \"$auth\" "+config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C "+path+" -x\n";
+                script += "curl ";
+                if(req.headers.authorization) script += "-H \"$auth\" ";
+                script += config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C "+path+" -x\n";
 
                 if(dataset.datatype.bids) {
                     //Create BIDS symlinks

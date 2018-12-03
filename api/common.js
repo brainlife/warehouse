@@ -59,6 +59,8 @@ exports.archive_task = function(dataset, auth, cb) {
     let output = dataset.prov.task.config._outputs.find(o=>o.id == output_id);
     let files_override = output.files || {}
 
+    //TODO if output.subdir is set, ship taskdir/subdir directly to wrangler
+
     //start by pulling datatype detail
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
         if(err) return cb(err);
