@@ -102,7 +102,7 @@
                         </div>
                         <b-row>
                             <b-col>
-                                <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 10px; margin-bottom: 10px;"/>
+                                <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 10px; margin-bottom: 10px;" :branch="rule.branch||'master'"/>
                             </b-col>
                             <b-col>
                                 <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
@@ -409,7 +409,7 @@ export default {
                 name: "",
                 config: {},
                 project: this.project,
-                active: true,
+                active: false,
                 removed: false,
             };
             this.$refs.scrolled.scrollTop = 0;
@@ -487,19 +487,6 @@ export default {
                     var elem = document.getElementById(rule._id);
                     this.$refs.scrolled.scrollTop = elem.offsetTop;
                 });
-
-                /*
-                //load task info for this rule
-                this.$http.get(Vue.config.amaretti_api+"/task", {params: {
-                    find: JSON.stringify({
-                        'config._rule.id': rule._id
-                    }),
-                    limit: 0, //I just need a count
-                }})
-                .then(res=>{
-                    this.rule_task_count = res.body.count;
-                });
-                */
             }
         },
 

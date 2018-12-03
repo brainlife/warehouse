@@ -47,8 +47,9 @@
             <!--input-->
             <div slot="input" v-if="task.config._inputs">
                 <div v-for="(input, idx) in task.config._inputs" :key="idx" style="padding: 10px;">
-                    <div v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
-                        <b v-if="input.meta.subject">{{input.meta.subject}}</b>
+                    <small style="opacity: 0.6; float: right;">{{input.id}}</small>
+                    <b v-if="input.meta.subject">{{input.meta.subject}}</b>
+                    <div style="display: inline-block;" v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <span style="opacity: 0.5;">
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
@@ -59,7 +60,6 @@
                         </span>
                     </div>
                     <div v-else>
-                        <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                         <small v-if="input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <span style="opacity: 0.5;">
@@ -73,7 +73,7 @@
             <!--output-->
             <div slot="output">
                 <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 10px;">
-                    <div class="float-right" style="position: relative; top: -5px;">
+                    <div class="float-right" style="position: relative; top: -7px; margin-left: 10px">
                         <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
                             <icon name="cubes"/>
                         </div>
@@ -86,6 +86,7 @@
                         </div>
                     </div>
 
+                    <small style="opacity: 0.6; float: right;">{{output.id}}</small>
                     <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                     <small v-if="output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
                     <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>

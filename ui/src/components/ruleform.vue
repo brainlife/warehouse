@@ -24,12 +24,17 @@
                 </template>
             </v-select>
             <div v-if="rule.app">
-                <b-alert :show="!rule.app.github_branch" variant="danger">This App has no branch specified. Code might be modified while processing subjects</b-alert>
+                <!--
+                <b-alert :show="!rule.app.github_branch" variant="danger">This App has no default branch specified. We can not gurantee code consistency.</b-alert>
+                -->
                 <app :app="rule.app" :compact="true" :clickable="false" style="margin-top: 5px;"/>
             </div>
         </b-form-group>
 
         <div v-if="rule.app">
+            <b-form-group label="Branch" horizontal>
+                <b-form-select :options="github_branches" v-model='rule.branch'></b-form-select>
+            </b-form-group>
             <b-form-group label="Configuration" horizontal>
                 <b-card>
                     <configform :spec="rule.app.config" v-model="rule.config"/>
@@ -158,6 +163,7 @@ export default {
             ready: false,
             input_dataset_tags: {},
             output_dataset_tags: {},
+            github_branches: [],
 
             config: Vue.config,
         }
@@ -168,13 +174,18 @@ export default {
             this.load_value();
         },
 
+        "rule.app": function() {
+            if(!this.rule.app) return;
+            console.log("app changed");
+            this.ensure_ids_exists();
+            this.ensure_config_exists();
+            this.load_dataset_tags();
+            this.load_branches();
+        },
+
         rule: {
             handler: function() {
-                if(this.rule.app) {
-                    this.ensure_ids_exists();
-                    this.ensure_config_exists();
-                    this.load_dataset_tags();
-                }
+                console.log("rule detail changed");
                 this.query_matching_datasets();
             },
             deep: true,
@@ -191,6 +202,10 @@ export default {
             //querying matching datasets for each input
             for(let id in this.rule.input_tags) {
                 let input = this.rule.app.inputs.find(i=>i.id == id);
+                if(!input) {
+                    console.error("no input found for", id);
+                    return;
+                }
                 let find = {
                     project: this.rule.input_project_override[id] || this.rule.project,
                     datatype: input.datatype_id,
@@ -212,52 +227,6 @@ export default {
                     Vue.set(this.rule.input_tags_count, id, res.body.count);
                 }); 
             }
-
-            /*
-            let find = {
-                project: this.rule.project,
-                removed: false,
-            }
-            if(this.rule.subject_match != "") {
-                find["meta.subject"] = {$regex: this.rule.subject_match};
-            }
-            console.dir(find);
-            this.$http.get('dataset/distinct', {params: {
-                distinct: "meta.subject",
-                find: JSON.stringify(find),
-            }}).then(res=>{
-                console.log("found subjects", res.body.length);
-                Vue.set(this.rule, 'subject_match_count', res.body.length);
-            });
-            */
-
-            /* 
-            //count number of subjects that doesn't have specified output dataset
-            //TODO this is not trivial to do..
-            //I think we need to..
-            //first enumerate all subjects that will be created (union of matching subjects from all inputs)
-            //then, count the number of datasets with matching criteria for each output
-            //finally, subtract second from the first.
-            for(let id in this.rule.output_tags) {
-                let output = this.rule.app.outputs.find(i=>i.id == id);
-                let find = {
-                    project: this.rule.project,
-                    storage: { $exists: true }, //might be removed on the rule_handler query..
-                    removed: false,
-                    datatype: {$not: output.datatype},
-                }
-                if(output.datatype_tags.length > 0) find.datatype_tags = {$not: {$all: output.datatype_tags}};
-                if(this.rule.output_tags[id].length > 0) find.tags = {$not: {$all: this.rule.output_tags[id]}};
-                console.dir(find);
-                this.$http.get('dataset/distinct', {params: {
-                    find: JSON.stringify(find),
-                    distinct: "meta.subject", 
-                }}).then(res=>{
-                    //console.dir(res.body);
-                    Vue.set(this.rule.output_tags_neg_count, id, res.body.length);
-                }); 
-            }
-            */
         },
 
         //update with value from the parent component
@@ -371,7 +340,7 @@ export default {
                 }})
                 .then(res=>{
                     this.apps = res.body.apps;
-                    console.log("search result:", search, this.apps);
+                    //console.log("search result:", search, this.apps);
                     loading(false);
                 });
             }, 300);
@@ -407,6 +376,23 @@ export default {
                     Vue.set(this.output_dataset_tags, output.id, res.body);
                 }); 
             });
+        },
+
+        load_branches() {
+            console.log("loading branches", this.rule.branch);
+            this.$http.get('https://api.github.com/repos/' + this.rule.app.github + '/branches', 
+                { headers: { Authorization: null } })
+            .then(res=>{
+                this.github_branches = res.body.map(b => {
+                    return {
+                        value: b.name,
+                        text: b.name
+                    };
+                });
+                
+                this.rule.branch = this.rule.branch || this.rule.app.github_branch || 'master';
+                
+            }).catch(console.error);
         },
         
         /*

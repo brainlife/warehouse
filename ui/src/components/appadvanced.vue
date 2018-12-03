@@ -79,9 +79,7 @@ export default {
             
             this.github_branch = this.value.github_branch || this.app.github_branch || 'master';
         })
-        .catch(err => {
-            console.error(err)
-        });
+        .catch(console.error);
     },
 
     watch: {

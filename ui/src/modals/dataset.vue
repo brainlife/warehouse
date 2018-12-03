@@ -361,7 +361,7 @@ export default {
                                     //springLength: 150,
                                     //avoidOverlap: 0.2,
                                     //damping: 0.3,
-                                    gravitationalConstant: -2500,
+                                    gravitationalConstant: -4000,
                                     //gravitationalConstant: -6500,
                                 }
                             },
