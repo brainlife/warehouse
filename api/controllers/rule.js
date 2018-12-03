@@ -123,6 +123,8 @@ function check_access(req, rule, cb) {
  * @apiParam {Object} input_project_override 
  *                                  Input project override
  * @apiParam {String} app           Application ID
+ * @apiParam {String} branch        Application branch to use
+ * @apiParam {Boolean} active       Active flag
  * @apiParam {String} subject_match Subject Match
  * @apiParam {Object} config        Application configuration
  *
@@ -160,6 +162,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiParam {Object} input_project_override 
  *                                  Input project override
  * @apiParam {String} app           Application ID
+ * @apiParam {String} branch        Application branch to use
  * @apiParam {Object} extra_datatype_tags 
  *                                  Datatype tags to add to each inputs
  * @apiParam {String} subject_match Subject Match
