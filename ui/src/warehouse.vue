@@ -305,6 +305,12 @@ opacity: 0.9;
 font-weight: bold;
 font-size: 95%;
 }
+
+.vs__actions button.clear {
+position: relative;
+top: 2px;
+}
+
 .v-select .dropdown-toggle {
 background-color: white;
 }
@@ -332,18 +338,6 @@ margin: 3px 0px;
 border: 1px solid #ced4da;
 }
 
-/*
-.ps__rail-x:hover, .ps__rail-y:hover, .ps__rail-x:focus, .ps__rail-y:focus {
-background-color: rgba(0,0,0,0);
-opacity: 1;
-}
-.ps__rail-y {
-width: 6px;
-}
-.ps__rail-y:hover > .ps__thumb-y, .ps__rail-y:focus > .ps__thumb-y {
-width: 6px;
-}
-*/
 .js-plotly-plot .plotly .modebar {
 z-index: inherit;
 }

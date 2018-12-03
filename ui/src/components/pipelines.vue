@@ -459,7 +459,7 @@ export default {
                 this.$http.post('rule', rule).then(res=>{
                     this.selected = res.body;
                     this.load(err=>{
-                        this.$notify({text: "Successfully created a new rule", type: "success"});
+                        this.$notify({text: "Successfully created a new rule. You must activate it so that it will run", type: "success"});
                         this.cancel_edit();
                     });
                 }).catch(this.notify_error);
