@@ -329,11 +329,11 @@ export default {
                     if(node.id.indexOf("dataset.") === 0) {
                         node.color = "#159957";
                         node.font = {size: 12, color: "#fff"};
-                        node.y = 0;
+                        //node.y = 0;
                     }
                     if(node.id == "dataset."+this.dataset._id) {
                         node.label = "This Dataset";
-                        //node.color = "#2693ff";
+                        node.color = "#2693ff";
                         //node.color = "rgba(255,0,0,0.5)";
                         node.y = 1500;
                         node.margin = 10;
