@@ -74,20 +74,14 @@ function run() {
 	});
 }
 
-/*
-//check to see if task will be removed soon
-function isremoving(task) {
-    if(!task.remove_date) return false;
-    let now = new Date().getTime();
-    let ttl = now - task.remove_date.getTime();
-    if(ttl > 
-}
-*/
-
 function isalive(task) {
     if(!task) return false;
     let dead_states = ["failed", "stop_requested", "stopped", "removed"];
     if(~dead_states.indexOf(task.status)) return false;
+
+    //TODO - maybe I should consider task with up-coming remove_date to be dead? 
+    //I will try to see if I can prevent task from being removed if it has deps that hasn't finished yet
+
     return true;    
 }
 
@@ -714,7 +708,10 @@ function handle_rule(rule, cb) {
                         instance_id: instance._id,
                         name: rule.app.name,
                         service: rule.app.github,
-                        service_branch: rule.app.github_branch,
+                        
+                        //rule.app.github_branch is no longer used, but rule.branch might not be set for old rules
+                        service_branch: rule.branch||rule.app.github_branch,
+
                         retry: rule.app.retry,
                         nice: config.rule.nice,
 
