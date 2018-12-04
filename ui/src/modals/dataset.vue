@@ -732,6 +732,19 @@ overflow: auto;
 overflow: auto;
 padding: 20px;
 }
+/*
+.reef {
+position: absolute;
+top: -21px;
+left: -21px;
+z-index: 100;
+width: 80px;
+transition: opacity 1s;
+}
+.brainlife-modal-header:hover .reef {
+opacity: 0;
+}
+*/
 </style>
 
 

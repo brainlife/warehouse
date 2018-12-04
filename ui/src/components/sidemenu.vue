@@ -1,5 +1,6 @@
 <template>
 <div class="sidemenu">
+    <br>
     <ul class="items">
         <!-- currently being developped -->
         <li v-if="config.debug" 

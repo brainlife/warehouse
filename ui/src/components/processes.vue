@@ -480,7 +480,7 @@ z-index: 1; /*needed to make sort order dropdown box to show up on top of page-c
 height: 45px;
 }
 .content {
-top: 90px;
+top: 100px;
 margin-top: 40px;
 }
 
