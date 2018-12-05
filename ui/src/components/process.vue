@@ -121,7 +121,7 @@
 
                                 <!--show dataset status if it's not stored-->
                                 <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                                    <icon name="cog" :spin="true"/> Storing ...
+                                    <icon name="cog" :spin="true"/> {{dataset.status_msg||dataset.status}}
                                 </span> 
                                 <span v-else-if="dataset.status == 'stored'"></span>
                                 <span v-else><statustag :status="dataset.status"/></span>
@@ -365,7 +365,7 @@ export default {
                         return;
                     }
                     if(!event) {
-                        console.error("cann't parse event", json);
+                        console.error("can't parse event", json);
                         return;
                     }
                     if(event.error) return console.error(event.error);

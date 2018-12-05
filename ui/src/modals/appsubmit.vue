@@ -20,7 +20,7 @@
         <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
             <b-col cols="3">
                 <small style="float: right;" class="text-muted">{{input.id}}</small>
-                <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false"/>
 
                 <span v-if="!input.optional">*</span>
                 <span class="text-muted" v-else>(optional)</span>

@@ -34,7 +34,8 @@ export default {
 
 <style>
 
-/*@import url('https://fonts.googleapis.com/css?family=Cabin|Inconsolata|Nunito|Nunito+Sans|Pacifico|Quicksand|Rubik|VT323');
+/*
+@import url('https://fonts.googleapis.com/css?family=Cabin|Inconsolata|Nunito|Nunito+Sans|Pacifico|Quicksand|Rubik|VT323');
 font-family: 'Rubik', sans-serif;
 font-family: 'Pacifico', cursive;
 font-family: 'Quicksand', sans-serif;
