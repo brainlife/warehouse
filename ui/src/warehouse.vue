@@ -300,6 +300,7 @@ small {
 font-size: 85%;
 opacity: 0.7;
 }
+.col-form-label,
 .form-header {
 text-transform: uppercase;
 opacity: 0.9;

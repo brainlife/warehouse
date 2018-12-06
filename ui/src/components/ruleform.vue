@@ -43,74 +43,75 @@
             <b-form-group label="Inputs" horizontal>
                 <p class="text-muted">Look for subjects that has the following input datasets.</p>
 
-                <p>
-                    <b-input-group prepend="Subject Filter" title="Only process subjects that matches this regex">
-                        <b-form-input v-model="rule.subject_match" type="text" placeholder="regex to match subject name"></b-form-input>
-                    </b-input-group>
-                    <small class="text-muted">For example, <b>^100</b> will make this rule to only process subjects that starts with 100.</small>
-                </p>
-
-                <b-card v-for="input in rule.app.inputs" :key="input._id" class="card">
-                    <div slot="header">
-                        <small class="text-muted" style="float: right">{{input.id}}</small>
-                        <datatypetag :datatype="input.datatype_id" :tags="input.datatype_tags"/>
-                        <span class="text-muted" v-if="input.optional">(optional)</span>
-                        <div class="button" v-if="!input.edit_extra_tags" @click="edit_etag(input)" style="position: absolute; top: 7px;"><icon name="plus" scale="0.8"/></div>
-                        <tageditor v-if="input.edit_extra_tags" v-model="rule.extra_datatype_tags[input.id]" placeholder="(enter extra datatype tags)" style="margin-top: 2px;"/>
-                    </div>
-                    <p v-if="input.optional">
-                        <b-form-checkbox v-model="rule.input_selection[input.id]" value="ignore">Do not use this input</b-form-checkbox>
-                        <small class="text-muted">This is an optional field. You can submit without this input</small>
+                <div style="border-left: 4px solid rgb(0, 123, 355); padding-left: 10px;">
+                    <p>
+                        <b-input-group prepend="Subject Filter" title="Only process subjects that matches this regex">
+                            <b-form-input v-model="rule.subject_match" type="text" placeholder="regex to match subject name"></b-form-input>
+                        </b-input-group>
+                        <small class="text-muted">For example, <b>^100</b> will make this rule to only process subjects that starts with 100.</small>
                     </p>
-                    <div v-if="rule.input_selection[input.id] != 'ignore'">
-                        <b-row>
-                            <b-col>Project</b-col>
-                            <b-col :cols="9">
-                                <p>
-                                <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(from this project)"/>
-                                <small class="text-muted">Look for datasets in this project</small>
-                                </p>
-                            </b-col>
-                        </b-row> 
-                        <b-row>
-                            <b-col>Dataset Tags</b-col>
-                            <b-col :cols="9">
-                                <p>
-                                    <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="input_dataset_tags[input.id]"/>
-                                    <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
-                                </p>
-                                <small v-if="rule.input_tags_count[input.id]">{{rule.input_tags_count[input.id]}} datasets matches this criteria</small>
-                            </b-col>
-                        </b-row> 
-                        <b-alert :show="!rule.input_tags_count[input.id]" variant="warning">There are no input datasets that matches the specified criteria.</b-alert>
-                    </div>
-                </b-card>
 
-
+                    <b-card v-for="input in rule.app.inputs" :key="input._id" class="card">
+                        <div slot="header">
+                            <small class="text-muted" style="float: right">{{input.id}}</small>
+                            <datatypetag :datatype="input.datatype_id" :tags="input.datatype_tags"/>
+                            <span class="text-muted" v-if="input.optional">(optional)</span>
+                            <div class="button" v-if="!input.edit_extra_tags" @click="edit_etag(input)" style="position: absolute; top: 7px;"><icon name="plus" scale="0.8"/></div>
+                            <tageditor v-if="input.edit_extra_tags" v-model="rule.extra_datatype_tags[input.id]" placeholder="(enter extra datatype tags)" style="margin-top: 2px;"/>
+                        </div>
+                        <p v-if="input.optional">
+                            <b-form-checkbox v-model="rule.input_selection[input.id]" value="ignore">Do not use this input</b-form-checkbox>
+                            <small class="text-muted">This is an optional field. You can submit without this input</small>
+                        </p>
+                        <div v-if="rule.input_selection[input.id] != 'ignore'">
+                            <b-row>
+                                <b-col>Project</b-col>
+                                <b-col :cols="9">
+                                    <p>
+                                    <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(from this project)"/>
+                                    <small class="text-muted">Look for datasets in this project</small>
+                                    </p>
+                                </b-col>
+                            </b-row> 
+                            <b-row>
+                                <b-col>Dataset Tags</b-col>
+                                <b-col :cols="9">
+                                    <p>
+                                        <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="input_dataset_tags[input.id]"/>
+                                        <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
+                                    </p>
+                                    <small v-if="rule.input_tags_count[input.id]">{{rule.input_tags_count[input.id]}} datasets matches this criteria</small>
+                                </b-col>
+                            </b-row> 
+                            <b-alert :show="!rule.input_tags_count[input.id]" variant="warning">There are no input datasets that matches the specified criteria.</b-alert>
+                        </div>
+                    </b-card>
+                </div><!--border-->
                 <!--
                 <p v-if="rule.subject_match_count"><small>{{rule.subject_match_count}} subjects matches this filter</small></p>
                 -->
-
             </b-form-group>
 
             <b-form-group label="Outputs" horizontal>
                 <p class="text-muted">Submit the app if the following dataset <b>does not</b> exist.</p>
-                <b-card v-for="output in rule.app.outputs" :key="output._id" class="card">
-                    <div slot="header">
-                        <small class="text-muted" style="float: right">{{output.id}}</small>
-                        <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
-                    </div>
-                    <b-row>
-                        <b-col>Dataset Tags</b-col>
-                        <b-col :cols="9">
-                            <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
-                            <small class="text-muted">Output tags allows you can easily query for specific set of datasets on subsequent rules.</small>
-                            <!--
-                            <small v-if="rule.output_tags_neg_count[output.id]">{{rule.output_tags_neg_count[output.id]}} datasets needs to be generated</small>
-                            -->
-                        </b-col>
-                    </b-row>
-                </b-card>
+                <div style="border-left: 4px solid rgb(40, 167, 69); padding-left: 10px;">
+                    <b-card v-for="output in rule.app.outputs" :key="output._id" class="card">
+                        <div slot="header">
+                            <small class="text-muted" style="float: right">{{output.id}}</small>
+                            <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
+                        </div>
+                        <b-row>
+                            <b-col>Dataset Tags</b-col>
+                            <b-col :cols="9">
+                                <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
+                                <small class="text-muted">Output tags allows you can easily query for specific set of datasets on subsequent rules.</small>
+                                <!--
+                                <small v-if="rule.output_tags_neg_count[output.id]">{{rule.output_tags_neg_count[output.id]}} datasets needs to be generated</small>
+                                -->
+                            </b-col>
+                        </b-row>
+                    </b-card>
+                </div><!--border-->
             </b-form-group>
         </div>
     </div>

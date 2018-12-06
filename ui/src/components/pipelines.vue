@@ -501,6 +501,7 @@ export default {
             this.$http.get(Vue.config.amaretti_api+"/task", {params: {
                 find: JSON.stringify({
                     'config._rule.id': rule._id,
+                    'config._app': {$exists: true}, //don't want to remove staging task (might be used by other rules)
                     status: {$ne: "removed"},
                 }),
                 limit: 5000, //big enough to grab all tasks?
