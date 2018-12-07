@@ -127,6 +127,7 @@ left: 330px;
 transition: 0.2s left;
 }
 
+/*
 @media screen and (max-width: 850px) {
     .page-header.with-menu,
     .page-footer.with-menu,
@@ -134,6 +135,7 @@ transition: 0.2s left;
         left: 200px;
     }
 }
+*/
 
 code.hljs {
 font-size: 80%;

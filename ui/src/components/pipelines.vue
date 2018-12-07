@@ -2,10 +2,10 @@
 <div v-if="ready">
     <div v-if="!editing && rules.length > 0" class="page-header with-menu header">
         <b-row :no-gutters="true">
-            <b-col :cols="5">
+            <b-col>
                 <b>{{rules.length}}</b> Pipeline Rules
             </b-col>
-            <b-col :cols="3" style="position: relative; top: -5px; text-align: right;">
+            <b-col :cols="4" style="position: relative; top: -5px; text-align: right;">
                 <small>Order by</small>
                 <b-dropdown :text="order" size="sm" :variant="'light'">
                     <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
@@ -71,7 +71,6 @@
                             <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm" title="edit"><icon name="edit"/></div>
                             <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" title="remove"><icon name="trash"/></div>
                     </div>
-
 
                     <div v-if="rule.active" style="margin: 0px 10px;">
                         <b-btn @click="deactivate(rule)" variant="outline-danger" size="sm" v-if="!rule.deactivating_remain"><icon name="times"/> Deactivate </b-btn>
