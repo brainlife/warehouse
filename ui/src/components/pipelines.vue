@@ -67,8 +67,9 @@
                 <!--rule body-->
                 <div v-if="selected == rule" transition="expand">
                     <div style="float: right; margin-right: 90px;">
-                            <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></div>
-                            <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="trash"/></div>
+                            <div class="button" @click="copy(rule)" v-if="ismember() || isadmin()" size="sm" title="copy"><icon name="copy"/></div>
+                            <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm" title="edit"><icon name="edit"/></div>
+                            <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" title="remove"><icon name="trash"/></div>
                     </div>
 
 
@@ -249,6 +250,7 @@ export default {
             this.$http.get(Vue.config.amaretti_api+"/task", {params: {
                 find: JSON.stringify({
                     'config._rule.id': this.selected._id,
+                    'config._app': {$exists: true}, //don't count number of staging
                     status: {$ne: "removed"},
                 }),
                 limit: 0, //I just need a count.
@@ -304,7 +306,7 @@ export default {
     },
 
     methods: {
-        load: function(cb) {
+        load(cb) {
             let group_id = this.project.group_id;
             this.order = window.localStorage.getItem("pipelines.order."+group_id)||"create_date";
 
@@ -315,12 +317,10 @@ export default {
                     removed: false,
                 }),
                 populate: 'app', 
-                //sort: '-active create_date', 
                 sort: 'create_date', 
             }})
             .then(res=>{
                 this.rules = res.body.rules; 
-
                 if(this.$route.params.subid) {
                     this.editing = this.rules.find(rule=>rule._id == this.$route.params.subid);
                 }
@@ -421,6 +421,13 @@ export default {
             this.$refs.scrolled.scrollTop = 0;
             this.editing = rule;
             this.selected = rule; //I think it makes sense to select rule that user is editing?
+        },
+
+        copy(rule) {
+            this.editing = Object.assign({}, rule);
+            delete this.editing._id;
+            this.editing.name = rule.name+" - copy";
+            this.editing.active = false; //should deactivate if it's active
         },
 
         update_subject_match(rule) {
