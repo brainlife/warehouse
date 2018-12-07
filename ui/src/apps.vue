@@ -302,14 +302,14 @@ background-color: black;
 background-color: #007bff;
 }
 .search-box {
-padding-left: 130px;
+padding-left: 290px;
 position: fixed;
 top: 6px;
 width: 495px;
 }
 .search-box .input {
 font-size: 140%;
-padding-left: 50px;
+padding-left: 45px;
 background-color: #fff6;
 border: none;
 color: white;
@@ -326,7 +326,7 @@ color: white;
 opacity: 0.8;
 position: absolute;
 top: 7px;
-left: 145px;
+left: 300px;
 z-index: -1;
 transition: color 0.5s;
 }
