@@ -175,9 +175,11 @@ export default {
             this.load_value();
         },
 
-        "rule.app": function() {
-            if(!this.rule.app) return;
-            console.log("app changed");
+        "rule.app": function(newv, oldv) {
+            if(!newv) return;
+            if(oldv && oldv._id && newv._id != oldv._id) {
+                this.rule.branch = null;
+            }
             this.ensure_ids_exists();
             this.ensure_config_exists();
             this.load_dataset_tags();
@@ -186,7 +188,6 @@ export default {
 
         rule: {
             handler: function() {
-                console.log("rule detail changed");
                 this.query_matching_datasets();
             },
             deep: true,
@@ -199,6 +200,7 @@ export default {
     },
     
     methods: {
+
         query_matching_datasets() {
             //querying matching datasets for each input
             for(let id in this.rule.input_tags) {
@@ -240,11 +242,7 @@ export default {
                 input_tags_count: {}, //number of matching input datasets for each input
 
                 subject_match: "", 
-                //subject_match_count: null,  //number of matching subjects for subject_match filter
-
                 output_tags: {}, 
-                //output_tags_neg_count: {}, //number of subjects that has no dataset that mathces output criteria
-
                 input_project_override: {},
                 input_selection: {},
                 extra_datatype_tags: {},
@@ -391,7 +389,8 @@ export default {
                     };
                 });
                 
-                this.rule.branch = this.rule.branch || this.rule.app.github_branch || 'master';
+                //pick a default if rule.branch not set
+                if(!this.rule.branch) this.rule.branch = this.rule.app.github_branch || 'master';
                 
             }).catch(console.error);
         },

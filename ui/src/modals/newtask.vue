@@ -12,8 +12,7 @@
     </div><!--header-->
 
     <!--app selection page--> 
-    <div v-if="!app" class="app-selecter" style="background-color: white;">
-
+    <div v-if="!app" class="app-selecter">
         <div v-if="apps">
             <!--
             <div style="padding: 20px; padding-bottom: 0px;">
@@ -22,20 +21,22 @@
             </div>
             -->
             <b-alert v-if="apps.length == 0" show variant="secondary">You have no application to submit with currently staged datasets. Please try staging more datasets.</b-alert>
-            <b-tabs v-else class="brainlife-tab" style="padding: 5px 20px;">
+            <b-tabs v-else class="brainlife-tab">
                 <b-tab title="Most Popular" v-if="apps.length > 6">
-                    <br>
-                    <div style="width: 50%; float: left;" v-for="app in most_popular_apps" :key="app._id">
-                        <div @click="selectapp(app)" style="margin-bottom: 5px; margin-right: 10px; font-size: 85%; box-shadow: 2px 2px 3px #eee;">
-                            <app :app="app" :clickable="false" class="clickable" height="160px"/>
+                    <div style="margin: 20px;">
+                        <div style="width: 50%; float: left;" v-for="app in most_popular_apps" :key="app._id">
+                            <div @click="selectapp(app)" style="margin-bottom: 10px; margin-right: 10px;">
+                                <app :app="app" :clickable="false" class="clickable" height="165px"/>
+                            </div>
                         </div>
                     </div>
                 </b-tab>
                 <b-tab title="All">
-                    <br>
-                    <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
-                        <div @click="selectapp(app)" style="margin-bottom: 5px; margin-right: 10px; font-size: 85%; box-shadow: 2px 2px 3px #eee;">
-                            <app :app="app" :clickable="false" class="clickable" height="160px"/>
+                    <div style="margin: 20px;">
+                        <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
+                            <div @click="selectapp(app)" style="margin-bottom: 10px; margin-right: 10px;">
+                                <app :app="app" :clickable="false" class="clickable" height="165px"/>
+                            </div>
                         </div>
                     </div>
                 </b-tab>
@@ -46,7 +47,7 @@
     </div>
 
     <!--app configuration page--> 
-    <b-form v-if="app" class="submit-form" @submit="submit">
+    <b-form v-if="app" class="submit-form" @submit="submit" style="padding: 20px;">
         <!--<app :app="app" :compact="false" />-->
         <app :app="app" :clickable="false" style="margin: -20px; margin-bottom: 0px;"/>
         <br>
@@ -507,5 +508,4 @@ bottom: 0px;
 overflow: auto;
 background-color: #f9f9f9;
 }
-
 </style>

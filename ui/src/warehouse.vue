@@ -138,7 +138,7 @@ transition: 0.2s left;
 */
 
 code.hljs {
-font-size: 80%;
+font-size: 85%;
 }
 table.info {
 width: 100%;

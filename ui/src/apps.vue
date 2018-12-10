@@ -305,7 +305,7 @@ background-color: #007bff;
 padding-left: 290px;
 position: fixed;
 top: 6px;
-width: 495px;
+width: 550px;
 }
 .search-box .input {
 font-size: 140%;
