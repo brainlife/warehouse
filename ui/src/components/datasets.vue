@@ -924,7 +924,7 @@ right: 250px;
     position: fixed;
     right: -250px;
     width: 250px;
-    top: 100px;
+    top: 95px;
     bottom: 0px;
     z-index: 2;
     transition: right 0.2s;

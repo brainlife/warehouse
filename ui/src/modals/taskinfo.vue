@@ -9,8 +9,11 @@
                     </div>
                 </div>
                 <h4 style="margin-top: 8px;">
-                    {{task.name}} <small style="opacity: 0.5">{{task._id}}</small>
-                    <b style="opacity: 0.5; position: relative; top: -8px; font-size: 60%;">t.{{task.config._tid}}</b>
+                    {{task.name}} 
+                    <span style="float: right;">
+                        <small style="opacity: 0.5">{{task._id}}</small>
+                        <b style="opacity: 0.5; position: relative; top: -8px; font-size: 60%;">t.{{task.config._tid}}</b>
+                    </span>
                 </h4>
             </div><!--header-->
 
@@ -239,11 +242,11 @@ export default {
                     let tokens = long.split(" ");
                     let short = "";
                     tokens.forEach(t=>{
-                        if(t.length < 15) {
+                        if(t.length < 20) {
                             short+=t+" ";
                             return;
                         }
-                        short+=".."+t.substring(t.length-15)+" ";
+                        short+=".."+t.substring(t.length-20)+" ";
                     });
                     if(short.length > 40) short = short.substring(0, 40)+"...";
                     return short;
@@ -332,15 +335,20 @@ export default {
                 this.smon.disk.data = [disk];
                 this.smon.disk.layout = {
                     title: "Disk Usage",
-                    height: 350,
+                    height: 370,
                     margin: {
                         //l: 50, 
                         //r: 10, 
                         //b: 80,
+                        t: 25,
                     },
                     showlegend: true,
                     legend: {
                         //orientation: "h",
+                        font: {
+                            family: 'sans-serif',
+                            size: 10,
+                        }
                     },
                     yaxis: {
                         title: 'MB',
@@ -355,7 +363,7 @@ export default {
                     if(non0) this.smon.cpu.data.push(pcpus[pid]);
                 }
                 this.smon.cpu.layout = {
-                    title: "CPU Usage",
+                    title: "CPU Usage (ps/pcpu)",
                     xaxis: {
                         range: [begin_date, end_date],
                     },
@@ -367,14 +375,18 @@ export default {
                     },
                     showlegend: true,
                     legend: {
-                        //orientation: "h",
                         font: {
-                          //family: 'sans-serif',
-                          size: 10,
-                          //color: '#000'
-                        },
+                            family: 'sans-serif',
+                            size: 10,
+                        }
                     },
                     height: 400,
+                    margin: {
+                        //l: 50, 
+                        //r: 10, 
+                        //b: 80,
+                        t: 25,
+                    },
                     shapes: [
                         //job max
                         {
@@ -412,16 +424,18 @@ export default {
                     showlegend: true,
                     //paper_bgcolor: "#000",
                     legend: {
-                        //orientation: "h",
-                        //x: -.1, 
-                        //y: 1.2,
                         font: {
-                          //family: 'sans-serif',
+                          family: 'sans-serif',
                           size: 10,
-                          //color: '#000'
                         },
                     },
                     height: 400,
+                    margin: {
+                        //l: 50, 
+                        //r: 10, 
+                        //b: 80,
+                        t: 25,
+                    },
                     shapes: [
                         //job memory max
                         {
