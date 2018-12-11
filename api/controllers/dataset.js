@@ -28,6 +28,14 @@ function canedit(user, rec, canwrite_project_ids) {
     return false;
 }
 
+function isuploadtask(task) {
+    //TODO might change in the future
+    return ( 
+        task.service == "soichih/sca-product-raw" || 
+        task.service == "soichih/sca-service-noop" ||
+        ~task.service.indexOf("brain-life/validator-"));
+}
+
 function construct_dataset_query(query, canread_project_ids) {
     var ands = [];
     if(query.find) ands.push(query.find);
@@ -88,7 +96,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         let query = construct_dataset_query(req.query, canread_project_ids);
-        console.log(JSON.stringify(query, null, 4));
+        //console.log(JSON.stringify(query, null, 4));
         db.Datasets.find(query)
         .populate(populate)
         .select(req.query.select)
@@ -233,6 +241,7 @@ router.get('/prov/:id', (req, res, next)=>{
         return label;
     }
 
+
     let datasets_analyzed = [];
     function load_dataset_prov(dataset, defer, cb) {
         let to = "dataset."+dataset._id;
@@ -251,35 +260,17 @@ router.get('/prov/:id', (req, res, next)=>{
 
         load_task(dataset.prov.task._id, (err, task)=>{
             if(err) return cb(err);
-            //logger.debug("load_task", task._id, task.service);
-
             if(!task.service) task.service = "unknown"; //only happens for dev/test? (TODO.. maybe I should cb()?)
             
-            //TODO might change in the future
-            if( task.service == "soichih/sca-product-raw" || 
-                task.service == "soichih/sca-service-noop" ||
-                ~task.service.indexOf("brain-life/validator-")) { 
+            if(isuploadtask(task)) {
                 if(defer) {
                     add_node(defer.node);
-                    //logger.debug(JSON.stringify(defer, null, 4));
-                    //logger.debug("to", to);
                     datasets_analyzed.push(dataset._id.toString());
                     if(defer.edge.to != defer.edge.from) edges.push(defer.edge);
                     to = defer.node.id;
                 }
-                //if(~task.service.indexOf("brain-life/validator-")) return cb();
                 if(dataset.prov.subdir) load_product_raw(to, dataset.prov.subdir, cb);
                 else load_product_raw(to, dataset._id, cb);
-            /*
-            } else if(task.service && task.service.indexOf("brain-life/validator-") === 0) { 
-                if(defer) {
-                    logger.debug("defer adding");
-                    logger.debug(JSON.stringify(defer, null, 4));
-                    add_node(defer.node);
-                    if(defer.edge.to != defer.edge.from) edges.push(defer.edge);
-                }
-                cb(); //ignore validator
-            */
             } else {
                 //should be a normal task..
                 add_node({
@@ -985,20 +976,10 @@ ${p.readme||''}`;
                 if(dataset.datatype.bids) {
                     //Create BIDS symlinks
                     let bidspath = root+"/bids/derivatives";
-                    let pipeline = "upload";
-                    if(dataset.prov && dataset.prov.task) {
-                        switch(dataset.prov.task.service) {
-                        case "soichih/sca-product-raw":
-                        case "soichih/sca-service-noop":
-                            break;
-                        default:
-                            if(~pipeline.indexOf("brain-life/validator-")) {
-                                pipeline = "upload";
-                            } else {
-                                pipeline = dataset.prov.task.service.replace(/\//g, '.');
-                            }
-                        }
-                        
+                    let pipeline = "upload"; //assumed by default..
+                    if(dataset.prov && dataset.prov.task && !isuploadtask(dataset.prov.task)) {
+                        //use service name as the pipeline name
+                        pipeline = dataset.prov.task.service.replace(/\//g, '.');
                         //add branch at the end of pipeline name
                         if(dataset.prov.task.service_branch) pipeline += "."+dataset.prov.task.service_branch;
                     }
