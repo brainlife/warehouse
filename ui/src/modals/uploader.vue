@@ -63,10 +63,18 @@
     <div v-if="mode == 'validate' && tasks.validation">
         <task :task="tasks.validation" v-if="!tasks.validation.product"/>
         <div v-else>
-            <b-alert show variant="success" v-if="tasks.validation.product.errors.length == 0 && tasks.validation.product.warnings.length == 0">
-                Your data looks good! Please check information below and click Archive button.
+            <p show="tasks.validation.product.errors.length == 0 && tasks.validation.product.warnings.length == 0" variant="success">
+                <b-alert show variant="success">
+                    Your data looks good! Please check information below and click Archive button.
+                </b-alert>
+                <product :product="tasks.validation.product"/>
+            </p>
+            <b-alert show="tasks.validation.product.errors.length > 0" variant="danger" v-for="(error, idx) in tasks.validation.product.errors" :key="idx">
+                {{error}}
             </b-alert>
-            <product :product="tasks.validation.product"/>
+            <b-alert show="tasks.validation.product.warnings.length > 0" variant="warning" v-for="(warning, idx) in tasks.validation.product.warning" :key="idx">
+                {{warning}}
+            </b-alert>
 
             <!--show info-->
             <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" 

@@ -1,5 +1,5 @@
 <template>
-<img :style="imgstyle" :src="project.avatar || 'https://api.adorable.io/avatars/'+width+'/'+project._id+'.png'" :width="width" :height="height"></img>
+<img :style="imgstyle" v-lazy="project.avatar || 'https://api.adorable.io/avatars/'+width+'/'+project._id+'.png'" :width="width" :height="height"></img>
 </template>
 
 <script>

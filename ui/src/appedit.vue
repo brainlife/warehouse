@@ -332,7 +332,7 @@
                                 <b-col cols="5">
                                     <span class="text-muted">Datatype</span>
                                     <datatypeselecter v-model="input.datatype" @input="input_datatype_changed(idx)"></datatypeselecter>
-                                    <datatype :datatype="datatypes[input.datatype]" style="margin-top: 5px;" v-if="input.datatype"/>
+                                    <datatype :datatype="datatypes[input.datatype]" style="margin-top: 5px;" v-if="input.datatype" :clickable="false"/>
                                 </b-col>
                                 <b-col cols="7">
                                     <div class="text-muted">Datatype Tags</div>
@@ -413,7 +413,7 @@
                                 <b-col>
                                     <div class="text-muted">Datatype</div>
                                     <datatypeselecter v-model="output.datatype"></datatypeselecter>
-                                    <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype"/>
+                                    <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype" :clickable="false"/>
                                 </b-col>
                                 <b-col cols="7" v-if="output.datatype">
                                     <div class="text-muted">Datatype Tags</div>

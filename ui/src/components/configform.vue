@@ -20,8 +20,7 @@
 
                 <!--boolean-->
                 <div v-if="v.type == 'boolean'">
-                    <b-form-checkbox :disabled="v.readonly"
-                    v-model="value[v.id]">{{v.desc}}</b-form-checkbox>
+                    <b-form-checkbox :disabled="v.readonly" v-model="value[v.id]">{{v.desc}}</b-form-checkbox>
                 </div>
 
                 <!--select-->
@@ -35,7 +34,7 @@
                     </option>
                 </b-form-select>
 
-                <b-form-text v-if="v.type != 'boolean'">{{v.desc}}</b-form-text>
+                <b-form-text v-if="v.type != 'boolean'" style="white-space: pre-wrap;">{{v.desc}}</b-form-text>
                 <b-form-text>
                     <span v-if="v.min !== undefined">min: {{v.min}}</span>
                     <span v-if="v.max !== undefined">max: {{v.max}}</span>

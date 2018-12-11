@@ -1,7 +1,7 @@
 <template>
 <v-select v-model="selected" :options="datatypes" label="name" v-if="datatypes">
     <template slot="option" slot-scope="datatype">
-        <datatype :datatype="datatype"/>
+        <datatype :datatype="datatype" :clickable="false"/>
     </template>
 </v-select>
 <!--

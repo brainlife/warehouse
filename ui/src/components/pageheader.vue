@@ -1,5 +1,6 @@
 <template>
 <div class="pageheader" :style="styles">
+    <img src="./christmas.png" class="reef">
     <b-nav class="nav">
         <!--
         <b-nav-item @click="doc"><icon name="book"/></b-nav-item>
@@ -129,7 +130,7 @@ svg.cloud {
 .title {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 20pt;
-    position: relative;
+    position: fixed;
     top: 3px;
     margin-left: 15px;
     margin-right: 20px;
@@ -158,7 +159,12 @@ svg.cloud {
 
 <style>
 .pageheader .nav .nav-link {
-    font-weight: bold;
-    color: white;
+font-weight: bold;
+color: white;
+}
+.pageheader .reef {
+position: absolute;
+top: -25px;
+left: -26px;
 }
 </style>

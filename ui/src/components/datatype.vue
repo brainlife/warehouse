@@ -1,6 +1,6 @@
 <template>
 <div v-if="datatype">
-    <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id"/> 
+    <datatypetag :datatype="datatype" :tags="datatype_tags" :title="id" :clickable="clickable"/> 
     <slot name="tag_extra"/>
     <p style="margin-bottom: 0px;"><small style="opacity:.7;">{{datatype.desc}}</small></p>
     <div>
@@ -24,6 +24,7 @@ export default {
         datatype: Object,
         datatype_tags: Array,
         id: String,
+        clickable: { type: Boolean, default: true, },
         /*
         showtag: {
             type: Boolean,

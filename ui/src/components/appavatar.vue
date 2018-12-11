@@ -1,6 +1,6 @@
 <template>
 <div class="appavatar">
-    <img :style="imgstyle" :src="app.avatar || '//robohash.org/'+app._id+'.png'" :width="width" :height="height"></img>
+    <img :style="imgstyle" v-lazy="app.avatar || '//robohash.org/'+app._id+'.png'" :width="width" :height="height"></img>
 </div>
 </template>
 
