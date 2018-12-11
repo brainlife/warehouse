@@ -11,7 +11,7 @@
                         <appavatar :app="app" style="margin-bottom: 10px;" :width="200" :height="200"/>
                     </b-col>
                     <b-col cols="9" style="background-color: white;"><!--hide avatar when screen is narrow-->
-                        <div style="float: right;">
+                        <div style="float: right; position: relative; z-index: 3">
                             <span class="button" @click="go_github()" title="github"><icon name="brands/github" scale="1.25"/></span>
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
@@ -554,7 +554,7 @@ background-color: #ddd;
 }
 .resource {
 background-color: white;
-box-shadow: 2px 2px 3px #ddd;
+box-shadow: 2px 2px 3px #eee;
 margin-bottom: 10px;
 position: relative;
 }
@@ -572,8 +572,9 @@ float: right;
 }
 .readme {
 background-color: white;
-padding: 30px;
-box-shadow: 2px 2px 5px #ddd;
+padding: 20px;
+box-shadow: 2px 2px 5px #eee;
+margin-bottom: 10px;
 }
 .io-card {
 padding: 8px; 

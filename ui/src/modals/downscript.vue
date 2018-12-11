@@ -5,14 +5,12 @@
 
     <p class="text-muted">
         The above command will download selected datasets inside sub directories for each subject. 
-        The command will also create <a href="http://bids.neuroimaging.io">BIDS</a> a directory (/bids) containing symlinks to organize files according to BIDS derivative standard.
+        The command will also create <a href="http://bids.neuroimaging.io">BIDS</a> a directory (bids) containing symbolic links to organize downloaded files info a BIDS derivative format.
     </p>
 
-    <!--
     <p class="text-muted">
-        For Windows users, please launch <b>bash</b> terminal from the command prompt.
+        For Windows users, please install <a href="https://itsfoss.com/install-bash-on-windows/">bash Shell</a> before running the above command.
     </p>
-    -->
 
     <div slot="modal-footer">
         <b-button variant="primary" @click="close">Close</b-button>

@@ -646,13 +646,15 @@ export default {
             this.sort_params_by_order();
         },
         
-        convert_ui_to_config(cb) {
+        validate(cb) {
             let config = {};
             let inputTable = {};
             let outputTable = {};
             let paramTable = {};
+
+            this.app.github = this.app.github.trim();
+            if(this.app.github.split("/").length != 2) return cb("please enter github repo in 'orgname/reponame' format");
             
-            //validate
             for (let input of this.input_datasets) {
                 if (!input.id) return cb("Not all input ids are non-null");
                 if (inputTable[input.id]) return cb("Duplicate ID '" + input.id + "' found in list of inputs");
@@ -664,19 +666,6 @@ export default {
                 }
                 
                 inputTable[input.id] = true;
-                /*
-                inputs.push({
-                    _id: input._id,
-                    id: input.id,
-                    datatype_tags: input.datatype_tags,
-                    datatype: input.datatype,
-                    optional: input.optional,
-                    multi: input.multi,
-                    desc: input.desc,
-                });
-                inputs.push(Object.assign({}, input));
-                */
-                
                 if (!input.files || input.files.length == 0) {
                     return cb("No file mapping given for input '" + input.id + "'");
                 }
@@ -820,7 +809,7 @@ export default {
         },
 
         submit() {
-            this.convert_ui_to_config(err => {
+            this.validate(err => {
                 if (err) {
                     this.$notify({ text: err, type: 'error' });
                     console.error(err);
