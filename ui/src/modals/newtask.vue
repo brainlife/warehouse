@@ -13,22 +13,43 @@
 
     <!--app selection page--> 
     <div v-if="!app" class="app-selecter">
-        <div v-if="apps && apps.length == 0" style="margin: 20px;">
-            <p style="opacity: 0.8">You have no application that you can submit with currently staged datasets.<br><br>Please try staging more datasets.</p>
-        </div>
-        <p v-else style="opacity: 0.8">You can submit following application(s) with currently available dataset.</p>
-
-        <div style="width: 50%; float: left;" v-for="app in apps" :key="app._id">
-            <div @click="selectapp(app)" style="padding-bottom: 5px; padding-right: 10px; font-size: 85%;">
-                <app :app="app" :clickable="false" class="clickable" height="160px"/>
+        <div v-if="apps">
+            <!--
+            <div style="padding: 20px; padding-bottom: 0px;">
+                <span v-if="apps.length > 0" style="opacity: 0.8;">You can submit following application with currently available dataset.</span>
+                <span v-else style="opacity: 0.8">You have no application to submit with currently staged datasets.<br><br>Please try staging more datasets.</span>
             </div>
-        </div>
+            -->
+            <b-alert v-if="apps.length == 0" show variant="secondary">You have no application to submit with currently staged datasets. Please try staging more datasets.</b-alert>
+            <b-tabs v-else class="brainlife-tab">
+                <b-tab title="Popular" v-if="apps.length > 9">
+                    <div class="apps">
+                        <div style="width: 33%; float: left;" v-for="app in most_popular_apps" :key="app._id">
+                            <div @click="selectapp(app)" style="margin-bottom: 10px; margin-right: 10px;">
+                                <app :app="app" :clickable="false" class="clickable" height="270px"/>
+                            </div>
+                        </div>
+                    </div>
+                </b-tab>
+                <b-tab title="All">
+                    <div class="apps">
+                        <div style="width: 33%; float: left;" v-for="app in apps" :key="app._id">
+                            <div @click="selectapp(app)" style="margin-bottom: 10px; margin-right: 10px;">
+                                <app :app="app" :clickable="false" class="clickable" height="270px"/>
+                            </div>
+                        </div>
+                    </div>
+                </b-tab>
+            </b-tabs>
+        </div> 
+
         <br clear="both">
     </div>
 
     <!--app configuration page--> 
-    <b-form v-if="app" class="submit-form" @submit="submit">
-        <app :app="app" :compact="false" />
+    <b-form v-if="app" class="submit-form" @submit="submit" style="padding: 20px;">
+        <!--<app :app="app" :compact="false" />-->
+        <app :app="app" :clickable="false" style="margin: -20px; margin-bottom: 0px;"/>
         <br>
 
         <!--input-->
@@ -64,12 +85,13 @@
                     </b-row>
                     <b-row v-if='input.multi'>
                         <b-col cols="5">
-                            <small v-if="input.desc" style="opacity: 0.8">{{input.desc}}</small>
+                            <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
                         </b-col>
                         <b-col cols="6" style="text-align:right;">
                             <b-button :size="'sm'" :variant="'secondary'" @click="input.selected.push(null)">Add Dataset</b-button>
                         </b-col>
                     </b-row>
+                    <small v-else-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
                 </b-form-group>
             </b-col>
         </b-row>
@@ -255,6 +277,18 @@ export default {
 
     destroyed() {
         this.$root.$off("newtask.open");
+    },
+
+    computed: {
+        most_popular_apps() {
+            return this.apps
+                .map(a=>{
+                    if(!a.stats) a.stats = {users: 0};
+                    return a;
+                })
+                .sort((a,b)=>b.stats.users-a.stats.users)
+                .slice(0, 9);
+        }
     },
 
     methods: {
@@ -471,10 +505,17 @@ position: absolute;
 left: 0px;
 right: 0px;
 top: 60px;
-padding: 20px;
 bottom: 0px;
 overflow: auto;
 background-color: #f9f9f9;
 }
-
+.apps {
+padding: 20px;
+overflow: auto;
+position: absolute;
+top: 45px;
+left: 0;
+right: 0;
+bottom: 0px;
+}
 </style>

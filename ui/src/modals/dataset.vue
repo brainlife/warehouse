@@ -152,11 +152,15 @@
                             <b-col cols="3"><span class="form-header">Publications</span></b-col>
                             <b-col cols="9">
                                 <p><small class="text-muted">This dataset has been published on the following publications.</small></p>
-                                <p v-for="pub in dataset._pubs" v-if="!pub.removed">
-                                    <a href="javascript:void(0);" @click="openpub(pub)">
-                                        <icon name="book" scale="0.8"/> {{pub.name||pub}}
-                                    </a>
-                                </p>
+                                <div v-for="release in dataset.publications">
+                                    <div v-for="pub in dataset._pubs" v-if="!pub.removed">
+                                        <p v-for="r in pub.releases" :key="r" v-if="r._id == release">
+                                            <a href="javascript:void(0);" @click="openpub(pub)">
+                                                <icon name="book" scale="0.8"/> {{pub.name||pub}} Release {{r.name}}
+                                            </a>
+                                        </p>
+                                    </div>
+                                </div>
                             </b-col>
                         </b-row>
                         <b-row>
@@ -183,6 +187,7 @@
                         <b-alert show variant="secondary">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
                     </div>
                     <div ref="vis" v-else style="height: 100%;"/>
+                    <small style="opacity: 0.5; position: absolute; bottom: 0; right: 0px; padding: 10px;">* Double click input datasets to open</small>
                 </div>
             </b-tab>
             <b-tab title="Apps">
@@ -370,6 +375,15 @@ export default {
                                 shadow: true, //TODO - shadow is too string..
                                 borderWidth: 0,
                             },
+                        });
+                        gph.on("doubleClick", e=>{
+                            /*e.edges, e.event, e.nodes. e.pointer*/
+                            e.nodes.forEach(node=>{
+                                if(node.startsWith("dataset.")) {
+                                    let dataset_id = node.substring(8);
+                                    this.$router.push(this.$route.path.replace(this.dataset._id, dataset_id));
+                                }
+                            });
                         });
                     });
                 }
@@ -571,12 +585,10 @@ export default {
                 if(this.dataset.publications) {
                     find["releases._id"] = {$in: this.dataset.publications};
                 }
-                //console.dir(find);
                 return this.$http.get('pub', {params: {
                     find: JSON.stringify(find),
                 }});
             }).then(res=>{
-                //console.dir(res.body.pubs);
                 this.$set(this.dataset, '_pubs', res.body.pubs);
                 
              }).catch(err=>{

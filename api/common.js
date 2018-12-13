@@ -172,7 +172,7 @@ exports.archive_task = function(dataset, auth, cb) {
 
                 fs.writeFileSync(tmpdir+"/.brainlife.json", JSON.stringify(dataset, null, 4));
                 filenames.push(".brainlife.json");
-                console.dir(filenames);
+                //console.dir(filenames);
 
                 //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
                 var storage = config.storage_default();

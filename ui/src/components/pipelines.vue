@@ -2,10 +2,10 @@
 <div v-if="ready">
     <div v-if="!editing && rules.length > 0" class="page-header with-menu header">
         <b-row :no-gutters="true">
-            <b-col :cols="5">
+            <b-col>
                 <b>{{rules.length}}</b> Pipeline Rules
             </b-col>
-            <b-col :cols="3" style="position: relative; top: -5px; text-align: right;">
+            <b-col :cols="4" style="position: relative; top: -5px; text-align: right;">
                 <small>Order by</small>
                 <b-dropdown :text="order" size="sm" :variant="'light'">
                     <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
@@ -67,15 +67,15 @@
                 <!--rule body-->
                 <div v-if="selected == rule" transition="expand">
                     <div style="float: right; margin-right: 90px;">
-                            <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="edit"/></div>
-                            <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm"><icon name="trash"/></div>
+                            <div class="button" @click="copy(rule)" v-if="ismember() || isadmin()" size="sm" title="copy"><icon name="copy"/></div>
+                            <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm" title="edit"><icon name="edit"/></div>
+                            <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" title="remove"><icon name="trash"/></div>
                     </div>
-
 
                     <div v-if="rule.active" style="margin: 0px 10px;">
                         <b-btn @click="deactivate(rule)" variant="outline-danger" size="sm" v-if="!rule.deactivating_remain"><icon name="times"/> Deactivate </b-btn>
-                        <b-btn variant="outline-danger" size="sm" v-if="rule.deactivating_remain > 0"><icon name="times"/> Deactivating <b-badge>{{rule.deactivating_remain}}</b-badge></b-btn>
-                        <small style="opacity: 0.8">{{rule.taskcount||0}} active tasks</small>
+                        <b-btn variant="outline-danger" size="sm" v-if="rule.deactivating_remain > 0"><icon name="times"/> Deactivating {{rule.deactivating_remain}}</b-btn>
+                        <small style="opacity: 0.8; padding: 10px;"><b>{{rule.activetaskcount||0}}</b> Active Tasks</small>
                         <!--
                         <icon name="cog" :spin="true" scale="1.25" style="float: left;"/>
                         <div style="margin-left: 30px;">
@@ -217,12 +217,17 @@ export default {
             //deactivating: null,
             //deactivating_remain: null,
 
+            activetaskcount_int: null,
+
             config: Vue.config,
         }
     },
 
-    mounted: function() {
+    mounted() {
         this.load();
+    },
+    destroyed() {
+        if(this.activetaskcount_int) clearInterval(this.activetaskcount_int);
     },
 
     watch: {
@@ -242,21 +247,16 @@ export default {
 
         selected: function() {
             if(!this.selected) return;
-
             Vue.set(this.selected, 'subject_match_edit', this.selected.subject_match);
 
-            //load number of tasks submitted by this rule
-            this.$http.get(Vue.config.amaretti_api+"/task", {params: {
-                find: JSON.stringify({
-                    'config._rule.id': this.selected._id,
-                    status: {$ne: "removed"},
-                }),
-                limit: 0, //I just need a count.
-            }})
-            .then(res=>{
-                Vue.set(this.selected, 'taskcount', res.body.count);
-            });            
+            //start activetaskcount query
+            if(this.activetaskcount_int) clearInterval(this.activetaskcount_int);
+            this.activetaskcount_int = setInterval(()=>{
+                this.get_activetaskcount();    
+            }, 5000);
+            this.get_activetaskcount();
         },
+
     },
 
     computed: {
@@ -304,7 +304,26 @@ export default {
     },
 
     methods: {
-        load: function(cb) {
+        get_activetaskcount() {
+            if(!this.selected) return;
+            //console.log("querying activetaskcount");
+            //load number of tasks submitted by this rule (and active)
+            this.$http.get(Vue.config.amaretti_api+"/task", {params: {
+                find: JSON.stringify({
+                    'config._rule.id': this.selected._id,
+                    'config._app': {$exists: true}, //don't count number of staging
+                    status: {$in: ["running", "running_sync", "requested"] }, //count active
+                    //status: {$ne: "removed"},
+                }),
+
+                limit: 0, //I just need a count.
+            }})
+            .then(res=>{
+                Vue.set(this.selected, 'activetaskcount', res.body.count);
+            });  
+        },
+
+        load(cb) {
             let group_id = this.project.group_id;
             this.order = window.localStorage.getItem("pipelines.order."+group_id)||"create_date";
 
@@ -315,12 +334,10 @@ export default {
                     removed: false,
                 }),
                 populate: 'app', 
-                //sort: '-active create_date', 
                 sort: 'create_date', 
             }})
             .then(res=>{
                 this.rules = res.body.rules; 
-
                 if(this.$route.params.subid) {
                     this.editing = this.rules.find(rule=>rule._id == this.$route.params.subid);
                 }
@@ -353,8 +370,8 @@ export default {
             });
             return this.$http.get('datatype', {params: {
                 find: JSON.stringify({
-                        _id: {$in: ids}
-                    })
+                    _id: {$in: ids}
+                })
             }})
             .then(res=>{
                 this.datatypes = {};
@@ -421,6 +438,13 @@ export default {
             this.$refs.scrolled.scrollTop = 0;
             this.editing = rule;
             this.selected = rule; //I think it makes sense to select rule that user is editing?
+        },
+
+        copy(rule) {
+            this.editing = Object.assign({}, rule);
+            delete this.editing._id;
+            this.editing.name = rule.name+" - copy";
+            this.editing.active = false; //should deactivate if it's active
         },
 
         update_subject_match(rule) {
@@ -501,15 +525,20 @@ export default {
             this.$http.get(Vue.config.amaretti_api+"/task", {params: {
                 find: JSON.stringify({
                     'config._rule.id': rule._id,
+                    //'config._app': {$exists: true}, //don't want to remove staging task (might be used by other rules)
                     status: {$ne: "removed"},
                 }),
                 limit: 5000, //big enough to grab all tasks?
             }})
             .then(res=>{
                 if(res.body.count > 0) {
-                    if(confirm("Deactivating this rule will remove "+res.body.count+" active tasks submitted by this rule. Should we proceed?")) {
-                        //this.deactivating = rule;
-                        //this.deactivating_remain = res.body.count;
+                    let active_count = 0;
+                    let active_tasks = res.body.tasks.filter(task=>{
+                        if(!["requested", "running", "running_sync"].includes(task.status)) return false;
+                        if(!task.config._app) return false; //staging job?
+                        return true;
+                    });
+                    if(confirm("Deactivating this rule will remove "+active_tasks.length+" active tasks ("+res.body.count+" total) submitted by this rule. Should we proceed?")) {
                         Vue.set(rule, 'deactivating_remain', res.body.count);
                         this.$notify({ title: 'Removing Task', text: 'Removing'+res.body.count+' tasks', type: 'info', });
 
@@ -524,7 +553,6 @@ export default {
                             this.$notify({ title: 'Removing Task', text: 'Removed '+res.body.count+' tasks', type: 'success', });
                             this.$http.put('rule/'+rule._id, {active: false}).then(res=>{
                                 rule.active = false;
-                                //rule.deactivating = null;
                             }).catch(this.notify_error);
                         });
                     }
@@ -532,6 +560,10 @@ export default {
                     this.$http.put('rule/'+rule._id, {active: false}).then(res=>{
                         rule.active = false;
                         this.$notify({ text: 'Rule has been deactivated', type: 'success'});
+            
+                        //TODO - task might get submitted by rule handler while deactivating tasks.. 
+                        //we should query one more time and remove them if there are any ..
+
                     }).catch(this.notify_error);
                 }
             });

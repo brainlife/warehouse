@@ -127,6 +127,7 @@ left: 330px;
 transition: 0.2s left;
 }
 
+/*
 @media screen and (max-width: 850px) {
     .page-header.with-menu,
     .page-footer.with-menu,
@@ -134,9 +135,10 @@ transition: 0.2s left;
         left: 200px;
     }
 }
+*/
 
 code.hljs {
-font-size: 80%;
+font-size: 85%;
 }
 table.info {
 width: 100%;
@@ -300,6 +302,7 @@ small {
 font-size: 85%;
 opacity: 0.7;
 }
+.col-form-label,
 .form-header {
 text-transform: uppercase;
 opacity: 0.9;

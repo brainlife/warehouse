@@ -378,13 +378,15 @@ export default {
                         var task = event.msg;
                         var t = this.tasks.find(t=>t._id == task._id);
                         if(!t) {
-                            //new task?
-                            this.$notify("new t."+task.config._tid+"("+task.name+") "+task.status_msg);
-                            task.show = true;
-                            this.tasks.push(task); 
-                            Vue.nextTick(()=>{
-                                this.scrollto(task._id);
-                            });
+                            //new task? - /use _tid to know that it's meant for process view
+                            if(task.config && task.config._tid) {
+                                this.$notify("new t."+task.config._tid+"("+task.name+") "+task.status_msg);
+                                task.show = true;
+                                this.tasks.push(task); 
+                                Vue.nextTick(()=>{
+                                    this.scrollto(task._id);
+                                });
+                            }
                         } else {
                             //update
                             if(t.status != task.status) {
@@ -529,7 +531,6 @@ export default {
                     var task = res.body.task;
                 });
             });
-
         },
 
         submit_task(task) {
@@ -538,6 +539,27 @@ export default {
             task.config._tid = this.next_tid();
             this.$http.post(Vue.config.api+"/app/submit", task).then(res=>{
                 var _task = res.body.task;
+                
+                /*
+                //experimental... submit noop on wrangler to move output to wrangler
+                //see if user requested for archive
+                if(task.config._outputs.find(out=>out.archive)) {
+                    this.$http.post(Vue.config.wf_api+'/task', {
+                        instance_id: _task.instance_id,
+                        name: "noop",
+                        desc: "to copy data to wrangler",
+                        service: "brainlife/app-noop",
+                        //config: { _tid: this.next_tid() },
+                        preferred_resource_id: "59ea931df82bb308c0197c3d", //for dev1 wrangler
+                        //preferred_resource_id: "5bb230e9bdd0e1002a57f034", //for prod?
+                        deps: [ _task._id ],
+                    }).then(res=>{
+                        console.log("noop requested"); 
+                        console.dir(res);
+                    }).catch(console.error);
+                }
+                */
+                
             }).catch(this.notify_error);
         },
 
@@ -580,22 +602,6 @@ export default {
 </script>
 
 <style scoped>
-.sidebar {
-background-color: #ddd;
-position: fixed;
-top: 110px;
-bottom: 0px;
-width: 300px;
-right: 0px;
-overflow: auto;
-padding-bottom: 50px; /*so it won't be covered by notification*/
-}
-.sidebar h6 {
-font-weight: bold;
-color: #999;
-padding: 10px;
-margin: 0px;
-}
 .task-header {
 margin: 0px;
 padding: 10px;
@@ -610,12 +616,6 @@ margin-left: 95px;
 border-left: 5px solid #ccc;
 padding-left: 10px;
 font-style: italic;
-}
-.sidebar .dataset {
-border-bottom: 1px solid #d5d5d5; 
-padding: 3px;
-padding-left: 7px;
-font-size: 85%;
 }
 .dataset.clickable:hover {
 background-color: #eee;
@@ -647,12 +647,6 @@ ul.archived li:hover {
 cursor: pointer;
 background-color: #ddd;
 }
-.sidebar .statusicon-failed {
-color: #c00;
-}
-.sidebar .statusicon-running {
-color: #2693ff;
-}
 .task-id {
 cursor: pointer;
 color: gray;
@@ -673,7 +667,16 @@ margin-bottom: 1px;
 .task-area {
 margin-right: 310px;
 box-shadow: 0px 2px 4px #ccc;
+transition: margin-right 0.5s;
 }
+
+@media screen and (max-width: 1200px) {
+    .new-action,
+    .task-area {
+        margin-right: 40px;
+    }
+}
+
 .new-action {
 position: sticky; bottom: 0px;
 background-color: white;
@@ -707,7 +710,14 @@ background-color: #28a745;
 .task-tabs {
 float: right;
 width: 300px;
+transition: margin-right 0.5s;
 }
+@media screen and (max-width: 1200px) {
+    .task-tabs {
+        margin-right: -300px;
+    }
+}
+
 .task-tab {
 font-size: 90%;
 background-color: white;

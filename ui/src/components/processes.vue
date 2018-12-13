@@ -484,10 +484,12 @@ top: 100px;
 margin-top: 40px;
 }
 
+/*
 .header, 
 .content {
 min-width: 700px;
 }
+*/
 
 .instance-header {
 padding: 3px 15px;
@@ -538,7 +540,6 @@ text-overflow: inherit;
 .process {
 padding-bottom: 20px;
 margin-bottom: 20px;
-/*background-color: #f7f7f7;*/
 background-color: #f0f0f0;
 border-bottom: 1px solid #e0e0e0;
 }
@@ -638,6 +639,9 @@ width: 110px;
 text-align: right;
 font-size: 88%;
 line-height: 200%;
+}
+#scrolled-area {
+overflow-x: hidden;
 }
 </style>
 

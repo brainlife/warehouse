@@ -52,7 +52,7 @@
                 </b-row>
                 <b-row>
                     <b-col cols="5">
-                        <small v-if="input.desc" class="text-muted">{{input.desc}}</small>
+                        <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
                     </b-col>
                     <b-col cols="6" style="text-align:right;">
                         <b-button :size="'sm'" :variant="'secondary'" @click="form.inputs[input.id].push(null)" v-if="input.multi">Add Dataset</b-button>
@@ -575,7 +575,7 @@ export default {
                 event: "wf.task.finished",
                 handler: "email",
                 config: {
-                    task_id: task_id,
+                    task_id,
                     subject: "[brainlife.io] Process Completed",
                     message: "Hello!\n\nI'd like to inform you that your process has completed successfully.\n\nPlease visit "+url+" to view your result.\n\nBrain-life.org Administrator"
                 },

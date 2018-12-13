@@ -96,7 +96,7 @@
                                 <p>
                                     <small class="text-muted">Citation to this dataset/app published on Brainlife</small>
                                 </p>
-                                <b-card no-body>
+                                <b-card no-body class="citation-box">
                                     <b-tabs pills card>
                                         <b-tab title="Text">
                                             <p>
@@ -216,7 +216,7 @@
                         <p v-if="dataset_groups">
                             <span class="button" @click="downscript({})">
                                 {{total.subjects}} Subjects <span style="opacity: 0.2">|</span> {{total.count}} Datasets <span v-if="total.size"> {{total.size|filesize}}</span>
-                                <icon name="download" scale="0.9"/> 
+                                <icon name="download" scale="0.8" style="opacity: 0.5; position: relative; top: -2px;"/> 
                             </span>
                         </p>
                         <p style="opacity: 0.5" v-else>Loading ... <icon name="cog" spin/></p>
@@ -237,9 +237,9 @@
                                                     <icon name="caret-right" v-if="!block.show"/> 
                                                     <icon name="caret-down" v-if="block.show"/> 
                                                 </div>
-                                                <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)"/>
+                                                <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)" :clickable="false"/>
                                                 &nbsp;
-                                                <span class="text-muted">{{datatypes[datatype_id].desc}}</span>
+                                                <!--<span class="text-muted">{{datatypes[datatype_id].desc}}</span>-->
                                                 <small class="text-muted" style="float: right;">{{block.count}} datasets <span v-if="block.size">{{block.size|filesize}}</span></small>
                                             </div>
                                             <transition name="fadeHeight">
@@ -266,12 +266,14 @@
                         <p style="opacity: 0.8;">
                             The following Apps were used to generate the files in this release. Apps are preserved and can be downloaded with the appropriate version number.
 </p>
-                        <b-row>
-                            <b-col cols="6" v-for="(rec, idx) in apps" :key="idx" style="margin-bottom: 10px;">
+                        <div v-for="(rec, idx) in apps" :key="idx" style="width: 33%; float: left;">
+                            <div style="margin-right: 10px; margin-bottom: 10px; position: relative;">
                                 <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
-                                <div class="button" style="float: right;" @click="download_app(rec.service, rec.service_branch)"><icon name="download"/></div>
-                            </b-col>
-                        </b-row>
+                                <div class="button app-download" size="sm" variant="primary" @click="download_app(rec.service, rec.service_branch)" title="Download App">
+                                    <icon name="download"/>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                 </b-col>
@@ -521,6 +523,7 @@ transition: 0.5s color;
 color: white;
 }
 </style>
+
 <style scoped>
 .header {
 background-color: white;
@@ -588,11 +591,26 @@ padding-top: 10px;
 border-top: 1px solid #eee;
 }
 .download-subject {
-opacity: 0.7;
-display: none;
+opacity: 0.5;
+position: relative;
+top: -2px;
 }
 .group .button:hover .download-subject {
-display: inherit;
+opacity: 1;
+}
+.app-download {
+position: absolute;
+bottom: 40px;
+right: 5px;
+}
+.readme {
+background-color: white;
+padding: 20px;
+box-shadow: 2px 2px 3px #eee;
+}
+.citation-box {
+border: none;
+box-shadow: 2px 2px 3px #eee;
 }
 </style>
 

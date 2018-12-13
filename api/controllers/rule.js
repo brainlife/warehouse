@@ -140,6 +140,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         if(err) return next(err);
         let override = {
             user_id: req.user.sub,
+            create_date: new Date(),
         }
         new db.Rules(Object.assign(req.body, override)).save((err, rule)=>{
             if(err) return next(err);

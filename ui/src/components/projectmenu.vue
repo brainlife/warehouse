@@ -188,6 +188,7 @@ position: relative;
 left: -3px;
 }
 
+/*
 @media screen and (max-width: 850px) {
     .projectmenu {
         width: 150px;
@@ -207,5 +208,6 @@ left: -3px;
         padding: 5px 10px;
     }
 }
+*/
 </style>
 

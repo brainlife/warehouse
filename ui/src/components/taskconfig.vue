@@ -2,7 +2,7 @@
 <div v-if="taskconfig && appconfig">
     <span style="opacity: 0.4;" v-if="Object.keys(taskconfig).length == 0">No configuration</span>
     <table width="100%">
-        <tr v-for="(v,k) in taskconfig" :key="k" :class="{ default: is_default(k) }">
+        <tr v-for="(v,k) in taskconfig" :key="k" class="config-row" :class="{ default: is_default(k) }">
             <th>{{k}}</th>
             <td v-if="v === null">
                 <pre class="text-muted" style="margin-bottom: 0">null</pre>
@@ -14,8 +14,7 @@
             <td v-else width="30%"><pre style="white-space: pre-wrap;">{{v}}</pre></td>
             
             <td style="font-size: 85%;" width="50%">
-                <div v-if="appconfig[k]">
-                    {{ appconfig[k].desc }} <span style="opacity: 0.6;">default={{get_default(k)}}</span>
+                <div v-if="appconfig[k]" style="white-space: pre-wrap;">{{appconfig[k].desc}} <span style="opacity: 0.6;">default={{get_default(k)}}</span>
                 </div>
             </td>
         </tr>
@@ -134,6 +133,9 @@ export default {
 <style scoped>
 tr.default {
 opacity:.6;
+}
+tr.default:hover {
+opacity: inherit; 
 }
 td,th {
 vertical-align: top;

@@ -266,7 +266,7 @@ color: #222;
 font-family: 'monospace';
 margin-bottom: 5px;
 padding: 0px;
-box-shadow: 1px 1px 4px #aaa;
+box-shadow: 1px 1px 3px #bbb;
 border-left: 15px solid #ddd;
 }
 .file-content .hljs {
@@ -277,8 +277,8 @@ position: relative;
 }
 .file-content-buttons {
 position: absolute; 
-top: 5px; 
-right: 25px; 
+top: -3px; 
+right: 20px; 
 opacity: 0;
 transition: opacity 0.5s;
 }

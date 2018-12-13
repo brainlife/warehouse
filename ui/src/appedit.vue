@@ -90,10 +90,11 @@
                                 <b-input-group prepend="Github Repository Name">
                                     <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
                                 </b-input-group>
+                                <small v-if="github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
                             </b-col>
-                            <b-col>
-                                <b-input-group prepend="Branch/Tag (optional)">
-                                    <b-form-input type="text" v-model="app.github_branch" placeholder="master"/>
+                            <b-col v-if="github_branches && github_branches.length > 0">
+                                <b-input-group prepend="Branch/Tag">
+                                    <b-form-select v-model="app.github_branch" :options="github_branches"/>
                                 </b-input-group>
                             </b-col>
                         </b-row>
@@ -480,6 +481,8 @@ import trueorfalse from '@/components/trueorfalse'
 import tageditor from '@/components/tageditor'
 import datatype from '@/components/datatype'
 
+let debounce;
+
 export default {
     components: { 
         sidemenu, contactlist, 
@@ -493,8 +496,12 @@ export default {
             app: {
                 config: {},
                 inputs: [],
-                outputs: []
+                outputs: [],
+                github_branch: "master",
             },
+
+            invalid_repo: false,
+            github_branches: null,
             
             input_datasets: [],
             output_datasets: [],
@@ -504,7 +511,6 @@ export default {
 
             ready: false,  //ready to render form
 
-            //cache
             datatypes: null, //registered datatypes (keyed by datatype_id)
 
             config: Vue.config
@@ -542,24 +548,28 @@ export default {
                 this.load_app_tags().then(tags=>{
                     this.alltags = tags;
 
-                    if (this.$route.params.id !== '_') {
-
-                        //finally time to load app to edit
-                        this.$http.get('app', {params: {
-                            find: JSON.stringify({_id: this.$route.params.id})
-                        }})
-                        .then(res=>{
-                            this.app = res.body.apps[0];
-                            this.convert_config_to_ui();
-                            this.ready = true;
-                        });
-                    } else {
-                        //init.. (can't do it in data() for some reason (maybe because contact list is not setup?))
+                    if (this.$route.params.id == '_') {
+                        //new .. (can't do it in data() for some reason (maybe because contact list is not setup?))
                         this.app.admins = [Vue.config.user.sub];
                         this.convert_config_to_ui();
                         this.ready = true;
+                    } else {
+                        //finally time to load app to edit
+                        this.$http.get('app', {params: {
+                            find: JSON.stringify({_id: this.$route.params.id})
+                        }}).then(res=>{
+                            this.app = res.body.apps[0];
+                            this.convert_config_to_ui();
+                            this.load_branches();
+                            if(this.$route.params.mode == 'copy') {
+                                this.app.name += " - copy";
+                                delete this.app._id;
+                                delete this.app.doi;
+                                delete this.app.create_date;
+                            }
+                            this.ready = true;
+                        });
                     }
-
                 });
             });
         }, res => {
@@ -567,7 +577,33 @@ export default {
         });
     },
 
+    watch: {
+        "app.github"(newv, oldv) {
+            if(!oldv) return;
+            clearTimeout(debounce);
+            debounce = setTimeout(()=>{ 
+                this.load_branches();
+            }, 500);
+        },
+    },
+
     methods: {
+        load_branches() {
+            console.log("loading branches");
+            this.github_branches = [];
+            this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', 
+                { headers: { Authorization: null } })
+            .then(res=>{
+                this.github_branches = res.body.map(b => {
+                    return {
+                        value: b.name,
+                        text: b.name
+                    };
+                });
+            }).catch(err=>{
+                console.error(err);
+            });
+        },
         swap_inputs(first_idx, snd_idx) {
             let tmp = this.input_datasets[first_idx];
             Vue.set(this.input_datasets, first_idx, this.input_datasets[snd_idx]);
@@ -646,13 +682,16 @@ export default {
             this.sort_params_by_order();
         },
         
-        convert_ui_to_config(cb) {
+        validate(cb) {
             let config = {};
             let inputTable = {};
             let outputTable = {};
             let paramTable = {};
+
+            if(!this.app.github) return cb("please specify github repo");
+            this.app.github = this.app.github.trim();
+            if(this.app.github.split("/").length != 2) return cb("please enter github repo in 'orgname/reponame' format");
             
-            //validate
             for (let input of this.input_datasets) {
                 if (!input.id) return cb("Not all input ids are non-null");
                 if (inputTable[input.id]) return cb("Duplicate ID '" + input.id + "' found in list of inputs");
@@ -664,19 +703,6 @@ export default {
                 }
                 
                 inputTable[input.id] = true;
-                /*
-                inputs.push({
-                    _id: input._id,
-                    id: input.id,
-                    datatype_tags: input.datatype_tags,
-                    datatype: input.datatype,
-                    optional: input.optional,
-                    multi: input.multi,
-                    desc: input.desc,
-                });
-                inputs.push(Object.assign({}, input));
-                */
-                
                 if (!input.files || input.files.length == 0) {
                     return cb("No file mapping given for input '" + input.id + "'");
                 }
@@ -820,13 +846,13 @@ export default {
         },
 
         submit() {
-            this.convert_ui_to_config(err => {
+            this.validate(err => {
                 if (err) {
                     this.$notify({ text: err, type: 'error' });
                     console.error(err);
                 } else {
                     //now ready to submit
-                    if(this.$route.params.id !== '_') {
+                    if(this.app._id) {
                         //update
                         this.$http.put('app/' + this.app._id, this.app)
                         .then(res=>{
@@ -836,6 +862,7 @@ export default {
                             console.error(err);
                         });
                     } else {
+                        //new
                         this.$http.post('app', this.app)
                         .then(res => {
                             this.$router.push("/app/" + res.body._id);
