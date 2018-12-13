@@ -536,7 +536,7 @@ export default {
             //set last minutes stuff
             task.instance_id = this.instance._id;
             task.config._tid = this.next_tid();
-            this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
+            this.$http.post(Vue.config.api+"/app/submit", task).then(res=>{
                 var _task = res.body.task;
             }).catch(this.notify_error);
         },
