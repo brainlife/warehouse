@@ -46,7 +46,7 @@ export default new Router({
         {path: '/apps', component: apps, meta: {public: true}},
         {path: '/appsgraph', component: appsgraph, meta: {public: true}},
         {path: '/app/:id', component: app, meta: {public: true}},
-        {path: '/app/:id/edit', component: appedit},
+        {path: '/app/:id/:mode', component: appedit},
 
         {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true},
         {path: '/novnc/:taskid/:type/:datatype64/:subdir?', component: novnc, props: true},

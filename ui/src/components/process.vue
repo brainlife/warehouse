@@ -378,13 +378,15 @@ export default {
                         var task = event.msg;
                         var t = this.tasks.find(t=>t._id == task._id);
                         if(!t) {
-                            //new task?
-                            this.$notify("new t."+task.config._tid+"("+task.name+") "+task.status_msg);
-                            task.show = true;
-                            this.tasks.push(task); 
-                            Vue.nextTick(()=>{
-                                this.scrollto(task._id);
-                            });
+                            //new task? - /use _tid to know that it's meant for process view
+                            if(task.config && task.config._tid) {
+                                this.$notify("new t."+task.config._tid+"("+task.name+") "+task.status_msg);
+                                task.show = true;
+                                this.tasks.push(task); 
+                                Vue.nextTick(()=>{
+                                    this.scrollto(task._id);
+                                });
+                            }
                         } else {
                             //update
                             if(t.status != task.status) {
@@ -529,7 +531,6 @@ export default {
                     var task = res.body.task;
                 });
             });
-
         },
 
         submit_task(task) {
@@ -538,6 +539,27 @@ export default {
             task.config._tid = this.next_tid();
             this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
                 var _task = res.body.task;
+                
+                /*
+                //experimental... submit noop on wrangler to move output to wrangler
+                //see if user requested for archive
+                if(task.config._outputs.find(out=>out.archive)) {
+                    this.$http.post(Vue.config.wf_api+'/task', {
+                        instance_id: _task.instance_id,
+                        name: "noop",
+                        desc: "to copy data to wrangler",
+                        service: "brainlife/app-noop",
+                        //config: { _tid: this.next_tid() },
+                        preferred_resource_id: "59ea931df82bb308c0197c3d", //for dev1 wrangler
+                        //preferred_resource_id: "5bb230e9bdd0e1002a57f034", //for prod?
+                        deps: [ _task._id ],
+                    }).then(res=>{
+                        console.log("noop requested"); 
+                        console.dir(res);
+                    }).catch(console.error);
+                }
+                */
+                
             }).catch(this.notify_error);
         },
 

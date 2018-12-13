@@ -126,7 +126,6 @@ Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.productionTip = false
 
-
 Vue.http.options.root = Vue.config.api; //default root for $http
 
 if (process.env.NODE_ENV == "development") {
