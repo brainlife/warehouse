@@ -673,6 +673,20 @@ margin-bottom: 1px;
 .task-area {
 margin-right: 310px;
 box-shadow: 0px 2px 4px #ccc;
+transition: margin-right 0.5s;
+}
+
+@media (max-width: 950px) {
+    .new-action,
+    .task-area {
+        margin-right: 0px;
+    }
+}
+@media (min-width: 950px) and (max-width: 1200px) {
+    .new-action,
+    .task-area {
+        margin-right: 40px;
+    }
 }
 .new-action {
 position: sticky; bottom: 0px;
@@ -697,7 +711,6 @@ color: #007bff;
 .new-action-button-newtask:hover {
 background-color: #007bff;
 }
-
 .new-action-button-newdataset{
 color: #28a745;
 }
@@ -707,6 +720,12 @@ background-color: #28a745;
 .task-tabs {
 float: right;
 width: 300px;
+transition: margin-right 0.5s;
+}
+@media screen and (max-width: 1200px) {
+    .task-tabs {
+        margin-right: -300px;
+    }
 }
 .task-tab {
 font-size: 90%;

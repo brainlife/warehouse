@@ -164,7 +164,6 @@ export default {
 
             //cache
             datasets: {}, //available datasets grouped by input._id then project_id then array of datasets
-            //projects: [], //just names and group_ids
             
             config: Vue.config,
         }
@@ -172,6 +171,15 @@ export default {
 
     created() {
         this.$root.$on("appsubmit.open", _id=>{
+
+            //reset form
+            this.form.desc = "";
+            this.form.inputs = {};
+            this.form.options = {};
+            this.form.projects = {};
+            this.form.config = {};
+            this.form.advanced = {};
+
             //load app detail
             return this.$http.get('app', {params: {
                 find: JSON.stringify({_id}),
