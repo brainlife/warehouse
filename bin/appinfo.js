@@ -8,7 +8,7 @@ const redis = require('redis');
 const jsonwebtoken = require('jsonwebtoken');
 
 const config = require('../api/config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
@@ -57,7 +57,7 @@ function handle_app(app, cb) {
     logger.debug("caching serviceinfo");
     request.get({
         url: config.amaretti.api+"/service/info", json: true,
-        headers: { authorization: "Bearer "+config.auth.jwt },
+        headers: { authorization: "Bearer "+config.auth.jwt||config.warehouse.jwt },  //config.auth.jwt is deprecated
         qs: {
             service: app.github,
             //service_branch: app.github_branch,  //let's not group by branch for now.

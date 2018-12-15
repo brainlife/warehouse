@@ -2,7 +2,7 @@ const winston = require('winston');
 const async = require('async');
 
 const config = require('./config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('./models');
 const common = require('./common');
 

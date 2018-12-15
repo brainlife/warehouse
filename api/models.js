@@ -6,7 +6,7 @@ const winston = require("winston");
 
 //mine
 const config = require("./config");
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 
 //use native promise for mongoose
 //without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated

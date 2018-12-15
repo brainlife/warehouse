@@ -9,7 +9,7 @@ const mkdirp = require('mkdirp');
 //const xml2js = require('xml2js');
 
 const config = require('../api/config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 

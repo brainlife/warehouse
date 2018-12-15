@@ -8,7 +8,7 @@ const request = require('request');
 const redis = require('redis');
 
 const config = require('../api/config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
@@ -105,7 +105,7 @@ function archive_dataset(msg, cb) {
 			logger.debug("issue jwt to download dataset");
 			request.get({
 				url: config.auth.api+"/jwt/"+dataset.user_id, json: true,
-				headers: { authorization: "Bearer "+config.auth.jwt },
+				headers: { authorization: "Bearer "+config.auth.jwt||config.warehouse.jwt }, //config.auth.jwt is deprecated
 			}, (err, res, body)=>{
 				if(err) return next(err);
 				if(res.statusCode != 200) return next("couldn't obtain user jwt code:"+res.statusCode);

@@ -8,7 +8,7 @@ const async = require('async');
 const request = require('request');
 
 const config = require('../config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 const mongoose = require('mongoose');
@@ -135,14 +135,14 @@ router.get('/apps/:releaseid', (req, res, next)=>{
     .exec((err, recs)=>{
         if(err) return next(err);
         
-        //now populate apps
+        //load apps used
         let app_ids = [];
         recs.forEach(rec=>{ if(rec.app) app_ids.push(rec.app);});
-
         db.Apps.find({
             _id: {$in: app_ids},
             projects: [], //only show *public* apps
         })
+        //.sort(req.query.sort || '_id')
         .populate(req.query.populate || '')
         .exec((err, apps)=>{
             if(err) return next(err);
@@ -153,13 +153,17 @@ router.get('/apps/:releaseid', (req, res, next)=>{
                 app_obj[app._id] = app;
             });
 
-            //populate on recs
+            //now populate apps
             let populated = [];
             recs.forEach(rec=>{
                 if(rec.app) {
                     rec.app = app_obj[rec.app];
                     populated.push(rec);
                 }
+            });
+
+            populated.sort((a,b)=>{
+                return a.app.name.localeCompare(b.app.name);  
             });
             res.json(populated);
         });

@@ -4,11 +4,11 @@ const amqp = require('amqp');
 const winston = require('winston');
 const mongoose = require('mongoose');
 const async = require('async');
-const request = require('request');
+const request = require('request-promise-native');
 const redis = require('redis');
 
 const config = require('../api/config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
@@ -118,131 +118,173 @@ function health_check() {
 
 function handle_task(task, cb) {
     _counts.tasks++;
-    logger.debug("task", task._id, task.status);
+    logger.debug(["task", task._id, task.status, task.status_msg]);
 
-    if(task.status == "finished" && task.config && task.config._outputs) {
-        logger.info("handling finished task (archive)", task._id, task.status, task.name);
-        let products = common.split_product(task.product||{}, task.config._outputs);
-        async.eachSeries(task.config._outputs, (output, next_output)=>{
-            if(!output.archive) return next_output();
-            handle_archive(task, output, products[output.id], next_output);
-        }, cb);
-
+    if(task.status == "finished") {
+        logger.info("handling finished task");
+        handle_task_finished(task, cb);
     } else if(task.status == "removed" && task.config && task.config._rule) {
         logger.info("rule submitted task is removed. updating update_date:"+task.config._rule.id);
         db.Rules.findOneAndUpdate({_id: task.config._rule.id}, {$set: {update_date: new Date()}}, cb);
     } else {
-        //logger.debug("ignoring task", task._id, task.status, task.name);
         cb();
     }
 }
 
-function handle_archive(task, output, product, cb) {
+function handle_task_finished(task, cb) {
+    if(task.config && task.config._outputs) handle_task_output(task, cb);
+    if(task.service == "brainlife/app-archive") {
+        //TODO - finalize the dataset
+    }
+}
 
-    logger.debug("archive request made", output);
+function handle_task_output(task, cb) {
 
-    //var dataset = null;
-    var datatype = null;
-	var auth = null;
+    logger.debug("handling task outputs");
+    if(!Array.isArray(task.config._outputs)) {
+        return cb("task.config._outputs is not array "+JSON.stringify(task.config, null, 4));
+    }
+    let products = common.split_product(task.product||{}, task.config._outputs);
 
-    async.series([
-        next=>{
-            logger.debug("see if this dataset is already archived");
-            //TODO - some reason, this query is super slow... ??
-            db.Datasets.findOne({
-                "prov.task_id": task._id,
-                "prov.output_id": output.id,
-                
-                //ignore failed and removed ones
-                //TODO - very strange query indeed.. but it should work
-                $or: [
-                    { removed: false }, //already archived!
-                    
-                    //or.. if archived but removed and not failed, user must have a good reason to remove it.. (don't rearchive)
-                    { removed: true, status: {$ne: "failed"} }, 
-                ]
-                
-            }).exec((err,_dataset)=>{
-                if(err) return cb(err);
-                if(_dataset) {
-                    logger.info("already archived or removed by user", _dataset._id.toString());
-                    return cb();
+    //get all project ids set by user
+    let project_ids = [];
+    task.config._outputs.forEach(output=>{
+        if(output.archive) project_ids.push(output.archive.project);
+    });
+    
+    //check project access
+    common.validate_projects(task.user_id, project_ids, err=>{
+        if(err) return cb(err);
+        
+        //register datasets
+        let datasets = []; 
+        async.eachSeries(task.config._outputs, (output, next_output)=>{
+            if(!output.archive) return next_output();
+            register_dataset(task, output, products[output.id], (err, dataset)=>{
+                if(err || !dataset) return next_output(); //couldn't register, or already registered
+
+                if(!output.subdir) {
+                    //if output doesn't have subdir set, we need to use the old archiving method...
+                    logger.debug("requesting for archive_handler to archive it");
+                    acon.publish('warehouse.archive', {dataset_id: dataset._id});
+                } else {
+                    //for new archiver
+                    logger.debug("new archive");
+                    datasets.push({
+                        project: output.archive.project,
+                        id: dataset._id,
+                        dir: "../"+task._id+"/"+output.subdir,
+                    });
                 }
-                logger.debug("not yet archived.. proceeding", task._id, output.id);
-                next();
+                next_output();
             });
-        },
+        }, async err=>{
+            if(err) return cb(err);
+            if(datasets.length == 0) return cb();
 
-        /*
-        next=>{
-            //query the current task status and make sure it's still finished (not removed)
-			request.get({
-				url: config.amaretti.api+"/task/"+task._id, json: true,
-				headers: { authorization: "Bearer "+config.auth.jwt },
-			}, (err, res, task)=>{
-				if(err) return next(err);
-                if(task.status != "finished") {
-                    logger.warn("task status is no longer finished.. removing this request");
-                    return cb();
-                }
-                next();
-			});
-        },
-        */
+            try {
+                //load user's gids so that we can add warehouse group id (authorized to access archive)
+                let gids = await request.get({
+                    url: config.auth.api+"/user/groups/"+task.user_id,
+                    json: true,
+                    headers: {
+                        authorization: "Bearer "+config.warehouse.jwt,
+                    }
+                });
 
-        next=>{
-            //WARNING - similar code exists in controller/dataset
-            //logger.debug("registering dataset now");
-            new db.Datasets({
-                user_id: task.user_id,
-                desc: output.archive.desc,
+                ///add warehouse group that allows user to submit
+                gids = gids.concat(config.archive.gid);  
 
-                project: output.archive.project,
-                datatype: output.datatype,
+                //issue user token 
+                let {jwt: user_jwt} = await request.get({
+                    url: config.auth.api+"/jwt/"+task.user_id,
+                    json: true,
+                    qs: {
+                        claim: JSON.stringify({gids}),
+                    },
+                    headers: {
+                        authorization: "Bearer "+config.warehouse.jwt,
+                    }
+                });
 
-                datatype_tags: product.datatype_tags,
-                tags: product.tags,
-                meta: product.meta,
+                logger.debug("submitting app-archive");
+                let archive_task = await request.post({
+                    url: config.amaretti.api+"/task",
+                    json: true,
+                    body: {
+                        deps : [ task._id ],
+                        //name : "archiving",
+                        //desc : "archiving",
+                        service : "brainlife/app-archive",
+                        instance_id : task.instance_id,
+                        config: {
+                            datasets,
+                        },
+                    },
+                    headers: {
+                        authorization: "Bearer "+user_jwt,
+                    }
+                });
+                logger.debug(archive_task);
+                cb();
+            } catch(err) {
+                cb(err);
+            }
+        });
+    });
+}
 
-                product,
+function register_dataset(task, output, product, cb) {
 
-                //status: "waiting",
-                status_msg: "Waiting for the archive handler..",
-                
-                prov: {
-                    task, 
-                    output_id: output.id, 
-                    subdir: output.subdir, //optional
+    //first check to make sure the dataset is already registered
+    db.Datasets.findOne({
+        "prov.task_id": task._id,
+        "prov.output_id": output.id,
+        
+        //ignore failed and removed ones
+        //TODO - very strange query indeed.. but it should work
+        $or: [
+            { removed: false }, //already archived!
+            
+            //or.. if archived but removed and not failed, user must have a good reason to remove it.. (don't rearchive)
+            { removed: true, status: {$ne: "failed"} }, 
+        ]
+        
+    }).exec((err,_dataset)=>{
+        if(err) return cb(err);
+        if(_dataset) {
+            logger.info("already archived or removed by user. output_id:"+output.id+" dataset_id:"+_dataset._id.toString());
+            return cb();
+        }
 
-                    instance_id: task.instance_id, //deprecated use prov.task.instance_id
-                    task_id: task._id, //deprecated. use prov.task._id
+        logger.debug("not yet archived.. registering new dataset");
+        new db.Datasets({
+            user_id: task.user_id,
+            desc: output.archive.desc,
 
-                },
-            }).save((err, dataset)=>{
-                if(err) return next(err);
-                logger.debug("publishing to archive queue");
-                acon.publish('warehouse.archive', {dataset_id: dataset._id});
-                next(); //TODO - I can't get cb to fire from acon.publish..
-            });
-        },
+            project: output.archive.project,
+            datatype: output.datatype,
 
-        /*
-		next=>{
-			//issue jwt to download dataset from a given task
-			request.get({
-				url: config.auth.api+"/jwt/"+task.user_id, json: true,
-				headers: { authorization: "Bearer "+config.auth.jwt },
-			}, (err, res, body)=>{
-				if(err) return next(err);
-				if(res.statusCode != 200) return cb("couldn't obtain user jwt code:"+res.statusCode);
-				auth = "Bearer "+body.jwt;
-				next();
-			});
-		},
+            datatype_tags: product.datatype_tags,
+            tags: product.tags,
+            meta: product.meta,
 
-        */
+            product,
 
-    ], cb);
+            //status: "waiting",
+            status_msg: "Waiting for the archiver ..",
+            
+            prov: {
+                task, 
+                output_id: output.id, 
+                subdir: output.subdir, //optional
+
+                instance_id: task.instance_id, //deprecated use prov.task.instance_id
+                task_id: task._id, //deprecated. use prov.task._id
+
+            },
+        }).save(cb); 
+    });
 }
 
 function handle_instance(instance, cb) {

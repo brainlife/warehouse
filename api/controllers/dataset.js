@@ -13,7 +13,7 @@ const mongoose = require('mongoose');
 
 //mine
 const config = require('../config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 
@@ -29,11 +29,13 @@ function canedit(user, rec, canwrite_project_ids) {
 }
 
 function isuploadtask(task) {
-    //TODO might change in the future
     return ( 
         task.service == "soichih/sca-product-raw" || 
-        task.service == "soichih/sca-service-noop" ||
-        ~task.service.indexOf("brain-life/validator-"));
+        task.service == "soichih/sca-service-noop" || //deprecated
+        task.service == "brainlife/app-noop" ||
+        ~task.service.indexOf("brainlife/validator-") ||
+        ~task.service.indexOf("brain-life/validator-")
+    );
 }
 
 function construct_dataset_query(query, canread_project_ids) {
@@ -215,7 +217,7 @@ router.get('/prov/:id', (req, res, next)=>{
 
     function load_task(id, cb) {
         request.get({
-            url: config.wf.api+"/task/"+id,
+            url: config.amaretti.api+"/task/"+id,
             json: true,
             //task/:id api is now public.. but in case we might change our mind.. just send jwt
             headers: {

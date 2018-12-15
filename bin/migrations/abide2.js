@@ -9,7 +9,7 @@ const ssh2 = require('ssh2');
 const gunzip = require('gunzip-stream');
 
 const config = require('../../api/config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../../api/models');
 
 console.log("connecting to db");

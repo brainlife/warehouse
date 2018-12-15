@@ -10,7 +10,7 @@ const redis = require('redis');
 const xmlescape = require('xml-escape');
 
 const config = require('./config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('./models');
 
 //connect to redis - used to store various shared caches
@@ -19,23 +19,22 @@ exports.redis.on('error', err=>{throw err});
 
 //TODO - should be called something like "get_project_accessiblity"?
 exports.getprojects = function(user, cb) {
-    if(!user) return cb(null, [], []);
+    if(user === undefined) return cb(null, [], []);
+    //string has sub() so I can't just do if(user.sub)
+    if(typeof user == 'object') user = user.sub.toString();
     
     //everyone has read access to public project
     let project_query = {access: "public"};
     
     //logged in user may have acess to more projects
-    if(user) {
-        project_query = {
-            $or: [
-                project_query,
-                {"members": user.sub.toString()},
-                {"admins": user.sub.toString()}, 
-                {"guests": user.sub.toString()},
-            ],
-        };
-    }
-
+    project_query = {
+        $or: [
+            project_query,
+            {"members": user},
+            {"admins": user}, 
+            {"guests": user},
+        ],
+    };
     db.Projects.find(project_query).select('_id admins members guests').lean().exec((err, projects)=>{
         if(err) return cb(err);
         //user can read from all matching projects
@@ -43,12 +42,30 @@ exports.getprojects = function(user, cb) {
 
         //user has write access if they are listed in members/admins
         let canwrite_projects = projects.filter(p=>{
-            if(p.members.includes(user.sub.toString())) return true;
-            if(p.admins.includes(user.sub.toString())) return true;
+            if(p.members.includes(user)) return true;
+            if(p.admins.includes(user)) return true;
             return false;
         });
         let canwrite_ids = canwrite_projects.map(p=>p._id);
         cb(null, canread_ids, canwrite_ids);
+    });
+}
+
+//check if user has access to all projects in (write access) projects_id
+exports.validate_projects = function(user, project_ids, cb) {
+    if(!project_ids) return cb(); //no project, no checking necessary
+    exports.getprojects(user, (err, canread_project_ids, canwrite_project_ids)=>{
+        if(err) return cb(err);
+
+        //need to convert all ids to string..
+        canwrite_project_ids = canwrite_project_ids.map(id=>id.toString());
+
+        //iterate each ids to see if user has access
+        var err = null;
+        project_ids.forEach(id=>{
+            if(!~canwrite_project_ids.indexOf(id)) err = "you don't have write access to project:"+id;
+        });
+        cb(err);
     });
 }
 
@@ -436,7 +453,7 @@ exports.cache_contact = function(cb) {
         qs: {
             limit: 5000, //TODO -- really!?
         },
-        headers: { authorization: "Bearer "+config.auth.jwt },
+        headers: { authorization: "Bearer "+config.warehouse.jwt }, //config.auth.jwt is deprecated
     }, (err, res, body)=>{
         if(err) return logger.error(err);
         if(res.statusCode != 200) logger.error("couldn't cache auth profiles. code:"+res.statusCode);

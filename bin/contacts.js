@@ -8,7 +8,7 @@ const redis = require('redis');
 const jsonwebtoken = require('jsonwebtoken');
 
 const config = require('../api/config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 

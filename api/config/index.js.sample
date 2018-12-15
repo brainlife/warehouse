@@ -1,5 +1,7 @@
 const fs = require('fs');
-const winston = require('winston');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, label, prettyPrint } = format;
+
 const child_process = require('child_process');
 
 const mkdirp = require('mkdirp'); //for dc2
@@ -25,8 +27,8 @@ exports.github = {
 exports.amaretti = {
     api: "https://dev1.soichi.us/api/amaretti",
 
-    //jwt used to query things from workflow service as admin
-    jwt: fs.readFileSync(__dirname+'/amaretti.jwt', 'ascii').trim(),
+    //jwt used to query things from workflow service as admin (TODO - I can't find any use for it?)
+    //jwt: fs.readFileSync(__dirname+'/warehouse.jwt', 'ascii').trim(),
 }
 exports.wf = exports.amaretti; //deprecated (use amaretti)
 
@@ -34,7 +36,7 @@ exports.auth = {
     api: "https://dev1.soichi.us/api/auth",
    
     //jwt used to request auth service to issue new user jwt to be used to submit tasks onbehalf of the user
-    jwt: fs.readFileSync(__dirname+'/auth.jwt', 'ascii').trim(),
+    //jwt: fs.readFileSync(__dirname+'/auth.jwt', 'ascii').trim(),
 }
 
 exports.warehouse = {
@@ -50,6 +52,11 @@ exports.warehouse = {
 
     //place to store rule logs 
     rule_logdir: "/tmp",
+
+    //jwt used to access other services
+    //submit task on amaretti
+    //query gids from auth
+    jwt: fs.readFileSync(__dirname+'/warehouse.jwt', 'ascii').trim(),
  }
 
 /*
@@ -91,10 +98,15 @@ exports.datacite = {
 //  storage system where we can archive data
 exports.storage_systems = {};
 
-//pick default storage
+//pick default storage (TODO - deprecate thsi and use archive.storage_default instead
 exports.storage_default = function() {
     //return "jetstream";
     return "wrangler";
+}
+
+exports.archive = {
+    storage_default: "wrangler",  //TODO not used yet.. move storage_default to use this
+    gid: 137, //warehouse group enabled to access storage service
 }
 
 //
@@ -232,7 +244,6 @@ function connect_wrangler(cb) {
         //keepaliveCountMax: 30, //default 3 (https://github.com/mscdex/ssh2/issues/367)
     });
 }
-
 
 function get_wrangler_archive_path(dataset) {
     let _path = "/home/04040/hayashis/data/dev-archive/";
@@ -540,11 +551,22 @@ exports.sda = {
 
 exports.logger = {
     winston: {
+        level: 'debug',
+        format: combine(
+            //label({ label: 'right meow!' }),
+            timestamp(),
+            format.colorize(),
+            //prettyPrint()
+            format.simple()
+            //format.json()
+        ),
+        
         //hide headers which may contain jwt
         requestWhitelist: ['url', 'method', 'httpVersion', 'originalUrl', 'query'],
         transports: [
             //display all logs to console
-            new winston.transports.Console({
+            new transports.Console({
+                /*
                 timestamp: function() {
                     var d = new Date();
                     if(process.env.NODE_APP_INSTANCE) {
@@ -553,9 +575,9 @@ exports.logger = {
                         return d.toString();
                     }
                 },
-                level: 'debug',
                 colorize: true,
                 stderrLevels: ["error"], //default includes debug
+                */
             }),
         ]
     },

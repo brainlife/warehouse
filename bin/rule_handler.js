@@ -8,7 +8,7 @@ const redis = require('redis');
 const jsonwebtoken = require('jsonwebtoken');
 
 const config = require('../api/config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 
 let rcon = null;
@@ -150,7 +150,7 @@ function handle_rule(rule, cb) {
         next=>{
             request.get({
                 url: config.auth.api+"/jwt/"+rule.user_id, json: true,
-                headers: { authorization: "Bearer "+config.auth.jwt },
+                headers: { authorization: "Bearer "+config.warehouse.jwt },
             }, (err, res, body)=>{
                 if(err) return next(err);
                 if(res.statusCode != 200) return cb("couldn't obtain user jwt code:"+res.statusCode);
@@ -168,7 +168,7 @@ function handle_rule(rule, cb) {
                 } catch (err) {
                     logger.info("failed to truncate.. maybe first time", logpath);
                 }
-                rlogger = new winston.Logger({
+                rlogger = winston.createLogger({
                     transports: [
                         new (winston.transports.File)({
                             filename: logpath,
@@ -724,6 +724,11 @@ function handle_rule(rule, cb) {
                     next(err);
                 });
             },
+
+            /*
+            next=>{
+            },
+            */
 
         ], cb);
     }

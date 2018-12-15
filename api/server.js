@@ -9,7 +9,7 @@ const cors = require('cors');
 const nocache = require('nocache');
 
 const config = require('./config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('./models');
 
 //init express

@@ -4,9 +4,11 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('express-jwt');
 const winston = require('winston');
+const async = require('async');
+const request = require('request');
 
 const config = require('../config');
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
 const common = require('../common');
 
@@ -16,25 +18,6 @@ function canedit(user, rec) {
         if(rec.admins && ~rec.admins.indexOf(user.sub.toString())) return true;
     }
     return false;
-}
-
-//make sure user has access to all projects in (write access) projects_id
-function validate_projects(user, projects_ids, cb) {
-    if(!projects_ids) return cb(); //no project, no checking necessary
- 
-    common.getprojects(user, (err, canread_project_ids, canwrite_project_ids)=>{
-        if(err) return cb(err);
-
-        //need to convert all ids to string..
-        canwrite_project_ids = canwrite_project_ids.map(id=>id.toString());
-
-        //iterate each ids to see if user has access
-        var err = null;
-        projects_ids.forEach(id=>{
-            if(!~canwrite_project_ids.indexOf(id)) err = "you don't have write access to project:"+id;
-        });
-        cb(err);
-    });
 }
 
 /**
@@ -130,10 +113,10 @@ function mint_doi(cb) {
  *
  * @apiSuccess {Object}         App registered
  */
-router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) {
+router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     req.body.user_id = req.user.sub;
     
-    validate_projects(req.user, req.body.projects, err=>{
+    common.validate_projects(req.user, req.body.projects, err=>{
         if(err) return next(err);
 
         //create app record and load github info into
@@ -191,7 +174,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
  */
 router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var id = req.params.id;
-    validate_projects(req.user, req.body.projects, err=>{
+    common.validate_projects(req.user, req.body.projects, err=>{
         if(err) return next(err);
         db.Apps.findById(id, (err, app)=>{
             if(err) return next(err);
@@ -276,10 +259,10 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"
  */
-router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
+router.delete('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     var id = req.params.id;
     //TODO - prevent user from removing app that's in use..
-    db.Apps.findById(req.params.id, function(err, app) {
+    db.Apps.findById(req.params.id, (err, app)=>{
         if(err) return next(err);
         if(!app) return next(new Error("can't find the app with id:"+req.params.id));
         if(canedit(req.user, app)) {
@@ -289,7 +272,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
             }); 
             */
             app.removed = true;
-            app.save(function(err) {
+            app.save(err=>{
                 if(err) return next(err);
                 res.json({status: "ok"});
             }); 

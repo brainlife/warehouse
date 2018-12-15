@@ -8,7 +8,7 @@ const winston = require('winston');
 //mine
 const config = require("../config");
 const db = require("../models");
-const logger = new winston.Logger(config.logger.winston);
+const logger = winston.createLogger(config.logger.winston);
 
 router.get("/checkaccess/project/:project_id", jwt({secret: config.express.pubkey}), function(req, res, next) {
     //load project requested and check
