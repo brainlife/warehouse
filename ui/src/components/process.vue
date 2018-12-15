@@ -377,6 +377,7 @@ export default {
                     case "wf.task":
                         var task = event.msg;
                         var t = this.tasks.find(t=>t._id == task._id);
+                        if(!task.config._tid) break; //not ui task
                         if(!t) {
                             //new task?
                             this.$notify("new t."+task.config._tid+"("+task.name+") "+task.status_msg);

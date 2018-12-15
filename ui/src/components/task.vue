@@ -243,7 +243,7 @@ export default {
                 this.$notify({ text: res.body.message, type: 'success'});
             })
             .catch(err=>{
-                console.error(err); 
+                this.$notify({ text: err.body.message, type: 'error'});
             });
         },
         stop() {

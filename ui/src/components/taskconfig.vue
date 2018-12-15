@@ -133,6 +133,7 @@ export default {
 <style scoped>
 tr.default {
 opacity:.6;
+transition: opacity 0.3s;
 }
 tr.default:hover {
 opacity: inherit; 
