@@ -13,10 +13,16 @@
                     <b-col cols="9" style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right; position: relative; z-index: 3">
                             <span class="button" @click="go_github()" title="github"><icon name="brands/github" scale="1.25"/></span>
+                            <span class="button" @click="copy()" title="Copy"><icon name="copy" scale="1.25"/></span>
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                         </div>
-                        <h4 style="margin-bottom: 3px;">{{app.name}}</h4>
+                        <h4 style="margin-bottom: 3px;">
+                            <b-badge v-if="app.projects && app.projects.length > 0" variant="danger" title="Private App">
+                                <icon name="lock" scale="0.8"/>
+                            </b-badge>
+                            {{app.name}}
+                        </h4>
                         <h6 style="opacity: 0.8;">
                             <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
                             <small><b-badge variant="secondary" v-if="app.github_branch" style="position: relative; top: -2px"><icon name="code-branch" scale="0.6"/> {{app.github_branch}}</b-badge></small>
@@ -48,7 +54,7 @@
             <!-- detail -->
             <div v-if="tab_index == 0">
                 <b-row>
-                    <b-col cols="3" style="opacity: 0.8;">
+                    <b-col cols="3">
                         <p>
                             <doibadge :doi="app.doi" v-if="app.doi"/>
                         </p>
@@ -152,7 +158,7 @@
 
                         <div v-if="app.projects && app.projects.length > 0">
                             <span class="form-header">Projects</span>
-                            <p><small class="text-muted"><icon name="lock" /> Only the members of the following project(s) can view/execute this app.</small></p>
+                            <p><small class="text-muted">Only the members of the following project(s) can view/execute this app.</small></p>
                             <div v-for="project in app.projects" :key="project._id" class="project-card" @click="go('/project/'+project._id)">
                                 <b-row>
                                     <b-col cols="2">
@@ -190,7 +196,7 @@
 
                             <b-row>
                                 <b-col cols="4" v-for="resource in resources" :key="resource._id">
-                                    <div class="resource" v-b-popover.hover="resource.info.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
+                                    <div class="resource" v-b-popover.hover.d500="resource.info.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
                                         <p style="padding: 10px; margin-bottom: 0px;">
                                             <icon v-if="resource.gids.length > 0" name="users" style="opacity: 0.4; float: right"/>
                                             <icon v-else name="lock" class="text-danger" style="float: right" title="Private resource"/>
@@ -458,12 +464,18 @@ export default {
          */
         trimGit: (text) => text.replace(/^[ \t]*(https?:\/\/)?github\.com\/?/g, ''),
         
+        copy() {
+            this.$router.push('/app/'+this.app._id+'/copy');
+        },
+
         go(path) {
             this.$router.push(path);
         },
+
         go_github() {
             document.location = "https://github.com/"+this.app.github;
         },
+
         execute() {
             if(Vue.config.user) {
                 this.$root.$emit("appsubmit.open", this.app._id);
@@ -471,6 +483,7 @@ export default {
                 alert("Please sign up / login first to execute Apps.");
             }
         },
+
         find_resources(service) {
             this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
                 service,

@@ -1,7 +1,7 @@
 <template>
 <div v-if="instances" class="processes">
     <div class="page-header with-menu header">
-        <div style="margin-top: 5px; margin-left: 10px; display: inline-block;">
+        <div class="process-count">
             <b>{{instances.length}}</b> Processes
         </div>
 
@@ -642,6 +642,16 @@ line-height: 200%;
 }
 #scrolled-area {
 overflow-x: hidden;
+}
+.process-count {
+margin-top: 5px; 
+margin-left: 10px; 
+display: inline-block;
+}
+@media (max-width: 1000px) {
+    .process-count {
+        display: none;
+    }
 }
 </style>
 

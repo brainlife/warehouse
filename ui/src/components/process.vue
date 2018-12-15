@@ -580,6 +580,22 @@ export default {
 </script>
 
 <style scoped>
+.sidebar {
+background-color: #ddd;
+position: fixed;
+top: 110px;
+bottom: 0px;
+width: 300px;
+right: 0px;
+overflow: auto;
+padding-bottom: 50px; /*so it won't be covered by notification*/
+}
+.sidebar h6 {
+font-weight: bold;
+color: #999;
+padding: 10px;
+margin: 0px;
+}
 .task-header {
 margin: 0px;
 padding: 10px;
@@ -594,6 +610,12 @@ margin-left: 95px;
 border-left: 5px solid #ccc;
 padding-left: 10px;
 font-style: italic;
+}
+.sidebar .dataset {
+border-bottom: 1px solid #d5d5d5; 
+padding: 3px;
+padding-left: 7px;
+font-size: 85%;
 }
 .dataset.clickable:hover {
 background-color: #eee;
@@ -625,6 +647,12 @@ ul.archived li:hover {
 cursor: pointer;
 background-color: #ddd;
 }
+.sidebar .statusicon-failed {
+color: #c00;
+}
+.sidebar .statusicon-running {
+color: #2693ff;
+}
 .task-id {
 cursor: pointer;
 color: gray;
@@ -648,13 +676,18 @@ box-shadow: 0px 2px 4px #ccc;
 transition: margin-right 0.5s;
 }
 
-@media screen and (max-width: 1200px) {
+@media (max-width: 950px) {
+    .new-action,
+    .task-area {
+        margin-right: 0px;
+    }
+}
+@media (min-width: 950px) and (max-width: 1200px) {
     .new-action,
     .task-area {
         margin-right: 40px;
     }
 }
-
 .new-action {
 position: sticky; bottom: 0px;
 background-color: white;
@@ -678,7 +711,6 @@ color: #007bff;
 .new-action-button-newtask:hover {
 background-color: #007bff;
 }
-
 .new-action-button-newdataset{
 color: #28a745;
 }
@@ -695,7 +727,6 @@ transition: margin-right 0.5s;
         margin-right: -300px;
     }
 }
-
 .task-tab {
 font-size: 90%;
 background-color: white;
