@@ -13,8 +13,8 @@ pm2 start bin/rule_handler.js --name warehouse-rule --watch --ignore-watch="*.lo
 pm2 delete warehouse-event
 pm2 start bin/event_handler.js --name warehouse-event --watch --ignore-watch="*.log test *.sh ui example .git"
 
-pm2 delete warehouse-archive
-pm2 start bin/archive_handler.js -i 2 --name warehouse-archive --watch --ignore-watch="*.log test *.sh ui example .git"
+#pm2 delete warehouse-archive
+#pm2 start bin/archive_handler.js -i 2 --name warehouse-archive --watch --ignore-watch="*.log test *.sh ui example .git"
 
 pm2 delete warehouse-appinfo
 pm2 start bin/appinfo.js --name warehouse-appinfo --watch --ignore-watch="*.log test *.sh ui example .git"

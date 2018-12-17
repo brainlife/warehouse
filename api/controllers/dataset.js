@@ -427,7 +427,7 @@ router.get('/prov/:id', (req, res, next)=>{
  *
  * @apiParam {Object} [meta]            Metadata - to override
  * @apiParam {String[]} [tags]          List of tags to add
- * @apiParam {String} [desc]            Description for this crate
+ * @apiParam {String} [desc]            Description for archived dataset
  *
  * @apiParam {Boolean} await            Wait for dataset to be fully achived before returning (default true)
  *
@@ -446,26 +446,27 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     
     //to be loaded..
     let task = null;
-    let output = null;
+    let archive_task = null;
     let dataset = null;
 
     //logger.debug("posting new dataset");
 
     async.series([
+        //get the task to archive and check project
         next=>{
-            //get the task to archive
-            //console.log(config.amaretti.api, req.body.task_id);
             request.get({
                 url: config.amaretti.api+"/task/"+req.body.task_id, json: true,
                 headers: { authorization: req.headers.authorization, }
             }, (err, _res, _task)=>{
                 if(err) return next(err);
+                task = _task;
                 if(_res.statusCode != 200) return next("failed to load task "+req.body.task_id);
                 const gids = req.user.gids||[];
-                if(_task.user_id != req.user.sub && !~gids.indexOf(_task._group_id)) return next("you don't own this task or member of a group "+_task._group_id);
-                if(!_task.resource_id) return next("resource_id not set");
-                if(_task.status != "finished") return next("task not in finished state");
+                if(task.user_id != req.user.sub && !~gids.indexOf(task._group_id)) return next("you don't own this task or member of a group "+task._group_id);
+                if(!task.resource_id) return next("resource_id not set");
+                if(task.status != "finished") return next("task not in finished state");
                 
+                /* archive_task_outputs checks output.archive.project access
                 //make sure user is member of the project selected
                 db.Projects.findById(req.body.project, (err, project)=>{
                     if(err) return next(err);
@@ -475,23 +476,51 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                     task = _task;
                     next();
                 });
+                */
+                next();
             });
         },
 
+        //request archvie
         next=>{
             if(!task.config) task.config = {};
             
             //find output
+            let output;
             if(task.config._outputs) {
                 output = task.config._outputs.find(o=>o.id == req.body.output_id);
+                output.archive = {
+                    project: req.body.project,
+                    desc: req.body.desc,
+                }
+                if(req.body.meta) Object.assign(output.meta, req.body.meta); //TODO test
+                if(req.body.tags) output.tags = output.tags.concat(req.body.tags).unique(); //TODO test
             }
             if(!output) {
-                logger.info("no config_outputs for ", req.body.output_id);
-                console.dir(task.config);
+                //console.dir(task.config);
+                return next("no config_outputs for ", req.body.output_id);
             }
-            next();
+
+            common.archive_task_outputs(task, [output], (err, _archive_task)=>{
+                if(err) return next(err);
+                archive_task = _archive_task;
+                console.log(JSON.stringify(archive_task, null, 4));
+                dataset = archive_task.config.datasets[0].dataset;
+                if(!await) res.json(dataset); 
+                next();
+            });
         },
 
+        //wait for archive to be done
+        next=>{
+            if(!await) return next(); //don't need to wait
+            common.wait_task(req, archive_task, err=>{
+                if(err) return next(err);
+                res.json(dataset);
+            });
+        }
+
+        /*
         next=>{
             //WARNING - similar code exists in event_handler
             let products = common.split_product(task.product, task.config._outputs);
@@ -512,7 +541,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 datatype: output.datatype,
                 datatype_tags: product.datatype_tags,
 
-                status: "storing",
+                //status: "storing",
                 product,
 
                 prov: {
@@ -531,14 +560,11 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 if(!await) res.json(_dataset); 
 
                 logger.debug("running archive_task now");
-                common.archive_task(_dataset, /*req.body.files,*/ req.headers.authorization, next);
+                common.archive_task(_dataset, req.headers.authorization, next);
             });
         },
-    ], err=>{
-        if(err) return cb(err);
-        logger.debug("all done archiving");    
-        if(await) res.json(dataset); 
-	});
+        */
+    ], cb);
 });
 
 /**

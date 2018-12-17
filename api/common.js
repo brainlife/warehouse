@@ -1,4 +1,5 @@
-const request = require('request');
+const request = require('request'); //TODO - switch to rp
+const rp = require('request-promise-native');
 const winston = require('winston');
 const tmp = require('tmp');
 const mkdirp = require('mkdirp');
@@ -69,6 +70,7 @@ exports.validate_projects = function(user, project_ids, cb) {
     });
 }
 
+/*
 exports.archive_task = function(dataset, auth, cb) {
 
     //find output file override
@@ -76,7 +78,7 @@ exports.archive_task = function(dataset, auth, cb) {
     let output = dataset.prov.task.config._outputs.find(o=>o.id == output_id);
     let files_override = output.files || {}
 
-    //TODO if output.subdir is set, ship taskdir/subdir directly to wrangler
+    //TODO - deprecate this with app-archive based archiver
 
     //start by pulling datatype detail
     db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
@@ -231,6 +233,180 @@ exports.archive_task = function(dataset, auth, cb) {
                     });
                 });
             });
+        });
+    });
+}
+*/
+
+//TODO should inline this?
+function register_dataset(task, output, product, cb) {
+    new db.Datasets({
+        user_id: task.user_id,
+        project: output.archive.project,
+        desc: output.archive.desc,
+
+        tags: product.tags,
+        meta: product.meta,
+        datatype: output.datatype,
+        datatype_tags: product.datatype_tags,
+
+        //status: "waiting",
+        status_msg: "Waiting for the archiver ..",
+        product,
+        
+        prov: {
+            task, 
+            output_id: output.id, 
+            subdir: output.subdir, //optional
+
+            instance_id: task.instance_id, //deprecated use prov.task.instance_id
+            task_id: task._id, //deprecated. use prov.task._id
+        },
+    }).save(cb); 
+}
+
+//wait for a task to terminate .. finish/fail/stopped/removed
+exports.wait_task = function(req, task_id, cb) {
+    logger.info("waiting for task to finish");
+    request.get({
+        url: config.amaretti.api+"/task/"+task_id,
+        json: true,
+        headers: {
+            authorization: req.headers.authorization,
+        }
+    }, (err, _res, task)=>{
+        if(err) return cb(err);
+        switch(task.status) {
+        case "finished":
+            cb();
+            break;
+        case "requested":
+        case "running":
+        case "running_sync":
+            setTimeout(()=>{
+                exports.wait_task(req, task_id, cb);
+            }, 2000);
+            break;
+        default:
+            //consider all else as failed
+            cb(task.status);
+        }
+    });
+}
+
+exports.archive_task_outputs = function(task, outputs, cb) {
+    if(!Array.isArray(outputs)) {
+        return cb("archive_task_outputs/outputs is not array "+JSON.stringify(outputs, null, 4));
+    }
+    let products = exports.split_product(task.product||{}, outputs);
+
+    //get all project ids set by user
+    let project_ids = [];
+    outputs.forEach(output=>{
+        if(output.archive) project_ids.push(output.archive.project);
+    });
+    
+    //check project access
+    exports.validate_projects(task.user_id, project_ids, err=>{
+        if(err) return cb(err);
+        
+        //register datasets
+        let datasets = []; 
+        async.eachSeries(outputs, (output, next_output)=>{
+            if(!output.archive) return next_output();
+            register_dataset(task, output, products[output.id], (err, dataset)=>{
+                if(err || !dataset) return next_output(); //couldn't register, or already registered
+                /*
+                if(!output.subdir) {
+                    //if output doesn't have subdir set, we need to use the old archiving method...
+                    logger.debug("requesting for archive_handler to archive it");
+                    acon.publish('warehouse.archive', {dataset_id: dataset._id});
+                }else {
+                */
+                let dir =  "../"+task._id;
+                dataset.prov.task = dataset.prov.task._id; //unpopulate prov as it will be somewhat redundant
+                if(output.subdir) {
+                    //new subdir outputs
+                    dir+="/"+output.subdir,
+                    datasets.push({
+                        project: output.archive.project,
+                        dir,
+                        dataset, //need to pass the dataet for .brainlife.io
+                    });
+                    next_output();
+                } else {
+                    //old method
+                    //console.dir(output.archive);
+                    db.Datatypes.findById(output.datatype, (err, datatype)=>{
+                        if(err) return next_output(err);
+                        datasets.push({
+                            project: output.archive.project,
+                            dir,
+                            dataset, //for .brainlife.io
+                            files: datatype.files,
+                            files_override: output.files, 
+                        });
+                        next_output();
+                    });
+                }
+
+            });
+        }, async err=>{
+            if(err) return cb(err);
+            if(datasets.length == 0) return cb();
+
+            try {
+                //load user's gids so that we can add warehouse group id (authorized to access archive)
+                let gids = await rp.get({
+                    url: config.auth.api+"/user/groups/"+task.user_id,
+                    json: true,
+                    headers: {
+                        authorization: "Bearer "+config.warehouse.jwt,
+                    }
+                });
+                
+                ///add warehouse group that allows user to submit
+                gids = gids.concat(config.archive.gid);  
+
+                //issue user token with added gids priviledge
+                let {jwt: user_jwt} = await rp.get({
+                    url: config.auth.api+"/jwt/"+task.user_id,
+                    json: true,
+                    qs: {
+                        claim: JSON.stringify({gids}),
+                    },
+                    headers: {
+                        authorization: "Bearer "+config.warehouse.jwt,
+                    }
+                });
+
+                //submit app-archive!
+                let remove_date = new Date();
+                remove_date.setDate(remove_date.getDate()+7); //remove in 7 days(?)
+                let archive_task = await rp.post({
+                    url: config.amaretti.api+"/task",
+                    json: true,
+                    body: {
+                        deps : [ task._id ],
+                        //name : "archiving",
+                        //desc : "archiving",
+                        service : "brainlife/app-archive",
+                        instance_id : task.instance_id,
+                        config: {
+                            datasets,
+                        },
+                        max_runtime: 1000*3600, //1 hour should be enough for most..
+                        remove_date,
+                    },
+                    headers: {
+                        authorization: "Bearer "+user_jwt,
+                    }
+                });
+                logger.info("submitted archive_task:"+archive_task.task._id);
+                cb(null, archive_task.task);
+            } catch(err) {
+                cb(err);
+            }
         });
     });
 }

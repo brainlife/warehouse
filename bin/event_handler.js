@@ -118,174 +118,74 @@ function health_check() {
 
 function handle_task(task, cb) {
     _counts.tasks++;
-    logger.debug(["task", task._id, task.status, task.status_msg]);
+    logger.debug(["task", task._id, task.service, task.status, task.status_msg]);
 
-    if(task.status == "finished") {
-        logger.info("handling finished task");
-        handle_task_finished(task, cb);
-    } else if(task.status == "removed" && task.config && task.config._rule) {
-        logger.info("rule submitted task is removed. updating update_date:"+task.config._rule.id);
-        db.Rules.findOneAndUpdate({_id: task.config._rule.id}, {$set: {update_date: new Date()}}, cb);
-    } else {
-        cb();
-    }
-}
+    async.series([
+        next=>{
+            if(task.status == "finished" && task.config && task.config._outputs) {
+                logger.info("handling task outputs");
+                let outputs = [];
 
-function handle_task_finished(task, cb) {
-    if(task.config && task.config._outputs) handle_task_output(task, cb);
-    if(task.service == "brainlife/app-archive") {
-        //TODO - finalize the dataset
-    }
-}
-
-function handle_task_output(task, cb) {
-
-    logger.debug("handling task outputs");
-    if(!Array.isArray(task.config._outputs)) {
-        return cb("task.config._outputs is not array "+JSON.stringify(task.config, null, 4));
-    }
-    let products = common.split_product(task.product||{}, task.config._outputs);
-
-    //get all project ids set by user
-    let project_ids = [];
-    task.config._outputs.forEach(output=>{
-        if(output.archive) project_ids.push(output.archive.project);
-    });
-    
-    //check project access
-    common.validate_projects(task.user_id, project_ids, err=>{
-        if(err) return cb(err);
-        
-        //register datasets
-        let datasets = []; 
-        async.eachSeries(task.config._outputs, (output, next_output)=>{
-            if(!output.archive) return next_output();
-            register_dataset(task, output, products[output.id], (err, dataset)=>{
-                if(err || !dataset) return next_output(); //couldn't register, or already registered
-
-                if(!output.subdir) {
-                    //if output doesn't have subdir set, we need to use the old archiving method...
-                    logger.debug("requesting for archive_handler to archive it");
-                    acon.publish('warehouse.archive', {dataset_id: dataset._id});
-                } else {
-                    //for new archiver
-                    logger.debug("new archive");
-                    datasets.push({
-                        project: output.archive.project,
-                        id: dataset._id,
-                        dir: "../"+task._id+"/"+output.subdir,
+                async.eachSeries(task.config._outputs, (output, next_output)=>{
+                    //check to make sure that the output is not already registered
+                    db.Datasets.findOne({
+                        "prov.task_id": task._id,
+                        "prov.output_id": output.id,
+                        //ignore failed and removed ones
+                        $or: [
+                            { removed: false }, 
+                            //or.. if archived but removed and not failed, user must have a good reason to remove it.. (don't rearchive)
+                            { removed: true, status: {$ne: "failed"} }, 
+                        ]
+                    }).exec((err,_dataset)=>{
+                        if(!_dataset) outputs.push(output);
+                        else logger.info("already archived or removed by user. output_id:"+output.id+" dataset_id:"+_dataset._id.toString());
+                        next_output(err);
                     });
-                }
-                next_output();
-            });
-        }, async err=>{
-            if(err) return cb(err);
-            if(datasets.length == 0) return cb();
-
-            try {
-                //load user's gids so that we can add warehouse group id (authorized to access archive)
-                let gids = await request.get({
-                    url: config.auth.api+"/user/groups/"+task.user_id,
-                    json: true,
-                    headers: {
-                        authorization: "Bearer "+config.warehouse.jwt,
-                    }
+                }, err=>{
+                    if(err) return next(err);
+                    common.archive_task_outputs(task, outputs, next);
                 });
+            } else next();
+        },
 
-                ///add warehouse group that allows user to submit
-                gids = gids.concat(config.archive.gid);  
-
-                //issue user token 
-                let {jwt: user_jwt} = await request.get({
-                    url: config.auth.api+"/jwt/"+task.user_id,
-                    json: true,
-                    qs: {
-                        claim: JSON.stringify({gids}),
-                    },
-                    headers: {
-                        authorization: "Bearer "+config.warehouse.jwt,
+        next=>{
+            if(task.service == "brainlife/app-archive") {
+                logger.info("handling app-archive envets");
+                /*TODO
+12|warehou | debug: task,5c172542f7a2e238e21f31b3,brainlife/app-archive,running,Service started {"timestamp":"2018-12-17T04:26:11.442Z"}
+12|warehou | info: handling app-archive envets {"timestamp":"2018-12-17T04:26:11.442Z"}
+12|warehou | error: Cannot read property 'project' of null {"timestamp":"2018-12-17T04:26:11.446Z"}
+*/
+                async.eachSeries(task.config.datasets, (dataset_config, next_dataset)=>{
+                    let _set = {
+                        status_msg: task.status_msg,
+                    };
+                    switch(task.status) {
+                    case "finished":
+                        _set.status = "stored";
+                        _set.storage = "wrangler";
+                        break;
+                    case "failed":
+                        _set.status = "failed";
+                        _set.desc = task.status_msg;
+                        break;
                     }
-                });
+                    db.Datasets.findByIdAndUpdate(dataset_config.dataset._id, {$set: _set}, next_dataset);
+                }, next);
+            } else next();
+        },
 
-                logger.debug("submitting app-archive");
-                let archive_task = await request.post({
-                    url: config.amaretti.api+"/task",
-                    json: true,
-                    body: {
-                        deps : [ task._id ],
-                        //name : "archiving",
-                        //desc : "archiving",
-                        service : "brainlife/app-archive",
-                        instance_id : task.instance_id,
-                        config: {
-                            datasets,
-                        },
-                    },
-                    headers: {
-                        authorization: "Bearer "+user_jwt,
-                    }
-                });
-                logger.debug(archive_task);
-                cb();
-            } catch(err) {
-                cb(err);
-            }
-        });
-    });
+        next=>{
+            if(task.status == "removed" && task.config && task.config._rule) {
+                logger.info("rule submitted task is removed. updating update_date:"+task.config._rule.id);
+                db.Rules.findOneAndUpdate({_id: task.config._rule.id}, {$set: {update_date: new Date()}}, next);
+            } else next();
+        },
+
+    ], cb);
 }
 
-function register_dataset(task, output, product, cb) {
-
-    //first check to make sure the dataset is already registered
-    db.Datasets.findOne({
-        "prov.task_id": task._id,
-        "prov.output_id": output.id,
-        
-        //ignore failed and removed ones
-        //TODO - very strange query indeed.. but it should work
-        $or: [
-            { removed: false }, //already archived!
-            
-            //or.. if archived but removed and not failed, user must have a good reason to remove it.. (don't rearchive)
-            { removed: true, status: {$ne: "failed"} }, 
-        ]
-        
-    }).exec((err,_dataset)=>{
-        if(err) return cb(err);
-        if(_dataset) {
-            logger.info("already archived or removed by user. output_id:"+output.id+" dataset_id:"+_dataset._id.toString());
-            return cb();
-        }
-
-        logger.debug("not yet archived.. registering new dataset");
-        new db.Datasets({
-            user_id: task.user_id,
-            desc: output.archive.desc,
-
-            project: output.archive.project,
-            datatype: output.datatype,
-
-            datatype_tags: product.datatype_tags,
-            tags: product.tags,
-            meta: product.meta,
-
-            product,
-
-            //status: "waiting",
-            status_msg: "Waiting for the archiver ..",
-            
-            prov: {
-                task, 
-                output_id: output.id, 
-                subdir: output.subdir, //optional
-
-                instance_id: task.instance_id, //deprecated use prov.task.instance_id
-                task_id: task._id, //deprecated. use prov.task._id
-
-            },
-        }).save(cb); 
-    });
-}
 
 function handle_instance(instance, cb) {
     _counts.instances++;

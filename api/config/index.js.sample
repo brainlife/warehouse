@@ -563,6 +563,9 @@ exports.logger = {
         
         //hide headers which may contain jwt
         requestWhitelist: ['url', 'method', 'httpVersion', 'originalUrl', 'query'],
+        exceptionHandlers: [
+            new transports.Console(),
+        ],
         transports: [
             //display all logs to console
             new transports.Console({

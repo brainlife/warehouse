@@ -5,7 +5,7 @@
 pm2 start /app/api/warehouse.js
 pm2 start /app/bin/rule_handler.js
 pm2 start /app/bin/event_handler.js
-pm2 start -i 2 /app/bin/archive_handler.js
+#pm2 start -i 2 /app/bin/archive_handler.js
 pm2 start /app/bin/appinfo.js
 
 pm2 logs
