@@ -8,6 +8,7 @@ const jwt = require('express-jwt');
 const jsonwebtoken = require('jsonwebtoken');
 const async = require('async');
 const request = require('request');
+const rp = require('request-promise-native');
 const meter = require('stream-meter');
 const mongoose = require('mongoose');
 
@@ -28,9 +29,10 @@ function canedit(user, rec, canwrite_project_ids) {
     return false;
 }
 
-function isuploadtask(task) {
+function isimporttask(task) {
     return ( 
         task.service == "soichih/sca-product-raw" || 
+        task.service == "brainlife/app-stage" || 
         task.service == "soichih/sca-service-noop" || //deprecated
         task.service == "brainlife/app-noop" ||
         ~task.service.indexOf("brainlife/validator-") ||
@@ -264,7 +266,7 @@ router.get('/prov/:id', (req, res, next)=>{
             if(err) return cb(err);
             if(!task.service) task.service = "unknown"; //only happens for dev/test? (TODO.. maybe I should cb()?)
             
-            if(isuploadtask(task)) {
+            if(isimporttask(task)) {
                 if(defer) {
                     add_node(defer.node);
                     datasets_analyzed.push(dataset._id.toString());
@@ -362,7 +364,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 //process uses sca-product-raw to load input datasets
                 //instead of showing that, let's *skip* this node back to datasets that it loaded
                 //and load their tasks
-                if(dep_task.service == "soichih/sca-product-raw") { //TODO might change in the future
+                if(dep_task.service == "soichih/sca-product-raw" || dep_task.service == "brainlife/app-stage") { 
                     load_product_raw("task."+task._id, input.dataset_id||input._id||input.subdir, next_dep);
                 } else {
                     //task2task
@@ -567,6 +569,140 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     ], cb);
 });
 
+
+/**
+ * @apiGroup Dataset
+ * @api {put} /dataset/stage        Stage datasets
+ *                              
+ * @apiDescription                  Stage datasets on specified instance
+ *
+ * @apiParam {String} instance_id   Instance to stage the datasets
+ * @apiParam {String[]} dataset_ids Dataset IDs to stage
+ *
+ * @apiHeader {String} authorization 
+ *                                  A valid JWT token "Bearer: xxxxx"
+ *
+ * @apiSuccess {Object}             Submitted brainlife/stage task
+ */
+router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    if(!req.body.instance_id) return next("instance_id is not set");
+    if(!req.body.dataset_ids && !Array.isArray(req.body.dataset_ids)) return next("dataset_ids are not set");
+
+    let datasets;
+    let next_tid;
+    let stage_task; 
+
+    async.series([
+        //load dataset info (and check access)
+        next=>{
+            common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
+                if(err) return next(err);
+                db.Datasets.find({_id: {$in: req.body.dataset_ids}}).exec((err, _datasets)=>{
+                    if(err) return next(err);
+                    //find dataset ids that user have access to
+                    datasets = [];
+                    _datasets.forEach(dataset=>{
+                        if(!dataset) return;
+                        if(!dataset.storage) return;
+
+                        canread_project_ids = canread_project_ids.map(id=>id.toString());
+                        if(!~canread_project_ids.indexOf(dataset.project.toString())) {
+                            //user doesn't have read access to this project
+                            return;
+                        } 
+
+                        datasets.push(dataset);
+                    });
+                    next();
+                });
+            });
+        },
+
+        //find next tid
+        next=>{
+            request.get({
+                url: config.amaretti.api+'/task', 
+                json: true,
+                headers: {
+                    authorization: req.headers.authorization, 
+                },
+                qs: {
+                    find: JSON.stringify({
+                        instance_id: req.body.instance_id,
+                        status: {$ne: "removed"},
+                        'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
+                    }),
+                    select: 'config._tid', //I just need max _tid
+                    limit: 1000, //should be enough.. for now 
+                    //sort: 'create_date',
+                },
+            }, (err, _res, body)=>{
+                next_tid = body.tasks.reduce((m,v)=>{ 
+                    if(v.config._tid && v.config._tid > m) return v.config._tid;
+                    return m;
+                }, 0) + 1;
+                next();
+            });
+        },
+
+        //submit!
+        async next=>{
+            let jwt = await common.issue_archiver_jwt(req.user.sub);
+
+            //stage task is used as input to real *first* app that uses the data, so I believe we can 
+            //remove it shortly after it's stage.. remove in 7 days(?)
+            //TODO - if it's already staged, and another user request for the same datazet, should I just reuse it?
+            let remove_date = new Date();
+            remove_date.setDate(remove_date.getDate()+7); 
+
+            stage_task = await rp.post({
+                url: config.amaretti.api+"/task",
+                json: true,
+                body: {
+                    name : "Staging Out Of Archive",
+                    //desc : "archiving",
+                    service : "brainlife/app-stage",
+                    instance_id : req.body.instance_id,
+                    config: {
+                        datasets: datasets.map(d=>{
+                            return {
+                                id: d.id,
+                                project: d.project,
+                            }
+                        }),
+                        _tid: next_tid,
+                        _outputs: datasets.map(d=>{
+                            return {
+                                id: d._id,
+                                datatype: d.datatype,
+                                meta: d.meta,
+                                tags: d.tags,
+                                datatype_tags: d.datatypetags,
+                                
+                                subdir: d._id,
+                                dataset_id: d._id,
+
+                                project: d.project,
+                            }
+                        }),
+                    },
+                    max_runtime: 1000*3600, //1 hour should be enough?
+                    remove_date,
+                },
+                headers: {
+                    authorization: "Bearer "+jwt,
+                }
+            });
+
+            console.log(JSON.stringify(stage_task, null, 4));
+        },
+
+    ], err=>{
+        if(err) next(err);
+        res.json(stage_task);
+    });
+});
+
 /**
  * @apiGroup Dataset
  * @api {put} /dataset/:id      Update Dataset
@@ -617,6 +753,8 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  *
  * @apiSuccess {Object}         Object containing jwt: key
 */
+//TODO - deprecated by dataset/stage
+/*
 router.post('/token', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
@@ -638,7 +776,6 @@ router.post('/token', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 valid_ids.push(dataset._id);
             });
 
-            logger.debug("signing jwt", valid_ids);
             let jwt = jsonwebtoken.sign({
                 sub: req.user.sub,
                 iss: "warehouse",
@@ -651,6 +788,7 @@ router.post('/token', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         });
     });
 });
+*/
 
 function stream_dataset(dataset, res, next) {
     var system = config.storage_systems[dataset.storage];
@@ -1005,7 +1143,7 @@ ${p.readme||''}`;
                     //Create BIDS symlinks
                     let bidspath = root+"/bids/derivatives";
                     let pipeline = "upload"; //assumed by default..
-                    if(dataset.prov && dataset.prov.task && !isuploadtask(dataset.prov.task)) {
+                    if(dataset.prov && dataset.prov.task && !isimporttask(dataset.prov.task)) {
                         //use service name as the pipeline name
                         pipeline = dataset.prov.task.service.replace(/\//g, '.');
                         //add branch at the end of pipeline name

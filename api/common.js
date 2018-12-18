@@ -294,6 +294,34 @@ exports.wait_task = function(req, task_id, cb) {
     });
 }
 
+exports.issue_archiver_jwt = async function(user_id, cb) {
+    //load user's gids so that we can add warehouse group id (authorized to access archive)
+    let gids = await rp.get({
+        url: config.auth.api+"/user/groups/"+user_id,
+        json: true,
+        headers: {
+            authorization: "Bearer "+config.warehouse.jwt,
+        }
+    });
+    
+    ///add warehouse group that allows user to submit
+    gids = gids.concat(config.archive.gid);  
+
+    //issue user token with added gids priviledge
+    let {jwt: user_jwt} = await rp.get({
+        url: config.auth.api+"/jwt/"+user_id,
+        json: true,
+        qs: {
+            claim: JSON.stringify({gids}),
+        },
+        headers: {
+            authorization: "Bearer "+config.warehouse.jwt,
+        }
+    });
+
+    return user_jwt;
+}
+
 exports.archive_task_outputs = function(task, outputs, cb) {
     if(!Array.isArray(outputs)) {
         return cb("archive_task_outputs/outputs is not array "+JSON.stringify(outputs, null, 4));
@@ -356,6 +384,8 @@ exports.archive_task_outputs = function(task, outputs, cb) {
             if(datasets.length == 0) return cb();
 
             try {
+                let user_jwt = await exports.issue_archiver_jwt(task.user_id);
+                /*
                 //load user's gids so that we can add warehouse group id (authorized to access archive)
                 let gids = await rp.get({
                     url: config.auth.api+"/user/groups/"+task.user_id,
@@ -379,6 +409,7 @@ exports.archive_task_outputs = function(task, outputs, cb) {
                         authorization: "Bearer "+config.warehouse.jwt,
                     }
                 });
+                */
 
                 //submit app-archive!
                 let remove_date = new Date();

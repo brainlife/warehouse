@@ -5,11 +5,12 @@ const async = require('async');
 const request = require('request');
 const fs = require('fs');
 const redis = require('redis');
-const jsonwebtoken = require('jsonwebtoken');
+//const jsonwebtoken = require('jsonwebtoken');
 
 const config = require('../api/config');
 const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
+const common = require('../api/common');
 
 let rcon = null;
 db.init(function(err) {
@@ -400,7 +401,7 @@ function handle_rule(rule, cb) {
         var task_out = null;
 		var meta = {}; //metadata to store for archived dataset
         var next_tid = null;
-        var safe_jwt = null;
+        var stage_jwt = null;
 
         var _app_inputs = []; 
         var deps = [];
@@ -480,6 +481,11 @@ function handle_rule(rule, cb) {
 
             //create safe dataset download jwt (I can do this synchrnously.. but)
             next=>{
+                common.issue_archiver_jwt(rule.user_id).then(jwt=>{
+                    stage_jwt = jwt;
+                    next();
+                });
+                /*
 				let ids = [];
 				for(var input_id in inputs) {
                     var input = inputs[input_id];
@@ -494,6 +500,7 @@ function handle_rule(rule, cb) {
 					},
 				}, config.warehouse.private_key, {algorithm: 'RS256'});
                 next();
+                */
             },
 
             //submit input staging task for datasets that aren't staged yet
@@ -547,9 +554,9 @@ function handle_rule(rule, cb) {
                         var output = null;
                         for(var task_id in tasks) {
                             task = tasks[task_id];
-                            if(task.service == "soichih/sca-product-raw" && isalive(task)) {
+                            if(task.service == "soichih/sca-product-raw" || task.service == "brainlife/app-stage") {
                                 output = task.config._outputs.find(o=>o._id == input._id);
-                                if(output) {
+                                if(output && isalive(task)) {
                                     rlogger.debug("found it", output);
                                     break;
                                 }
@@ -575,11 +582,14 @@ function handle_rule(rule, cb) {
                     if(!canuse_source() && !canuse_staged()) {
                         //we don't have it.. we need to stage from warehouse
                         rlogger.debug("couldn't find source task/staged dataset.. need to load from warehouse");
+                        /*
                         downloads.push({
                             url: config.warehouse.api+"/dataset/download/safe/"+input._id+"?at="+safe_jwt,
                             untar: "auto",
                             dir: input._id,
                         });
+                        */
+                        downloads.push(input);
                         
                         //TODO I should only put stuff that I need output input..
                         var output = Object.assign({}, input, {
@@ -596,6 +606,7 @@ function handle_rule(rule, cb) {
                 //nothing to download, then proceed to submitting the app
                 if(downloads.length == 0) return next();
 
+                /*
                 //need to submit download task first.
                 request.post({
                     url: config.amaretti.api+'/task', json: true, 
@@ -616,6 +627,49 @@ function handle_rule(rule, cb) {
                         },
                         deps: [],
                         nice: config.rule.nice,
+                    },
+                */
+                
+                //stage task is used as input to real *first* app that uses the data, so I believe we can 
+                //remove it shortly after it's stage.. remove in 7 days(?)
+                //TODO - if it's already staged, and another user request for the same datazet, should I just reuse it?
+                let remove_date = new Date();
+                remove_date.setDate(remove_date.getDate()+7); 
+                console.log(JSON.stringify(downloads, null, 4));
+
+                request.post({
+                    url: config.amaretti.api+"/task", json: true,
+                    headers: { authorization: "Bearer "+stage_jwt },
+                    body: {
+                        name : "Staging Out Of Archive",
+                        //desc : "archiving",
+                        service : "brainlife/app-stage",
+                        instance_id: instance._id,
+                        config: {
+                            datasets: downloads.map(d=>{
+                                return {
+                                    id: d._id,
+                                    project: d.project,
+                                }
+                            }),
+                            _tid: next_tid++,
+                            _outputs: downloads.map(d=>{
+                                return {
+                                    id: d._id,
+                                    datatype: d.datatype,
+                                    meta: d.meta,
+                                    tags: d.tags,
+                                    datatype_tags: d.datatypetags,
+                                    
+                                    subdir: d._id,
+                                    dataset_id: d._id,
+
+                                    project: d.project,
+                                }
+                            }),
+                        },
+                        max_runtime: 1000*3600, //1 hour should be enough?
+                        remove_date,
                     },
                 }, (err, res, _body)=>{
                     if(err) return next(err);
