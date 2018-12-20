@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-const winston = require('winston');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, label, prettyPrint } = format;
 const async = require('async');
 const request = require('request');
 const fs = require('fs');
@@ -8,7 +9,7 @@ const redis = require('redis');
 //const jsonwebtoken = require('jsonwebtoken');
 
 const config = require('../api/config');
-const logger = winston.createLogger(config.logger.winston);
+const logger = createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
@@ -169,9 +170,13 @@ function handle_rule(rule, cb) {
                 } catch (err) {
                     logger.info("failed to truncate.. maybe first time", logpath);
                 }
-                rlogger = winston.createLogger({
+                rlogger = createLogger({
+                    format: combine(
+                        timestamp(),
+                        format.simple(),
+                    ),
                     transports: [
-                        new (winston.transports.File)({
+                        new (transports.File)({
                             filename: logpath,
                             json: false,
                             level: "debug",
@@ -212,7 +217,7 @@ function handle_rule(rule, cb) {
                     return next("too many tasks submitted for this rule");
                 }
 
-                rlogger.debug("running/requested tasks", running);
+                rlogger.debug(["running/requested tasks:"+running]);
                 next();
             });
         },
@@ -351,17 +356,17 @@ function handle_rule(rule, cb) {
         }
 
         if(rule_tasks[subject]) {
-            rlogger.debug("task already submitted for subject:", subject, rule_tasks[subject]._id, rule_tasks[subject].status);
+            rlogger.debug("task already submitted for subject:"+subject+" "+rule_tasks[subject]._id+" "+rule_tasks[subject].status);
             return next_subject();
         }
 
-        rlogger.debug("handling subject", subject);
+        rlogger.debug("handling subject "+subject);
         
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var output_missing = false;
         rule.app.outputs.forEach(output=>{
             if(!~output._subjects.indexOf(subject)) {
-                rlogger.debug("output dataset not yet created for id:", output.id);
+                rlogger.debug("output dataset not yet created for id:"+output.id);
                 output_missing = true;
             }
         });
@@ -380,12 +385,13 @@ function handle_rule(rule, cb) {
             }
             if(!input._datasets[subject]) {
                 missing = true;
+                rlogger.info("missing input "+input.id);
             } else {
                 inputs[input.id] = input._datasets[subject][0]; //use the first one for now.. (TODO for multiinput, we could grab all?)
             }
         });
         if(missing) {
-            rlogger.info("Found the output datasets that need to be generated, but we can't find input datasets with specified datatype / tags to submit the task with.. skipping");
+            rlogger.info("Found the output datasets that need to be generated, but input are missing");
             return next_subject();
         }
 
@@ -430,7 +436,7 @@ function handle_rule(rule, cb) {
                     if(err) return next(err);
                     instance = body.instances[0];
                     if(instance) {
-                        rlogger.debug("using instance id:", instance._id);
+                        rlogger.debug("using instance id:"+instance._id);
                     }
                     next();
                 });
@@ -557,7 +563,7 @@ function handle_rule(rule, cb) {
                             if(task.service == "soichih/sca-product-raw" || task.service == "brainlife/app-stage") {
                                 output = task.config._outputs.find(o=>o._id == input._id);
                                 if(output && isalive(task)) {
-                                    rlogger.debug("found it", output);
+                                    rlogger.debug(["found it ",output]);
                                     break;
                                 }
                             }
@@ -726,9 +732,18 @@ function handle_rule(rule, cb) {
                         desc: output.desc,
                         meta: meta,
                         tags: rule.output_tags[output.id], 
-                        archive: {
+                    }
+
+                    if(rule.archive === undefined) {
+                        //for backward compatibility.. assume do == true
+                        output_req.archive = {
                             project: rule.project._id,  
                             desc: rule.name,
+                        }
+                    } else if(rule.archive[output.id].do) {
+                        output_req.archive = {
+                            project: rule.project._id,  
+                            desc: rule.archive[output.id].desc||rule.name,
                         }
                     }
 
