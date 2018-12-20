@@ -6,7 +6,7 @@
         <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
             <div class="task-tab-title">
                 <b style="float: right;">t.{{task.config._tid}}</b> 
-                <span v-if="task.service!='soichih/sca-product-raw'">{{task.service}}</span>
+                <span v-if="task.service!='soichih/sca-product-raw' && task.service!='brainlife/app-stage'">{{task.service}}</span>
             </div>
             <div v-for="(output, idx) in task.config._outputs" :key="idx">
                 <b>{{output.meta.subject}}</b>
@@ -120,9 +120,9 @@
                                 </span>
 
                                 <!--show dataset status if it's not stored-->
-                                <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                                    <icon name="cog" :spin="true"/> {{dataset.status_msg||dataset.status}}
-                                </span> 
+                                <small style="color: #2693ff;" v-if="dataset.status == 'storing'">
+                                    <icon name="cog" :spin="true"/> Archiver | {{dataset.status_msg||dataset.status}}
+                                </small> 
                                 <span v-else-if="dataset.status == 'stored'"></span>
                                 <span v-else><statustag :status="dataset.status"/></span>
                             </li>
@@ -222,7 +222,6 @@ export default {
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
         this.$root.$on('showtask', id=>{
-            console.log("showtask received", id);
             this.selected_task_id = id;
             this.scrollto(id);
         }); 
@@ -491,46 +490,23 @@ export default {
         },
 
         submit_stage(datasets) {
-            //issue jwt to allow access
-            this.$http.post('dataset/token', {
-                ids: Object.keys(datasets),
-            }).then(res=>{
-                var jwt = res.body.jwt;
-                var download = [];
-                var _outputs = [];
-                for(var dataset_id in datasets) {
-                    //ignore already staged dataset
-                    var found = this._datasets.find(dataset=>dataset.dataset_id == dataset_id);
-                    if(found) {
-                        this.$notify({type: 'warn', text:'Dataset(s) specified is already staged. Skipping.'});
-                        continue;
-                    }
-                    download.push({
-                        url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
-                        untar: "auto",
-                        dir: dataset_id,
-                    });
-                    _outputs.push(Object.assign(datasets[dataset_id], {
-                        id: dataset_id, 
-                        subdir: dataset_id, 
-                        dataset_id,
-                        prov: null,
-                    }));
+            let dataset_ids = [];
+            for(var dataset_id in datasets) {
+                //skip already staged dataset
+                var found = this._datasets.find(dataset=>dataset.dataset_id == dataset_id);
+                if(found) {
+                    this.$notify({type: 'warn', text:'Dataset(s) specified is already staged. Skipping.'});
+                    continue;
                 }
-                if(download.length == 0) return;
-
-                //now submit request
-                this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: this.instance._id,
-                    name: "Staging Datasets",
-                    service: "soichih/sca-product-raw",
-                    config: { download, _outputs, _tid: this.next_tid() },
-                }).then(res=>{
-                    console.log("submitted download", res.body.task);
-                    var task = res.body.task;
-                });
+                dataset_ids.push(dataset_id);
+            }
+            if(dataset_ids.length == 0) return;
+            this.$http.post('dataset/stage', {
+                instance_id: this.instance._id,
+                dataset_ids,
+            }).then(res=>{
+                console.dir(res.body);
             });
-
         },
 
         submit_task(task) {
@@ -566,13 +542,14 @@ export default {
                 project: this.project,
             });
         },
+
         newdataset() {
             this.$root.$emit("datasetselecter.open");
         },
 
         get_tasktab_class(task) {
             let c = ["task-tab"];
-            if(task.service == 'soichih/sca-product-raw') c.push("task-tab-stage");
+            if(task.service == 'soichih/sca-product-raw' || task.service == 'brainlife/app-stage') c.push("task-tab-stage");
             c.push("task-tab-"+task.status);
             return c;
         },

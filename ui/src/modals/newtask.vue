@@ -248,7 +248,7 @@ export default {
                             if(!input.datatype) return false; //only happens on dev?
                             if(dataset.datatype != input.datatype._id) return false;
                             var match_tag = true;
-                            input.datatype_tags.forEach(tag=>{
+                            if(dataset.datatype_tags) input.datatype_tags.forEach(tag=>{
                                 //make sure tag matches
                                 if(tag[0] == "!" && ~dataset.datatype_tags.indexOf(tag.substring(1))) match_tag = false;
                                 if(tag[0] != "!" && !~dataset.datatype_tags.indexOf(tag)) match_tag = false;
@@ -490,7 +490,7 @@ export default {
             var label = "";
             if(dataset.task.status != 'finished') label += "("+dataset.task.status+") ";
             label += dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject;
-            if(dataset.datatype_tags.length > 0) label += ' '+dataset.datatype_tags;
+            if(dataset.datatype_tags && dataset.datatype_tags.length > 0) label += ' '+dataset.datatype_tags;
             if(dataset.tags.length > 0) label +=' | '+dataset.tags; 
             return label;
         },

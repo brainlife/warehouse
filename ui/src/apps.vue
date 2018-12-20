@@ -261,12 +261,6 @@ margin-bottom: 10px;
 width: 350px;
 float: left;
 }
-/*
-.app:hover {
-transition: transform .2s;
-transform: scale(1.5);
-}
-*/
 .page-content {
 margin-left: 240px;
 }
@@ -348,8 +342,14 @@ background-color: #2693ff;
 background-color: inherit;
 color: white;
 }
+.app-shadow {
+position: relative;
+top: 0px;
+transition: all 0.3s  ease 0s;
+}
 .app-shadow:hover {
-box-shadow: 3px 3px 6px rgba(0,0,0,0.25);
+box-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+top: -3px;
 }
 
 </style>

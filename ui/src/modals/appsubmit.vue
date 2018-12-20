@@ -221,29 +221,6 @@ export default {
     },
 
     methods: {
-        
-        // if there's only 1 applicable dataset for a given input, pre-select it
-        //TODO - update to make it work with array input
-        /*
-        preselect_single_items: function(input) {
-            this.fetch_datasets(input, {}, data => {
-                //if there's only 1 applicable dataset...
-                if (data.results.length == 1) {
-                    let result = data.results[0];
-                    //first add it to the list of options to choose from
-                    Vue.set(this.form.options, input.id, data.results);
-                    //then select it
-                    Vue.set(this.form.inputs, input.id, result.id);
-                }
-                else { // more than one, clear the selection
-                    // clear select2 selection using only options
-                    Vue.set(this.form.options, input.id, []);
-                    Vue.set(this.form.inputs, input.id, undefined);
-                }
-            });
-        },
-        */
-
         fetch_datasets: function(input, params, cb) {
             // essentially the same code from datasetselecter.vue
             if (!params.page) params.page = 1;
@@ -409,12 +386,10 @@ export default {
             }
 
             var app_inputs = [];
-            var meta = {};
             var project = null;
             var instance = null;
             var download = [];
             var _outputs = [];
-            var datasets = {};
 
             //load project detail for project selected and desintation project
             let project_ids = [ this.project ]; //desintation
@@ -449,82 +424,55 @@ export default {
             }).then(res=>{
                 instance = res.body;
                 console.log("instance created", instance);
-
-                //pull datasets info that we are submitting with
-                return this.$http.get('dataset', {params: {
-                    find: JSON.stringify({_id: {$in: all_dataset_ids}}),
-                }})
-            }).then(res=>{
-                res.body.datasets.forEach(d=>{
-                    datasets[d._id] = d;
-                });
-
-                //issue token to download datasets 
-                return this.$http.post('dataset/token', {
-                    ids: all_dataset_ids,
+                //submit staging task
+                return this.$http.post('dataset/stage', {
+                    instance_id: instance._id,
+                    dataset_ids: all_dataset_ids,
                 });
             }).then(res=>{
-                var jwt = res.body.jwt;
-                
-                //create config to download all input data from archive
+                var download_task = res.body.task;
+                //console.log("download task submitted", download_task);
+
+                //construct _inputs for main app
                 for(var input_id in this.form.inputs) {
                     this.form.inputs[input_id].forEach(dataset_id=>{
-                        download.push({
-                            url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
-                            untar: "auto",
-                            dir: dataset_id,
-                        });
-
-                        var dataset = datasets[dataset_id];
-                        var output = {
+                        let dataset = download_task.config._outputs.find(out=>out.dataset_id == dataset_id);
+                        let keys = [];
+                        for(var key in this.app.config) {
+                            if(this.app.config[key].input_id == input_id) keys.push(key); 
+                        }
+                        app_inputs.push({
                             id: input_id,
                             subdir: dataset_id, 
                             dataset_id,
-                            task_id: dataset.task_id,
                             datatype: dataset.datatype,
                             datatype_tags: dataset.datatype_tags,
                             tags: dataset.tags,
                             meta: dataset.meta,
+
                             project: dataset.project,
-                        }
-                        _outputs.push(output);
-
-                        //aggregate metas
-                        for(var k in dataset.meta) if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
-
-                        //turn output into input for the main app
-                        var keys = [];
-                        for(var key in this.app.config) {
-                            if(this.app.config[key].input_id == input_id) keys.push(key); 
-                        }
-                        app_inputs.push(Object.assign({
                             keys,
-                        }, output));
+                            task_id: download_task._id,
+                        });
                     });
                 }
 
-                //now submit task to download data from archive
-                console.log("submitting download task", download, _outputs);
-                return this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: instance._id,
-                    name: "Staging Dataset",
-                    service: "soichih/sca-product-raw",
-                    config: { download, _outputs, _tid: 0 },
-                })
-            }).then(res=>{
-                var download_task = res.body.task;
-                console.log("download task submitted", download_task);
-                app_inputs.forEach(input=>{
-                    input.task_id = download_task._id;
-                });
+                //aggregate meta
+                //TODO - this just concatenate *all* meta from all input datasets.. I should probaby do something smarter..
+                let meta = download_task.config._outputs.reduce((meta, dataset)=>{
+                    for(var k in dataset.meta) if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
+                    return meta;
+                }, {});
 
-                //now submit the main task
+                //put config together
                 var config = Object.assign(this.generate_config(download_task._id), {
                     _app: this.app._id,
-                    _tid: 1,
+                    _tid: 2,
                     _inputs: app_inputs,
                     _outputs: [],
                 });
+
+                //now submit the main task
                 this.app.outputs.forEach(output=>{
                     var output_req = {
                         id: output.id,
@@ -543,7 +491,8 @@ export default {
 					var tags = [];
                     if(output.datatype_tags_pass) {
                         this.form.inputs[output.datatype_tags_pass].forEach(dataset_id=>{
-							tags = tags.concat(tags, datasets[dataset_id].datatype_tags);
+                            let dataset = download_task.config._outputs.find(out=>out.dataset_id == dataset_id);
+							tags = tags.concat(tags, dataset.datatype_tags);
                         }); 
                     }
 					//.. and add app specified output tags at the end

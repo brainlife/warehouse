@@ -457,7 +457,7 @@ export default {
         },
 
         submit_process(project_id, instance) {
-            //console.log("submitting staging task", this.dataset);
+            /*
             this.$http.post(Vue.config.amaretti_api+'/task', {
                 instance_id: instance._id,
                 name: "Staged Datasets - "+this.dataset.datatype.name,
@@ -485,6 +485,14 @@ export default {
                         })
                     ], 
                 },
+            }).then(res=>{
+                this.$router.push("/project/"+project_id+"/process/"+instance._id);
+                this.dataset = null;
+            });
+            */
+            this.$http.post('dataset/stage', {
+                instance_id: instance._id,
+                dataset_ids: [ this.dataset._id ],
             }).then(res=>{
                 this.$router.push("/project/"+project_id+"/process/"+instance._id);
                 this.dataset = null;
@@ -615,7 +623,8 @@ export default {
                     if(task) {
                         this.$root.$emit("viewselecter.open", { datatype, task, subdir });
                     } else {
-                        this.create_stage_task((task, subdir)=>{
+                        this.create_stage_task((err, task, subdir)=>{
+                            if(err) return this.$notify({type: "error", text: err.toString()});
                             this.$root.$emit("viewselecter.open", { datatype, task, subdir });
                         });
                     }
@@ -628,7 +637,7 @@ export default {
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({ 
                     status: { $ne: "removed" },
-                    service: "soichih/sca-product-raw", 
+                    service: { $in: ["soichih/sca-product-raw", "brainlife/app-stage"]}, 
                     "config.download.dir": this.dataset._id,
                 }),
                 sort: '-create_date', //pick the latest one
@@ -651,15 +660,13 @@ export default {
                         console.log("task that produced this dataset still exists... using it");
                         return cb(res.body.tasks[0], this.dataset.prov.subdir);
                     }
-
-                    //didn't find it
-                    cb(null);
-
+                    cb(null); //didn't find it
                 });
             });
         },
 
         create_stage_task(cb) {
+            console.log("creating stage task");
             //it hasn't been staged.. create a new instance to download dataset to
             let instance = {
                 name: "brainlife.download",
@@ -669,12 +676,14 @@ export default {
             };
 
             //set group_id so that we can share it with other group members
-            //but.. user might not have write access to the project (probably a guest)
+            //TODO but.. user might not have write access to the project (probably a guest?)
             if(~Vue.config.user.gids.indexOf(this.dataset.project.group_id)) {
                 instance.group_id = this.dataset.project.group_id;
             }
             this.$http.post(Vue.config.amaretti_api+'/instance', instance).then(res=>{
                 let instance_id = res.body._id;
+
+/*
                 var download = [];
                 download.push({
                     url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
@@ -694,9 +703,14 @@ export default {
                     config: { download, _tid: -2 },
                     remove_date: remove_date,
                 }).then(res=>res.body.task);
-            }).then(task=>{
-                cb(task, this.dataset._id);
-            }).catch(console.error);
+*/
+                return this.$http.post('dataset/stage', {
+                    instance_id: instance_id,
+                    dataset_ids: [ this.dataset._id ],
+                });
+            }).then(res=>{
+                cb(null, res.body.task, this.dataset._id);
+            }).catch(cb);
         },
 
         save_desc() {

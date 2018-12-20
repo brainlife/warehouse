@@ -1,14 +1,14 @@
 <template>
 <div style="height: 100%; overflow: auto;">
     <div v-if="task && task.status == 'finished'" style="padding: 20px;">
-        <h4>Staging Data</h4>
+        <!--<h4>Staging Data</h4>-->
         <task :task="task"/>
         <br>
-        <h4>Starting Viewer</h4>
+        <!--<h4>Starting Viewer</h4>-->
         <task :task="novnc_task"/>
     </div>
     <div v-else style="padding: 20px;">
-        <h4>Staging Data</h4>
+        <!--<h4>Staging Data</h4>-->
         <task :task="task"/>
     </div>
 </div>
@@ -20,6 +20,8 @@ import Vue from 'vue'
 import task from '@/components/task'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import wait from '@/mixins/wait'
+
+const novnc_task_name="brainlife.novnc";
 
 export default {
     mixins: [ wait ],
@@ -71,13 +73,11 @@ export default {
 
         open_novnc() {
             this.get_instance_singleton("novnc").then((instance)=>{
-                //console.log("using instance", instance);
-                var task_name = "brainlife.novnc";
                 //look for novnc task running for specified instance/task
                 this.$http.get(Vue.config.wf_api+'/task', {params: {
                     find: JSON.stringify({
                         instance_id: instance._id,
-                        name: task_name,
+                        name: novnc_task_name,
                         //"config.input_instance_id": this.instanceid,
                         "config.input_instance_id": this.task.instance_id,
                         "config.input_task_id": this.taskid,
@@ -90,7 +90,7 @@ export default {
                         //submit novnc service for the first time!
                         this.$http.post(Vue.config.wf_api+'/task', {
                             instance_id: instance._id,
-                            name: task_name,
+                            name: novnc_task_name,
                             service: "soichih/abcd-novnc",
                             max_runtime: 3600*1000, //1 hour should be enough?
                             config: {
@@ -145,12 +145,12 @@ export default {
             }
         },
 
-        get_instance_singleton() {
+        get_instance_singleton(name) {
             return new Promise((resolve, reject) => {
                 //console.log("querying instance");
                 this.$http.get(Vue.config.wf_api+'/instance', {params: {
                     find: JSON.stringify({
-                        name: "brainlife.novnc",
+                        name,
                     })
                 }})
                 .then(res=>{
@@ -158,7 +158,7 @@ export default {
                     if(res.body.instances.length == 0) {
                         //need to submit new instance
                         this.$http.post(Vue.config.wf_api+'/instance', {
-                            name: "brainlife.novnc",
+                            name,
                         })
                         .then(res=>{
                             console.log("created instance", res.body);
@@ -194,11 +194,11 @@ export default {
                 }
                 var msg = event.msg;
                 if(!msg || !msg._id) return; //odd..
-                if(~msg.name.indexOf("brainlife.novnc")) {
-                    console.log("novnc_task updated", msg);
-                    this.novnc_task = msg;
-                    this.check_status();
-                }
+                //if(~msg.name.indexOf(novnc_task_name)) {
+                console.log("novnc_task updated", msg);
+                this.novnc_task = msg;
+                this.check_status();
+                //}
             }
         }
     }

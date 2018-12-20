@@ -56,10 +56,12 @@
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
                                         <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
+                                        <!--
                                         <span class="text-primary" v-if="dataset.publications && dataset.publications.length > 0">
                                             <icon name="book" scale="0.8"/>
                                             <small v-if="dataset.publications.length > 1">{{dataset.publications.length}}</small>
                                         </span>
+                                        -->
                                     </b-col>
                                     <b-col cols="3" class="truncate">
                                         {{dataset.desc||'&nbsp;'}}
@@ -95,14 +97,6 @@
         </h4>
 
         <div class="select-action">
-            <!--
-            <p>
-                <b-btn size="sm" variant="outline-secondary" @click="download">
-                    <icon name="download" scale="0.8"/> Download (BIDS)
-                    <small v-if="selected_size > 0"> | {{selected_size|filesize}}</small>
-                </b-btn>
-            </p>
-            -->
             <p>
                 <b-btn size="sm" variant="outline-secondary" @click="downscript">
                     <icon name="download" scale="0.8"/> Download
@@ -289,12 +283,6 @@ export default {
             let subid = this.$route.params.subid;
             this.$root.$emit('dataset.view', {id: subid, back: './'});
         },
-
-        /*
-        selected: function() {
-            localStorage.setItem('datasets.selected', JSON.stringify(this.selected));
-        },
-        */
     },
 
 	methods: {
@@ -554,11 +542,6 @@ export default {
             }
             //this.persist_selected();
         },
-        /*
-        persist_selected() {
-            localStorage.setItem('datasets.selected', JSON.stringify(this.selected));
-        },
-        */
         clear_selected() {
             //unselect all 
             this.pages.forEach(page=>{
@@ -595,133 +578,10 @@ export default {
             }).then(res=>res.body);
         },
 
-        temp_stage_selected(instance) {
-            //create config to download all selected data from archive
-            var download = [];
-            var datatypes = {};
-
-            return this.$http.post('dataset/token', {
-                ids: Object.keys(this.selected)
-            }).then(res=>{
-                var jwt = res.body.jwt;
-                for(var dataset_id in this.selected) {
-                    download.push({
-                        url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
-                        untar: "auto",
-                        dir: dataset_id, 
-                    });
-                    var dataset = this.selected[dataset_id];
-                    var datatype = this.datatypes[dataset.datatype];
-                    datatypes[dataset_id] = datatype;
-                }
-
-                //remove in 48 hours (abcd-novnc should terminate in 24 hours)
-                var remove_date = new Date();
-                remove_date.setDate(remove_date.getDate()+2);
-
-                //now submit
-                return this.$http.post(Vue.config.wf_api+'/task', {
-                    instance_id: instance._id,
-                    name: "brainlife.download.stage",
-                    service: "soichih/sca-product-raw",
-                    config: { download },
-                    remove_date: remove_date,
-                });
-            }).then(res=>res.body.task);
-        },
-
         set_uploader_options() {
             //dialog itself is opened via ref= on b-button, but I still need to pass some info to the dialog and retain task._id
             this.$root.$emit("uploader.option", {
                 project: this.project,
-            });
-        },
-
-        download() {
-            this.check_agreements(this.project, ()=>{
-                var download_instance = null;
-                var download_task = null;
-                this.get_instance().then(instance=>{
-                    download_instance = instance;
-                    return this.temp_stage_selected(instance);
-                }).then(task=>{
-                    download_task = task;
-
-                    //load task prov
-                    let task_ids = [];
-                    for(var dataset_id in this.selected) {
-                        let dataset = this.selected[dataset_id]; 
-                        if(!dataset.prov || !dataset.prov.task_id) break;
-                        task_ids.push(dataset.prov.task_id); 
-                    } 
-                    return this.$http.get(Vue.config.amaretti_api+'/task', {
-                        params: {
-                            find: JSON.stringify({_id: {$in: task_ids}})
-                        },
-                    });
-                })
-                .then(res=>{
-                    var tasks = res.body.tasks;
-
-                    //submit another sca-product-raw service to organize files 
-                    var symlink = [];
-                    for(var dataset_id in this.selected) {
-                        var dataset = this.selected[dataset_id]; 
-                        var datatype = this.datatypes[dataset.datatype];
-                        var datatype_tags = dataset.datatype_tags;
-
-                        var orgs = [];
-                        if(dataset.meta) {
-                            if(dataset.meta.subject) orgs.push("sub-"+dataset.meta.subject);
-                            if(dataset.meta.session) orgs.push("ses-"+dataset.meta.session);
-                            if(dataset.meta.run) orgs.push("run-"+dataset.meta.run);
-                        } else orgs.push("no-org");
-
-                        var download_path = "../"+download_task._id+"/"+dataset_id;
-
-                        //figure out the best process name
-                        var process_name = "upload"; 
-                        if(dataset.prov && dataset.prov.task_id) {
-                            var task = tasks.find(t=>t._id == dataset.prov.task_id);
-                            if(task) process_name = task.service.replace(/\//g, ".");
-                        }
-
-                        datatype.files.forEach(file=>{
-                            //last minute modification of filename depending on each datatype 
-                            var name = file.filename||file.dirname;
-                            switch(datatype.name) {
-                            case "neuro/func/task":
-                                name = datatype_tags.join("_")+"_"+name; 
-                                break;
-                            }
-                            var fullname = "ds-"+dataset_id+"_"+orgs.join("_")+"_"+name;
-            
-                            //can't create symlink as dir, so let's skip the dirname if it's just .
-                            if(file.dirname) {
-                                fullname = "ds-"+dataset_id+"_"+orgs.join("_");
-                                if(name != ".") fullname+="/"+name;
-                            }
-
-                            symlink.push({
-                                src: download_path+"/"+(file.filename||file.dirname),
-                                dest: "download/derivatives/"+process_name+"/"+orgs.join("/")+"/"+fullname,
-                            });
-                        });
-                    }
-                    return this.$http.post(Vue.config.wf_api+'/task', {
-                        instance_id: download_instance._id,
-                        name: "brainlife.download.bids",
-                        service: "soichih/sca-product-raw",
-                        config: { symlink },
-                        deps: [ download_task._id ], 
-                    })
-                }).then(res=>{
-                    this.bids_task = res.body.task;
-                    this.clear_selected();
-                    this.$router.push("/download/"+download_instance._id);
-                }).catch(res=>{
-                    this.$notify({type: 'error', text: res.toString()});
-                });
             });
         },
 
@@ -764,25 +624,6 @@ export default {
         remove() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 this.check_agreements(this.project, ()=>{
-                    /* bulk remove
-                    let ids = [];
-                    for(var id in this.selected) {
-                        var dataset = this.selected[id];
-                        if(!dataset._canedit) {
-                            this.$notify({type: "error", text: "You don't have permission to remove this dataset: "+dataset._id});
-                        } else {
-                            ids.push(id);
-                            dataset.removed = true;
-                        }
-                    }
-                    this.$http.post('dataset/delete', {id: ids}).then(res=>{
-                        this.clear_selected();
-                        this.$notify({type: "success", text: res.body.message});
-                    }).catch(err=>{
-                        this.$notify({type: "error", text: err.body.message});
-                    });
-                    */
-
                     let count = 0;
                     this.$notify({type: "info", text: "Removing all selected datasets.."});
 
@@ -806,66 +647,19 @@ export default {
         },
 
         submit_process(project_id, instance) {
-
-            //find the next _tid to use
-            var tid = 0;
-            this.$http.get(Vue.config.wf_api+'/task', {params: {
-                find: JSON.stringify({
-                    instance_id: instance._id,
-                    status: {$ne: "removed"},
-                    'config._tid': {$exists: true}, //use _tid to know that it's meant for process view
-                }),
-                populate: 'config._tid',
-                limit: 1000, //should be enough.. for now
-            }}).then(res=>{
-                res.body.tasks.forEach(task=>{
-                    if(task.config._tid >= tid) tid = task.config._tid+1;
-                });
-
-                //submit data staging task (TODO - Instead of downloading each datatypes, I feel I should group by subject?)
-                async.eachOfSeries(this.group_selected, (datasets, datatype_id, next_group)=>{
-                    var download = [];
-                    var _outputs = [];
-                    this.$http.post('dataset/token', {
-                        ids: Object.keys(datasets),
-                    }).then(res=>{
-                        var jwt = res.body.jwt;
-                        for(var dataset_id in datasets) {
-                            download.push({
-                                url: Vue.config.api+"/dataset/download/safe/"+dataset_id+"?at="+jwt,
-                                untar: "auto",
-                                dir: dataset_id,
-                            });
-                            _outputs.push(Object.assign(datasets[dataset_id], {
-                                id: dataset_id, 
-                                subdir: dataset_id, 
-                                dataset_id,
-                                prov: null,
-                            }));
-                        }
-                        return this.$http.post(Vue.config.wf_api+'/task', {
-                            instance_id: instance._id,
-                            name: "Staging Datasets - "+this.datatypes[datatype_id].name,
-                            service: "soichih/sca-product-raw",
-                            config: { download, _outputs, _tid: tid++ },
-                        });
-                    }).then(res=>{
-                        next_group();
-                    }).catch(err=>{
-                        next_group(err.body.message);
-                    });
-                }, err=>{
-                    if(err) {
-                        console.error(err);
-                        this.$notify({type: 'error', text: JSON.stringify(err)});
-                        return;
-                    }
-
-                    this.clear_selected();
-                    this.$router.push("/project/"+project_id+"/process/"+instance._id);
-                });
+            let dataset_ids = [];
+            Object.values(this.group_selected).forEach(group=>{
+                dataset_ids = dataset_ids.concat(Object.keys(group));
             });
-        }
+            this.$http.post('dataset/stage', {
+                instance_id: instance._id,
+                dataset_ids,
+            }).then(res=>{
+                //console.dir(res.body);
+                this.clear_selected();
+                this.$router.push("/project/"+project_id+"/process/"+instance._id);
+            });
+         }
     },
 }
 </script>

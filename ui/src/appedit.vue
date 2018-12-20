@@ -135,7 +135,8 @@
                                         <b-input-group prepend="Default Value">
                                             <b-form-input v-if="param.type == 'integer'" type="number" v-model.number="param.default" placeholder="(no default)" @mousewheel.native="$event.preventDefault()"/><!--deprecated-->
                                             <b-form-input v-if="param.type == 'number'" type="number" step="0.01" v-model.number="param.default" placeholder="(no default)" @mousewheel.native="$event.preventDefault()"/>
-                                            <b-form-input v-if="param.type == 'string'" type="text" v-model="param.default" placeholder="(no default)"/>
+                                            <b-form-input v-if="param.type == 'string' && !param.multiline" type="text" v-model="param.default" placeholder="(no default)"/>
+                                            <b-form-textarea v-if="param.type == 'string' && param.multiline" v-model="param.default" placeholder="(no default)" :rows="2"/>
                                         </b-input-group>
                                     </b-form-group>
 

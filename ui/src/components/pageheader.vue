@@ -135,6 +135,7 @@ svg.cloud {
     margin-left: 15px;
     margin-right: 20px;
     font-weight: bold;
+    text-shadow: 0px 0px 2px black;
 }
 .nav {
     float: right;

@@ -2,7 +2,7 @@
 <!--vue-select doesn't support required attribute yet (https://github.com/sagalbot/vue-select/issues/477)-->
 <!--close-on-select allows user to keep adding values, but they also can't close it easily when they are done with adding values 
 as ESC key will close modals-->
-<v-select multiple taggable v-model='tags' :options='options' :placeholder='placeholder' :required="required">
+<v-select multiple taggable v-model='tags' :options='options' :placeholder='placeholder' :required="required" :disabled="disabled">
     <span slot="no-options">
         <!-- Don't show anything if there are no options -->
     </span>
@@ -12,7 +12,13 @@ as ESC key will close modals-->
 <script>
 
 export default {
-    props: ['options', 'value', 'placeholder', 'required'],
+    props: {
+        options: Array, 
+        value: Array, 
+        placeholder: String,
+        required: Boolean,
+        disabled: { type: Boolean, default: false },
+    },
     //components: { },
     
     data: function() {

@@ -267,7 +267,6 @@ export default {
                 return this.$http.post(Vue.config.wf_api+'/task', {
                     instance_id: this.instance._id,
                     name: "upload",
-                    //service: "soichih/sca-service-noop",
                     service: "brainlife/app-noop",
                     preferred_resource_id: this.validator_resource, 
                 });

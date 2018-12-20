@@ -64,9 +64,8 @@ export default {
     },
 
     mounted() {
-        console.log("view mounted", this.taskid);
-        console.log("taskid", this.taskid);
         if(!this.taskid) return;
+        //this starts the wait loop for specified taskid
         this.wait(this.taskid, task=>{
             console.log("done waiting");
             //this.task = task;

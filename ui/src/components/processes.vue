@@ -73,7 +73,7 @@
                         <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
                         &nbsp;
                         <div v-if="instance.config && instance.config.summary" style="display: contents; opacity: 0.8;">
-                            <span v-for="summary in instance.config.summary" v-if="summary.service != 'soichih/sca-product-raw' && summary.name" 
+                            <span v-for="summary in instance.config.summary" v-if="summary.service!='soichih/sca-product-raw' && summary.service!='brainlife/app-stage' && summary.name" 
                                 :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" @click.stop="select_task(instance, summary)" :key="summary.task_id">
                                 {{summary.name.substring(0,4).trim()}}
                             </span>

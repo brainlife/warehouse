@@ -10,7 +10,7 @@ function filter_apps(dataset, apps) {
             if(input_datatype_id == dataset_datatype_id) {
                 //make sure the data type meets all application datatype tags
                 var reject = false;
-                input.datatype_tags.forEach((tag)=> {
+                if(dataset.datatype_tags) input.datatype_tags.forEach((tag)=> {
                     if(tag[0] == '!') {
                         //negative tag (dataset must't have)
                         if(~dataset.datatype_tags.indexOf(tag.substring(1))) {
@@ -38,7 +38,7 @@ function filter_datasets(datasets, input) {
 
         var match = true;
         //see if all required tags exists
-        input.datatype_tags.forEach(required_tag=>{
+        if(dataset.datatype_tags) input.datatype_tags.forEach(required_tag=>{
             if(required_tag[0] == "!") {
                 //negative tag
                 var neg_tag = required_tag.substring(1);

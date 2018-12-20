@@ -61,7 +61,11 @@
                             </tr>
                             <tr v-if="task.next_date" style="opacity: 0.6;">
                                 <th>Next&nbsp;Chk</th>
-                                <td>in {{((new Date(this.task.next_date).getTime() - new Date().getTime())/1000).toFixed(0)}} secs</td>
+                                <td>In {{((new Date(this.task.next_date).getTime() - new Date().getTime())/1000).toFixed(0)}} secs</td>
+                            </tr>
+                            <tr v-if="task.max_runtime">
+                                <th>Max Runtime</th>
+                                <td>{{task.max_runtime/(1000*60)}} mins</td>
                             </tr>
                             </table>
                         </b-col>

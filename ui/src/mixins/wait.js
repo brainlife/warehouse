@@ -40,8 +40,6 @@ export default {
                 }
             });
         },  
-        rerun() {
-        },
     }
 }
 

@@ -15,7 +15,7 @@
 
         <b-form-group label="App *" horizontal>
             <v-select required v-model="rule.app" label="name" :filterable="false" :options="apps" @search="search_app">
-                <template slot="no-options">please enter app name / desc to search</template>
+                <template slot="no-options">please enter App name / desc to search</template>
                 <template slot="option" slot-scope="app">
                     <app :app="app" :compact="true" :clickable="false"/>
                 </template>
@@ -93,7 +93,7 @@
             </b-form-group>
 
             <b-form-group label="Outputs" horizontal>
-                <p class="text-muted">Submit the app if the following dataset <b>does not</b> exist.</p>
+                <p class="text-muted">Submit the App if the following dataset <b>does not</b> exist.</p>
                 <div style="border-left: 4px solid rgb(40, 167, 69); padding-left: 10px;">
                     <b-card v-for="output in rule.app.outputs" :key="output._id" class="card">
                         <div slot="header">
@@ -103,13 +103,27 @@
                         <b-row>
                             <b-col>Dataset Tags</b-col>
                             <b-col :cols="9">
-                                <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
-                                <small class="text-muted">Output tags allows you can easily query for specific set of datasets on subsequent rules.</small>
-                                <!--
-                                <small v-if="rule.output_tags_neg_count[output.id]">{{rule.output_tags_neg_count[output.id]}} datasets needs to be generated</small>
-                                -->
+                                <p>
+                                    <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
+                                    <small class="text-muted">Output tags allows you can easily query for specific set of datasets on subsequent rules.</small>
+                                    <!--
+                                    <small v-if="rule.output_tags_neg_count[output.id]">{{rule.output_tags_neg_count[output.id]}} datasets needs to be generated</small>
+                                    -->
+                                </p>
+                                <p>
+                                    <b-form-checkbox v-model="rule.archive[output.id].do">Archive Output</b-form-checkbox>
+                                </p>
                             </b-col>
                         </b-row>
+                        <b-row v-if="rule.archive[output.id].do">
+                            <b-col>
+                            </b-col>
+                            <b-col :cols="9">
+                                <p>
+                                    <b-form-textarea :rows="2" v-model="rule.archive[output.id].desc" placeholder="Description for archived dataset"/>
+                                </p>
+                            </b-col>
+                        </b-row> 
                     </b-card>
                 </div><!--border-->
             </b-form-group>
@@ -159,6 +173,7 @@ export default {
                 },
                 input_tags: {},
                 output_tags: {},
+                archive: {},
             },
             apps: [],
             ready: false,
@@ -188,7 +203,10 @@ export default {
 
         rule: {
             handler: function() {
-                this.query_matching_datasets();
+                clearTimeout(debounce);
+                debounce = setTimeout(()=>{
+                    this.query_matching_datasets();
+                }, 1000);
             },
             deep: true,
         },
@@ -203,6 +221,7 @@ export default {
 
         query_matching_datasets() {
             //querying matching datasets for each input
+            if(!this.rule.app) return;
             for(let id in this.rule.input_tags) {
                 let input = this.rule.app.inputs.find(i=>i.id == id);
                 if(!input) {
@@ -247,6 +266,7 @@ export default {
                 input_selection: {},
                 extra_datatype_tags: {},
                 config: {},
+                archive: {},
             }, this.value);
             this.ensure_ids_exists();
         },
@@ -264,6 +284,7 @@ export default {
             });
             this.rule.app.outputs.forEach(output=>{
                 if(!this.rule.output_tags[output.id]) Vue.set(this.rule.output_tags, output.id, []);
+                if(!this.rule.archive[output.id]) Vue.set(this.rule.archive, output.id, {do: true, desc: ""}); //archive all by default
             });
         },
 
