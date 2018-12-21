@@ -499,6 +499,9 @@ var ruleSchema = mongoose.Schema({
 
     //any tags to set for each output id (object with key(output id)=>array(tags))
     output_tags: mongoose.Schema.Types.Mixed,
+    
+    //archive info (keyed by output id, then {do: Boolean, desc: ""}.
+    archive: mongoose.Schema.Types.Mixed,
 
     //only process subjects that ends with this if set
     subject_match: String,
