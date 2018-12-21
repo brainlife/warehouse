@@ -491,22 +491,6 @@ function handle_rule(rule, cb) {
                     stage_jwt = jwt;
                     next();
                 });
-                /*
-				let ids = [];
-				for(var input_id in inputs) {
-                    var input = inputs[input_id];
-					ids.push(input._id);	
-				}
-				safe_jwt = jsonwebtoken.sign({
-					sub: rule.user_id,
-					iss: "warehouse",
-					exp: (Date.now() + 1000*3600*24*30)/1000, //30 days should be enough..
-					scopes: {
-						datasets: ids,
-					},
-				}, config.warehouse.private_key, {algorithm: 'RS256'});
-                next();
-                */
             },
 
             //submit input staging task for datasets that aren't staged yet
@@ -561,8 +545,8 @@ function handle_rule(rule, cb) {
                         for(var task_id in tasks) {
                             task = tasks[task_id];
                             if(task.service == "soichih/sca-product-raw" || task.service == "brainlife/app-stage") {
-                                output = task.config._outputs.find(o=>o._id == input._id);
-                                if(output && isalive(task)) {
+                                if(isalive(task)) {
+                                    output = task.config._outputs.find(o=>o.dataset_id == input._id);
                                     rlogger.debug(["found it ",output]);
                                     break;
                                 }
@@ -588,13 +572,6 @@ function handle_rule(rule, cb) {
                     if(!canuse_source() && !canuse_staged()) {
                         //we don't have it.. we need to stage from warehouse
                         rlogger.debug("couldn't find source task/staged dataset.. need to load from warehouse");
-                        /*
-                        downloads.push({
-                            url: config.warehouse.api+"/dataset/download/safe/"+input._id+"?at="+safe_jwt,
-                            untar: "auto",
-                            dir: input._id,
-                        });
-                        */
                         downloads.push(input);
                         
                         //TODO I should only put stuff that I need output input..
@@ -612,30 +589,6 @@ function handle_rule(rule, cb) {
                 //nothing to download, then proceed to submitting the app
                 if(downloads.length == 0) return next();
 
-                /*
-                //need to submit download task first.
-                request.post({
-                    url: config.amaretti.api+'/task', json: true, 
-                    headers: { authorization: "Bearer "+jwt },
-                    body: {
-                        instance_id: instance._id,
-                        name: "Staging Input",
-                        service: "soichih/sca-product-raw",
-
-                        config: {
-                            download: downloads,
-                            _rule: {
-                                id: rule._id,
-                                subject,
-                            },
-                            _outputs,
-                            _tid: next_tid++,
-                        },
-                        deps: [],
-                        nice: config.rule.nice,
-                    },
-                */
-                
                 //stage task is used as input to real *first* app that uses the data, so I believe we can 
                 //remove it shortly after it's stage.. remove in 7 days(?)
                 //TODO - if it's already staged, and another user request for the same datazet, should I just reuse it?
@@ -662,10 +615,10 @@ function handle_rule(rule, cb) {
                             _outputs: downloads.map(d=>{
                                 return {
                                     id: d._id,
-                                    datatype: d.datatype,
+                                    datatype: d.datatype._id,
                                     meta: d.meta,
                                     tags: d.tags,
-                                    datatype_tags: d.datatypetags,
+                                    datatype_tags: d.datatype_tags,
                                     
                                     subdir: d._id,
                                     dataset_id: d._id,
@@ -793,11 +746,6 @@ function handle_rule(rule, cb) {
                     next(err);
                 });
             },
-
-            /*
-            next=>{
-            },
-            */
 
         ], cb);
     }

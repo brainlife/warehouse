@@ -361,7 +361,7 @@ router.get('/prov/:id', (req, res, next)=>{
             load_task(input.task_id, (err, dep_task)=>{
                 if(err) return next_dep(err);
                 
-                //process uses sca-product-raw to load input datasets
+                //process uses app-stage to load input datasets
                 //instead of showing that, let's *skip* this node back to datasets that it loaded
                 //and load their tasks
                 if(dep_task.service == "soichih/sca-product-raw" || dep_task.service == "brainlife/app-stage") { 
