@@ -108,7 +108,7 @@
             </b-col>
         </b-row>
 
-        <b-row>
+        <b-row v-if="this.app.outputs.length > 0">
             <b-col cols="3"></b-col>
             <b-col>
                 <b-row>

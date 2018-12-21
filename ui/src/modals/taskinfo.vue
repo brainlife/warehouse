@@ -125,20 +125,21 @@
 
                 <div v-if="!loading && smon.info" style="padding: 20px;">
 
-                    <h5>Resouce Utilization</h5>
+                    <h5>Resource Utilization</h5>
                     <p style="opacity: 0.7"><small>
                         The following information is collected on the actual compute node used to run this App.
                         The App should be using close to all requested CPU cores / memory.
                     </small></p>
                
+                    <!-- without watchShallow, vue-plotly will go infinite loop with layout watch event and locks up the browser-->
                     <div v-if="smon.cpu.data">
-                        <vue-plotly :data="smon.cpu.data" :layout="smon.cpu.layout" :autoResize="true"/>
+                        <vue-plotly :data="smon.cpu.data" :layout="smon.cpu.layout" :autoResize="true" :watchShallow="true"/>
                     </div>
                     <div v-if="smon.memory.data">
-                        <vue-plotly :data="smon.memory.data" :layout="smon.memory.layout" :autoResize="true"/>
+                        <vue-plotly :data="smon.memory.data" :layout="smon.memory.layout" :autoResize="true" :watchShallow="true"/>
                     </div>
                     <div v-if="smon.disk.data">
-                        <vue-plotly :data="smon.disk.data" :layout="smon.disk.layout" :autoResize="true"/>
+                        <vue-plotly :data="smon.disk.data" :layout="smon.disk.layout" :autoResize="true" :watchShallow="true"/>
                     </div>
                     <br>
 

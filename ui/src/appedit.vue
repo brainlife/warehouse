@@ -90,7 +90,7 @@
                                 <b-input-group prepend="Github Repository Name">
                                     <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
                                 </b-input-group>
-                                <small v-if="github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
+                                <small v-if="app.github && github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
                             </b-col>
                             <b-col v-if="github_branches && github_branches.length > 0">
                                 <b-input-group prepend="Branch/Tag">
@@ -108,7 +108,7 @@
                 Configuration
             </h4>
             <div>
-                <transition-group name="move-item" tag="p">
+                <!--<transition-group name="move-item" tag="p">-->
                     <div v-for="(param, idx) in config_params" v-if="param.pid" :key="param.pid" style="margin:5px;">
                         <b-card v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
                             <div style="float: right">
@@ -274,7 +274,7 @@
                             <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm">Add Enum Option</b-button>
                         </b-card>
                     </div>
-                </transition-group>
+                <!--</transition-group>-->
             </div>
             <p>
                 <b-dropdown size="sm" text="Add Configuration Parameter" variant="secondary">
@@ -291,7 +291,7 @@
                 Input
             </h4>
             <div style="border-left: 4px solid #007bff; padding-left: 10px;">
-                <transition-group name="move-item" tag="p">
+                <!--<transition-group name="move-item" tag="p">-->
                     <div v-for="(input, idx) in input_datasets" v-if="input.pid" :key="input.pid" style="margin-bottom: 10px;">
                         <b-card style="position: relative;">
                             <b-row v-if="is_raw(input)">
@@ -349,7 +349,7 @@
                             <div v-if="input.datatype">
                                 <br><b>File Mapping</b><br>
                                 <p class="text-muted">Please choose keys used to specify the input files/directories inside config.json</p>
-                                <transition-group name="file-transition" tag="div">
+                                <!--<transition-group name="file-transition" tag="div">-->
                                     <div v-for="(file, fidx) in input.files" :key="fidx" class="file-map">
                                         <div class="button" @click="remove_file(idx, fidx)" style="float: right">
                                             <icon name="trash"/>
@@ -370,13 +370,13 @@
                                             </b-col>
                                         </b-row>
                                     </div>
-                                </transition-group>
+                                <!--</transition-group>-->
                                 <br>
                                 <b-button v-if="input.datatype" @click="add_file(idx)" size="sm">Add File Mapping</b-button>
                             </div>
                         </b-card>
                     </div>
-                </transition-group>
+                <!--</transition-group>-->
                 <p>
                     <b-button size="sm" @click="add_dataset(input_datasets)" variant="primary">Add Input</b-button>
                 </p>
@@ -387,7 +387,7 @@
                 Output
             </h4>
             <div style="border-left: 4px solid #28a745; padding-left: 10px;">
-                <transition-group name="move-item" tag="p">
+                <!--<transition-group name="move-item" tag="p">-->
                     <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
                         <b-card>
                                <b-row>
@@ -440,7 +440,7 @@
                             </div>
                         </b-card>
                     </div>
-                </transition-group>
+                <!--</transition-group>-->
                 <p>
                     <b-button size="sm" @click="add_dataset(output_datasets)" variant="success">Add Output</b-button>
                 </p>
@@ -499,6 +499,7 @@ export default {
                 inputs: [],
                 outputs: [],
                 github_branch: "master",
+                github: "",
             },
 
             invalid_repo: false,
@@ -580,18 +581,18 @@ export default {
 
     watch: {
         "app.github"(newv, oldv) {
-            if(!oldv) return;
             clearTimeout(debounce);
             debounce = setTimeout(()=>{ 
                 this.load_branches();
-            }, 500);
+            }, 1000);
         },
     },
 
     methods: {
         load_branches() {
-            console.log("loading branches");
-            this.github_branches = [];
+            if(!this.app.github) return;
+            console.log("loading branches", this.app.github);
+            this.github_branches = null;
             this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', 
                 { headers: { Authorization: null } })
             .then(res=>{
@@ -602,6 +603,7 @@ export default {
                     };
                 });
             }).catch(err=>{
+                this.github_branches = [];
                 console.error(err);
             });
         },

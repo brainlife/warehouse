@@ -250,7 +250,7 @@
                         <div v-if="info">
                             <span class="form-header">Past Executions</span>
                             <p><small class="text-muted">Showing activities during the last 180 days.</small></p>
-                            <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true"/>
+                            <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true" :watchShallow="true"/>
                             <br>
                         </div>
 
