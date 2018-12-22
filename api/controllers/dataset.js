@@ -496,6 +496,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                     desc: req.body.desc,
                 }
                 if(req.body.meta) Object.assign(output.meta, req.body.meta); //TODO test
+                if(!output.tags) output.tags = [];
                 if(req.body.tags) output.tags = output.tags.concat(req.body.tags).unique(); //TODO test
             }
             if(!output) {

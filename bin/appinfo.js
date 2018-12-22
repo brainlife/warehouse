@@ -57,7 +57,7 @@ function handle_app(app, cb) {
     logger.debug("caching serviceinfo");
     request.get({
         url: config.amaretti.api+"/service/info", json: true,
-        headers: { authorization: "Bearer "+config.auth.jwt||config.warehouse.jwt },  //config.auth.jwt is deprecated
+        headers: { authorization: "Bearer "+config.warehouse.jwt },  //config.auth.jwt is deprecated
         qs: {
             service: app.github,
             //service_branch: app.github_branch,  //let's not group by branch for now.
@@ -66,21 +66,15 @@ function handle_app(app, cb) {
         if(err) return cb(err);
         if(res.statusCode != 200) return cb("couldn't obtain service stats "+res.statusCode);
 
-        common.load_github_detail(app.github, (err, repo, con_details)=>{
+        common.pull_appinfo(app.github, (err, gitinfo)=>{
             if(err) return cb(err);
+            Object.assign(app, gitinfo);
 
-            if(!app.stats) app.stats = {};
-            app.stats.stars = repo.stargazers_count;
             if(info) {
                 app.stats.requested = info.counts.requested;
                 app.stats.users = info.users;
                 app.stats.success_rate = info.success_rate;
             }
-
-            //see https://api.github.com/users/francopestilli for other fields
-            app.contributors = con_details.map(con=>{
-                return {name: con.name, email: con.email};
-            });
 
             /*
             //all existing app should have this set to true for now

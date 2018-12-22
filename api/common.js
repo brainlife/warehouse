@@ -442,6 +442,24 @@ exports.archive_task_outputs = function(task, outputs, cb) {
     });
 }
 
+exports.pull_appinfo = function(service_name, cb) {
+    let app = {};
+    exports.load_github_detail(service_name, (err, repo, con_details)=>{
+        if(err) return cb(err);
+        app.desc = repo.description;
+        app.tags = repo.topics;
+        if(!app.stats) app.stats = {};
+        app.stats.stars = repo.stargazers_count;
+        app.contributors = con_details.map(con=>{
+            //see https://api.github.com/users/francopestilli for other fields
+            return {name: con.name, email: con.email};
+        });
+        //console.dir(app.contributors.toObject());
+        cb(null, app);
+    });
+
+}
+
 exports.load_github_detail = function(service_name, cb) {
     if(!config.github) return cb("no github config");
 
@@ -540,7 +558,7 @@ exports.compose_app_datacite_metadata = function(app) {
           <description descriptionType="Other">${xmlescape(app.desc_override||app.desc)}</description>
       </descriptions>
     </resource>`;
-    logger.debug(metadata);
+    //logger.debug(metadata);
     return metadata;
 }
 
@@ -616,7 +634,7 @@ exports.compose_pub_datacite_metadata = function(pub) {
 //create new doi and register metadata (still needs to set url once it's minted)
 exports.doi_post_metadata = function(metadata, cb) {
     //register!
-    logger.debug("registering doi metadata");
+    //logger.debug("registering doi metadata");
     request.post({
         url: config.datacite.api+"/metadata",
         auth: {
