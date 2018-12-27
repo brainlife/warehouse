@@ -1,6 +1,6 @@
 <template>
 <div class="pageheader" :style="styles">
-    <img src="./christmas.png" class="reef">
+    <!--<img src="./christmas.png" class="reef">-->
     <b-nav class="nav">
         <!--
         <b-nav-item @click="doc"><icon name="book"/></b-nav-item>
@@ -165,9 +165,11 @@ svg.cloud {
 font-weight: bold;
 color: white;
 }
+/*
 .pageheader .reef {
 position: absolute;
 top: -25px;
 left: -26px;
 }
+*/
 </style>
