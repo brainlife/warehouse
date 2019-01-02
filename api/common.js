@@ -70,174 +70,6 @@ exports.validate_projects = function(user, project_ids, cb) {
     });
 }
 
-/*
-exports.archive_task = function(dataset, auth, cb) {
-
-    //find output file override
-    let output_id = dataset.prov.output_id;
-    let output = dataset.prov.task.config._outputs.find(o=>o.id == output_id);
-    let files_override = output.files || {}
-
-    //TODO - deprecate this with app-archive based archiver
-
-    //start by pulling datatype detail
-    db.Datatypes.findById(dataset.datatype, (err, datatype)=>{
-        if(err) return cb(err);
-        if(!datatype) return cb("couldn't find specified datatype:"+dataset.datatype);
-
-        //create temp directory to download things
-        tmp.dir({unsafeCleanup: true, template: "/tmp/archive-XXXXXX"}, (err, tmpdir, cleantmp)=>{
-            if(err) return cb(err);
-
-            //find files that doesn't need to be copied - as it's contained inside another dirname
-            var dirs = datatype.files.filter(file=>file.dirname);
-            var files = datatype.files.filter(file=>file.filename);
-            files.forEach(file=>{
-                dirs.forEach(dir=>{
-                    if(dir.dirname == ".") file.skip = true; //TODO a bit brittle
-                    //skip files that are contained inside another directory
-                    //for example..
-                    //(dirname)  dtiinit
-                    //(filename) dtiinit/something.mat
-                    //since something.mat is under dtiinit/, I can skip it
-                    if(file.filename.startsWith(dir.dirname+"/")) file.skip = true;
-                });
-            });
-
-            let filenames = [];
-            
-            //now download files to temp directory
-            async.eachSeries(datatype.files, (file, next_file)=>{
-                if(file.skip) return next_file();
-
-                logger.debug("processing file", file.toString());
-                var writestream = null;
-                var srcpath = "";
-                var input_ok = true;
-                if(dataset.prov.subdir) srcpath += dataset.prov.subdir+"/";
-                if(file.filename) {
-                    //files can be downloaded directly to tmpdir
-                    srcpath += (files_override[file.id]||file.filename);
-                    var fullpath = tmpdir+"/"+file.filename;
-                    mkdirp.sync(path.dirname(fullpath)); //make sure the path exitsts
-                    logger.debug("downloading from", srcpath, "and write to", fullpath);
-                    writestream = fs.createWriteStream(fullpath);
-                    writestream.on('finish', ()=>{
-                        if(input_ok) {
-                            logger.debug("download complete");
-                            filenames.push(file.filename);
-                            next_file()
-                        } else {
-                            if(file.required) {
-                                return next_file({ message: "required input file failed for download", file });
-                            }
-                            
-                            //failed but not required.. remove the file and move on
-                            fs.unlink(fullpath, next_file);            
-                        }
-                    });
-                }
-                if(file.dirname) {
-                    //directory has to be unzip/tar-ed to tmpdir
-                    srcpath += (files_override[file.id]||file.dirname);
-                    var fullpath = tmpdir+"/"+file.dirname;
-                    mkdirp.sync(fullpath); //don't need to path.dirname() here
-                    logger.debug("downloading from", srcpath, "and untar to", fullpath);
-                    var untar = child_process.spawn("tar", ["xz"], {cwd: fullpath});
-                    writestream = untar.stdin;
-                    untar.on('close', code=>{
-                        if(code) {
-                            if(file.required) return next_file({ message: "tar failed with code:"+code, file });
-                            logger.error("tar finished with code "+code);
-                        }
-                        if(input_ok) {
-                            logger.debug("download/tar complete");
-                            filenames.push(file.dirname);
-                            next_file();
-                        } else {
-                            if(file.required) return next_file({ message: "required input directory failed to download/untar", file });
-                            //failed but not required.. remove the directory
-                            fs.rmdir(fullpath, next_file);
-                        }
-                    });
-                }
-
-                //now start feeding the writestream (/tmp/archive-XXX/thing)
-                request({
-                    url: config.amaretti.api+"/task/download/"+dataset.prov.task._id,
-                    qs: {
-                        p: srcpath,
-                    },
-                    headers: { authorization: auth }
-                })
-                .on('response', function(r) {
-                    if(r.statusCode != 200) {
-                        logger.debug("/task/download failed "+r.statusCode+" path:"+srcpath, file.required); 
-                        input_ok = false;
-                    }
-                }).pipe(writestream);
-            }, err=>{
-                if(err) {
-                    cleantmp();
-                    if (err.file) dataset.desc = "Expected output " + (err.file.filename||err.file.dirname) + " not found";
-                    else dataset.desc = "Failed to store all files under tmpdir";
-                    dataset.status = "failed";
-                    dataset.save(_err=>{
-                        if(_err) logger.error(_err); //ignore..?
-                        cb(dataset.desc);
-                    });
-                    return;
-                }
-
-                fs.writeFileSync(tmpdir+"/.brainlife.json", JSON.stringify(dataset, null, 4));
-                filenames.push(".brainlife.json");
-                //console.dir(filenames);
-
-                //all items stored under tmpdir! call cb, but then asynchrnously copy content to the storage
-                var storage = config.storage_default();
-                var system = config.storage_systems[storage];
-                logger.debug("obtaining upload stream for", storage);
-                system.upload(dataset, (err, writestream, done)=>{
-                    if(err) return cb(err);
-                    filenames.unshift("hc"); //inject tar command..
-                    var tar = child_process.spawn("tar", filenames, {cwd: tmpdir});
-                    tar.on('close', code=>{
-                        logger.debug("tar finished", code);
-                        cleantmp();
-                        if(code) {
-                            //failed to upload..
-                            dataset.desc = "Failed to archive with code:"+code;
-                            dataset.status = "failed";
-                        }
-                    });
-
-                    logger.debug("streaming to storage");
-                    tar.stdout.pipe(writestream);
-
-                    //TODO - I am not sure if all writestream returnes file object (pkgcloud does.. but this makes it a bit less generic)
-                    //maybe I should run system.stat()?
-                    done.then(file=>{
-                        logger.debug("streaming success", JSON.stringify(file));
-                        dataset.storage = storage;
-                        dataset.status = "stored";
-                        dataset.size = file.size;
-                        dataset.save(cb);
-                    }).catch(err=>{
-                        logger.error("streaming failed", err);
-                        dataset.desc = "Failed to archive "+err.toString();
-                        dataset.status = "failed";
-                        dataset.save(_err=>{
-                            if(_err) logger.error(_err); //ignore..?
-                            cb(err); //return error from streaming which is more interesting
-                        });
-                    });
-                });
-            });
-        });
-    });
-}
-*/
-
 //TODO should inline this?
 function register_dataset(task, output, product, cb) {
     new db.Datasets({
@@ -267,7 +99,7 @@ function register_dataset(task, output, product, cb) {
 
 //wait for a task to terminate .. finish/fail/stopped/removed
 exports.wait_task = function(req, task_id, cb) {
-    logger.info("waiting for task to finish");
+    logger.info("waiting for task to finish id:"+task_id);
     request.get({
         url: config.amaretti.api+"/task/"+task_id,
         json: true,
@@ -288,8 +120,10 @@ exports.wait_task = function(req, task_id, cb) {
             }, 2000);
             break;
         default:
+            logger.debug("wait_task detected failed task")
+            console.dir(JSON.stringify(task, null, 4));
             //consider all else as failed
-            cb(task.status);
+            cb(task.status_msg);
         }
     });
 }
@@ -322,6 +156,7 @@ exports.issue_archiver_jwt = async function(user_id, cb) {
     return user_jwt;
 }
 
+//submits brainlife/app-archive
 exports.archive_task_outputs = function(task, outputs, cb) {
     if(!Array.isArray(outputs)) {
         return cb("archive_task_outputs/outputs is not array "+JSON.stringify(outputs, null, 4));
@@ -333,7 +168,7 @@ exports.archive_task_outputs = function(task, outputs, cb) {
     outputs.forEach(output=>{
         if(output.archive) project_ids.push(output.archive.project);
     });
-    
+
     //check project access
     exports.validate_projects(task.user_id, project_ids, err=>{
         if(err) return cb(err);
@@ -344,13 +179,6 @@ exports.archive_task_outputs = function(task, outputs, cb) {
             if(!output.archive) return next_output();
             register_dataset(task, output, products[output.id], (err, dataset)=>{
                 if(err || !dataset) return next_output(); //couldn't register, or already registered
-                /*
-                if(!output.subdir) {
-                    //if output doesn't have subdir set, we need to use the old archiving method...
-                    logger.debug("requesting for archive_handler to archive it");
-                    acon.publish('warehouse.archive', {dataset_id: dataset._id});
-                }else {
-                */
                 let dir =  "../"+task._id;
                 dataset.prov.task = dataset.prov.task._id; //unpopulate prov as it will be somewhat redundant
                 if(output.subdir) {
@@ -363,8 +191,7 @@ exports.archive_task_outputs = function(task, outputs, cb) {
                     });
                     next_output();
                 } else {
-                    //old method
-                    //console.dir(output.archive);
+                    //old method - need to lookup datatype first
                     db.Datatypes.findById(output.datatype, (err, datatype)=>{
                         if(err) return next_output(err);
                         datasets.push({
@@ -377,7 +204,6 @@ exports.archive_task_outputs = function(task, outputs, cb) {
                         next_output();
                     });
                 }
-
             });
         }, async err=>{
             if(err) return cb(err);
@@ -385,31 +211,6 @@ exports.archive_task_outputs = function(task, outputs, cb) {
 
             try {
                 let user_jwt = await exports.issue_archiver_jwt(task.user_id);
-                /*
-                //load user's gids so that we can add warehouse group id (authorized to access archive)
-                let gids = await rp.get({
-                    url: config.auth.api+"/user/groups/"+task.user_id,
-                    json: true,
-                    headers: {
-                        authorization: "Bearer "+config.warehouse.jwt,
-                    }
-                });
-                
-                ///add warehouse group that allows user to submit
-                gids = gids.concat(config.archive.gid);  
-
-                //issue user token with added gids priviledge
-                let {jwt: user_jwt} = await rp.get({
-                    url: config.auth.api+"/jwt/"+task.user_id,
-                    json: true,
-                    qs: {
-                        claim: JSON.stringify({gids}),
-                    },
-                    headers: {
-                        authorization: "Bearer "+config.warehouse.jwt,
-                    }
-                });
-                */
 
                 //submit app-archive!
                 let remove_date = new Date();

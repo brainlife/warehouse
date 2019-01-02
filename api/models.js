@@ -49,6 +49,10 @@ exports.init = (cb)=>{
 }
 
 function dataset_event(dataset) {
+    if(!dataset) {
+        logger.error("dataset_event called with undefined dataset");
+        return;
+    }
     if(!dataset_ex) {
         logger.error("amqp not connected - but event handler called");
         return;

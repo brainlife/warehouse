@@ -556,8 +556,8 @@ exports.logger = {
             //label({ label: 'right meow!' }),
             timestamp(),
             format.colorize(),
-            //prettyPrint()
-            format.simple()
+            prettyPrint()
+            //format.simple()
             //format.json()
         ),
         

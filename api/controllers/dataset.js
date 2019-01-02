@@ -468,17 +468,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 if(!task.resource_id) return next("resource_id not set");
                 if(task.status != "finished") return next("task not in finished state");
                 
-                /* archive_task_outputs checks output.archive.project access
-                //make sure user is member of the project selected
-                db.Projects.findById(req.body.project, (err, project)=>{
-                    if(err) return next(err);
-                    if(!project) return next("couldn't find the project");
-                    if(!~project.members.indexOf(req.user.sub) && 
-                        !~project.admins.indexOf(req.user.sub)) return next("you are not admin/member of this project");
-                    task = _task;
-                    next();
-                });
-                */
                 next();
             });
         },
@@ -495,78 +484,38 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                     project: req.body.project,
                     desc: req.body.desc,
                 }
-                if(req.body.meta) Object.assign(output.meta, req.body.meta); //TODO test
-                if(!output.tags) output.tags = [];
-                if(req.body.tags) output.tags = output.tags.concat(req.body.tags).unique(); //TODO test
             }
             if(!output) {
                 //console.dir(task.config);
                 return next("no config_outputs for ", req.body.output_id);
             }
 
+            //let user override meta/tags
+            if(!output.meta) output.meta = {};
+            if(req.body.meta) Object.assign(output.meta, req.body.meta);
+            if(!output.tags) output.tags = [];
+            if(req.body.tags) output.tags = output.tags.concat(req.body.tags).unique();
+
+            logger.debug("submitting archive task");
             common.archive_task_outputs(task, [output], (err, _archive_task)=>{
                 if(err) return next(err);
                 archive_task = _archive_task;
-                console.log(JSON.stringify(archive_task, null, 4));
                 dataset = archive_task.config.datasets[0].dataset;
-                if(!await) res.json(dataset); 
+                if(!await) return res.json(dataset); //don't need to wait
+
                 next();
             });
         },
 
         //wait for archive to be done
         next=>{
-            if(!await) return next(); //don't need to wait
-            common.wait_task(req, archive_task, err=>{
+            logger.debug("waiting for archive task to finish");
+            common.wait_task(req, archive_task._id, err=>{
                 if(err) return next(err);
                 res.json(dataset);
             });
         }
 
-        /*
-        next=>{
-            //WARNING - similar code exists in event_handler
-            let products = common.split_product(task.product, task.config._outputs);
-            let product = products[req.body.output_id];
-            if(!product) return next("no such output_id in app");
-
-            //merge stuff that user requested at the last minute
-            if(req.body.meta) Object.assign(product.meta, req.body.meta);
-            if(req.body.tags) product.tags = product.tags.concat(req.body.tags).unique();
-
-            new db.Datasets({
-                user_id: req.user.sub,
-                project: req.body.project,
-                desc: req.body.desc,
-
-                tags: product.tags,
-                meta: product.meta,
-                datatype: output.datatype,
-                datatype_tags: product.datatype_tags,
-
-                //status: "storing",
-                product,
-
-                prov: {
-                    task, //TODO - mongo doesn't allow key that contains ".".. I should do something about that.. 
-                    output_id: req.body.output_id,
-                    subdir: req.body.subdir, //optional
-
-                    instance_id: task.instance_id, //deprecated
-                    task_id: task._id, //deprecated
-                },
-            }).save((err, _dataset)=>{
-                if(err) return next(err);
-                dataset = _dataset;
-
-                logger.debug("created dataset record......................", _dataset.toObject());
-                if(!await) res.json(_dataset); 
-
-                logger.debug("running archive_task now");
-                common.archive_task(_dataset, req.headers.authorization, next);
-            });
-        },
-        */
     ], cb);
 });
 
@@ -742,54 +691,6 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         });
     });
 });
-
-/**
- * @apiGroup Dataset
- * @api {post} /dataset/token    Generate dataset access token
- * @apiDescription              Issues warehouse jwt token that grants access to specified dataset IDs that user has access to
- *
- * @apiParam {String[]} ids     List of dataset IDs to grant access
- * @apiHeader {String} authorization 
- *                              A valid JWT token "Bearer: xxxxx"
- *
- * @apiSuccess {Object}         Object containing jwt: key
-*/
-//TODO - deprecated by dataset/stage
-/*
-router.post('/token', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
-        if(err) return next(err);
-        db.Datasets.find({_id: {$in: req.body.ids}}).exec(function(err, datasets) {
-            if(err) return next(err);
-            //find dataset ids that user have access to
-            var valid_ids = [];
-            datasets.forEach(dataset=>{
-                if(!dataset) return;
-                if(!dataset.storage) return;
-
-                canread_project_ids = canread_project_ids.map(id=>id.toString());
-                if(!~canread_project_ids.indexOf(dataset.project.toString())) {
-                    //user doesn't have read access to this project
-                    return;
-                } 
-
-                //all good with this one
-                valid_ids.push(dataset._id);
-            });
-
-            let jwt = jsonwebtoken.sign({
-                sub: req.user.sub,
-                iss: "warehouse",
-                exp: (Date.now() + 1000*3600*24*30)/1000, //30 days should be enough..
-                scopes: {
-                    datasets: valid_ids,
-                },
-            }, config.warehouse.private_key, {algorithm: 'RS256'});
-            res.json({jwt});
-        });
-    });
-});
-*/
 
 function stream_dataset(dataset, res, next) {
     var system = config.storage_systems[dataset.storage];

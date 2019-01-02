@@ -47,6 +47,7 @@ function subscribe() {
                 instance_q.bind('wf.instance', '#');
                 instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
                     handle_instance(instance, err=>{
+                        logger.debug("done handling instance");
                         if(err) {
                             logger.error(err)
                             //continue .. TODO - maybe I should report the failed event to failed queue?
@@ -66,6 +67,7 @@ function subscribe() {
                 task_q.bind('wf.task', '#');
                 task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
                     handle_task(task, err=>{
+                        logger.debug("done handling task");
                         if(err) {
                             logger.error(err)
                             //TODO - maybe I should report the failed event to failed queue?
@@ -152,11 +154,6 @@ function handle_task(task, cb) {
         next=>{
             if(task.service == "brainlife/app-archive") {
                 logger.info("handling app-archive envets");
-                /*TODO
-12|warehou | debug: task,5c172542f7a2e238e21f31b3,brainlife/app-archive,running,Service started {"timestamp":"2018-12-17T04:26:11.442Z"}
-12|warehou | info: handling app-archive envets {"timestamp":"2018-12-17T04:26:11.442Z"}
-12|warehou | error: Cannot read property 'project' of null {"timestamp":"2018-12-17T04:26:11.446Z"}
-*/
                 async.eachSeries(task.config.datasets, (dataset_config, next_dataset)=>{
                     let _set = {
                         status_msg: task.status_msg,
@@ -171,7 +168,9 @@ function handle_task(task, cb) {
                         _set.desc = task.status_msg;
                         break;
                     }
+                    console.log(JSON.stringify(dataset_config, null, 4));
                     db.Datasets.findByIdAndUpdate(dataset_config.dataset._id, {$set: _set}, next_dataset);
+                    //db.Datasets.findByIdAndUpdate(dataset_config.id, {$set: _set}, next_dataset);
                 }, next);
             } else next();
         },
