@@ -71,7 +71,7 @@
                                     <span v-if="option.dataset.task.status != 'finished'">({{option.dataset.task.status}})</span>
                                     {{option.dataset.task.name}} (t.{{option.dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
                                     <b>{{option.dataset.meta.subject}}</b> 
-                                    <small>{{option.dataset.datatype_tags.toString()}}</small>
+                                    <small v-if="option.dataset.datatype_tags">{{option.dataset.datatype_tags.toString()}}</small>
                                     <span v-if="option.dataset.tags.length > 0">
                                         |
                                         <small>{{option.dataset.tags.toString()}}</small>

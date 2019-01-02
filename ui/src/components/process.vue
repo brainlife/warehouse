@@ -358,7 +358,6 @@ export default {
                     var event = null;
                     try {
                         event = JSON.parse(json.data);
-                        //console.dir(event);
                     } catch(err) {
                         console.error(err);
                         return;

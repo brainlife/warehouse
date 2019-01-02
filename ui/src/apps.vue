@@ -30,7 +30,7 @@
                 <h4 class="group-title" v-if="tag == '_new'">New Apps</h4> 
                 <h4 class="group-title" v-else>{{tag}}</h4> 
                 <div v-for="app in app_groups[tag]" :key="app._id" class="app">
-                    <app :app="app" height="246px" class="app-shadow"/>
+                    <app :app="app" height="246px" class="app-card"/>
                 </div>
                 <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
                     <p style="opacity: 0.7;">
@@ -219,6 +219,7 @@ export default {
         },
 
         update_active() {
+            if(!this.$refs.scrolled) return;
             var scrolltop = this.$refs.scrolled.scrollTop;
             var height = this.$refs.scrolled.clientHeight;
             this.active = false;
@@ -254,12 +255,6 @@ position: sticky;
 top: 0px;
 z-index: 1;
 opacity: 0.8;
-}
-.app {
-margin-left: 10px;
-margin-bottom: 10px;
-width: 350px;
-float: left;
 }
 .page-content {
 margin-left: 240px;
@@ -333,24 +328,24 @@ color: gray;
 z-index: 2;
 }
 .newapps {
-/*background-color: #bbb;*/
-/*background-image: linear-gradient(120deg, #007bff, #159957);*/
-/*background-color: #007bff;*/
 background-color: #2693ff;
 }
 .newapps .group-title {
 background-color: inherit;
 color: white;
 }
-.app-shadow {
+.app {
+margin-left: 10px;
+margin-bottom: 10px;
+width: 350px;
+float: left;
 position: relative;
-top: 0px;
-transition: all 0.3s  ease 0s;
+top: 0;
+transition: all 0.3s ease;
 }
-.app-shadow:hover {
-box-shadow: 3px 3px 6px rgba(0,0,0,0.2);
-top: -3px;
+.app:hover {
+box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+top: -5px;
 }
-
 </style>
 
