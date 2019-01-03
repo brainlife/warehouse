@@ -548,16 +548,6 @@ export default {
 </script>
 
 <style scoped>
-/*
-h4 {
-margin-top: 20px;
-opacity: 0.6;
-padding-bottom: 10px;
-border-bottom: 1px solid #ddd;
-font-size: 18px;
-font-weight: bold;
-}
-*/
 .submit-form {
 position: absolute;
 left: 0px;

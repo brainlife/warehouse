@@ -287,7 +287,8 @@ export default {
                     return a;
                 })
                 .sort((a,b)=>b.stats.users-a.stats.users)
-                .slice(0, 9);
+                .slice(0, 9)
+                .sort((a,b)=>b.name-a.name);
         }
     },
 
