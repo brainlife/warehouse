@@ -117,7 +117,7 @@
                 <div @click.stop="remove_selected(dataset)" style="float: right; padding-right: 3px;" title="Unselect">
                     <icon name="times"></icon>
                 </div>
-                {{dataset.meta.subject}} 
+                <span v-if="dataset.meta">{{dataset.meta.subject}}</span>
                 <small>
                     <tags :tags="dataset.datatype_tags"></tags>
                 </small>
@@ -454,7 +454,7 @@ export default {
                     dataset.checked = this.selected[dataset._id];
                     var subject = "nosub"; //not all datasets has subject tag
                     if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
-                    if(dataset.meta.session) subject += " / " + dataset.meta.session;
+                    if(dataset.meta && dataset.meta.session) subject += " / " + dataset.meta.session;
                     last_subject = subject;
                     if(!groups[subject]) groups[subject] = [];
                     groups[subject].push(dataset);
