@@ -1,7 +1,7 @@
 exports.public_project_consent = `
-By uploading data to brainlife.io you declare that you have understood the possible risks and side-effects that can occur by making data available on the platform. In short: 
+By uploading data to brainlife.io you declare that you the right of ownership and have agreed to sharing that data with your study participants. Also, you declare that you understand the possible risks that can occur by making data available on the platform. In short: 
 Data uploaded to the internet cannot be fully deleted; there may always be a backup somewhere.
-By publishing re-identifiable data, you are at risk of exposing information about the participants of your experiments.
+Publishing re-identifiable data can incur in the risk of exposing information about your study participants.
 Identifiable, biomedical information can in principle be used by employers, insurance companies, and the government to know more about the subjects.
 
 ### What has been seen cannot be unseen.
@@ -10,7 +10,7 @@ You agree that all data you upload to and make public on brainlife.io will be fr
 
 ### Privacy is a relative anyway, we publish data on public platforms every day.
 
-Uploading data on brainlife.io, you are at risk of disclosing information about yourself or your study participants. Before uploading any data, you should make sure that those people have approved data sharing. This is generally managed at most academic and research institution via an IRB (Institutional Review Board) process.
+Uploading data on brainlife.io, you are at risk of disclosing information about yourself or your study participants. Before uploading any data, you should make sure that those people have approved data sharing. This is generally managed at most academic and research institutions via an IRB (Institutional Review Board) process. You are responsible to comply with your local IRB process. brainlife.io is not responsible for your misconduct.
 
 ### Employers, insurance, the government
 
@@ -18,7 +18,7 @@ Biomedical data can in principle be used to discriminate against people. For exa
 
 ### Knowledge about the fact that biomedical data is not static.
 
-Nearly every day there are new scientific publications that find new associations between certain traits (like diseases) with existing biomedical information. Because of this, you should not publish your data just because it currently looks harmless and unsuspicious. It may be true that your data is currently of no great interest to your employer, your insurance company, or the government, but this can easily change (Remember: one of the reasons to upload your data here in the first place is to enable everyone to find such new associations).
+Nearly every day there are new scientific publications that find new associations between certain traits (like diseases) with existing biomedical information. Because of this, you should not publish your data just because it currently looks harmless and unsuspicious. It may be true that your data is currently of no great interest to your employer, your insurance company, or the government, but this can easily change (Remember: one of the reasons to upload data on brainlife.io and make it public is in the first place is to enable others to find such new associations).
 
 ### Account housekeeping
 
