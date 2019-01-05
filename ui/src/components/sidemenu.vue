@@ -18,12 +18,12 @@
         </li>
         <li @click="go('/pubs');"
             :class="{active: active == '/pubs'}">
-            <icon name="brands/leanpub" scale="1.3"/>
+            <icon name="newspaper" scale="1.3"/>
             <h4>Publications</h4>
         </li>
         <li @click="go('/datatypes')"
             :class="{active: active == '/datatypes'}">
-            <icon name="cube" scale="1.3"/>
+            <icon name="cubes" scale="1.3"/>
             <h4>Datatypes</h4>
         </li>
 

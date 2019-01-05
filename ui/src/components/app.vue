@@ -120,15 +120,15 @@ export default {
 background-color: white;
 min-height: 80px;
 box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
-transition: box-shadow 0.3s;
+transition: box-shadow 0.5s;
 }
 
 .appcard.clickable:hover {
 cursor: pointer;
-/*box-shadow: 3px 3px 6px rgba(0,0,0,0.25);*/
 }
 
 .appcard.clickable:hover .name,
+/*.appcard.clickable:hover .desc,*/
 .appcard.clickable:hover .github {
 color: #007bff;
 }
@@ -154,9 +154,7 @@ padding: 10px;
 margin-bottom: 32px;
 transition: color 0.5s;
 font-size: 90%;
-/* border: solid 7px white; */
 }
-
 .image {
 width: 100%;
 display: block;
@@ -214,7 +212,5 @@ color: #bbb;
 height: 32px;
 background-color: #f7f7f7;
 line-height: 100%;
-}
-.stat {
 }
 </style>

@@ -395,7 +395,6 @@ background-color: inherit;
 .github {
 opacity: 0.7;
 font-size: 90%;
-transition: color 0.5s;
 margin-bottom: 2px;
 }
 </style>

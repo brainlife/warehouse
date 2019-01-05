@@ -5,6 +5,11 @@ function filter_apps(dataset, apps) {
     return apps.filter((app)=> {
         var has_matching_input = false;
         app.inputs.forEach((input)=> {
+            if(!input.datatype) {
+                console.log("input datatype missing.. maybe broken app");
+                console.dir(app);
+                return;
+            }
             var input_datatype_id = input.datatype._id || input.datatype;
             var dataset_datatype_id = dataset.datatype._id || dataset.datatype;
             if(input_datatype_id == dataset_datatype_id) {

@@ -26,16 +26,21 @@
         </span>
     </p>
     <p>
-        <span v-if="info.success_rate" style="position: relative" v-b-tooltip.hover title="Success Rate. finished/(failed+finished). Same request could be re-submitted / rerun.">
-            <svg width="20" height="20">
-                <circle :r="40/(2*Math.PI)" cx="10" cy="10" fill="transparent" stroke="#dc3545" stroke-width="4"/>
-                <circle :r="40/(2*Math.PI)" cx="10" cy="10" fill="transparent" stroke="#28a745" stroke-width="4" :stroke-dasharray="info.success_rate*(40/100)+' '+(100-info.success_rate)*(40/100)" stroke-dashoffset="0"/>
+        <center v-if="info.success_rate" style="position: relative; border: 1px solid #eee; background-color: white; padding: 10px 0px; max-width: 200px" v-b-tooltip.hover 
+            title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+            <span style="opacity: 0.5">Success Rate</span>
+            <br>
+            <svg width="70" height="70">
+                <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
+                <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
+                    :stroke-dasharray="info.success_rate*(140/100)+' '+(100-info.success_rate)*(140/100)" stroke-dashoffset="-105"/>
             </svg>
-            {{info.success_rate.toFixed(1)}}%
+            <br>
+            <b>{{info.success_rate.toFixed(1)}}%</b>
             <!--
                 <span :class="success_rate_color" v-if="info.success_rate">{{info.success_rate.toFixed(1)}}%</span>
             -->
-        </span>
+        </center>
     </p>
 
 

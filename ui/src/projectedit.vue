@@ -61,6 +61,11 @@
                             <small class="text-muted">Only the members of project can access datasets. Guest users has read access to the datasets.</small>
                        </p>
                     </b-form-radio-group>
+                    <p v-if="project.access == 'public'">
+                        <vue-markdown :source="public_project_consent" class="readme"></vue-markdown>
+                        <br>
+                        <b-form-checkbox v-model="consent" required>I consent to the above consent form.</b-form-checkbox>
+                    </p>
                     <p>
                         <b-form-checkbox v-if="project.access == 'private'" style="margin-left: 40px;" v-model="project.listed">List project summary for all users</b-form-checkbox>
                     </p>
@@ -163,9 +168,11 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import license from '@/components/license'
+import VueMarkdown from 'vue-markdown'
+import {public_project_consent} from '@/consents'
 
 export default {
-    components: { sidemenu, contactlist, pageheader, license },
+    components: { sidemenu, contactlist, pageheader, license, VueMarkdown },
     data () {
         return {
             project: {
@@ -179,6 +186,9 @@ export default {
                 //license: "ccby.40",
                 agreements: [],
             },
+
+            public_project_consent,
+            consent: false,
 
             config: Vue.config,
         }
@@ -277,6 +287,12 @@ left: 50px;
 bottom: 0px;
 padding: 10px 30px;
 background-color: rgba(100,100,100,0.4);
+}
+.readme {
+background-color: white;
+max-height: 500px;
+overflow: auto;
+padding: 20px;
 }
 </style>
 
