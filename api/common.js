@@ -280,6 +280,7 @@ exports.load_github_detail = function(service_name, cb) {
             logger.error(_res.body);
             return cb("failed to query requested repo. code:"+_res.statusCode);
         }
+        logger.debug(_res.headers);
 
         logger.debug("loading contributors");
         request("https://api.github.com/repos/"+service_name+"/contributors"+auth, { json: true, headers: {
@@ -300,6 +301,7 @@ exports.load_github_detail = function(service_name, cb) {
                         logger.error(_res.body);
                         return next_con("failed to load user detail:"+_res.statusCode);
                     }
+                    logger.debug(_res.headers);
                     con_details.push(detail);
                     next_con();
                 });

@@ -11,17 +11,17 @@ const config = require('../api/config');
 const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 
-console.log("connecting to db");
+//console.log(["connecting to db", "yay"]);
 db.init(function(err) {
     if(err) throw err;
-    run(err=>{
+    async.series([free_storage, remove_failed], err=>{
         if(err) throw err;
         logger.info("all done.. disconnecting");
         db.disconnect();
     });
 });
 
-function run(cb) {
+function free_storage(cb) {
 
     //list storage system that we need to backup
     let storages = [];
@@ -53,11 +53,11 @@ function run(cb) {
     .limit(1000) 
     .exec((err,datasets)=>{
         if(err) return cb(err);
-        logger.debug("datasets needs removed:",datasets.length);
+        logger.debug("datasets needs removed: %d",datasets.length);
         let count = 0;
         async.eachSeries(datasets, (dataset, next_dataset)=>{
             count++;
-            logger.debug("removing dataset", count, dataset.toString());
+            logger.debug("freeing storage for dataset %d %s", count, dataset._id.toString());
             var system = config.storage_systems[dataset.storage];
             system.remove(dataset, err=>{
                 if(err) return next_dataset(err);
@@ -68,4 +68,28 @@ function run(cb) {
     });
 }
 
+function remove_failed(cb) {
 
+    let week_ago = new Date();
+    week_ago.setDate(week_ago.getDate()-7);
+    
+    //find datasets that are removed (long ago) and not published
+    db.Datasets.find({
+        status: "failed",
+        removed: true,
+        update_date: {$lt: week_ago }, //only remove if it's old enough
+    })
+    .limit(1000) 
+    .exec((err,datasets)=>{
+        if(err) return cb(err);
+        logger.debug("failed datasets needs removed %d",datasets.length);
+        let count = 0;
+        async.eachSeries(datasets, (dataset, next_dataset)=>{
+            count++;
+            logger.debug("removing failed dataset %d %s", count, dataset._id.toString());
+            dataset.status = "removed";
+            dataset.save(next_dataset);
+        }, cb);
+    });
+
+}

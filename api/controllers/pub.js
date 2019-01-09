@@ -265,7 +265,9 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     if(err) return next(err);
                     //then attach url to it (to "mint" it!)
                     let url = config.warehouse.url+"/pub/"+pub._id;  //TODO make it configurable?
-                    common.doi_put_url(pub.doi, url, logger.error);
+                    common.doi_put_url(pub.doi, url, err=>{
+                        if(err) logger.error(err);
+                    });
                 });
                 
                 //I have to use req.body.releases which has "sets", but not release._id

@@ -553,12 +553,16 @@ exports.logger = {
     winston: {
         level: 'debug',
         format: combine(
-            //label({ label: 'right meow!' }),
+            label({ label: 'warehouse' }),
             timestamp(),
             format.colorize(),
-            prettyPrint()
+            format.splat(),
+            //prettyPrint()
             //format.simple()
-            //format.json()
+            //format.json(),
+            format.printf(info=>{
+                return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`;
+            }),
         ),
         
         //hide headers which may contain jwt

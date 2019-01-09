@@ -143,7 +143,7 @@ function handle_rule(rule, cb) {
             
         //update handle_date
         next=>{
-            logger.info("handling project:", rule.project.name, "rule:", rule.name, rule._id.toString());
+            logger.info("handling project:"+rule.project.name+" rule:"+rule.name+" "+rule._id.toString());
             rule.handle_date = new Date();
             rule.save(next);
         },
@@ -168,7 +168,7 @@ function handle_rule(rule, cb) {
                 try {
                     fs.truncateSync(logpath);
                 } catch (err) {
-                    logger.info("failed to truncate.. maybe first time", logpath);
+                    logger.info("failed to truncate.. maybe first time "+logpath);
                 }
                 rlogger = createLogger({
                     format: combine(
@@ -633,6 +633,7 @@ function handle_rule(rule, cb) {
                 }, (err, res, _body)=>{
                     if(err) return next(err);
                     task_stage = _body.task;
+                    if(!_task_stage) return next("failed to submit staging task");
 
                     //reset task_id 
                     _app_inputs.forEach(input=>{
@@ -742,7 +743,7 @@ function handle_rule(rule, cb) {
                     }
                 }, (err, res, _body)=>{
                     task_app = _body.task;
-                    rlogger.debug("submitted app task", task_app._id);
+                    rlogger.debug("submitted app task "+task_app._id);
                     next(err);
                 });
             },

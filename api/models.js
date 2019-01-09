@@ -290,6 +290,7 @@ datasetSchema.pre('save', function(next) {
 
 datasetSchema.index({'$**': 'text'}) //make all text fields searchable
 datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1});
+datasetSchema.index({'prov.task_id': 1, 'prov.output_id': 1, removed: 1}); //for event_handler
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

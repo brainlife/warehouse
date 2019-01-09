@@ -77,6 +77,26 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 
 });
 
+//experimental
+router.get('/:id/badge', (req, res, next)=>{
+    db.Apps.findById(req.params.id).select('stats').exec((err, app)=>{
+        if(err) return next(err);
+        if(!app) return next("no such app");
+        /*
+10|warehou | {
+10|warehou |     "stats": {
+10|warehou |         "stars": 1,
+10|warehou |         "requested": 288,
+10|warehou |         "users": 2,
+10|warehou |         "success_rate": 83
+10|warehou |     },
+10|warehou |     "_id": "58c56d92e13a50849b258801"
+10|warehou | }
+        */
+        res.redirect('https://img.shields.io/badge/Brainlife-'+app.stats.requested+' runs ('+app.stats.users+' users)-brightgreen.svg');
+    });
+});
+
 function mint_doi(cb) {
     db.Apps.count({doi: {$exists: true}}).exec((err, count)=>{
         if(err) return cb(err);
