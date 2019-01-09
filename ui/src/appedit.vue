@@ -16,7 +16,7 @@
     </div>
 
     <div class="page-content" v-if="ready">
-        <b-form @submit="submit" class="container">
+        <b-form class="container">
             <!--
             <p v-if="$route.params.id == '_'">
                 Before you can 
@@ -463,7 +463,7 @@
         <div class="form-action" style="padding-right: 20px;">
             <b-container>
                 <b-button @click="cancel">Cancel</b-button>
-                <b-button @click="submit" variant="primary">Submit</b-button>
+                <b-button @click.once="submit" variant="primary">Submit</b-button>
             </b-container>
         </div>
     </div><!--page-content-->
@@ -848,7 +848,8 @@ export default {
             this.$router.go(-1);
         },
 
-        submit() {
+        submit(evt) {
+            console.log("submitting");
             this.validate(err => {
                 if (err) {
                     this.$notify({ text: err, type: 'error' });

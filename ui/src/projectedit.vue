@@ -12,7 +12,7 @@
     </div>
 
     <div class="main-section">
-        <b-form @submit="submit">
+        <b-form>
         <b-container>
             <b-row>
                 <b-col cols="3">
@@ -144,8 +144,8 @@
 
             <div class="form-action">
                 <b-container>
-                    <b-button type="button" variant="secondary" @click="cancel">Cancel</b-button>
-                    <b-button type="submit" variant="primary">Submit</b-button>
+                    <b-button variant="secondary" @click="cancel">Cancel</b-button>
+                    <b-button variant="primary" @click.once="submit">Submit</b-button>
                 </b-container>
             </div>
                 
@@ -211,31 +211,22 @@ export default {
     },
 
     methods: {
-        changeadmins: function(admins) {
+        changeadmins(admins) {
             //this.project.admins = admins;
         },
 
-        /*
-        add: function(it) {
-            it.push({
-                id: "",
-                datatype: null,
-                datatype_tags: [],
-            });
-        },
-        */
-
-        cancel: function() {
+        cancel() {
             if(this.project._id) this.$router.push('/project/'+this.project._id);
             else this.$router.push('/project');
         },
 
-        remove_agreement: function(idx) {
+        remove_agreement(idx) {
             this.project.agreements.splice(idx, 1);
             //this.$forceUpdate();
         },
 
-        submit: function(evt) {
+        submit(evt) {
+            console.log("submitting");
             evt.preventDefault();
             if(this.project._id) {
                 //update
