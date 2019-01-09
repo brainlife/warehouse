@@ -27,6 +27,7 @@
                 </div>
             </h4>
         </div><!--header-->
+        <b-alert :show="!dataset.storage" variant="info"><icon name="cog" spin/> Archiving Dataset .. Please wait for a minute before you can interact with this dataset.</b-alert>
         <b-tabs class="brainlife-tab" v-model="tab_index">
             <b-tab title="Details">
                 <div class="dataset-detail">
