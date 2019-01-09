@@ -55,9 +55,6 @@
             <div v-if="tab_index == 0">
                 <b-row>
                     <b-col cols="3">
-                        <p>
-                            <doibadge :doi="app.doi" v-if="app.doi"/>
-                        </p>
                         <p> 
                             <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
                         </p>
@@ -66,7 +63,10 @@
                             <contact :id="app.user_id" size="small"/> 
                         </p>
                         -->
-                        <appstats :info="info"/>
+                        <p>
+                            <doibadge :doi="app.doi" v-if="app.doi"/>
+                        </p>
+                        <appstats :info="info" :appid="app._id"/>
 
                     </b-col>
                     <b-col cols="9">

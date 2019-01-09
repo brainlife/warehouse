@@ -63,18 +63,16 @@
     <div v-if="mode == 'validate' && tasks.validation">
         <task :task="tasks.validation" v-if="!tasks.validation.product"/>
         <div v-else>
-            <p show="tasks.validation.product.errors.length == 0 && tasks.validation.product.warnings.length == 0" variant="success">
-                <b-alert show variant="success">
-                    Your data looks good! Please check information below and click Archive button.
-                </b-alert>
-                <product :product="tasks.validation.product"/>
-            </p>
-            <b-alert show="tasks.validation.product.errors.length > 0" variant="danger" v-for="(error, idx) in tasks.validation.product.errors" :key="idx">
+            <b-alert :show="can_archive()" variant="success">
+                Your data looks good! Please check information below and click Archive button.
+            </b-alert>
+            <b-alert :show="tasks.validation.product.errors.length > 0" variant="danger" v-for="(error, idx) in tasks.validation.product.errors" :key="idx">
                 {{error}}
             </b-alert>
-            <b-alert show="tasks.validation.product.warnings.length > 0" variant="warning" v-for="(warning, idx) in tasks.validation.product.warning" :key="idx">
+            <b-alert :show="tasks.validation.product.warnings.length > 0" variant="warning" v-for="(warning, idx) in tasks.validation.product.warning" :key="idx">
                 {{warning}}
             </b-alert>
+            <product :product="tasks.validation.product"/>
 
             <!--show info-->
             <b-form-group horizontal v-for="(v, k) in tasks.validation.product" :key="k" 
@@ -91,11 +89,11 @@
     <div slot="modal-footer">
         <b-form-group v-if="mode == 'upload'">
             <b-button @click="cancel">Cancel</b-button>
-            <b-button variant="primary" @click="validate()" :disabled="!is_valid()">Next</b-button>
+            <b-button variant="primary" @click="validate()" :disabled="!can_validate()">Next</b-button>
         </b-form-group>
         <b-form-group v-if="mode == 'validate'">
             <b-button @click="mode = 'upload'">Back</b-button>
-            <b-button variant="primary" @click="finalize()" :disabled="!(tasks.validation && tasks.validation.product && tasks.validation.product.errors.length == 0)">Archive</b-button>
+            <b-button variant="primary" @click="finalize()" :disabled="!can_archive()">Archive</b-button>
         </b-form-group>
     </div>
 </b-modal>
@@ -193,7 +191,7 @@ export default {
     },
 
     methods: {
-        reset: function() {
+        reset() {
             this.mode = "upload";
             this.project = null;
             this.meta = {};
@@ -202,13 +200,13 @@ export default {
             this.desc = "";
         },
 
-        filechange: function(file, e) {
+        filechange(file, e) {
             var files = e.target.files || e.dataTransfer.files;
             if(!files.length) return;
             this.upload(file, files[0]); //only upload first one
         },
 
-        create_instance: function() {
+        create_instance() {
             this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "_upload",
             }).then(res=>{
@@ -279,22 +277,28 @@ export default {
             });
         },
 
-        is_valid: function() {
+        can_validate() {
             let valid = true;
             if(!this.project) return false;
             if(!this.datatype_id) return false;
+            if(!this.meta["subject"]) return false;
+            /*
             this.datatypes[this.datatype_id].meta.forEach(meta=>{
                 if(!meta.required) return;
                 if(!this.meta[meta.id]) valid = false;
             });
+            */
             this.files.forEach(file=>{
-                //console.log(file);
                 if(file.required && !file.uploaded) valid = false;
             });
             return valid;
         },
-        
-        upload: function(file, f) {
+
+        can_archive() {
+            return (this.tasks.validation && this.tasks.validation.product && this.tasks.validation.product.errors.length == 0);
+        },
+ 
+        upload(file, f) {
             if(!this.tasks.upload.resource_id) return;
 
             file.local_filename  = f.name;
