@@ -61,11 +61,13 @@
                             <small class="text-muted">Only the members of project can access datasets. Guest users has read access to the datasets.</small>
                        </p>
                     </b-form-radio-group>
+                    <!-- I think we should put this under AUP when user signin
                     <p v-if="project.access == 'public'">
                         <vue-markdown :source="public_project_consent" class="readme"></vue-markdown>
                         <br>
                         <b-form-checkbox v-model="consent" required>I consent to the above consent form.</b-form-checkbox>
                     </p>
+                    -->
                     <p>
                         <b-form-checkbox v-if="project.access == 'private'" style="margin-left: 40px;" v-model="project.listed">List project summary for all users</b-form-checkbox>
                     </p>

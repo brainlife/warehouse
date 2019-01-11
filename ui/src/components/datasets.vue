@@ -107,6 +107,9 @@
                 <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="paper-plane" scale="0.8"/> Stage to process</b-btn>
             </p>
             <p>
+                <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy</b-btn>
+            </p>
+            <p>
                 <b-btn size="sm" @click="remove" variant="outline-danger"><icon name="trash" scale="0.8"/> Remove</b-btn>
             </p>
         </div>
@@ -608,6 +611,24 @@ export default {
                             this.$notify({type: 'error', text: err.body.message});
                         })
                     }
+                });
+            });
+        },
+
+        copy() {
+            this.check_agreements(this.project, ()=>{
+                this.$root.$emit('copytarget.open', opt=>{
+                    let dataset_ids = [];
+                    Object.values(this.group_selected).forEach(group=>{
+                        dataset_ids = dataset_ids.concat(Object.keys(group));
+                    });
+                    this.$http.post('dataset/copy', {
+                        dataset_ids,
+                        project: opt.project_id,
+                    }).then(res=>{
+                        this.clear_selected();
+                        this.$router.push("/project/"+opt.project_id);
+                    });
                 });
             });
         },

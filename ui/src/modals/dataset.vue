@@ -194,7 +194,7 @@
             <b-tab title="Apps">
                 <div class="dataset-apps" v-if="apps">
                     <p v-if="apps.length > 0" class="text-muted">The following apps can be submitted with this dataset.</p>
-                    <b-alert show variant="info" v-if="apps.length == 0">There are currently no applications that use the datatype from this dataset.</b-alert>
+                    <b-alert :show="apps.length == 0" variant="secondary" style="margin: -20px;">There are currently no applications that use the datatype from this dataset.</b-alert>
                     <div v-for="app in apps" :key="app._id" style="width: 33%; float: left;">
                         <!-- why am I handling @click on the parent div - instead of letting <app> do it?-->
                         <div style="margin-right: 10px; margin-bottom: 10px;" @click="openapp(app._id)">
