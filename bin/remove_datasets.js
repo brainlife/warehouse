@@ -33,6 +33,7 @@ function free_storage(cb) {
     let month_ago = new Date();
     month_ago.setMonth(month_ago.getMonth() - 1);
     
+    //TODO - don't remove if it's used by copied datasets
     //find datasets that are removed (long ago) and not published
     db.Datasets.find({
         status: "stored",

@@ -162,6 +162,9 @@ exports.Publications = mongoose.model("Publications", publicationSchema);
 // each data is a .tar.gz of a task directory from wf service
 //
 var datasetSchema = mongoose.Schema({
+
+    //experimental field to show that this dataset was created by copying another dataset.
+    //copied_from_id: {type: mongoose.Schema.Types.ObjectId, ref: "Datasets"},
     
     //user who submitted this rule. task will run under this user
     user_id: {type: String, index: true},

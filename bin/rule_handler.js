@@ -589,9 +589,10 @@ function handle_rule(rule, cb) {
                 //nothing to download, then proceed to submitting the app
                 if(downloads.length == 0) return next();
 
+/*
                 //stage task is used as input to real *first* app that uses the data, so I believe we can 
                 //remove it shortly after it's stage.. remove in 7 days(?)
-                //TODO - if it's already staged, and another user request for the same datazet, should I just reuse it?
+                //TODO - if it's already staged, and another user request for the same dataset, should I just reuse it?
                 let remove_date = new Date();
                 remove_date.setDate(remove_date.getDate()+7); 
                 console.log(JSON.stringify(downloads, null, 4));
@@ -631,9 +632,19 @@ function handle_rule(rule, cb) {
                         remove_date,
                     },
                 }, (err, res, _body)=>{
+*/
+                request.post({
+                    url: config.warehouse.api+'/dataset/stage', json: true, 
+                    headers: { authorization: "Bearer "+jwt },
+                    body: {
+                        instance_id: instance._id,
+                        dataset_ids: downloads.map(d=>d._id),
+                    }
+                }, (err, res, _body)=>{
                     if(err) return next(err);
                     task_stage = _body.task;
-                    if(!_task_stage) return next("failed to submit staging task");
+                    if(!task_stage) return next("failed to submit staging task");
+                    next_tid++;
 
                     //reset task_id 
                     _app_inputs.forEach(input=>{

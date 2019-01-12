@@ -85,6 +85,7 @@ function register_dataset(task, output, product, cb) {
         //status: "waiting",
         status_msg: "Waiting for the archiver ..",
         product,
+
         
         prov: {
             task, 
@@ -181,26 +182,28 @@ exports.archive_task_outputs = function(task, outputs, cb) {
                 if(err || !dataset) return next_output(); //couldn't register, or already registered
                 let dir =  "../"+task._id;
                 dataset.prov.task = dataset.prov.task._id; //unpopulate prov as it will be somewhat redundant
+                let dataset_config = {
+                    project: output.archive.project,
+                    dir,
+                    dataset, //need to pass the dataet for .brainlife.io
+
+                    storage: config.archive.storage_default,
+                    
+                    //TODO - should let config/index.js generate this?
+                    //storage_config: { path: dataset.project+"/"+dataset._id+".tar" },
+                }
                 if(output.subdir) {
                     //new subdir outputs
-                    dir+="/"+output.subdir,
-                    datasets.push({
-                        project: output.archive.project,
-                        dir,
-                        dataset, //need to pass the dataet for .brainlife.io
-                    });
+                    dataset_config.dir+="/"+output.subdir,
+                    datasets.push(dataset_config);
                     next_output();
                 } else {
                     //old method - need to lookup datatype first
                     db.Datatypes.findById(output.datatype, (err, datatype)=>{
                         if(err) return next_output(err);
-                        datasets.push({
-                            project: output.archive.project,
-                            dir,
-                            dataset, //for .brainlife.io
-                            files: datatype.files,
-                            files_override: output.files, 
-                        });
+                        dataset_config.files = datatype.files;
+                        dataset_config.files_override = output.files;
+                        datasets.push(dataset_config);
                         next_output();
                     });
                 }
@@ -208,7 +211,6 @@ exports.archive_task_outputs = function(task, outputs, cb) {
         }, async err=>{
             if(err) return cb(err);
             if(datasets.length == 0) return cb();
-
             try {
                 let user_jwt = await exports.issue_archiver_jwt(task.user_id);
 

@@ -1,13 +1,9 @@
-'use strict';
-
-//contrib
 const express = require('express');
 const router = express.Router();
 const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
 
-//mine
 const config = require('../config');
 const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');

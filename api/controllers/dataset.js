@@ -31,9 +31,9 @@ function canedit(user, rec, canwrite_project_ids) {
 
 function isimporttask(task) {
     return ( 
-        task.service == "soichih/sca-product-raw" || 
-        task.service == "brainlife/app-stage" || 
+        task.service == "soichih/sca-product-raw" ||  //deprecated
         task.service == "soichih/sca-service-noop" || //deprecated
+        task.service == "brainlife/app-stage" || 
         task.service == "brainlife/app-noop" ||
         ~task.service.indexOf("brainlife/validator-") ||
         ~task.service.indexOf("brain-life/validator-")
@@ -487,7 +487,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             }
             if(!output) {
                 //console.dir(task.config);
-                return next("no config_outputs for ", req.body.output_id);
+                return next("no config._outputs for id:"+req.body.output_id);
             }
 
             //let user override meta/tags
@@ -615,13 +615,25 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     instance_id : req.body.instance_id,
                     config: {
                         datasets: datasets.map(d=>{
-                            return {
-                                id: d.id,
-                                project: d.project,
+                            if(d.storage == "copy") {
+                                //stage copy source 
+                                return {
+                                    id: d.storage_config.dataset_id,
+                                    project: d.storage_config.project,
+                                    outdir: d._id,
+                                }
+                            } else {
+                                return {
+                                    id: d.id,
+                                    project: d.project,
+                                }
                             }
                         }),
                         _tid: next_tid,
                         _outputs: datasets.map(d=>{
+                            let subdir = d._id;
+                            //if(d.storage == "copy") subdir = d.storage_config.dataset_id;
+
                             return {
                                 id: d._id,
                                 datatype: d.datatype,
@@ -629,7 +641,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                                 tags: d.tags,
                                 datatype_tags: d.datatypetags,
                                 
-                                subdir: d._id,
+                                subdir,
                                 dataset_id: d._id,
 
                                 project: d.project,
@@ -775,7 +787,7 @@ router.get('/download/:id', jwt({
     }
 }), function(req, res, next) {
     var id = req.params.id;
-    logger.debug("download requested dataset "+id);
+    //logger.debug("download requested dataset "+id);
     if(!req.user) logger.warn("no auth request");
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
@@ -783,7 +795,6 @@ router.get('/download/:id', jwt({
             if(err) return next(err);
             if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
             if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
-            
             if(dataset.publications && dataset.publications.length > 0) {
                 //this dataset is published .. no need for access control
                 //TODO - maybe I should still limit download without correct publication id? (what's the point?)
@@ -886,6 +897,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
  *                              A valid JWT token "Bearer: xxxxx"
  */
 //DEPRECATED - delete one dataset at a time with (delete)/dataset/:id api
+/*
 router.post('/delete', jwt({secret: config.express.pubkey}), function(req, res, next) {
     let ids = req.body.id;
     if(!Array.isArray(ids)) ids = [ ids ];
@@ -907,7 +919,7 @@ router.post('/delete', jwt({secret: config.express.pubkey}), function(req, res, 
         });
     });
 });
-
+*/
 /*
 router.post('/ds/issue', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
@@ -1112,6 +1124,65 @@ ${p.readme||''}`;
     });
 });
 
+/**
+ * @apiGroup Dataset
+ * @api {post} /dataset/copy    Copy datasets
+ * @apiDescription              Copy specified datasets to another project by creating new dataset records 
+ *
+ * @apiParam {String} project   Project ID to copy datasets to
+ * @apiParam {String[]} dataset_ids 
+ *                              Dataset IDs to  copy
+ *
+ * @apiHeader {String} authorization 
+ *                                  A valid JWT token "Bearer: xxxxx"
+*/
+router.post('/copy', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    if(!req.body.project) return next("project(id) is not set");
+    if(!req.body.dataset_ids && !Array.isArray(req.body.dataset_ids)) return next("dataset_ids are not set");
+
+    common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
+        if(err) return next(err);
+        db.Datasets.find({_id: {$in: req.body.dataset_ids}}).lean().exec((err, _datasets)=>{
+            if(err) return next(err);
+            
+            //find dataset ids that user have access to
+            let datasets = [];
+            _datasets.forEach(dataset=>{
+                if(!dataset) return;
+                if(!dataset.storage) return;
+
+                canread_project_ids = canread_project_ids.map(id=>id.toString());
+                if(!~canread_project_ids.indexOf(dataset.project.toString())) {
+                    //user doesn't have read access to this project
+                    return;
+                } 
+                datasets.push(dataset);
+            });
+
+            //update to create list of new datasets
+            datasets.forEach(dataset=>{
+                if(dataset.storage != "copy") {
+                    dataset.storage_config = {
+                        dataset_id: dataset._id,
+                        project: dataset.project,
+                        storage: dataset.storage,
+                        storage_config: dataset.storage_config,
+                    };
+                    dataset.storage = "copy";
+                }
+                dataset.project = req.body.project;
+                delete dataset._id;
+                dataset.publications = [];
+            });
+
+            db.Datasets.insertMany(datasets,(err, docs)=>{
+                if(err) return next(err);
+                res.json(docs);
+            });
+        });
+    });
+});
+ 
 module.exports = router;
 
 

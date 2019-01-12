@@ -161,7 +161,8 @@ function handle_task(task, cb) {
                     switch(task.status) {
                     case "finished":
                         _set.status = "stored";
-                        _set.storage = "wrangler";
+                        _set.storage = dataset_config.storage;
+                        _set.storage_config = dataset_config.storage_config;//might not be set
                         break;
                     case "failed":
                         _set.status = "failed";

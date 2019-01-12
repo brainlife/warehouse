@@ -105,7 +105,7 @@ exports.storage_default = function() {
 }
 
 exports.archive = {
-    storage_default: "wrangler",  //TODO not used yet.. move storage_default to use this
+    storage_default: "wrangler",  
     gid: 137, //warehouse group enabled to access storage service
 }
 
@@ -253,7 +253,7 @@ function get_wrangler_archive_path(dataset) {
 }
 
 exports.storage_systems.wrangler = {
-    need_backup: false,
+    need_backup: true,
     test: cb=>{
         connect_wrangler((err, conn, sftp)=>{
             if(err) return cb(err);
@@ -269,7 +269,6 @@ exports.storage_systems.wrangler = {
             });
             stream.on('end', ()=>{
                 conn.end();
-                
                 //parse quota content
                 let lines = content.split("\n");
                 if(lines[0] != "Disk quotas for usr hayashis (uid 833400):") {
@@ -291,21 +290,13 @@ exports.storage_systems.wrangler = {
         connect_wrangler((err, conn, sftp)=>{
             if(err) return cb(err);
             sftp.stat(get_wrangler_archive_path(dataset), (err,stat)=>{
-                /*
-                Stats {
-                  mode: 33206,
-                  permissions: 33206,
-                  uid: 833400,
-                  gid: 817579,
-                  size: 5427200,
-                  atime: 1533646596,
-                  mtime: 1533646596 }
-                */
                 conn.end();
                 cb(err, stat);
             });
         });
     },
+
+    //TODO - with app-archive in place, I don't think we use this anymore
     upload: (dataset, cb)=>{
         connect_wrangler((err, conn, sftp)=>{
             console.log("got wrangler streams for uplload");
@@ -324,7 +315,6 @@ exports.storage_systems.wrangler = {
                             });
                         });
                         stream.on('error', reject); //not testetd..
-
                         //needed to raise close event.. I think
                         stream.on('data', data=>{
                             console.log(data.toString());
@@ -338,28 +328,62 @@ exports.storage_systems.wrangler = {
             });
         });
     },
+
     download: (dataset, cb)=>{
         connect_wrangler((err, conn, sftp)=>{
             if (err) {
                 conn.end();
                 return cb(err);
             }
-            //let stream = sftp.createReadStream(get_wrangler_archive_path(dataset));
-            conn.exec("cat "+get_wrangler_archive_path(dataset), (err, stream)=>{
+            let path = get_wrangler_archive_path(dataset);
+            let filename = path.split("/").pop();
+            console.debug(["loading...", path, filename]);
+            conn.exec("cat "+path, (err, stream)=>{
                 stream.on('error', err=>{
                     console.error("stream failed but train has already left the station", err);
                 });
                 stream.on('close', code=>{
-                    //setTimeout(()=>{conn.end();}, 1000);
                     conn.end();
                     console.log("read stream closed");
                 });
                 stream.stderr.on('data', data=>{
                     console.error(data.toString());
                 });
-                cb(null, stream, dataset._id+".tar");
+                cb(null, stream, filename);
             });
         });
+    },
+} 
+
+function get_copysource_dataset(dataset) {
+    return Object.assign({}, dataset, {
+        project: dataset.storage_config.project,
+        storage: dataset.storage_config.storage,
+        storage_config: dataset.storage_config.storage_config,
+        _id: dataset.storage_config.dataset_id,
+    });
+}
+exports.storage_systems.copy = {
+    need_backup: false,
+    test: cb=>{
+        cb();
+    }, 
+
+    stat: (dataset, cb)=>{
+        let source_dataset = get_copysource_dataset(dataset);
+        let system = exports.storage_systems[source_dataset.storage];
+        system.stat(source_dataset, cb);
+    },
+
+    //TODO - with app-archive in place, I don't think we use this anymore
+    upload: (dataset, cb)=>{
+        cb("can't upload to copy target");
+    },
+
+    download: (dataset, cb)=>{
+        let source_dataset = get_copysource_dataset(dataset);
+        let system = exports.storage_systems[source_dataset.storage];
+        system.download(source_dataset, cb);
     },
 } 
 

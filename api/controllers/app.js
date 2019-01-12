@@ -259,6 +259,8 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
                     //update datacite info
                     cb=>{
+                        if(!app.doi) return cb(); //doi not set...skip
+
                         let metadata = common.compose_app_datacite_metadata(app);
                         //logger.debug("updating doi inffo", metadata);
                         common.doi_post_metadata(metadata, err=>{
