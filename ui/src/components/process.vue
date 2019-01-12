@@ -305,11 +305,6 @@ export default {
         'input_dialog.project': function(p) {
             this.input_dialog.datasets_groups = {};
         },
-        /*
-        selected_task(task_id) {
-            this.scrollto(task_id);
-        },
-        */
     },
 
     methods: {

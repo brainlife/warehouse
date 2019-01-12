@@ -1,6 +1,6 @@
 <template>
 <b-modal :no-close-on-backdrop='true' title="Copy Datasets" ref="modal" size="lg" @ok="submit">
-    <p class="text-muted">Please select project where you want to copy selected datasets to</p>
+    <p class="text-muted">Please select a project where you want to copy selected datasets to</p>
     <br>
     <b-row>
         <b-col :cols="3">Project</b-col>

@@ -67,16 +67,16 @@
                                 <th>Max Runtime</th>
                                 <td>{{task.max_runtime/(1000*60)}} mins</td>
                             </tr>
+                            <tr v-if="resource">
+                                <th>Resource</th>
+                                <td>{{resource.name}} <small>{{resource.desc}}</small></td>
+                            </tr>
                             </table>
                         </b-col>
                         <b-col cols="6" v-if="smon.info">
                             <h5>Compute Node</h5>
                             <!--<p><small style="opacity: 0.5">This task rans on the following compute node</small></p>-->
                             <table class="table table-sm">
-                            <tr v-if="resource">
-                                <th>Resource</th>
-                                <td>{{resource.name}} <small>{{resource.desc}}</small></td>
-                            </tr>
                             <tr>
                                 <th>Host</th>
                                 <td>

@@ -6,7 +6,7 @@
             <icon name="paper-plane"/>&nbsp;{{info.counts.requested||0}}
         </span>
         -->
-        <img :src="config.api+'/app/'+appid+'/badge'" @click="show_badge_url('/app/'+appid+'/badge')"/>
+        <img :src="config.api+'/app/'+appid+'/badge'" @click="show_badge_url('/app/'+appid+'/badge')" class="clickable"/>
     </p>
     <!--
     <p>

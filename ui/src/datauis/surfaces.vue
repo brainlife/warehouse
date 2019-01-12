@@ -32,8 +32,9 @@ export default {
             .then(res => {
                 let surfaces = res.body;
                 surfaces.forEach(surface => {
-                    surface.basename = surface.filename;
-                    surface.filename = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces/"+surface.filename)+"&at="+Vue.config.jwt;
+                    surface.basename = surface.name||surface.filename; //surface.filename is deprecated?
+                    let filepath = surface.path||surface.filename; //surface.filename is deprecated?
+                    surface.filename = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces/"+filepath)+"&at="+Vue.config.jwt;
                 });
                 cb(surfaces);
             }).catch(err => {

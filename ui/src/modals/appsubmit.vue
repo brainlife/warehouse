@@ -15,7 +15,7 @@
         <p>
             <app :app="app" :clickable="false" style="margin: -20px; margin-bottom: 0px;"/>
         </p>
-        <b-alert :show="this.no_resource || true" variant="secondary">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
+        <b-alert :show="this.no_resource || true" variant="secondary" style="margin: -20px; margin-bottom: 10px">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
         <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
             <b-col cols="3">
                 <small style="float: right;" class="text-muted">{{input.id}}</small>
@@ -423,16 +423,31 @@ export default {
             }).then(res=>{
                 instance = res.body;
                 console.log("instance created", instance);
-                //submit staging task
+
                 return this.$http.post('dataset/stage', {
                     instance_id: instance._id,
                     dataset_ids: all_dataset_ids,
                 });
             }).then(res=>{
                 var download_task = res.body.task;
-                //console.log("download task submitted", download_task);
 
-                //construct _inputs for main app
+                //construct _inputs for main app - using download_task._outputs as starting point
+                app_inputs = download_task.config._outputs;
+                app_inputs.forEach(input=>{
+                    input.task_id = download_task._id;
+
+                    //enumerate input ids for each input datasets
+                    input.keys = [];
+                    for(var input_id in this.form.inputs) {
+                        this.form.inputs[input_id].forEach(dataset_id=>{
+                            for(var key in this.app.config) {
+                                if(this.app.config[key].input_id == input_id) input.keys.push(key); 
+                            }
+                        });
+                    }
+                });
+
+                /*
                 for(var input_id in this.form.inputs) {
                     this.form.inputs[input_id].forEach(dataset_id=>{
                         let dataset = download_task.config._outputs.find(out=>out.dataset_id == dataset_id);
@@ -455,6 +470,7 @@ export default {
                         });
                     });
                 }
+                */
 
                 //aggregate meta
                 //TODO - this just concatenate *all* meta from all input datasets.. I should probaby do something smarter..
@@ -483,7 +499,7 @@ export default {
                     if(output.output_on_root) {
                         output_req.files = output.files; //optional
                     } else {
-                        output_req.subdir = output.id;
+                        output_req.subdir = output.id; //TODO - why not output.subdir?
                     }
 
                     //handle tag passthrough

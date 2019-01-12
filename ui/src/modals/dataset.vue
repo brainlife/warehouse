@@ -27,11 +27,11 @@
                 </div>
             </h4>
         </div><!--header-->
-        <b-alert :show="!dataset.storage" variant="info"><icon name="cog" spin/> Archiving Dataset .. Please wait for a minute before you can interact with this dataset.</b-alert>
         <b-tabs class="brainlife-tab" v-model="tab_index">
             <b-tab title="Details">
                 <div class="dataset-detail">
                     <b-alert :show="dataset.removed" variant="secondary">This dataset has been removed</b-alert>
+                    <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="info"><icon name="cog" spin/> Archiving Dataset .. Please wait for a minute before you can interact with this dataset.</b-alert>
                     <!-- detail -->
                     <div class="margin20">
                         <b-row>
@@ -122,7 +122,7 @@
                                         Status is unknown
                                     </span> 
                                     <span title="Backup of this dataset exists in Scholarly Data Archive (SDA) system." v-if="dataset.backup_date" class="text-success">
-                                        <b-badge variant="success">Backed Up</b-badge>
+                                        <b-badge variant="success"><icon name="archive" scale="0.7"/> SDA</b-badge>
                                     </span>
                                 </p>
                             </b-col>
@@ -428,6 +428,7 @@ export default {
                 var url = Vue.config.api+'/dataset/download/'+this.dataset._id;
                 if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
                 document.location = url;
+                this.$notify({type: 'info', text: "Download will start soon.."});
             });
         },
 
