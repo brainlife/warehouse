@@ -12,11 +12,10 @@
     </div><!--header-->
 
     <b-form v-if="app" class="submit-form" @submit="submit">
-        <b-alert :show="this.no_resource" style="margin-bottom: 10px;">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
-
         <p>
             <app :app="app" :clickable="false" style="margin: -20px; margin-bottom: 0px;"/>
         </p>
+        <b-alert :show="this.no_resource || true" variant="secondary">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
         <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
             <b-col cols="3">
                 <small style="float: right;" class="text-muted">{{input.id}}</small>

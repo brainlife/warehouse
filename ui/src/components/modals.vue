@@ -12,6 +12,7 @@
         <datasetselecter/>
         <uploader/>
         <instanceselecter/>
+        <copytarget/>
         <archiver/>
         <taskinfo/>
         <appsubmit/>
@@ -36,12 +37,13 @@ import downscript from '@/modals/downscript'
 import taskinfo from '@/modals/taskinfo'
 import appsubmit from '@/modals/appsubmit'
 import dsimport from '@/modals/dsimport'
+import copytarget from '@/modals/copytarget'
 
 export default {
     components: {
         viewselecter, dataset, datatype, 
         uploader, datasetselecter, instanceselecter, 
-        archiver, agreements, downscript, taskinfo, appsubmit, dsimport,
+        archiver, agreements, downscript, taskinfo, appsubmit, dsimport, copytarget,
     },
     data() {
         return {

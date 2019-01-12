@@ -1,15 +1,16 @@
 <template>
-<b-modal :no-close-on-backdrop='true' title="Stage Datasets" ref="modal" size="lg" @ok="submit">
-    <p class="text-muted">Please select project / process where you want to stage selected datasets to</p>
+<b-modal :no-close-on-backdrop='true' title="Copy Datasets" ref="modal" size="lg" @ok="submit">
+    <p class="text-muted">Please select project where you want to copy selected datasets to</p>
     <br>
     <b-row>
         <b-col :cols="3">Project</b-col>
         <b-col>
             <projectselecter v-if="shown" canwrite="true" v-model="project" :required="true"/>
-            <small>Project to run a new process</small>
+            <!--<small>Project to run a new process</small>-->
         </b-col>
     </b-row>
     <br>
+    <!--
     <b-row>
         <b-col :cols="3">Process</b-col>
         <b-col>
@@ -22,16 +23,16 @@
         </b-col>
     </b-row>
     <br>
+    -->
     <div slot="modal-footer">
         <b-button variant="primary" v-if="isvalid()" @click="submit">Submit</b-button>
-        <!--<b-button @click="cancel">Cancel</b-button>-->
     </div>
 </b-modal>
 </template>
 
 <script>
-import Vue from 'vue'
 
+import Vue from 'vue'
 import projectselecter from '@/components/projectselecter'
 
 export default {
@@ -42,21 +43,24 @@ export default {
             submit_cb: null, 
             shown: false,
             project: null, 
-            instance: null, 
-            desc: "",
-            projects: {},
-            instances: [],
+            //instance: null, 
+            //desc: "",
 
-            createnew: true, //for toggle button
+            //options
+            projects: {},
+            //instances: [],
+
+            //createnew: true, //for toggle button
         }
     },
 
     destroyed() {
-        this.$root.$off("instanceselecter.open");
+        this.$root.$off("copytarget.open");
     },
 
     watch: {
         project: function() {
+            /*
             //refresh instance list
             this.instances = [];
             if(!this.project) return;
@@ -82,16 +86,17 @@ export default {
                 });
                 this.instance = this.instances[0];//might be empty
             });
+            */
         },
     },
 
     mounted() {
-        this.$root.$on("instanceselecter.open", cb=>{
+        this.$root.$on("copytarget.open", cb=>{
             this.submit_cb = cb;
             this.$refs.modal.show()
             this.shown = true;
-            this.instance = null;
-            this.desc = "";
+            //this.instance = null;
+            //this.desc = "";
         });
 
         this.$http.get('project', {params: {
@@ -122,9 +127,9 @@ export default {
         submit: function() {
             this.submit_cb({
                 project_id: this.project,
-                group_id: this.projects[this.project].group_id,
-                instance: (this.createnew?null:this.instance),
-                desc: this.desc.trim(),
+                //group_id: this.projects[this.project].group_id,
+                //instance: (this.createnew?null:this.instance),
+                //desc: this.desc.trim(),
             });
             this.$refs.modal.hide()
             this.shown = false;
@@ -136,5 +141,3 @@ export default {
     },
 } 
 </script>
-<style scoped>
-</style>
