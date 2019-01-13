@@ -621,11 +621,13 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                                     id: d.storage_config.dataset_id,
                                     project: d.storage_config.project,
                                     outdir: d._id,
+                                    storage: d.storage_config.storage,
                                 }
                             } else {
                                 return {
                                     id: d.id,
                                     project: d.project,
+                                    storage: d.storage,
                                 }
                             }
                         }),
@@ -787,28 +789,32 @@ router.get('/download/:id', jwt({
     }
 }), function(req, res, next) {
     var id = req.params.id;
-    //logger.debug("download requested dataset "+id);
     if(!req.user) logger.warn("no auth request");
-    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+    db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
         if(err) return next(err);
-        db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
-            if(err) return next(err);
-            if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
-            if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
-            if(dataset.publications && dataset.publications.length > 0) {
-                //this dataset is published .. no need for access control
-                //TODO - maybe I should still limit download without correct publication id? (what's the point?)
-            } else {
-                //unpublished -- need to do access control
+        if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
+        if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
+        if(dataset.publications && dataset.publications.length > 0) {
+            //this dataset is published .. no need for access control
+            //TODO - maybe I should still limit download without correct publication id? (what's the point?)
+            stream_dataset(dataset, res, next);
+        } else if(req.user && req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('stage')) {
+            //app-stage can access any dataset
+            logger.debug("stage role acess");
+            stream_dataset(dataset, res, next);
+        } else {
+            //unpublished -- need to do access control
+            common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+                if(err) return next(err);
                 canread_project_ids = canread_project_ids.map(id=>id.toString());
                 if(!~canread_project_ids.indexOf(dataset.project.toString())) {
                     return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
                 } 
-            }
-            
-            logger.debug("streaming");
-            stream_dataset(dataset, res, next);
-        });
+
+                //proceed!
+                stream_dataset(dataset, res, next);
+            });
+        }
     });
 });
 
@@ -1173,6 +1179,7 @@ router.post('/copy', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 dataset.project = req.body.project;
                 delete dataset._id;
                 dataset.publications = [];
+                dataset.desc = "(copy) "+dataset.desc;
             });
 
             db.Datasets.insertMany(datasets,(err, docs)=>{

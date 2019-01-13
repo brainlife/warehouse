@@ -346,6 +346,7 @@ exports.storage_systems.wrangler = {
                     conn.end();
                     console.log("read stream closed");
                 });
+                //I believe listening to stream is required for close event to fire..?
                 stream.stderr.on('data', data=>{
                     console.error(data.toString());
                 });
