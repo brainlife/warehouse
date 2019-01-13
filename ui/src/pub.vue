@@ -299,7 +299,10 @@ import citation from '@/components/citation'
 import app from '@/components/app'
 import doibadge from '@/components/doibadge'
 
+import agreementMixin from '@/mixins/agreement'
+
 export default {
+    mixins: [agreementMixin],
 
     components: { 
         pageheader, sidemenu, projectavatar, 
@@ -488,8 +491,10 @@ export default {
         },
 
         downscript(query) {
-            query.publications = this.release._id;
-            this.$root.$emit("downscript.open", {find: query});
+            this.check_agreements(this.pub.project, ()=>{
+                query.publications = this.release._id;
+                this.$root.$emit("downscript.open", {find: query});
+            });
         },
     }
 }
