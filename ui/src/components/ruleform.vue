@@ -279,6 +279,9 @@ export default {
                 if(!this.rule.input_project_override[input.id]) Vue.set(this.rule.input_project_override, input.id, null);
                 if(!this.rule.extra_datatype_tags[input.id]) Vue.set(this.rule.extra_datatype_tags, input.id, []);
 
+                //make all optional field optional by default
+                if(this.rule.input_selection[input.id] === undefined && input.optional) Vue.set(this.rule.input_selection, input.id, 'ignore');
+
                 input.edit_extra_tags = (this.rule.extra_datatype_tags[input.id].length > 0);
             });
             this.rule.app.outputs.forEach(output=>{

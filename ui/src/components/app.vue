@@ -22,8 +22,9 @@
                 </h4>
                 <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
                 <div class="datatypes">
-                    <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id">
+                    <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id" :class="[input.optional?'input-optional':'']">
                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false"/>
+                        <b v-if="input.optional">(opt)</b>
                     </div>
                     <icon scale="0.7" name="arrow-right"/>
                     <div class="datatype" v-for="output in app_.outputs" :key="'output.'+output.id">
@@ -201,6 +202,9 @@ margin: 3px 0px;
 display: inline-block;
 margin-right: 2px;
 margin-top: 2px;
+}
+.input-optional {
+opacity: 0.6;
 }
 .stats {
 position:absolute;
