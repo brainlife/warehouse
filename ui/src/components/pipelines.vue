@@ -214,9 +214,6 @@ export default {
             datatypes: null,
             projects: null,
 
-            //deactivating: null,
-            //deactivating_remain: null,
-
             activetaskcount_int: null,
 
             config: Vue.config,

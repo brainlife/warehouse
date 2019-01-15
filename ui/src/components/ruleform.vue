@@ -245,7 +245,6 @@ export default {
                     datatype_tags,
                     limit: 0, //I just need count
                 }}).then(res=>{
-                    //console.log("query returned ", res.body.count);
                     Vue.set(this.rule.input_tags_count, id, res.body.count);
                 }); 
             }
@@ -416,14 +415,6 @@ export default {
             }).catch(console.error);
         },
         
-        /*
-        edit_tags(io) {
-            //Vue.set(io, 'edit_extra_tags', true);
-            io.edit_extra_tags = true;
-            console.dir(io);
-        },
-        */
-
         edit_etag(input) {
             input.edit_extra_tags = true;
             this.$forceUpdate();

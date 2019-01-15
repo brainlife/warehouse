@@ -110,7 +110,7 @@
                 <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy (experimental)</b-btn>
             </p>
             <p>
-                <b-btn size="sm" @click="remove" variant="outline-danger"><icon name="trash" scale="0.8"/> Remove</b-btn>
+                <b-btn size="sm" @click="remove" variant="outline-danger"><icon name="trash" scale="0.8"/> Remove <span v-if="remove_remain">({{remove_remain}})</span></b-btn>
             </p>
         </div>
 
@@ -180,6 +180,7 @@ export default {
 
             query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
             ws: null, //websocket
+            remove_remain: 0,
 
             //cache
             datatypes: null,
@@ -647,10 +648,12 @@ export default {
                 this.check_agreements(this.project, ()=>{
                     let count = 0;
                     this.$notify({type: "info", text: "Removing all selected datasets.."});
+                    this.remove_remain = Object.keys(this.selected).length;
 
                     //TODO - it's the UI update that's slowing things down.. (also the ws messaging)
                     async.eachOfLimit(this.selected, 1, (dataset, id, next_dataset)=>{
                         dataset.checked = false;
+                        this.remove_remain--;
                         if(!dataset._canedit) { 
                             this.$notify({type: "error", text: "You don't have permission to remove this dataset: "+dataset._id});
                             next_dataset();
