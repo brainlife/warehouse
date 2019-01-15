@@ -546,6 +546,7 @@ export default {
             }
             //this.persist_selected();
         },
+
         clear_selected() {
             //unselect all 
             this.pages.forEach(page=>{
@@ -558,6 +559,7 @@ export default {
             this.selected = {};
             //this.persist_selected();
         },
+
         remove_selected(dataset) {
             //NOTE - selected[] contains clone of the datasets selected - not the same object so I can't just do "dataset.checked = false"
             //find the real dataset object
@@ -635,12 +637,14 @@ export default {
         },
 
         downscript() {
-            let ids = [];
-            for(let id in this.selected) {
-                ids.push(id);
-            }
-            let query = {_id: ids};
-            this.$root.$emit("downscript.open", {find: query});
+            this.check_agreements(this.project, ()=>{
+                let ids = [];
+                for(let id in this.selected) {
+                    ids.push(id);
+                }
+                let query = {_id: ids};
+                this.$root.$emit("downscript.open", {find: query});
+            });
         },
 
         remove() {
