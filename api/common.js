@@ -435,6 +435,13 @@ exports.compose_pub_datacite_metadata = function(pub) {
     return metadata;
 }
 
+exports.get_next_app_doi = function(cb) {
+    db.Apps.countDocuments({doi: {$exists: true}}).exec((err, count)=>{
+        if(err) return cb(err);
+        cb(null, config.datacite.prefix+"app."+count);
+    });
+}
+
 //https://support.datacite.org/v1.1/docs/mds-2
 //create new doi and register metadata (still needs to set url once it's minted)
 exports.doi_post_metadata = function(metadata, cb) {
@@ -451,8 +458,13 @@ exports.doi_post_metadata = function(metadata, cb) {
     }, (err, res, body)=>{
         if(err) return cb(err); 
         logger.debug('metadata registration:', res.statusCode, body);
-        if(res.statusCode != 201) return cb(body);
-        cb();
+        if(res.statusCode == 201) return cb(); //good!
+
+        //consider all else failed!
+        logger.error("failed to post metadata to datacite");
+        logger.error(config.datacite.api+"/metadata");
+        logger.error("user %s", config.datacite.username);
+        return cb(body);
     });
 }
 

@@ -52,43 +52,72 @@ function run() {
 }
 
 function handle_app(app, cb) {
-    logger.debug("......................................", app.name, app._id.toString());
+    logger.debug("...................................... %s %s", app.name, app._id.toString());
 
-    logger.debug("caching serviceinfo");
-    request.get({
-        url: config.amaretti.api+"/service/info", json: true,
-        headers: { authorization: "Bearer "+config.warehouse.jwt },  //config.auth.jwt is deprecated
-        qs: {
-            service: app.github,
-            //service_branch: app.github_branch,  //let's not group by branch for now.
-        }
-    }, (err, res, info)=>{
-        if(err) return cb(err);
-        if(res.statusCode != 200) return cb("couldn't obtain service stats "+res.statusCode);
+    async.series([
 
-        common.pull_appinfo(app.github, (err, gitinfo)=>{
-            if(err) return cb(err);
-            Object.assign(app, gitinfo);
+        //caching serviceinfo
+        next=>{
+            request.get({
+                url: config.amaretti.api+"/service/info", json: true,
+                headers: { authorization: "Bearer "+config.warehouse.jwt },  //config.auth.jwt is deprecated
+                qs: {
+                    service: app.github,
+                    //service_branch: app.github_branch,  //let's not group by branch for now.
+                }
+            }, (err, res, info)=>{
+                if(err) return next(err);
+                if(res.statusCode != 200) return next("couldn't obtain service stats "+res.statusCode);
 
-            if(info) {
-                app.stats.requested = info.counts.requested;
-                app.stats.users = info.users;
-                app.stats.success_rate = info.success_rate;
-            }
+                common.pull_appinfo(app.github, (err, gitinfo)=>{
+                    if(err) return next(err);
+                    Object.assign(app, gitinfo);
 
-            /*
-            //all existing app should have this set to true for now
-            app.outputs.forEach(output=>{
-                //console.dir(JSON.stringify(output, null, 4));
-                output.output_on_root = true;
+                    if(info) {
+                        app.stats.requested = info.counts.requested;
+                        app.stats.users = info.users;
+                        app.stats.success_rate = info.success_rate;
+                    }
+
+                    /*
+                    //all existing app should have this set to true for now
+                    app.outputs.forEach(output=>{
+                        //console.dir(JSON.stringify(output, null, 4));
+                        output.output_on_root = true;
+                    });
+                    */
+                    
+                    //done.. save it
+                    console.log(JSON.stringify(app.stats, null, 4));
+                    next();
+                });
             });
-            */
-            
-            //done.. save it
-            console.dir(app.stats);
-            app.save(cb);
-        });
-    });
+        },
+
+        //make sure doi is issued
+        next=>{
+            if(app.doi) return next();
+            logger.debug("minting doi");
+            common.get_next_app_doi((err, doi)=>{
+                if(err) return next(err);
+                app.doi = doi;
+                let metadata = common.compose_app_datacite_metadata(app);
+                console.dir(metadata);
+                common.doi_post_metadata(metadata, err=>{
+                    if(err) return next(err);
+                    let url = config.warehouse.url+"/app/"+app._id;  
+                    common.doi_put_url(app.doi, url, next);
+                });
+            });
+        },
+
+        //now save the app
+        next=>{
+            logger.debug("saving app");
+            app.save(next);
+        },
+
+    ], cb);
 }
 
 

@@ -97,12 +97,14 @@ router.get('/:id/badge', (req, res, next)=>{
     });
 });
 
+/*
 function mint_doi(cb) {
     db.Apps.count({doi: {$exists: true}}).exec((err, count)=>{
         if(err) return cb(err);
         cb(null, config.datacite.prefix+"app."+count);
     });
 }
+*/
 
 /**
  * @apiGroup App
@@ -159,7 +161,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         //mint doi
         cb=>{
             logger.debug("minting doi");
-            mint_doi((err, doi)=>{
+            common.get_next_app_doi((err, doi)=>{
                 if(err) return cb(err);
                 app.doi = doi;
                 cb();
@@ -262,13 +264,18 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                         if(!app.doi) return cb(); //doi not set...skip
 
                         let metadata = common.compose_app_datacite_metadata(app);
-                        //logger.debug("updating doi inffo", metadata);
                         common.doi_post_metadata(metadata, err=>{
-                            if(err) return cb(err);
+                            if(err) {
+                                logger.error("failed to update metadata for datacite");
+                                logger.error(err);
+                                return cb(); //sometime datacite is broken.. let's skip if this happens
+                            }
+                            /*
                             //shouldn't need to be updated but just in case..
                             let url = config.warehouse.url+"/app/"+app._id; 
-                            //logger.debug("setting url", url, app.doi);
                             common.doi_put_url(app.doi, url, cb);
+                            */
+                            cb();
                         });
                     },
 

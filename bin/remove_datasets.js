@@ -33,7 +33,6 @@ function free_storage(cb) {
     let month_ago = new Date();
     month_ago.setMonth(month_ago.getMonth() - 1);
     
-    //TODO - don't remove if it's used by copied datasets
     //find datasets that are removed (long ago) and not published
     db.Datasets.find({
         status: "stored",
@@ -58,25 +57,30 @@ function free_storage(cb) {
         let count = 0;
         async.eachSeries(datasets, (dataset, next_dataset)=>{
             count++;
-            logger.debug("freeing storage for dataset %d %s", count, dataset._id.toString());
-            var system = config.storage_systems[dataset.storage];
-            system.remove(dataset, err=>{
-                if(err) return next_dataset(err);
-                dataset.status = "removed";
-                dataset.save(next_dataset);
+            //don't remove if it's used by copied datasets
+            db.Datasets.findOne({storage: "copy", "storage_config.dataset_id": dataset._id, removed: false}).exec((err, copy)=>{
+                if(err) return cb(err);
+                if(copy) return cb(); //has copy.. we can't remove this
+
+                logger.debug("freeing storage for dataset %d %s", count, dataset._id.toString());
+                var system = config.storage_systems[dataset.storage];
+                system.remove(dataset, err=>{
+                    if(err) return next_dataset(err);
+                    dataset.status = "removed";
+                    dataset.save(next_dataset);
+                });
             });
         }, cb);
     });
 }
 
 function remove_failed(cb) {
-
     let week_ago = new Date();
-    week_ago.setDate(week_ago.getDate()-7);
+    week_ago.setDate(week_ago.getDate()-14);
     
-    //find datasets that are removed (long ago) and not published
+    //find datasets that failed to archive
     db.Datasets.find({
-        status: "failed",
+        status: {$in: ["storing", "failed"]},
         removed: true,
         update_date: {$lt: week_ago }, //only remove if it's old enough
     })
@@ -92,5 +96,4 @@ function remove_failed(cb) {
             dataset.save(next_dataset);
         }, cb);
     });
-
 }
