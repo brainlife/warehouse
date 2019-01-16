@@ -7,6 +7,9 @@
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.25"/>
                 </div>
+                <div class="button" @click="copy" v-if="config.user && dataset.storage" title="Copy">
+                    <icon name="copy" scale="1.25"/> 
+                </div>
                 <div class="button" @click="start_viewer(dataset.datatype)" v-if="config.user && dataset.storage" title="View Dataset">
                     <icon name="eye" scale="1.25"/>
                 </div>
@@ -109,10 +112,11 @@
                                 <p>
                                     <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
                                         <icon name="cog" :spin="true"/> <b>{{dataset.status_msg||'Storing ...'}}</b> 
-                                        <!--Please wait before you download / process this dataset.-->
                                     </span> 
                                     <span v-if="dataset.status == 'stored'">
-                                        <b>{{dataset.storage}}</b>
+                                        <b>
+                                            {{dataset.storage}} <span v-if="dataset.storage == 'copy'">- {{dataset.storage_config.storage}}</span>
+                                        </b>
                                         <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                     </span> 
                                     <span v-if="dataset.status == 'failed'" style="color: red;">
@@ -458,46 +462,29 @@ export default {
             });
         },
 
-        submit_process(project_id, instance) {
-            /*
-            this.$http.post(Vue.config.amaretti_api+'/task', {
-                instance_id: instance._id,
-                name: "Staged Datasets - "+this.dataset.datatype.name,
-                service: "soichih/sca-product-raw",
-                config: { 
-                    _tid: 0,
-                    download: [
-                        {
-                            url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
-                            untar: "auto",
-                            dir: this.dataset._id,
-                        }
-                    ], 
-                    _outputs: [
-                        Object.assign({}, this.dataset, {
-                            id: this.dataset._id, 
-                            did: 0,
-                            subdir: this.dataset._id, 
-                            dataset_id: this.dataset._id,
-                            prov: null,
-
-                            //unpopulate
-                            project: this.dataset.project._id,
-                            datatype: this.dataset.datatype._id,
-                        })
-                    ], 
-                },
-            }).then(res=>{
-                this.$router.push("/project/"+project_id+"/process/"+instance._id);
-                this.dataset = null;
+        copy() {
+            this.check_agreements(this.dataset.project, ()=>{
+                this.$root.$emit('copytarget.open', opt=>{
+                    this.$http.post('dataset/copy', {
+                        dataset_ids: [ this.dataset._id ],
+                        project: opt.project_id,
+                    }).then(res=>{
+                        this.$notify({type: 'success', text: 'Dataset copied'});
+                        //this.$router.push("/project/"+opt.project_id);
+                    });
+                });
             });
-            */
-            this.$http.post('dataset/stage', {
-                instance_id: instance._id,
-                dataset_ids: [ this.dataset._id ],
-            }).then(res=>{
-                this.$router.push("/project/"+project_id+"/process/"+instance._id);
-                this.dataset = null;
+        },
+
+        submit_process(project_id, instance) {
+            this.check_agreements(this.dataset.project, ()=>{
+                this.$http.post('dataset/stage', {
+                    instance_id: instance._id,
+                    dataset_ids: [ this.dataset._id ],
+                }).then(res=>{
+                    this.$router.push("/project/"+project_id+"/process/"+instance._id);
+                    this.dataset = null;
+                });
             });
         },
 
@@ -561,8 +548,6 @@ export default {
                     return;
                 }
                 this.dataset = res.body.datasets[0];
-                console.log("dataset loaded");
-                console.dir(this.dataset);
                 if(this.dataset.status == "storing") this.load_status(id);
 
                 Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));

@@ -245,7 +245,6 @@ export default {
                     datatype_tags,
                     limit: 0, //I just need count
                 }}).then(res=>{
-                    //console.log("query returned ", res.body.count);
                     Vue.set(this.rule.input_tags_count, id, res.body.count);
                 }); 
             }
@@ -279,6 +278,9 @@ export default {
                 if(!this.rule.input_tags[input.id]) Vue.set(this.rule.input_tags, input.id, []);
                 if(!this.rule.input_project_override[input.id]) Vue.set(this.rule.input_project_override, input.id, null);
                 if(!this.rule.extra_datatype_tags[input.id]) Vue.set(this.rule.extra_datatype_tags, input.id, []);
+
+                //make all optional field optional by default
+                if(this.rule.input_selection[input.id] === undefined && input.optional) Vue.set(this.rule.input_selection, input.id, 'ignore');
 
                 input.edit_extra_tags = (this.rule.extra_datatype_tags[input.id].length > 0);
             });
@@ -416,14 +418,6 @@ export default {
             }).catch(console.error);
         },
         
-        /*
-        edit_tags(io) {
-            //Vue.set(io, 'edit_extra_tags', true);
-            io.edit_extra_tags = true;
-            console.dir(io);
-        },
-        */
-
         edit_etag(input) {
             input.edit_extra_tags = true;
             this.$forceUpdate();
