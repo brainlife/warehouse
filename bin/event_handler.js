@@ -163,6 +163,8 @@ function handle_task(task, cb) {
                         _set.status = "stored";
                         if(dataset_config.storage) _set.storage = dataset_config.storage;
                         if(dataset_config.storage_config) _set.storage_config = dataset_config.storage_config; //might not be set
+                        let dataset_product = task.product[dataset_config.dataset._id];
+                        if(dataset_product) _set.size = dataset_product.size;
                         break;
                     case "failed":
                         _set.status = "failed";
