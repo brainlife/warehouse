@@ -24,8 +24,6 @@ describe('index', function() {
             .end(function(err, res) {
                 if (err) throw err;
                 console.dir(res.body);
-                //assert(res.body.status == "failed", "initial status should be failed");
-                //done();
             });
         });
     });

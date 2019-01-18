@@ -174,6 +174,16 @@ export default {
                 input_tags: {},
                 output_tags: {},
                 archive: {},
+
+                input_tags_count: {}, //number of matching input datasets for each input
+
+                subject_match: "", 
+                input_project_override: {},
+                input_selection: {},
+                extra_datatype_tags: {},
+                config: {},
+
+                branch: null,
             },
             apps: [],
             ready: false,
@@ -193,7 +203,7 @@ export default {
         "rule.app": function(newv, oldv) {
             if(!newv) return;
             if(oldv && oldv._id && newv._id != oldv._id) {
-                this.rule.branch = null;
+                this.reset_rule();
             }
             this.ensure_ids_exists();
             this.ensure_config_exists();
@@ -220,7 +230,6 @@ export default {
     methods: {
 
         query_matching_datasets() {
-            //querying matching datasets for each input
             if(!this.rule.app) return;
             for(let id in this.rule.input_tags) {
                 let input = this.rule.app.inputs.find(i=>i.id == id);
@@ -254,7 +263,13 @@ export default {
         load_value() {
             if(!this.value) return; //no value specified yet
 
-            this.rule = Object.assign({
+            this.reset_rule();
+            Object.assign(this.rule, this.value);
+            this.ensure_ids_exists();
+        },
+
+        reset_rule() {
+            Object.assign(this.rule, {
                 //should be set to empty object by default
                 input_tags: {},
                 input_tags_count: {}, //number of matching input datasets for each input
@@ -266,8 +281,9 @@ export default {
                 extra_datatype_tags: {},
                 config: {},
                 archive: {},
-            }, this.value);
-            this.ensure_ids_exists();
+
+                branch: null,
+            });
         },
 
         ensure_ids_exists() {
