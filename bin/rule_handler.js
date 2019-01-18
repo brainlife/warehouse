@@ -463,7 +463,7 @@ function handle_rule(rule, cb) {
                 });
             },
             
-            //find next tid by counting number of tasks (including removed)
+            //get tasks submitted.. and compute next _tid
             next=>{
                 request.get({
                     url: config.amaretti.api+"/task", json: true,
@@ -477,10 +477,16 @@ function handle_rule(rule, cb) {
                     },
                 }, (err, res, body)=>{
                     if(err) return next(err);
-                    next_tid = body.count;
                     body.tasks.forEach(task=>{
                         tasks[task._id] = task;
                     });
+
+                    //find max + 1
+                    next_tid = body.tasks.reduce((m,v)=>{ 
+                        if(v.config._tid && v.config._tid > m) return v.config._tid;
+                        return m;
+                    }, 0) + 1; 
+
                     next();
                 });
             },
@@ -589,50 +595,6 @@ function handle_rule(rule, cb) {
                 //nothing to download, then proceed to submitting the app
                 if(downloads.length == 0) return next();
 
-/*
-                //stage task is used as input to real *first* app that uses the data, so I believe we can 
-                //remove it shortly after it's stage.. remove in 7 days(?)
-                //TODO - if it's already staged, and another user request for the same dataset, should I just reuse it?
-                let remove_date = new Date();
-                remove_date.setDate(remove_date.getDate()+7); 
-                console.log(JSON.stringify(downloads, null, 4));
-
-                request.post({
-                    url: config.amaretti.api+"/task", json: true,
-                    headers: { authorization: "Bearer "+stage_jwt },
-                    body: {
-                        name : "Staging Out Of Archive",
-                        //desc : "archiving",
-                        service : "brainlife/app-stage",
-                        instance_id: instance._id,
-                        config: {
-                            datasets: downloads.map(d=>{
-                                return {
-                                    id: d._id,
-                                    project: d.project,
-                                }
-                            }),
-                            _tid: next_tid++,
-                            _outputs: downloads.map(d=>{
-                                return {
-                                    id: d._id,
-                                    datatype: d.datatype._id,
-                                    meta: d.meta,
-                                    tags: d.tags,
-                                    datatype_tags: d.datatype_tags,
-                                    
-                                    subdir: d._id,
-                                    dataset_id: d._id,
-
-                                    project: d.project,
-                                }
-                            }),
-                        },
-                        max_runtime: 1000*3600, //1 hour should be enough?
-                        remove_date,
-                    },
-                }, (err, res, _body)=>{
-*/
                 request.post({
                     url: config.warehouse.api+'/dataset/stage', json: true, 
                     headers: { authorization: "Bearer "+jwt },
