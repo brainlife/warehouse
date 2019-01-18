@@ -1048,6 +1048,10 @@ ${p.readme||''}`;
                 path+="/";
                 path+="dt-"+dataset.datatype.name.replace(/\//g, '-');
                 dataset.datatype_tags.forEach(tag=>{
+                    //null is getting injected into datatype_tags.. until I find where it's coming from, 
+                    //I need to patch this by ignoring this
+                    if(!tag) return; 
+
                     path+=".tag-"+tag.replace(/\./g, '-'); //'.' is used as delimiter
                 });
                 if(dataset.meta.run) path += ".run-"+dataset.meta.run;
@@ -1085,6 +1089,7 @@ ${p.readme||''}`;
 
                         //franco/paolo wants to add tags to desc
                         dataset.datatype_tags.forEach(tag=>{
+                            if(!tag) return;  //patch for null tag injected
                             source_keywords+="_tag-"+tag.replace(/_/g, ''); //_ is delimiter
                         });
                         /* dataset tags are entered by user, so there is higher risk of invalid char corrupting the filename..
