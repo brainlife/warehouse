@@ -16,6 +16,19 @@ before(function(done) {
 });
 */
 
+<<<<<<< HEAD
+describe('index', function() {
+    describe('/health', function() {
+        it('should return ok', function() {
+            request(app)
+            .get('/health')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+                if (err) throw err;
+                console.dir(res.body);
+            });
+=======
 describe.skip('/health', function() {
     it('should return ok', function() {
         request(app)
@@ -27,6 +40,7 @@ describe.skip('/health', function() {
             console.dir(res.body);
             //assert(res.body.status == "failed", "initial status should be failed");
             //done();
+>>>>>>> 872bb7f8e59cee27739c81787eb753e1e3ed0173
         });
     });
 });
