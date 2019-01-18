@@ -459,11 +459,11 @@ export default {
                 if(output.datatype_tags_pass) {
                     this.inputs[output.datatype_tags_pass].selected.forEach(selected=>{
                         if(!selected) return; //not set?
-                        tags = tags.concat(tags, selected.dataset.datatype_tags);
+                        if(selected.dataset.datatype_tags) tags = tags.concat(selected.dataset.datatype_tags);
                     }); 
                 }
                 //.. and add app specified output tags at the end
-                tags = tags.concat(tags, output.datatype_tags); 
+                tags = tags.concat(output.datatype_tags); 
                 output_req.datatype_tags = lib.uniq(tags);
 
                 _outputs.push(output_req);

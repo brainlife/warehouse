@@ -687,10 +687,10 @@ function handle_rule(rule, cb) {
                     if(output.datatype_tags_pass) {
 						//TODO - how is multi input handled here?
             			var dataset = inputs[output.datatype_tags_pass];
-						tags = tags.concat(tags, dataset.datatype_tags);
+                        if(dataset.datatype_tags) tags = dataset.datatype_tags; //could be null?
                     }
                     //.. and add app specified output tags at the end
-                    tags = tags.concat(tags, output.datatype_tags);
+                    if(output.datatype_tags) tags = tags.concat(output.datatype_tags);
                     output_req.datatype_tags = uniq(tags);
 
                     _config._outputs.push(output_req);
