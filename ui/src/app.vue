@@ -158,7 +158,7 @@
 
                         <div v-if="app.projects && app.projects.length > 0">
                             <span class="form-header">Projects</span>
-                            <p><small class="text-muted">Only the members of the following project(s) can view/execute this app.</small></p>
+                            <p><small class="text-muted">Only the members of the following project(s) can view and execute this App.</small></p>
                             <div v-for="project in app.projects" :key="project._id" class="project-card" @click="go('/project/'+project._id)">
                                 <b-row>
                                     <b-col cols="2">
@@ -175,7 +175,7 @@
 
                         <div v-if="app.retry">
                             <span class="form-header">Retry</span>
-                            <p>If this app fails, it will automatically be rerun up to <b>{{app.retry}}</b> times</p>
+                            <p>If this App fails, it will automatically be rerun up to <b>{{app.retry}}</b> times.</p>
                             <br>
                         </div>
 
@@ -231,7 +231,7 @@
 
                         <div v-if="config.user">
                             <span class="form-header">Administrators</span>
-                            <p><small class="text-muted">The following users can administer this App registration.</small></p>
+                            <p><small class="text-muted">List of users that can administer this App.</small></p>
                             <p v-for="c in app.admins" :key="c._id">
                                 <contact :id="c"/>
                             </p>
@@ -240,7 +240,7 @@
 
                         <div v-if="app.contributors.length > 0">
                             <span class="form-header">Contributors</span>
-                            <p><small class="text-muted">The following people have contributed to the source code ({{app.github}}).</small></p>
+                            <p><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
                             <p v-for="dev in app.contributors" :key="dev._id">
                                 <contact :fullname="dev.name" :email="dev.email"/>
                             </p>
@@ -248,8 +248,8 @@
                         </div>
  
                         <div v-if="info">
-                            <span class="form-header">Past Executions</span>
-                            <p><small class="text-muted">Showing activities during the last 180 days.</small></p>
+                            <span class="form-header">App execution history.</span>
+                            <p><small class="text-muted">Activity over the last 180 days.</small></p>
                             <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true" :watchShallow="true"/>
                             <br>
                         </div>
@@ -284,10 +284,10 @@
             </div>
             <div v-if="tab_index == 1">
                 <appsubmit v-if="config.user" :id="app._id"/>
-                <p v-else class="text-muted">Please login first to execute App.</p>
+                <p v-else class="text-muted">Please login to execute the App.</p>
             </div>
             <div v-if="tab_index == 3">
-                <p class="text-muted">No test status available yet</p>
+                <p class="text-muted">No test status available yet.</p>
             </div>
             -->
             <br>
