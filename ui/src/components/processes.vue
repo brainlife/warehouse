@@ -479,17 +479,11 @@ color: #999;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 height: 45px;
 }
+
 .content {
 top: 100px;
 margin-top: 40px;
 }
-
-/*
-.header, 
-.content {
-min-width: 700px;
-}
-*/
 
 .instance-header {
 padding: 3px 15px;
@@ -506,10 +500,12 @@ transition: margin 0.3s, background-color 0.3s;
 display:inline-block;
 vertical-align:middle;
 }
+
 .instance-header:hover {
 cursor: pointer;
 background-color: #eee;
 }
+
 .instance-active {
 margin: 0px;
 padding: 15px;
@@ -518,12 +514,15 @@ box-shadow: none;
 white-space: inherit;
 background-color: #f0f0f0;
 }
+
 .instance-item {
 clear: both;
 }
+
 .instance-item:not(:first-child) .instance-active {
 margin-top: 20px;
 }
+
 .instance-desc {
 font-size: 95%;
 white-space: nowrap; 
@@ -532,6 +531,7 @@ text-overflow: ellipsis;
 margin-top: 3px;
 padding-left: 3px;
 }
+
 .instance-active .instance-desc {
 white-space: inherit;
 text-overflow: inherit;
@@ -547,14 +547,17 @@ border-bottom: 1px solid #e0e0e0;
 .button-fixed {
 right: 30px;
 }
+
 .table-header th {
 padding: 8px 0px;
 }
+
 .process-action {
 display: none;
 opacity: 0;
 transition: opacity 0.5s;
 }
+
 .instance-active .process-action,
 .instance-header:hover .process-action {
 display: block;
@@ -562,8 +565,8 @@ opacity: 1;
 }
 
 .instance-status {
-width: 22px;
-height: 22px;
+width: 20px;
+height: 20px;
 text-align: center;
 border-radius: 11px;
 display: inline-block;
@@ -571,30 +574,35 @@ margin-right: 10px;
 background-color: gray;
 color: white;
 line-height: 150%;
+margin-top: 3px;
 }
 
 .instance-finished .instance-status {
 background-color: #28a745;
 }
+
 .instance-failed .instance-status {
 background-color: #dc3545;
 }
+
 .instance-warning .instance-status {
 background-color: #ffc107;
 }
+
 .instance-removed .instance-status {
 background-color: #868e96;
 }
+
 .instance-undefined .instance-status {
 background-olor: #464a4e;
 }
+
 .instance-requested .instance-status {
 background-color: #50bfff;
 }
+
 .instance-running .instance-status {
 background-color: #007bff;
-}
-.instance.instance-active {
 }
 
 .status-toggler {

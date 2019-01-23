@@ -397,4 +397,8 @@ opacity: 0.7;
 font-size: 90%;
 margin-bottom: 2px;
 }
+.fa-icon {
+position: relative;
+top: -0.1em;
+}
 </style>

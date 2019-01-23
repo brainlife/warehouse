@@ -39,7 +39,7 @@
                 </div>
                 <div v-else>
                     <h4 style="margin: 0px;" class="text-muted">
-                        <icon name="paper-plane"/>&nbsp;&nbsp;&nbsp;{{task.name}}
+                        <icon name="paper-plane"/>&nbsp;&nbsp;{{task.name}}
                     </h4>
                 </div>
             </div>
@@ -73,7 +73,7 @@
             <!--output-->
             <div slot="output">
                 <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 10px;">
-                    <div class="float-right" style="position: relative; top: -7px; margin-left: 10px">
+                    <div class="float-right" style="position: relative; top: -5px; margin-left: 10px">
                         <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
                             <icon name="cubes"/>
                         </div>
@@ -149,10 +149,10 @@
     <div class="new-action">
         <b-row no-gutters>
             <b-col>
-                <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="paper-plane"/> Submit New App</div>
+                <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="play"/>&nbsp;&nbsp;Submit New App</div>
             </b-col>
             <b-col>
-                <div class="new-action-button new-action-button-newdataset" @click="newdataset"><icon name="cube"/> Stage New Dataset</div>
+                <div class="new-action-button new-action-button-newdataset" @click="newdataset"><icon name="cube"/>&nbsp;&nbsp;Stage New Dataset</div>
             </b-col>
         </b-row>
     </div>

@@ -23,38 +23,38 @@
 
                 <span v-if="!input.optional">*</span>
                 <span class="text-muted" v-else>(optional)</span>
+
+                <span v-if="input.multi">(multi)</span>
+
             </b-col>
             <b-col>
-                <b-row v-for="(item, idx) in form.inputs[input.id]" :key="idx" style="margin-bottom: 5px;">
+                <b-row v-for="ps in form.inputs[input.id]" :key="ps.id" style="margin-bottom: 5px;">
                     <b-col cols="5">
                         <projectselecter 
-                            v-model="form.projects[input.id]" 
+                            v-model="ps.project" 
                             :datatype="input.datatype"
                             :datatype_tags="input.datatype_tags"
                             :required="true"
                             placeholder="Select Project" 
-                            @input="form.inputs[input.id][idx] = null"/>
+                            @input="ps.dataset = null"/>
                     </b-col>
                     <b-col cols="6">
                         <select2 
-                            v-if="form.projects[input.id]"
-                            v-model="form.inputs[input.id][idx]" 
-                            :dataAdapter="debounce_fetch_datasets(input)" 
+                            v-if="ps.project"
+                            v-model="ps.dataset" 
+                            :dataAdapter="debounce_fetch_datasets(input, ps)" 
                             :allowClear="input.optional"
                             :multiple="false" 
                             :placeholder="'Select Input Dataset'" 
-                            :options="form.options[input.id]"/>
+                            @input="makesure_null_exists(input)"/>
                     </b-col>
-                    <b-col cols="1" v-if="input.multi">
-                        <div class="button button-danger" @click="form.inputs[input.id].splice(idx, 1)" size="sm"><icon name="trash"/></div>
+                    <b-col cols="1" v-if="input.multi && ps.dataset">
+                        <div class="button button-danger" @click="remove_input(input, ps)" size="sm"><icon name="trash"/></div>
                     </b-col>
                 </b-row>
                 <b-row>
                     <b-col cols="5">
                         <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
-                    </b-col>
-                    <b-col cols="6" style="text-align:right;">
-                        <b-button :size="'sm'" :variant="'secondary'" @click="form.inputs[input.id].push(null)" v-if="input.multi">Add Dataset</b-button>
                     </b-col>
                 </b-row>
             </b-col>
@@ -153,10 +153,7 @@ export default {
 
             form: {
                 desc: "",
-                inputs: {}, //input_id as key, and array of dataset ids selected
-                options: {}, // explicit options to load (temporary)
-                
-                projects: {},
+                inputs: {}, //input_id as key, and array of {id, project, dataset}
                 config: {},
                 advanced: {},
             },
@@ -174,8 +171,6 @@ export default {
             //reset form
             this.form.desc = "";
             this.form.inputs = {};
-            this.form.options = {};
-            this.form.projects = {};
             this.form.config = {};
             this.form.advanced = {};
 
@@ -191,7 +186,7 @@ export default {
                 //initialize input datasets array (with null as first item)
                 for(var idx in this.app.inputs) {
                     var input = this.app.inputs[idx];
-                    Vue.set(this.form.inputs, input.id, [null]);
+                    Vue.set(this.form.inputs, input.id, [{id: new Date().getTime(), project: null, dataset: null}]);
                 }
 
                 return this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
@@ -220,7 +215,7 @@ export default {
     },
 
     methods: {
-        fetch_datasets: function(input, params, cb) {
+        fetch_datasets: function(input, ps, params, cb) {
             // essentially the same code from datasetselecter.vue
             if (!params.page) params.page = 1;
             var dropdown_items = [];
@@ -228,7 +223,7 @@ export default {
             let limit = 100;
             let skip = (params.page - 1) * limit;
             let find_raw = {
-                project: this.form.projects[input.id],
+                project: ps.project,
                 datatype: input.datatype._id,
                 storage: {$exists: true}, 
                 removed: false,
@@ -273,9 +268,8 @@ export default {
         },
         
         // wait a bit (unless interrupted by more keystrokes), then calls fetch_datasets
-        debounce_fetch_datasets: function(input) {
+        debounce_fetch_datasets(input, ps) {
             let debounce;
-            
             // return a new fetch_datasets event that can be called for each input datatype
             // params + cb are input from select2
             return (params, cb) => {
@@ -286,12 +280,12 @@ export default {
                 }
                 debounce = setTimeout(()=>{
                     debounce = null;
-                    this.fetch_datasets(input, params, cb);
+                    this.fetch_datasets(input, ps, params, cb);
                 }, 200);
             }
         },
 
-        generate_config: function(download_task_id) {
+        generate_config(download_task_id) {
             var config = this.app.config;
             var app = this.app;
             var form = this.form;
@@ -308,10 +302,10 @@ export default {
                                 //find the input 
                                 app.inputs.forEach(input=>{
                                     if(input.id == node.input_id) {
-                                        var dataset_ids = form.inputs[input.id];
+                                        var pss = form.inputs[input.id];
                                         var allnull = true;
-                                        dataset_ids.forEach(id=>{
-                                            if(id) allnull = false;
+                                        pss.forEach(ps=>{
+                                            if(ps.dataset) allnull = false;
                                         });
                                         if(allnull) {
                                             //optional config that's not set?
@@ -323,12 +317,12 @@ export default {
                                             if(file.id == node.file_id) {
                                                 if(input.multi) {
                                                     obj[k] = [];
-                                                    dataset_ids.forEach(dataset_id=>{
-                                                        obj[k].push("../"+download_task_id+"/"+dataset_id+"/"+(file.filename||file.dirname));
+                                                    pss.forEach(ps=>{
+                                                        obj[k].push("../"+download_task_id+"/"+ps.dataset+"/"+(file.filename||file.dirname));
                                                     });
                                                 } else {
-                                                    //single
-                                                    obj[k] = "../"+download_task_id+"/"+dataset_ids[0]+"/"+(file.filename||file.dirname)
+                                                    //single (pick first one)
+                                                    obj[k] = "../"+download_task_id+"/"+pss[0].dataset+"/"+(file.filename||file.dirname)
                                                 }
                                             }
                                         });
@@ -348,14 +342,27 @@ export default {
             return config;
         },
 
+        remove_input(input, ps) {
+            let idx = this.form.inputs[input.id].indexOf(ps);
+            this.form.inputs[input.id].splice(idx, 1);
+            this.makesure_null_exists(input);
+        },
 
-        validate: function() {
+        makesure_null_exists(input) {
+            if(!input.multi) return;
+            let pss = this.form.inputs[input.id];
+            if(!pss.find(ps=>(ps.dataset == null))) {
+                pss.push({project: null, dataset: null, id: new Date().getTime()});
+            }
+        },
+
+        validate() {
             var validated = true;
             this.app.inputs.forEach(input=>{
                 if(input.optional !== undefined && input.optional) return;
                 //count number of non nulls
-                if(this.form.inputs[input.id].filter(id=>id!=null).length == 0) {
-                    this.$notify({ text: 'Please select '+input.id, type: 'error' });
+                if(this.form.inputs[input.id].filter(ps=>ps.dataset!=null).length == 0) {
+                    this.$notify({ text: 'Please select an input datasets for '+input.id, type: 'error' });
                     validated = false;
                 }
             });
@@ -366,7 +373,7 @@ export default {
             return validated;
         },
 
-        submit: function(evt) {
+        submit(evt) {
             evt.preventDefault();
             if(!this.validate()) return;
 
@@ -374,14 +381,16 @@ export default {
             if(!this.open) return; 
             this.open = false;
 
-            //remove null inputs 
+            //remove null inputs (for multi)
             this.app.inputs.forEach(input=>{
-                this.form.inputs[input.id] = this.form.inputs[input.id].filter(id=>id!=null);
+                this.form.inputs[input.id] = this.form.inputs[input.id].filter(ps=>ps.dataset!=null);
             });
 
             var all_dataset_ids = [];
             for(var input_id in this.form.inputs) {
-                all_dataset_ids = all_dataset_ids.concat(this.form.inputs[input_id]);
+                this.form.inputs[input_id].forEach(ps=>{
+                    all_dataset_ids.push(ps.dataset);
+                });
             }
 
             var app_inputs = [];
@@ -393,8 +402,10 @@ export default {
             //load project detail for project selected and desintation project
             let project_ids = [ this.project ]; //desintation
             //for project selected for input
-            for(let input_id in this.form.projects) {
-                project_ids.push(this.form.projects[input_id]);
+            for(let input_id in this.form.inputs) {
+                this.form.inputs[input_id].forEach(ps=>{
+                    project_ids.push(ps.project);
+                });
             }
             this.$http.get('project', {params: {
                 find: JSON.stringify({
@@ -422,8 +433,6 @@ export default {
                 }); 
             }).then(res=>{
                 instance = res.body;
-                console.log("instance created", instance);
-
                 return this.$http.post('dataset/stage', {
                     instance_id: instance._id,
                     dataset_ids: all_dataset_ids,
@@ -439,38 +448,11 @@ export default {
                     //enumerate input ids for each input datasets
                     input.keys = [];
                     for(var input_id in this.form.inputs) {
-                        this.form.inputs[input_id].forEach(dataset_id=>{
-                            for(var key in this.app.config) {
-                                if(this.app.config[key].input_id == input_id) input.keys.push(key); 
-                            }
-                        });
+                        for(var key in this.app.config) {
+                            if(this.app.config[key].input_id == input_id) input.keys.push(key); 
+                        }
                     }
                 });
-
-                /*
-                for(var input_id in this.form.inputs) {
-                    this.form.inputs[input_id].forEach(dataset_id=>{
-                        let dataset = download_task.config._outputs.find(out=>out.dataset_id == dataset_id);
-                        let keys = [];
-                        for(var key in this.app.config) {
-                            if(this.app.config[key].input_id == input_id) keys.push(key); 
-                        }
-                        app_inputs.push({
-                            id: input_id,
-                            subdir: dataset_id, 
-                            dataset_id,
-                            datatype: dataset.datatype,
-                            datatype_tags: dataset.datatype_tags,
-                            tags: dataset.tags,
-                            meta: dataset.meta,
-
-                            project: dataset.project,
-                            keys,
-                            task_id: download_task._id,
-                        });
-                    });
-                }
-                */
 
                 //aggregate meta
                 //TODO - this just concatenate *all* meta from all input datasets.. I should probaby do something smarter..
@@ -505,8 +487,8 @@ export default {
                     //handle tag passthrough
 					var tags = [];
                     if(output.datatype_tags_pass) {
-                        this.form.inputs[output.datatype_tags_pass].forEach(dataset_id=>{
-                            let dataset = download_task.config._outputs.find(out=>out.dataset_id == dataset_id);
+                        this.form.inputs[output.datatype_tags_pass].forEach(ps=>{
+                            let dataset = download_task.config._outputs.find(out=>out.dataset_id == ps.dataset);
 							if(dataset.datatype_tags) tags = tags.concat(dataset.datatype_tags);
                         }); 
                     }
@@ -539,7 +521,7 @@ export default {
             });
         },
 
-        request_notifications: function(instance, task_id) {
+        request_notifications(instance, task_id) {
             var url = document.location.origin+document.location.pathname+"/process/"+instance._id;
 
             //for success

@@ -24,7 +24,7 @@
                             {{app.name}}
                         </h4>
                         <h6 style="opacity: 0.8;">
-                            <a :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
+                            <a target="github" :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
                             <small><b-badge variant="secondary" v-if="app.github_branch" style="position: relative; top: -2px"><icon name="code-branch" scale="0.6"/> {{app.github_branch}}</b-badge></small>
                         </h6>
                         <p class="text">
@@ -34,7 +34,7 @@
                             <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
                         </p>
                         <p style="float: right;">
-                            <b-btn @click="execute" variant="primary"><icon name="paper-plane"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
+                            <b-btn @click="execute" variant="primary"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
                         </p>
                     </b-col>
                 </b-row>
@@ -489,8 +489,6 @@ export default {
                 service,
             }})
             .then(res => {
-                console.log("loaded resources");
-                console.dir(res.body);
                 if(res.body.resource) this.preferred_resource = res.body.resource;
                 this.resources = res.body.considered.sort((a, b) => {
                     if (a.score < b.score) return 1;

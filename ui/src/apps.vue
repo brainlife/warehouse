@@ -9,12 +9,27 @@
     <sidemenu active="/apps"></sidemenu>
     <div class="group-list" v-if="app_groups">
         <h4>Categories</h4>
-        <p v-for="(tag, idx) in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)" :key="idx">
-            <span v-if="tag == '_new'">New Apps</span> 
-            <span v-else>{{tag}}</span> 
+
+        <div v-if="app_groups['_new']">
+            <p class="item" @click="jump('_new')" :class="{'active': active == '_new'}" title="Apps that are registered recently">
+                <span>New Apps</span> 
+            </p>
+            <hr/>
+        </div>
+
+        <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)" :key="tag">
+            <span>{{tag}}</span> 
             <b-badge variant="dark" v-if="app_groups[tag]">{{app_groups[tag].length}}</b-badge>
         </p>
+
+        <div v-if="my_apps && my_apps.length > 0">
+            <hr/>
+            <p class="item" @click="jump('_mine')" :class="{'active': active == '_mine'}" title="Apps that you administer">
+                <span>My Apps</span> 
+            </p>
+        </div>
         <br>
+
         <div style="position: fixed; bottom: 0px;">
             <div class="button" style="margin: 5px; color: gray;" @click="go('/appsgraph')">
                 <icon name="code-branch"/>
@@ -23,20 +38,30 @@
 
     </div>
     <div class="page-content" v-on:scroll="update_active" ref="scrolled">
-        <div v-if="!app_groups" style="margin: 40px;"><h3>Loading ..</h3></div>
+        <div v-if="apps === null" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
         <div v-else>
-            <h3 show v-if="count == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
-            <div v-for="(tag, idx) in sorted_tags" :id="tag" :class="{'newapps': tag == '_new'}" style="position: relative;" :key="idx">
-                <h4 class="group-title" v-if="tag == '_new'">New Apps</h4> 
-                <h4 class="group-title" v-else>{{tag}}</h4> 
-                <div v-for="app in app_groups[tag]" :key="app._id" class="app">
+            <h3 v-if="apps.length == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
+
+            <div v-if="app_groups['_new']" class="newapps" id="_new" style="position: relative">
+                <h4 class="group-title colored">New Apps</h4> 
+                <div v-for="app in app_groups['_new']" :key="app._id" class="app">
                     <app :app="app" height="246px" class="app-card"/>
                 </div>
+                <!--
                 <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
                     <p style="opacity: 0.7;">
-                        You can publish your code on Brainlife so that other users can run it online.
+                        You can register your App on Brainlife so that other users can run it online.
                     </p>
                     <b-button variant="primary" @click="go('/app/_/edit')" size="sm">Register New App</b-button> 
+                </div>
+                -->
+                <br clear="both">
+            </div>
+
+            <div v-for="tag in sorted_tags" :id="tag" style="position: relative;" :key="tag">
+                <h4 class="group-title">{{tag}} <!--<small style="float: right;">{{app_groups[tag].length}} Apps</small>--> </h4> 
+                <div v-for="app in app_groups[tag]" :key="app._id" class="app">
+                    <app :app="app" height="246px" class="app-card"/>
                 </div>
                 <br clear="both">
             </div>
@@ -50,12 +75,36 @@
 
             <br>
 
-            <p style="padding: 20px 20px; opacity: 0.5; border-top: solid 1px #ddd;" v-if="count > 0">
+            <p style="padding: 20px 20px; opacity: 0.5;" v-if="apps.length > 0">
                 <span style="float: right">
-                    Showing {{count}} Apps
+                    Showing {{apps.length}} Unique Apps 
                 </span>
             </p>
             <br>
+
+            <!-- mine -->
+            <div style="position: relative;" id="_mine" class="bg-success" v-if="my_apps.length > 0">
+                <h4 class="group-title colored">My Apps <!--<small style="float: right">{{my_apps.length}} Apps</small>--> </h4> 
+                <div v-for="app in my_apps" :key="app._id" class="app">
+                    <app :app="app" height="246px" class="app-card"/>
+                </div>
+                <br clear="both">
+                <!--
+                <div style="color: white; padding: 20px;">
+                    <p style="opacity: 0.7;">
+                        You can register your App on Brainlife so that other users can run it online.
+                    </p>
+                    <b-button variant="primary" @click="go('/app/_/edit')">Register New App</b-button> 
+                </div>
+                -->
+
+                <br clear="both">
+
+                <br>
+                <br>
+                <br>
+                <br>
+            </div>
 
             <!--
             <div style="background-color: #159957; color: white;">
@@ -70,10 +119,6 @@
                 <br>
             </div>
             -->
-            <br>
-            <br>
-            <br>
-            <br>
         </div>
 
         <b-button v-if="config.user" class="button-fixed" @click="go('/app/_/edit')" title="Register App"><icon name="plus" scale="2"/></b-button>
@@ -95,8 +140,8 @@ export default {
         return {
             active: null,
             sorted_tags: [], 
-            app_groups: null,
-            count: null,  //number of total apps loaded
+            app_groups: {},
+            apps: null,  //number of total apps loaded
             query: "",
             config: Vue.config,
 
@@ -105,7 +150,15 @@ export default {
     },
 
     created() {
+        this.query = sessionStorage.getItem("apps.query");
         this.load();
+    },
+
+    computed: {
+        my_apps() {
+            if(!this.apps) return null;
+            return this.apps.filter(app=>app.admins.includes(Vue.config.user.sub));
+        },
     },
 
     methods: {
@@ -134,6 +187,7 @@ export default {
         load() {
             this.app_groups = {};
             this.sorted_tags = [];
+            this.apps = null;
 
             let ands = [
                 {$or: [
@@ -174,14 +228,14 @@ export default {
                 populate: 'inputs.datatype outputs.datatype contributors',
             }})
             .then(res=>{
-                this.count = res.body.count;
+                this.apps = res.body.apps;
 
                 //organize apps into various tags
                 res.body.apps.forEach(app=>{
                     var tags = [ 'miscellaneous' ];
                     if(app.tags && app.tags.length > 0) tags = app.tags;
                     tags.forEach(tag=>{
-                        if(!this.app_groups[tag]) this.app_groups[tag] = [];
+                        if(!this.app_groups[tag]) Vue.set(this.app_groups, tag, []);
                         if(!~this.sorted_tags.indexOf(tag)) this.sorted_tags.push(tag);
                         this.app_groups[tag].push(app);
                     });
@@ -196,7 +250,7 @@ export default {
                         return false;
                     });
                     apps.sort((a,b)=>new Date(b.create_date) - new Date(a.create_date));
-                    this.sorted_tags.unshift('_new');
+                    //this.sorted_tags.unshift('_new');
                     this.app_groups._new = apps.slice(0, 3);
                 }
 
@@ -214,6 +268,7 @@ export default {
         go(path) {
             this.$router.push(path);
         },
+
         jump(tag) {
             document.location="#"+tag;
         },
@@ -223,10 +278,22 @@ export default {
             var scrolltop = this.$refs.scrolled.scrollTop;
             var height = this.$refs.scrolled.clientHeight;
             this.active = false;
+
+            //TODO - simplify this..
+
+            //check for new apps
+            var e = document.getElementById("_new");
+            if(e && e.offsetTop-height/4 <= scrolltop) this.active = "_new";
+
+            //check for category tags`
             this.sorted_tags.forEach(tag=>{
-                var e = document.getElementById(tag);
-                if(e.offsetTop-height/4 <= scrolltop) this.active = tag;
+                e = document.getElementById(tag);
+                if(e && e.offsetTop-height/4 <= scrolltop) this.active = tag;
             });
+
+            //check for other things
+            e = document.getElementById("_mine");
+            if(e && e.offsetTop-height/4 <= scrolltop) this.active = "_mine";
         },
 
         change_query_debounce() {
@@ -235,9 +302,9 @@ export default {
         },
 
         change_query() {
-            if(this.loading || !this.datatypes) return setTimeout(this.change_query, 300);
-
-            document.location="#"; //clear hash
+            if(!this.datatypes) return setTimeout(this.change_query, 300);
+            //document.location="#"; //clear hash //TODO what is this?
+            sessionStorage.setItem("apps.query", this.query);
             this.load();
         },
     },
@@ -301,18 +368,16 @@ font-size: 140%;
 padding-left: 45px;
 background-color: #fff6;
 border: none;
-color: white;
 transition: background-color 0.5s, color 0.5s;
 }
 
-.search-box .input:focus {
+.search-box .input:focus,
+.search-box .input:not([value=""]) {
 background-color: white;
 color: gray;
 }
 
 .search-box .search-icon {
-color: white;
-opacity: 0.8;
 position: absolute;
 top: 7px;
 left: 300px;
@@ -320,17 +385,26 @@ z-index: -1;
 transition: color 0.5s;
 }
 .search-box .input::placeholder {
-color: white;
 font-weight: bold;
 }
-.input:focus ~ .search-icon {
+
+.search-box .search-icon,
+.search-box .input::placeholder {
+color: white;
+opacity: 0.5;
+}
+
+.input:focus ~ .search-icon,
+.input:not([value=""]) ~ .search-icon {
 color: gray;
 z-index: 2;
 }
+
 .newapps {
 background-color: #2693ff;
+padding-bottom: 30px;
 }
-.newapps .group-title {
+.group-title.colored {
 background-color: inherit;
 color: white;
 }
