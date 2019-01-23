@@ -4,10 +4,8 @@
         <dtiinit v-if="type == 't1pdd'" :task="task" :subdir="subdir" :datatype="datatype"></dtiinit>
         <tractview v-else-if="type == 'tractview'" :task="task" :subdir="subdir" :datatype="datatype"></tractview>
         <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir" :datatype="datatype"></surfaces>
-        <!--
         <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir" :datatype="datatype"></lifeview>
-        -->
-        <life v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"></life>
+        <lifestats v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"></lifestats>
         <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"></evaluator>
         <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"></images>
         <volumeviewer v-else-if="type == 'volumeviewer'" :task="task" :subdir="subdir" :datatype="datatype"></volumeviewer>
@@ -30,7 +28,8 @@ import dtiinit from '@/datauis/dtiinit'
 import freesurfer from '@/datauis/freesurfer'
 import tractview from '@/datauis/tractview'
 import surfaces from '@/datauis/surfaces'
-import life from '@/datauis/life'
+import lifestats from '@/datauis/lifestats'
+import lifeview from '@/datauis/lifeview'
 import evaluator from '@/datauis/evaluator'
 import images from '@/datauis/images'
 import volumeviewer from '@/datauis/volumeviewer'
@@ -46,7 +45,7 @@ export default {
     props: [ /*'instanceid',*/ 'taskid', 'type', 'datatype64', 'subdir' ],
     components: { 
         dtiinit, freesurfer, tractview, 
-        life, evaluator, images, 
+        lifestats, lifeview, evaluator, images, 
         volumeviewer, filebrowser, task,
         surfaces,
     },
