@@ -13,7 +13,7 @@
                     <b-col cols="9" style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right; position: relative; z-index: 3">
                             <span class="button" @click="go_github()" title="github"><icon name="brands/github" scale="1.25"/></span>
-                            <span class="button" @click="copy()" title="Copy"><icon name="copy" scale="1.25"/></span>
+                            <span class="button" @click="copy()" v-if="app._canedit" title="Copy"><icon name="copy" scale="1.25"/></span>
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                         </div>
