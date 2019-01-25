@@ -190,6 +190,9 @@ transform: rotate(180deg);
 box-shadow: none;
 cursor: pointer;
 }
+.button-fixed .fa-icon {
+top: -1px;
+}
 .button {
 display: inline-block;
 color: rgba(0,0,0,0.5);
@@ -396,5 +399,9 @@ background-color: inherit;
 opacity: 0.7;
 font-size: 90%;
 margin-bottom: 2px;
+}
+.fa-icon {
+position: relative;
+top: -0.1em;
 }
 </style>

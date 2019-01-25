@@ -8,7 +8,7 @@
             <span class="text-muted">No Name</span>
         </div><div class="email" v-if="profile.email && size == 'full'">&lt;{{profile.email}}&gt;</div>
     </div>
-    <b-popover :target="uuid" :title="null" triggers="hover click" @show="show">
+    <b-popover :target="uuid" :title="null" delay="500" triggers="hover click" @show="show">
         <img :src="gurl(60)" style="float: left">
         <div style="margin-left: 70px; min-height: 60px;">
             <b>{{profile.fullname}}</b> <small style="opacity: 0.5">{{profile.username}}</small>

@@ -37,7 +37,7 @@ export default {
 
     watch: {
         selected: function() {
-            console.log("changing select...");
+            //console.log("changing select...");
             if(this.selected) {
                 console.log("new select", this.selected);
                 localStorage.setItem('last_projectid_used', this.selected);
@@ -81,11 +81,11 @@ export default {
             //if datatype filter is set, only pull projects that has datasets with specified datatype
             if(this.datatype) {
                 let project_query = {
-                    datatype: this.datatype,
+                    datatype: this.datatype._id||this.datatype,
                     removed: false,
                 } 
+
                 if(this.datatype_tags && this.datatype_tags.length > 0) {
-                    //project_query.datatype_tags = { $all: this.datatype_tags };
                     var ands = [];
                     this.datatype_tags.forEach(tag=>{
                         if(tag[0] == "!") ands.push({datatype_tags: {$ne: tag.substring(1)}});
@@ -93,11 +93,12 @@ export default {
                     });
                     project_query.$and = ands;
                 }
+
+                //query distinct project ids that has specified datasets
                 this.$http.get('dataset/distinct', {params: {
                     find: JSON.stringify(project_query),
                     distinct: 'project',
                 }}).then(res=>{
-                    console.log('projects that has ', this.datatype);
                     var project_ids = res.body;
                     find._id = {$in: project_ids};
                     //TODO - if there are no project, not point of querying for datasets.

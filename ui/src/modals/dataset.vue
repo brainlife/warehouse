@@ -5,19 +5,19 @@
         <div class="brainlife-modal-header">
             <div style="float: right;">
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
-                    <icon name="trash" scale="1.25"/>
+                    <icon name="trash" scale="1.1"/>
                 </div>
                 <div class="button" @click="copy" v-if="config.user && dataset.storage" title="Copy">
-                    <icon name="copy" scale="1.25"/> 
+                    <icon name="copy" scale="1.1"/> 
                 </div>
                 <div class="button" @click="start_viewer(dataset.datatype)" v-if="config.user && dataset.storage" title="View Dataset">
-                    <icon name="eye" scale="1.25"/>
+                    <icon name="eye" scale="1.1"/>
                 </div>
                 <div class="button" @click="download" v-if="dataset.storage" title="Download Dataset">
-                    <icon name="download" scale="1.25"/>
+                    <icon name="download" scale="1.1"/>
                 </div>
                 <div class="button" @click="process" v-if="config.user && dataset.storage" title="Process">
-                    <icon name="paper-plane" scale="1.25"/> 
+                    <icon name="play" scale="1.1"/> 
                 </div>
                 <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
                     <icon name="times" scale="1.5"/>

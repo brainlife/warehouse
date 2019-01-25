@@ -1,21 +1,8 @@
 <template>
 <div class="appstats" v-if="info">
     <p>
-        <!--
-        <span v-b-tooltip.hover="'Number of time this App was requested by all users.'" style="margin-right: 5px;">
-            <icon name="paper-plane"/>&nbsp;{{info.counts.requested||0}}
-        </span>
-        -->
         <img :src="config.api+'/app/'+appid+'/badge'" @click="show_badge_url('/app/'+appid+'/badge')" class="clickable"/>
     </p>
-    <!--
-    <p>
-        <span v-b-tooltip.hover title="Number of unique users who ran this App." style="margin-right: 5px;">
-            <icon name="user"/>&nbsp;
-            {{info.users}}
-        </span>
-    </p>
-    -->
     <div style="border: 1px solid #eee; background-color: white; padding: 10px 0px; max-width: 200px; text-align: center;">
         <p v-if="info.success_rate" v-b-tooltip.hover.d1000.right
             title="finished/(failed+finished). Same request could be re-submitted / rerun.">
@@ -28,9 +15,6 @@
             </svg>
             <br>
             <b>{{info.success_rate.toFixed(1)}}%</b>
-            <!--
-                <span :class="success_rate_color" v-if="info.success_rate">{{info.success_rate.toFixed(1)}}%</span>
-            -->
         </p>
         <hr>
         <p>

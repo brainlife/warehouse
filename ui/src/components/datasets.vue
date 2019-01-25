@@ -104,7 +104,7 @@
                 </b-btn>
             </p>
             <p>
-                <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="paper-plane" scale="0.8"/> Stage to process</b-btn>
+                <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="play" scale="0.8"/> Stage to process</b-btn>
             </p>
             <p>
                 <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy (experimental)</b-btn>

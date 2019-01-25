@@ -24,7 +24,8 @@
                 <div class="datatypes">
                     <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id" :class="[input.optional?'input-optional':'']">
                         <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false"/>
-                        <b v-if="input.optional">(opt)</b>
+                        <b v-if="input.multi">multi</b>
+                        <b v-if="input.optional">opt</b>
                     </div>
                     <icon scale="0.7" name="arrow-right"/>
                     <div class="datatype" v-for="output in app_.outputs" :key="'output.'+output.id">

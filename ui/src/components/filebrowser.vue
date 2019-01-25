@@ -14,7 +14,7 @@
             </div>
             -->
             <div  class="buttons">
-                <div class="button" @click="download()" title="Download"><icon name="download" scale="0.9"/> {{files.length}} files</div>
+                <div class="button" @click="download()" title="Download"><icon name="download" scale="0.9"/> {{files.length}} files/dirs</div>
                 <div class="button" @click="load()" title="Refresh"><icon name="sync-alt" scale="0.9"/></div>
             </div>
         </div>
@@ -277,7 +277,7 @@ position: relative;
 }
 .file-content-buttons {
 position: absolute; 
-top: -3px; 
+top: 3px; 
 right: 20px; 
 opacity: 0;
 transition: opacity 0.5s;

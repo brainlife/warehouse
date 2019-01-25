@@ -59,12 +59,16 @@
                 <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
                 <span v-if="input.optional" style="opacity: 0.8">(optional)</span>
                 <span v-else>*</span>
+                <span v-if="input.multi" style="opacity: 0.8">(multi)</span>
             </b-col>
             <b-col>
                 <b-form-group>
                     <b-row v-for="(it, idx) in input.selected" style="margin-bottom: 5px;" :key="idx">
                         <b-col>
-                            <v-select :onChange="validate()" v-model="input.selected[idx]" :options="vsel(filter_datasets(input))">
+                            <v-select :onChange="change_input(input)" 
+                                placeholder="Select Input Dataset"
+                                v-model="input.selected[idx]" 
+                                :options="vsel(filter_datasets(input))">
                                 <span slot="no-options">No dataset available for this datatype / tags</span>
 
                                 <template slot="option" slot-scope="option">
@@ -80,9 +84,11 @@
                             </v-select>
                         </b-col>
                         <b-col cols="1" v-if="input.multi">
-                            <div class="button button-danger" @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
+                            <div class="button button-danger" v-if="input.selected[idx]"
+                                @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
                         </b-col>
                     </b-row>
+                    <!--
                     <b-row v-if='input.multi'>
                         <b-col cols="5">
                             <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
@@ -91,7 +97,8 @@
                             <b-button :size="'sm'" :variant="'secondary'" @click="input.selected.push(null)">Add Dataset</b-button>
                         </b-col>
                     </b-row>
-                    <small v-else-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
+                    -->
+                    <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
                 </b-form-group>
             </b-col>
         </b-row>
@@ -320,6 +327,15 @@ export default {
                 //TODO - for multi inputs, what should I do?
                 this.inputs[input.id].selected[0] = input.options[0];
             }
+        },
+
+        change_input(input) {
+            //make sure at least one null dataset exists
+            if(input.multi && !input.selected.includes(null)) {
+                input.selected.push(null); 
+            } 
+
+            this.validate();
         },
 
         validate() {
