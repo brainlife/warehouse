@@ -137,12 +137,11 @@ router.get('/apps/:releaseid', (req, res, next)=>{
         
         //load apps used
         let app_ids = [];
-        recs.forEach(rec=>{ if(rec.app) app_ids.push(rec.app);});
+        recs.forEach(rec=>{ if(rec.app) app_ids.push(rec.app); });
         db.Apps.find({
             _id: {$in: app_ids},
             projects: [], //only show *public* apps
         })
-        //.sort(req.query.sort || '_id')
         .populate(req.query.populate || '')
         .exec((err, apps)=>{
             if(err) return next(err);
@@ -158,7 +157,11 @@ router.get('/apps/:releaseid', (req, res, next)=>{
             recs.forEach(rec=>{
                 if(rec.app) {
                     rec.app = app_obj[rec.app];
-                    populated.push(rec);
+                    if(!rec.app) {
+                        logger.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
+                    } else {
+                        populated.push(rec);
+                    }
                 }
             });
 

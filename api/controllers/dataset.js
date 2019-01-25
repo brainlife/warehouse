@@ -431,8 +431,6 @@ router.get('/prov/:id', (req, res, next)=>{
  * @apiParam {String[]} [tags]          List of tags to add
  * @apiParam {String} [desc]            Description for archived dataset
  *
- * @apiParam {Boolean} await            Wait for dataset to be fully achived before returning (default true)
- *
  * @apiHeader {String} authorization 
  *                                      A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}                 Dataset created
@@ -443,9 +441,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     if(!req.body.task_id) return cb("task_id not set");
     if(!req.body.output_id) return cb("output_id not set");
 
-    let await = true;
-    if(req.body.await === false) await = false;
-    
     //to be loaded..
     let task = null;
     let archive_task = null;
@@ -501,12 +496,12 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 if(err) return next(err);
                 archive_task = _archive_task;
                 dataset = archive_task.config.datasets[0].dataset;
-                if(!await) return res.json(dataset); //don't need to wait
-
-                next();
+                //dataset._archive_task_id = archive_task._id; //to let caller know about the archvie task (not stored in DB right now)
+                res.json(dataset); 
             });
         },
 
+        /* async registration is now deprecated
         //wait for archive to be done
         next=>{
             logger.debug("waiting for archive task to finish");
@@ -515,6 +510,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 res.json(dataset);
             });
         }
+        */
 
     ], cb);
 });
@@ -658,7 +654,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 }
             });
 
-            console.log(JSON.stringify(stage_task, null, 4));
+            //console.log(JSON.stringify(stage_task, null, 4));
         },
 
     ], err=>{

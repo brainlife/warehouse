@@ -1,34 +1,6 @@
+
 const assert = require('assert');
-//const request = require('supertest')
 
-//const config = require('../api/config');
-//const db = require('../api/models');
-//const app = require('../api/server').app;
-
-/*
-before(function(done) {
-    console.log("connecting to mongodb");
-    this.timeout(10000);
-    db.init(function(err) {
-        if(err) return done(err);
-        done();
-    });
-});
-*/
-
-<<<<<<< HEAD
-describe('index', function() {
-    describe('/health', function() {
-        it('should return ok', function() {
-            request(app)
-            .get('/health')
-            .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
-            .end(function(err, res) {
-                if (err) throw err;
-                console.dir(res.body);
-            });
-=======
 describe.skip('/health', function() {
     it('should return ok', function() {
         request(app)
@@ -38,13 +10,9 @@ describe.skip('/health', function() {
         .end(function(err, res) {
             if (err) throw err;
             console.dir(res.body);
-            //assert(res.body.status == "failed", "initial status should be failed");
-            //done();
->>>>>>> 872bb7f8e59cee27739c81787eb753e1e3ed0173
         });
     });
 });
-
 
 describe('openneuro', function() {
     const openneuro = require('../api/openneuro');
@@ -55,7 +23,6 @@ describe('openneuro', function() {
                 assert(!err, err);
                 console.log(JSON.stringify(datasets, null, 4));
                 console.log(datasets.length, cursor);
-                //assert.equal(datasets.edges.length, 100);
                 done();
             });
         });
