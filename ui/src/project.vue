@@ -12,27 +12,30 @@
         <!--detail-->
         <div v-if="tabs[tab].id == 'detail'">
             <div style="padding: 20px; background-color: #f0f0f0;">
-            <b-row>
-                <b-col cols="2">
-                    <projectavatar :project="selected"/>
-                </b-col>
-                <b-col cols="10" style="background-color: rgb(240, 240, 240);"><!--hide avatar when screen is narrow-->
-                    <div style="float: right;" v-if="isadmin()">
-                        <div @click="edit()" class="button">
-                            <icon name="edit" scale="1.25"/>
+                <b-row>
+                    <b-col cols="2">
+                        <projectavatar :project="selected"/>
+                    </b-col>
+                    <b-col cols="10" style="background-color: rgb(240, 240, 240);"><!--hide avatar when screen is narrow-->
+                        <div style="float: right;" v-if="isadmin()">
+                            <div @click="edit()" class="button">
+                                <icon name="edit" scale="1.25"/>
+                            </div>
+                            <div @click="remove()" v-if="isadmin() && !selected.removed" class="button">
+                                <icon name="trash" scale="1.25"/>
+                            </div>
                         </div>
-                        <div @click="remove()" v-if="isadmin() && !selected.removed" class="button">
-                            <icon name="trash" scale="1.25"/>
-                        </div>
-                    </div>
 
-                    <h4 style="color: #666; margin-bottom: 10px;">
-                        <projectaccess :access="selected.access"/> 
-                        {{selected.name}}
-                    </h4>
-                    <p style="opacity: 0.8;">{{selected.desc}}</p>
-                </b-col>
-            </b-row>
+                        <h4 style="color: #666; margin-bottom: 10px;">
+                            <projectaccess :access="selected.access"/> 
+                            {{selected.name}}
+                        </h4>
+                        <p style="opacity: 0.8;">{{selected.desc}}</p>
+                        <p style="opacity: 0.5;">
+                            <icon name="calendar"/> Created on {{new Date(selected.create_date).toLocaleDateString()}}
+                        </p>
+                    </b-col>
+                </b-row>
             </div>
 
             <b-alert :show="selected.removed" style="border-radius: 0px" variant="warning">This project has been removed.</b-alert>
@@ -93,12 +96,12 @@
                 </b-row>
 
 
-                <b-row>
+                <b-row v-if="selected.readme">
                     <b-col cols="2"> 
                         <span class="form-header">Readme</span>
                     </b-col>
                     <b-col cols="10">
-                        <p class="text-muted" v-if="!selected.readme">Please edit README.md content</p>
+                        <p class="text-muted" v-if="!selected.readme">No readme</p>
                         <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
                     </b-col>
                 </b-row>

@@ -15,11 +15,7 @@ export default {
             //console.log("looking for ", id);
             if(cache_[id]) {
                 let now = (new Date()).getTime();
-                if(cache_[id].exp < now) {
-                    //console.log("expired", cache_[id].exp, now);
-                    return null;
-                }
-                //console.log("using cache", id);
+                if(cache_[id].exp < now) return null;
                 return cache_[id].it; //good!
             }
             return null;
@@ -29,7 +25,6 @@ export default {
             if(!ttl) ttl = 600; //10 minute default
             let now = (new Date()).getTime();
             let exp = now + ttl*1000;
-            //console.log("setting ", id, it);
             cache_[id] = {it, exp};
         },
     }

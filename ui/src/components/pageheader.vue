@@ -31,7 +31,7 @@
         <b-nav-item v-if="!config.user" @click="signup">Sign Up</b-nav-item>
     </b-nav>
 
-    <span class="title" @click="gohome">BrainLife</span>
+    <span class="title" @click="gohome">brainlife</span>
     <div class="slot"><slot/></div>
 </div>
 </template>
@@ -131,13 +131,11 @@ svg.cloud {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 20pt;
     position: fixed;
-    top: 3px;
+    top: 4px;
     margin-left: 15px;
     margin-right: 20px;
     font-weight: bold;
-/*
-    text-shadow: 0px 0px 2px black;
-*/
+    cursor: pointer;
 }
 .nav {
     float: right;
@@ -161,15 +159,10 @@ svg.cloud {
 </style>
 
 <style>
+/*placing under warehouse.vue doesn't work for some reason*/
 .pageheader .nav .nav-link {
 font-weight: bold;
 color: white;
 }
-/*
-.pageheader .reef {
-position: absolute;
-top: -25px;
-left: -26px;
-}
-*/
+
 </style>
