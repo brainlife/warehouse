@@ -813,7 +813,7 @@ right: 250px;
     float: left;
     margin:3px;
     margin-right: 5px;
-    opacity: 0;
+    opacity: 0.25;
     transition: opacity 0.3s;
     transform: scale(1.5);
 }
