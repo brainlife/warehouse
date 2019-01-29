@@ -110,7 +110,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
-            db.Datasets.count(query).exec((err, count)=>{
+            db.Datasets.estimatedDocumentCount(query).exec((err, count)=>{
                 if(err) return next(err);
                 datasets.forEach(rec=>{
                     rec._canedit = canedit(req.user, rec, canwrite_project_ids);
@@ -538,13 +538,16 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     let next_tid;
     let stage_task; 
 
+    logger.debug("staging request");
+    console.dir(req.body.dataset_ids);
+
     async.series([
         //load dataset info (and check access)
-        next=>{
+        cb=>{
             common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
-                if(err) return next(err);
+                if(err) return cb(err);
                 db.Datasets.find({_id: {$in: req.body.dataset_ids}}).exec((err, _datasets)=>{
-                    if(err) return next(err);
+                    if(err) return cb(err);
                     //find dataset ids that user have access to
                     datasets = [];
                     _datasets.forEach(dataset=>{
@@ -559,13 +562,17 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
                         datasets.push(dataset);
                     });
-                    next();
+
+                    if(req.body.dataset_ids.length != datasets.length) {
+                        return cb("you don't have access to all requested datasets");
+                    }
+                    cb();
                 });
             });
         },
 
         //find next tid
-        next=>{
+        cb=>{
             request.get({
                 url: config.amaretti.api+'/task', 
                 json: true,
@@ -587,12 +594,12 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     if(v.config._tid && v.config._tid > m) return v.config._tid;
                     return m;
                 }, 0) + 1;
-                next();
+                cb();
             });
         },
 
         //submit!
-        async next=>{
+        async cb=>{
             let jwt = await common.issue_archiver_jwt(req.user.sub);
 
             //stage task is used as input to real *first* app that uses the data, so I believe we can 
@@ -654,11 +661,11 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 }
             });
 
-            //console.log(JSON.stringify(stage_task, null, 4));
+            //don't need to call cb() as this is an async function
         },
 
     ], err=>{
-        if(err) next(err);
+        if(err) return next(err);
         res.json(stage_task);
     });
 });

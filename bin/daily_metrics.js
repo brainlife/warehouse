@@ -14,7 +14,7 @@ if(!graphite_prefix) {
 
 function count_apps(d) {
     return new Promise((resolve, reject)=>{
-        db.Apps.count({create_date: {$lt: d}, removed: false}, (err, count)=>{
+        db.Apps.estimatedDocumentCount({create_date: {$lt: d}, removed: false}, (err, count)=>{
             if(err) return reject(err);
             const time = Math.round(d.getTime()/1000);
             console.log(graphite_prefix+".app.count "+count+" "+time);
@@ -25,7 +25,7 @@ function count_apps(d) {
 
 function count_dataset(d) {
     return new Promise((resolve, reject)=>{
-        db.Datasets.count({create_date: {$lt: d}, removed: false}, (err, count)=>{
+        db.Datasets.estimatedDocumentCount({create_date: {$lt: d}, removed: false}, (err, count)=>{
             if(err) return reject(err);
             const time = Math.round(d.getTime()/1000);
             console.log(graphite_prefix+".dataset.count "+count+" "+time);

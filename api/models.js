@@ -379,8 +379,8 @@ var appSchema = mongoose.Schema({
     name: String,
 
     //TODO - citation / references can easily be part of README.md on github..
-    citation: String,
-    references: [ new mongoose.Schema({text: String}) ], 
+    //citation: String,
+    //references: [ new mongoose.Schema({text: String}) ], 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //
