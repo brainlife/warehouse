@@ -110,7 +110,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
-            db.Datasets.estimatedDocumentCount(query).exec((err, count)=>{
+            db.Datasets.countDocuments(query).exec((err, count)=>{
                 if(err) return next(err);
                 datasets.forEach(rec=>{
                     rec._canedit = canedit(req.user, rec, canwrite_project_ids);

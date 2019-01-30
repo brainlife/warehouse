@@ -64,7 +64,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         .lean()
         .exec((err, recs)=>{
             if(err) return next(err);
-            db.Apps.estimatedDocumentCount({$and: ands}).exec((err, count)=>{
+            db.Apps.countDocuments({$and: ands}).exec((err, count)=>{
                 if(err) return next(err);
                 //adding some derivatives
                 if(req.user) recs.forEach(function(rec) {
