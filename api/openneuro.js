@@ -22,37 +22,61 @@ curl -X POST --url https://openneuro.org/crn/graphql \
 #  --data '{"query":"query dataset { datasets(first: 10, orderBy: {created:descending}, filterBy: {public:true}, myDatasets: false) { edges { node { id name } } pageInfo { hasNextPage endCursor } } }"}' | jq -r
 */
 
-exports.list_datasets = async function(cb) {
+exports.list_all_datasets = async function(cb) {
     logger.debug("listing datasets from openneuro");
 
     let datasets = [];
 
-    //load first page
-    logger.debug("loading first page");
-    let query = "query { datasets(first: 10) { edges { node { id name } } pageInfo { hasNextPage endCursor } } }";
-    let body = await rp({json: true, method: 'POST', 
-        uri: 'https://openneuro.org/crn/graphql', 
-        body: {query},
-    });
-    body.data.datasets.edges.forEach(edge=>datasets.push(edge.node));
-    let cursor = body.data.datasets.pageInfo.endCursor;
-    while(cursor) {
-        logger.debug("loading another page");
-        query = "query { datasets(first: 10 after: \""+cursor+"\") { edges { node { id name } } pageInfo { hasNextPage endCursor } } }";
+    let hasNextPage = true;
+    let cursor = null;
+    while(hasNextPage) {
+        logger.debug("loading another page. datasets:%d", datasets.length);
+        page_query = "first: 50";
+        if(cursor) page_query += "after: \""+cursor+"\"";
+        query = "query { datasets("+page_query+") { edges { node { id name } } pageInfo { hasNextPage endCursor } } }";
+        /*
+
+query {
+  datasets(first: 10) {
+    edges {
+      node {
+        id
+        name
+        public
+        created
+        snapshots { tag created }
+      }
+    }
+  }
+}
+        */
+
+        //load next page
         let body = await rp({json: true, method: 'POST', 
             uri: 'https://openneuro.org/crn/graphql', 
             body: {query},
         });
         body.data.datasets.edges.forEach(edge=>datasets.push(edge.node));
+
         cursor = body.data.datasets.pageInfo.endCursor;
+        hasNextPage = body.data.datasets.pageInfo.hasNextPage;
     }
     cb(null, datasets);
 }
 
-//exports.list_datasets();
-
-exports.list_snapshots=function(cb) {
-}
+//cache of all datasets and snapshots for each datasets
+let datasets_snaps_cache = [
+/*
+    {
+        "id": "ds001650",
+        "name": "DRM False Memory"
+    },
+    {
+        "id": "ds001652",
+        "name": "Ironia VEV"
+    }
+*/
+];
 
 
 

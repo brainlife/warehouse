@@ -644,7 +644,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                                 datatype: d.datatype,
                                 meta: d.meta,
                                 tags: d.tags,
-                                datatype_tags: d.datatypetags,
+                                datatype_tags: d.datatype_tags,
                                 
                                 subdir,
                                 dataset_id: d._id,
