@@ -379,60 +379,58 @@
                 Output
             </h4>
             <div style="border-left: 4px solid #28a745; padding-left: 10px;">
-                <!--<transition-group name="move-item" tag="p">-->
-                    <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
-                        <b-card>
-                               <b-row>
-                                <b-col>
-                                    <b-input-group prepend="ID">
-                                        <b-form-input type="text" v-model="output.id" required />
-                                    </b-input-group>
-                                </b-col>
-                                <b-col cols="7">
-                                     <div style="float: right;">
-                                        <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
-                                            <icon name="arrow-up" />
-                                        </div>
-                                        <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
-                                            <icon name="arrow-down" />
-                                        </div>
-                                        <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
-                                            <icon name="trash"/>
-                                        </div>
+                <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
+                    <b-card>
+                           <b-row>
+                            <b-col>
+                                <b-input-group prepend="ID">
+                                    <b-form-input type="text" v-model="output.id" required />
+                                </b-input-group>
+                            </b-col>
+                            <b-col cols="7">
+                                 <div style="float: right;">
+                                    <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
+                                        <icon name="arrow-up" />
                                     </div>
-                                </b-col>
-                            </b-row>
-                            <small class="text-muted">You should output files in a subdirectory with this ID as the directory name (unless you set "Output on root" below.)</small>
-                            <b-row>
-                                <b-col>
-                                    <div class="text-muted">Datatype</div>
-                                    <datatypeselecter v-model="output.datatype"></datatypeselecter>
-                                    <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype" :clickable="false"/>
-                                </b-col>
-                                <b-col cols="7" v-if="output.datatype">
-                                    <div class="text-muted">Datatype Tags</div>
-                                    <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
-                                    <small class="text-muted">Set these datatype tags on this output dataset</small>
+                                    <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
+                                        <icon name="arrow-down" />
+                                    </div>
+                                    <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
+                                        <icon name="trash"/>
+                                    </div>
+                                </div>
+                            </b-col>
+                        </b-row>
+                        <small class="text-muted">You should output files in a subdirectory with this ID as the directory name (unless you set "Output on root" below.)</small>
+                        <b-row>
+                            <b-col>
+                                <div class="text-muted">Datatype</div>
+                                <datatypeselecter v-model="output.datatype"></datatypeselecter>
+                                <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype" :clickable="false"/>
+                            </b-col>
+                            <b-col cols="7" v-if="output.datatype">
+                                <div class="text-muted">Datatype Tags</div>
+                                <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
+                                <small class="text-muted">Set these datatype tags on this output dataset</small>
 
-                                    <div class="text-muted">Datatype Tags Passthrough</div>
-                                    <b-form-select v-model="output.datatype_tags_pass">
-                                        <option :value="null">(No Pass)</option>
-                                        <option v-for="input in input_datasets" :key="input.id" :value="input.id">{{input.id}}</option>
-                                    </b-form-select>
-                                    <small class="text-muted">Add all datatype tags from the input dataset specified</small>
-                                    
-                                </b-col>
-                            </b-row>
-                            
-                            <br>
-                            <b-form-checkbox v-model="output.output_on_root">(DEPRECATED) Output files on the root of workdir (instead of inside the subdirectory with ID of this output as the directory name)</b-form-checkbox>
-                            <div v-if="output.output_on_root">
-                                <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/direcory name to avoid more than 1 output to collide.</small></div>
-                                <b-form-textarea v-model="output._files" :rows="3" :placeholder="default_outmap(output.datatype)"></b-form-textarea>
-                            </div>
-                        </b-card>
-                    </div>
-                <!--</transition-group>-->
+                                <div class="text-muted">Datatype Tags Passthrough</div>
+                                <b-form-select v-model="output.datatype_tags_pass">
+                                    <option :value="null">(No Pass)</option>
+                                    <option v-for="input in input_datasets" :key="input.id" :value="input.id">{{input.id}}</option>
+                                </b-form-select>
+                                <small class="text-muted">Add all datatype tags from the input dataset specified</small>
+                                
+                            </b-col>
+                        </b-row>
+                        
+                        <br>
+                        <b-form-checkbox v-model="output.output_on_root">(DEPRECATED) Output files on the root of workdir (instead of inside the subdirectory with ID of this output as the directory name)</b-form-checkbox>
+                        <div v-if="output.output_on_root">
+                            <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/direcory name to avoid more than 1 output to collide.</small></div>
+                            <b-form-textarea v-model="output._files" :rows="3" :placeholder="default_outmap(output.datatype)"></b-form-textarea>
+                        </div>
+                    </b-card>
+                </div>
                 <p>
                     <b-button size="sm" @click="add_dataset(output_datasets)" variant="success">Add Output</b-button>
                 </p>
@@ -455,7 +453,7 @@
         <div class="form-action" style="padding-right: 20px;">
             <b-container>
                 <b-button @click="cancel">Cancel</b-button>
-                <b-button @click.once="submit" variant="primary">Submit</b-button>
+                <b-button @click="submit" variant="primary" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
             </b-container>
         </div>
     </div><!--page-content-->
@@ -504,6 +502,7 @@ export default {
             alltags: [],
 
             ready: false,  //ready to render form
+            submitting: false,
 
             datatypes: null, //registered datatypes (keyed by datatype_id)
 
@@ -756,7 +755,12 @@ export default {
                 try {
                     if(output._files) output.files = JSON.parse(output._files);
                 } catch (err) {
-                    return cb("Failed to parse JSON given for output '" + output.id + "'");
+                    return cb("Failed to parse JSON given for output:" + output.id);
+                }
+
+                //datatype_tags_pass could be set to an invalid id if user changes input id
+                if(output.datatype_tags_pass && !inputTable[output.datatype_tags_pass]) {
+                    return cb("Datatype Tags Passthrough id is invalid for output:" + output.id);
                 }
             }
             
@@ -764,11 +768,8 @@ export default {
                 if (!param.id) {
                     return cb("Not all configuration parameter ids are non-null");
                 }
-                if (inputTable[param.id]) {
-                    return cb("Duplicate ID '" + param.id + "' used for configuration parameter and input");
-                }
-                if (outputTable[param.id]) {
-                    return cb("Duplicate ID '" + param.id + "' used for configuration parameter and output");
+                if (config[param.id]) {
+                    return cb("Duplicate ID '" + param.id + "' used for config.json key or input file mapping ID");
                 }
                 if (paramTable[param.id]) {
                     return cb("Duplicate ID '" + param.id + "' found in list of config parameters");
@@ -858,10 +859,13 @@ export default {
 
         submit(evt) {
             console.log("submitting");
+            if(this.submitting) return;
+            this.submitting = true;
             this.validate(err => {
                 if (err) {
                     this.$notify({ text: err, type: 'error' });
                     console.error(err);
+                    this.submitting = false;
                 } else {
                     //now ready to submit
                     if(this.app._id) {
@@ -869,18 +873,22 @@ export default {
                         this.$http.put('app/' + this.app._id, this.app)
                         .then(res=>{
                             this.$router.push("/app/" + this.app._id);
+                            this.submitting = false;
                         }).catch(err=>{
                             this.$notify({text: err.body.message, type: 'error' });
                             console.error(err);
+                            this.submitting = false;
                         });
                     } else {
                         //new
                         this.$http.post('app', this.app)
                         .then(res => {
                             this.$router.push("/app/" + res.data._id);
+                            this.submitting = false;
                         }).catch(err=>{
                             this.$notify({text: err.body.message, type: 'error' });
                             console.error(err);
+                            this.submitting = false;
                         });
                     }
                 }

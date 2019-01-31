@@ -667,7 +667,7 @@ function handle_rule(rule, cb) {
                             project: rule.project._id,  
                             desc: rule.name,
                         }
-                    } else if(rule.archive[output.id].do) {
+                    } else if(rule.archive[output.id] && rule.archive[output.id].do) {
                         output_req.archive = {
                             project: rule.project._id,  
                             desc: rule.archive[output.id].desc||rule.name,

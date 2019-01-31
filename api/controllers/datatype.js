@@ -42,7 +42,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     .sort(req.query.sort || '_id')
     .exec((err, datatypes)=>{
         if(err) return next(err);
-        db.Datatypes.count(find).exec((err, count)=>{
+        db.Datatypes.countDocuments(find).exec((err, count)=>{
             if(err) return next(err);
             res.json({datatypes: datatypes, count: count});
         });

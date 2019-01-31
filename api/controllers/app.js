@@ -64,7 +64,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         .lean()
         .exec((err, recs)=>{
             if(err) return next(err);
-            db.Apps.count({$and: ands}).exec((err, count)=>{
+            db.Apps.countDocuments({$and: ands}).exec((err, count)=>{
                 if(err) return next(err);
                 //adding some derivatives
                 if(req.user) recs.forEach(function(rec) {
@@ -93,18 +93,9 @@ router.get('/:id/badge', (req, res, next)=>{
 10|warehou |     "_id": "58c56d92e13a50849b258801"
 10|warehou | }
         */
-        res.redirect('https://img.shields.io/badge/Brainlife-'+app.stats.requested+' runs ('+app.stats.users+' users)-brightgreen.svg');
+        res.redirect('https://img.shields.io/badge/brainlife-'+app.stats.requested+' runs ('+app.stats.users+' users)-brightgreen.svg');
     });
 });
-
-/*
-function mint_doi(cb) {
-    db.Apps.count({doi: {$exists: true}}).exec((err, count)=>{
-        if(err) return cb(err);
-        cb(null, config.datacite.prefix+"app."+count);
-    });
-}
-*/
 
 /**
  * @apiGroup App
@@ -233,9 +224,35 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             } else {
                 
                 //apply user update 
+                /*
                 delete req.body.user_id;
                 delete req.body.create_date;
-                for(var k in req.body) app[k] = req.body[k];
+                delete req.body.doi;
+                logger.debug(req.body);
+                for(var k in req.body) app[k] = req.body[k];    
+                */
+                for(var k in req.body) {
+                    //white list fields that user can update
+                    switch(k) {
+                    case "admins":
+                    case "avatar":
+                    case "name":
+                    case "config":
+                    case "desc_override":
+                    case "github":
+                    case "github_branch":
+                    case "inputs":
+                    case "outputs":
+                    case "projects":
+                    case "retry":
+                    //case "references":
+                    case "removed":
+                        app[k] = req.body[k];    
+                        break;
+                    default:
+                        logger.debug("can't update %s", k);
+                    }
+                }
 
                 async.series([
                     /* we don't need to do this anymore

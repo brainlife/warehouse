@@ -57,7 +57,7 @@ router.get('/', (req, res, next)=>{
     .lean()
     .exec((err, pubs)=>{
         if(err) return next(err);
-        db.Publications.count(find).exec((err, count)=>{
+        db.Publications.countDocuments(find).exec((err, count)=>{
             if(err) return next(err);
 
             //dereference user ID to name/email
@@ -137,12 +137,11 @@ router.get('/apps/:releaseid', (req, res, next)=>{
         
         //load apps used
         let app_ids = [];
-        recs.forEach(rec=>{ if(rec.app) app_ids.push(rec.app);});
+        recs.forEach(rec=>{ if(rec.app) app_ids.push(rec.app); });
         db.Apps.find({
             _id: {$in: app_ids},
             projects: [], //only show *public* apps
         })
-        //.sort(req.query.sort || '_id')
         .populate(req.query.populate || '')
         .exec((err, apps)=>{
             if(err) return next(err);
@@ -158,7 +157,11 @@ router.get('/apps/:releaseid', (req, res, next)=>{
             recs.forEach(rec=>{
                 if(rec.app) {
                     rec.app = app_obj[rec.app];
-                    populated.push(rec);
+                    if(!rec.app) {
+                        logger.error("dataset(%s) is set to use invalid app id(%s)", rec._id, rec.app);
+                    } else {
+                        populated.push(rec);
+                    }
                 }
             });
 
@@ -199,7 +202,7 @@ router.get('/datasets/:releaseid', (req, res, next)=>{
     .lean()
     .exec((err, datasets)=>{
         if(err) return next(err);
-        db.Datasets.count(query).exec((err, count)=>{
+        db.Datasets.countDocuments(query).exec((err, count)=>{
             if(err) return next(err);
             res.json({datasets, count});
         });
@@ -249,7 +252,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         let pub = new db.Publications(Object.assign(def, req.body, override));
 
         //mint new doi - get next doi id - use number of publication record with doi (brittle?)
-        db.Publications.count({doi: {$exists: true}}).exec((err, count)=>{
+        db.Publications.countDocuments({doi: {$exists: true}}).exec((err, count)=>{
             if(err) return next(err);
             let doi = config.datacite.prefix+"pub."+count; //TODO - should make the "shoulder" configurable?
             pub.doi = doi;

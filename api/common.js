@@ -85,7 +85,6 @@ function register_dataset(task, output, product, cb) {
         //status: "waiting",
         status_msg: "Waiting for the archiver ..",
         product,
-
         
         prov: {
             task, 
@@ -122,7 +121,7 @@ exports.wait_task = function(req, task_id, cb) {
             break;
         default:
             logger.debug("wait_task detected failed task")
-            console.dir(JSON.stringify(task, null, 4));
+            //console.dir(JSON.stringify(task, null, 4));
             //consider all else as failed
             cb(task.status_msg);
         }
@@ -181,7 +180,7 @@ exports.archive_task_outputs = function(task, outputs, cb) {
             register_dataset(task, output, products[output.id], (err, dataset)=>{
                 if(err || !dataset) return next_output(); //couldn't register, or already registered
                 let dir =  "../"+task._id;
-                dataset.prov.task = dataset.prov.task._id; //unpopulate prov as it will be somewhat redundant
+                //dataset.prov.task = dataset.prov.task._id; //unpopulate prov as it will be somewhat redundant (cli/bl-dataset-upload wants this)
                 let dataset_config = {
                     project: output.archive.project,
                     dir,

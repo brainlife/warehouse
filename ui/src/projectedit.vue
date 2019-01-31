@@ -147,7 +147,7 @@
             <div class="form-action">
                 <b-container>
                     <b-button variant="secondary" @click="cancel">Cancel</b-button>
-                    <b-button variant="primary" @click.once="submit">Submit</b-button>
+                    <b-button variant="primary" @click="submit" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
                 </b-container>
             </div>
                 
@@ -171,7 +171,7 @@ import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import license from '@/components/license'
 import VueMarkdown from 'vue-markdown'
-import {public_project_consent} from '@/consents'
+//import {public_project_consent} from '@/consents'
 
 export default {
     components: { sidemenu, contactlist, pageheader, license, VueMarkdown },
@@ -189,8 +189,10 @@ export default {
                 agreements: [],
             },
 
-            public_project_consent,
-            consent: false,
+            //public_project_consent,
+            //consent: false,
+
+            submitting: false,
 
             config: Vue.config,
         }
@@ -229,19 +231,28 @@ export default {
 
         submit(evt) {
             console.log("submitting");
+            if(this.submitting) return;
+            this.submitting = true;
             evt.preventDefault();
             if(this.project._id) {
                 //update
                 this.$http.put('project/'+this.project._id, this.project).then(res=>{
                     this.$root.$emit("refresh_jwt");
                     this.$router.push('/project/'+this.project._id);
-                }).catch(console.error);
+                    this.submitting = false;
+                }).catch(err=>{
+                    console.error(err);
+                    this.submitting = false;
+                });
             } else {
                 //create
                 this.$http.post('project', this.project).then(res=>{
                     this.$root.$emit("refresh_jwt");
                     this.$router.push('/project/'+res.data._id);
-                }).catch(console.error);
+                }).catch(err=>{
+                    console.error(err);
+                    this.submitting = false;
+                });
             }
         }
     },

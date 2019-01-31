@@ -58,7 +58,7 @@ router.get('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     .lean()
     .exec((err, rules)=>{
         if(err) return next(err);
-        db.Datatypes.count(find).exec((err, count)=>{
+        db.Datatypes.countDocuments(find).exec((err, count)=>{
             if(err) return next(err);
             res.json({rules, count});
         });

@@ -59,7 +59,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     } else {
         find.access = "public"; //guest can only see public projects
     }
-    console.log(JSON.stringify(find, null, 4));
+    //console.log(JSON.stringify(find, null, 4));
 
     db.Projects.find(find)
     .select(select)
@@ -69,7 +69,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     .lean()
     .exec((err, recs)=>{
         if(err) return next(err);
-        db.Projects.count(find).exec((err, count)=>{
+        db.Projects.countDocuments(find).exec((err, count)=>{
             if(err) return next(err);
             res.json({projects: recs, count: count});
         });

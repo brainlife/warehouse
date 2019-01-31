@@ -110,7 +110,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
-            db.Datasets.count(query).exec((err, count)=>{
+            db.Datasets.countDocuments(query).exec((err, count)=>{
                 if(err) return next(err);
                 datasets.forEach(rec=>{
                     rec._canedit = canedit(req.user, rec, canwrite_project_ids);
@@ -431,8 +431,6 @@ router.get('/prov/:id', (req, res, next)=>{
  * @apiParam {String[]} [tags]          List of tags to add
  * @apiParam {String} [desc]            Description for archived dataset
  *
- * @apiParam {Boolean} await            Wait for dataset to be fully achived before returning (default true)
- *
  * @apiHeader {String} authorization 
  *                                      A valid JWT token "Bearer: xxxxx"
  * @apiSuccess {Object}                 Dataset created
@@ -443,9 +441,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     if(!req.body.task_id) return cb("task_id not set");
     if(!req.body.output_id) return cb("output_id not set");
 
-    let await = true;
-    if(req.body.await === false) await = false;
-    
     //to be loaded..
     let task = null;
     let archive_task = null;
@@ -501,12 +496,12 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 if(err) return next(err);
                 archive_task = _archive_task;
                 dataset = archive_task.config.datasets[0].dataset;
-                if(!await) return res.json(dataset); //don't need to wait
-
-                next();
+                //dataset._archive_task_id = archive_task._id; //to let caller know about the archvie task (not stored in DB right now)
+                res.json(dataset); 
             });
         },
 
+        /* async registration is now deprecated
         //wait for archive to be done
         next=>{
             logger.debug("waiting for archive task to finish");
@@ -515,6 +510,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 res.json(dataset);
             });
         }
+        */
 
     ], cb);
 });
@@ -542,13 +538,16 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     let next_tid;
     let stage_task; 
 
+    logger.debug("staging request");
+    console.dir(req.body.dataset_ids);
+
     async.series([
         //load dataset info (and check access)
-        next=>{
+        cb=>{
             common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
-                if(err) return next(err);
+                if(err) return cb(err);
                 db.Datasets.find({_id: {$in: req.body.dataset_ids}}).exec((err, _datasets)=>{
-                    if(err) return next(err);
+                    if(err) return cb(err);
                     //find dataset ids that user have access to
                     datasets = [];
                     _datasets.forEach(dataset=>{
@@ -563,13 +562,17 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
                         datasets.push(dataset);
                     });
-                    next();
+
+                    if(req.body.dataset_ids.length != datasets.length) {
+                        return cb("you don't have access to all requested datasets");
+                    }
+                    cb();
                 });
             });
         },
 
         //find next tid
-        next=>{
+        cb=>{
             request.get({
                 url: config.amaretti.api+'/task', 
                 json: true,
@@ -591,12 +594,12 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     if(v.config._tid && v.config._tid > m) return v.config._tid;
                     return m;
                 }, 0) + 1;
-                next();
+                cb();
             });
         },
 
         //submit!
-        async next=>{
+        async cb=>{
             let jwt = await common.issue_archiver_jwt(req.user.sub);
 
             //stage task is used as input to real *first* app that uses the data, so I believe we can 
@@ -658,11 +661,11 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 }
             });
 
-            console.log(JSON.stringify(stage_task, null, 4));
+            //don't need to call cb() as this is an async function
         },
 
     ], err=>{
-        if(err) next(err);
+        if(err) return next(err);
         res.json(stage_task);
     });
 });
