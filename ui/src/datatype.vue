@@ -76,7 +76,7 @@ export default {
             //populate: 'inputs.datatype outputs.datatype',
         }})
         .then(res=>{
-            this.datatype = res.body.datatypes[0];
+            this.datatype = res.data.datatypes[0];
         }).catch(err=>{
             console.error(err);
         });

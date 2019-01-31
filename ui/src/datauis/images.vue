@@ -41,8 +41,8 @@ export default {
             '?p='+encodeURIComponent(basepath+'images.json')+
             '&at='+Vue.config.jwt;
         this.$http.get(url).then(res=>{
-            console.dir(res.body);
-            res.body.images.forEach(image=>{
+            console.dir(res.data);
+            res.data.images.forEach(image=>{
                 var src = Vue.config.wf_api+'/task/download/'+this.task._id+
                     '?p='+encodeURIComponent(basepath+image.filename)+
                     '&at='+Vue.config.jwt;

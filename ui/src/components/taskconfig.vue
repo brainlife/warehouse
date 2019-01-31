@@ -65,7 +65,7 @@ export default {
             } else {
                 if(!this.taskid) return;
                 this.$http.get(Vue.config.wf_api+'/task/'+this.taskid).then(res=>{
-                    this.load_config(res.body.config);
+                    this.load_config(res.data.config);
                 });
             }
         },

@@ -232,7 +232,7 @@ export default {
                 find: JSON.stringify({"project": this.project._id}),
                 distinct: 'tags',
             }}).then(res=>{
-                this.alltags = res.body;
+                this.alltags = res.data;
             });
 
             //now find apps that user can submit
@@ -247,7 +247,7 @@ export default {
             .then(res=>{
                 //now, pick apps that we have *all* input datasets that matches the input datatype/tags
                 this.apps = [];
-                res.body.apps.forEach(app=>{
+                res.data.apps.forEach(app=>{
                     var match = true;
                     app.inputs.forEach(input=>{
                         if(input.optional) return; //optional 

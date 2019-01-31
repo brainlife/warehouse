@@ -146,7 +146,7 @@ export default {
             .then(res=>{
                 //regroup to datatype/tags (we don't need to split by subject)
                 let datatype_ids = [];
-                res.body.forEach(rec=>{
+                res.data.forEach(rec=>{
                     let subject = rec._id.subject;
                     let datatype = rec._id.datatype;
                     if(!datatype_ids.includes(datatype)) datatype_ids.push(datatype);
@@ -167,7 +167,7 @@ export default {
             }) 
             .then(res=>{
                 let datatypes = {};
-                res.body.datatypes.forEach((d)=>{
+                res.data.datatypes.forEach((d)=>{
                     datatypes[d._id] = d;
                 });
 

@@ -352,7 +352,7 @@ export default {
                 },
                 group_id: this.project.group_id,
             }).then(res=>{
-                let instance = res.body;
+                let instance = res.data;
                 this.instances.unshift(instance);
                 this.toggle_instance(instance);
             }).catch(this.notify_error);
@@ -363,16 +363,10 @@ export default {
                 //unselect
                 if(this.selected == instance) this.toggle_instance(instance);
 
-                //remove from UI 
-                var idx = this.instances.indexOf(instance);
-                this.instances.splice(idx, 1);
-
                 //remove for real
                 this.$http.delete(Vue.config.wf_api+'/instance/'+instance._id).then(res=>{
-                    this.$notify({type: "success", text: "Removed the process"});
+                    this.$notify({type: "success", text: "Removing the process.."});
                 }).catch(err=>{
-                    //failed to remove it.. put it back to UI
-                    this.instances.push(instance); 
                     console.error(err);
                     this.notify_error(err);
                 });
@@ -400,8 +394,8 @@ export default {
                 limit: 3000,
             }}).then(res=>{
                 //debug.. 
-                //this.instances = res.body.instances.concat(res.body.instances).concat(res.body.instances);
-                this.instances = res.body.instances;
+                //this.instances = res.data.instances.concat(res.data.instances).concat(res.data.instances);
+                this.instances = res.data.instances;
 
                 this.selected = this.instances.find(it=>it._id == this.$route.params.subid);
                 if(this.selected) {
@@ -429,9 +423,16 @@ export default {
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
                 if(event.dinfo && event.dinfo.exchange == "wf.instance") {
-                    var instance = this.instances.find(i=>i._id == event.msg._id);
-                    if(instance) {
-                        for(var k in event.msg) instance[k] = event.msg[k];
+                    var idx = this.instances.findIndex(i=>i._id == event.msg._id);
+                    if(~idx) {
+                        if(event.msg.status == "removed") {
+                            //removed!
+                            this.instances.splice(idx, 1);
+
+                        } else {
+                            //must be normal update
+                            for(var k in event.msg) this.instances[idx][k] = event.msg[k];
+                        }
                     } else {
                         //new instance created by other user?
                         this.instances.unshift(event.msg);

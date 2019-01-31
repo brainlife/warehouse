@@ -71,7 +71,7 @@ export default {
             find: JSON.stringify({_id: this.$route.params.id}),
         }})
         .then(res=>{
-            this.instance = res.body.instances[0];
+            this.instance = res.data.instances[0];
 
             //load tasks under this instance
             return this.$http.get(Vue.config.wf_api+'/task', {params: {
@@ -79,7 +79,7 @@ export default {
             }})
         })
         .then(res=>{
-            this.tasks = res.body.tasks;
+            this.tasks = res.data.tasks;
 
             //subscribe to the instance events
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;

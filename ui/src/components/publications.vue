@@ -103,7 +103,7 @@ export default {
                 populate: 'project', //needed by pubcard
             }})
             .then(res=>{
-                this.pubs = res.body.pubs; 
+                this.pubs = res.data.pubs; 
 
                 //find opened publication
                 if(this.$route.params.subid) {
@@ -159,22 +159,22 @@ export default {
                 //update
                 this.$http.put('pub/'+pub._id, pub).then(res=>{
                     for(var k in pub) {
-                        this.editing[k] = res.body[k]; //will load release._id
+                        this.editing[k] = res.data[k]; //will load release._id
                     }
                     this.$router.push('/project/'+this.project._id+'/pub/');
                     this.editing = null;
                     this.$notify("Successfully updated!");
                 }).catch(res=>{
-                    this.$notify({type: 'error', text: res.body});
+                    this.$notify({type: 'error', text: res.data});
                 });
             } else {
                 //new publication
                 this.$http.post('pub', pub).then(res=>{
-                    this.pubs.push(res.body);
+                    this.pubs.push(res.data);
                     this.$notify("Registered new publication!");
                     this.editing = null;
                 }).catch(res=>{
-                    this.$notify({type: 'error', text: res.body});
+                    this.$notify({type: 'error', text: res.data});
                 });
             }
         },

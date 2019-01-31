@@ -22,7 +22,7 @@ export default {
             this.$http.get(Vue.config.wf_api+'/task', {params: {
                 find: JSON.stringify({ _id: taskid, })
             }}).then(res=>{
-                this.task = res.body.tasks[0];
+                this.task = res.data.tasks[0];
                 if(!this.task) console.error("no such task", taskid);
                 switch(this.task.status) {
                 case 'finished':

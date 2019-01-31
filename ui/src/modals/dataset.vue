@@ -325,7 +325,7 @@ export default {
         load_prov() {
             //load provenance
             this.$http.get('dataset/prov/'+this.dataset._id).then(res=>{
-                this.prov = res.body;
+                this.prov = res.data;
 
                 //apply styles
                 this.prov.nodes.forEach(node=>{
@@ -353,7 +353,7 @@ export default {
 
                 if(this.prov.edges.length) {
                     Vue.nextTick(()=>{
-                        var gph = new vis.Network(this.$refs.vis, res.body, {
+                        var gph = new vis.Network(this.$refs.vis, res.data, {
                             /*
                           layout: {
                             hierarchical: {
@@ -406,7 +406,7 @@ export default {
                 populate: 'inputs.datatype outputs.datatype contributors', //used by filter_apps and apps
             }}).then(res=>{
                 if(!res) return; //TODO notify error?
-                this.apps = lib.filter_apps(this.dataset, res.body.apps);
+                this.apps = lib.filter_apps(this.dataset, res.data.apps);
             });
         },
 
@@ -452,7 +452,7 @@ export default {
                             //can't use this.dataset.project.group_id because user could be selecting another project
                             group_id: opt.group_id, 
                         }).then(res=>{
-                            this.submit_process(opt.project_id, res.body);
+                            this.submit_process(opt.project_id, res.data);
                         }).catch(err=>{
                             console.error(err);
                             this.$notify({type: 'error', text: err.body.message});
@@ -507,7 +507,11 @@ export default {
                 find: JSON.stringify({_id: id}),
             }})
             .then(res=>{
-                var dataset = res.body.datasets[0];
+                var dataset = res.data.datasets[0];
+                if(!dataset) {
+                    console.error("couldn't load dataset:", id);
+                    return;
+                }
                 //TODO - why not just set all fields?
                 this.dataset.size = dataset.size;
                 this.dataset.status = dataset.status;
@@ -543,12 +547,14 @@ export default {
                 }),
             }})
             .then(res=>{
-                if(res.body.count == 0) {
+                if(res.data.count == 0) {
                     console.error("can't find dataset");
                     return;
                 }
-                this.dataset = res.body.datasets[0];
-                if(this.dataset.status == "storing") this.load_status(id);
+                this.dataset = res.data.datasets[0];
+                if(this.dataset.status == "storing") {
+                    setTimeout(()=>{ this.load_status(id); }, 5000);
+                }
 
                 Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
                 Vue.set(this.dataset, '_meta_dirty',  false);
@@ -559,7 +565,7 @@ export default {
                 if(this.dataset.prov) {
                     if(this.dataset.prov.task_id) {
                         this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.prov.task_id).then(res=>{
-                            this.dataset.prov.task = res.body;
+                            this.dataset.prov.task = res.data;
                             this.load_resource();
                         });
                     } else if(this.dataset.prov.task) {
@@ -573,7 +579,7 @@ export default {
                     distinct: 'tags',
                 }});
             }).then(res=>{
-                this.alltags = res.body;
+                this.alltags = res.data;
 
                 //load publications (releases)
                 let find = {};
@@ -584,7 +590,7 @@ export default {
                     find: JSON.stringify(find),
                 }});
             }).then(res=>{
-                this.$set(this.dataset, '_pubs', res.body.pubs);
+                this.$set(this.dataset, '_pubs', res.data.pubs);
                 
              }).catch(err=>{
                 console.error(err);
@@ -597,7 +603,7 @@ export default {
                 find: JSON.stringify({_id: this.dataset.prov.task.resource_id}),
             }})
             .then(res=>{
-                this.resource = res.body.resources[0];
+                this.resource = res.data.resources[0];
             }).catch(err=>{
                 console.error(err);
             });;
@@ -630,9 +636,9 @@ export default {
                 sort: '-create_date', //pick the latest one
                 limit: 1,
             }}).then(res=>{
-                if(res.body.tasks[0]) {
+                if(res.data.tasks[0]) {
                     //console.log("found staging task!");
-                    return cb(res.body.tasks[0], this.dataset._id);
+                    return cb(res.data.tasks[0], this.dataset._id);
                 }
 
                 //ok.. let's see if a task that produced the dataset still exists
@@ -643,9 +649,9 @@ export default {
                         status: "finished",
                     }),
                 }}).then(res=>{
-                    if(res.body.tasks[0]) {
+                    if(res.data.tasks[0]) {
                         console.log("task that produced this dataset still exists... using it");
-                        return cb(res.body.tasks[0], this.dataset.prov.subdir);
+                        return cb(res.data.tasks[0], this.dataset.prov.subdir);
                     }
                     cb(null); //didn't find it
                 });
@@ -668,7 +674,7 @@ export default {
                 instance.group_id = this.dataset.project.group_id;
             }
             this.$http.post(Vue.config.amaretti_api+'/instance', instance).then(res=>{
-                let instance_id = res.body._id;
+                let instance_id = res.data._id;
 
 /*
                 var download = [];
@@ -689,14 +695,14 @@ export default {
                     service: "soichih/sca-product-raw",
                     config: { download, _tid: -2 },
                     remove_date: remove_date,
-                }).then(res=>res.body.task);
+                }).then(res=>res.data.task);
 */
                 return this.$http.post('dataset/stage', {
                     instance_id: instance_id,
                     dataset_ids: [ this.dataset._id ],
                 });
             }).then(res=>{
-                cb(null, res.body.task, this.dataset._id);
+                cb(null, res.data.task, this.dataset._id);
             }).catch(cb);
         },
 

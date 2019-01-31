@@ -46,14 +46,14 @@ export default {
         //load counts of apps currently running
         this.$http.get(Vue.config.wf_api+'/admin/services/running')
         .then(res=>{
-            this.service_running = res.body;
+            this.service_running = res.data;
         });
 
         /*
         //load counts of resource currently running
         this.$http.get(Vue.config.wf_api+'/admin/resources/running')
         .then(res=>{
-            this.resource_running = res.body;
+            this.resource_running = res.data;
         });
         */
     },
@@ -69,7 +69,7 @@ export default {
                     ],
                 }),
             }}).then(res=>{
-                this.su_options = res.body;
+                this.su_options = res.data;
                 loading(false);
             });
         },
@@ -77,15 +77,15 @@ export default {
         su(person) {
             if(!person) return;
             this.$http.get(Vue.config.auth_api+'/jwt/'+person.id).then(res=>{
-                localStorage.setItem("jwt", res.body.jwt);
+                localStorage.setItem("jwt", res.data.jwt);
                 document.location = "/project/";
             });
         },
 
         refresh() {
             this.$http.post(Vue.config.auth_api+'/refresh').then(res=>{
-                console.log(res.body.jwt);
-                localStorage.setItem("jwt", res.body.jwt);
+                console.log(res.data.jwt);
+                localStorage.setItem("jwt", res.data.jwt);
                 this.$notify("refreshed");
             });
             

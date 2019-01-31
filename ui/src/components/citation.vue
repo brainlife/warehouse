@@ -33,7 +33,7 @@ export default {
             doi: this.doi,
             accept: this.accept,
         }}).then(res=>{
-            this.citation = res.body;
+            this.citation = res.data;
         }).catch(res=>{
             console.error(res);
             this.citation = res.status;

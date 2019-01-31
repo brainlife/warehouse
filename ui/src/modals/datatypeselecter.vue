@@ -115,7 +115,7 @@ export default {
 
                 //group datasets by datatype
                 let groups = {};
-                res.body.forEach(rec=>{
+                res.data.forEach(rec=>{
                     let subject = rec._id.subject;
                     let datatype = rec._id.datatype;
                     let datatype_tags = rec._id.datatype_tags;
@@ -142,7 +142,7 @@ export default {
             }) 
             .then(res=>{
                 this.datatypes = {};
-                res.body.datatypes.forEach((d)=>{
+                res.data.datatypes.forEach((d)=>{
                     this.datatypes[d._id] = d;
                 });
                 this.$forceUpdate();

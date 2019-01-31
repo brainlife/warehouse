@@ -515,7 +515,7 @@ export default {
         //load datatypes for form
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
-            res.body.datatypes.forEach(type=>{
+            res.data.datatypes.forEach(type=>{
                 this.datatypes[type._id] = type;
                 type._tags = [];
             });
@@ -532,7 +532,7 @@ export default {
                         if(!~dt._tags.indexOf(tag)) dt._tags.push(tag);
                     });
                 }
-                res.body.apps.forEach(app=>{
+                res.data.apps.forEach(app=>{
                     app.inputs.forEach(aggregate_tags);
                     app.outputs.forEach(aggregate_tags);
                 });
@@ -550,7 +550,7 @@ export default {
                         this.$http.get('app', {params: {
                             find: JSON.stringify({_id: this.$route.params.id})
                         }}).then(res=>{
-                            this.app = res.body.apps[0];
+                            this.app = res.data.apps[0];
                             this.convert_config_to_ui();
                             this.load_branches();
                             if(this.$route.params.mode == 'copy') {
@@ -586,7 +586,7 @@ export default {
             this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', 
                 { headers: { Authorization: null } })
             .then(res=>{
-                this.github_branches = res.body.map(b => {
+                this.github_branches = res.data.map(b => {
                     return {
                         value: b.name,
                         text: b.name
@@ -877,7 +877,7 @@ export default {
                         //new
                         this.$http.post('app', this.app)
                         .then(res => {
-                            this.$router.push("/app/" + res.body._id);
+                            this.$router.push("/app/" + res.data._id);
                         }).catch(err=>{
                             this.$notify({text: err.body.message, type: 'error' });
                             console.error(err);
@@ -894,7 +894,7 @@ export default {
                     select: 'tags',
                 }}).then(res=>{
                     var alltags = []; 
-                    res.body.apps.forEach(app=>{
+                    res.data.apps.forEach(app=>{
                         if(app.tags) app.tags.forEach(tag=>{
                             if(!~alltags.indexOf(tag)) alltags.push(tag);
                         });

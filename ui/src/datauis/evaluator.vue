@@ -32,10 +32,10 @@ export default {
             '?p='+encodeURIComponent(basepath+'out.json')+
             '&at='+Vue.config.jwt;
         this.$http.get(url).then(res=>{
-            //console.dir(res.body);
-            this.nnz = res.body.nnz;
-            this.rmse = res.body.rmse;
-            var ref = res.body.reference;
+            //console.dir(res.data);
+            this.nnz = res.data.nnz;
+            this.rmse = res.data.rmse;
+            var ref = res.data.reference;
     
             //organize out.json into dataformat that plotly likes
             var data = [];

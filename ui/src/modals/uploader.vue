@@ -155,7 +155,7 @@ export default {
             sort: 'name', 
         }}).then(res=>{
             this.datatypes = {};
-            res.body.datatypes.forEach((type)=>{
+            res.data.datatypes.forEach((type)=>{
                 this.datatypes[type._id] = type;
             });
             
@@ -210,7 +210,7 @@ export default {
             this.$http.post(Vue.config.wf_api+'/instance', {
                 name: "_upload",
             }).then(res=>{
-                this.instance = res.body;
+                this.instance = res.data;
 
                 //lastly, subscribe to the whole instance task events
                 var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -255,11 +255,11 @@ export default {
             this.$http.get(Vue.config.wf_api+'/resource/best/', {params: {
                 service: this.get_validator(),
             }}).then(res=>{
-                if(!res.body.resource) { 
+                if(!res.data.resource) { 
                     this.$notify({ type: 'error', title: 'Server Busy', text: 'Validator service is busy. Please try again later' });
                     this.cancel();
                 }
-                this.validator_resource = res.body.resource;
+                this.validator_resource = res.data.resource;
 
                 //submit noop to upload files on the resource where validator can run
                 return this.$http.post(Vue.config.wf_api+'/task', {
@@ -270,7 +270,7 @@ export default {
                 });
             }).then(res=>{
                 console.log("upload task submitted");
-                this.tasks.upload = res.body.task;
+                this.tasks.upload = res.data.task;
                 this.mode = "upload"; 
             }).catch(err=>{
                 console.error(err);
@@ -364,7 +364,7 @@ export default {
                 deps: [ this.tasks.upload._id ], 
             }).then(res=>{
                 console.log("submitted validation task");
-                this.tasks.validation = res.body.task;
+                this.tasks.validation = res.data.task;
             }, res=>{
                 console.error(res);
             });
@@ -390,7 +390,7 @@ export default {
                 await: false,
             }).then(res=>{
                 console.log("submitted dataset request");
-                var dataset = res.body;
+                var dataset = res.data;
                 this.$notify({ type: 'success', text: 'Successfully uploaded a new dataset. Please give a few minutes for your data to become available.', });
                 this.$router.push("/project/"+this.project._id+"/dataset/"+dataset._id);
 
@@ -428,7 +428,7 @@ export default {
                 distinct: 'tags',
                 find: JSON.stringify({project: this.project._id, datatype: this.datatype_id}),
             }}).then(res=>{
-                this.available_tags = res.body;
+                this.available_tags = res.data;
             });
 
             //load available datatype tags
@@ -436,7 +436,7 @@ export default {
                 distinct: 'datatype_tags',
                 find: JSON.stringify({project: this.project._id, datatype: this.datatype_id}),
             }}).then(res=>{
-                this.available_dt_tags = res.body;
+                this.available_dt_tags = res.data;
             });            
         },
     },

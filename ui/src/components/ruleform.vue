@@ -254,7 +254,7 @@ export default {
                     datatype_tags,
                     limit: 0, //I just need count
                 }}).then(res=>{
-                    Vue.set(this.rule.input_tags_count, id, res.body.count);
+                    Vue.set(this.rule.input_tags_count, id, res.data.count);
                 }); 
             }
         },
@@ -377,7 +377,7 @@ export default {
                     populate: 'inputs.datatype outputs.datatype contributors', //to display app detail
                 }})
                 .then(res=>{
-                    this.apps = res.body.apps;
+                    this.apps = res.data.apps;
                     //console.log("search result:", search, this.apps);
                     loading(false);
                 });
@@ -397,7 +397,7 @@ export default {
                     }),
                     datatype_tags: input.datatype_tags,
                 }}).then(res=>{
-                    Vue.set(this.input_dataset_tags, input.id, res.body);
+                    Vue.set(this.input_dataset_tags, input.id, res.data);
                 }); 
             });
 
@@ -411,7 +411,7 @@ export default {
                     }),
                     datatype_tags: output.datatype_tags,
                 }}).then(res=>{
-                    Vue.set(this.output_dataset_tags, output.id, res.body);
+                    Vue.set(this.output_dataset_tags, output.id, res.data);
                 }); 
             });
         },
@@ -421,7 +421,7 @@ export default {
             this.$http.get('https://api.github.com/repos/' + this.rule.app.github + '/branches', 
                 { headers: { Authorization: null } })
             .then(res=>{
-                this.github_branches = res.body.map(b => {
+                this.github_branches = res.data.map(b => {
                     return {
                         value: b.name,
                         text: b.name

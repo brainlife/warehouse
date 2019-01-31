@@ -30,7 +30,7 @@ export default {
             
             this.$http.get(url_surfaces_json)
             .then(res => {
-                let surfaces = res.body;
+                let surfaces = res.data;
                 surfaces.forEach(surface => {
                     surface.basename = surface.name||surface.filename; //surface.filename is deprecated?
                     let filepath = surface.path||surface.filename; //surface.filename is deprecated?
@@ -42,34 +42,13 @@ export default {
                 this.$http.get(Vue.config.wf_api+"/task/ls/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces"))
                 .then(res=>{        
                     var surfaces = [];
-                    res.body.files.forEach(file=>{
+                    res.data.files.forEach(file=>{
                         var url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"surfaces/"+file.filename)+"&at="+Vue.config.jwt;
                         surfaces.push({ name: file.filename.substring(0, file.filename.length-4), path: url }); 
                     });
                     cb(surfaces);
                 }).catch(this.$notify.error);
             });
-
-            /* 
-            this.$http.get(Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/tracts.json"))
-            .then(res=>{
-                var tracts = res.body;
-                tracts.forEach(tract=>{
-                    tract.url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/"+tract.filename)
-                });
-                cb(tracts);
-            }).catch(err=>{
-                console.error("failed to load tracts.json - probably output from old afq. using afq.tract.json template");
-                fetch("https://brainlife.io/ui/tractview/afq.tracts.json")
-                    .then(res=>res.json())
-                    .then(tracts=>{
-                    tracts.forEach(tract=>{
-                        tract.url = Vue.config.wf_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/"+tract.filename)
-                    });
-                    cb(tracts);
-                });
-            });
-            */
         }
     }
 }

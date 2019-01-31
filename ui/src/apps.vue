@@ -167,7 +167,7 @@ export default {
             return this.$http.get('datatype')
             .then(res=>{
                 this.datatypes = {};
-                res.body.datatypes.forEach((d)=>{
+                res.data.datatypes.forEach((d)=>{
                     this.datatypes[d._id] = d;
                 });
             }).catch(err=>{
@@ -228,10 +228,10 @@ export default {
                 populate: 'inputs.datatype outputs.datatype contributors',
             }})
             .then(res=>{
-                this.apps = res.body.apps;
+                this.apps = res.data.apps;
 
                 //organize apps into various tags
-                res.body.apps.forEach(app=>{
+                res.data.apps.forEach(app=>{
                     var tags = [ 'miscellaneous' ];
                     if(app.tags && app.tags.length > 0) tags = app.tags;
                     tags.forEach(tag=>{
@@ -244,7 +244,7 @@ export default {
 
                 if(!this.query) {
                     //find most recently created apps as *new apps*
-                    let apps = res.body.apps.filter(a=>{
+                    let apps = res.data.apps.filter(a=>{
                         //only find apps that has non-0 success rate
                         if(a.stats && a.stats.success_rate > 0) return true;
                         return false;

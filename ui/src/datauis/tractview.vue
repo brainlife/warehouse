@@ -18,7 +18,7 @@ export default {
         if(this.subdir) basepath += this.subdir+"/";
         this.$http.get(Vue.config.amaretti_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/tracts.json"))
         .then(res=>{
-            var tracts = res.body;
+            var tracts = res.data;
             if(!Array.isArray(tracts)) tracts = [tracts]; //make it an array if it's not.. some app just output a single tract without wrapped in []
             tracts.forEach(tract=>{
                 tract.url = Vue.config.amaretti_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/"+tract.filename)

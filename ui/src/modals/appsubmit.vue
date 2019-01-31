@@ -180,7 +180,7 @@ export default {
                 populate: 'inputs.datatype outputs.datatype',
             }})
             .then(res=>{
-                this.app = res.body.apps[0];
+                this.app = res.data.apps[0];
                 this.github_branch = this.app.github_branch || 'master';
 
                 //initialize input datasets array (with null as first item)
@@ -194,7 +194,7 @@ export default {
                 }});
             })
             .then(res => {
-                this.no_resource = !res.body.resource;
+                this.no_resource = !res.data.resource;
                 this.open = true;
             })
             .catch(err=>{
@@ -241,7 +241,7 @@ export default {
                 skip
             }})
             .then(res => {
-                res.body.datasets.forEach(dataset => {
+                res.data.datasets.forEach(dataset => {
                     var subject = "N/A";
                     if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
 
@@ -261,7 +261,7 @@ export default {
                     results: dropdown_items,
                     pagination: {
                         // only load more items if there's more items to load
-                        more: skip + res.body.datasets.length < res.body.count,
+                        more: skip + res.data.datasets.length < res.data.count,
                     },
                 });
             });
@@ -413,11 +413,11 @@ export default {
                 }),
                 select: 'name group_id agreements',
             }}).then(res=>{
-                project = res.body.projects.find(p=>p._id == this.project);
+                project = res.data.projects.find(p=>p._id == this.project);
 
                 //make sure user has met agreements to all projects used
                 return new Promise((resolve, reject)=>{
-                    async.eachSeries(res.body.projects, this.check_agreements, err=>{
+                    async.eachSeries(res.data.projects, this.check_agreements, err=>{
                         if(err) return reject(err);
 
                         //create an instance to run everything
@@ -432,13 +432,13 @@ export default {
                     });
                 }); 
             }).then(res=>{
-                instance = res.body;
+                instance = res.data;
                 return this.$http.post('dataset/stage', {
                     instance_id: instance._id,
                     dataset_ids: all_dataset_ids,
                 });
             }).then(res=>{
-                var download_task = res.body.task;
+                var download_task = res.data.task;
 
                 //construct _inputs for main app - using download_task._outputs as starting point
                 app_inputs = download_task.config._outputs;
@@ -447,6 +447,7 @@ export default {
 
                     //enumerate input ids for each input datasets
                     input.keys = [];
+                    debugger;
                     for(var input_id in this.form.inputs) {
                         for(var key in this.app.config) {
                             if(this.app.config[key].input_id == input_id) input.keys.push(key); 
@@ -513,11 +514,11 @@ export default {
                 
                 return this.$http.post(Vue.config.wf_api+'/task', submissionParams);
             }).then(res=>{
-                console.log("submitted app task", res.body.task);
+                console.log("submitted app task", res.data.task);
                 this.$router.push("/project/"+this.project+"/process/"+instance._id);
             }).catch(res=>{
                 console.error(res);
-                this.$notify({ text: res.body.message , type: 'error' });
+                this.$notify({ text: res.data.message , type: 'error' });
             });
         },
 
@@ -535,7 +536,7 @@ export default {
                 },
             }).then(res=>{
                 console.log("requested notification");
-                console.dir(res.body);
+                console.dir(res.data);
             }).catch(err=>{
                 console.error(err);
             });

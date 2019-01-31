@@ -42,7 +42,7 @@ export default {
             sort: 'name',
         }}).then(res=>{
             var option_groups = {} 
-            res.body.projects.forEach(project=>{
+            res.data.projects.forEach(project=>{
                 if(this.access && project.access != this.access) return; //filtered out by access filter
                 if(!option_groups[project.access]) option_groups[project.access] = [];
                 option_groups[project.access].push({ id: project._id, text: project.name, });

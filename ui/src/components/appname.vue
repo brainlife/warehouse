@@ -33,7 +33,7 @@ export default {
                 find: JSON.stringify({_id: this.appid}),
                 populate: 'inputs.datatype outputs.datatype',
             }}).then(res=>{
-                this.app_ = res.body.apps[0];
+                this.app_ = res.data.apps[0];
             });
             */
 

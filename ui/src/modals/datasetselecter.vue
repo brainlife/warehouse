@@ -118,7 +118,7 @@ export default {
                 limit: 500,
                 select: 'name agreements',
             }}).then(res=>{
-                async.eachSeries(res.body.projects, this.check_agreements, err=>{
+                async.eachSeries(res.data.projects, this.check_agreements, err=>{
                     if(err) return console.error(err);
                     this.$root.$emit("datasetselecter.submit", os);
                     this.close();
@@ -189,7 +189,7 @@ export default {
             //now load datasets
             this.$http.get('dataset', { params: filter_params })
             .then(res => {
-                var datasets = res.body.datasets;
+                var datasets = res.data.datasets;
                 
                 datasets.forEach(dataset => {
                     //console.dir(dataset);
@@ -231,7 +231,7 @@ export default {
                     results: dropdown_items,
                     pagination: {
                         // only load more items if there's more items to load
-                        more: filter_params.skip + res.body.datasets.length < res.body.count,
+                        more: filter_params.skip + res.data.datasets.length < res.data.count,
                     },
                 });
             });
@@ -253,7 +253,7 @@ export default {
                 }),
                 distinct: 'meta.subject',
             }}).then(res=>{
-                this.subjects = res.body;
+                this.subjects = res.data;
             });
         },
     },
@@ -267,7 +267,7 @@ export default {
             sort: 'name'
         }}).then(res=>{
             this.datatypes = {};
-            res.body.datatypes.forEach(datatype=>{
+            res.data.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
                 this.datatypes_s2.push({ id: datatype._id, text: datatype.name });
             });

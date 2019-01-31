@@ -89,7 +89,7 @@ export default {
                 find: JSON.stringify({ _id: this.taskid, })
             }})
             .then(res=>{
-                this.task = res.body.tasks[0];
+                this.task = res.data.tasks[0];
                 if(this.task.status == 'finished') return; //ready to show!
                 if(this.task.status == 'removed') {
                     console.debug("rerunning");

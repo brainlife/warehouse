@@ -40,7 +40,7 @@ export default {
         }});
         profiles.then(res=>{
             this.profiles = [];
-            res.body.profiles.forEach(profile=>{
+            res.data.profiles.forEach(profile=>{
                 this.profiles.push({id: profile.id, text: profile.fullname + "<"+profile.email+">"});
             });
         }, res=>{

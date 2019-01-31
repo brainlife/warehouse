@@ -359,7 +359,7 @@ export default {
             //load release
             this.$http.get('pub/datasets-inventory/'+this.release._id).then(res=>{
                 let groups = {};
-                res.body.forEach(rec=>{
+                res.data.forEach(rec=>{
                     let subject = rec._id.subject;
                     let datatype = rec._id.datatype;
                     let datatype_tags = rec._id.datatype_tags;
@@ -388,7 +388,7 @@ export default {
                 }});
             })
             .then(res=>{
-                this.apps = res.body;
+                this.apps = res.data;
             });
         }
     },
@@ -418,7 +418,7 @@ export default {
             deref_contacts: true,
         }})
         .then(res=>{
-            this.pub = res.body.pubs[0];
+            this.pub = res.data.pubs[0];
 
             if(Vue.config.debug) this.pub.doi = "10.1038/nature.2014.14583";
 
@@ -436,7 +436,7 @@ export default {
             return this.$http.get('datatype');
         })
         .then(res=>{
-            res.body.datatypes.forEach((d)=>{
+            res.data.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
             });
 
@@ -480,7 +480,7 @@ export default {
                     //skip: this.datasets_perpage*(this.datasets_page-1),
                     //limit: this.datasets_perpage,
                 }}).then(res=>{
-                    block.datasets = res.body.datasets;
+                    block.datasets = res.data.datasets;
                 }).catch(console.error);
             }
         },

@@ -52,7 +52,7 @@ export default {
                 find: JSON.stringify({ _id: this.taskid, })
             }})
             .then(res=>{
-                this.task = res.body.tasks[0];
+                this.task = res.data.tasks[0];
                 if(this.task.status == 'finished') return cb();
                 if(this.task.status == 'removed') this.rerun();
                 console.log("polling", this.task.status, this.task.status_msg);
@@ -85,8 +85,8 @@ export default {
                     })
                 }})
                 .then(res=>{
-                    console.log("query result", res.body.tasks);
-                    if(res.body.tasks.length == 0) {
+                    console.log("query result", res.data.tasks);
+                    if(res.data.tasks.length == 0) {
                         //submit novnc service for the first time!
                         this.$http.post(Vue.config.wf_api+'/task', {
                             instance_id: instance._id,
@@ -104,12 +104,12 @@ export default {
                             deps: [ this.taskid ], 
                         })
                         .then(res => {
-                            this.novnc_task = res.body.task;
+                            this.novnc_task = res.data.task;
                             this.subscribe_ws();
                         });
                     } else {
                         //already submitted..
-                        this.novnc_task = res.body.tasks[0];
+                        this.novnc_task = res.data.tasks[0];
                         this.subscribe_ws();
                         this.check_status();
 
@@ -136,7 +136,7 @@ export default {
                         '&at='+Vue.config.jwt;
                     this.$http.get(url).then(function(res) {
                         //load novnc!
-                        document.location = res.body;
+                        document.location = res.data;
                     }, function(err) {
                         //still waiting for url.txt
                         console.error(err);
@@ -155,17 +155,17 @@ export default {
                 }})
                 .then(res=>{
                     //console.log(res);
-                    if(res.body.instances.length == 0) {
+                    if(res.data.instances.length == 0) {
                         //need to submit new instance
                         this.$http.post(Vue.config.wf_api+'/instance', {
                             name,
                         })
                         .then(res=>{
-                            console.log("created instance", res.body);
-                            resolve(res.body);
+                            console.log("created instance", res.data);
+                            resolve(res.data);
                         });
                     } else {
-                        resolve(res.body.instances[0]);
+                        resolve(res.data.instances[0]);
                     }
                 }).catch(reject); 
             });

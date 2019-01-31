@@ -272,7 +272,7 @@ export default {
         //this.ps = new PerfectScrollbar(this.$refs.scrollable);
         this.$http.get('datatype/ui', {params: {}})
         .then(res=>{
-            this.uis = res.body.uis;    
+            this.uis = res.data.uis;    
         });
         */
 
@@ -280,7 +280,7 @@ export default {
             sort: 'name',
         }})
         .then(res=>{
-            this.datatypes = res.body.datatypes;
+            this.datatypes = res.data.datatypes;
             this.selected = this.datatypes.find(d=>d._id == this.$route.params.id);
         }).catch(console.error);
     },
@@ -365,7 +365,7 @@ export default {
                     sort: 'name',
                     find: JSON.stringify({_id: this.selected._id}),
                 }}).then(res=>{
-                    Object.assign(this.selected, res.body.datatypes[0]);
+                    Object.assign(this.selected, res.data.datatypes[0]);
                 });
             } else {
                 this.selected = null;
@@ -412,7 +412,7 @@ export default {
                 select: 'name desc inputs outputs stats github',
                 populate: 'inputs.datatype outputs.datatype', //<app> likes datatypes populated
             }}).then(res=>{
-                this.apps = res.body.apps;
+                this.apps = res.data.apps;
             })
 
             //load adhoc datatype_tags used for this datatype
@@ -426,7 +426,7 @@ export default {
                 }),
                 
             }}).then(res=>{
-                this.adhoc_datatype_tags = res.body;
+                this.adhoc_datatype_tags = res.data;
             });
 
         },

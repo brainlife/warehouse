@@ -316,7 +316,7 @@ export default {
                 limit: 0, //I just need a count.
             }})
             .then(res=>{
-                Vue.set(this.selected, 'activetaskcount', res.body.count);
+                Vue.set(this.selected, 'activetaskcount', res.data.count);
             });  
         },
 
@@ -334,7 +334,7 @@ export default {
                 sort: 'create_date', 
             }})
             .then(res=>{
-                this.rules = res.body.rules; 
+                this.rules = res.data.rules; 
                 if(this.$route.params.subid) {
                     this.editing = this.rules.find(rule=>rule._id == this.$route.params.subid);
                 }
@@ -372,7 +372,7 @@ export default {
             }})
             .then(res=>{
                 this.datatypes = {};
-                res.body.datatypes.forEach(datatype=>{
+                res.data.datatypes.forEach(datatype=>{
                     this.datatypes[datatype._id] = datatype;
                 });
 
@@ -392,7 +392,7 @@ export default {
             })
             .then(res=>{
                 this.projects = {};
-                res.body.projects.forEach(project=>{
+                res.data.projects.forEach(project=>{
                     this.projects[project._id] = project;
                 });
                 cb();
@@ -478,7 +478,7 @@ export default {
             } else {
                 //create
                 this.$http.post('rule', rule).then(res=>{
-                    this.selected = res.body;
+                    this.selected = res.data;
                     this.load(err=>{
                         this.$notify({text: "Successfully created a new rule. You must activate it so that it will run", type: "success"});
                         this.cancel_edit();
@@ -528,18 +528,18 @@ export default {
                 limit: 5000, //big enough to grab all tasks?
             }})
             .then(res=>{
-                if(res.body.count > 0) {
+                if(res.data.count > 0) {
                     let active_count = 0;
-                    let active_tasks = res.body.tasks.filter(task=>{
+                    let active_tasks = res.data.tasks.filter(task=>{
                         if(!["requested", "running", "running_sync"].includes(task.status)) return false;
                         if(!task.config._app) return false; //staging job?
                         return true;
                     });
-                    if(confirm("Deactivating this rule will remove "+active_tasks.length+" active tasks ("+res.body.count+" total) submitted by this rule. Should we proceed?")) {
-                        Vue.set(rule, 'deactivating_remain', res.body.count);
-                        this.$notify({ title: 'Removing Task', text: 'Removing'+res.body.count+' tasks', type: 'info', });
+                    if(confirm("Deactivating this rule will remove "+active_tasks.length+" active tasks ("+res.data.count+" total) submitted by this rule. Should we proceed?")) {
+                        Vue.set(rule, 'deactivating_remain', res.data.count);
+                        this.$notify({ title: 'Removing Task', text: 'Removing'+res.data.count+' tasks', type: 'info', });
 
-                        async.eachSeries(res.body.tasks, (task, next_task)=>{
+                        async.eachSeries(res.data.tasks, (task, next_task)=>{
                             console.log("removing", task._id);
                             this.$http.delete(Vue.config.wf_api+'/task/'+task._id).then(res=>{
                                 rule.deactivating_remain--;
@@ -547,7 +547,7 @@ export default {
                             }).catch(next_task);
                         }, err=>{
                             if(err) return this.notify_error(err);
-                            this.$notify({ title: 'Removing Task', text: 'Removed '+res.body.count+' tasks', type: 'success', });
+                            this.$notify({ title: 'Removing Task', text: 'Removed '+res.data.count+' tasks', type: 'success', });
                             this.$http.put('rule/'+rule._id, {active: false}).then(res=>{
                                 rule.active = false;
                             }).catch(this.notify_error);

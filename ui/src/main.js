@@ -21,9 +21,8 @@ import 'select2/dist/js/select2.js'
 import Vue from 'vue'
 
 import vSelect from 'vue-select' 
-import VueResource from 'vue-resource'
+//import VueResource from 'vue-resource' //deprecated by vue-axios
 import VueHighlightJS from 'vue-highlightjs'
-//import Vue2Filters from 'vue2-filters' //conflicts with vue-select filterBy?
 
 import Element from 'element-ui'
 import locale from 'element-ui/lib/locale/lang/en'
@@ -43,19 +42,22 @@ import SocialSharing from 'vue-social-sharing';
 import VueAnalytics from 'vue-analytics'
 //import Meta from 'vue-meta'
 
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+
 Vue.component('v-select', vSelect)
 Vue.component('icon', Icon)
 
 import VueDisqus from 'vue-disqus'
-Vue.use(VueDisqus)
 
+Vue.use(VueDisqus)
 Vue.use(VueHighlightJS)
-Vue.use(VueResource)
+//Vue.use(VueResource)
+Vue.use(VueAxios, axios)
 Vue.use(Element, {locale})
 Vue.use(Notifications);
 Vue.use(VueLazyload)
 Vue.use(BootstrapVue);
-//Vue.use(Vue2Filters)
 Vue.use(SocialSharing);
 Vue.use(VueTimeago, {
     name: 'timeago',
@@ -126,7 +128,8 @@ Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.productionTip = false
 
-Vue.http.options.root = Vue.config.api; //default root for $http
+//Vue.http.options.root = Vue.config.api; //default root for $http
+axios.defaults.baseURL= Vue.config.api; //default root for $http
 
 if (process.env.NODE_ENV == "development") {
     Vue.config.debug = true;
@@ -139,7 +142,10 @@ function jwt_decode_brainlife(jwt) {
     //auth service should return sub in string format, but currently it doesn't..
     //let's just covert it to string 
     Vue.config.user.sub = Vue.config.user.sub.toString();
-    Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
+
+    //for vue resource
+    //Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
+    axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
     Vue.config.is_admin = isadmin();
     if(Vue.config.is_admin) console.log("user is admin!");
@@ -163,7 +169,7 @@ if (Vue.config.jwt) {
 
 router.beforeEach(function (to, from, next) {
     if (to.matched.length == 0) {
-        console.log("no matching reouter for", JSON.stringify(to, null, 4), "redirecting to /404");
+        //console.log("no matching reouter for", JSON.stringify(to, null, 4), "redirecting to /404");
         document.location = "/404";
         return;
     }
@@ -172,12 +178,13 @@ router.beforeEach(function (to, from, next) {
     if (!to.meta) to.meta = {};
     if (!to.meta.public && !Vue.config.jwt) {
         console.log("authentication required", document.location.href);
-        sessionStorage.setItem('auth_redirect', document.location.href);
-        document.location = Vue.config.auth_signin;
+        if(!Vue.config.debug) {
+            document.location = Vue.config.auth_signin;
+            sessionStorage.setItem('auth_redirect', document.location.href);
+        }
         return;
     }
 
-    //console.log("scrolling to top");
     window.scrollTo(0, 0); //scroll to top on route update (sensible default.. or bad practice?)
     next();
 });
@@ -212,16 +219,19 @@ new Vue({
             if(!Vue.config.jwt) return;
             console.log("refreshing token");
             this.$http.post(Vue.config.auth_api+"/refresh").then(res=>{
-                if(!res.body.jwt) console.log("token refresh didn't work.. resetting jwt");
+                if(!res.data.jwt) console.log("token refresh didn't work.. resetting jwt");
                 console.log("refreshed token!");
-                jwt_decode_brainlife(res.body.jwt);
-                localStorage.setItem("jwt", res.body.jwt);
+                jwt_decode_brainlife(res.data.jwt);
+                localStorage.setItem("jwt", res.data.jwt);
                 if(cb) cb();
             }).catch(err=>{
-                console.error("failed to referesh token - redirecting to auth service");
-                console.error(err); 
-                sessionStorage.setItem('auth_redirect', document.location.href);
-                document.location = Vue.config.auth_signin;
+                console.error("failed to referesh token");
+                if(!Vue.config.debug) {
+                    console.error("redirecting to auth service");
+                    console.error(err); 
+                    sessionStorage.setItem('auth_redirect', document.location.href);
+                    document.location = Vue.config.auth_signin;
+                }
             });
         },
 
@@ -229,7 +239,7 @@ new Vue({
             if(!Vue.config.jwt) return;
             console.log("loading private profile");
             this.$http.get(Vue.config.profile_api+"/private").then(res=>{
-                Vue.config.profile = res.body;
+                Vue.config.profile = res.data;
             }).catch(err=>{
                 console.error(err); 
             });

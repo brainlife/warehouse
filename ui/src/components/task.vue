@@ -226,7 +226,7 @@ export default {
                 this.$http.get(Vue.config.wf_api+'/resource/', {params: {
                     find: JSON.stringify({_id: id})
                 }}).then(res=>{
-                    this.resource = res.body.resources[0];
+                    this.resource = res.data.resources[0];
                     resource_cache[id] = this.resource;
                 });
             }
@@ -240,7 +240,7 @@ export default {
         rerun() {
             this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.task._id)
             .then(res=>{
-                this.$notify({ text: res.body.message, type: 'success'});
+                this.$notify({ text: res.data.message, type: 'success'});
             })
             .catch(err=>{
                 this.$notify({ text: err.body.message, type: 'error'});
@@ -249,7 +249,7 @@ export default {
         stop() {
             this.$http.put(Vue.config.wf_api+'/task/stop/'+this.task._id)
             .then(res=>{
-                this.$notify({ text: res.body.message, type: 'success'});
+                this.$notify({ text: res.data.message, type: 'success'});
             })
             .catch(err=>{
                 console.error(err); 
@@ -268,7 +268,7 @@ export default {
         poke() {
             this.$http.put(Vue.config.wf_api+'/task/poke/'+this.task._id)
             .then(res=>{
-                this.$notify({text: res.body.message, type: 'success'});
+                this.$notify({text: res.data.message, type: 'success'});
             })
             .catch(err=>{
                 console.error(err); 

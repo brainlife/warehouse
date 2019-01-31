@@ -239,7 +239,7 @@ export default {
             select: '-readme'
         }}).then(res=>{
             this.projects = {};
-            res.body.projects.forEach((p)=>{
+            res.data.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
 
@@ -272,7 +272,7 @@ export default {
         })
         .catch(res=>{
             console.error(res);
-            this.$notify({type: 'error', text: res.body.message});
+            this.$notify({type: 'error', text: res.data.message});
         });
     },
 
@@ -323,7 +323,7 @@ export default {
                     _id: project._id,
                 }),
             }}).then(res=>{
-                let full_project = res.body.projects[0];
+                let full_project = res.data.projects[0];
                 for(var key in full_project) {
                     this.selected[key] = full_project[key];
                 }

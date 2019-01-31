@@ -373,7 +373,7 @@ export default {
             populate: 'inputs.datatype outputs.datatype projects',
         }})
         .then(res=>{
-            this.app = res.body.apps[0];
+            this.app = res.data.apps[0];
             if(this.config.user) this.find_resources(this.app.github);
 
             //then load service info
@@ -381,7 +381,7 @@ export default {
                 service: this.app.github,
             }});
         }).then(res=>{
-            this.info = res.body;
+            this.info = res.data;
 
             //then load github README
             var branch = this.app.github_branch||"master";
@@ -390,7 +390,6 @@ export default {
             if(res.status == "200") return res.text()
         }).then(readme=>{
             this.readme = readme;
-
         }).catch(err=>{
             console.error(err);
         });
@@ -489,8 +488,8 @@ export default {
                 service,
             }})
             .then(res => {
-                if(res.body.resource) this.preferred_resource = res.body.resource;
-                this.resources = res.body.considered.sort((a, b) => {
+                if(res.data.resource) this.preferred_resource = res.data.resource;
+                this.resources = res.data.considered.sort((a, b) => {
                     if (a.score < b.score) return 1;
                     if (a.score > b.score) return -1;
                     return 0;

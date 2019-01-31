@@ -25,7 +25,7 @@
             <!--file/dir label-->
             <div class="fileitem" @click="click(file)" :class="{'fileitem-viewing': file.view}">
                 <span :style="{marginLeft: offset, opacity: '0.7'}">
-                    <icon name="link" v-if="!file.directory && file.link" class="text-warning"></icon>
+                    <icon name="link" v-if="file.link" class="text-warning" scale="0.80"></icon>
                     <icon name="regular/file" v-if="!file.directory && !file.link"></icon>
                     <icon name="folder-open" v-if="file.directory && file.open" class="text-primary"></icon>
                     <icon name="folder" v-if="file.directory && !file.open" class="text-primary"></icon>
@@ -126,7 +126,7 @@ export default {
             var url = Vue.config.wf_api+'/task/ls/'+this.task._id;
             if(this.path) url += '?p='+encodeURIComponent(this.path);
             this.$http.get(url).then(res=>{
-                this.files = res.body.files.sort((a, b)=>{
+                this.files = res.data.files.sort((a, b)=>{
                     if(a.attrs.mtime == b.attrs.mtime) {
                         return a.attrs.filename||a.attrs.dirname > b.attrs.filename||b.attrs.dirname;
                     }
@@ -150,26 +150,23 @@ export default {
         },
 
         //subordiante of click method.. this and click methods are ugly..
-        open_text(res, file, type) {
-            res.text().then(c=>{
-                //reformat json content
-                if(type == "json") {
-                    var j = JSON.parse(c);
-                    c = JSON.stringify(j, null, 4);
-                }
+        open_text(data, file, type) {
+            //reformat json content
+            if(type == "json") {
+                data = JSON.stringify(data, null, 4);
+            }
 
-                if(c == "") c = "(empty)";
-                Vue.set(file, 'type', type);
-                Vue.set(file, 'content', c);
-                Vue.set(file, 'view', true);
+            if(data == "") data = "(empty)";
+            Vue.set(file, 'type', type);
+            Vue.set(file, 'content', data);
+            Vue.set(file, 'view', true);
 
-                //scroll to the buttom of the <pre>
-                this.$nextTick(()=>{
-                    let id = this.files.indexOf(file);
-                    let pre = this.$refs["file."+id][0];
-                    pre.scrollTop = pre.scrollTopMax;
-                });
-            });
+            //scroll to the buttom of the <pre>
+            this.$nextTick(()=>{
+                let id = this.files.indexOf(file);
+                let pre = this.$refs["file."+id][0];
+                pre.scrollTop = pre.scrollTopMax;
+            });   
         },
 
         click(file){
@@ -198,18 +195,20 @@ export default {
             Vue.set(file, 'downloading', true);
             this.$http.get(url).then(res=>{
                 file.downloading = false;
-                switch(res.headers.get("Content-Type")) {
+                console.dir(res.headers);
+                switch(res.headers["content-type"]) {
                 case "application/json": 
-                        this.open_text(res, file, "json");
+                        this.open_text(res.data, file, "json");
                         return;
                 case "application/x-sh": 
-                        this.open_text(res, file, "bash");
+                        this.open_text(res.data, file, "bash");
                         return;
+                case "text/markdown":
                 case "text/plain":
-                        this.open_text(res, file, "text"); 
+                        this.open_text(res.data, file, "text"); 
                         return;
                 case "text/csv": 
-                        this.open_text(res, file, "csv");
+                        this.open_text(res.data, file, "csv");
                         return;
                 case "image/png":
                 case "image/jpeg":
@@ -222,13 +221,18 @@ export default {
                 case null:
                     var tokens = file.filename.split(".");
                     var ext = tokens[tokens.length-1];
+                    //console.log("ext", ext);
+                    
+                    //common text files that brainlife sees
                     switch(ext) {
                     case "bvals": 
                     case "bvecs": 
                     case "err": 
                     case "jobid": 
+                    case "_main":                     
                     case "main": 
-                        this.open_text(res, file, "text");
+                    case "exit-code":                    
+                        this.open_text(res.data, file, "text");
                         return;
                     }
                 }

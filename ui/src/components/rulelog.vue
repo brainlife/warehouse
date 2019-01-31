@@ -55,11 +55,11 @@ export default {
             this.stats = null;
 
             this.$http.get('rule/log/'+this.id).then(res=>{
-                this.logs = res.body.logs;
-                this.stats = res.body.stats;
+                this.logs = res.data.logs;
+                this.stats = res.data.stats;
             }).catch(res=>{
                 console.error(res);
-                this.err = res.body.err;
+                this.err = res.data.err;
             });
     
             /*
@@ -72,7 +72,7 @@ export default {
                 limit: 0, //I just need a count.
             }})
             .then(res=>{
-                this.taskcount = res.body.count;
+                this.taskcount = res.data.count;
             });
             */
         },

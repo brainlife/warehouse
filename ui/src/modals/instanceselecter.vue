@@ -76,7 +76,7 @@ export default {
                 limit: 1000,
                 sort: '-create_date',
             }}).then(res=>{
-                res.body.instances.forEach(instance=>{
+                res.data.instances.forEach(instance=>{
                     instance._label = instance.desc||'('+instance._id+')';
                     this.instances.push(instance);
                 });
@@ -107,7 +107,7 @@ export default {
         }})
         .then(res=>{
             this.projects = {};
-            res.body.projects.forEach((p)=>{
+            res.data.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
         });

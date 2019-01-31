@@ -120,7 +120,7 @@ export default {
 
                 await: false, //request to not wait for dataset to be archived before returning
             }).then(res=>{
-                this.$root.$emit('archiver.submit', res.body);
+                this.$root.$emit('archiver.submit', res.data);
                 this.$notify({text: "Archiving requested.."});
                 this.$refs.archiver.hide();
             }).catch(err=>{
@@ -145,7 +145,7 @@ export default {
                 }),
                 distinct: 'tags',
             }}).then(res=>{
-                this.other_tags = res.body;
+                this.other_tags = res.data;
             });
         }
     },

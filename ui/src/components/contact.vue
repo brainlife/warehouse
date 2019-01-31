@@ -102,7 +102,7 @@ export default {
                 profiles = this.$http.get(Vue.config.auth_api+'/profile?limit=3000');
             }
             profiles.then(res=>{
-                res.body.profiles.forEach((profile)=>{
+                res.data.profiles.forEach((profile)=>{
                     if(profile.id == this.id) this.profile = profile;
                 });
             
@@ -127,7 +127,7 @@ export default {
         show() {
             if(!this.public) {
                 this.$http.get(Vue.config.profile_api+'/public/'+this.profile.id).then(res=>{
-                    this.public = res.body;
+                    this.public = res.data;
                 }).catch(err=>{
                     console.log("couldn't load profile");
                 });

@@ -99,7 +99,7 @@ export default {
                     find: JSON.stringify(project_query),
                     distinct: 'project',
                 }}).then(res=>{
-                    var project_ids = res.body;
+                    var project_ids = res.data;
                     find._id = {$in: project_ids};
                     //TODO - if there are no project, not point of querying for datasets.
                     //we should warn user that they can't execue this app until data derivative is generated
@@ -119,7 +119,7 @@ export default {
             }}).then(res=>{
                 this.options = [];
                 if(!this.required) this.options.push({value: null, text: this.placeholder||''});
-                res.body.projects.forEach(project=>{
+                res.data.projects.forEach(project=>{
                     this.options.push({value: project._id, text: project.name});
                 });
 

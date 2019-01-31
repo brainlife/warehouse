@@ -55,7 +55,7 @@ export default {
         }})
         .then(res => {
 
-            this.preferrable_resources = res.body.considered.map(resource => {
+            this.preferrable_resources = res.data.considered.map(resource => {
                 return {
                     value: resource.id,
                     text: resource.name + " - " + resource.info.name
@@ -65,12 +65,12 @@ export default {
             this.preferrable_resources.sort((a, b) => a.score > b.score);
 
             //this.preferred_resource = this.value.preferred_resource; //leave it none
-            //if(!this.value.preferred_resource && res.body.resource) this.preferred_resource = res.body.resource._id;
+            //if(!this.value.preferred_resource && res.data.resource) this.preferred_resource = res.data.resource._id;
             
             return this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', { headers: { Authorization: null } });
         })
         .then(res => {
-            this.github_branches = res.body.map(b => {
+            this.github_branches = res.data.map(b => {
                 return {
                     value: b.name,
                     text: b.name

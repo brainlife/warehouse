@@ -37,7 +37,7 @@ export default {
             sort: 'name'
         }})
         .then(res => {
-            this.datatypes = res.body.datatypes;
+            this.datatypes = res.data.datatypes;
             this.datatypes.forEach(datatype => {
                 if (datatype._id == this.value) {
                     this.selected = datatype;

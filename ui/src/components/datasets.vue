@@ -250,7 +250,7 @@ export default {
         return this.$http.get('datatype')
         .then(res=>{
             this.datatypes = {};
-            res.body.datatypes.forEach((d)=>{
+            res.data.datatypes.forEach((d)=>{
                 this.datatypes[d._id] = d;
             });
             this.reload();
@@ -315,9 +315,9 @@ export default {
                 find: JSON.stringify({$and: this.get_mongo_query()}),
                 distinct: 'meta.subject'
             }}).then(res=>{
-                this.total_subjects = res.body.length;
+                this.total_subjects = res.data.length;
             }).catch(res=>{
-                this.$notify({type: 'error', text: res.body.message || JSON.stringify(res.body)});
+                this.$notify({type: 'error', text: res.data.message || JSON.stringify(res.data)});
             });
 
             var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
@@ -450,11 +450,11 @@ export default {
                 }
             })
             .then(res=>{
-                this.total_datasets = res.body.count;
+                this.total_datasets = res.data.count;
                 var groups = this.last_groups; //start with the last subject group from previous load
 
                 var last_subject = null;
-                res.body.datasets.forEach((dataset, idx)=>{
+                res.data.datasets.forEach((dataset, idx)=>{
                     dataset.checked = this.selected[dataset._id];
                     var subject = "nosub"; //not all datasets has subject tag
                     if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
@@ -465,7 +465,7 @@ export default {
                 });
 
                 this.last_groups = {};
-                loaded += res.body.datasets.length;
+                loaded += res.data.datasets.length;
                 if(this.total_datasets != loaded) {
                     //don't add last subject group - in case we might have more datasets for that key in the next page - so that we can join them together
                     this.last_groups[last_subject] = groups[last_subject];
@@ -581,7 +581,7 @@ export default {
                 config: {
                     selected: this.selected,
                 }
-            }).then(res=>res.body);
+            }).then(res=>res.data);
         },
 
         set_uploader_options() {
@@ -608,7 +608,7 @@ export default {
                             //I can't use this.project.group_id because user might be running it on another project
                             group_id: opt.group_id, 
                         }).then(res=>{
-                            this.submit_process(opt.project_id, res.body);
+                            this.submit_process(opt.project_id, res.data);
                         }).catch(err=>{
                             console.error(err);
                             this.$notify({type: 'error', text: err.body.message});
@@ -683,7 +683,7 @@ export default {
                 instance_id: instance._id,
                 dataset_ids,
             }).then(res=>{
-                //console.dir(res.body);
+                //console.dir(res.data);
                 this.clear_selected();
                 this.$router.push("/project/"+project_id+"/process/"+instance._id);
             });

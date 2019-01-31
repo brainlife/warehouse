@@ -18,7 +18,6 @@ export default {
 
     methods: {
         load_agreement: async function() {
-            //console.log("loading agreement ui");
             let agreements = await this.get_user_agreements();
             for(let id in agreements) {
                 Vue.set(this.user_agreements, id, agreements[id]);
@@ -35,9 +34,9 @@ export default {
                 if(!Vue.config.jwt) return resolve(agreements);
 
                 //load from profile service
-                //console.log("loading private profile");
+                console.log("loading private profile for user agreements");
                 this.$http.get(Vue.config.profile_api+"/private").then(res=>{
-                    resolve(res.body.agreements||{});
+                    resolve(res.data.agreements||{});
                 }).catch(reject);
             });
         },

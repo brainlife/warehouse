@@ -235,7 +235,7 @@ export default {
 
         this.$http.get('datatype').then(res=>{
             this.datatypes = {};
-            res.body.datatypes.forEach(datatype=>{
+            res.data.datatypes.forEach(datatype=>{
                 this.datatypes[datatype._id] = datatype;
             });
             cache_datatypes = this.datatypes;
@@ -246,7 +246,7 @@ export default {
             }});
         }).then(res=>{
             this.projects = {};
-            res.body.projects.forEach(project=>{
+            res.data.projects.forEach(project=>{
                 this.projects[project._id] = project;
             });
             cache_projects = this.projects;
@@ -422,13 +422,13 @@ export default {
             .then(res=>{
 
                 //load show/hide status
-                res.body.tasks.forEach(task=>{
+                res.data.tasks.forEach(task=>{
                     task.show = true;
                     var show = localStorage.getItem("task.show."+task._id);
                     if(show == "false") task.show = false;
                 });
 
-                this.tasks = res.body.tasks;
+                this.tasks = res.data.tasks;
                 this.loading = false;
 
                 //loading archived datasets for all tasks
@@ -441,7 +441,7 @@ export default {
                     }),
                     limit: 300,
                 }}).then(res=>{
-                    this.archived = res.body.datasets;
+                    this.archived = res.data.datasets;
                     this.$nextTick(()=>{
                         console.log("trying to scroll to", this.selected_task_id);
                         this.scrollto(this.selected_task_id);
@@ -499,7 +499,7 @@ export default {
                 instance_id: this.instance._id,
                 dataset_ids,
             }).then(res=>{
-                console.dir(res.body);
+                console.dir(res.data);
             });
         },
 
@@ -508,7 +508,7 @@ export default {
             task.instance_id = this.instance._id;
             task.config._tid = this.next_tid();
             this.$http.post(Vue.config.wf_api+'/task', task).then(res=>{
-                var _task = res.body.task;
+                var _task = res.data.task;
             }).catch(this.notify_error);
         },
 

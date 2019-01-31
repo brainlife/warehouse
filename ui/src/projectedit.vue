@@ -201,7 +201,7 @@ export default {
             this.$http.get('project', {params: {
                 find: JSON.stringify({_id: this.$route.params.id})
             }}).then(res=>{
-                this.project = res.body.projects[0];
+                this.project = res.data.projects[0];
                 if(!this.project.agreements) Vue.set(this.project, "agreements", []); //backward compatibility
             });
         } else {
@@ -240,7 +240,7 @@ export default {
                 //create
                 this.$http.post('project', this.project).then(res=>{
                     this.$root.$emit("refresh_jwt");
-                    this.$router.push('/project/'+res.body._id);
+                    this.$router.push('/project/'+res.data._id);
                 }).catch(console.error);
             }
         }

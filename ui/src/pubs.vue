@@ -54,7 +54,7 @@ export default {
             deref_contacts: true,
         }})
         .then(res=>{
-            this.pubs = res.body.pubs;
+            this.pubs = res.data.pubs;
         }, res=>{
             console.error(res);
         });

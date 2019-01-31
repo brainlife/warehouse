@@ -36,7 +36,7 @@ export default {
             populate: 'inputs.datatype outputs.datatype contributors',
         }})
         .then(res=>{
-            this.init_vis(res.body.apps);
+            this.init_vis(res.data.apps);
         }, res=>{
             console.error(res);
         });

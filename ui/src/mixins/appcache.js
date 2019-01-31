@@ -16,7 +16,7 @@ export default {
                     find: JSON.stringify({_id: id}),
                     populate: 'inputs.datatype outputs.datatype',
                 }}).then(res=>{
-                    let app = res.body.apps[0];
+                    let app = res.data.apps[0];
                     this.set_cache(id, app);
                     cb(null, app);
                 }).catch(cb);

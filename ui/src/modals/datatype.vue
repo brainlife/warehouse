@@ -81,9 +81,9 @@ export default {
                     "_id": id
                 })
             }}).then(res=>{
-                if (!res.body.count) console.error(`No matching datatype found for ${id}`);
+                if (!res.data.count) console.error(`No matching datatype found for ${id}`);
                 else {
-                    this.datatype = res.body.datatypes[0];
+                    this.datatype = res.data.datatypes[0];
                     
                     this.$http.get('app', {params: {
                         "find": JSON.stringify({
@@ -94,7 +94,7 @@ export default {
                         populate: 'inputs.datatype outputs.datatype contributors',
                     }}).then(res=>{
                         if(!res) return; //TODO notify error?
-                        this.apps = res.body.apps;
+                        this.apps = res.data.apps;
                     });
                 }
             }).catch(console.error);

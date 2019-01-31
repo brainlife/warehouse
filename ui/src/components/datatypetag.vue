@@ -61,7 +61,7 @@ export default {
                         _id: this.datatype,
                     })
                 }}).then(res=>{
-                    this.post_init(res.body.datatypes[0]);
+                    this.post_init(res.data.datatypes[0]);
                 });
             }
         },
