@@ -286,7 +286,7 @@ export default {
         },
 
         generate_config(download_task_id) {
-            var config = this.app.config;
+            var config = Object.assign({}, this.app.config);
             var app = this.app;
             var form = this.form;
             function handle_obj(obj) {
@@ -393,11 +393,9 @@ export default {
                 });
             }
 
-            var app_inputs = [];
             var project = null;
             var instance = null;
             var download = [];
-            var _outputs = [];
 
             //load project detail for project selected and desintation project
             let project_ids = [ this.project ]; //desintation
@@ -440,20 +438,52 @@ export default {
             }).then(res=>{
                 var download_task = res.data.task;
 
-                //construct _inputs for main app - using download_task._outputs as starting point
-                app_inputs = download_task.config._outputs;
-                app_inputs.forEach(input=>{
+                //start constructing config
+                var config = Object.assign(this.generate_config(download_task._id), {
+                    _app: this.app._id,
+                    _tid: 2,
+                    _inputs: [],
+                    _outputs: [],
+                });
+    
+                //update config._inputs for main app
+                /*
+                config._inputs.forEach(input=>{
                     input.task_id = download_task._id;
 
-                    //enumerate input ids for each input datasets
+                    //enumerate json keys associated with this input
                     input.keys = [];
-                    debugger;
                     for(var input_id in this.form.inputs) {
                         for(var key in this.app.config) {
-                            if(this.app.config[key].input_id == input_id) input.keys.push(key); 
+                            if(this.app.config[key].input_id == input_id) {
+                                input.keys.push(key); 
+                            }
                         }
                     }
+                    //TODO input.id = ...
                 });
+                */
+                for(let input_id in this.form.inputs) {
+                    this.form.inputs[input_id].forEach(input=>{
+                        
+                        //find config.json key mapped to this input
+                        let keys = []; 
+                        for(var key in this.app.config) {
+                            if(this.app.config[key].input_id == input_id) {
+                                keys.push(key); 
+                            }
+                        }
+
+                        //for each input, find dataset that's staged and use dataset information from it
+                        let dataset = download_task.config._outputs.find(output=>output.dataset_id == input.dataset);
+                        config._inputs.push(
+                            Object.assign(dataset, {
+                                id: input_id,
+                                keys,
+                            })
+                        );
+                    });
+                }
 
                 //aggregate meta
                 //TODO - this just concatenate *all* meta from all input datasets.. I should probaby do something smarter..
@@ -462,15 +492,7 @@ export default {
                     return meta;
                 }, {});
 
-                //put config together
-                var config = Object.assign(this.generate_config(download_task._id), {
-                    _app: this.app._id,
-                    _tid: 2,
-                    _inputs: app_inputs,
-                    _outputs: [],
-                });
-
-                //now submit the main task
+                //prepare _outputs
                 this.app.outputs.forEach(output=>{
                     var output_req = {
                         id: output.id,
@@ -500,6 +522,7 @@ export default {
                     config._outputs.push(output_req);
                 });
 
+               //now submit the main task
                 let submissionParams = {
                     instance_id: instance._id,
                     name: this.app.name,
