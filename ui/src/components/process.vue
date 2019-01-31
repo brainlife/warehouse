@@ -59,7 +59,7 @@
                             {{findtask(input.task_id).name}}
                         </span>
                     </div>
-                    <div v-else>
+                    <div v-else style="display: inline-block;">
                         <small v-if="input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <span style="opacity: 0.5;">

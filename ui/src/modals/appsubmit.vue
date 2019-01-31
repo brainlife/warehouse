@@ -466,6 +466,7 @@ export default {
                 for(let input_id in this.form.inputs) {
                     this.form.inputs[input_id].forEach(input=>{
                         
+                        
                         //find config.json key mapped to this input
                         let keys = []; 
                         for(var key in this.app.config) {
@@ -479,6 +480,7 @@ export default {
                         config._inputs.push(
                             Object.assign(dataset, {
                                 id: input_id,
+                                task_id: download_task._id,
                                 keys,
                             })
                         );
