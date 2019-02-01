@@ -233,9 +233,7 @@ export default {
             this.loading = true;
             this.smon.info = null;
             this.$http.get(Vue.config.amaretti_api+'/task/download/'+this.task._id+'?p=_smon.out').then(res=>{
-                return res.text();
-            }).then(content=>{
-                let records = content.split("\n");
+                let records = res.data.split("\n");
 
                 //first record should be host/job info
                 this.smon.info = JSON.parse(records.shift()); 

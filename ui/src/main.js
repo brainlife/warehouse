@@ -143,8 +143,6 @@ function jwt_decode_brainlife(jwt) {
     //let's just covert it to string 
     Vue.config.user.sub = Vue.config.user.sub.toString();
 
-    //for vue resource
-    //Vue.http.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
     axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
     Vue.config.is_admin = isadmin();
