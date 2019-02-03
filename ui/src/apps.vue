@@ -358,17 +358,20 @@ background-color: black;
 background-color: #007bff;
 }
 .search-box {
-padding-left: 290px;
 position: fixed;
 top: 6px;
-width: 550px;
+/*width: 550px;*/
+padding-left: 290px;
+width: 100%;
+max-width: 1320px;
+padding-right: 300px;
 }
 .search-box .input {
 font-size: 140%;
-padding-left: 45px;
 background-color: #fff6;
 border: none;
 transition: background-color 0.5s, color 0.5s;
+padding-left: 45px;
 }
 
 .search-box .input:focus,

@@ -102,7 +102,7 @@ export default {
         
         is_default: function(key) {
             if(!this.appconfig[key]) {
-                console.log(key, "not found in ", this.appconfig);
+                //console.log(key, "not found in ", this.appconfig);
                 return;
             }
             return (this.appconfig[key].default == this.taskconfig[key]);

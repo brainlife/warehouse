@@ -464,21 +464,20 @@ export default {
                 });
                 */
                 for(let input_id in this.form.inputs) {
-                    this.form.inputs[input_id].forEach(input=>{
-                        
-                        
-                        //find config.json key mapped to this input
-                        let keys = []; 
-                        for(var key in this.app.config) {
-                            if(this.app.config[key].input_id == input_id) {
-                                keys.push(key); 
-                            }
-                        }
 
-                        //for each input, find dataset that's staged and use dataset information from it
+                    //find config.json key mapped to this input
+                    let keys = []; 
+                    for(var key in this.app.config) {
+                        if(this.app.config[key].input_id == input_id) {
+                            keys.push(key); 
+                        }
+                    }
+
+                    //for each input, find dataset that's staged and use dataset information from it
+                    this.form.inputs[input_id].forEach(input=>{
                         let dataset = download_task.config._outputs.find(output=>output.dataset_id == input.dataset);
                         config._inputs.push(
-                            Object.assign(dataset, {
+                            Object.assign({}, dataset, {
                                 id: input_id,
                                 task_id: download_task._id,
                                 keys,

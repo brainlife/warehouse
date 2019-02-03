@@ -69,7 +69,7 @@
                             </tr>
                             <tr v-if="resource">
                                 <th>Resource</th>
-                                <td>{{resource.name}} <small>{{resource.desc}}</small></td>
+                                <td>{{resource.name}} <small>{{resource.config.username}}@{{resource.config.hostname}} {{resource.desc}}</small></td>
                             </tr>
                             </table>
                         </b-col>
@@ -80,7 +80,7 @@
                             <tr>
                                 <th>Host</th>
                                 <td>
-                                    {{smon.info.uname[1]}}
+                                    {{smon.info.uid}}@{{smon.info.uname[1]}}
                                 </td>
                             </tr>
                             <tr>

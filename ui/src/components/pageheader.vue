@@ -146,7 +146,7 @@ svg.cloud {
     margin-top: 7px;
     display: inline-block;
 }
-@media screen and (max-width: 850px) {
+@media screen and (max-width: 750px) {
     .slot {
         display: none;
     }

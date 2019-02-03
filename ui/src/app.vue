@@ -144,7 +144,7 @@
                                                         <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ <b>{{output.datatype_tags_pass}}</b></span>
                                                     </template>
                                                 </datatype>
-                                                <small style="position: relative" v-if="output.files"> 
+                                                <small style="position: relative" v-if="output.output_on_root && output.files"> 
                                                     <b>Output Mapping</b>
                                                     <pre v-highlightjs v-if="output.files"><code class="json hljs">{{output.files}}</code></pre>
                                                 </small>

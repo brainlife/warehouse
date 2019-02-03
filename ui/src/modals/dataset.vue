@@ -159,9 +159,9 @@
                                 <p><small class="text-muted">This dataset has been published on the following publications.</small></p>
                                 <div v-for="release in dataset.publications">
                                     <div v-for="pub in dataset._pubs" v-if="!pub.removed">
-                                        <p v-for="r in pub.releases" :key="r" v-if="r._id == release">
+                                        <p v-for="r in pub.releases" :key="r._id" v-if="r._id == release && !r.removed">
                                             <a href="javascript:void(0);" @click="openpub(pub)">
-                                                <icon name="book" scale="0.8"/> {{pub.name||pub}} Release {{r.name}}
+                                                <icon name="book" scale="0.8"/> {{pub.name||pub}} - Release {{r.name}}
                                             </a>
                                         </p>
                                     </div>
@@ -388,6 +388,10 @@ export default {
                                     let dataset_id = node.substring(8);
                                     this.$router.push(this.$route.path.replace(this.dataset._id, dataset_id));
                                 }
+                                if(node.startsWith("task.")) {
+                                    let fullnode = this.prov.nodes.find(n=>n.id == node);
+                                    if(fullnode._app) this.$router.push("/app/"+fullnode._app);
+                                }
                             });
                         });
                     });
@@ -581,7 +585,7 @@ export default {
             }).then(res=>{
                 this.alltags = res.data;
 
-                //load publications (releases)
+                //load all publications that this datasets is published in
                 let find = {};
                 if(this.dataset.publications) {
                     find["releases._id"] = {$in: this.dataset.publications};
@@ -590,8 +594,18 @@ export default {
                     find: JSON.stringify(find),
                 }});
             }).then(res=>{
+                /* TODO - due to the way release ids are stored on each dataset but removed
+                          flag is stored on the DB as part of pub, it's not simple to
+                          only load pub/releases that this dataset is published in
+                //remove removed releases, and remove publication if there is no release
+                let pubs = [];
+                res.data.pubs.forEach(pub=>{
+                    pub.releases = pub.releases.filter(release=>!release.removed);
+                    if(pub.releases.length>0) pubs.push(pub);
+                });
+                console.dir(pubs);
+                */
                 this.$set(this.dataset, '_pubs', res.data.pubs);
-                
              }).catch(err=>{
                 console.error(err);
             });
@@ -630,14 +644,15 @@ export default {
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({ 
                     status: { $ne: "removed" },
-                    service: { $in: ["soichih/sca-product-raw", "brainlife/app-stage"]}, 
-                    "config.download.dir": this.dataset._id,
+                    service: "brainlife/app-stage", 
+                    "config.datasets.id": this.dataset._id,
                 }),
                 sort: '-create_date', //pick the latest one
                 limit: 1,
             }}).then(res=>{
+                console.dir(res.data);
                 if(res.data.tasks[0]) {
-                    //console.log("found staging task!");
+                    console.log("found previously staged task!");
                     return cb(res.data.tasks[0], this.dataset._id);
                 }
 
