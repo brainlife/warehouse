@@ -132,10 +132,9 @@ export default {
                     }
                     return a.attrs.mtime - b.attrs.mtime;
                 });
-
             }).catch(err=>{
-                console.error(err);
-                this.error = err.body.message || err.statusText;
+                console.dir(err);
+                this.error = err.message || err.statusText || err.toString();
                 this.files = [];
             })
         },
