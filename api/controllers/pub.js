@@ -342,7 +342,9 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 } else {
                     //update doi meta
                     let metadata = common.compose_pub_datacite_metadata(pub);
-                    common.doi_post_metadata(metadata, logger.error); 
+                    common.doi_post_metadata(metadata, err=>{
+                        if(err) logger.error(err);
+                    });
                 }
 
                 //I have to use req.body.releases which has "sets", but not release._id
