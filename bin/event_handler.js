@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const async = require('async');
 const request = require('request-promise-native');
 const redis = require('redis');
+const fs = require('fs');
 
 const config = require('../api/config');
 const logger = winston.createLogger(config.logger.winston);
@@ -14,28 +15,26 @@ const common = require('../api/common');
 
 // TODO  Look for failed tasks and report to the user/dev?
 
-logger.info("starting event handler");
-
-setInterval(health_check, 1000*60*10); //It has to be long enough - when it needs to transfer data
-
+var acon, rcon;
 db.init(err=>{
     logger.info("connected to mongo");
-});
+    
+    //init and start 
+    acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    acon.on('error', logger.error);
+    acon.on('ready', ()=>{
+        logger.info("connected to amqp");
+        subscribe();
+    });
 
-//init and start 
-var acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-acon.on('error', logger.error);
-acon.on('ready', ()=>{
-    logger.info("connected to amqp");
-    subscribe();
-});
+    rcon = redis.createClient(config.redis.port, config.redis.server);
+    rcon.on('error', logger.error);
+    rcon.on('ready', ()=>{
+        logger.info("connected to redis");
+    });
 
-var rcon = redis.createClient(config.redis.port, config.redis.server);
-rcon.on('error', logger.error);
-rcon.on('ready', ()=>{
-    logger.info("connected to redis");
+    setInterval(emit_counts, 1000*config.metrics.interval); 
 });
-
 
 function subscribe() {
     async.series([
@@ -47,7 +46,7 @@ function subscribe() {
                 instance_q.bind('wf.instance', '#');
                 instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
                     handle_instance(instance, err=>{
-                        logger.debug("done handling instance");
+                        //logger.debug("done handling instance");
                         if(err) {
                             logger.error(err)
                             //continue .. TODO - maybe I should report the failed event to failed queue?
@@ -67,7 +66,7 @@ function subscribe() {
                 task_q.bind('wf.task', '#');
                 task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
                     handle_task(task, err=>{
-                        logger.debug("done handling task");
+                        //logger.debug("done handling task");
                         if(err) {
                             logger.error(err)
                             //TODO - maybe I should report the failed event to failed queue?
@@ -85,9 +84,27 @@ function subscribe() {
     });
 }
 
-var _counts = {
-    tasks: 0,
-    instances: 0,
+let counts = {};
+function inc_count(path) {
+    if(counts[path] === undefined) counts[path] = 0;
+    counts[path]++;
+    //logger.debug("counter: %s = %d", path, counts[path]);
+}
+
+function emit_counts() {
+    health_check();
+
+    //emit graphite metrics
+    let out = "";
+    for(let key in counts) {
+        out += config.metrics.prefix+"."+key+" "+counts[key]+" "+new Date().getTime()/1000+"\n";
+    }
+    fs.writeFileSync(config.metrics.path, out);
+
+    logger.debug("----------- "+config.metrics.path+" --------------");
+    logger.debug(out);
+
+    counts = {}; //reset all counters
 }
 
 function health_check() {
@@ -95,33 +112,38 @@ function health_check() {
         status: "ok",
         messages: [],
         date: new Date(),
-        counts: _counts,
+        counts: {
+            tasks: counts["health.tasks"],
+            instances: counts["health.instances"],
+        },
         maxage: 1000*60*20,  //should be double the check frequency to avoid going stale while development
     }
 
-    if(_counts.tasks == 0) {
+    if(counts["health.tasks"] == 0) {
         report.status = "failed";
         report.messages.push("task event counts is low");
     }
 
-    /* 
-    if(_counts.instances == 0) {
-        report.status = "failed";
-        report.messages.push("instance event counts is low");
-    }
-    */
-
     rcon.set("health.warehouse.event."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
-
-    //reset counter
-    _counts.tasks = 0;
-    _counts.instances = 0;
 }
 
 function handle_task(task, cb) {
-    _counts.tasks++;
-    logger.debug(["task", task._id, task.service, task.status, task.status_msg]);
+    logger.debug("%s task:%s %s %s %s", (task._status_changed?"+++":"---"), task._id, task.service, task.status, task.status_msg);
 
+    //handle counters
+    inc_count("health.tasks");
+    if(task._status_changed) {
+        //number of task change for each user
+        inc_count("task.user."+task.user_id+"."+task.status);  
+        //number of task change for each app
+        if(task.config && task.config._app) inc_count("task.app."+task.config._app+"."+task.status); 
+        //number of task change for each resource
+        if(task.resource_id) inc_count("task.resource."+task.resource_id+"."+task.status); 
+        //number of task change events for each resource
+        if(task._group_id) inc_count("task.group."+task._group_id+"."+task.status); 
+    }
+
+    //handle event
     async.series([
         next=>{
             if(task.status == "finished" && task.config && task.config._outputs) {
@@ -173,7 +195,7 @@ function handle_task(task, cb) {
                         _set.desc = task.status_msg;
                         break;
                     }
-                    console.log(JSON.stringify(dataset_config, null, 4));
+                    //console.log(JSON.stringify(dataset_config, null, 4));
                     db.Datasets.findByIdAndUpdate(dataset_config.dataset._id, {$set: _set}, next_dataset);
                     //db.Datasets.findByIdAndUpdate(dataset_config.id, {$set: _set}, next_dataset);
                 }, next);
@@ -190,10 +212,17 @@ function handle_task(task, cb) {
     ], cb);
 }
 
-
 function handle_instance(instance, cb) {
-    _counts.instances++;
-    //logger.debug("instance handling TODO",instance);
+    logger.debug("%s instance:%s %s", (instance._status_changed?"+++":"---"), instance._id, instance.status);
+
+    inc_count("health.instances");
+    if(instance._status_changed) {
+        //number of instance events for each resource
+        inc_count("instance.user."+instance.user_id+"."+instance.status); 
+        //number of instance events for each resource
+        if(instance.group_id) inc_count("instance.group."+instance.group_id+"."+instance.status); 
+    }
+
     cb();
 }
 

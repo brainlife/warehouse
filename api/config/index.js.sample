@@ -57,7 +57,15 @@ exports.warehouse = {
     //submit task on amaretti
     //query gids from auth
     jwt: fs.readFileSync(__dirname+'/warehouse.jwt', 'ascii').trim(),
- }
+
+    //graphite metrics prefix
+}
+
+exports.metrics = {
+    path: "/tmp/graphite.5min/warehouse.counts", 
+    prefix: "dev.warehouse", 
+    interval: 300, //emit every 5min
+}
 
 /*
 //for archive service

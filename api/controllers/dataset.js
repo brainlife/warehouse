@@ -280,6 +280,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 add_node({
                     id: "task."+task._id, 
                     label: compose_label(task),
+                    _app: task.config._app,
                 });
                 edges.push({
                     from: "task."+task._id,
@@ -373,6 +374,7 @@ router.get('/prov/:id', (req, res, next)=>{
                     add_node({
                         id: "task."+input.task_id,
                         label: compose_label(dep_task),
+                        _app: task.config._app,
                     });
                     edges.push({
                         from: "task."+input.task_id,
@@ -541,12 +543,14 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     logger.debug("staging request");
     console.dir(req.body.dataset_ids);
 
+    let unique_dataset_ids = [...new Set(req.body.dataset_ids)];
+
     async.series([
         //load dataset info (and check access)
         cb=>{
             common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
                 if(err) return cb(err);
-                db.Datasets.find({_id: {$in: req.body.dataset_ids}}).exec((err, _datasets)=>{
+                db.Datasets.find({_id: {$in: unique_dataset_ids}}).exec((err, _datasets)=>{
                     if(err) return cb(err);
                     //find dataset ids that user have access to
                     datasets = [];
@@ -563,7 +567,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                         datasets.push(dataset);
                     });
 
-                    if(req.body.dataset_ids.length != datasets.length) {
+                    if(unique_dataset_ids.length != datasets.length) {
                         return cb("you don't have access to all requested datasets");
                     }
                     cb();
