@@ -249,6 +249,9 @@ color: #2693ff;
 opacity: 1;
 border-bottom: 3px solid #2693ff;
 }
+.nav:focus {
+outline: none;
+}
 
 #warehouse .alert {
 border-radius: 0;
