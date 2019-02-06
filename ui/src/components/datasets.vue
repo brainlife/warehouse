@@ -155,6 +155,11 @@ let scroll_debounce = null;
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
+import axios from 'axios'
+
+const CancelToken = axios.CancelToken;
+const source = CancelToken.source();
+
 export default {
     mixins: [agreementMixin],
     components: { 
@@ -171,7 +176,7 @@ export default {
             total_subjects: null, //number of subjects for this project
 
             page_info: [], //{top/bottom/visible/}
-            loading: null,
+            loading: false,
 
             last_groups: {},
 
@@ -280,7 +285,11 @@ export default {
         //when user select different project, this gets called (mounted() won't be called anymore)
         project() {
             this.query = ""; //clear query to avoid confusion
-            if(this.loading) this.loading.abort();
+            if(this.loading) {
+                console.log("canceling load");
+                source.cancel('cancel due to project navigation');
+                this.loading = false;
+            }
             this.reload();
         },
         '$route': function() {
@@ -438,18 +447,23 @@ export default {
             }
             if(loaded === this.total_datasets) return;
 
+            this.loading = true;
             this.$http.get('dataset', {
+                /*
                 before(request) {
                     this.loading = request;
                 },
+                */
                 params: {
                     find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,
                     limit: 250,  //needs to be bigger than the largest dataset per subject (bigger == slower for vue to render)
                     sort: 'meta.subject meta.session -create_date'
-                }
+                },
+                cancelToken: source.token
             })
             .then(res=>{
+                this.loading = false;
                 this.total_datasets = res.data.count;
                 var groups = this.last_groups; //start with the last subject group from previous load
 
@@ -480,13 +494,11 @@ export default {
                     var prev = 0;
                     if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
                     this.page_info.push({top: prev, bottom: h, height: h-prev, visible: true});
-                    this.loading = null;
                 });
-                //console.log("done loading");
                 
             }, err=>{
+                this.loading = false;
                 console.error(err);
-                this.loading = null;
             });
         },
 
