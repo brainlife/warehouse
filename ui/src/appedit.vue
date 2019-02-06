@@ -36,7 +36,10 @@
                     </b-col> 
                     <b-col>
                         <b-form-textarea v-model="app.desc_override" placeholder="(Leave empty to use github repo description)" :rows="3" :max-rows="6"></b-form-textarea>
-                        <br>
+                        <p>
+                            <small class="text-muted">
+Normally, the App description is automatically pulled from github repo description that you specify below. If you'd like to use different description from the one used for your github repo, you can enter it here to override the github repo description.</small>
+                        </p>
                     </b-col>
                 </b-row>
 
