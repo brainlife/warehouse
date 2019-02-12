@@ -1,61 +1,59 @@
 <template>
-<div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}">
-    <div @click="click">
-        <div v-if="compact">
-            <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="78" :height="78"/>
-            <div style="max-height: 75px; overflow: hidden;">
-                <h4 class="name">
-                    <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
-                    {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
-                    <b-badge>{{branch||app_.github_branch}}</b-badge>
-                </h4>
-                <div class="desc">{{app_.desc_override||app_.desc||'no desc..'}}</div>
-            </div>
-            <slot/>
+<div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}" @click="click">
+    <div v-if="compact">
+        <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="78" :height="78"/>
+        <div style="max-height: 75px; overflow: hidden;">
+            <h4 class="name">
+                <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
+                {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
+                <b-badge>{{branch||app_.github_branch}}</b-badge>
+            </h4>
+            <div class="desc">{{app_.desc_override||app_.desc||'no desc..'}}</div>
         </div>
-        <div v-else style="overflow: hidden; position: relative;" :style="{ height }">
-            <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
-            <div class="header">
-                <h4 class="name">
-                    <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
-                    {{app_.name}}
-                </h4>
-                <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
-                <div class="datatypes">
-                    <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id" :class="[input.optional?'input-optional':'']">
-                        <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false"/>
-                        <b v-if="input.multi">multi</b>
-                        <b v-if="input.optional">opt</b>
-                    </div>
-                    <icon scale="0.7" name="arrow-right"/>
-                    <div class="datatype" v-for="output in app_.outputs" :key="'output.'+output.id">
-                        <datatypetag :datatype="output.datatype" :tags="output.datatype_tags" :clickable="false"/>
-                    </div>
-                    <span style="opacity: 0.7" v-if="app_.outputs.length == 0">(no output)</span>
+        <slot/>
+    </div>
+    <div v-else style="overflow: hidden; position: relative;" :style="{ height }">
+        <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
+        <div class="header">
+            <h4 class="name">
+                <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
+                {{app_.name}}
+            </h4>
+            <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
+            <div class="datatypes">
+                <div class="datatype" v-for="input in app_.inputs" :key="'input.'+input.id" :class="[input.optional?'input-optional':'']">
+                    <datatypetag :datatype="input.datatype" :tags="input.datatype_tags" :clickable="false"/>
+                    <b v-if="input.multi">multi</b>
+                    <b v-if="input.optional">opt</b>
                 </div>
+                <icon scale="0.7" name="arrow-right"/>
+                <div class="datatype" v-for="output in app_.outputs" :key="'output.'+output.id">
+                    <datatypetag :datatype="output.datatype" :tags="output.datatype_tags" :clickable="false"/>
+                </div>
+                <span style="opacity: 0.7" v-if="app_.outputs.length == 0">(no output)</span>
             </div>
-            <div class="desc">{{app_.desc_override||app_.desc||'no description..'}}</div>
-            <slot/>
-            <div class="stats" v-if="app_.stats">
-                <span class="stat" v-b-tooltip.hover.d500 title="Number of time this App was requested">
-                    <icon name="play" scale="0.8"/> {{app_.stats.requested}}
-                    &nbsp;
-                    &nbsp;
-                </span>
-                <span class="stat" v-b-tooltip.hover.d500 title="Number of unique users who requested this App">
-                    <icon name="user" scale="0.8"/> {{app_.stats.users}}
-                    &nbsp;
-                    &nbsp;
-                </span>
-                <span class="stat" v-b-tooltip.hover.d500 title="github stars" v-if="app_.stats.stars">
-                    <icon name="star" scale="0.8"/> {{app_.stats.stars}}
-                    &nbsp;
-                    &nbsp;
-                </span>
-                <span class="stat" style="float: right;" v-b-tooltip.hover.d500 title="success rate = finished/(failed+finished)" v-if="app_.stats.success_rate">
-                    <icon name="check-circle" scale="0.8"/> {{app_.stats.success_rate.toFixed(1)}}%
-                </span>
-            </div>
+        </div>
+        <div class="desc">{{app_.desc_override||app_.desc||'no description..'}}</div>
+        <slot/>
+        <div class="stats" v-if="app_.stats">
+            <span class="stat" v-b-tooltip.hover.d500 title="Number of time this App was requested">
+                <icon name="play" scale="0.8"/> {{app_.stats.requested}}
+                &nbsp;
+                &nbsp;
+            </span>
+            <span class="stat" v-b-tooltip.hover.d500 title="Number of unique users who requested this App">
+                <icon name="user" scale="0.8"/> {{app_.stats.users}}
+                &nbsp;
+                &nbsp;
+            </span>
+            <span class="stat" v-b-tooltip.hover.d500 title="github stars" v-if="app_.stats.stars">
+                <icon name="star" scale="0.8"/> {{app_.stats.stars}}
+                &nbsp;
+                &nbsp;
+            </span>
+            <span class="stat" style="float: right;" v-b-tooltip.hover.d500 title="success rate = finished/(failed+finished)" v-if="app_.stats.success_rate">
+                <icon name="check-circle" scale="0.8"/> {{app_.stats.success_rate.toFixed(1)}}%
+            </span>
         </div>
     </div>
 </div>

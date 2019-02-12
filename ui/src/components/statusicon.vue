@@ -1,6 +1,6 @@
 <template>
 <!--adding spin causes cpu usage to go way up https://github.com/Justineo/vue-awesome/issues/90-->
-<icon :scale="scale" :name="name" :spin="name == 'cog'"/>
+<icon :scale="scale" :name="name" :spin="name == 'cog'" :title="status"/>
 </template>
 
 <script>
@@ -26,6 +26,8 @@ export default {
             case "stop_requested":
             case "stopped":
                 return "hand-paper";
+            case "empty":
+                return "circle";
             default:
                 return "question";
             }

@@ -84,7 +84,7 @@ Normally, the App description is automatically pulled from github repo descripti
                     <b-col>
                         <b-row>
                             <b-col cols="7">
-                                <b-input-group prepend="Github Repository Name">
+                                <b-input-group prepend="https://github.com/">
                                     <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
                                 </b-input-group>
                                 <small v-if="app.github && github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
