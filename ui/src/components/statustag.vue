@@ -26,9 +26,15 @@
     </p>
 
 
-    <!--this is for resource status-->
+    <!-- for resource status-->
     <p class="text-success" v-else-if="status == 'ok'">
         <statusicon :status="status" :scale="scale"></statusicon>OK
+    </p>
+
+
+    <!-- for instance status-->
+    <p class="text-muted" v-else-if="status == 'empty'">
+        <statusicon :status="status" :scale="scale"></statusicon>Empty
     </p>
 
     <p class="text-warning" v-else>
