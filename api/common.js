@@ -587,3 +587,12 @@ exports.split_product = function(task_product, outputs) {
 
     return products;
 }
+
+//TODO - this has to match up between amaretti/bin/metrics and warehouse/api/controller querying for graphite daa
+exports.sensu_name = function(name) {
+    name = name.toLowerCase();
+    name = name.replace(/[_.@$#\/]/g, "-");
+    name = name.replace(/[ ()]/g, "");
+    return name;
+}
+

@@ -87,14 +87,13 @@ function handle_app(app, cb) {
                     });
                     */
                     
-                    //done.. save it
                     console.log(JSON.stringify(app.stats, null, 4));
                     next();
                 });
             });
         },
 
-        //make sure doi is issued
+        //make sure doi is issued (shouldn't be needed anymore..)
         next=>{
             if(app.doi) return next();
             logger.debug("minting doi");

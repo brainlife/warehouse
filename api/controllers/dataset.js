@@ -216,15 +216,15 @@ router.get('/prov/:id', (req, res, next)=>{
 
     //starting from the dataset ID specified, walk back through dataset prov & task deps all the way to the 
     //original input datasets
-
     function load_task(id, cb) {
         request.get({
             url: config.amaretti.api+"/task/"+id,
             json: true,
-            //task/:id api is now public.. but in case we might change our mind.. just send jwt
-            headers: {
-                authorization: req.headers.authorization, 
+            /*
+            //task/:id api is now public.. 
+            headers: q authorization: req.headers.authorization, 
             }
+            */
         }, (err, _res, task)=>{
             if(err) return cb(err);
             cb(null, task);
@@ -244,7 +244,6 @@ router.get('/prov/:id', (req, res, next)=>{
         }
         return label;
     }
-
 
     let datasets_analyzed = [];
     function load_dataset_prov(dataset, defer, cb) {
@@ -273,8 +272,8 @@ router.get('/prov/:id', (req, res, next)=>{
                     if(defer.edge.to != defer.edge.from) edges.push(defer.edge);
                     to = defer.node.id;
                 }
-                if(dataset.prov.subdir) load_product_raw(to, dataset.prov.subdir, cb);
-                else load_product_raw(to, dataset._id, cb);
+                if(dataset.prov.subdir) load_stage(to, dataset.prov.subdir, cb);
+                else load_stage(to, dataset._id, cb);
             } else {
                 //should be a normal task..
                 add_node({
@@ -293,7 +292,7 @@ router.get('/prov/:id', (req, res, next)=>{
         });
     }
 
-    function load_product_raw(to, dataset_id, cb) {
+    function load_stage(to, dataset_id, cb) {
         //staging task should be shown as dataset input.. 
         if(~datasets_analyzed.indexOf(dataset_id.toString())) {
             //dataset already analyzed.. just add edge
@@ -313,7 +312,6 @@ router.get('/prov/:id', (req, res, next)=>{
                 logger.warn("no such dataset .. removed?", dataset_id);
                 return cb();
             }
-            //logger.debug("load_product_raw", dataset._id, dataset.desc);
 
             //datatype should never be missing.. but it happened during testing
             let datatype_name = dataset.datatype;
@@ -332,7 +330,6 @@ router.get('/prov/:id', (req, res, next)=>{
             let defer = {
                 node: {
                     id: "dataset."+dataset_id, 
-                    //font: {size: 12, color: "#fff"},
                     label:  dataset.project.name+" / "+ 
                             dataset.meta.subject + "\n"+
                             datatype_name + "\n"+
@@ -366,7 +363,7 @@ router.get('/prov/:id', (req, res, next)=>{
                 //instead of showing that, let's *skip* this node back to datasets that it loaded
                 //and load their tasks
                 if(dep_task.service == "soichih/sca-product-raw" || dep_task.service == "brainlife/app-stage") { 
-                    load_product_raw("task."+task._id, input.dataset_id||input._id||input.subdir, next_dep);
+                    load_stage("task."+task._id, input.dataset_id||input._id||input.subdir, next_dep);
                 } else {
                     //task2task
                     let datatype = datatypes[input.datatype];
@@ -641,7 +638,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                         _tid: next_tid,
                         _outputs: datasets.map(d=>{
                             let subdir = d._id;
-                            //if(d.storage == "copy") subdir = d.storage_config.dataset_id;
 
                             return {
                                 id: d._id,
@@ -651,7 +647,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                                 datatype_tags: d.datatype_tags,
                                 
                                 subdir,
-                                dataset_id: d._id,
+                                dataset_id: d._id, //TODO - id or dataset_id.. what's the difference? which one should I use?
 
                                 project: d.project,
                             }

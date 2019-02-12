@@ -57,14 +57,18 @@ exports.warehouse = {
     //submit task on amaretti
     //query gids from auth
     jwt: fs.readFileSync(__dirname+'/warehouse.jwt', 'ascii').trim(),
-
-    //graphite metrics prefix
 }
 
 exports.metrics = {
+    interval: 300, //emit every 5min
     path: "/tmp/graphite.5min/warehouse.counts", 
     prefix: "dev.warehouse", 
-    interval: 300, //emit every 5min
+
+    //graphite api (https://graphite-api.readthedocs.io/en/latest/api.html#the-metrics-api)
+    //curl http://10.0.0.10/metrics/find?query=test.*
+    //curl -o test.png http://10.0.0.10/render?target=prod.amaretti.service.*&height=800&width=600 
+    //curl -o test.json "http://10.0.0.10/render?target=prod.amaretti.service.bcmcpher-app-networkmatrices&format=json&noNullPoints"
+    api: "http://10.0.0.10",
 }
 
 /*
@@ -586,7 +590,7 @@ exports.logger = {
     winston: {
         level: 'debug',
         format: combine(
-            label({ label: 'warehouse' }),
+            label({ label: 'warehouse-dev' }),
             timestamp(),
             format.colorize(),
             format.splat(),
@@ -606,18 +610,7 @@ exports.logger = {
         transports: [
             //display all logs to console
             new transports.Console({
-                /*
-                timestamp: function() {
-                    var d = new Date();
-                    if(process.env.NODE_APP_INSTANCE) {
-                        return process.env.NODE_APP_INSTANCE + "> "+ d.toString();
-                    } else {
-                        return d.toString();
-                    }
-                },
-                colorize: true,
-                stderrLevels: ["error"], //default includes debug
-                */
+                stderrLevels: ["error"], //error is sent to stdout by default..
             }),
         ]
     },

@@ -88,7 +88,6 @@ let counts = {};
 function inc_count(path) {
     if(counts[path] === undefined) counts[path] = 0;
     counts[path]++;
-    //logger.debug("counter: %s = %d", path, counts[path]);
 }
 
 function emit_counts() {
@@ -100,9 +99,8 @@ function emit_counts() {
         out += config.metrics.prefix+"."+key+" "+counts[key]+" "+new Date().getTime()/1000+"\n";
     }
     fs.writeFileSync(config.metrics.path, out);
-
-    logger.debug("----------- "+config.metrics.path+" --------------");
-    logger.debug(out);
+    //logger.debug("----------- "+config.metrics.path+" --------------");
+    //logger.debug(out);
 
     counts = {}; //reset all counters
 }
@@ -132,6 +130,8 @@ function handle_task(task, cb) {
 
     //handle counters
     inc_count("health.tasks");
+
+    //event counts to store on graphite. these numbers can be aggregated to show various bar graphs
     if(task._status_changed) {
         //number of task change for each user
         inc_count("task.user."+task.user_id+"."+task.status);  
@@ -216,6 +216,8 @@ function handle_instance(instance, cb) {
     logger.debug("%s instance:%s %s", (instance._status_changed?"+++":"---"), instance._id, instance.status);
 
     inc_count("health.instances");
+    
+    //event counts to store on graphite. these numbers can be aggregated to show various bar graphs
     if(instance._status_changed) {
         //number of instance events for each resource
         inc_count("instance.user."+instance.user_id+"."+instance.status); 

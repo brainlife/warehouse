@@ -97,6 +97,30 @@ router.get('/:id/badge', (req, res, next)=>{
     });
 });
 
+//experimental
+router.get('/:id/metrics', /*jwt({secret: config.express.pubkey, credentialsRequired: false}),*/ (req, res, next)=>{
+    db.Apps.findById(req.params.id).select('github').lean().exec((err, app)=>{
+        if(err) return next(err);
+        if(!app) return next("no such app");
+        console.dir(app);
+        let service = common.sensu_name(app.github);
+        request.get({url: config.metrics.api+"/render", qs: {
+            target: "prod.amaretti.service."+service,
+            format: "json",
+            noNullPoints: "true"
+        }, json: true }, (err, _res, json)=>{
+            if(err) return next(err);
+            let points = json[0].datapoints;
+            /*
+            //TODO - insert artificial 0 value if timestams jumps more than 90 seconds (should be reported every 60 seconds)
+            let previous = null;
+            points.forEach(point=>{ });
+            */
+            res.json(points);
+        });
+    });
+});
+
 /**
  * @apiGroup App
  * @api {post} /app             Post App
