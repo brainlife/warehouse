@@ -290,9 +290,10 @@ function handle_rule(rule, cb) {
                     query.project = rule.input_project_override[input.id];
                 } 
                 if(rule.input_tags[input.id]) {
-                    query.tags = { $all: rule.input_tags[input.id] }; 
+                    if(rule.input_tags[input.id].length > 0) query.tags = { $all: rule.input_tags[input.id] }; 
                 }
 
+                console.dir(query);
                 db.Datasets.find(query)
                 .populate('datatype')
                 .sort(sort)
@@ -374,6 +375,7 @@ function handle_rule(rule, cb) {
             rlogger.info("all datasets accounted for.. skipping to next subject");
             return next_subject();
         }
+
 
         //make sure we have all datasets we need
         let inputs = {};
