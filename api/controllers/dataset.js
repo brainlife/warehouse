@@ -906,34 +906,33 @@ router.get('/download/safe/:id', jwt({
 
 /**
  * @apiGroup Dataset 
- * @api {delete} /dataset/:id   Hide dataset from dataset results 
- * @apiDescription              Logically remove dataset by setting "removed" to true 
+ * @api {delete} /dataset/:id?   Hide dataset from dataset results 
+ * @apiDescription               Logically remove dataset by setting "removed" to true 
+ *
+ * @apiParam {Integer[]} [ids]   List of dataset IDs to remove (ids or url param should be set)
  *
  * @apiHeader {String} authorization 
- *                              A valid JWT token "Bearer: xxxxx"
+ *                               A valid JWT token "Bearer: xxxxx"
  */
-router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
-    //res.json({stauts: "skip"});
-    //return;
-
-    const id = req.params.id;
-    logger.debug("getting project");
+router.delete('/:id?', jwt({secret: config.express.pubkey}), function(req, res, next) {
+    let ids = req.body.ids||req.params.id;
+    if(!Array.isArray(ids)) ids = [ ids ];
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        logger.debug("getting dataset");
-        db.Datasets.findById(id, function(err, dataset) {
-            if(err) return next(err);
-            if(!dataset) return next(new Error("can't find the dataset with id:"+id));
-            if(canedit(req.user, dataset, canwrite_project_ids)) {
+        //logger.debug("getting dataset");
+        async.eachSeries(ids, (id, next_id)=>{
+            db.Datasets.findById(id, (err, dataset)=>{
+                if(err) return next_id(err);
+                if(!dataset) return next_id(new Error("can't find the dataset with id:"+id));
+                if(!canedit(req.user, dataset, canwrite_project_ids)) return next_id("can't edit:"+id);
                 dataset.remove_date = new Date();
                 dataset.removed = true;
-                logger.debug("updating");
-                dataset.save(function(err) {
-                    if(err) return next(err);
-                    logger.debug("respoinding");
-                    res.json({status: "ok"});
-                }); 
-            } else return res.status(401).end();
+                //logger.debug("updating %s", id);
+                dataset.save(next_id);
+            });
+        }, err=>{
+            if(err) return next(err);
+            res.json({status: "ok", removed: ids.length});
         });
     });
 });
