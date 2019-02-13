@@ -295,9 +295,17 @@ router.get('/prov/:id', (req, res, next)=>{
                 add_node({
                     id: "task."+task._id, 
                     label: compose_label(task),
-                    _app: task.config._app,
+                    _app: (task.config?task.config._app:null),
                 });
 
+                let edge_label = datatypes[dataset.datatype].name+" "+dataset.datatype_tags.join(",");
+                let archived_dataset_id = null;
+                if(defer) {
+                    let label_parts = defer.node.label.split("\n");
+                    if(label_parts[2]) edge_label += "\n"+label_parts[2];//tags
+                    archived_dataset_id = defer.node.id.split(".")[1];
+                }
+                /*
                 if(defer) {
                     let label_parts = defer.node.label.split("\n");
                     edges.push({
@@ -314,14 +322,15 @@ router.get('/prov/:id', (req, res, next)=>{
                         to,
                         arrows: "to",
                     });
-                } else {
-                    edges.push({
-                        from: "task."+task._id,
-                        to,
-                        arrows: "to",
-                        label: datatypes[dataset.datatype].name+" "+dataset.datatype_tags.join(","),
-                    });
-                }
+                } else {*/
+
+                edges.push({
+                    to,
+                    from: "task."+task._id,
+                    arrows: "to",
+                    label: edge_label,
+                    _archived_dataset_id: archived_dataset_id,
+                });
                 load_task_prov(task, cb);
             }
         });
