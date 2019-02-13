@@ -110,14 +110,14 @@
                 <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy (experimental)</b-btn>
             </p>
             <p>
-                <b-btn size="sm" @click="remove" variant="outline-danger"><icon name="trash" scale="0.8"/> Remove <span v-if="remove_remain">({{remove_remain}})</span></b-btn>
+                <b-btn size="sm" @click="remove" variant="outline-danger"><icon name="trash" scale="0.8"/> Remove<!--<span v-if="remove_remain">({{remove_remain}})</span>--></b-btn>
             </p>
         </div>
 
         <div v-for="(_datasets, did) in group_selected" :key="did" v-if="datatypes[did]" class="select-group">
             <datatypetag :datatype="datatypes[did]"/>
             <div class="selected-item" v-for="(dataset, id) in _datasets" :key="id" @click="open(id)">
-                <div @click.stop="remove_selected(dataset)" style="float: right; padding-right: 3px;" title="Unselect">
+                <div @click.stop="unselect(dataset)" style="float: right; padding-right: 3px;" title="Unselect">
                     <icon name="times"></icon>
                 </div>
                 <span v-if="dataset.meta">{{dataset.meta.subject}}</span>
@@ -185,7 +185,7 @@ export default {
 
             query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
             ws: null, //websocket
-            remove_remain: 0,
+            //remove_remain: 0,
 
             //cache
             datatypes: null,
@@ -362,7 +362,7 @@ export default {
                             old_dataset.meta = dataset.meta;
                             old_dataset.removed = dataset.removed;
                             old_dataset.status = dataset.status;
-                            if(dataset.removed) this.remove_selected(dataset);
+                            if(dataset.removed) this.unselect(dataset);
                             this.$forceUpdate(); //need this because I am not inside vue hook?
                         }
                     });
@@ -572,7 +572,7 @@ export default {
             //this.persist_selected();
         },
 
-        remove_selected(dataset) {
+        unselect(dataset) {
             //NOTE - selected[] contains clone of the datasets selected - not the same object so I can't just do "dataset.checked = false"
             //find the real dataset object
             this.pages.forEach(page=>{
@@ -662,10 +662,19 @@ export default {
         remove() {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 this.check_agreements(this.project, ()=>{
-                    let count = 0;
                     this.$notify({type: "info", text: "Removing all selected datasets.."});
-                    this.remove_remain = Object.keys(this.selected).length;
+                    axios({
+                        method: 'delete',
+                        url: '/dataset',
+                        data: { ids: Object.keys(this.selected) },
+                    }).then(res=>{
+                        this.$notify({type: "success", text: "Removed "+res.data.removed+" datasets"});
+                        this.clear_selected();
+                    }).catch(err=>{
+                        this.$notify({type: "error", text: err.toString()})
+                    });
 
+                    /*
                     //TODO - it's the UI update that's slowing things down.. (also the ws messaging)
                     async.eachOfLimit(this.selected, 1, (dataset, id, next_dataset)=>{
                         dataset.checked = false;
@@ -677,11 +686,13 @@ export default {
                         this.$http.delete('dataset/'+id).then(res=>{
                             count++;
                             next_dataset();
-                        });
+                        }).catch(next_dataset);
                     }, err=>{
+                        if(err) return this.$notify({type: "error", text: err.toString()})
                         this.$notify({type: "success", text: "Removed "+count+" datasets"});
                         this.clear_selected();
                     });
+                    */
                 });
             }
         },

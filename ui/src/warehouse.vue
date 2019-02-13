@@ -411,4 +411,15 @@ margin-bottom: 2px;
 position: relative;
 top: -0.1em;
 }
+
+/*perfectscrollbar mod*/
+.ps .ps__rail-y:hover,
+.ps .ps__rail-y:focus,
+.ps .ps__rail-y.ps--clicking  {
+background-color: transparent;
+opacity: 0.9;
+}
+.ps__thumb-y {
+width: 11px;
+}
 </style>
