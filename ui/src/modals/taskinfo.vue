@@ -3,12 +3,12 @@
     <div v-if="open" class="brainlife-modal-overlay">
         <b-container class="brainlife-modal">
             <div class="brainlife-modal-header">
-                <div style="float: right;">
+                <div class="brainlife-modal-header-buttons">
                     <div class="button" @click="open = false" style="margin-left: 20px; opacity: 0.8;">
                         <icon name="times" scale="1.5"/>
                     </div>
                 </div>
-                <h4 style="margin-top: 8px;">
+                <h4 style="margin-top: 5px;">
                     {{task.name}} 
                     <span style="float: right;">
                         <small style="opacity: 0.5">{{task._id}}</small>

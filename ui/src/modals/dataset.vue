@@ -3,7 +3,7 @@
 <div v-if="dataset" class="brainlife-modal-overlay">
     <b-container class="brainlife-modal">
         <div class="brainlife-modal-header">
-            <div style="float: right;">
+            <div class="brainlife-modal-header-buttons">
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.1"/>
                 </div>
@@ -192,7 +192,7 @@
                         <b-alert show variant="secondary">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
                     </div>
                     <div ref="vis" v-else style="height: 100%;"/>
-                    <small style="opacity: 0.5; position: absolute; bottom: 0; right: 0px; padding: 10px;">* Double click input datasets to open</small>
+                    <small style="opacity: 0.5; position: absolute; bottom: 0; right: 0px; padding: 10px;">* Double click to open</small>
                 </div>
             </b-tab>
             <b-tab title="Apps">
@@ -349,20 +349,37 @@ export default {
                         node.margin = 10;
                         node.font = {color: "#fff"};
                     }
+                    if(node._archive) {
+                        node.color = "#999";
+                        node.font = {size: 10, color: "#fff"};
+                        //node.mass = 0;
+                    }
                 });
+                /*
+                this.prov.edges.forEach(edge=>{
+                    edge.physics = false;
+                })
+                */
 
                 if(this.prov.edges.length) {
                     Vue.nextTick(()=>{
                         var gph = new vis.Network(this.$refs.vis, res.data, {
-                            /*
+                            
                           layout: {
+                            randomSeed: 0,
+                                                           /*
                             hierarchical: {
-                                direction:"LR",
+                                direction:"DU",
+                                improvedLayout:true,
+                         
                                 levelSeparation: 100,
                                 sortMethod: "hubsize",
+  
+
                             }
+                                                          */
                           },
-                            */
+                            
                             //physics:{barnesHut:{/*gravitationalConstant:-3500, springConstant: 0.01, avoidOverlap: 0.02*/}},
                             physics:{
                                 //enabled: true, //default true
@@ -372,7 +389,6 @@ export default {
                                     //avoidOverlap: 0.2,
                                     //damping: 0.3,
                                     gravitationalConstant: -4000,
-                                    //gravitationalConstant: -6500,
                                 }
                             },
 

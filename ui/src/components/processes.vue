@@ -566,8 +566,8 @@ opacity: 1;
 }
 
 .instance-status {
-width: 20px;
-height: 20px;
+width: 22px;
+height: 22px;
 text-align: center;
 border-radius: 11px;
 display: inline-block;
@@ -575,7 +575,7 @@ margin-right: 10px;
 background-color: gray;
 color: white;
 line-height: 150%;
-margin-top: 3px;
+margin-top: 2px;
 }
 
 .instance-finished .instance-status {

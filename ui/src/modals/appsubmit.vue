@@ -3,12 +3,12 @@
 <div v-if="open" class="brainlife-modal-overlay">
 <b-container class="brainlife-modal">
     <div class="brainlife-modal-header">
-        <div style="float: right;">
+        <div class="brainlife-modal-header-buttons">
             <div class="button" @click="open = false" style="margin-left: 20px; opacity: 0.8;">
                 <icon name="times" scale="1.5"/>
             </div>
         </div>
-        <h4 style="margin-top: 8px;">Execute App</h4>
+        <h4 style="margin-top: 5px;">Execute App</h4>
     </div><!--header-->
 
     <b-form v-if="app" class="submit-form" @submit="submit">

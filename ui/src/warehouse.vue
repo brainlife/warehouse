@@ -293,6 +293,10 @@ z-index: 20;
 height: 60px;
 position: relative;
 }
+.brainlife-modal-header-buttons {
+float: right;
+margin-top: 5px;
+}
 /*
 .brainlife-modal-footer {
 background-color: white;
