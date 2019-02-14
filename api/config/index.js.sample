@@ -594,9 +594,6 @@ exports.logger = {
             timestamp(),
             format.colorize(),
             format.splat(),
-            //prettyPrint()
-            //format.simple()
-            //format.json(),
             format.printf(info=>{
                 return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`;
             }),

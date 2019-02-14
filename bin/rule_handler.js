@@ -172,15 +172,18 @@ function handle_rule(rule, cb) {
                 }
                 rlogger = createLogger({
                     format: combine(
+                        //label({ label: 'warehouse-dev' }),
                         timestamp(),
-                        format.simple(),
+                        format.splat(),
+                        format.printf(info=>{
+                            return `${info.timestamp} ${info.message}`;
+                        }),
                     ),
                     transports: [
-                        new (transports.File)({
+                        new transports.File({
                             filename: logpath,
-                            json: false,
                             level: "debug",
-                        })
+                        }),
                     ]
                 });
             }
@@ -277,7 +280,6 @@ function handle_rule(rule, cb) {
                 input._datasets = {}; //keyed by subject array of matchind datasets (should be sorted by "selection_method")
 
                 //defaults
-                var sort = "create_date";
                 var query = {
                     project: rule.project._id,
                     datatype: input.datatype,
@@ -285,22 +287,55 @@ function handle_rule(rule, cb) {
                     removed: false,
                 }
 
+                //console.dir(input.datatype_tags);
+
                 //allow user to override which project to load input datasets from
                 if(rule.input_project_override && rule.input_project_override[input.id]) {
                     query.project = rule.input_project_override[input.id];
                 } 
+
+                let tag_query = [];
+                let pos_tags = [];
+                let neg_tags = [];
+                
+                //handle dataset tags
                 if(rule.input_tags[input.id]) {
-                    if(rule.input_tags[input.id].length > 0) query.tags = { $all: rule.input_tags[input.id] }; 
+                    //if(rule.input_tags[input.id].length > 0) query.tags = { $all: rule.input_tags[input.id] }; 
+                    rule.input_tags[input.id].forEach(tag=>{
+                        if(tag[0] != "!") pos_tags.push(tag);
+                        else neg_tags.push(tag.substring(1));
+                    });
+                    if(pos_tags.length > 0) tag_query.push({tags: {$all: pos_tags}});
+                    if(neg_tags.length > 0) tag_query.push({tags: {$nin: neg_tags}});
                 }
+
+                //handle datatype_tags
+                let datatype_tags = input.datatype_tags;
+                if(rule.extra_datatype_tags && rule.extra_datatype_tags[input.id]) datatype_tags = datatype_tags.concat(rule.extra_datatype_tags[input.id]);
+                pos_tags = [];
+                neg_tags = [];
+                datatype_tags.forEach(tag=>{
+                    if(tag[0] != "!") pos_tags.push(tag);
+                    else neg_tags.push(tag.substring(1));
+                });
+                if(pos_tags.length > 0) tag_query.push({datatype_tags: {$all: pos_tags}});
+                if(neg_tags.length > 0) tag_query.push({datatype_tags: {$nin: neg_tags}});
+                if(tag_query.length > 0) query.$and = tag_query;
 
                 console.dir(query);
                 db.Datasets.find(query)
                 .populate('datatype')
-                .sort(sort)
+                .sort("create_date")
                 .lean()
                 .exec((err, datasets)=>{
                     if(err) return next_input(err);
+                    datasets.forEach(dataset=>{
+                        if(!input._datasets[dataset.meta.subject]) input._datasets[dataset.meta.subject] = [];
+                        input._datasets[dataset.meta.subject].push(dataset);
+                    });
 
+                    /*
+                    //TODO WHY can't I not do this filtering with mongo query?
                     //find first dataset that matches all tags
                     //var matching_dataset = null;
                     datasets.forEach(dataset=>{
@@ -322,6 +357,7 @@ function handle_rule(rule, cb) {
                             input._datasets[dataset.meta.subject].push(dataset);
                         }
                     });
+                    */
 
                     next_input(); 
                 });
@@ -361,7 +397,8 @@ function handle_rule(rule, cb) {
             return next_subject();
         }
 
-        rlogger.debug("handling subject "+subject);
+        rlogger.debug("");//empty
+        rlogger.debug(subject+" --------------------------------");
         
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var output_missing = false;
@@ -555,7 +592,7 @@ function handle_rule(rule, cb) {
                             if(task.service == "soichih/sca-product-raw" || task.service == "brainlife/app-stage") {
                                 if(isalive(task)) {
                                     output = task.config._outputs.find(o=>o.dataset_id == input._id);
-                                    rlogger.debug(["found it ",output]);
+                                    //if(output) rlogger.debug("found task");
                                     break;
                                 }
                             }

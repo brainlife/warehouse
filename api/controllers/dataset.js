@@ -45,6 +45,7 @@ function construct_dataset_query(query, canread_project_ids) {
     if(query.find) ands.push(query.find);
 
     //handle datatype_tags
+    //TODO - I should use {$all: []} and {$nin: []}?
     if(query.datatype_tags) {
         query.datatype_tags.forEach(tag=>{ 
             if(tag[0] == "!") {
@@ -72,7 +73,8 @@ function construct_dataset_query(query, canread_project_ids) {
  * @apiParam {Object} [sort]    Mongo sort object - defaults to _id. Enter in string format like "-name%20desc"
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter (default all)
  * @apiParam {String[]} [datatype_tags]  
- *                              List of datatype tags to filter (you can use exclusion tags also)
+ *                              List of datatype tags to filter (you can use exclusion tags also). MIGHT DEPRECATE
+ *                              as this is not too difficult to construct
  * @apiParam {Number} [limit]   Maximum number of records to return - defaults to 100
  * @apiParam {Number} [skip]    Record offset for pagination (default to 0)
  * @apiParam {String} [populate] Fields to populate
