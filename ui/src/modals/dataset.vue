@@ -361,15 +361,15 @@ export default {
                 this.prov.edges.forEach(edge=>{
                     if(!edge.label) return;
                     let lines = edge.label.split("\n");
+                    if(lines[0].startsWith("neuro/")) lines[0] = lines[0].substring(6);
                     if(edge._archived_dataset_id) {
-                        edge.label=lines[0]+"\n📦";
-                        if(lines[1]) edge.label +=" "+lines[1];
+                        //lines[0]=lines[0]+"\n📦 ";
+                        lines[1] = "📦 "+(lines[1]?lines[1]:'');
                         //edge.color = {highlight:"#159957"};
                     }
-
+                    edge.label = lines.join("\n");
                 })
                 
-
                 if(this.prov.edges.length) {
                     Vue.nextTick(()=>{
                         var gph = new vis.Network(this.$refs.vis, res.data, {

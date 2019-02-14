@@ -194,7 +194,7 @@ export default {
             Vue.set(file, 'downloading', true);
             this.$http.get(url).then(res=>{
                 file.downloading = false;
-                console.dir(res.headers);
+                //console.dir(res.headers);
                 switch(res.headers["content-type"]) {
                 case "application/json": 
                         this.open_text(res.data, file, "json");
