@@ -345,22 +345,31 @@ export default {
                         node.label = "This Dataset";
                         node.color = "#2693ff";
                         //node.color = "rgba(255,0,0,0.5)";
-                        node.y = 1500;
+                        node.y = 2000;
                         node.margin = 10;
                         node.font = {color: "#fff"};
                     }
+                    /*
                     if(node._archive) {
                         node.color = "#999";
                         node.font = {size: 10, color: "#fff"};
                         //node.mass = 0;
                     }
+                    */
                 });
-                /*
+                
                 this.prov.edges.forEach(edge=>{
-                    edge.physics = false;
+                    if(!edge.label) return;
+                    let lines = edge.label.split("\n");
+                    if(lines[0].startsWith("neuro/")) lines[0] = lines[0].substring(6);
+                    if(edge._archived_dataset_id) {
+                        //lines[0]=lines[0]+"\n📦 ";
+                        lines[1] = "📦 "+(lines[1]?lines[1]:'');
+                        //edge.color = {highlight:"#159957"};
+                    }
+                    edge.label = lines.join("\n");
                 })
-                */
-
+                
                 if(this.prov.edges.length) {
                     Vue.nextTick(()=>{
                         var gph = new vis.Network(this.$refs.vis, res.data, {
@@ -407,6 +416,12 @@ export default {
                                 if(node.startsWith("task.")) {
                                     let fullnode = this.prov.nodes.find(n=>n.id == node);
                                     if(fullnode._app) this.$router.push("/app/"+fullnode._app);
+                                }
+                            });
+                            e.edges.forEach(edge_id=>{
+                                let edge = this.prov.edges.find(e=>e.id == edge_id);
+                                if(edge._archived_dataset_id) {
+                                    this.$router.push(this.$route.path.replace(this.dataset._id, edge._archived_dataset_id)); 
                                 }
                             });
                         });

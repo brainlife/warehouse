@@ -68,7 +68,7 @@
                                 <b-col>Project</b-col>
                                 <b-col :cols="9">
                                     <p>
-                                    <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(from this project)"/>
+                                    <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(From this project)"/>
                                     <small class="text-muted">Look for datasets in this project</small>
                                     </p>
                                 </b-col>
@@ -83,7 +83,8 @@
                                     <small v-if="rule.input_tags_count[input.id]">{{rule.input_tags_count[input.id]}} datasets matches this criteria</small>
                                 </b-col>
                             </b-row> 
-                            <b-alert :show="!rule.input_tags_count[input.id]" variant="warning">There are no input datasets that matches the specified criteria.</b-alert>
+                            <p v-if="rule.input_tags_count[input.id] === null">Counting matching datasets..</p>
+                            <b-alert v-else :show="rule.input_tags_count[input.id] == 0" variant="warning">There are no input datasets that matches the specified criteria.</b-alert>
                         </div>
                     </b-card>
                 </div><!--border-->
@@ -211,14 +212,38 @@ export default {
             this.load_branches();
         },
 
-        rule: {
+        //can't just watch rule with deep:true because there are so many fields that
+        //has nothing to do with querying 
+        "rule.inputs": function() {
+            this.query_matching_datasets();
+            this.load_dataset_tags();
+        },
+        "rule.input_tags": {
             handler: function() {
                 clearTimeout(debounce);
                 debounce = setTimeout(()=>{
                     this.query_matching_datasets();
-                }, 1000);
-            },
-            deep: true,
+                }, 300)
+            }, deep: true,
+        },
+        "rule.extra_datatype_tags": {
+            handler: function(v) {
+                this.query_matching_datasets();
+                this.load_dataset_tags();
+            }, deep: true,
+        },
+        "rule.input_project_override": {
+            handler: function(v) {
+                this.query_matching_datasets();
+                this.load_dataset_tags();
+            }, deep: true,
+        },
+        "rule.subject_match": function() {
+            clearTimeout(debounce);
+            debounce = setTimeout(()=>{
+                this.query_matching_datasets();
+                this.load_dataset_tags();
+            }, 300)
         },
     },
     
@@ -231,30 +256,54 @@ export default {
 
         query_matching_datasets() {
             if(!this.rule.app) return;
+            console.dir(this.rule.input_tags);
             for(let id in this.rule.input_tags) {
                 let input = this.rule.app.inputs.find(i=>i.id == id);
                 if(!input) {
+                    //maybe obsolute key stored in input_tags? let's ignore this for now.
                     console.error("no input found for", id);
-                    return;
+                    continue;
                 }
+
                 let find = {
                     project: this.rule.input_project_override[id] || this.rule.project,
                     datatype: input.datatype_id,
+                    storage: { $exists: true }, //just to be consistent with rule_handler
                     removed: false,
                 }
                 if(this.rule.subject_match != "") find["meta.subject"] = {$regex: this.rule.subject_match};
-                if(this.rule.input_tags[id].length > 0) find.tags = {$all: this.rule.input_tags[id]};
 
+                //handle dataset (negative)tags
+                let tag_query = [];
+                let pos_tags = [];
+                let neg_tags = [];
+                this.rule.input_tags[id].forEach(tag=>{
+                    if(tag[0] != "!") pos_tags.push(tag);
+                    else neg_tags.push(tag.substring(1));
+                });
+                if(pos_tags.length > 0) tag_query.push({tags: {$all:pos_tags}});
+                if(neg_tags.length > 0) tag_query.push({tags: {$nin:neg_tags}});
+
+                //handle datatype (negative) tags
                 let datatype_tags = input.datatype_tags.concat(this.rule.extra_datatype_tags[id]);
-                if(datatype_tags.length == 0) datatype_tags = null; //suppress setting it at all
+                pos_tags = [];
+                neg_tags = [];
+                datatype_tags.forEach(tag=>{
+                    if(tag[0] != "!") pos_tags.push(tag);
+                    else neg_tags.push(tag.substring(1));
+                });
+                if(pos_tags.length > 0) tag_query.push({datatype_tags: {$all:pos_tags}});
+                if(neg_tags.length > 0) tag_query.push({datatype_tags: {$nin:neg_tags}});
+               
+                if(tag_query.length > 0) find.$and = tag_query;
 
                 console.log("querying datasets", find);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify(find),
-                    datatype_tags,
+                    //datatype_tags,
                     limit: 0, //I just need count
                 }}).then(res=>{
-                    Vue.set(this.rule.input_tags_count, id, res.data.count);
+                    this.rule.input_tags_count[id] = res.data.count;
                 }); 
             }
         },
@@ -294,6 +343,8 @@ export default {
                 if(!this.rule.input_tags[input.id]) Vue.set(this.rule.input_tags, input.id, []);
                 if(!this.rule.input_project_override[input.id]) Vue.set(this.rule.input_project_override, input.id, null);
                 if(!this.rule.extra_datatype_tags[input.id]) Vue.set(this.rule.extra_datatype_tags, input.id, []);
+
+                if(!this.rule.input_tags_count[input.id]) Vue.set(this.rule.input_tags_count, input.id, null);
 
                 //make all optional field optional by default
                 if(this.rule.input_selection[input.id] === undefined && input.optional) Vue.set(this.rule.input_selection, input.id, 'ignore');
@@ -386,10 +437,10 @@ export default {
 
         load_dataset_tags() {
             this.rule.app.inputs.forEach(input=>{
-                //console.log(this.rule.input_project_override[input.id]);
                 input.datatype_id = input.datatype._id || input.datatype; //parent component passes app.input without populating datatype sometimes?
                 this.$http.get('dataset/distinct', {params: {
                     distinct: 'tags',
+                    //TODO - I should apply filtering for datatype_tags and dataset tags
                     find: JSON.stringify({
                         project: this.rule.input_project_override[input.id] || this.rule.project, 
                         datatype: input.datatype_id,

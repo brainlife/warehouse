@@ -90,9 +90,10 @@ Normally, the App description is automatically pulled from github repo descripti
                                 <small v-if="app.github && github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
                             </b-col>
                             <b-col v-if="github_branches && github_branches.length > 0">
-                                <b-input-group prepend="Branch/Tag">
+                                <b-input-group prepend="Branch">
                                     <b-form-select v-model="app.github_branch" :options="github_branches"/>
                                 </b-input-group>
+                                 <small v-if="app.github_branch == 'master'" class="text-danger"><icon name="exclamation" scale="0.8"/> Please avoid master branch</small>
                             </b-col>
                         </b-row>
                         <br>

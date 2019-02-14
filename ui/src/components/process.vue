@@ -112,8 +112,8 @@
                                 <timeago class="text-muted" style="float: right" :since="dataset.create_date" :auto-update="10"/>
 
                                 <icon name="cubes"></icon>
-                                <mute>{{dataset.desc||dataset._id}}</mute>
-                                
+                                <mute>{{dataset.desc||'(no desc)'}}<!-- <small style="font-size: 50%">{{dataset._id}}</small>--></mute>
+
                                 <tags :tags="dataset.tags"/>
                                 <span class="text-muted" v-if="dataset.project != project._id">
                                     <small>on</small> <icon name="shield-alt"/> <b>{{projectname(dataset.project)}}</b>
