@@ -364,23 +364,22 @@ function handle_rule(rule, cb) {
             }, next);
         },
 
-        //handle all subjects
+        //now handle all subjects
         next=>{
             subjects.sort();
             async.eachSeries(subjects, handle_subject, next);
         },
 
-        next=>{
-            logger.debug("done with this rule");
-            next();
-        },
     ], err=>{
         if(err) return cb(err);
-        rlogger.debug("done processing all rules");
+        rlogger.debug("done processing rule");
         cb();
     });
 
     function handle_subject(subject, next_subject) {
+        rlogger.debug("");//empty
+        rlogger.debug(subject+" --------------------------------");
+
         /* disabling this now because we are only running rule when datasets or rule is updated
         if(running >= config.rule.max_task_per_rule) {
             rlogger.info("reached max running task.. skipping the rest of subjects", subject, running);
@@ -389,6 +388,7 @@ function handle_rule(rule, cb) {
         */
 
         if(rule.subject_match && !subject.match(rule.subject_match)) {
+            rlogger.debug("doesn't match subject filter:"+rule.subject_match);
             return next_subject();
         }
 
@@ -396,9 +396,6 @@ function handle_rule(rule, cb) {
             rlogger.debug("task already submitted for subject:"+subject+" "+rule_tasks[subject]._id+" "+rule_tasks[subject].status);
             return next_subject();
         }
-
-        rlogger.debug("");//empty
-        rlogger.debug(subject+" --------------------------------");
         
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var output_missing = false;
@@ -424,7 +421,7 @@ function handle_rule(rule, cb) {
             }
             if(!input._datasets[subject]) {
                 missing = true;
-                rlogger.info("missing input "+input.id);
+                rlogger.info("missing input for "+input.id);
             } else {
                 inputs[input.id] = input._datasets[subject][0]; //use the first one for now.. (TODO for multiinput, we could grab all?)
             }
