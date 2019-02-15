@@ -527,7 +527,7 @@ export default {
             */
             //if(confirm("Deactivating this rule will remove "+active_tasks.length+" active tasks ("+res.data.count+" total) submitted by this rule. Should we proceed?")) {
             Vue.set(rule, 'deactivating', true);
-            this.$notify({ title: 'Deactivating', text: 'Removing'+res.data.count+' tasks', type: 'info', });
+            this.$notify({ title: 'Deactivating', text: 'Deactivating this rule and all tasks submitted from it', type: 'info', });
 
             //first reactivate the rule
             this.$http.put('rule/deactivate/'+rule._id).then(res=>{

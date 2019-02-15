@@ -224,7 +224,7 @@ export default {
 
             this.$http.get('app', {params: {
                 find: JSON.stringify({$and: ands}),
-                limit: 1000, //TODO - use paging?
+                limit: 500, //TODO - this is not sustailable
                 populate: 'inputs.datatype outputs.datatype contributors',
             }})
             .then(res=>{

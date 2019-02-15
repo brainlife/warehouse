@@ -526,6 +526,7 @@ export default {
             //load datatype_tags from all apps -- TODO - this is super inefficient!
             this.$http.get('app', {params: {
                 select: 'inputs outputs',
+                limit: 500, //TODO - this is not sustailable
             }}).then(res=>{
                 var v = this;
                 function aggregate_tags(dataset) {
@@ -551,7 +552,8 @@ export default {
                     } else {
                         //finally time to load app to edit
                         this.$http.get('app', {params: {
-                            find: JSON.stringify({_id: this.$route.params.id})
+                            find: JSON.stringify({_id: this.$route.params.id}),
+                            limit: 1,
                         }}).then(res=>{
                             this.app = res.data.apps[0];
                             this.convert_config_to_ui();
@@ -904,6 +906,7 @@ export default {
             return new Promise((resolve, reject)=>{
                 this.$http.get('app', {params: {
                     select: 'tags',
+                    limit: 500, //TODO - this is not sustailable
                 }}).then(res=>{
                     var alltags = []; 
                     res.data.apps.forEach(app=>{

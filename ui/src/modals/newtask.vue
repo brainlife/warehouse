@@ -243,6 +243,7 @@ export default {
                 }),
                 sort: 'name', 
                 populate: 'inputs.datatype outputs.datatype',
+                limit: 500, //TODO - this is not sustailable
             }})
             .then(res=>{
                 //now, pick apps that we have *all* input datasets that matches the input datatype/tags
