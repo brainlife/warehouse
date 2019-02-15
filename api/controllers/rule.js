@@ -6,6 +6,7 @@ const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
 const fs = require('fs');
+const request = require('request');
 
 const config = require('../config');
 const logger = winston.createLogger(config.logger.winston);
@@ -196,6 +197,61 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 if(err) return next(err);
                 res.json(_rule); 
             });
+        });
+    });
+});
+
+/**
+ * @apiGroup Pipeline Rules
+ * @api {put} /rule/:id/deactivate
+ *                              Deactivate the rule
+ * @apiDescription              Removed all running/requested tasks
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ */
+router.put('/deactivate/:id', jwt({secret: config.express.pubkey}), function(req, res, next) {
+    const id = req.params.id;
+    db.Rules.findById(id, function(err, rule) {
+        if(err) return next(err);
+        if(!rule) return next(new Error("can't find the rule with id:"+id));
+        
+        //check user has access to the project
+        common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
+            if(err) return next(err);
+            let found = canwrite_project_ids.find(id=>id.equals(rule.project));
+            if(!found) return next("you are not allowed to edit this rule");
+            rule.active = false;
+            rule.save(function(err) {
+                if(err) return next(err);
+                //res.json({status: "ok"});
+                //I need to wait for the rule_handler to finish its cycle before I start removing tasks..
+                //for now, I am going to give 5 seconds 
+                //TODO - maybe I should wait for event from rule_handler?
+                logger.debug("giving a few seconds to rule_handler for our flag to take effect..");
+                setTimeout(()=>{
+                    request.get({ url: config.amaretti.api+"/task", json: true, headers: { authorization: req.headers.authorization },
+                        qs: {
+                            find: JSON.stringify({
+                                'config._rule.id': rule._id,
+                                //'config._app': {$exists: true}, //don't want to remove staging task (might be used by other rules)
+                                status: {$ne: "removed"},
+                            }),
+                            limit: 5000, //big enough to grab all tasks?
+                        },
+                    }, (err, _res, data)=>{
+                        if(err) return cb(err);
+                        //console.dir(data.tasks);
+                        async.eachSeries(data.tasks, (task, next_task)=>{
+                            logger.debug("removing task %s", task._id.toString());
+                            request.delete({url: config.amaretti.api+"/task/"+task._id, json: true, headers: { authorization: req.headers.authorization }}, next_task);
+                        }, err=>{
+                            if(err) return next(err);
+                            res.json({status: "ok"});
+                        });
+                    });
+                }, 3000);
+            });  
         });
     });
 });
