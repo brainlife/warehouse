@@ -31,7 +31,7 @@
         <!--list view-->
         <div class="margin20" v-if="rules.length == 0">
             <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
-            <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brainlife.github.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
+            <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brainlife.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
         </div>
         <div class="rules">
             <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}" class="rule" v-if="rule.removed == false">
@@ -74,7 +74,7 @@
 
                     <div v-if="rule.active" style="margin: 0px 10px;">
                         <b-btn @click="deactivate(rule)" variant="outline-danger" size="sm" v-if="!rule.deactivating"><icon name="times"/> Deactivate </b-btn>
-                        <b-btn variant="outline-danger" size="sm" v-if="rule.deactivating"><icon name="times"/> Deactivating ...</b-btn>
+                        <b-btn variant="outline-danger" size="sm" v-if="rule.deactivating"><icon name="cog" :spin="true"/> Deactivating</b-btn>
                         <small style="opacity: 0.8; padding: 10px;"><b>{{rule.activetaskcount||0}}</b> Active Tasks</small>
                         <!--
                         <icon name="cog" :spin="true" scale="1.25" style="float: left;"/>
