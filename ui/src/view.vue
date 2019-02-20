@@ -81,36 +81,6 @@ export default {
         go(path) {
             this.$router.push(path);
         },
-
-        //poll task status until it becomes finished
-        /*
-        wait() {
-            this.$http.get(Vue.config.wf_api+'/task', {params: {
-                find: JSON.stringify({ _id: this.taskid, })
-            }})
-            .then(res=>{
-                this.task = res.data.tasks[0];
-                if(this.task.status == 'finished') return; //ready to show!
-                if(this.task.status == 'removed') {
-                    console.debug("rerunning");
-                    this.rerun();
-                }
-
-                console.debug("polling task status.."+this.taskid);
-                setTimeout(()=>{this.wait()}, 300);
-            });
-        },
-
-        rerun() {
-            this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.taskid)
-            .then(res => {
-                console.dir(res); 
-            })
-            .catch(err => {
-                console.error(err); 
-            });
-        },
-        */
     }
 }
 </script>
