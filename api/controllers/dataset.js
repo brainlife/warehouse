@@ -647,11 +647,14 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         async cb=>{
             let jwt = await common.issue_archiver_jwt(req.user.sub);
 
+            /*
+            //TODO - we can't remove it too soon - the same staged job might be used by other task
             //stage task is used as input to real *first* app that uses the data, so I believe we can 
             //remove it shortly after it's stage.. remove in 7 days(?)
             //TODO - if it's already staged, and another user request for the same datazet, should I just reuse it?
             let remove_date = new Date();
             remove_date.setDate(remove_date.getDate()+7); 
+            */
 
             stage_task = await rp.post({
                 url: config.amaretti.api+"/task",
@@ -698,7 +701,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                         }),
                     },
                     max_runtime: 1000*3600, //1 hour should be enough?
-                    remove_date,
+                    //remove_date,
                 },
                 headers: {
                     authorization: "Bearer "+jwt,
