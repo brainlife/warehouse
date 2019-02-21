@@ -148,7 +148,7 @@
                                     <small style="opacity: 0.8;">
                                         You can download this dataset via <a href="https://github.com/brain-life/cli" target="doc">Brainlife CLI</a>
                                     </small>
-                                    <pre>$ bl dataset download --id {{dataset._id}}</pre>
+                                    <pre class="code">$ bl dataset download --id {{dataset._id}}</pre>
                                 </p>
                             </b-col>
                         </b-row>
@@ -465,10 +465,14 @@ export default {
 
         download() {
             this.check_agreements(this.dataset.project, ()=>{
+                /*
                 var url = Vue.config.api+'/dataset/download/'+this.dataset._id;
                 if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
                 document.location = url;
                 this.$notify({type: 'info', text: "Download will start soon.."});
+                */
+                let query = {_id: [this.dataset._id]};
+                this.$root.$emit("downscript.open", {find: query});
             });
         },
 
@@ -811,6 +815,10 @@ transition: opacity 1s;
 opacity: 0;
 }
 */
+pre.code {
+background-color: white;
+padding: 10px;
+}
 </style>
 
 

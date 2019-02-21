@@ -45,6 +45,9 @@ import VueAnalytics from 'vue-analytics'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 
+//import VueClipboard from 'vue-clipboard2'
+//Vue.use(VueClipboard)
+
 Vue.component('v-select', vSelect)
 Vue.component('icon', Icon)
 
