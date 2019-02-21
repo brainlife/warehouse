@@ -65,7 +65,6 @@
     "vue2-ace-editor": "0.0.13",
     "vue2-animate": "^2.1.0",
     "vue2-filters": "^0.4.1",
-    "vue2-scrollbar": "0.0.3",
     "webpack-merge": "^4.2.1"
   },
   "devDependencies": {

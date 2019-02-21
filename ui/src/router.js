@@ -13,17 +13,12 @@ import appedit from '@/appedit'
 import project from '@/project'
 import projectedit from '@/projectedit'
 import datatypes from '@/datatypes'
-import datatype from '@/datatype'
-//import datatypeedit from '@/datatypeedit'
 import pubs from '@/pubs'
 import pub from '@/pub'
-import settings from '@/settings'
 import admin from '@/admin'
 
 import test from '@/test'
 import missing from '@/missing'
-
-//import Meta from 'vue-meta'
 
 Vue.use(Router)
 /*
@@ -37,7 +32,6 @@ Vue.use(Meta, {
 
 export default new Router({
     mode: 'history',
-    //base: '/warehouse',
     routes: [
         {path: '/', redirect: '/project'},
         {path: '/dashboard', component: dashboard},
@@ -66,8 +60,6 @@ export default new Router({
         {path: '/404', component: missing, meta: {public: true}},
         
         {path: '/admin', component: admin},
-       
-//        {path: '/datasets/:id?', component: project},
     ]
 })
 

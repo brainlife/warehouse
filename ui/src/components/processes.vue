@@ -174,6 +174,7 @@ export default {
                 return 0;
             });
         },
+
         instance_counts: function() {
             let counts = {};
             this.instances.forEach(i=>{
@@ -215,10 +216,12 @@ export default {
         project: function() {
             this.load();
         },
+
         order: function() {
             let group_id = this.project.group_id;
             window.localStorage.setItem("processes.order."+group_id, this.order);
         },
+        
         show: function() {
             let group_id = this.project.group_id;
             if(this.show) window.localStorage.setItem("processes.show."+group_id, this.show);
@@ -249,8 +252,6 @@ export default {
                 }
             }
         },
-
-    
     },
 
     methods: {
