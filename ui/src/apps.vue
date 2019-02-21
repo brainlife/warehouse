@@ -367,7 +367,7 @@ max-width: 1320px;
 padding-right: 300px;
 }
 .search-box .input {
-font-size: 140%;
+font-size: 120%;
 background-color: #fff6;
 border: none;
 transition: background-color 0.5s, color 0.5s;

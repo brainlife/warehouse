@@ -51,7 +51,7 @@
                                 <b-row>
                                     <b-col cols="3" class="truncate">
                                         <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
-                                        <datatypetag :datatype="datatypes[dataset.datatype]" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
+                                        <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
                                         <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                         <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
@@ -507,7 +507,7 @@ export default {
         },
 
         open(dataset_id) {
-            this.$router.push('/project/'+this.project._id+'/dataset/'+dataset_id);
+            this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
             this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
         },
 

@@ -89,9 +89,17 @@ Normally, the App description is automatically pulled from github repo descripti
                                 </b-input-group>
                                 <small v-if="app.github && github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
                             </b-col>
-                            <b-col v-if="github_branches && github_branches.length > 0">
-                                <b-input-group prepend="Branch">
-                                    <b-form-select v-model="app.github_branch" :options="github_branches"/>
+                            <b-col>
+                                <b-input-group prepend="Branch/Tag">
+                                    <b-form-select v-model="app.github_branch">
+                                        <optgroup label="Branches" v-if="github_branches">
+                                            <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
+                                        </optgroup>
+                                        <optgroup label="Tags" v-if="github_tags">
+                                            <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
+                                        </optgroup>
+                                    </b-form-select>
+                                    
                                 </b-input-group>
                                  <small v-if="app.github_branch == 'master'" class="text-danger"><icon name="exclamation" scale="0.8"/> Please avoid master branch</small>
                             </b-col>
@@ -498,6 +506,7 @@ export default {
 
             invalid_repo: false,
             github_branches: null,
+            github_tags: null,
             
             input_datasets: [],
             output_datasets: [],
@@ -511,6 +520,14 @@ export default {
             datatypes: null, //registered datatypes (keyed by datatype_id)
 
             config: Vue.config
+        }
+    },
+
+    computed: {
+        github_bt() {
+            return {
+
+            }
         }
     },
 
@@ -592,13 +609,22 @@ export default {
                 { headers: { Authorization: null } })
             .then(res=>{
                 this.github_branches = res.data.map(b => {
-                    return {
-                        value: b.name,
-                        text: b.name
-                    };
+                    return b.name;
                 });
             }).catch(err=>{
                 this.github_branches = [];
+                console.error(err);
+            });
+
+            this.github_tags = null;
+            this.$http.get('https://api.github.com/repos/' + this.app.github + '/tags', 
+                { headers: { Authorization: null } })
+            .then(res=>{
+                this.github_tags = res.data.map(b => {
+                    return b.name;
+                });
+            }).catch(err=>{
+                this.github_tags = [];
                 console.error(err);
             });
         },
