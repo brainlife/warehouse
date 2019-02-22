@@ -274,6 +274,7 @@ export default {
                 if(this.rule.subject_match != "") find["meta.subject"] = {$regex: this.rule.subject_match};
 
                 //handle dataset (negative)tags
+                //TODO - I think I can simplify this by combining $in and $nin like.. "{tags: {$all: ["test", "dev"], $nin: ["xyz123"]}}"
                 let tag_query = [];
                 let pos_tags = [];
                 let neg_tags = [];
