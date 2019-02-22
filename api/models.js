@@ -7,6 +7,7 @@ const winston = require("winston");
 //mine
 const config = require("./config");
 const logger = winston.createLogger(config.logger.winston);
+const common = require("./common"); //circular?
 
 //use native promise for mongoose
 //without this, I will get Mongoose: mpromise (mongoose's default promise library) is deprecated
@@ -17,7 +18,8 @@ let dataset_ex = null;
 let amqp_conn = null;
 function init_amqp(cb) {
     logger.info("connecting to amqp..");
-    amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    //amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    /*
     amqp_conn.once("ready", ()=>{
         logger.info("amqp connection ready.. creating exchanges");
         amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
@@ -28,6 +30,15 @@ function init_amqp(cb) {
     amqp_conn.on("error", (err)=>{
         logger.error("amqp connection error");
         logger.error(err);
+    });
+    */
+    common.get_amqp_connection((err, conn)=>{
+        amqp_conn = conn;
+        logger.info("amqp connection ready.. creating exchanges");
+        amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
+            dataset_ex = ex;
+            cb();
+        });
     });
 }
 
@@ -68,11 +79,7 @@ function dataset_event(dataset) {
 
 exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
-    if(amqp_conn) {
-        logger.debug("disconnecting from amqp");
-        amqp_conn.setImplOptions({reconnect: false}); //https://github.com/postwait/node-amqp/issues/462
-        amqp_conn.disconnect();
-    }
+    common.disconnect_amqp();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,5 @@
 
 //contrib
-const amqp = require("amqp");
 const mongoose = require("mongoose");
 const winston = require("winston");
 const rp = require('request-promise');

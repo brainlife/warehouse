@@ -9,6 +9,7 @@ const fs = require('fs');
 const async = require('async');
 const redis = require('redis');
 const xmlescape = require('xml-escape');
+const amqp = require("amqp");
 
 const config = require('./config');
 const logger = winston.createLogger(config.logger.winston);
@@ -595,4 +596,44 @@ exports.sensu_name = function(name) {
     name = name.replace(/[ ()]/g, "");
     return name;
 }
+
+let amqp_conn;
+exports.get_amqp_connection = function(cb) {
+    if(amqp_conn) return cb(null, amqp_conn); //already connected
+    amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    amqp_conn.once("ready", ()=>{
+        cb(null, amqp_conn);
+    });
+    amqp_conn.on("error", err=>{
+        logger.error(err);
+    });
+}
+
+exports.disconnect_amqp = function(cb) {
+    if(amqp_conn) {
+        logger.debug("disconnecting from amqp");
+        amqp_conn.setImplOptions({reconnect: false}); //https://github.com/postwait/node-amqp/issues/462
+        amqp_conn.disconnect();
+    }
+}
+
+//connect to the amqp exchange and wait for a event to occur
+exports.wait_for_event = function(exchange, key, cb) {
+    exports.get_amqp_connection((err, conn)=>{
+        if(err) {
+            logger.error("failed to obtain amqp connection");
+            return cb(err);
+        }
+        logger.info("amqp connection ready.. creating exchanges");
+        conn.queue('', q=>{
+            q.bind(exchange, key, ()=>{
+                q.subscribe((message, header, deliveryInfo, messageObject)=>{
+                    q.destroy();
+                    cb(null, message);
+                });
+            });
+        });
+    });
+}
+
 

@@ -228,8 +228,9 @@ router.put('/deactivate/:id', jwt({secret: config.express.pubkey}), function(req
                 //I need to wait for the rule_handler to finish its cycle before I start removing tasks..
                 //for now, I am going to give 5 seconds 
                 //TODO - maybe I should wait for event from rule_handler?
-                logger.debug("giving a few seconds to rule_handler for our flag to take effect..");
-                setTimeout(()=>{
+                logger.debug("waiting for rule handler to finish processing for the current round");
+                common.wait_for_event("warehouse.rule", "done", (err, message)=>{
+                    logger.debug(JSON.stringify(message, null, 4));
                     request.get({ url: config.amaretti.api+"/task", json: true, headers: { authorization: req.headers.authorization },
                         qs: {
                             find: JSON.stringify({
@@ -250,7 +251,7 @@ router.put('/deactivate/:id', jwt({secret: config.express.pubkey}), function(req
                             res.json({status: "ok"});
                         });
                     });
-                }, 3000);
+                });
             });  
         });
     });

@@ -6,16 +6,37 @@ const async = require('async');
 const request = require('request');
 const fs = require('fs');
 const redis = require('redis');
-//const jsonwebtoken = require('jsonwebtoken');
+const amqp = require('amqp');
 
 const config = require('../api/config');
 const logger = createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
-let rcon = null;
+let rcon;
+let acon;
+let rule_ex;
 db.init(function(err) {
     if(err) throw err;
+
+    /*
+    acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
+    acon.on('error', logger.error);
+    acon.on('ready', ()=>{
+        logger.info("connected to amqp.. now setting up warehouse.rule exchange");
+        acon.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
+            rule_ex = ex; 
+        });
+    });
+    */
+    common.get_amqp_connection((err, conn)=>{
+        acon = conn;
+        logger.info("connected to amqp.. now setting up warehouse.rule exchange");
+        acon.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
+            rule_ex = ex; 
+        });
+    });
+
     rcon = redis.createClient(config.redis.port, config.redis.server);
     rcon.on('error', err=>{throw err});
     rcon.on('ready', ()=>{
@@ -44,8 +65,6 @@ function health_check() {
     }
 
     rcon.set("health.warehouse.rule."+(process.env.NODE_APP_INSTANCE||'0'), JSON.stringify(report));
-
-    //reset counter
     _counts.rules = 0;
 }
 
@@ -70,7 +89,8 @@ function run() {
 		if(err) throw err;
         async.eachSeries(rules, handle_rule, err=>{
             if(err) logger.error(err);
-            logger.debug("done with all rules - sleeping for a while");
+            logger.debug("done handling "+rules.length+" rules - sleeping for a while");
+            rule_ex.publish("done", {count: rules.length});    
             setTimeout(run, 1000*3);
         });
 	});
@@ -261,7 +281,11 @@ function handle_rule(rule, cb) {
                     removed: false,
                 }
                 if(output.datatype_tags.length > 0) query.datatype_tags = { $all: output.datatype_tags };
-                if(rule.output_tags[output.id]) query.tags = { $all: rule.output_tags[output.id] }; 
+                let tags = rule.output_tags[output.id];
+                if(tags && tags.length > 0) query.tags = { $all: tags };
+
+                console.log("finding output-------------------");
+                console.log(JSON.stringify(query, null, 4));
                 db.Datasets.find(query)
                 .select('meta') 
                 .lean()
@@ -275,7 +299,6 @@ function handle_rule(rule, cb) {
 
         //find all input datasets that this rule can use
         next=>{
-            logger.debug("finding inputs");
             async.eachSeries(rule.app.inputs, (input, next_input)=>{
                 input._datasets = {}; //keyed by subject array of matchind datasets (should be sorted by "selection_method")
 
@@ -286,8 +309,6 @@ function handle_rule(rule, cb) {
                     storage: { $exists: true },
                     removed: false,
                 }
-
-                //console.dir(input.datatype_tags);
 
                 //allow user to override which project to load input datasets from
                 if(rule.input_project_override && rule.input_project_override[input.id]) {
@@ -300,7 +321,6 @@ function handle_rule(rule, cb) {
                 
                 //handle dataset tags
                 if(rule.input_tags[input.id]) {
-                    //if(rule.input_tags[input.id].length > 0) query.tags = { $all: rule.input_tags[input.id] }; 
                     rule.input_tags[input.id].forEach(tag=>{
                         if(tag[0] != "!") pos_tags.push(tag);
                         else neg_tags.push(tag.substring(1));
@@ -322,7 +342,8 @@ function handle_rule(rule, cb) {
                 if(neg_tags.length > 0) tag_query.push({datatype_tags: {$nin: neg_tags}});
                 if(tag_query.length > 0) query.$and = tag_query;
 
-                console.dir(query);
+                console.log("finding input-------------------");
+                console.log(JSON.stringify(query, null, 4));
                 db.Datasets.find(query)
                 .populate('datatype')
                 .sort("create_date")
