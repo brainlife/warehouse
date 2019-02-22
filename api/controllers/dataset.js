@@ -45,7 +45,7 @@ function construct_dataset_query(query, canread_project_ids) {
     if(query.find) ands.push(query.find);
 
     //handle datatype_tags
-    //TODO - I should use {$all: []} and {$nin: []}?
+    //TODO DEPRECATE! - I should use {$all: []} and {$nin: []}?
     if(query.datatype_tags) {
         query.datatype_tags.forEach(tag=>{ 
             if(tag[0] == "!") {
@@ -73,7 +73,7 @@ function construct_dataset_query(query, canread_project_ids) {
  * @apiParam {Object} [sort]    Mongo sort object - defaults to _id. Enter in string format like "-name%20desc"
  * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter (default all)
  * @apiParam {String[]} [datatype_tags]  
- *                              List of datatype tags to filter (you can use exclusion tags also). MIGHT DEPRECATE
+ *                              (Deprecate) List of datatype tags to filter (you can use exclusion tags also).
  *                              as this is not too difficult to construct
  * @apiParam {Number} [limit]   Maximum number of records to return - defaults to 100
  * @apiParam {Number} [skip]    Record offset for pagination (default to 0)
@@ -647,11 +647,14 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         async cb=>{
             let jwt = await common.issue_archiver_jwt(req.user.sub);
 
+            /*
+            //TODO - we can't remove it too soon - the same staged job might be used by other task
             //stage task is used as input to real *first* app that uses the data, so I believe we can 
             //remove it shortly after it's stage.. remove in 7 days(?)
             //TODO - if it's already staged, and another user request for the same datazet, should I just reuse it?
             let remove_date = new Date();
             remove_date.setDate(remove_date.getDate()+7); 
+            */
 
             stage_task = await rp.post({
                 url: config.amaretti.api+"/task",
@@ -698,7 +701,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                         }),
                     },
                     max_runtime: 1000*3600, //1 hour should be enough?
-                    remove_date,
+                    //remove_date,
                 },
                 headers: {
                     authorization: "Bearer "+jwt,
@@ -1003,19 +1006,24 @@ router.post('/ds/issue', jwt({secret: config.express.pubkey}), (req, res, next)=
  * @apiGroup Dataset
  * @api {post} /dataset/ds/:id  Generate dataset download script
  * @apiDescription              Generate shell script that can download specified set of datasets.
- *                              It g
  *
  * @apiParam {Object} [find]    Optional Mongo query to perform (you need to JSON.stringify)
+ * @apiParam {Number} [limit]   Maximum number of records to return - defaults to 100
+ * @apiParam {Number} [skip]    Record offset for pagination (default to 0)
  * @apiParam {String[]} [datatype_tags]  
- *                              List of datatype tags to filter (you can use exclusion tags also)
+ *                              (deprecated) List of datatype tags to filter (you can use exclusion tags also)
  *
  * @apiSuccess {String}         generated bash shell script
 */
 router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
+    let skip = req.query.skip||0;
+    let limit = req.query.limit||100; //this means if user set it to "0", no limit (it's string)
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         db.Datasets.find(construct_dataset_query(req.body, canread_project_ids))
-        .populate('datatype project', 'name desc readme admins members bids') //mixed in with datatype/project model fields...
+        .populate('datatype project', 'name desc admins members bids') //mixed in with datatype/project model fields...
+        .skip(+skip)
+        .limit(+limit)
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
@@ -1061,9 +1069,7 @@ set +e #stop the script if anything fails
 
 ${config.warehouse.url}/project/${project_id}
 
-${p.desc}
-
-${p.readme||''}`;
+${p.desc}`;
                 
                 script += "\n__ENDREADME__\n";
 
@@ -1080,7 +1086,7 @@ ${p.readme||''}`;
                     ],
                     //DatasetDOI: "",
                 };
-                script += "echo \""+JSON.stringify(dataset_description, null, 4).replace().replace(/\"/g, '\\"')+"\" > "+root+"/bids/dataset_description.json\n";
+                script += "echo \""+JSON.stringify(dataset_description).replace().replace(/\"/g, '\\"')+"\" > "+root+"/bids/dataset_description.json\n";
             }
             
             datasets.forEach(dataset=>{
@@ -1157,7 +1163,7 @@ ${p.readme||''}`;
                             //request for metadata!
                             if(dataset.prov) {
                                 dataset.meta.BrainlifeURL = config.warehouse.url+"/project/"+dataset.project._id+"/dataset/"+dataset._id;
-                                script += "echo \""+JSON.stringify(dataset.meta, null, 4).replace().replace(/\"/g, '\\"')+"\" > "+bidspath+"/"+dest+"\n";
+                                script += "echo \""+JSON.stringify(dataset.meta).replace().replace(/\"/g, '\\"')+"\" > "+bidspath+"/"+dest+"\n";
                             } else {
                                 //can't output json.. as we have no prov
                             }
