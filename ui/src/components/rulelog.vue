@@ -58,8 +58,7 @@ export default {
                 this.logs = res.data.logs;
                 this.stats = res.data.stats;
             }).catch(res=>{
-                console.error(res);
-                this.err = res.data.err;
+                //no log usually means the rule hasn't been executed yet
             });
     
             /*

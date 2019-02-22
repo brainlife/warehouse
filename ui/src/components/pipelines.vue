@@ -37,13 +37,13 @@
             <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}" class="rule" v-if="rule.removed == false">
                 <div class="rule-header" @click="toggle(rule)">
                     <b-row :no-gutters="true">
-                        <b-col :cols="2">
-                            <span class="text-primary" v-if="rule.active">
-                                <icon name="cog" :spin="true" scale="0.8" style="margin: 0px 5px"/> Online
-                            </span>
-                            <span class="text-secondary" v-else>
-                                <icon name="stop" scale="0.8" style="margin: 0px 5px"/> Offline
-                            </span>
+                        <b-col :cols="2" @click.stop="">
+                            <b-form-checkbox switch v-model="rule.active" name="Online" @change="flip_switch(rule)" :disabled="rule.deactivating">
+                                <b style="position: relative; top: 3px;">
+                                    <span v-if="rule.active" class="text-primary">Online</span>
+                                    <span v-else class="text-secondary">Offline</span>
+                                </b>
+                            </b-form-checkbox>
                         </b-col>
                         <b-col :cols="4">
                             <span>{{rule.app.name}}</span>
@@ -66,38 +66,24 @@
 
                 <!--rule body-->
                 <div v-if="selected == rule" transition="expand">
-                    <div style="float: right; margin-right: 90px;">
-                            <div class="button" @click="copy(rule)" v-if="ismember() || isadmin()" size="sm" title="copy"><icon name="copy"/></div>
-                            <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm" title="edit"><icon name="edit"/></div>
-                            <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" title="remove"><icon name="trash"/></div>
-                    </div>
-
+                    <!--
                     <div v-if="rule.active" style="margin: 0px 10px;">
                         <b-btn @click="deactivate(rule)" variant="outline-danger" size="sm" v-if="!rule.deactivating"><icon name="times"/> Deactivate </b-btn>
                         <b-btn variant="outline-danger" size="sm" v-if="rule.deactivating"><icon name="cog" :spin="true"/> Deactivating</b-btn>
                         <small style="opacity: 0.8; padding: 10px;"><b>{{rule.activetaskcount||0}}</b> Active Tasks</small>
-                        <!--
-                        <icon name="cog" :spin="true" scale="1.25" style="float: left;"/>
-                        <div style="margin-left: 30px;">
-                            Running<br>
-                            <small>Monitored by the rule handler. See the log below for more information. ({{rule.taskcount||0}} active tasks)</small>
-                        </div>
-                        -->
                     </div>
                     <div v-else style="margin: 0px 10px;">
-                        <!--
-                        <icon name="hand-paper" scale="1.25" style="float: left;"/> 
-                        <div style="margin-left: 30px;">
-                            Stopped<br>
-                        </div>
-                        -->
                         <b-btn @click="activate(rule)" variant="outline-success" size="sm" v-if="!rule.active"><icon name="play"/> Activate </b-btn>
-                        <!--<small>Not monitored by the rule handler.</small>-->
                     </div>
-                    <br>
+                    -->
 
                     <div class="rule-body">
                         <div class="section-header">
+                            <div style="float: right; position: relative; top: -4px;">
+                                <div class="button" @click="copy(rule)" v-if="ismember() || isadmin()" size="sm" title="copy"><icon name="copy"/></div>
+                                <div class="button" @click="edit(rule)" v-if="ismember() || isadmin()" size="sm" title="edit"><icon name="edit"/></div>
+                                <div class="button" @click="remove(rule)" v-if="ismember() || isadmin()" size="sm" title="remove"><icon name="trash"/></div>
+                            </div>
                             Submit the following App <small style="opacity: 0.5;">and archive all output datasets to this project</small>
                         </div>
                         <b-row>
@@ -132,7 +118,7 @@
                             </div>
                             <small style="opacity: 0.5">(regex)</small>
                             that have the following set of archived datasets
-                      </div>
+                        </div>
                         <div style="margin-left: 30px;">
                             <p v-for="input in rule.app.inputs" :key="input.id">
                                 <small style="float: right; margin-right: 10px;">{{input.id}}</small>
@@ -214,7 +200,7 @@ export default {
             datatypes: null,
             projects: null,
 
-            activetaskcount_int: null,
+            //activetaskcount_int: null,
 
             config: Vue.config,
         }
@@ -223,9 +209,11 @@ export default {
     mounted() {
         this.load();
     },
+    /*
     destroyed() {
         if(this.activetaskcount_int) clearInterval(this.activetaskcount_int);
     },
+    */
 
     watch: {
         project: function() {
@@ -246,14 +234,15 @@ export default {
             if(!this.selected) return;
             Vue.set(this.selected, 'subject_match_edit', this.selected.subject_match);
 
+            /*
             //start activetaskcount query
             if(this.activetaskcount_int) clearInterval(this.activetaskcount_int);
             this.activetaskcount_int = setInterval(()=>{
                 this.get_activetaskcount();    
             }, 5000);
             this.get_activetaskcount();
+            */
         },
-
     },
 
     computed: {
@@ -301,6 +290,7 @@ export default {
     },
 
     methods: {
+        /*
         get_activetaskcount() {
             if(!this.selected) return;
             //console.log("querying activetaskcount");
@@ -319,7 +309,7 @@ export default {
                 Vue.set(this.selected, 'activetaskcount', res.data.count);
             });  
         },
-
+        */
         load(cb) {
             let group_id = this.project.group_id;
             this.order = window.localStorage.getItem("pipelines.order."+group_id)||"create_date";
@@ -499,6 +489,7 @@ export default {
         },
 
         toggle(rule) {
+            console.log("toggling");
             if(this.selected == rule) {
                 this.selected = null;
             } else {
@@ -511,52 +502,31 @@ export default {
             }
         },
 
-        activate(rule) {
-            this.$http.put('rule/'+rule._id, {active: true}).then(res=>{
-                rule.active = true;
-            }).catch(this.notify_error);
-        },
-
-        deactivate(rule) {
-            /*
-            let active_tasks = res.data.tasks.filter(task=>{
-                if(!["requested", "running", "running_sync"].includes(task.status)) return false;
-                if(!task.config._app) return false; //staging job?
-                return true;
-            });
-            */
-            //if(confirm("Deactivating this rule will remove "+active_tasks.length+" active tasks ("+res.data.count+" total) submitted by this rule. Should we proceed?")) {
-            Vue.set(rule, 'deactivating', true);
-            this.$notify({ title: 'Deactivating', text: 'Deactivating this rule and all tasks submitted from it', type: 'info', });
-
-            //first reactivate the rule
-            this.$http.put('rule/deactivate/'+rule._id).then(res=>{
-                rule.active = false;
-                rule.deactivating = false;
-                /*
-                async.eachSeries(res.data.tasks, (task, next_task)=>{
-                    console.log("removing", task._id);
-                    this.$http.delete(Vue.config.wf_api+'/task/'+task._id).then(res=>{
-                        rule.deactivating_remain--;
-                        next_task();
-                    }).catch(next_task);
-                }, err=>{
-                    if(err) return this.notify_error(err);
-                    this.$notify({ title: 'Removing Task', text: 'Removed '+res.data.count+' tasks', type: 'success', });
-                    this.$http.put('rule/'+rule._id, {active: false}).then(res=>{
-                        rule.active = false;
-                    }).catch(this.notify_error);
-                });
-                */
-            }).catch(this.notify_error);
-            //}
-        },
-
         all_datatype_tags(rule, input) {
             let tags = input.datatype_tags;
             if(rule.extra_datatype_tags) tags = tags.concat(rule.extra_datatype_tags[input.id]);
             return tags;
-        } 
+        },
+    
+        flip_switch(rule) {
+            if(rule.active) {
+                //deactivate
+                Vue.set(rule, 'deactivating', true);
+                this.$notify({ title: 'Deactivating', text: 'Deactivating this rule and all tasks submitted from it', type: 'info', });
+                this.$http.put('rule/deactivate/'+rule._id).then(res=>{
+                    rule.deactivating = false;
+                    this.$notify({ title: 'Deactivating', text: 'Successfully deactivated', type: 'success', });
+                }).catch(this.notify_error);
+            } else {
+                //activate
+                this.$http.put('rule/'+rule._id, {active: true}).then(res=>{
+                    this.$notify({ title: 'Activating', text: 'Successfully activated', type: 'success', });
+                }).catch(this.notify_error);
+            }
+
+            return true; //stop prop
+        },
+    
    },
 };
 
@@ -592,7 +562,12 @@ background-color: #eee;
 cursor: pointer;
 transition: background-color 0.3s;
 padding: 7px;
+padding-top: 10px;
+
 font-size: 88%;
+}
+.rule-header .custom-switch {
+top: -2px;   
 }
 .rule.rule-selected .rule-header {
 padding: 15px;
