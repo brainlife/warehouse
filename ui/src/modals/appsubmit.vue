@@ -178,6 +178,7 @@ export default {
             return this.$http.get('app', {params: {
                 find: JSON.stringify({_id}),
                 populate: 'inputs.datatype outputs.datatype',
+                limit: 1,
             }})
             .then(res=>{
                 this.app = res.data.apps[0];
@@ -539,6 +540,7 @@ export default {
                 return this.$http.post(Vue.config.wf_api+'/task', submissionParams);
             }).then(res=>{
                 console.log("submitted app task", res.data.task);
+                console.log("/project/"+this.project+"/process/"+instance._id);
                 this.$router.push("/project/"+this.project+"/process/"+instance._id);
             }).catch(res=>{
                 console.error(res);

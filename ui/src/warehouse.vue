@@ -67,9 +67,12 @@ font-size: 14px;
 .input-group-text {
 font-size: 14px;
 }
-.form-control {
+
+.form-control,
+.custom-select {
 font-size: inherit;
 }
+
 legend {
 font-size: 1.1rem;
 }
@@ -407,6 +410,7 @@ opacity: 0.7;
 font-size: 90%;
 margin-bottom: 2px;
 }
+
 .fa-icon {
 position: relative;
 top: -0.1em;

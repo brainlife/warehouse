@@ -72,15 +72,6 @@ export default {
 
         load_config: function(config) {
             this.appcache(config._app, (err, app)=>{
-            /*
-            this.$http.get('app', { params: {
-                find: JSON.stringify({
-                    _id: config._app,
-                    removed: false,
-                }),
-            } })
-            .then(res => {
-            */
                 //create key/value of scalar config
                 this.taskconfig = {};
                 this.appconfig = {};

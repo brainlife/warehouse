@@ -3,11 +3,13 @@
     <pageheader/>
     <sidemenu active="/projects"/>
     <projectmenu :active="selected._id" :projects="projects" @change="change_project"></projectmenu>
+ 
     <div class="page-header with-menu">
         <b-tabs class="brainlife-tab" v-model="tab">
-            <b-tab v-for="tabinfo in tabs" :key="tabinfo.id" :title="tabinfo.label"/>
+            <!--without setting active="true" on active tab, b-tabs emits change event back to tab 0 at mount-->
+            <b-tab v-for="(tabinfo, idx) in tabs" :key="tabinfo.id" :title="tabinfo.label" :active="tab == idx"/>
         </b-tabs>
-    </div><!--header-->
+    </div>
     <div class="page-content with-menu">
         <!--detail-->
         <div v-if="tabs[tab].id == 'detail'">
@@ -192,8 +194,8 @@ export default {
                 {id: "pipeline", label: "Pipelines"},
                 {id: "pub", label: "Publications"},
             ],
-            tab: 0, //current tab
 
+            tab: 0, //initial tab
             projects: null, //all projects that user can see summary of
             config: Vue.config,
         }
@@ -201,7 +203,7 @@ export default {
 
     watch: {
         '$route': function() {
-            //console.log("route changed");
+            console.log("route changed");
             var project_id = this.$route.params.id;
             if(project_id && this.selected && project_id != this.selected._id) {
                 this.open_project(this.projects[project_id]);
@@ -210,13 +212,17 @@ export default {
             if(tab_id) {
                 //find the tab requested
                 this.tabs.forEach((tab, idx)=>{  
-                    if(tab.id == tab_id) this.tab = idx; 
+                    if(tab.id == tab_id) {
+                        console.log("tab = ", idx);
+                        this.tab = idx; 
+                    }
                 });
             }         
         },
 
         tab: function() {
             //tab gets changed even if value doesn't change.. so I have to hve if statement like this..
+            console.log(this.tab, this.tabs);
             var tabid = this.tabs[this.tab].id;
             if(tabid != this.$route.params.tab) {
                 console.log("tab seems to have really changed", tabid);
@@ -242,30 +248,31 @@ export default {
             res.data.projects.forEach((p)=>{
                 this.projects[p._id] = p;
             });
-
             //decide which project to open
             let project_id = this.$route.params.id
             if(!this.projects[project_id]) project_id = null; //invalid project id specified?
+  
             if(!project_id) {
                 //if no project id is specified, use last_projectid_used
                 let ids = Object.keys(this.projects); 
                 project_id = localStorage.getItem("last_projectid_used");
                 if(!this.projects[project_id]) project_id = ids[0];
-                this.$router.replace("/project/"+project_id);
+                //this.$router.replace("/project/"+project_id);
             }
             this.open_project(this.projects[project_id]);
-
+    
             //open tab requested..
             if(this.$route.params.tab) {
+
                 //find the tab requested
                 this.tabs.forEach((tab, idx)=>{  
                     if(tab.id == this.$route.params.tab) {
+                        console.log("setting tab", idx);
                         this.tab = idx; //this has an effect of *clicking* the tab..
                     }
                 });
             } else {
-                //if no tab is opened, open first page
-                this.tab = 0;
+                //if no tab is opened, open first pag
                 console.log("resetting url due to missing tab");
                 this.$router.replace("/project/"+project_id+"/"+this.tabs[this.tab].id);
             }
@@ -310,13 +317,13 @@ export default {
         },
 
         change_project(project) {
+            console.log("change project");
             this.$router.push('/project/'+project._id+'/'+this.$route.params.tab);
             this.open_project(project);
         },
 
         open_project(project) {
             if(this.selected == project) return; //no point of opening project if it's already opened
-
             this.selected = project;
             this.$http.get('project', {params: {
                 find: JSON.stringify({
@@ -330,8 +337,7 @@ export default {
                 localStorage.setItem("last_projectid_used", project._id);
 
                 //https://github.com/ktquez/vue-disqus/issues/11#issuecomment-354023326
-                if(this.$refs.disqus) {
-                    console.log("resetting disqus", this.selected._id);
+                if(this.$refs.disqus && window.DISQUS) {
                     this.$refs.disqus.reset(window.DISQUS);
                 }
             });

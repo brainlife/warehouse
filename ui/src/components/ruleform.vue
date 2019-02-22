@@ -80,7 +80,7 @@
                                         <tageditor v-model="rule.input_tags[input.id]" placeholder="(any tags)" :options="input_dataset_tags[input.id]"/>
                                         <small class="text-muted">Look for datasets with specific dataset tags (<b>not datatype tag!</b>)</small>
                                     </p>
-                                    <small v-if="rule.input_tags_count[input.id]">{{rule.input_tags_count[input.id]}} datasets matches this criteria</small>
+                                    <small v-if="rule.input_tags_count[input.id]">{{rule.input_tags_count[input.id]}} datasets matches this criteria (may belong to the same subject)</small>
                                 </b-col>
                             </b-row> 
                             <p v-if="rule.input_tags_count[input.id] === null">Counting matching datasets..</p>
@@ -426,6 +426,7 @@ export default {
                         removed: false,
                     }),
                     populate: 'inputs.datatype outputs.datatype contributors', //to display app detail
+                    limit: 500, //TODO - this is not sustailable
                 }})
                 .then(res=>{
                     this.apps = res.data.apps;

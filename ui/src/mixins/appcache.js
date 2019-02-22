@@ -15,6 +15,7 @@ export default {
                 this.$http.get('app', {params: {
                     find: JSON.stringify({_id: id}),
                     populate: 'inputs.datatype outputs.datatype',
+                    limit: 1,
                 }}).then(res=>{
                     let app = res.data.apps[0];
                     this.set_cache(id, app);

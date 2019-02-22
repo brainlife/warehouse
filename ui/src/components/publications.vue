@@ -31,7 +31,7 @@
             </div>
             <div class="margin20 text-muted" v-if="!pubs || pubs.length == 0">
                 <p>No publication registered for this project.</p>
-                <p>To learn about how to submit publications, please refer to our <a href="https://brainlife.github.io/docs/user/publication/" target="doc">Documentation</a>.</p>
+                <p>To learn about how to submit publications, please refer to our <a href="https://brainlife.io/docs/user/publication/" target="doc">Documentation</a>.</p>
             </div>
 
             <!--space to make sure add button won't overwrap the pub list-->

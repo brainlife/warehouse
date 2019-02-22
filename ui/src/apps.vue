@@ -224,7 +224,7 @@ export default {
 
             this.$http.get('app', {params: {
                 find: JSON.stringify({$and: ands}),
-                limit: 1000, //TODO - use paging?
+                limit: 500, //TODO - this is not sustailable
                 populate: 'inputs.datatype outputs.datatype contributors',
             }})
             .then(res=>{
@@ -367,7 +367,7 @@ max-width: 1320px;
 padding-right: 300px;
 }
 .search-box .input {
-font-size: 140%;
+font-size: 120%;
 background-color: #fff6;
 border: none;
 transition: background-color 0.5s, color 0.5s;

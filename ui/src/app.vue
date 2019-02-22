@@ -371,6 +371,7 @@ export default {
         this.$http.get('app', {params: {
             find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'inputs.datatype outputs.datatype projects',
+            limit: 500, //TODO - this is not sustailable
         }})
         .then(res=>{
             this.app = res.data.apps[0];

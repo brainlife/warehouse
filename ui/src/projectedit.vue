@@ -5,7 +5,7 @@
     <div class="fixed-top">
         <b-container>
             <p style="float: right">
-                <a href="https://brainlife.github.io/docs/user/project/"><icon name="book"/></a>
+                <a href="https://brainlife.io/docs/user/project/"><icon name="book"/></a>
             </p>
             <h3>{{project.name||'No name'}}</h3>
         </b-container>

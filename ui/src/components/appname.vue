@@ -28,15 +28,6 @@ export default {
             this.appcache(this.appid, (err, app)=>{
                 this.app_ = app;
             });
-            /*
-            this.$http.get('app', {params: {
-                find: JSON.stringify({_id: this.appid}),
-                populate: 'inputs.datatype outputs.datatype',
-            }}).then(res=>{
-                this.app_ = res.data.apps[0];
-            });
-            */
-
         }
         if(this.app) this.app_ = this.app;
     },

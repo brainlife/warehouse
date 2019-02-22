@@ -92,6 +92,7 @@ export default {
                             removed: false,
                         }),
                         populate: 'inputs.datatype outputs.datatype contributors',
+                        limit: 500, //TODO - this is not sustailable
                     }}).then(res=>{
                         if(!res) return; //TODO notify error?
                         this.apps = res.data.apps;

@@ -209,7 +209,6 @@ export default {
 
             selected_task_id: null,
             
-            //archiving: null, 
             ws: null, //websocket
 
             loading: false,

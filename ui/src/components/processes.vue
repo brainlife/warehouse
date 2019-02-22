@@ -36,7 +36,7 @@
         <div class="text-muted margin20" v-if="instances.length == 0">
             <p>Here, you can submit series of apps with shared input and output datasets.</p>
             <p>Output datasets will be removed within 25 days. Please archive any output dataset you'd like to keep.</p>
-            <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.github.io/docs/user/process/" target="doc">Documentation</a>.</p>
+            <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
         </div>
 
         <div v-if="instances.length > 0" style="clear: both;">
@@ -174,6 +174,7 @@ export default {
                 return 0;
             });
         },
+
         instance_counts: function() {
             let counts = {};
             this.instances.forEach(i=>{
@@ -215,10 +216,12 @@ export default {
         project: function() {
             this.load();
         },
+
         order: function() {
             let group_id = this.project.group_id;
             window.localStorage.setItem("processes.order."+group_id, this.order);
         },
+        
         show: function() {
             let group_id = this.project.group_id;
             if(this.show) window.localStorage.setItem("processes.show."+group_id, this.show);
@@ -249,8 +252,6 @@ export default {
                 }
             }
         },
-
-    
     },
 
     methods: {

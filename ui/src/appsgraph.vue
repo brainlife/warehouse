@@ -34,6 +34,7 @@ export default {
                 ]
             }),
             populate: 'inputs.datatype outputs.datatype contributors',
+            limit: 500, //TODO - this is not sustailable
         }})
         .then(res=>{
             this.init_vis(res.data.apps);

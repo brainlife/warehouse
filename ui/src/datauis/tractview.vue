@@ -16,13 +16,18 @@ export default {
     mounted() {
         var basepath = "";
         if(this.subdir) basepath += this.subdir+"/";
-        this.$http.get(Vue.config.amaretti_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/tracts.json"))
+        let api = Vue.config.amaretti_api+"/task/download/"+this.task._id;
+
+        this.$http.get(api+"?p="+encodeURIComponent(basepath+"tracts/tracts.json"))
         .then(res=>{
             var tracts = res.data;
             if(!Array.isArray(tracts)) tracts = [tracts]; //make it an array if it's not.. some app just output a single tract without wrapped in []
             tracts.forEach(tract=>{
-                tract.url = Vue.config.amaretti_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/"+tract.filename)
+                tract.url = api+"?p="+encodeURIComponent(basepath+"tracts/"+tract.filename)
             });
+
+            //TODO - I should also try loading surfaces/surfaces.json soon
+        
             window.config = {tracts};
             this.ready = true;
         }).catch(err=>{
@@ -32,7 +37,7 @@ export default {
                 .then(res=>res.json())
                 .then(tracts=>{
                 tracts.forEach(tract=>{
-                    tract.url = Vue.config.amaretti_api+"/task/download/"+this.task._id+"?p="+encodeURIComponent(basepath+"tracts/"+tract.filename)
+                    tract.url = api+"?p="+encodeURIComponent(basepath+"tracts/"+tract.filename)
                 });
                 window.config = {tracts};
                 this.ready = true;

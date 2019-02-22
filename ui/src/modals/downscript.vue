@@ -1,15 +1,23 @@
 <template>
 <b-modal :no-close-on-backdrop='true' title="Download Datasets" ref="modal" size="lg">
-    <p>Please copy and paste the following command on your bash terminal to download your datasets.</p>
-    <pre class="code">curl {{headers}} -d '{{json}}' -X POST {{config.api}}/dataset/downscript | bash</pre>
+     <div v-if="single_dataset_url">
+        <p>
+            <a :href="single_dataset_url" @click="direct_download">Directly Download</a> to your browser
+        </p>
+        <p>or ..</p>
+    </div>
+ 
+    <p>Copy and paste the following command on your bash terminal to download your datasets.</p>
+    <textarea class="downscript" ref="downscript" readonly>{{downscript}}</textarea>
+    <b-btn @click="copy_downscript" style="float: left; margin-right: 20px; margin-bottom: 50px;">Copy to clipboard</b-btn>
 
     <p class="text-muted">
         The above command will download selected datasets inside sub directories for each subject. 
-        The command will also create <a href="http://bids.neuroimaging.io">BIDS</a> a directory (bids) containing symbolic links to organize downloaded files info a BIDS derivative format.
+        The command will also create <a href="http://bids.neuroimaging.io" target="_bids">BIDS</a> a directory (/bids) containing symbolic links to organize downloaded files into a BIDS derivative format - for BIDS compatible datatypes.
     </p>
 
     <p class="text-muted">
-        For Windows users, please install <a href="https://itsfoss.com/install-bash-on-windows/">bash Shell</a> before running the above command.
+        For Windows users, please install <a href="https://itsfoss.com/install-bash-on-windows/">bash shell</a> before running the above command.
     </p>
 
     <div slot="modal-footer">
@@ -39,14 +47,27 @@ export default {
         json() {
             if(!this.query) return null;
             let json = {find: this.query.find};
-            //if(this.query.find) json.find = JSON.stringify(this.query.find);
             return JSON.stringify(json);
         },
+
         headers() {
             let headers = "-H 'Content-Type: application/json'";
             if(Vue.config.jwt) headers += " -H 'Authorization: Bearer "+Vue.config.jwt+"'";
             return headers;
         },
+
+        single_dataset_url() {
+            if(this.query && this.query.find && this.query.find._id && this.query.find._id.length == 1) {
+                let dataset_id = this.query.find._id[0];
+                var url = Vue.config.api+'/dataset/download/'+dataset_id;
+                if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
+                return url;
+            }
+            return null; 
+        },
+        downscript() {
+            return `curl ${this.headers} -d '${this.json}' -X POST ${Vue.config.api}/dataset/downscript | bash`
+        }
     },
 
     mounted() {
@@ -58,14 +79,24 @@ export default {
     },
 
     methods: {
-        close: function() {
+        close() {
             this.$refs.modal.hide();
         },
+
+        direct_download() {
+            this.$notify({type: 'info', text: "Download will start soon.."});
+        },
+
+        copy_downscript() {
+            var copyText = this.$refs.downscript;
+            copyText.select();
+            document.execCommand("copy");
+        }
     },
 } 
 </script>
 <style scoped>
-.code {
+.downscript {
 font-family: monospace; 
 background-color: #eee; 
 white-space: pre-wrap; 
@@ -73,5 +104,8 @@ font-size: 70%;
 padding: 10px;
 overflow: auto;
 margin-bottom: 10px;
+width: 100%;
+height: 150px;
+border: none;
 }
 </style>

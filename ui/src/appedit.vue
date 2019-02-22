@@ -7,7 +7,7 @@
             <div style="margin: 20px 0px;">
                 <p style="float: right; color: #999;">
                     If you are new to creating Apps for Brainlife, please read our
-                    <b-button size="sm" variant="outline-secondary" href="https://brainlife.github.io/docs/apps/introduction" target="doc">Documentation</b-button>
+                    <b-button size="sm" variant="outline-secondary" href="https://brainlife.io/docs/apps/introduction" target="doc">Documentation</b-button>
                 </p>
                 <h3 v-if="$route.params.id == '_'">New App</h3>
                 <h3 v-else>{{app.name}}</h3>
@@ -89,9 +89,17 @@ Normally, the App description is automatically pulled from github repo descripti
                                 </b-input-group>
                                 <small v-if="app.github && github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
                             </b-col>
-                            <b-col v-if="github_branches && github_branches.length > 0">
-                                <b-input-group prepend="Branch">
-                                    <b-form-select v-model="app.github_branch" :options="github_branches"/>
+                            <b-col>
+                                <b-input-group prepend="Branch/Tag">
+                                    <b-form-select v-model="app.github_branch">
+                                        <optgroup label="Branches" v-if="github_branches">
+                                            <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
+                                        </optgroup>
+                                        <optgroup label="Tags" v-if="github_tags">
+                                            <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
+                                        </optgroup>
+                                    </b-form-select>
+                                    
                                 </b-input-group>
                                  <small v-if="app.github_branch == 'master'" class="text-danger"><icon name="exclamation" scale="0.8"/> Please avoid master branch</small>
                             </b-col>
@@ -102,7 +110,7 @@ Normally, the App description is automatically pulled from github repo descripti
             </div>
 
             <h4>
-                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
+                <a style="float: right;" href="https://brainlife.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
                 Configuration
             </h4>
             <div>
@@ -283,7 +291,7 @@ Normally, the App description is automatically pulled from github repo descripti
             </p>
             
             <h4>
-                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
+                <a style="float: right;" href="https://brainlife.io/docs/apps/register/#input-datasets" target="doc"><icon name="book"/></a>
                 Input
             </h4>
             <div style="border-left: 4px solid #007bff; padding-left: 10px;">
@@ -293,7 +301,7 @@ Normally, the App description is automatically pulled from github repo descripti
                             <b-row v-if="is_raw(input)">
                                 <b-col>
                                     <b-alert show variant="warning" style="margin-bottom: 10px;">
-                                        Warning: You have chosen a raw datatype as an input. We strongly recommend working with the developers of the App who is generating the raw datatype to register a new datatype so that it can used instead to pass dataset between Apps. Please refer to <a href="https://brainlife.github.io/docs/user/datatypes/">Datatypes</a>
+                                        Warning: You have chosen a raw datatype as an input. We strongly recommend working with the developers of the App who is generating the raw datatype to register a new datatype so that it can used instead to pass dataset between Apps. Please refer to <a href="https://brainlife.io/docs/user/datatypes/">Datatypes</a>
                                     </b-alert>
                                 </b-col>
                             </b-row>
@@ -379,7 +387,7 @@ Normally, the App description is automatically pulled from github repo descripti
             </div>
             
             <h4>
-                <a style="float: right;" href="https://brainlife.github.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
+                <a style="float: right;" href="https://brainlife.io/docs/apps/register/#output-datasets" target="doc"><icon name="book"/></a>
                 Output
             </h4>
             <div style="border-left: 4px solid #28a745; padding-left: 10px;">
@@ -498,6 +506,7 @@ export default {
 
             invalid_repo: false,
             github_branches: null,
+            github_tags: null,
             
             input_datasets: [],
             output_datasets: [],
@@ -514,6 +523,14 @@ export default {
         }
     },
 
+    computed: {
+        github_bt() {
+            return {
+
+            }
+        }
+    },
+
     mounted: function() {
         //load datatypes for form
         this.$http.get('datatype').then(res=>{
@@ -526,6 +543,7 @@ export default {
             //load datatype_tags from all apps -- TODO - this is super inefficient!
             this.$http.get('app', {params: {
                 select: 'inputs outputs',
+                limit: 500, //TODO - this is not sustailable
             }}).then(res=>{
                 var v = this;
                 function aggregate_tags(dataset) {
@@ -551,7 +569,8 @@ export default {
                     } else {
                         //finally time to load app to edit
                         this.$http.get('app', {params: {
-                            find: JSON.stringify({_id: this.$route.params.id})
+                            find: JSON.stringify({_id: this.$route.params.id}),
+                            limit: 1,
                         }}).then(res=>{
                             this.app = res.data.apps[0];
                             this.convert_config_to_ui();
@@ -590,13 +609,22 @@ export default {
                 { headers: { Authorization: null } })
             .then(res=>{
                 this.github_branches = res.data.map(b => {
-                    return {
-                        value: b.name,
-                        text: b.name
-                    };
+                    return b.name;
                 });
             }).catch(err=>{
                 this.github_branches = [];
+                console.error(err);
+            });
+
+            this.github_tags = null;
+            this.$http.get('https://api.github.com/repos/' + this.app.github + '/tags', 
+                { headers: { Authorization: null } })
+            .then(res=>{
+                this.github_tags = res.data.map(b => {
+                    return b.name;
+                });
+            }).catch(err=>{
+                this.github_tags = [];
                 console.error(err);
             });
         },
@@ -904,6 +932,7 @@ export default {
             return new Promise((resolve, reject)=>{
                 this.$http.get('app', {params: {
                     select: 'tags',
+                    limit: 500, //TODO - this is not sustailable
                 }}).then(res=>{
                     var alltags = []; 
                     res.data.apps.forEach(app=>{

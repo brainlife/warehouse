@@ -17,7 +17,7 @@
             <b-dropdown-item @click="go('/project/_/edit')">Project</b-dropdown-item>
         </b-nav-item-dropdown>
         -->
-        <b-nav-item @click="slack"><icon name="brands/slack" scale="1.25"/> Contact Us</b-nav-item>
+        <b-nav-item @click="slack"><icon name="brands/slack" scale="1.25"/>&nbsp;&nbsp;Contact Us</b-nav-item>
         <b-nav-item-dropdown v-if="config.user">
             <span slot="button-content">
                 <img :src="gurl">
