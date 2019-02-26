@@ -471,10 +471,10 @@ export default {
             return lib.filter_datasets(this._datasets, input);
         },
 
-        download(task, dataset) {
+        download(task, output) {
             var url = Vue.config.wf_api+'/task/download/'+task._id+'/';
-            if(dataset.subdir) url+=dataset.subdir;
-            url += '?at='+Vue.config.jwt;
+            if(output.subdir) url+=output.subdir;
+            url+='?at='+Vue.config.jwt;
             document.location = url;
         },
 
