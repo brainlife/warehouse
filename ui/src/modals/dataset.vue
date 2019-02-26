@@ -286,6 +286,8 @@ export default {
                 this.close();
             }
         });
+
+        //this.editor.setTheme("ace/theme/twilight");
     },
 
     destroyed() {
@@ -777,7 +779,8 @@ export default {
         },
         editorInit() {
             require('brace/mode/json')
-            require('brace/theme/chrome')
+            //require('brace/theme/chrome')
+            //require('brace/theme/twilight')
         },
     }
 }

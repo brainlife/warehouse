@@ -2,9 +2,7 @@
 <b-modal :no-close-on-backdrop='true' title="Upload Dataset" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
-            <el-select v-model="datatype_id" placeholder="Please select" @change="change_datatype" style="width: 100%;">
-                <el-option v-for="type in datatypes_with_validator" :key="type.id" :value="type.id" :label="type.desc"></el-option>
-            </el-select>
+            <v-select v-model="datatype_id" placeholder="Please select" @change="change_datatype" :options="datatypes_with_validator"/>
         </b-form-group>
 
         <div v-if="datatype_id">
@@ -180,11 +178,10 @@ export default {
             return this.datatypes[this.datatype_id].files;
         },
         datatypes_with_validator: function() {
-            var types = [];
-            for(var id in this.datatypes) { 
-                var type = this.datatypes[id];
-                type.id = id;
-                if(type.validator) types.push(type);
+            let types = [];
+            for(let id in this.datatypes) { 
+                let type = this.datatypes[id];
+                if(type.validator) types.push({label: type.desc/*+" ("+type.name+")"*/, value: id});
             }
             return types;
         },

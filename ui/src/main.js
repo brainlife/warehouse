@@ -5,10 +5,10 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.min.css'
 
 //is this for vue-element?
-import '../theme/index.css' 
+//import '../theme/index.css' 
 
 import 'select2/dist/css/select2.css'
-import 'highlight.js/styles/default.css'
+import 'highlight.js/styles/agate.css'
 
 import 'katex/dist/katex.min.css'
 import 'vue2-animate/dist/vue2-animate.min.css'
@@ -21,11 +21,10 @@ import 'select2/dist/js/select2.js'
 import Vue from 'vue'
 
 import vSelect from 'vue-select' 
-//import VueResource from 'vue-resource' //deprecated by vue-axios
 import VueHighlightJS from 'vue-highlightjs'
 
-import Element from 'element-ui'
-import locale from 'element-ui/lib/locale/lang/en'
+//import Element from 'element-ui'
+//import locale from 'element-ui/lib/locale/lang/en'
 
 import Notifications from 'vue-notification' //override element-ui ugly $notify..
 import 'vue-awesome/icons'
@@ -57,7 +56,7 @@ Vue.use(VueDisqus)
 Vue.use(VueHighlightJS)
 //Vue.use(VueResource)
 Vue.use(VueAxios, axios)
-Vue.use(Element, {locale})
+//Vue.use(Element, {locale})
 Vue.use(Notifications);
 Vue.use(VueLazyload)
 Vue.use(BootstrapVue);

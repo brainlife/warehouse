@@ -435,12 +435,6 @@ export default {
 }
 </script>
 
-<style>
-.el-card {
-box-shadow: none;
-}
-</style>
-
 <style scoped>
 .page-content h2 {
 background-color: white;

@@ -43,7 +43,7 @@
         <b-container>
             <b-row>
                 <b-col>
-                    <el-alert v-if="pub.removed" title="This publication has been removed" type="warning" show-icon :closable="false"></el-alert>
+                    <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
                     <!-- detail -->
                     <div v-if="tab_index == 0">
                         <b-row>

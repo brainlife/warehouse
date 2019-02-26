@@ -225,12 +225,14 @@ export default {
                     
                     //common text files that brainlife sees
                     switch(ext) {
+                    case "_main": 
+                    case "main": 
+                        this.open_text(res.data, file, "bash");
+                        return;
                     case "bvals": 
                     case "bvecs": 
                     case "err": 
-                    case "jobid": 
-                    case "_main":                     
-                    case "main": 
+                    case "jobid":                     
                     case "exit-code":                    
                         this.open_text(res.data, file, "text");
                         return;
@@ -263,18 +265,21 @@ background-color: #eee;
 color: #2185d0;
 }
 .hljs {
+/*
 background-color: #fff;
 color: #222;
+*/
+min-height: 35px;
 }
 .file-content pre {
 font-family: 'monospace';
 margin-bottom: 5px;
 padding: 0px;
 box-shadow: 1px 1px 3px #bbb;
-border-left: 15px solid #ddd;
+border-left: 15px solid #444;
 }
 .file-content .hljs {
-max-height: 400px;
+max-height: 425px;
 }
 .file-content {
 position: relative;
@@ -284,11 +289,19 @@ position: absolute;
 top: 3px; 
 right: 20px; 
 opacity: 0;
-transition: opacity 0.5s;
+transition: opacity 0.3s;
 }
 .file-content:hover .file-content-buttons {
 opacity: 0.7;
 }
+.file-content-buttons .button:hover {
+background-color: gray;
+}
+
+.file-content-buttons .button {
+color: white;
+}
+
 .buttons {
 padding-top: 5px;
 opacity: 0.5;

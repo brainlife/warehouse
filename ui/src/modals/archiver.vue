@@ -130,7 +130,7 @@ export default {
         },
         editorInit() {
             require('brace/mode/json')
-            require('brace/theme/chrome')
+            //require('brace/theme/chrome')
         },
 
         load_tags() {

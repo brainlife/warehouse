@@ -3,10 +3,10 @@
     <pageheader/>
     <sidemenu active="/datatypes"/>
     <div class="header" v-if="datatype">
-        <el-button-group style="float: right;" v-if="datatype._canedit">
-            <el-button @click="remove()" icon="delete">Remove Datatype</el-button>
-            <el-button @click="edit()" icon="edit">Edit</el-button>
-        </el-button-group>
+        <div style="float: right;" v-if="datatype._canedit">
+            <span class="button" @click="edit()"><icon name="edit" scale="1.25"></span>
+            <span class="button" @click="remove()"><icon name="trash" scale="1.25"></span>
+        </div>
         <h1><span class="text-muted"><icon name="shield-alt" scale="1.5"/> Datatype |</span> {{datatype.name}}</h1>
     </div>
     <div class="page-content" v-if="datatype" style="margin-top: 80px">

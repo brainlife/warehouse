@@ -393,9 +393,11 @@ font-size: 1rem;
 pre {
 margin-bottom: 0px;
 }
+/*
 .hljs {
 background-color: inherit;
 }
+*/
 
 /*default vue-animate.css effect is too slow*/
 .fade-enter-active, .fadeIn,
