@@ -9,6 +9,8 @@
         <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"></evaluator>
         <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"></images>
         <volumeviewer v-else-if="type == 'volumeviewer'" :task="task" :subdir="subdir" :datatype="datatype"></volumeviewer>
+        <nnview v-else-if="type == 'nnview'" :task="task" :subdir="subdir" :datatype="datatype"></nnview>
+        
         <div v-else-if="type == 'raw'" style="padding: 10px 0px; background-color: white; height: 100%; overflow: auto;">
             <filebrowser :task="task" :path="(subdir||'')" style="margin-right: 50px;"></filebrowser>
         </div>
@@ -33,6 +35,7 @@ import lifeview from '@/datauis/lifeview'
 import evaluator from '@/datauis/evaluator'
 import images from '@/datauis/images'
 import volumeviewer from '@/datauis/volumeviewer'
+import nnview from '@/datauis/nnview'
 
 import filebrowser from '@/components/filebrowser'
 import task from '@/components/task'
@@ -47,7 +50,7 @@ export default {
         dtiinit, freesurfer, tractview, 
         lifestats, lifeview, evaluator, images, 
         volumeviewer, filebrowser, task,
-        surfaces,
+        surfaces, nnview,
     },
 
     data() {
