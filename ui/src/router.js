@@ -3,7 +3,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import dashboard from '@/dashboard'
-import download from '@/download'
+//import download from '@/download'
 import view from '@/view'
 import novnc from '@/novnc'
 import apps from '@/apps'
@@ -35,7 +35,7 @@ export default new Router({
     routes: [
         {path: '/', redirect: '/project'},
         {path: '/dashboard', component: dashboard},
-        {path: '/download/:id', component: download},
+        //{path: '/download/:id', component: download},
         
         {path: '/apps', component: apps, meta: {public: true}},
         {path: '/appsgraph', component: appsgraph, meta: {public: true}},

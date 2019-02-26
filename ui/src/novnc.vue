@@ -128,20 +128,15 @@ export default {
  
         check_status() {
             if(this.novnc_task.status == "running") {
-                //var msgpart = this.novnc_task.status_msg.trim();
-                //if(msgpart == "running") {
-                    //load url.txt
-                    var url = Vue.config.wf_api+'/task/download/'+this.novnc_task._id+
-                        '?p='+encodeURIComponent('url.txt')+
-                        '&at='+Vue.config.jwt;
-                    this.$http.get(url).then(function(res) {
-                        //load novnc!
-                        document.location = res.data;
-                    }, function(err) {
-                        //still waiting for url.txt
-                        console.error(err);
-                    });
-                //}
+                //load url.txt
+                var url = Vue.config.wf_api+'/task/download/'+this.novnc_task._id+'/url.txt?at='+Vue.config.jwt;
+                this.$http.get(url).then(function(res) {
+                    //load novnc!
+                    document.location = res.data;
+                }, function(err) {
+                    //still waiting for url.txt
+                    console.error(err);
+                });
             }
         },
 

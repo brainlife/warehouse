@@ -222,17 +222,11 @@ export default {
         });
     },
 
-    /*
-    destroyed() {
-        this.$root.$off("taskinfo.open");
-    },
-    */
-
     methods: {
         load_smon() {
             this.loading = true;
             this.smon.info = null;
-            this.$http.get(Vue.config.amaretti_api+'/task/download/'+this.task._id+'?p=_smon.out').then(res=>{
+            this.$http.get(Vue.config.amaretti_api+'/task/download/'+this.task._id+'/_smon.out').then(res=>{
                 let records = res.data.split("\n");
 
                 //first record should be host/job info

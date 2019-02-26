@@ -29,9 +29,7 @@ export default {
     mounted() {
         var basepath = "";
         if(this.subdir) basepath+=this.subdir+"/";
-        this.url = Vue.config.wf_api+'/task/download/'+this.task._id+
-            '?p='+encodeURIComponent(basepath+'life_results.json')+
-            '&at='+Vue.config.jwt;
+        this.url = Vue.config.wf_api+'/task/download/'+this.task._id+'/'+basepath+'life_results.json'+'?at='+Vue.config.jwt;
         this.$http.get(this.url)
         .then(res=>{
             var rmse = res.data.out.plot[0];

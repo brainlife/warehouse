@@ -28,11 +28,8 @@ export default {
     created() {
         var basepath = "";
         if(this.subdir) basepath +=this.subdir+"/";
-        var url = Vue.config.wf_api+'/task/download/'+this.task._id+
-            '?p='+encodeURIComponent(basepath+'out.json')+
-            '&at='+Vue.config.jwt;
+        var url = Vue.config.wf_api+'/task/download/'+this.task._id+'/'+basepath+'out.json'+'?at='+Vue.config.jwt;
         this.$http.get(url).then(res=>{
-            //console.dir(res.data);
             this.nnz = res.data.nnz;
             this.rmse = res.data.rmse;
             var ref = res.data.reference;

@@ -37,16 +37,11 @@ export default {
         // Load image.json
         var basepath = "";
         if(this.subdir) basepath+=this.subdir+"/";
-        var url = Vue.config.wf_api+'/task/download/'+this.task._id+
-            '?p='+encodeURIComponent(basepath+'images.json')+
-            '&at='+Vue.config.jwt;
+        var url = Vue.config.wf_api+'/task/download/'+this.task._id+'/'+basepath+'images.json'+'?at='+Vue.config.jwt;
         this.$http.get(url).then(res=>{
             console.dir(res.data);
             res.data.images.forEach(image=>{
-                var src = Vue.config.wf_api+'/task/download/'+this.task._id+
-                    '?p='+encodeURIComponent(basepath+image.filename)+
-                    '&at='+Vue.config.jwt;
-                
+                var src = Vue.config.wf_api+'/task/download/'+this.task._id+'/'+basepath+image.filename+'?at='+Vue.config.jwt;
                 this.images.push({
                     name: image.name,     
                     desc: image.desc,     

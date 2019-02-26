@@ -13,11 +13,8 @@ export default {
     },
     mounted() {
         //construct path
-        var path = Vue.config.amaretti_api+"/task/download/";
-        path += this.task._id;
-        path += "?p=";
+        var path = Vue.config.amaretti_api+"/task/download/"+this.task._id+"/";
         if(this.subdir) path += this.subdir+"/";
-        console.log("datatype", this.datatype);
         switch(this.datatype) {
         case "neuro/anat/t1w":
             path += "t1.nii.gz"; 
@@ -31,7 +28,7 @@ export default {
         default:
             alert('unknown datatye:'+this.datatype);
         } 
-        path += "&at="+Vue.config.jwt;
+        path += "?at="+Vue.config.jwt;
         window.config = { datatype: this.datatype, path };
     },
 }

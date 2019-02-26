@@ -472,8 +472,9 @@ export default {
         },
 
         download(task, dataset) {
-            var url = Vue.config.wf_api+'/task/download/'+task._id+'?at='+Vue.config.jwt;
-            if(dataset.subdir) url+='&p='+encodeURIComponent(dataset.subdir);
+            var url = Vue.config.wf_api+'/task/download/'+task._id+'/';
+            if(dataset.subdir) url+=dataset.subdir;
+            url += '?at='+Vue.config.jwt;
             document.location = url;
         },
 

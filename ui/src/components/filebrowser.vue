@@ -112,9 +112,10 @@ export default {
             return subpath;
         },
         get_download_url(file) {
-            var url = Vue.config.wf_api+'/task/download/'+this.task._id+'?at='+Vue.config.jwt;
+            var url = Vue.config.wf_api+'/task/download/'+this.task._id+'/';
             var p = this.subpath(file);
-            if(p) url += "&p="+encodeURIComponent(p);
+            if(p) url += p;
+            url += '?at='+Vue.config.jwt;
             return url;
         },
         download() {
