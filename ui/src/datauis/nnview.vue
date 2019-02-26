@@ -1,5 +1,5 @@
 <template>
-<iframe v-if="ready" src="/ui/nnview"></iframe>
+<iframe src="/ui/nnview"></iframe>
 </template>
 
 <script>
@@ -10,7 +10,6 @@ export default {
     props: ['task', 'subdir'],
     data()  {
         return {
-            ready: false,
         }
     },
     mounted() {
