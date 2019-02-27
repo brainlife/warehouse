@@ -429,8 +429,10 @@ opacity: 0.9;
 width: 11px;
 }
 
+/* this fixes some issue but creates another.. (can't select):
 .ace_layer,
 .ace_gutter {
 z-index: inherit;
 }
+*/
 </style>

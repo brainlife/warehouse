@@ -127,6 +127,9 @@ export default {
             editor.setAutoScrollEditorIntoView(true);
             editor.setOption("maxLines", 30);
             editor.setOption("minLines", 3);
+
+            //editor.setHighlightActiveLine(false); //not enough.
+            editor.setShowPrintMargin(true);
         },
 
         subpath(file) {

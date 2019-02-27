@@ -646,6 +646,7 @@ margin-bottom: 1px;
 margin-right: 310px;
 box-shadow: 0px 2px 4px #ccc;
 transition: margin-right 0.5s;
+z-index: 6;
 }
 
 @media (max-width: 950px) {
