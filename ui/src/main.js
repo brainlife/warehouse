@@ -8,7 +8,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.min.css'
 //import '../theme/index.css' 
 
 import 'select2/dist/css/select2.css'
-import 'highlight.js/styles/agate.css'
+import 'highlight.js/styles/default.css'
 
 import 'katex/dist/katex.min.css'
 import 'vue2-animate/dist/vue2-animate.min.css'

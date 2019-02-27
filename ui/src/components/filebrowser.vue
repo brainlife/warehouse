@@ -53,7 +53,8 @@
                         <div class="button" @click="download_file(file)" title="Download"><icon name="download" scale="0.8"/></div>
                         <div class="button" @click="refresh_file(file)" title="Refresh"><icon name="sync-alt" scale="0.8"/></div>
                     </div>
-                    <pre :ref="'file.'+idx" v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
+                    <!--<pre :ref="'file.'+idx" v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>-->
+                    <editor :ref="'file.'+idx" v-model="file.content" @init="editorInit" :lang="file.lang"></editor>
                 </div>
                 <div v-if="file.image_src" style="margin-bottom: 20px;">
                     <a :href="file.image_src"><img style="max-width: 100%;" :src="file.image_src"/></a>
@@ -75,7 +76,10 @@ export default {
         path: { type: String },
         depth: { type: Number, default: 1}
     },
-    components: { mute },
+
+    components: {       
+        editor: require('vue2-ace-editor'), 
+    },
 
     data() {
         return {
@@ -102,6 +106,29 @@ export default {
     },
     
     methods: {
+        editorInit(editor) {
+            require('brace/mode/sh')
+            require('brace/mode/json')
+            require('brace/mode/matlab')
+            require('brace/mode/python')
+            require('brace/mode/javascript')
+            require('brace/mode/r')
+            require('brace/mode/markdown')
+            require('brace/mode/html')
+
+            //dark theme
+            require('brace/theme/monokai')
+            editor.setTheme("ace/theme/monokai");
+
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+            editor.setReadOnly(true);  // false to make it editable
+
+            editor.setAutoScrollEditorIntoView(true);
+            editor.setOption("maxLines", 30);
+            editor.setOption("minLines", 3);
+        },
+
         subpath(file) {
             let subpath = "";
             if(this.path) subpath += this.path;
@@ -150,20 +177,23 @@ export default {
         },
 
         //subordiante of click method.. this and click methods are ugly..
-        open_text(data, file, type) {
+        open_text(data, file, lang) {
+            console.log(file, lang);
+
             //reformat json content
-            if(type == "json") {
+            if(lang == "json") {
                 data = JSON.stringify(data, null, 4);
             }
 
             if(data == "") data = "(empty)";
-            Vue.set(file, 'type', type);
             Vue.set(file, 'content', data);
+            Vue.set(file, 'lang', lang);
             Vue.set(file, 'view', true);
 
             //scroll to the buttom of the <pre>
             this.$nextTick(()=>{
                 let id = this.files.indexOf(file);
+                console.dir(this.$refs);
                 let pre = this.$refs["file."+id][0];
                 pre.scrollTop = pre.scrollTopMax;
             });   
@@ -191,24 +221,72 @@ export default {
                 return;
             }
 
-            //start downloading file to see what the file type is
+            //start downloading file to see what the lang is
             Vue.set(file, 'downloading', true);
             this.$http.get(url).then(res=>{
                 file.downloading = false;
-                //console.dir(res.headers);
+
+                //known file names?
+                switch(file.filename) { 
+                case "_main": 
+                case "main": 
+                    this.open_text(res.data, file, "sh");
+                    return;
+                case "exit-code":                    
+                case "jobid":                     
+                case "pid":                     
+                case "bvals": 
+                case "bvecs": 
+                    this.open_text(res.data, file, "text");
+                    return;
+                case "config.json.sample": 
+                    this.open_text(res.data, file, "json");
+                    return;
+                }
+
+                //known file extensions?
+                var tokens = file.filename.split(".");
+                var ext = tokens[tokens.length-1];
+                switch(ext) {
+                case "txt": 
+                case "csv": 
+                case "err": 
+                case "log": 
+                    this.open_text(res.data, file, "text");
+                    return;
+                case "md": return this.open_text(res.data, file, "markdown");
+                case "json": 
+                    if(file.attrs.size > 1024*1024*2) return document.location = url; //don't open json that's too big.. (too slow)
+                    return this.open_text(res.data, file, "json");
+                case "sh": return this.open_text(res.data, file, "sh");
+                case "m": return this.open_text(res.data, file, "matlab");
+                case "js": return this.open_text(res.data, file, "javascript");
+                case "R": return this.open_text(res.data, file, "r");
+                case "py": return this.open_text(res.data, file, "python");
+                case "png":
+                case "jpeg":
+                case "jpg":
+                case "gif":
+                    Vue.set(file, 'image_src', url);
+                    Vue.set(file, 'view', true);
+                    return;
+                }
+
+                //known content-type?
                 switch(res.headers["content-type"]) {
                 case "application/json": 
                         this.open_text(res.data, file, "json");
                         return;
                 case "application/x-sh": 
-                        this.open_text(res.data, file, "bash");
+                        this.open_text(res.data, file, "sh");
                         return;
                 case "text/markdown":
                 case "text/plain":
                         this.open_text(res.data, file, "text"); 
                         return;
+                //ace doesn't have csv mode?
                 case "text/csv": 
-                        this.open_text(res.data, file, "csv");
+                        this.open_text(res.data, file, "text"); //no csv with ace?
                         return;
                 case "image/png":
                 case "image/jpeg":
@@ -216,27 +294,10 @@ export default {
                         Vue.set(file, 'image_src', url);
                         Vue.set(file, 'view', true);
                         return;
-
+                /*
                 case "application/octet-stream": //binary or unknown
                 case null:
-                    var tokens = file.filename.split(".");
-                    var ext = tokens[tokens.length-1];
-                    //console.log("ext", ext);
-                    
-                    //common text files that brainlife sees
-                    switch(ext) {
-                    case "_main": 
-                    case "main": 
-                        this.open_text(res.data, file, "bash");
-                        return;
-                    case "bvals": 
-                    case "bvecs": 
-                    case "err": 
-                    case "jobid":                     
-                    case "exit-code":                    
-                        this.open_text(res.data, file, "text");
-                        return;
-                    }
+                */
                 }
 
                 //don't know how to open it.. download.
@@ -264,11 +325,9 @@ background-color: #eee;
 .fileitem.fileitem-viewing {
 color: #2185d0;
 }
-.hljs {
+
 /*
-background-color: #fff;
-color: #222;
-*/
+.hljs {
 min-height: 35px;
 }
 .file-content pre {
@@ -281,6 +340,9 @@ border-left: 15px solid #444;
 .file-content .hljs {
 max-height: 425px;
 }
+*/
+
+
 .file-content {
 position: relative;
 }
@@ -290,6 +352,7 @@ top: 3px;
 right: 20px; 
 opacity: 0;
 transition: opacity 0.3s;
+z-index: 3;
 }
 .file-content:hover .file-content-buttons {
 opacity: 0.7;

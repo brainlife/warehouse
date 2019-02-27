@@ -428,4 +428,9 @@ opacity: 0.9;
 .ps__thumb-y {
 width: 11px;
 }
+
+.ace_layer,
+.ace_gutter {
+z-index: inherit;
+}
 </style>

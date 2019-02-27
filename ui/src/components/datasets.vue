@@ -107,7 +107,7 @@
                 <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="play" scale="0.8"/> Stage to process</b-btn>
             </p>
             <p>
-                <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy (experimental)</b-btn>
+                <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy</b-btn>
             </p>
             <p>
                 <b-btn size="sm" @click="remove" variant="outline-danger"><icon name="trash" scale="0.8"/> Remove<!--<span v-if="remove_remain">({{remove_remain}})</span>--></b-btn>

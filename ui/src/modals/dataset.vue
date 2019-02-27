@@ -250,7 +250,6 @@ export default {
         tageditor, taskconfig, product,
 
         editor: require('vue2-ace-editor'),
-
     },
 
     data () {
@@ -777,11 +776,14 @@ export default {
                 return;
             }
         },
-        editorInit() {
+        editorInit(editor) {
             require('brace/mode/json')
             //require('brace/theme/chrome')
             //require('brace/theme/twilight')
-        },
+            //editor.setTheme("ace/theme/twilight")
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize()
+        }
     }
 }
 
