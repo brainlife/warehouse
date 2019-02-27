@@ -116,9 +116,11 @@ export default {
             require('brace/mode/markdown')
             require('brace/mode/html')
 
+            /* too much visual noise?
             //dark theme
             require('brace/theme/monokai')
             editor.setTheme("ace/theme/monokai");
+            */
 
             editor.container.style.lineHeight = 1.25;
             editor.renderer.updateFontSize();
