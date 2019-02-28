@@ -107,6 +107,37 @@
                         <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
                     </b-col>
                 </b-row>
+                
+                <b-row v-if="selected.datatype_groups">
+                    <b-col cols="2"> 
+                        <span class="form-header">Datasets</span>
+                    </b-col>
+                    <b-col cols="10">
+                        <p class="text-muted">This project currently contains the following datasets</p>
+                        <b-card-group deck v-for="(group, datatype_id) in selected.datatype_groups" :key="datatype_id" style="margin-bottom: 10px;">
+                            <b-card header-tag="header">
+                                <div slot="header">
+                                    <datatypetag :datatype="datatypes[datatype_id]"/>
+                                    <b>{{group.count}}</b> datasets <small style="opacity: 0.8">({{group.size|filesize}})</small>
+                                    on <b>{{group.subjects.size}}</b> subjects
+                                </div>
+
+                                <!--<p style="opacity: 0.5; margin-bottom: 5px">Tags</p>-->
+                                <b-list-group>
+                                    <b-list-group-item v-for="(stats, tags_s) in group.datatype_tags" :key="tags_s" >
+                                        <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)"/>
+                                        <b>{{stats.count}}</b> datasets                             
+                                    </b-list-group-item>
+                                </b-list-group>
+
+                                <p style="opacity: 0.3">
+                                    TODO.. show product.json info
+                                </p>
+                
+                            </b-card>
+                        </b-card-group>
+                    </b-col>
+                </b-row>
 
                 <hr>
                 <b-row>
@@ -165,7 +196,7 @@ import processes from '@/components/processes'
 import publications from '@/components/publications'
 import pipelines from '@/components/pipelines'
 import agreements from '@/components/agreements'
-
+import datatypetag from '@/components/datatypetag'
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -178,7 +209,7 @@ export default {
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
         processes, publications, pipelines,
-        agreements,
+        agreements, datatypetag,
 
         newtaskModal, datatypeselecterModal,
     },
@@ -198,12 +229,14 @@ export default {
             tab: 0, //initial tab
             projects: null, //all projects that user can see summary of
             config: Vue.config,
+
+            datatypes: {}, //datatypes loadded (used by datatype_groups)
         }
     },
 
     watch: {
         '$route': function() {
-            console.log("route changed");
+            //console.log("route changed");
             var project_id = this.$route.params.id;
             if(project_id && this.selected && project_id != this.selected._id) {
                 this.open_project(this.projects[project_id]);
@@ -213,7 +246,6 @@ export default {
                 //find the tab requested
                 this.tabs.forEach((tab, idx)=>{  
                     if(tab.id == tab_id) {
-                        console.log("tab = ", idx);
                         this.tab = idx; 
                     }
                 });
@@ -234,8 +266,6 @@ export default {
                 this.$router.replace("/project/"+this.selected._id+"/"+this.tabs[this.tab].id);
             }
         },
-
-
     },
 
     mounted() {
@@ -341,6 +371,49 @@ export default {
                     this.$refs.disqus.reset(window.DISQUS);
                 }
             });
+
+            //load list of datatypes stored in this project
+            let groups = {};
+            this.$http.get('dataset/inventory', {params: {
+                find: JSON.stringify({
+                    removed: false,
+                    project: project._id,
+                }),
+            }})
+            .then(res=>{
+                //group datasets by datatype
+                res.data.forEach(rec=>{
+                    let subject = rec._id.subject;
+                    let datatype = rec._id.datatype;
+                    let datatype_tags = rec._id.datatype_tags;
+                    let datatype_tags_s = JSON.stringify(rec._id.datatype_tags);
+                    if(!groups[datatype]) {
+                        groups[datatype] = { size: 0, count:0, datatype_tags: {}, subjects: new Set()};
+                    }
+                    if(!groups[datatype].datatype_tags[datatype_tags_s]) {
+                        groups[datatype].datatype_tags[datatype_tags_s] = {size: 0, count: 0};
+                    }
+                    groups[datatype].subjects.add(subject);
+                    let name = datatype+"."+datatype_tags.join(":");
+                    groups[datatype].datatype_tags[datatype_tags_s].size += rec.size;
+                    groups[datatype].datatype_tags[datatype_tags_s].count += rec.count;
+                    groups[datatype].size += rec.size;
+                    groups[datatype].count += rec.count;
+                });
+
+                //load datatype details
+                return this.$http.get('datatype', {params: {
+                    find: JSON.stringify({_id: {$in: Object.keys(groups)}}),
+                }});
+            }) 
+            .then(res=>{
+                res.data.datatypes.forEach((d)=>{
+                    this.datatypes[d._id] = d;
+                });
+
+                Vue.set(this.selected, "datatype_groups", groups);
+                this.$forceUpdate();
+            }).catch(console.error);
         },
     },
 }

@@ -92,27 +92,14 @@ export default {
         project: function(project) {
             if(!project) return;
 
-            console.log("projet is", project);
-
-            //TODO sometimes 
-            //let project_id = project;
-            //if(project._id) project_id = project._id.toString();
-
             //load dataset inventory..
             this.$http.get('dataset/inventory', {params: {
                 find: JSON.stringify({
                     removed: false,
-                    project: project._id.toString(),
+                    project: project._id,
                 }),
             }})
             .then(res=>{
-                /*
-                //to select already selected record
-                let selected = this.selected.map(it=>{
-                    return it.datatype._id+"."+it.datatype_tags.join(":");
-                });
-                */
-
                 //group datasets by datatype
                 let groups = {};
                 res.data.forEach(rec=>{

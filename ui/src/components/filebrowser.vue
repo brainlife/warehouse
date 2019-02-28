@@ -53,7 +53,6 @@
                         <div class="button" @click="download_file(file)" title="Download"><icon name="download" scale="0.8"/></div>
                         <div class="button" @click="refresh_file(file)" title="Refresh"><icon name="sync-alt" scale="0.8"/></div>
                     </div>
-                    <!--<pre :ref="'file.'+idx" v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>-->
                     <editor :ref="'file.'+idx" v-model="file.content" @init="editorInit" :lang="file.lang"></editor>
                 </div>
                 <div v-if="file.image_src" style="margin-bottom: 20px;">
@@ -67,7 +66,6 @@
 
 <script>
 import Vue from 'vue'
-import mute from '@/components/mute'
 
 export default {
     name: "filebrowser", //needed to recurse itself
@@ -83,7 +81,6 @@ export default {
 
     data() {
         return {
-            //fullpath: null,
             files: null,
             error: null,
         }
@@ -121,6 +118,9 @@ export default {
             require('brace/theme/monokai')
             editor.setTheme("ace/theme/monokai");
             */
+
+            require('brace/theme/dawn')
+            editor.setTheme("ace/theme/dawn");
 
             editor.container.style.lineHeight = 1.25;
             editor.renderer.updateFontSize();
@@ -183,7 +183,8 @@ export default {
 
         //subordiante of click method.. this and click methods are ugly..
         open_text(data, file, lang) {
-            console.log(file, lang);
+            //sometime data arrives as nyumber.. and editor hates it
+            if(typeof data === 'number') data = data.toString();
 
             //reformat json content
             if(lang == "json") {
@@ -191,14 +192,13 @@ export default {
             }
 
             if(data == "") data = "(empty)";
-            Vue.set(file, 'content', data);
+            Vue.set(file, 'content', data); 
             Vue.set(file, 'lang', lang);
             Vue.set(file, 'view', true);
 
             //scroll to the buttom of the <pre>
             this.$nextTick(()=>{
                 let id = this.files.indexOf(file);
-                console.dir(this.$refs);
                 let pre = this.$refs["file."+id][0];
                 pre.scrollTop = pre.scrollTopMax;
             });   
@@ -241,7 +241,8 @@ export default {
                 case "jobid":                     
                 case "pid":                     
                 case "bvals": 
-                case "bvecs": 
+                case "bvecs":
+                case ".gitignore":  
                     this.open_text(res.data, file, "text");
                     return;
                 case "config.json.sample": 
@@ -362,6 +363,7 @@ z-index: 3;
 .file-content:hover .file-content-buttons {
 opacity: 0.7;
 }
+/*
 .file-content-buttons .button:hover {
 background-color: gray;
 }
@@ -369,6 +371,7 @@ background-color: gray;
 .file-content-buttons .button {
 color: white;
 }
+*/
 
 .buttons {
 padding-top: 5px;

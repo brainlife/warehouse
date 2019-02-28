@@ -15,8 +15,8 @@
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
             <vue-plotly v-if="tab == $idx" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true" :watchShallow="true"/>
         </b-tab>
-        <b-tab title="JSON" v-if="Object.keys(others).length > 0">
-            <pre v-highlightjs="JSON.stringify(others, null, 4)" style="max-height: 150px; background-color: white;"><code class="json hljs"></code></pre>
+        <b-tab title="JSON" v-if="others">
+            <editor v-model="others" @init="editorInit" lang="json"></editor>
         </b-tab>
     </b-tabs>
 </div>
@@ -32,12 +32,14 @@ export default {
 
     components: {
         VuePlotly,
+        editor: require('vue2-ace-editor'), 
     },
 
     data() {
         return {
             config: Vue.config,
             tab: null,
+            others: null,
         }
     },
     
@@ -55,10 +57,20 @@ export default {
             if(!this.product.brainlife) return [];
             return this.product.brainlife.filter(p=>p.type == 'plotly');
         },
-        others() {
-            let others = Object.assign({}, this.product);
-            delete others.brainlife;
-            return others;
+    },
+
+    methods: {
+        editorInit(editor) {
+             require('brace/mode/json')
+
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+            editor.setReadOnly(true);  // false to make it editable
+
+            editor.setAutoScrollEditorIntoView(true);
+            editor.setOption("maxLines", 30);
+            editor.setOption("minLines", 3);
+            //editor.setShowPrintMargin(true);
         },
     },
     mounted() {
@@ -109,6 +121,12 @@ export default {
                 }
             });
         });
+
+        let others = Object.assign({}, this.product);
+        delete others.brainlife;
+        if(Object.keys(others).length > 0) {     
+           this.others = JSON.stringify(others, null, 4);
+        }
     },
     watch: {
         tab() {
