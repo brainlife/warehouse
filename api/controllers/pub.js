@@ -111,7 +111,7 @@ router.get('/apps/:releaseid', (req, res, next)=>{
             _id: {
                 app: "$prov.task.config._app",
                 service: "$prov.task.service",
-                service_branch: "$prov.task.service_branch",
+                //service_branch: "$prov.task.service_branch",
             }
         }},
 
@@ -120,7 +120,7 @@ router.get('/apps/:releaseid', (req, res, next)=>{
             _id: 0, 
             app: "$_id.app", 
             service: "$_id.service",
-            service_branch: "$_id.service_branch",
+            //service_branch: "$_id.service_branch",
         }},
 
         /* doesn't work..
