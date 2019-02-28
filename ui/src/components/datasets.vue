@@ -283,7 +283,9 @@ export default {
 
     watch: {
         //when user select different project, this gets called (mounted() won't be called anymore)
-        project() {
+        project(nv, ov) {
+            if(nv == ov) return; //why does this happen?
+            console.log("project changed", nv, ov);
             this.query = ""; //clear query to avoid confusion
             if(this.loading) {
                 console.log("canceling load");
@@ -449,11 +451,6 @@ export default {
 
             this.loading = true;
             this.$http.get('dataset', {
-                /*
-                before(request) {
-                    this.loading = request;
-                },
-                */
                 params: {
                     find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,

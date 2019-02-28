@@ -2,14 +2,19 @@
 <b-modal :no-close-on-backdrop='true' title="Download Datasets" ref="modal" size="lg">
      <div v-if="single_dataset_url">
         <p>
-            <a :href="single_dataset_url" @click="direct_download">Directly Download</a> to your browser
+            <b-button block variant="secondary" @click="direct_download">
+                Download to your computer
+            </b-button>
         </p>
-        <p>or ..</p>
+        <center style="opacity: 0.7; font-weight: bold;">or</center>
+        <br>
     </div>
  
-    <p>Copy and paste the following command on your bash terminal to download your datasets.</p>
-    <textarea class="downscript" ref="downscript" readonly>{{downscript}}</textarea>
-    <b-btn @click="copy_downscript" style="float: left; margin-right: 20px; margin-bottom: 50px;">Copy to clipboard</b-btn>
+    <p>Copy and paste the following command on your bash terminal where you want to download the datasets.</p>
+    <div class="downscript-area">
+        <textarea class="downscript" ref="downscript" readonly>{{downscript}}</textarea>
+        <b-btn @click="copy_downscript" size="sm" variant="secondary" class="downscript-copy"><icon name="copy"/></b-btn>
+    </div>
 
     <p class="text-muted">
         The above command will download selected datasets inside sub directories for each subject. 
@@ -85,12 +90,14 @@ export default {
 
         direct_download() {
             this.$notify({type: 'info', text: "Download will start soon.."});
+            document.location = this.single_dataset_url;
         },
 
         copy_downscript() {
             var copyText = this.$refs.downscript;
             copyText.select();
             document.execCommand("copy");
+            this.$notify({type: 'success', text: "Copied to your clipboard"});
         }
     },
 } 
@@ -107,5 +114,19 @@ margin-bottom: 10px;
 width: 100%;
 height: 150px;
 border: none;
+}
+
+.downscript-area {
+position: relative;
+}
+.downscript-copy {
+position: absolute;
+right: 20px;
+top: 10px;
+opacity: 0;
+transition: opacity 0.3s;
+}
+.downscript-area:hover .downscript-copy {
+opacity: 1;
 }
 </style>
