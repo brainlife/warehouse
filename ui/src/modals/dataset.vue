@@ -104,7 +104,7 @@
                                     <small v-if="resource.desc">{{resource.desc}}</small>
                                 </p>
                             </b-col>
-                        </b-row>                 
+                        </b-row>              
                         <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.product">
                             <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
                             <b-col cols="9">
@@ -184,7 +184,7 @@
                                     <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
                                 </div>
                                 <div v-else>
-                                    <pre v-highlightjs><code class="json">{{dataset.meta}}</code></pre>
+                                    <editor v-model="dataset._meta" @init="editorInit" @input="dataset._meta_dirty = true" lang="json" height="200"></editor>
                                 </div>
                                 <br>
                             </b-col>
@@ -777,7 +777,8 @@ export default {
             //require('brace/theme/twilight')
             //editor.setTheme("ace/theme/twilight")
             editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize()
+            editor.renderer.updateFontSize();
+            if(!this.dataset._canedit) editor.setReadOnly(true);
         }
     }
 }

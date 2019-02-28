@@ -110,6 +110,10 @@
                 <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy</b-btn>
             </p>
             <p>
+                <!-- 
+                    I can't add  v-if="isadmin() || ismember()" here.. because user could mix datasets from other project.
+                    I need to analyze which dataset can be edited
+                -->
                 <b-btn size="sm" @click="remove" variant="outline-danger"><icon name="trash" scale="0.8"/> Remove<!--<span v-if="remove_remain">({{remove_remain}})</span>--></b-btn>
             </p>
         </div>
@@ -285,7 +289,7 @@ export default {
         //when user select different project, this gets called (mounted() won't be called anymore)
         project(nv, ov) {
             if(nv == ov) return; //why does this happen?
-            console.log("project changed", nv, ov);
+            //console.log("project changed", nv, ov);
             this.query = ""; //clear query to avoid confusion
             if(this.loading) {
                 console.log("canceling load");

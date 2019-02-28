@@ -83,7 +83,7 @@
             <br>
 
             <!-- mine -->
-            <div style="position: relative;" id="_mine" class="bg-success" v-if="my_apps.length > 0">
+            <div style="position: relative;" id="_mine" class="bg-success" v-if="my_apps && my_apps.length > 0">
                 <h4 class="group-title colored">My Apps <!--<small style="float: right">{{my_apps.length}} Apps</small>--> </h4> 
                 <div v-for="app in my_apps" :key="app._id" class="app">
                     <app :app="app" height="246px" class="app-card"/>
@@ -157,6 +157,7 @@ export default {
     computed: {
         my_apps() {
             if(!this.apps) return null;
+            if(!Vue.config.user) return null; //not logged in
             return this.apps.filter(app=>app.admins.includes(Vue.config.user.sub));
         },
     },
