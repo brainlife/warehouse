@@ -1,3 +1,4 @@
+<!-- deprecated ... use v-select instead-->
 <template>
 <select style="width: 100%;">
     <slot></slot>
@@ -200,8 +201,5 @@ export default {
 }
 .select2-dropdown {
     z-index: 9900;
-}
-.el-form-item__content {
-    line-height: inherit;
 }
 </style>

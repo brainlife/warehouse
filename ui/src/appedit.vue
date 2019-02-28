@@ -116,7 +116,7 @@ Normally, the App description is automatically pulled from github repo descripti
             <div>
                 <div v-for="(param, idx) in config_params" v-if="param.pid" :key="param.pid" style="margin:5px;">
                     <b-card v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
-                        <div style="float: right">
+                         <div class="right-buttons">
                             <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
                             </div>
@@ -181,7 +181,7 @@ Normally, the App description is automatically pulled from github repo descripti
                         </b-row>
                     </b-card>
                     <b-card v-if="param.type == 'boolean'">
-                        <div style="float: right">
+                        <div class="right-buttons">
                             <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
                             </div>
@@ -217,7 +217,7 @@ Normally, the App description is automatically pulled from github repo descripti
                         </b-row>
                     </b-card>
                     <b-card v-else-if="param.type == 'enum'">
-                        <div style="float: right">
+                         <div class="right-buttons">
                             <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
                                 <icon name="arrow-up" scale="1.25"/>
                             </div>
@@ -312,7 +312,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                     </b-input-group>
                                 </b-col>
                                 <b-col cols="7">
-                                    <div style="float: right;">
+                                     <div class="right-buttons">
                                         <div class="button" v-if="idx > 0 && input_datasets.length > 1" @click="swap_inputs(idx, idx - 1)">
                                             <icon name="arrow-up" />
                                         </div>
@@ -1015,5 +1015,10 @@ transition: none;
 }
 .move-item-move {
 transition: transform .45s;
+}
+.right-buttons {
+float: right;
+position: relative;
+z-index: 1;
 }
 </style>

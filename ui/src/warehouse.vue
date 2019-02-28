@@ -393,9 +393,11 @@ font-size: 1rem;
 pre {
 margin-bottom: 0px;
 }
+/*
 .hljs {
 background-color: inherit;
 }
+*/
 
 /*default vue-animate.css effect is too slow*/
 .fade-enter-active, .fadeIn,
@@ -426,4 +428,11 @@ opacity: 0.9;
 .ps__thumb-y {
 width: 11px;
 }
+
+/* this fixes some issue but creates another.. (can't select):
+.ace_layer,
+.ace_gutter {
+z-index: inherit;
+}
+*/
 </style>

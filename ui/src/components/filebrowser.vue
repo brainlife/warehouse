@@ -53,7 +53,7 @@
                         <div class="button" @click="download_file(file)" title="Download"><icon name="download" scale="0.8"/></div>
                         <div class="button" @click="refresh_file(file)" title="Refresh"><icon name="sync-alt" scale="0.8"/></div>
                     </div>
-                    <pre :ref="'file.'+idx" v-highlightjs="file.content"><code :class="file.type+' hljs'"></code></pre>
+                    <editor :ref="'file.'+idx" v-model="file.content" @init="editorInit" :lang="file.lang"></editor>
                 </div>
                 <div v-if="file.image_src" style="margin-bottom: 20px;">
                     <a :href="file.image_src"><img style="max-width: 100%;" :src="file.image_src"/></a>
@@ -66,7 +66,6 @@
 
 <script>
 import Vue from 'vue'
-import mute from '@/components/mute'
 
 export default {
     name: "filebrowser", //needed to recurse itself
@@ -75,11 +74,13 @@ export default {
         path: { type: String },
         depth: { type: Number, default: 1}
     },
-    components: { mute },
+
+    components: {       
+        editor: require('vue2-ace-editor'), 
+    },
 
     data() {
         return {
-            //fullpath: null,
             files: null,
             error: null,
         }
@@ -102,6 +103,38 @@ export default {
     },
     
     methods: {
+        editorInit(editor) {
+            require('brace/mode/sh')
+            require('brace/mode/json')
+            require('brace/mode/matlab')
+            require('brace/mode/python')
+            require('brace/mode/javascript')
+            require('brace/mode/r')
+            require('brace/mode/markdown')
+            require('brace/mode/html')
+            require('brace/mode/dockerfile')
+
+            /* too much visual noise?
+            //dark theme
+            require('brace/theme/monokai')
+            editor.setTheme("ace/theme/monokai");
+            */
+
+            require('brace/theme/dawn')
+            editor.setTheme("ace/theme/dawn");
+
+            editor.container.style.lineHeight = 1.25;
+            editor.renderer.updateFontSize();
+            editor.setReadOnly(true);  // false to make it editable
+
+            editor.setAutoScrollEditorIntoView(true);
+            editor.setOption("maxLines", 30);
+            editor.setOption("minLines", 3);
+
+            //editor.setHighlightActiveLine(false); //not enough.
+            editor.setShowPrintMargin(true);
+        },
+
         subpath(file) {
             let subpath = "";
             if(this.path) subpath += this.path;
@@ -112,9 +145,10 @@ export default {
             return subpath;
         },
         get_download_url(file) {
-            var url = Vue.config.wf_api+'/task/download/'+this.task._id+'?at='+Vue.config.jwt;
+            var url = Vue.config.wf_api+'/task/download/'+this.task._id+'/';
             var p = this.subpath(file);
-            if(p) url += "&p="+encodeURIComponent(p);
+            if(p) url += p;
+            url += '?at='+Vue.config.jwt;
             return url;
         },
         download() {
@@ -149,15 +183,18 @@ export default {
         },
 
         //subordiante of click method.. this and click methods are ugly..
-        open_text(data, file, type) {
+        open_text(data, file, lang) {
+            //sometime data arrives as nyumber.. and editor hates it
+            if(typeof data === 'number') data = data.toString();
+
             //reformat json content
-            if(type == "json") {
+            if(lang == "json") {
                 data = JSON.stringify(data, null, 4);
             }
 
             if(data == "") data = "(empty)";
-            Vue.set(file, 'type', type);
-            Vue.set(file, 'content', data);
+            Vue.set(file, 'content', data); 
+            Vue.set(file, 'lang', lang);
             Vue.set(file, 'view', true);
 
             //scroll to the buttom of the <pre>
@@ -190,24 +227,83 @@ export default {
                 return;
             }
 
-            //start downloading file to see what the file type is
+            //start downloading file to see what the lang is
             Vue.set(file, 'downloading', true);
             this.$http.get(url).then(res=>{
                 file.downloading = false;
-                //console.dir(res.headers);
+
+                //known file names?
+                switch(file.filename) { 
+                case "_main": 
+                case "main": 
+                    this.open_text(res.data, file, "sh");
+                    return;
+                case "exit-code":                   
+                case "jobid":                     
+                case "pid":                     
+                case "bvals": 
+                case "bvecs":
+                case ".gitignore":
+                case ".dockerignore":  
+                    this.open_text(res.data, file, "text");
+                    return;
+                case "Dockerfile":  
+                    this.open_text(res.data, file, "dockerfile");
+                    return;
+                case "config.json.sample": 
+                    this.open_text(res.data, file, "json");
+                    return;
+                }
+
+                //known file extensions?
+                var tokens = file.filename.split(".");
+                var ext = tokens[tokens.length-1];
+                switch(ext) {
+                case "txt": 
+                case "csv": 
+                case "err": 
+                case "log":
+                    this.open_text(res.data, file, "text");
+                    return;
+                case "md": return this.open_text(res.data, file, "markdown");
+                case "json": 
+                    if(file.attrs.size > 1024*1024*2) return document.location = url; //don't open json that's too big.. (too slow)
+                    return this.open_text(res.data, file, "json");
+                case "sh":
+                case "pbs":   
+                    return this.open_text(res.data, file, "sh");
+                case "m": return this.open_text(res.data, file, "matlab");
+                case "js": return this.open_text(res.data, file, "javascript");
+                case "R": return this.open_text(res.data, file, "r");
+                case "py": return this.open_text(res.data, file, "python");
+                case "png":
+                case "jpeg":
+                case "jpg":
+                case "gif":
+                    Vue.set(file, 'image_src', url);
+                    Vue.set(file, 'view', true);
+                    return;
+                case "html": 
+                    this.open_text(res.data, file, "html");
+                    return;
+                }
+
+                //known content-type?
+                console.log("relying on content-type", res.headers["content-type"]);
                 switch(res.headers["content-type"]) {
                 case "application/json": 
                         this.open_text(res.data, file, "json");
                         return;
                 case "application/x-sh": 
-                        this.open_text(res.data, file, "bash");
+                        this.open_text(res.data, file, "sh");
                         return;
                 case "text/markdown":
                 case "text/plain":
                         this.open_text(res.data, file, "text"); 
                         return;
+                //ace doesn't have csv mode?
                 case "text/csv": 
-                        this.open_text(res.data, file, "csv");
+                        this.open_text(res.data, file, "text"); //no csv with ace?
                         return;
                 case "image/png":
                 case "image/jpeg":
@@ -215,25 +311,10 @@ export default {
                         Vue.set(file, 'image_src', url);
                         Vue.set(file, 'view', true);
                         return;
-
+                /*
                 case "application/octet-stream": //binary or unknown
                 case null:
-                    var tokens = file.filename.split(".");
-                    var ext = tokens[tokens.length-1];
-                    //console.log("ext", ext);
-                    
-                    //common text files that brainlife sees
-                    switch(ext) {
-                    case "bvals": 
-                    case "bvecs": 
-                    case "err": 
-                    case "jobid": 
-                    case "_main":                     
-                    case "main": 
-                    case "exit-code":                    
-                        this.open_text(res.data, file, "text");
-                        return;
-                    }
+                */
                 }
 
                 //don't know how to open it.. download.
@@ -261,20 +342,24 @@ background-color: #eee;
 .fileitem.fileitem-viewing {
 color: #2185d0;
 }
+
+/*
 .hljs {
-background-color: #fff;
-color: #222;
+min-height: 35px;
 }
 .file-content pre {
 font-family: 'monospace';
 margin-bottom: 5px;
 padding: 0px;
 box-shadow: 1px 1px 3px #bbb;
-border-left: 15px solid #ddd;
+border-left: 15px solid #444;
 }
 .file-content .hljs {
-max-height: 400px;
+max-height: 425px;
 }
+*/
+
+
 .file-content {
 position: relative;
 }
@@ -283,11 +368,22 @@ position: absolute;
 top: 3px; 
 right: 20px; 
 opacity: 0;
-transition: opacity 0.5s;
+transition: opacity 0.3s;
+z-index: 3;
 }
 .file-content:hover .file-content-buttons {
 opacity: 0.7;
 }
+/*
+.file-content-buttons .button:hover {
+background-color: gray;
+}
+
+.file-content-buttons .button {
+color: white;
+}
+*/
+
 .buttons {
 padding-top: 5px;
 opacity: 0.5;

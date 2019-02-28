@@ -471,9 +471,10 @@ export default {
             return lib.filter_datasets(this._datasets, input);
         },
 
-        download(task, dataset) {
-            var url = Vue.config.wf_api+'/task/download/'+task._id+'?at='+Vue.config.jwt;
-            if(dataset.subdir) url+='&p='+encodeURIComponent(dataset.subdir);
+        download(task, output) {
+            var url = Vue.config.wf_api+'/task/download/'+task._id+'/';
+            if(output.subdir) url+=output.subdir;
+            url+='?at='+Vue.config.jwt;
             document.location = url;
         },
 
@@ -645,6 +646,7 @@ margin-bottom: 1px;
 margin-right: 310px;
 box-shadow: 0px 2px 4px #ccc;
 transition: margin-right 0.5s;
+z-index: 6;
 }
 
 @media (max-width: 950px) {

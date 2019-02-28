@@ -107,9 +107,13 @@
                 <b-btn size="sm" variant="outline-secondary" @click="process"><icon name="play" scale="0.8"/> Stage to process</b-btn>
             </p>
             <p>
-                <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy (experimental)</b-btn>
+                <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy</b-btn>
             </p>
             <p>
+                <!-- 
+                    I can't add  v-if="isadmin() || ismember()" here.. because user could mix datasets from other project.
+                    I need to analyze which dataset can be edited
+                -->
                 <b-btn size="sm" @click="remove" variant="outline-danger"><icon name="trash" scale="0.8"/> Remove<!--<span v-if="remove_remain">({{remove_remain}})</span>--></b-btn>
             </p>
         </div>
@@ -283,7 +287,9 @@ export default {
 
     watch: {
         //when user select different project, this gets called (mounted() won't be called anymore)
-        project() {
+        project(nv, ov) {
+            if(nv == ov) return; //why does this happen?
+            //console.log("project changed", nv, ov);
             this.query = ""; //clear query to avoid confusion
             if(this.loading) {
                 console.log("canceling load");
@@ -449,11 +455,6 @@ export default {
 
             this.loading = true;
             this.$http.get('dataset', {
-                /*
-                before(request) {
-                    this.loading = request;
-                },
-                */
                 params: {
                     find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,

@@ -295,23 +295,6 @@ export default {
             this.$router.push(`/datatypes/${datatype._id}`);
         },
 
-        /*
-        scroll_to_selected: function() {
-            if(!this.selected) return;
-            //scroll to selected datatype if it's out the scroll window
-            var e = document.getElementById(this.selected._id);
-            var area = this.$refs.scrollable;
-            if(area.clientHeight + area.scrollTop < e.offsetTop) {
-                area.scrollTop = e.offsetTop - area.clientHeight/2;
-            }
-
-            //I also need to scroll back to top if area is above..
-            if(e.offsetTop < area.scrollTop) {
-                area.scrollTop = e.offsetTop - 300;
-            }
-        },
-        */
-        
         get_datatypes(prefix) {
             if(!this.datatypes) return false;
             return this.datatypes.filter(d=>{
@@ -434,12 +417,6 @@ export default {
     }
 }
 </script>
-
-<style>
-.el-card {
-box-shadow: none;
-}
-</style>
 
 <style scoped>
 .page-content h2 {

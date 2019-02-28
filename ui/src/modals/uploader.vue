@@ -2,12 +2,10 @@
 <b-modal :no-close-on-backdrop='true' title="Upload Dataset" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
-            <el-select v-model="datatype_id" placeholder="Please select" @change="change_datatype" style="width: 100%;">
-                <el-option v-for="type in datatypes_with_validator" :key="type.id" :value="type.id" :label="type.desc"></el-option>
-            </el-select>
+            <v-select v-model="datatype" placeholder="Please select" :options="datatypes_with_validator"/>
         </b-form-group>
 
-        <div v-if="datatype_id">
+        <div v-if="datatype">
             <div v-if="tasks.upload && !tasks.upload.resource_id">
                 <b-form-group horizontal>
                     <p cass="text-muted">Preparing for file upload...  <icon name="cog" spin/></p>
@@ -16,7 +14,7 @@
             </div>
             
             <div v-if="tasks.upload && tasks.upload.resource_id">
-                <b-form-group horizontal v-if="datatype_id" v-for="file in files" :key="file.id" :label="file.id+(file.ext?'('+file.ext+')':'')+(file.required?' *':'')">
+                <b-form-group horizontal v-if="datatype" v-for="file in files" :key="file.id" :label="file.id+(file.ext?'('+file.ext+')':'')+(file.required?' *':'')">
                     <div v-if="!file.uploaded && !file.progress">
                         <input type="file" @change="filechange(file, $event)" :accept="file.ext">
                     </div>
@@ -38,7 +36,7 @@
                 </b-form-group>
             </div>
 
-            <b-form-group horizontal :label="m.id.toUpperCase()+(m.required?' *':'')" v-for="m in datatypes[datatype_id].meta" :key="m.id">
+            <b-form-group horizontal :label="m.id.toUpperCase()+(m.required?' *':'')" v-for="m in datatype.meta" :key="m.id">
                 <b-input type="text" v-model="meta[m.id]" :required="m.required" :placeholder="m.required?'':'(optional)'"/>
             </b-form-group>
 
@@ -127,7 +125,7 @@ export default {
 
             //user selections
             desc: "",
-            datatype_id: "",
+            datatype: null,
             tags: [],
             datatype_tags: [],
             meta: {},
@@ -175,15 +173,23 @@ export default {
         });
     },
 
+    watch: {
+        datatype() {
+            console.log("datatype changed")
+            this.change_datatype();
+        }
+    },
+
     computed: {
         files: function() {
-            return this.datatypes[this.datatype_id].files;
+            if(!this.datatype) return null;
+            return this.datatype.files;
         },
         datatypes_with_validator: function() {
-            var types = [];
-            for(var id in this.datatypes) { 
-                var type = this.datatypes[id];
-                type.id = id;
+            let types = [];
+            for(let id in this.datatypes) { 
+                let type = this.datatypes[id];
+                type.label = type.desc;
                 if(type.validator) types.push(type);
             }
             return types;
@@ -195,8 +201,8 @@ export default {
             this.mode = "upload";
             this.project = null;
             this.meta = {};
-            if(this.datatype_id) this.datatypes[this.datatype_id].files.forEach(this.clearfile);
-            this.datatype_id = null;
+            if(this.datatype) this.datatype.files.forEach(this.clearfile);
+            this.datatype = null;
             this.desc = "";
         },
 
@@ -280,14 +286,8 @@ export default {
         can_validate() {
             let valid = true;
             if(!this.project) return false;
-            if(!this.datatype_id) return false;
+            if(!this.datatype) return false;
             if(!this.meta["subject"]) return false;
-            /*
-            this.datatypes[this.datatype_id].meta.forEach(meta=>{
-                if(!meta.required) return;
-                if(!this.meta[meta.id]) valid = false;
-            });
-            */
             this.files.forEach(file=>{
                 if(file.required && !file.uploaded) valid = false;
             });
@@ -331,7 +331,7 @@ export default {
         },
 
         get_validator() {
-            return this.datatypes[this.datatype_id].validator;
+            return this.datatype.validator;
         },
 
         cancel() {
@@ -346,12 +346,11 @@ export default {
             var config = {
                 _outputs: [{
                     id: "output",
-                    datatype: this.datatype_id,
+                    datatype: this.datatype._id,
                     datatype_tags: this.datatype_tags,
                 }]
             };
-            var datatype = this.datatypes[this.datatype_id];
-            datatype.files.forEach(file=>{
+            this.datatype.files.forEach(file=>{
                 if(!file.local_filename) return; //not set.. optional?
                 config[file.id] = "../"+this.tasks.upload._id+"/"+file.filename;
             });
@@ -416,9 +415,11 @@ export default {
         },
 
         change_datatype() {
+            if(!this.datatype) return;
+
             //need to reset all meta properties to be reactive
             this.meta = {};
-            this.datatypes[this.datatype_id].meta.forEach(meta=>{
+            this.datatype.meta.forEach(meta=>{
                 Vue.set(this.meta, meta.id, "");
             });
             this.prep_upload();
@@ -426,7 +427,7 @@ export default {
             //load available dataset tags
             this.$http.get('dataset/distinct', {params: {
                 distinct: 'tags',
-                find: JSON.stringify({project: this.project._id, datatype: this.datatype_id}),
+                find: JSON.stringify({project: this.project._id, datatype: this.datatype._id}),
             }}).then(res=>{
                 this.available_tags = res.data;
             });
@@ -434,7 +435,7 @@ export default {
             //load available datatype tags
             this.$http.get('dataset/distinct', {params: {
                 distinct: 'datatype_tags',
-                find: JSON.stringify({project: this.project._id, datatype: this.datatype_id}),
+                find: JSON.stringify({project: this.project._id, datatype: this.datatype._id}),
             }}).then(res=>{
                 this.available_dt_tags = res.data;
             });            
