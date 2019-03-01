@@ -69,6 +69,7 @@
                         </div>
                     </div>
                     <div class="instance-desc">
+                        <icon name="robot" v-if="instance.config.rule_subject" style="opacity: 0.5"/>
                         {{instance.desc}}
                         <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
                         &nbsp;
