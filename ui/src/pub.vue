@@ -88,27 +88,15 @@
                         </b-row>
              
 
-                        <b-row v-if="pub.doi">
+                        <b-row>
                             <b-col cols="2">
                                 <span class="form-header">Citation</span>
                             </b-col>
                             <b-col cols="10">
                                 <p>
-                                    <small class="text-muted">Citation for this publiction. Please see citation section under each release for App specific citation. </small>
+                                    <small class="text-muted">Citation for this publiction. Please see citation section under each release for App specific citations. </small>
                                 </p>
-                                <b-card no-body class="citation-box">
-                                    <b-tabs pills card>
-                                        <b-tab title="Text">
-                                            <p>
-                                                <citation :doi="pub.doi"/>
-                                            </p> 
-                                            <small class="text-muted">in harvard3 format. <a href="https://citation.crosscite.org" target="_blank">Use other format</a></small>
-                                        </b-tab>
-                                        <b-tab title="bibtex">
-                                            <citation :doi="pub.doi" accept="application/x-bibtex"/>
-                                        </b-tab>
-                                    </b-tabs>
-                                </b-card>
+                                <citation :doi="pub.doi||config.debug_doi"/>
                                 <br>
                             </b-col>
                        </b-row>  
@@ -126,7 +114,6 @@
                                         {{funding.id}}
                                     </li>
                                 </ul>
-
                             </b-col>
                         </b-row>
                         <b-row>
@@ -174,29 +161,19 @@
                                             <network network="googleplus"> <icon name="brands/google-plus"/> Google + </network> <br>
                                             <network network="linkedin"> <icon name="brands/linkedin"/> LinkedIn </network><br>
                                             <network network="pinterest"> <icon name="brands/pinterest"/> Pinterest </network><br>
-                                            <!--<network network="sms"> <icon name="commenting-o"/> SMS </network><br>-->
-                                            <!--<network network="line"> <icon name="brands/line"/> Line </network> <br>-->
                                         </b-col>
                                         <b-col>
                                             <network network="reddit"> <icon name="brands/reddit"/> Reddit </network><br>
                                             <network network="skype"> <icon name="brands/skype"/> Skype </network><br>
                                             <network network="weibo"> <icon name="brands/weibo"/> Weibo </network> <br>
-                                            <!-- <network network="whatsapp"> <icon name="brands/whatsapp"/> Whatsapp </network><br>-->
-                                            <!-- <network network="telegram"> <icon name="brands/telegram"/> Telegram </network><br>-->
                                         </b-col>
-                                        <!--
-                                        <b-col>
-                                            <network network="vk"> <icon name="vk"/> VKontakte </network><br>
-                                            <network network="odnoklassniki"> <icon name="odnoklassniki"/> Odnoklassniki </network><br>
-                                        </b-col>
-                                        -->
                                     </b-row>
                                 </social-sharing>
                                 <br>
                             </b-col>
                             <b-col cols="3">
                                 <b-card>
-                                    <div class='altmetric-embed' data-badge-type='medium-donut' data-badge-details="right" data-hide-no-mentions="false" :data-doi="pub.doi"></div>
+                                    <div class='altmetric-embed' data-badge-type='medium-donut' data-badge-details="right" data-hide-no-mentions="false" :data-doi="pub.doi||config.debug_doi"></div>
                                 </b-card>
                             </b-col>
                         </b-row>
@@ -213,13 +190,16 @@
 
                     <div v-if="tab_index > 0">
                         <!-- release -->
-                        <p v-if="dataset_groups">
+                        <p style="opacity: 0.7; float: right;"><span style="opacity: 0.5">Released on</span> <time>{{new Date(release.create_date).toLocaleDateString()}}</time></p>
+
+                        <div v-if="dataset_groups">
                             <span class="button" @click="downscript({})">
-                                {{total.subjects}} Subjects <span style="opacity: 0.2">|</span> {{total.count}} Datasets <span v-if="total.size"> {{total.size|filesize}}</span>
+                                <b>{{total.subjects}}</b> Subjects <span style="opacity: 0.2">|</span> 
+                                <b>{{total.count}} Datasets</b> <span v-if="total.size"> ({{total.size|filesize}} Total)</span>
                                 <icon name="download" scale="0.8" style="opacity: 0.5; position: relative; top: -2px;"/> 
                             </span>
-                        </p>
-                        <p style="opacity: 0.5" v-else>Loading ... <icon name="cog" spin/></p>
+                        </div>
+                        <div v-else style="opacity: 0.5">Loading ... <icon name="cog" spin/></div>
 
                         <div class="group" v-for="(group, subject) in dataset_groups" :key="subject">
                             <b-row>
@@ -261,18 +241,30 @@
                             </b-row>
                         </div>
 
-
                         <hr>
-                        <p style="opacity: 0.8;">
-                            The following Apps were used to generate the files in this release.
-                        </p>
-                        <div v-for="(rec, idx) in apps" :key="idx" style="width: 33%; float: left;">
-                            <div style="margin-right: 10px; margin-bottom: 10px; position: relative;">
-                                <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
-                                <div class="button app-download" size="sm" variant="primary" @click="download_app(rec.service, rec.service_branch)" title="Download App">
-                                    <icon name="download"/>
+
+                        <!--apps-->
+                        <div>
+                            <p style="opacity: 0.8;">
+                                The following Apps were used to generate the files in this release.
+                            </p>
+                            <div v-for="rec in apps" :key="rec.app.doi" style="width: 33%; float: left;">
+                                <div style="margin-right: 10px; margin-bottom: 10px; position: relative;">
+                                    <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
                                 </div>
                             </div>
+                            <br clear="both">
+                        </div>
+
+                        <!--citations-->
+                        <div>
+                            <p style="opacity: 0.8;">
+                                Please use the following citations to cite these Apps.
+                            </p>
+                            <div v-for="rec in apps" :key="rec.app.doi">
+                                <citation :doi="rec.app.doi"/>
+                            </div>
+                            <br>
                         </div>
                     </div>
                     
@@ -396,7 +388,7 @@ export default {
     computed: {
         social_url: function() {
             if(this.pub.doi) return "http://doi.org/"+this.pub.doi;
-            return document.location;
+            return null;
         },
 
         total: function() {
@@ -420,17 +412,16 @@ export default {
         .then(res=>{
             this.pub = res.data.pubs[0];
 
-            if(Vue.config.debug) this.pub.doi = "10.1038/nature.2014.14583";
+            //if(Vue.config.debug) this.pub.doi = "10.1038/nature.2014.14583";
 
             //sort release by date (new first)
-            this.pub.releases.sort((a,b)=>{
-                if(a.create_date < b.create_date) return 1;
-                if(a.create_date > b.create_date) return -1;
-                return 0;
-            });
-
-            //remove removed release
-            this.pub.releases = this.pub.releases.filter(release=>!release.removed);
+            if(this.pub.releases) {
+                this.pub.releases = this.pub.releases.sort((a,b)=>{
+                    if(a.create_date < b.create_date) return 1;
+                    if(a.create_date > b.create_date) return -1;
+                    return 0;
+                }).filter(release=>!release.removed);
+            }
 
             //load all datatypes
             return this.$http.get('datatype');
@@ -483,11 +474,6 @@ export default {
                     block.datasets = res.data.datasets;
                 }).catch(console.error);
             }
-        },
-
-        download_app(service, branch) {
-            if(!branch) branch = "master";
-            document.location = "https://github.com/"+service+"/archive/"+branch+".zip";
         },
 
         downscript(query) {

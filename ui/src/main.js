@@ -128,7 +128,9 @@ Vue.config.event_api = apihost+"/api/event";
 Vue.config.profile_api = apihost+"/api/profile";
 Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
+Vue.config.debug_doi = "10.25663/bl.p.3";
+
 
 //Vue.http.options.root = Vue.config.api; //default root for $http
 axios.defaults.baseURL= Vue.config.api; //default root for $http
