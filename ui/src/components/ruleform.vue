@@ -256,7 +256,7 @@ export default {
 
         query_matching_datasets() {
             if(!this.rule.app) return;
-            console.dir(this.rule.input_tags);
+            //console.dir(this.rule.input_tags);
             for(let id in this.rule.input_tags) {
                 let input = this.rule.app.inputs.find(i=>i.id == id);
                 if(!input) {
@@ -301,9 +301,9 @@ export default {
                 console.log("querying datasets", find);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify(find),
-                    //datatype_tags,
-                    limit: 0, //I just need count
+                    limit: 1, //I just need count (0 means all!)
                 }}).then(res=>{
+                    console.log(res.data.count);
                     this.rule.input_tags_count[id] = res.data.count;
                 }); 
             }
@@ -312,7 +312,6 @@ export default {
         //update with value from the parent component
         load_value() {
             if(!this.value) return; //no value specified yet
-
             this.reset_rule();
             Object.assign(this.rule, this.value);
             this.ensure_ids_exists();
@@ -438,6 +437,7 @@ export default {
         },
 
         load_dataset_tags() {
+            
             this.rule.app.inputs.forEach(input=>{
                 input.datatype_id = input.datatype._id || input.datatype; //parent component passes app.input without populating datatype sometimes?
                 this.$http.get('dataset/distinct', {params: {
@@ -467,6 +467,7 @@ export default {
                     Vue.set(this.output_dataset_tags, output.id, res.data);
                 }); 
             });
+            
         },
 
         load_branches() {

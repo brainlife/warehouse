@@ -209,11 +209,6 @@ export default {
     mounted() {
         this.load();
     },
-    /*
-    destroyed() {
-        if(this.activetaskcount_int) clearInterval(this.activetaskcount_int);
-    },
-    */
 
     watch: {
         project: function() {
@@ -412,7 +407,7 @@ export default {
             this.editing = {
                 name: "",
                 config: {},
-                project: this.project,
+                project: this.project._id,
                 active: false,
                 removed: false,
             };
