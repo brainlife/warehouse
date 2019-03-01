@@ -94,7 +94,7 @@
                             </b-col>
                             <b-col cols="10">
                                 <p>
-                                    <small class="text-muted">Citation to this dataset/app published on Brainlife</small>
+                                    <small class="text-muted">Citation for this publiction. Please see citation section under each release for App specific citation. </small>
                                 </p>
                                 <b-card no-body class="citation-box">
                                     <b-tabs pills card>
