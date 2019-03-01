@@ -37,25 +37,40 @@ db.init(err=>{
     })
     //.limit(100)
     .lean()
-    .select('product project')
+    //.select('product project datatype meta prov')
+    .populate('datatype')
     .exec((err,datasets)=>{
         if(err) throw err;
         async.eachSeries(datasets, (dataset, next_dataset)=>{
             let doc = {
                 index: "warehouse."+dataset.project,
-                type: "dataset-product",
+                type: "dataset-product", //es didn't like datatype._id..
                 id: dataset._id.toString(),
-                body: dataset.product,
             }
-            console.dir(doc);
             es.exists(doc).then(b=>{
                 if(b) return next_dataset();
+                
+                //add bit more info to body
+                delete dataset.product.brainlife; //this is for ui
+                delete dataset.product.meta; //this is for sidecard
+                delete dataset.product.tags; 
+                delete dataset.product.datatype_tags; 
+
+                doc.body = dataset.product;
+                doc.body._datatype = dataset.datatype.name;
+                doc.body._subject = dataset.meta.subject;
+                if(dataset.meta.session) doc.body._session = dataset.meta.session;
+                if(dataset.meta.run) doc.body._run = dataset.meta.run;
+                doc.body._service = dataset.prov.task.service;
+                if(dataset.prov.task.service_branch) doc.body._branch = dataset.prov.task.service_branch;
+                console.dir(doc);
                 es.create(doc, next_dataset);
             });
         }, err=>{
             if(err) throw err;
             console.log("all done");
             db.disconnect();
+            //es.close();
         });
     });
 });
