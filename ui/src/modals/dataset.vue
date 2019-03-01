@@ -34,7 +34,7 @@
             <b-tab title="Details">
                 <div class="dataset-detail">
                     <b-alert :show="dataset.removed" variant="secondary">This dataset has been removed</b-alert>
-                    <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="info"><icon name="cog" spin/> Archiving Dataset .. Please wait for a minute before you can interact with this dataset.</b-alert>
+                    <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="secondary"><icon name="cog" spin/> Archiving Dataset .. Please wait for a minute before you can interact with this dataset.</b-alert>
                     <!-- detail -->
                     <div class="margin20">
                         <b-row>
@@ -79,13 +79,20 @@
                         </b-row>
                         <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.config && dataset.prov.task.config._app">
                             <b-col cols="3"><span class="form-header">Produced by</span></b-col>
-                            <b-col>
+                            <b-col cols="9">
                                 <app slot="header"
                                     :appid="dataset.prov.task.config._app" 
                                     :branch="dataset.prov.task.service_branch||'master'">
                                     <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
                                 </app>
                                 <br>
+                                <b-button block variant="outline-secondary" 
+                                    v-if="dataset.prov.task.commit_id" 
+                                    size="sm" style="margin-bottom: 10px"
+                                    title="Download the exact code used to produce this dataset"
+                                    @click="download_app(dataset.prov.task)">
+                                    Download App <small>{{dataset.prov.task.commit_id}}</small>
+                                </b-button>
                             </b-col>
                         </b-row>
                         <b-row v-if="resource">
@@ -97,7 +104,7 @@
                                     <small v-if="resource.desc">{{resource.desc}}</small>
                                 </p>
                             </b-col>
-                        </b-row>                 
+                        </b-row>              
                         <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.product">
                             <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
                             <b-col cols="9">
@@ -169,7 +176,7 @@
                             </b-col>
                         </b-row>
                         <b-row>
-                            <b-col cols="3"><span class="form-header">Metadata</span></b-col>
+                            <b-col cols="3"><span class="form-header">Metadata (sidecar)</span></b-col>
                             <b-col style="position: relative;">
                                 <div v-if="dataset._canedit">
                                     <editor v-model="dataset._meta" @init="editorInit" @input="dataset._meta_dirty = true" lang="json" height="200"></editor>
@@ -177,7 +184,7 @@
                                     <b-button v-if="dataset._meta_dirty" variant="primary" @click="save_meta()" style="float: right;">Save Metadata</b-button>
                                 </div>
                                 <div v-else>
-                                    <pre v-highlightjs><code class="json">{{dataset.meta}}</code></pre>
+                                    <editor v-model="dataset._meta" @init="editorInit" @input="dataset._meta_dirty = true" lang="json" height="200"></editor>
                                 </div>
                                 <br>
                             </b-col>
@@ -466,15 +473,14 @@ export default {
 
         download() {
             this.check_agreements(this.dataset.project, ()=>{
-                /*
-                var url = Vue.config.api+'/dataset/download/'+this.dataset._id;
-                if(Vue.config.user) url += '?at='+Vue.config.jwt; //guest can download without jwt for published datasets
-                document.location = url;
-                this.$notify({type: 'info', text: "Download will start soon.."});
-                */
                 let query = {_id: [this.dataset._id]};
                 this.$root.$emit("downscript.open", {find: query});
             });
+        },
+
+        download_app(task) {
+            let branch = task.branch||"master";
+            document.location = "https://github.com/"+task.service+"/archive/"+task.commit_id+".zip";
         },
 
         process() {
@@ -631,17 +637,6 @@ export default {
                     find: JSON.stringify(find),
                 }});
             }).then(res=>{
-                /* TODO - due to the way release ids are stored on each dataset but removed
-                          flag is stored on the DB as part of pub, it's not simple to
-                          only load pub/releases that this dataset is published in
-                //remove removed releases, and remove publication if there is no release
-                let pubs = [];
-                res.data.pubs.forEach(pub=>{
-                    pub.releases = pub.releases.filter(release=>!release.removed);
-                    if(pub.releases.length>0) pubs.push(pub);
-                });
-                console.dir(pubs);
-                */
                 this.$set(this.dataset, '_pubs', res.data.pubs);
              }).catch(err=>{
                 console.error(err);
@@ -782,7 +777,8 @@ export default {
             //require('brace/theme/twilight')
             //editor.setTheme("ace/theme/twilight")
             editor.container.style.lineHeight = 1.25;
-            editor.renderer.updateFontSize()
+            editor.renderer.updateFontSize();
+            if(!this.dataset._canedit) editor.setReadOnly(true);
         }
     }
 }

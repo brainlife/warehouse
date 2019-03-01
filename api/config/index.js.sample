@@ -61,7 +61,7 @@ exports.warehouse = {
 
 exports.metrics = {
     interval: 300, //emit every 5min
-    path: "/tmp/graphite.5min/warehouse.counts", 
+    path: "/usr/local/graphite.5min/warehouse.counts", 
     prefix: "dev.warehouse", 
 
     //graphite api (https://graphite-api.readthedocs.io/en/latest/api.html#the-metrics-api)

@@ -112,6 +112,7 @@ export default {
             require('brace/mode/r')
             require('brace/mode/markdown')
             require('brace/mode/html')
+            require('brace/mode/dockerfile')
 
             /* too much visual noise?
             //dark theme
@@ -237,13 +238,17 @@ export default {
                 case "main": 
                     this.open_text(res.data, file, "sh");
                     return;
-                case "exit-code":                    
+                case "exit-code":                   
                 case "jobid":                     
                 case "pid":                     
                 case "bvals": 
                 case "bvecs":
-                case ".gitignore":  
+                case ".gitignore":
+                case ".dockerignore":  
                     this.open_text(res.data, file, "text");
+                    return;
+                case "Dockerfile":  
+                    this.open_text(res.data, file, "dockerfile");
                     return;
                 case "config.json.sample": 
                     this.open_text(res.data, file, "json");
@@ -257,14 +262,16 @@ export default {
                 case "txt": 
                 case "csv": 
                 case "err": 
-                case "log": 
+                case "log":
                     this.open_text(res.data, file, "text");
                     return;
                 case "md": return this.open_text(res.data, file, "markdown");
                 case "json": 
                     if(file.attrs.size > 1024*1024*2) return document.location = url; //don't open json that's too big.. (too slow)
                     return this.open_text(res.data, file, "json");
-                case "sh": return this.open_text(res.data, file, "sh");
+                case "sh":
+                case "pbs":   
+                    return this.open_text(res.data, file, "sh");
                 case "m": return this.open_text(res.data, file, "matlab");
                 case "js": return this.open_text(res.data, file, "javascript");
                 case "R": return this.open_text(res.data, file, "r");
@@ -276,9 +283,13 @@ export default {
                     Vue.set(file, 'image_src', url);
                     Vue.set(file, 'view', true);
                     return;
+                case "html": 
+                    this.open_text(res.data, file, "html");
+                    return;
                 }
 
                 //known content-type?
+                console.log("relying on content-type", res.headers["content-type"]);
                 switch(res.headers["content-type"]) {
                 case "application/json": 
                         this.open_text(res.data, file, "json");
