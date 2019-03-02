@@ -147,7 +147,7 @@ function handle_task(task, cb) {
         if(task.config && task.config._app) inc_count("task.app."+task.config._app+"."+task.status); 
         //number of task change for each resource
         if(task.resource_id) inc_count("task.resource."+task.resource_id+"."+task.status); 
-        //number of task change events for each resource
+        //number of task change events for each project
         if(task._group_id) inc_count("task.group."+task._group_id+"."+task.status); 
     }
 
@@ -229,9 +229,11 @@ function handle_instance(instance, cb) {
     if(instance._status_changed) {
         //number of instance events for each resource
         inc_count("instance.user."+instance.user_id+"."+instance.status); 
-        //number of instance events for each resource
+        //number of instance events for each project
         if(instance.group_id) inc_count("instance.group."+instance.group_id+"."+instance.status); 
     }
+
+    console.log(JSON.stringify(instance, null, 4));
 
     cb();
 }

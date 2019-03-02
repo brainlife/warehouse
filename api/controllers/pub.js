@@ -382,7 +382,7 @@ function handle_release(release, project, cb) {
 
 //proxy doi.org doi resolver
 router.get('/doi', (req, res, next)=>{
-    logger.debug("querying doi", req.query.doi);
+    logger.debug("querying doi: %s", req.query.doi);
     request({
         url: "https://doi.org/"+req.query.doi, //TODO validate!
         headers: {
