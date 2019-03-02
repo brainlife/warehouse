@@ -8,11 +8,6 @@
     <b-alert :show="error" variant="danger">{{error}}</b-alert>
     <div v-if="files && !error">
         <div :style="{marginLeft: offset}">
-            <!--
-            <div class="fileitem" style="float: right; margin-right: 20px;">
-                {{files.length}}
-            </div>
-            -->
             <div  class="buttons">
                 <div class="button" @click="download()" title="Download"><icon name="download" scale="0.9"/> {{files.length}} files/dirs</div>
                 <div class="button" @click="load()" title="Refresh"><icon name="sync-alt" scale="0.9"/></div>
@@ -25,10 +20,10 @@
             <!--file/dir label-->
             <div class="fileitem" @click="click(file)" :class="{'fileitem-viewing': file.view}">
                 <span :style="{marginLeft: offset, opacity: '0.7'}">
-                    <icon name="link" v-if="file.link" class="text-warning" scale="0.80"></icon>
                     <icon name="regular/file" v-if="!file.directory && !file.link"></icon>
                     <icon name="folder-open" v-if="file.directory && file.open" class="text-primary"></icon>
                     <icon name="folder" v-if="file.directory && !file.open" class="text-primary"></icon>
+                    <icon name="link" v-if="file.link" class="text-warning" scale="0.80"></icon>
                 </span>
                 {{file.filename}}
                 <span style="float: right; width: 150px; opacity: 0.7;">
