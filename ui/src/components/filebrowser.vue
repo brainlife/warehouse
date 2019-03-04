@@ -236,8 +236,6 @@ export default {
                 case "exit-code":                   
                 case "jobid":                     
                 case "pid":                     
-                case "bvals": 
-                case "bvecs":
                 case ".gitignore":
                 case ".dockerignore":  
                     this.open_text(res.data, file, "text");
@@ -258,6 +256,8 @@ export default {
                 case "csv": 
                 case "err": 
                 case "log":
+                case "bvals": 
+                case "bvecs":
                     this.open_text(res.data, file, "text");
                     return;
                 case "md": return this.open_text(res.data, file, "markdown");
