@@ -45,31 +45,6 @@ export default {
     },
 
     methods: {
-        //wait for the staging task to finish
-        /*
-        wait: function(cb) {
-            this.$http.get(Vue.config.wf_api+'/task', {params: {
-                find: JSON.stringify({ _id: this.taskid, })
-            }})
-            .then(res=>{
-                this.task = res.data.tasks[0];
-                if(this.task.status == 'finished') return cb();
-                if(this.task.status == 'removed') this.rerun();
-                console.log("polling", this.task.status, this.task.status_msg);
-                setTimeout(()=>{this.wait(cb)}, 300);
-            });
-        },
-
-        rerun() {
-            this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.taskid)
-            .then(res => {
-                console.dir(res); 
-            })
-            .catch(err => {
-                console.error(err); 
-            });
-        },
-        */
 
         open_novnc() {
             this.get_instance_singleton("novnc").then((instance)=>{

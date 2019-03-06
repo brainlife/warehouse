@@ -682,10 +682,13 @@ export default {
                 sort: '-create_date', //pick the latest one
                 limit: 1,
             }}).then(res=>{
-                console.dir(res.data);
-                if(res.data.tasks[0]) {
+                let task = res.data.tasks[0];
+                if(task) {
                     console.log("found previously staged task!");
-                    return cb(res.data.tasks[0], this.dataset._id);
+                    //but.. copied dataset can't be accessed through the dataset id itself.. I need to use outdir
+                    let dataset_config = task.config.datasets.find(dataset=>dataset.id == this.dataset._id);
+                    let subdir = dataset_config.outdir || dataset_config.id;
+                    return cb(task, subdir);
                 }
 
                 //ok.. let's see if a task that produced the dataset still exists
@@ -696,9 +699,10 @@ export default {
                         status: "finished",
                     }),
                 }}).then(res=>{
-                    if(res.data.tasks[0]) {
+                    let task = res.data.tasks[0];
+                    if(task) {
                         console.log("task that produced this dataset still exists... using it");
-                        return cb(res.data.tasks[0], this.dataset.prov.subdir);
+                        return cb(task, this.dataset.prov.subdir);
                     }
                     cb(null); //didn't find it
                 });
