@@ -495,7 +495,7 @@ box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
 margin-left: 20px;
 margin-right: 20px;
 min-height: 32px;
-z-index: 6; /*app desc/github name shows up on top without it - and ace editor*/
+z-index: 7; /*app desc/github name shows up on top without it - and ace editor*/
 transition: margin 0.3s, background-color 0.3s;
 }
 

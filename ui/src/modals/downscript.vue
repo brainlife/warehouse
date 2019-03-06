@@ -91,6 +91,7 @@ export default {
         direct_download() {
             this.$notify({type: 'info', text: "Download will start soon.."});
             document.location = this.single_dataset_url;
+            this.$refs.modal.hide();
         },
 
         copy_downscript() {
