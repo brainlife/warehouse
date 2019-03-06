@@ -18,20 +18,6 @@ let dataset_ex = null;
 let amqp_conn = null;
 function init_amqp(cb) {
     logger.info("connecting to amqp..");
-    //amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-    /*
-    amqp_conn.once("ready", ()=>{
-        logger.info("amqp connection ready.. creating exchanges");
-        amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
-            dataset_ex = ex;
-            cb();
-        });
-    });
-    amqp_conn.on("error", (err)=>{
-        logger.error("amqp connection error");
-        logger.error(err);
-    });
-    */
     common.get_amqp_connection((err, conn)=>{
         amqp_conn = conn;
         logger.info("amqp connection ready.. creating exchanges");
@@ -121,7 +107,6 @@ var projectSchema = mongoose.Schema({
 
     removed: { type: Boolean, default: false },
 });
-//projectSchema.index({admins: 1, members: 1, guest: 1});
 exports.Projects = mongoose.model("Projects", projectSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -538,20 +523,3 @@ var ruleSchema = mongoose.Schema({
 }, {minimize: false}); //to keep empty config{} from disappearing
 exports.Rules = mongoose.model('Rules', ruleSchema);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Downtoken just stores list of dataset ids to allow downloading of the dataset
-//
-/*
-var downtokenSchema = mongoose.Schema({
-    user_id: {type: String, index: true}, 
-
-    ids: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}], 
-
-    count: {type: Number, default: 0 }, //number of time accessed?
-
-    //exp_date: { type: Date },
-    create_date: { type: Date, default: Date.now },
-});
-exports.Downtokens = mongoose.model('Downtokens', downtokenSchema);
-*/

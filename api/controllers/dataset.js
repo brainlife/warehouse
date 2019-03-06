@@ -268,7 +268,7 @@ router.get('/prov/:id', (req, res, next)=>{
         let to = "dataset."+dataset._id;
         if(defer) to = defer.to;
 
-        console.log("loading dataset prov", dataset._id.toString()); 
+        //console.log("loading dataset prov", dataset._id.toString()); 
         if(!dataset.prov.task) {
             //leaf dataset.. we are done!
             if(defer) {
@@ -581,8 +581,8 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     let next_tid;
     let stage_task; 
 
-    logger.debug("staging request");
-    console.dir(req.body.dataset_ids);
+    //logger.debug("staging request");
+    //console.dir(req.body.dataset_ids);
 
     let unique_dataset_ids = [...new Set(req.body.dataset_ids)];
 
@@ -667,7 +667,8 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     config: {
                         datasets: datasets.map(d=>{
                             if(d.storage == "copy") {
-                                //stage copy source 
+                                //this dataset is a copy of an original dataset.
+                                //we need to state the original, but output to this dataset id (outdir)
                                 return {
                                     id: d.storage_config.dataset_id,
                                     project: d.storage_config.project,
@@ -685,7 +686,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                         _tid: next_tid,
                         _outputs: datasets.map(d=>{
                             let subdir = d._id;
-
                             return {
                                 id: d._id,
                                 datatype: d.datatype,
@@ -809,7 +809,90 @@ function stream_dataset(dataset, res, next) {
     });
 }
 
-//this API allows user to download any files under user's workflow directory
+//caches agreements for each project
+let project_agreement_cache = {};
+function get_project_agreements(project_id, cb) {
+    let now = new Date().getTime();
+    let cache = project_agreement_cache[project_id];
+    if(cache && cache.timeout > now) return cb(null, cache.agreements);
+    
+    //load project agreements
+    db.Projects.findById(project_id, (err, project)=>{
+        if(err) return cb(err);
+        cache = {
+            agreements: project.agreements,
+            timeout: now + 1000*3600,
+        }
+        project_agreement_cache[project_id] = cache;
+        cb(null, cache.agreements);
+    });
+}
+
+/*
+//caches agreements for each user
+let user_agreement_cache = {};
+function get_user_agreements(sub, authorization, cb) {
+    let now = new Date().getTime();
+    let cache = user_agreement_cache[sub];
+    if(cache && cache.timeout > now) return cb(null, cache.agreements);
+    
+    //load user profile
+    console.log("loading profile agagin", cache);
+    request.get({ 
+        url: config.profile.api+"/private/"+sub, json: true, 
+        headers: { authorization }
+    }, (err, _res, profile)=>{
+        if(err) return cb(err);
+        //console.dir(profile);
+        cache = {
+            agreements: profile.agreements,
+            timeout: now + 1000*3600,
+        }
+        user_agreement_cache[sub] = cache;
+        cb(null, cache.agreements);
+    });
+}
+*/
+
+let cache;
+function get_user_agreements(sub, authorization, cb) { 
+
+    if(!cache) {
+        //initialize cache
+        cache = {};
+
+        //listen to update event
+        common.get_amqp_connection((err, conn)=>{
+            if(err) {
+                logger.error("failed to obtain amqp connection");
+            }
+            logger.info("amqp connection ready.. subscribing to profile updates");
+            conn.queue('', q=>{
+                q.bind("profile", "*.private", ()=>{ //no err..
+                    q.subscribe((message, header, deliveryInfo, messageObject)=>{
+                        let sub = deliveryInfo.routingKey.split(".")[0];
+                        console.dir(message);
+                        cache[sub] = message.agreements;
+                    });
+                });
+            });
+        });
+    }
+
+    //check cache
+    if(cache[sub]) return cb(null, cache[sub]);
+
+    //need to load from the source..
+    request.get({ 
+        url: config.profile.api+"/private/"+sub, json: true, headers: { authorization }
+    }, (err, _res, profile)=>{
+        let obj = profile.agreements;
+        cb(err, obj);
+        cache[sub] = obj;
+    });
+}
+
+
 //TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
 //doing so increases the chance of user misusing the token, but unless I use HTML5 File API
 //there isn't a good way to let user download files..
@@ -839,32 +922,75 @@ router.get('/download/:id', jwt({
     }
 }), function(req, res, next) {
     var id = req.params.id;
+
     if(!req.user) logger.warn("no auth request");
     db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
         if(err) return next(err);
         if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
         if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
-        if(dataset.publications && dataset.publications.length > 0) {
-            //this dataset is published .. no need for access control
-            //TODO - maybe I should still limit download without correct publication id? (what's the point?)
+        
+        //app-stage can access any dataset
+        if(req.user && req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('stage')) {
             stream_dataset(dataset, res, next);
-        } else if(req.user && req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('stage')) {
-            //app-stage can access any dataset
-            logger.debug("stage role acess");
-            stream_dataset(dataset, res, next);
-        } else {
-            //unpublished -- need to do access control
-            common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
-                if(err) return next(err);
-                canread_project_ids = canread_project_ids.map(id=>id.toString());
-                if(!~canread_project_ids.indexOf(dataset.project.toString())) {
-                    return res.status(403).json({message: "you don't have access to the project that the dataset belongs"});
-                } 
-
-                //proceed!
-                stream_dataset(dataset, res, next);
-            });
+            return next();
         }
+
+        //access control (I could do this in parallel?)
+        async.series([
+            //check project access
+            cb=>{
+                //we don't need to check project access if it's a published dataset
+                //TODO - maybe I should still limit download without correct publication id? (what's the point?)
+                if(dataset.publications && dataset.publications.length > 0) return cb();
+
+                common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
+                    if(err) return next(err);
+                    canread_project_ids = canread_project_ids.map(id=>id.toString());
+                    if(!~canread_project_ids.indexOf(dataset.project.toString())) {
+                        return cb("you don't have access to the project that the dataset belongs");
+                    } 
+
+                    //all good!
+                    cb();
+                });
+            },
+
+            //check aggreements
+            cb=>{
+                //load project agreements
+                get_project_agreements(dataset.project, (err, project_agreements)=>{
+                    if(err) return next(err);
+
+                    if(project_agreements.length == 0) return cb(); //no required agreements
+                    if(!req.user) return cb("you must be logged in to access this dataset");
+                    
+                    //load user agreements
+                    let authorization = req.headers.authorization;
+                    if(req.query.at) authorization = "Bearer "+req.query.at;
+                    get_user_agreements(req.user.sub, authorization, (err, user_agreements)=>{
+                        if(err) return next(err);
+
+                        //console.log("checking", user_agreements);
+
+                        //make sure user has agreed to all agreements
+                        let agreed = true;
+                        project_agreements.forEach(agreement=>{
+                            if(!user_agreements[agreement._id]) agreed = false;
+                        });
+                        if(!agreed) {
+                            return cb("You must agree to all data access agreements at "+
+                                config.warehouse.url+"/project/"+dataset.project);
+                        }
+
+                        cb();
+                    });
+                });
+            },
+
+        ], err=>{
+            if(err) return res.status(403).json({err});
+            stream_dataset(dataset, res, next);
+        });
     });
 });
 
@@ -941,66 +1067,6 @@ router.delete('/:id?', jwt({secret: config.express.pubkey}), function(req, res, 
         });
     });
 });
-
-/** 
- * @apiGroup Dataset
- * @api {post} /dataset/delete
- *                              Remove (hide) dataset from dataset results (async)
- * @apiParam {String[]} id      Dataset ID to remove (could be an array)
- *
- * @apiHeader {String} authorization 
- *                              A valid JWT token "Bearer: xxxxx"
- */
-//DEPRECATED - delete one dataset at a time with (delete)/dataset/:id api
-/*
-router.post('/delete', jwt({secret: config.express.pubkey}), function(req, res, next) {
-    let ids = req.body.id;
-    if(!Array.isArray(ids)) ids = [ ids ];
-    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
-        if(err) return next(err);
-        db.Datasets.find({_id: {$in: ids}}, (err, datasets)=>{
-            if(err) return next(err);
-            res.json({status: "ok", "message": "removing "+datasets.length+" datasets"});
-            async.eachSeries(datasets, (dataset, next_dataset)=>{
-                if(canedit(req.user, dataset, canwrite_project_ids)) {
-                    dataset.remove_date = new Date();
-                    dataset.removed = true;
-                    dataset.save(next_dataset);
-                }
-            }, err=>{
-                if(err) return next(err);
-                logger.debug("done removing datasets");
-            });
-        });
-    });
-});
-*/
-/*
-router.post('/ds/issue', jwt({secret: config.express.pubkey}), (req, res, next)=>{
-    common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
-        if(err) return next(err);
-        console.dir(req.body.ids);
-        db.Datasets.find({
-            $and: [
-                {project: {$in: canread_project_ids}},
-                {_id: {$in: req.body.ids}},
-            ]
-        })
-        .select('_id')
-		.exec((err, datasets)=>{
-            if(err) return next(err);
-            let ids = [];
-            datasets.forEach(dataset=>{
-                ids.push(dataset._id);
-            });
-            new db.Downscripts({ids}).save((err, _ds)=>{
-                if(err) return next(err);
-                res.json({id: _ds._id});
-            });
-        });
-    });
-});
-*/ 
 
 /**
  * @apiGroup Dataset

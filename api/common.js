@@ -387,7 +387,6 @@ exports.compose_pub_datacite_metadata = function(pub) {
         }
         //TODO - add <nameIdentifier nameIdentifierScheme="ORCID">12312312131</nameIdentifier>
         creators.push(`<creator><creatorName>${xmlescape(contact.fullname)}</creatorName></creator>`);
-
     });
 
     let contributors = [];
@@ -488,6 +487,7 @@ exports.doi_put_url = function(doi, url, cb) {
     });
 }
 
+//TODO - update cache from amqp events
 let cached_contacts = {};
 exports.cache_contact = function(cb) {
     request({
@@ -507,6 +507,7 @@ exports.cache_contact = function(cb) {
         }
     });
 }
+
 exports.cache_contact();
 setInterval(exports.cache_contact, 1000*60*30); //cache every 30 minutes
 
