@@ -490,6 +490,7 @@ exports.doi_put_url = function(doi, url, cb) {
 //TODO - update cache from amqp events
 let cached_contacts = {};
 exports.cache_contact = function(cb) {
+    logger.info("loading all profiles from auth service");
     request({
         url: config.auth.api+"/profile", json: true,
         qs: {

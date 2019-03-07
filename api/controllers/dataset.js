@@ -414,7 +414,7 @@ router.get('/prov/:id', (req, res, next)=>{
                     add_node({
                         id: "task."+input.task_id,
                         label: compose_label(dep_task),
-                        _app: task.config._app,
+                        _app: dep_task.config._app,
                     });
                     edges.push({
                         from: "task."+input.task_id,
@@ -937,6 +937,7 @@ router.get('/download/:id', jwt({
 
         //access control (I could do this in parallel?)
         async.series([
+            //
             //check project access
             cb=>{
                 //we don't need to check project access if it's a published dataset
