@@ -1176,11 +1176,11 @@ ${p.desc}`;
                 if(dataset.meta.run) path += ".run-"+dataset.meta.run;
                 path+= ".id-"+dataset._id;
 
-                script += "mkdir -p "+path+"\n";
+                script += "mkdir -p \""+path+"\"\n";
                 script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
                 script += "curl ";
                 if(req.headers.authorization) script += "-H \"$auth\" ";
-                script += config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C "+path+" -x\n";
+                script += config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C \""+path+"\" -x\n";
 
                 if(dataset.datatype.bids) {
                     //Create BIDS symlinks
@@ -1197,7 +1197,7 @@ ${p.desc}`;
                     if(dataset.meta.subject) bidspath += "/sub-"+dataset.meta.subject;
                     if(dataset.meta.session) bidspath += "/ses-"+dataset.meta.session;
                     bidspath+="/"+dataset.datatype.bids.derivatives;
-                    script += "mkdir -p "+bidspath+"\n";
+                    script += "mkdir -p \""+bidspath+"\"\n";
                     dataset.datatype.bids.maps.forEach(map=>{
                         //construct source keywords
                         let source_keywords = "sub-"+dataset.meta.subject;
@@ -1230,7 +1230,7 @@ ${p.desc}`;
                             //request for metadata!
                             if(dataset.prov) {
                                 dataset.meta.BrainlifeURL = config.warehouse.url+"/project/"+dataset.project._id+"/dataset/"+dataset._id;
-                                script += "echo \""+JSON.stringify(dataset.meta).replace().replace(/\"/g, '\\"')+"\" > "+bidspath+"/"+dest+"\n";
+                                script += "echo \""+JSON.stringify(dataset.meta).replace().replace(/\"/g, '\\"')+"\" > \""+bidspath+"/"+dest+"\"\n";
                             } else {
                                 //can't output json.. as we have no prov
                             }
@@ -1242,7 +1242,7 @@ ${p.desc}`;
                                 bidspath_exit += "../";
                             }
                             //then resolve the src(could be glob pattern) and link it to bidspath
-                            script += "ln -sf "+bidspath_exit+"$(ls -d "+path+"/"+map.src+") "+bidspath+"/"+dest+"\n";
+                            script += "ln -sf "+bidspath_exit+"$(ls -d \""+path+"/"+map.src+"\") \""+bidspath+"/"+dest+"\"\n";
                         }
                     });
                 } else script+="#no bids mapping\n";
