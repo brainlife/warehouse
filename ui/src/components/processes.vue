@@ -1,54 +1,59 @@
 <template>
-<div v-if="instances" class="processes">
-    <div class="page-header with-menu header">
+<p v-if="!instances" class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>
+<div v-else class="processes">
+        <!-- redundant with All(count)
         <div class="process-count">
             <b>{{instances.length}}</b> Processes
         </div>
+        -->
 
-        <div v-if="instances.length > 1" style="float: right;"> 
-            <div style="display: inline-block; margin-right: 10px;">
-                <small>Show</small>
-                <div class="status-toggler">
-                    <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">All ({{instances.length}})</b-button>
-                    <b-button size="sm" v-for="state in ['running', 'finished', 'failed']"  :key="state"
-                            :pressed="show == state" :variant="state2variant(state)" @click="show = state">
-                            {{state}} ({{instance_counts[state]||0}})
-                    </b-button>
-                </div>
+    <div class="info" v-if="instances.length > 1">
+        <!--header-->
+        <div style="float: right;  margin-right: 15px; opacity: 0.8; position: relative; top: 5px;">
+            <div class="date">
+                <small>Update Date</small>
             </div>
-
-            <div style="display: inline-block;">
-                <small>Order by</small>
-                <b-dropdown :text="order" size="sm" :variant="'light'">
-                    <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
-                    <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
-                    <b-dropdown-divider></b-dropdown-divider>
-                    <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
-                    <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
-                    <b-dropdown-divider></b-dropdown-divider>
-                    <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
-                    <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
-                </b-dropdown>
+            <div class="date">
+                <small>Create Date</small>
             </div>
         </div>
+
+        <div style="float: right;">
+            <small>Order by</small>
+            <b-dropdown :text="order" size="sm" :variant="'light'">
+                <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
+                <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
+                <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
+                <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
+            </b-dropdown>
+        </div>
+
+        <div style="margin-left: 5px;">
+            <!--<small>Show</small>-->
+            <div class="status-toggler">
+                <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">All ({{instances.length}})</b-button>
+                <b-button size="sm" v-for="state in ['running', 'finished', 'failed']"  :key="state"
+                        :pressed="show == state" :variant="state2variant(state)" @click="show = state">
+                        {{state}} ({{instance_counts[state]||0}})
+                </b-button>
+            </div>
+        </div>
+
     </div>
-    <div class="page-content with-menu content" id="scrolled-area" ref="scrolled_area">
+
+    <div class="list" id="scrolled-area" ref="scrolled_area">
         <div class="text-muted margin20" v-if="instances.length == 0">
             <p>Here, you can submit series of apps with shared input and output datasets.</p>
             <p>Output datasets will be removed within 25 days. Please archive any output dataset you'd like to keep.</p>
             <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
         </div>
 
+
         <div v-if="instances.length > 0" style="clear: both;">
-            <!--header-->
-            <div style="margin-right: 20px; padding: 5px 15px; opacity: 0.8; line-height: 200%;">
-                <div class="date">
-                    <small>Update Date</small>
-                </div>
-                <div class="date">
-                    <small>Create Date</small>
-                </div>
-            </div>
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
                     <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
@@ -88,7 +93,6 @@
     </div>
     <b-button class="button-fixed" @click="newinstance" title="Create New Process"><icon name="plus" scale="2"/></b-button>
 </div>
-<p v-else class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>
 </template>
 
 <script>
@@ -384,7 +388,10 @@ export default {
 
         load_instances(cb) {
             this.instances = null; 
-            if(!this.project.group_id) return; //can't load for non-group project..
+            if(!this.project.group_id) {
+                this.instances = [];
+                return; //can't load for non-group project..
+            }
             //console.log("loading instances for group", this.project.group_id);
             this.$http.get(Vue.config.wf_api+'/instance', {params: {
                 find: JSON.stringify({
@@ -482,10 +489,19 @@ color: #999;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 height: 45px;
 }
-
-.content {
+.info {
+z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
+padding: 8px 10px;
+padding-right: 30px;
+}
+.list {
+position: fixed;
+bottom: 0px;
 top: 100px;
+left: 200px;
+right: 0px;
 margin-top: 40px;
+overflow-y: scroll;
 }
 
 .instance-header {

@@ -1,5 +1,5 @@
 <template>
-<div v-if="app_" no-body class="appcard" :class="{'compact': compact, 'clickable': clickable}" @click="click">
+<div v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable}" @click="click">
     <div v-if="compact">
         <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="78" :height="78"/>
         <div style="max-height: 75px; overflow: hidden;">

@@ -1,9 +1,9 @@
 <template>
 <div v-if="pubs">
-    <div class="page-header with-menu header">
+    <div class="info" v-if="pubs.length > 0">
         <b>{{pubs.length}}</b> Publications
     </div>
-    <div class="page-content with-menu content">
+    <div class="list">
         <div v-if="editing" style="background-color: white; padding: 20px; padding-top: 10px;">
             <pubform :pub="editing" :project="project" @submit="save" @cancel="cancel"/>
         </div>
@@ -201,20 +201,14 @@ export default {
 </script>
 
 <style scoped>
-.header {
+.info {
 top: 95px;
-padding: 10px;
+padding: 10px 20px;
 color: #999;
 background-color: #f9f9f9;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 }
-.content {
-margin-top: 95px;
-}
-
-.header, 
-.content {
-min-width: 500px;
+.list {
 }
 
 .pub:first-child {

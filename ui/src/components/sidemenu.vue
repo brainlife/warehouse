@@ -1,6 +1,9 @@
 <template>
 <div class="sidemenu">
-    <br>
+    <div class="header" :style="styles">
+        <!--<icon name="home" scale="1.75" style="position: relative; top: -8px; margin-right: 5px;"/>-->
+        <span class="title" @click="gohome">brainlife</span>
+    </div>
     <ul class="items">
         <!-- currently being developped -->
         <li v-if="config.debug" 
@@ -16,22 +19,24 @@
             <icon name="th-large" scale="1.3"/>
             <h4>Apps</h4>
         </li>
+
+        <!-- only for authenticated users -->
+        <li v-if="config.user" @click="go('/projects')"
+            :class="{active: active == '/projects'}">
+            <icon name="shield-alt" scale="1.3"/>
+            <h4>Projects</h4>
+        </li>
+
         <li @click="go('/pubs');"
             :class="{active: active == '/pubs'}">
             <icon name="newspaper" scale="1.3"/>
             <h4>Publications</h4>
         </li>
+        
         <li @click="go('/datatypes')"
             :class="{active: active == '/datatypes'}">
             <icon name="cubes" scale="1.3"/>
             <h4>Datatypes</h4>
-        </li>
-
-        <!-- only for authenticated users -->
-        <li v-if="config.user" @click="go('/project')"
-            :class="{active: active == '/projects'}">
-            <icon name="shield-alt" scale="1.3"/>
-            <h4>Projects</h4>
         </li>
         
         <li v-if="config.user" @click="setting">
@@ -52,6 +57,47 @@
 
     <!--bottom-->
     <ul class="items items-bottom">
+        <!--
+        <b-dropdown variant="link" size="lg" no-caret>
+            <template slot="button-content">
+                <li v-if="config.user" @click="login">
+                    <img :src="gurl"/>&nbsp;{{config.user.profile.fullname||config.user.profile.username}}
+                </li>
+            </template>
+            <b-dropdown-item @click="goaccount">Settings</b-dropdown-item>
+            <b-dropdown-divider></b-dropdown-divider>
+            <b-dropdown-item @click="signout">Signout</b-dropdown-item>           
+        </b-dropdown>
+        -->
+        <li v-if="config.user" @click="open_usersettings" id="user">
+            <icon name="caret-right" style="float: right; margin-right: 10px; margin-top: 2px;" scale="1.25"/>
+            <img :src="gurl" width="18px" class="avatar"/>&nbsp;<h4>{{config.user.profile.fullname||config.user.profile.username}}</h4>
+        </li>
+        <b-popover ref="usersettings" target="user">
+            <b-list-group>
+                <b-list-group-item href="#"  @click="goaccount">                
+                    <icon name="cog" scale="1.3"/>&nbsp;
+                    Settings
+                </b-list-group-item>
+                <b-list-group-item href="#" @click="signout">
+                    <icon name="sign-out-alt" scale="1.3"/>&nbsp;
+                    Signout                 
+                </b-list-group-item>
+            </b-list-group>
+        </b-popover>
+
+        <li v-if="!config.user" @click="login">
+            <icon name="brands/slack" scale="1.3"/>
+            <h4>Login</h4>
+        </li>
+        <li v-if="!config.user" @click="signup">
+            <icon name="brands/slack" scale="1.3"/>
+            <h4>Sign Up</h4>
+        </li>
+        <li @click="slack">
+            <icon name="brands/slack" scale="1.3"/>
+            <h4>Contact us (slack)</h4>
+        </li>
         <li @click="doc">
             <icon name="book" scale="1.3"/>
             <h4>Documentation</h4>
@@ -61,8 +107,10 @@
 </template>
 
 <script>
+
 import Vue from 'vue'
 import projectmenu from '@/components/projectmenu'
+import md5 from 'md5'
 
 export default {
     components: { projectmenu },
@@ -75,16 +123,26 @@ export default {
 	mounted: function() {
 	},
     computed: {
-        /*
-        is_admin: function() {
-            if( Vue.config.user && 
-                Vue.config.user.scopes.warehouse && 
-                ~Vue.config.user.scopes.warehouse.indexOf('admin') &&
-                Vue.config.user.scopes.amaretti && 
-                ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
-            return false;
+        gurl: function() {
+            if(!this.config.user.profile.email) return null;
+            return "//www.gravatar.com/avatar/"+md5(this.config.user.profile.email)+"?s=22";
+        },
+        styles: function() {
+            switch(window.location.hostname) {
+            case "localhost-dis":
+                return {
+                    "backgroundImage": "inherit",
+                    "backgroundColor": "orange",
+                }
+            case "test.brainlife.io":
+                return {
+                    "backgroundImage": "inherit",
+                    "backgroundColor": "purple",
+                }
+            default: 
+                return {};
+            }
         }
-        */
     },
     methods: {
         setting() {
@@ -96,11 +154,31 @@ export default {
         doc() {
             window.open("https://brainlife.io/docs/", "brainlife doc");
         },
-        /*
-        goraw: function(url) {
-            document.location = url;
+        goaccount() {
+            document.location = "/auth#!/settings/account";
         },
-        */
+        signout() {
+            document.location = "/auth#!/signout";
+        },
+        reportbug() {
+            window.open("https://github.com/brain-life/warehouse/issues", "github");
+        },
+        gohome() {
+            document.location = "/";
+        },
+        login() {
+            document.location = "/auth";
+        },
+        signup() {
+            document.location = "/auth/#!/signup";
+        },
+        slack() {
+            document.location = "https://brainlife-inviter.herokuapp.com/";
+        },
+        md5, 
+        open_usersettings() {
+            this.$refs.usersettings.$emit('popoever');
+        },
     }
 }
 </script>
@@ -108,21 +186,43 @@ export default {
 <style scoped>
 .sidemenu {
     position: fixed;
-    top: 50px;
+    top: 0px;
     left: 0px;
-    width: 50px;
+    /*width: 50px;*/
+    width: 200px;
     bottom: 0px;
-    background-color: #222;
+    background-color: #333;
     color: #888;
     font-size: 8pt;
     transition: width 0.3s;
     z-index: 2; /*1 would conflict with some page headers*/
     overflow: hidden;
 }
+.header {
+    height: 50px;
+    color: white;
+
+    background-color: white;
+    box-shadow: 0px 1px 1px rgba(0,0,0,0.3);
+    background-image: linear-gradient(90deg, #2693ff, #159957);
+    text-align: center;
+}
+.header img {
+   
+}
+.title {
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 24pt;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/*
 .sidemenu:hover {
     transition-delay:0.5s;
     width: 200px;
 }
+*/
 .items {
     list-style: none;
     margin: 0px;
@@ -134,7 +234,7 @@ export default {
     margin: 0px;
     padding: 10px 0px;
     transition: background-color 0.2s, color 0.2s;
-    padding-left: 16px;
+    padding-left: 15px;
 }
 .items li h4 {
     display: inline-block;
@@ -151,11 +251,9 @@ export default {
 .items li.active {
     color: white;
     background-color: #222;
-    border-left: 3px solid #007bff;
-    padding-left: 12px;
 }
 .items li.divider {
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     padding: 0px;
     margin: 0px;
     padding-top: 5px;

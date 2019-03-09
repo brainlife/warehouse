@@ -1,113 +1,110 @@
 <template>
 <div class="appedit">
-    <pageheader/>
     <sidemenu active="/apps"></sidemenu>
-    <div class="fixed-top">
-        <div class="container" style="height: 50px;">
-            <div style="margin: 20px 0px;">
-                <p style="float: right; color: #999;">
-                    If you are new to creating Apps for Brainlife, please read our
-                    <b-button size="sm" variant="outline-secondary" href="https://brainlife.io/docs/apps/introduction" target="doc">Documentation</b-button>
-                </p>
-                <h3 v-if="$route.params.id == '_'">New App</h3>
-                <h3 v-else>{{app.name}}</h3>
-            </div>
-        </div>
+    <div class="page-header" v-if="ready">
+        <b-container>
+            <p style="float: right; color: #999;">
+                <b-button size="sm" variant="outline-secondary" href="https://brainlife.io/docs/apps/introduction" target="doc">
+                    <icon name="book"/> Documentation
+                </b-button>
+            </p>
+            <h4 style="margin-right: 150px" v-if="$route.params.id == '_'">New App</h4>
+            <h4 style="margin-right: 150px" v-else>{{app.name}}</h4>
+        </b-container>
     </div>
 
     <div class="page-content" v-if="ready">
-        <b-form class="container">
-            <div style="margin-top:20px;">
-                <h4>Detail</h4>
+        <b-form>
+        <b-container>
+            <h4>Detail</h4>
+            <b-row>
+                <b-col cols="3">
+                    <span class="form-header">Name *</span>
+                </b-col> 
+                <b-col>
+                    <b-form-input type="text" v-model="app.name" placeholder="Name of application" required/>
+                    <br>
+                </b-col> 
+            </b-row>
 
-                <b-row>
-                    <b-col cols="3">
-                        <span class="form-header">Name *</span>
-                    </b-col> 
-                    <b-col>
-                        <b-form-input type="text" v-model="app.name" placeholder="Name of application" required/>
-                        <br>
-                    </b-col> 
-                </b-row>
-
-                <b-row>
-                    <b-col cols="3">
-                        <span class="form-header">Description Override</span>
-                    </b-col> 
-                    <b-col>
-                        <b-form-textarea v-model="app.desc_override" placeholder="(Leave empty to use github repo description)" :rows="3" :max-rows="6"></b-form-textarea>
-                        <p>
-                            <small class="text-muted">
+            <b-row>
+                <b-col cols="3">
+                    <span class="form-header">Description Override</span>
+                </b-col> 
+                <b-col>
+                    <b-form-textarea v-model="app.desc_override" placeholder="(Leave empty to use github repo description)" :rows="3" :max-rows="6"></b-form-textarea>
+                    <p>
+                        <small class="text-muted">
 Normally, the App description is automatically pulled from github repo description that you specify below. If you'd like to use different description from the one used for your github repo, you can enter it here to override the github repo description.</small>
-                        </p>
-                    </b-col>
-                </b-row>
+                    </p>
+                </b-col>
+            </b-row>
 
-                <b-row>
-                    <b-col cols="3">
-                        <span class="form-header">Admins</span>
-                    </b-col> 
-                    <b-col>
-                        <contactlist v-model="app.admins"></contactlist>
-                        <p>
-                            <small class="text-muted">Users who can update this application registration</small>
-                        </p>
-                    </b-col>
-                </b-row>
+            <b-row>
+                <b-col cols="3">
+                    <span class="form-header">Admins</span>
+                </b-col> 
+                <b-col>
+                    <contactlist v-model="app.admins"></contactlist>
+                    <p>
+                        <small class="text-muted">Users who can update this application registration</small>
+                    </p>
+                </b-col>
+            </b-row>
 
-                <b-row>
-                    <b-col cols="3">
-                        <span class="form-header">Avatar</span>
-                    </b-col> 
-                    <b-col>
-                        <b-form-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
-                        <br>
-                    </b-col>
-                </b-row>
+            <b-row>
+                <b-col cols="3">
+                    <span class="form-header">Avatar</span>
+                </b-col> 
+                <b-col>
+                    <b-form-input type="text" v-model="app.avatar" placeholder="Image URL of application avatar"/>
+                    <br>
+                </b-col>
+            </b-row>
 
-                <b-row>
-                    <b-col cols="3">
-                        <span class="form-header">Projects</span>
-                    </b-col> 
-                    <b-col cols="9">
-                        <multiprojectselecter v-model="app.projects" placeholder="(Leave it empty to make it available for all users)"/>
-                        <p>
-                            <small class="text-muted">If a private project is selected, only the member of the project can access this app</small>
-                        </p>
-                    </b-col>
-                </b-row>
+            <b-row>
+                <b-col cols="3">
+                    <span class="form-header">Projects</span>
+                </b-col> 
+                <b-col cols="9">
+                    <multiprojectselecter v-model="app.projects" placeholder="(Leave it empty to make it available for all users)"/>
+                    <p>
+                        <small class="text-muted">If a private project is selected, only the member of the project can access this app</small>
+                    </p>
+                </b-col>
+            </b-row>
 
-                <b-row>
-                    <b-col cols="3">
-                        <span class="form-header">Source Code</span>
-                    </b-col> 
-                    <b-col>
-                        <b-row>
-                            <b-col cols="7">
-                                <b-input-group prepend="https://github.com/">
-                                    <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
-                                </b-input-group>
-                                <small v-if="app.github && github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
-                            </b-col>
-                            <b-col>
-                                <b-input-group prepend="Branch/Tag">
-                                    <b-form-select v-model="app.github_branch">
-                                        <optgroup label="Branches" v-if="github_branches">
-                                            <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
-                                        </optgroup>
-                                        <optgroup label="Tags" v-if="github_tags">
-                                            <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
-                                        </optgroup>
-                                    </b-form-select>
-                                    
-                                </b-input-group>
-                                 <small v-if="app.github_branch == 'master'" class="text-danger"><icon name="exclamation" scale="0.8"/> Please avoid master branch</small>
-                            </b-col>
-                        </b-row>
-                        <br>
-                    </b-col>
-                </b-row>
-            </div>
+            <b-row>
+                <b-col cols="3">
+                    <span class="form-header">Source Code</span>
+                </b-col> 
+                <b-col>
+                    <b-row>
+                        <b-col cols="7">
+                            <b-input-group prepend="https://github.com/">
+                                <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
+                            </b-input-group>
+                            <small v-if="app.github && github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
+                        </b-col>
+                        <b-col>
+                            <b-input-group prepend="Branch/Tag">
+                                <b-form-select v-model="app.github_branch">
+                                    <optgroup label="Branches" v-if="github_branches">
+                                        <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
+                                    </optgroup>
+                                    <optgroup label="Tags" v-if="github_tags">
+                                        <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
+                                    </optgroup>
+                                </b-form-select>
+                                
+                            </b-input-group>
+                                <small v-if="app.github_branch == 'master'" class="text-danger"><icon name="exclamation" scale="0.8"/> Please avoid master branch</small>
+                        </b-col>
+                    </b-row>
+                    <br>
+                </b-col>
+            </b-row>
+
 
             <h4>
                 <a style="float: right;" href="https://brainlife.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
@@ -447,7 +444,7 @@ Normally, the App description is automatically pulled from github repo descripti
                     <b-button size="sm" @click="add_dataset(output_datasets)" variant="success">Add Output</b-button>
                 </p>
             </div>
-            
+        </b-container>
         </b-form>
 
         <b-card v-if="config.debug">
@@ -462,7 +459,7 @@ Normally, the App description is automatically pulled from github repo descripti
             <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
         </b-card>
         
-        <div class="form-action" style="padding-right: 20px;">
+        <div class="page-footer">
             <b-container>
                 <b-button @click="cancel">Cancel</b-button>
                 <b-button @click="submit" variant="primary" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
@@ -526,7 +523,6 @@ export default {
     computed: {
         github_bt() {
             return {
-
             }
         }
     },
@@ -704,24 +700,6 @@ export default {
             
             // use _order for ordering of array items
             this.sort_params_by_order();
-
-            /*
-            //debug .. check to make sure all datatype actually exists
-            console.dir(this.datatypes);
-            this.input_datasets.forEach(dataset=>{
-                let dt = this.datatypes[dataset.datatype];
-                console.dir(dataset);
-                if(!dt) {
-                    console.error("detected missing datatype in inputs", dataset.datatype);
-                }
-            });
-            this.output_datasets.forEach(dataset=>{
-                let dt = this.datatypes[dataset.datatype];
-                if(!dt) {
-                    console.error("detected missing datatype in inputs", dataset.datatype);
-                }
-            });
-            */
         },
         
         validate(cb) {
@@ -971,28 +949,20 @@ export default {
 </script>
 
 <style scoped>
-.fixed-top {
-position: fixed;
-top: 50px;
-left: 50px;
-right: 0px;
-height: 80px;
-z-index: 1;
-background-color: white;
-border-bottom: 1px solid #eee;
+.page-header {
+padding: 10px 0px;    
 }
-h4 {
-color: #999;
-border-bottom: 1px solid #ddd;
-padding-bottom: 10px;
-margin-bottom: 15px;
+.page-header h4 {
+opacity: 0.8;
 }
-.page-content {
-top: 130px;
-}
-
 .file-map {
 margin: 7px;
+}
+.page-content h4 {
+color: #999;
+border-bottom: 1px solid #ddd;
+margin: 10px 0px;
+padding: 10px 0px;
 }
 
 .file-transition-enter-active {
@@ -1003,13 +973,6 @@ opacity: 0;
 transform: translate(0, -100%);
 }
 
-.form-action {
-text-align: right;
-position: sticky;
-bottom:0;
-background-color: rgba(100,100,100,0.4);
-padding:10px;
-}
 .move-item-enter-active, .move-item-leave-active {
 transition: none;
 }

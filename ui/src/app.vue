@@ -1,6 +1,5 @@
 <template>
 <div v-if="app">
-    <pageheader/>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
         <b-alert :show="app.removed" variant="secondary">This App has been removed.</b-alert>
@@ -8,7 +7,7 @@
             <b-container>
                 <b-row>
                     <b-col cols="3">
-                        <appavatar :app="app" style="margin-bottom: 10px;" :width="200" :height="200"/>
+                        <appavatar :app="app" style="margin-bottom: 20px;" :width="200" :height="200"/>
                     </b-col>
                     <b-col cols="9" style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right; position: relative; z-index: 3">
@@ -539,10 +538,13 @@ export default {
 </script>
 
 <style scoped>
+.page-content {
+top: 0px;
+}
 .header {
 background-color: white;
 margin-bottom: 30px;
-padding: 30px 0px 0px 0px;
+padding: 15px 0px 0px 0px;
 border-bottom: 1px solid #eee;
 z-index: 2;
 }

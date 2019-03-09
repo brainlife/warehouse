@@ -1,22 +1,8 @@
 <template>
-<div class="pageheader" :style="styles">
-    <!--<img src="./christmas.png" class="reef">-->
+<!--deprecated-->
+<div class="pageheader" :style="styles" v-if="false">
+    <!--
     <b-nav class="nav">
-        <!--
-        <b-nav-item @click="doc"><icon name="book"/></b-nav-item>
-        -->
-        <!--
-        <b-nav-item-dropdown text="Support">
-            <b-dropdown-item @click="doc">Documentation</b-dropdown-item>
-            <b-dropdown-item @click="reportbug">Report Issues / Feature Requests</b-dropdown-item>
-        </b-nav-item-dropdown>
-        -->
-        <!--
-        <b-nav-item-dropdown v-if="config.user" text="New">
-            <b-dropdown-item @click="go('/app/_/edit')">App</b-dropdown-item>
-            <b-dropdown-item @click="go('/project/_/edit')">Project</b-dropdown-item>
-        </b-nav-item-dropdown>
-        -->
         <b-nav-item @click="slack"><icon name="brands/slack" scale="1.25"/>&nbsp;&nbsp;Contact Us</b-nav-item>
         <b-nav-item-dropdown v-if="config.user">
             <span slot="button-content">
@@ -30,9 +16,9 @@
         <b-nav-item v-if="!config.user" @click="login">Login</b-nav-item>
         <b-nav-item v-if="!config.user" @click="signup">Sign Up</b-nav-item>
     </b-nav>
-
     <span class="title" @click="gohome">brainlife</span>
     <div class="slot"><slot/></div>
+    -->
 </div>
 </template>
 
