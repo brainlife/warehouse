@@ -82,7 +82,7 @@ var projectSchema = mongoose.Schema({
 
     group_id: Number, //group id from auth service to host admins/members
 
-    tags: [String], //used to classify projects
+    tags: [String], //used to classify projects (TODO - I don't think this is used yet..)
 
     name: String,
     desc: String, 
@@ -102,6 +102,28 @@ var projectSchema = mongoose.Schema({
 
     //list of agreemenets that user must agree before accessing datasets
     agreements: [ new mongoose.Schema({agreement: String}) ], 
+    
+    //basic stats for this app (aggregated by bin/appinfo.js - most info comes from amaretti/service/info)
+    stats: {
+        //count of instances for each status
+        instances: {
+            requested: Number,
+            finished: Number,
+            running: Number, 
+            stopped: Number, 
+            failed: Number, 
+            others: Number,  //probably empty, or null
+        },
+
+        datasets: Number, //total number of datasets
+        subjects: Number, //total number of subjects
+
+        //count of pipeline rules
+        rules: {
+            active: Number, 
+            inactive: Number, 
+        },
+    },
     
     create_date: { type: Date, default: Date.now },
 
