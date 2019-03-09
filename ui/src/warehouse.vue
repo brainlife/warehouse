@@ -190,6 +190,10 @@ cursor: pointer;
 .button-fixed .fa-icon {
 top: -1px;
 }
+.fa-icon {
+position: relative;
+top: -0.1em;
+}
 .button {
 display: inline-block;
 color: rgba(0,0,0,0.5);

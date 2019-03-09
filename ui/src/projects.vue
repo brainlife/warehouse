@@ -10,33 +10,15 @@
     <div class="page-content">
         <h4 class="group-title">My Projects</h4>
         <div style="padding: 10px;">
-            <b-card-group columns>
-                <projectcard v-for="project in my_projects" :project="project" :key="project._id">
-                    <!--
-                    <p class="name">
-                        <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
-                        {{project.name}} <icon v-if="project.access == 'private'" name="lock" scale="0.8"></icon>
-                    </p>
-                    <div class="desc">{{project.desc}}</div>
-                    -->
-                </projectcard>
-            </b-card-group>
+            <projectcard v-for="project in my_projects" :project="project" :key="project._id"/>
         </div>
+        <br clear="both">
 
         <h4 class="group-title">Other Projects</h4>
         <div style="padding: 10px;">
-            <b-card-group columns>
-                <projectcard v-for="project in other_projects" :project="project" :key="project._id" class="projectcard">
-                    <!--
-                    <p class="name">
-                        <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
-                        {{project.name}} <icon v-if="project.access == 'private'" name="lock" scale="0.8"></icon>
-                    </p>
-                    <div class="desc">{{project.desc}}</div>
-                    -->
-                </projectcard>
-            </b-card-group>
+            <projectcard v-for="project in other_projects" :project="project" :key="project._id" class="projectcard"/>
         </div>
+        <br clear="both">
     </div>
 
     <b-button class="button-fixed" @click="go('/project/_/edit')" title="New Project">
@@ -110,7 +92,8 @@ export default {
             this.$http.get('project', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500,
-                select: '-readme'
+                select: '-readme',
+                sort: 'name',
             }}).then(res=>{
                 res.data.projects.forEach(p=>{
                     if(p.admins.includes(Vue.config.user.sub) || p.members.includes(Vue.config.user.sub) || p.guests.includes(Vue.config.user.sub)) {
@@ -156,6 +139,15 @@ z-index: 1;
 opacity: 0.8;
 }
 .projectcard {
-margin: 10px 5px;
+width: 425px;
+float: left;
+margin-right: 10px;
+margin-bottom: 10px;
+box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+transition: box-shadow 0.5s;
+}
+.projectcard:hover {
+box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+z-index: 1;
 }
 </style>

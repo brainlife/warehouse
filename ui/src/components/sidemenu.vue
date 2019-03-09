@@ -94,11 +94,12 @@
             <icon name="brands/slack" scale="1.3"/>
             <h4>Sign Up</h4>
         </li>
-        <li @click="slack">
+
+        <li @click="slack" class="secondary secondary-first">
             <icon name="brands/slack" scale="1.3"/>
             <h4>Contact us (slack)</h4>
         </li>
-        <li @click="doc">
+        <li @click="doc" class="secondary">
             <icon name="book" scale="1.3"/>
             <h4>Documentation</h4>
         </li>
@@ -197,6 +198,7 @@ export default {
     transition: width 0.3s;
     z-index: 2; /*1 would conflict with some page headers*/
     overflow: hidden;
+    box-shadow: inset -3px 0px 3px rgba(0,0,0,0.2);
 }
 .header {
     height: 50px;
@@ -206,6 +208,7 @@ export default {
     box-shadow: 0px 1px 1px rgba(0,0,0,0.3);
     background-image: linear-gradient(90deg, #2693ff, #159957);
     text-align: center;
+    box-shadow: inset -3px 0px 3px rgba(0,0,0,0.2);
 }
 .header img {
    
@@ -225,8 +228,8 @@ export default {
 */
 .items {
     list-style: none;
+    padding: 0px;
     margin: 0px;
-    padding: 5px 0px;
     width: 200px;
 }
 .items li {
@@ -262,5 +265,13 @@ export default {
 .items-bottom {
     position: absolute;
     bottom: 0px;
+}
+
+li.secondary {
+    background-color: #2c2c2c;
+    color: #666;
+}
+li.secondary-first {
+    box-shadow: inset 0px 2px 2px rgba(0,0,0,0.1);
 }
 </style>

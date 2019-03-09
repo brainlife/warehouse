@@ -1,35 +1,46 @@
 <template>
-<!--
-<div class="projectcard">
-    <p class="name">
-        <projectavatar :project="project" :width="20" :height="20" class="projectavatar"/>
-        {{project.name}} <icon v-if="project.access == 'private'" name="lock" scale="0.8"></icon>
-    </p>
-    <div class="desc">{{project.desc}}</div>
-    {{project}}
-</div>
--->
-<b-card no-body class="projectcard" @click="open">
-    <projectavatar class="avatar" :project="project" :width="70" :height="70"/>
+<div class="projectcard" @click="open">
+    <projectavatar class="avatar" :project="project" :width="45" :height="45"/>
     <p class="title">
         <projectaccess :access="project.access"/> 
         {{project.name}}
     </p>
     <p class="desc">{{project.desc}}</p>
     <p class="contacts">
-        <contact v-for="c in project.admins" :key="c._id" :id="c" size="small"/>
+        <contact v-for="c in project.members" :key="c._id" :id="c" size="tiny"/>
     </p>
     <!--
     <p class="contacts">
         <b>Members</b> <contact v-for="c in project.members" :key="c._id" :id="c" size="small"/>
     </p>
     -->
-    <div class="status">
-        <span style="float: right;">
-            <icon name="calendar" scale="0.8"/>&nbsp;<time>{{new Date(project.create_date).toLocaleDateString()}}</time>
-        </span>
+    <div class="instances">
+        <b-progress :max="instance_count" height="20px">
+            <b-progress-bar v-for="(count, state) in project.stats.instances" :key="state" 
+                :variant="getvariant(state)" :value="count" :label="count.toString()" :title="count+' '+state+' processes'"/>
+        </b-progress>
     </div>
-</b-card>
+    <div class="status">
+        <b-row>
+            <b-col md="3">
+                <span v-if="project.stats" title="unique subjects">
+                    <icon name="users" scale="0.8"/>&nbsp;{{project.stats.subjects}}
+                </span>
+            </b-col>
+            <b-col md="3">
+                <span v-if="project.stats" title="datasets">
+                    <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets}}
+                </span>
+            </b-col>
+            <b-col md="3" title="active pipeline rules">
+                <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
+            </b-col>
+            <b-col md="3" title="create date">
+                <icon name="calendar" scale="0.8"/>&nbsp;<small>{{new Date(project.create_date).toLocaleDateString()}}</small>
+            </b-col>
+        </b-row>
+    </div>
+</div>
 </template>
 
 <script>
@@ -62,7 +73,29 @@ export default {
         open() {
             this.$router.push("/project/"+this.project._id);
         },
-    }
+
+        getvariant(state) {
+            switch(state) {
+            case "running": return "primary";
+            case "requested": return "info";
+            case "finished": return "success";
+            case "stopped": return "secondary";
+            case "failed": return "danger";
+            default: return "dark";
+            }
+        }
+    },
+    computed: {
+        instance_count: function() {
+            if(!this.project.stats) return 0;
+            let sum = 0;
+            for(let state in this.project.stats.instances) {
+                //if(state == "others") continue; //ignore this for now.
+                sum += this.project.stats.instances[state];
+            }
+            return sum;
+        }
+    },
 }
 </script>
 
@@ -72,6 +105,7 @@ export default {
 border: none;
 cursor: pointer;
 box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+background-color: white;
 /*
 transition: box-shadow 0.5s;
 */
@@ -85,37 +119,50 @@ transition: filter 1s;
 filter: none;
 }
 */
-.projectcard:hover {
-box-shadow: 4px 4px 8px rgba(0,0,0,0.2);
-}
 .avatar {
 float: right;
-margin-bottom: 5px;
+margin: 5px;
+position: relative;
+border-radius: 50%;
+border: 3px solid white;
 }
 .title {
 font-weight: bold;
 padding: 5px;
 margin-bottom: 0px;
+height: 30px;
+overflow: hidden;
 }
 .desc {
 padding: 5px;
 font-size: 85%;
 opacity: 0.8;
+height: 55px;
+overflow: hidden;
+padding-bottom: 5px;
 }
 .contacts {
 padding: 5px;
 margin-bottom: 5px;
 font-size: 90%;
+height: 50px;
+overflow: hidden;
 }
 .status {
-margin-top: 5px;
-background-color: #eee;
+background-color: #e0e0e0;
 padding: 4px 10px;
-color: #aaa;
+color: #999;
 clear: both;
 /*
 border-top: 1px solid #ddd;
 */
 height: 30px;
+}
+
+.progress {
+border-radius: 0;
+}
+.progress .bg-info {
+background-color: #50bfff !important;
 }
 </style>
