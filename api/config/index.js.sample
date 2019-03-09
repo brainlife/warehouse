@@ -26,11 +26,14 @@ exports.github = {
 
 exports.amaretti = {
     api: "https://dev1.soichi.us/api/amaretti",
-
     //jwt used to query things from workflow service as admin (TODO - I can't find any use for it?)
     //jwt: fs.readFileSync(__dirname+'/warehouse.jwt', 'ascii').trim(),
 }
 exports.wf = exports.amaretti; //deprecated (use amaretti)
+
+exports.profile = {
+    api: "https://dev1.soichi.us/api/profile",
+}
 
 exports.auth = {
     api: "https://dev1.soichi.us/api/auth",

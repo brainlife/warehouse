@@ -1,17 +1,18 @@
 <template>
 <div class="projectedit">
-    <pageheader/>
     <sidemenu active="/projects"></sidemenu>
-    <div class="fixed-top">
+    <div class="page-header">
         <b-container>
             <p style="float: right">
-                <a href="https://brainlife.io/docs/user/project/"><icon name="book"/></a>
+                <b-button size="sm" variant="outline-secondary" href="https://brainlife.io/docs/user/project" target="doc">
+                    <icon name="book"/> Documentation
+                </b-button>
             </p>
-            <h3>{{project.name||'No name'}}</h3>
+            <h4 style="margin-right: 150px">{{project.name||'No name'}}</h4>
         </b-container>
     </div>
-
-    <div class="main-section">
+    <div class="page-content">
+        <br>
         <b-form>
         <b-container>
             <b-row>
@@ -89,7 +90,7 @@
                             <div class="button" @click="remove_agreement(idx)"><icon name="trash"/></div>
                         </b-col>
                     </b-row>
-                    <p><b-button @click="project.agreements.push({agreement: ''})"><icon name="plus"/> Add Agreement</b-button></p>
+                    <p><b-button @click="project.agreements.push({agreement: ''})" size="sm"><icon name="plus"/> Add Agreement</b-button></p>
                     <br>
                 </b-col>
             </b-row>
@@ -144,7 +145,7 @@
                 </b-col>
             </b-row>
 
-            <div class="form-action">
+            <div class="page-footer">
                 <b-container>
                     <b-button variant="secondary" @click="cancel">Cancel</b-button>
                     <b-button variant="primary" @click="submit" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
@@ -159,7 +160,7 @@
             <pre v-highlightjs="JSON.stringify(project, null, 4)"><code class="json hljs"></code></pre>
         </div>
         </b-form>
-    </div><!--main-section-->
+    </div><!--page-content-->
 </div>
 </template>
 
@@ -260,37 +261,11 @@ export default {
 </script>
 
 <style scoped>
-.main-section {
-position: fixed;
-padding: 20px;
-left: 50px;
-right: 0px;
-top: 130px;
-bottom: 0px;
-overflow: auto;
+.page-header {
+padding: 10px 20px;    
 }
-.fixed-top {
-background-color: white;
-padding: 20px;
-position: fixed;
-top: 50px;
-left: 50px;
-right: 0px;
-height: 80px;
-z-index: 1;
-border-bottom: 1px solid #eee;
-}
-.fixed-top h3 {
+.page-header h4 {
 opacity: 0.8;
-}
-.form-action {
-text-align: right;
-position: fixed;
-right: 0px;
-left: 50px;
-bottom: 0px;
-padding: 10px 30px;
-background-color: rgba(100,100,100,0.4);
 }
 .readme {
 background-color: white;

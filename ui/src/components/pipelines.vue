@@ -1,11 +1,11 @@
 <template>
 <div v-if="ready">
-    <div v-if="!editing && rules.length > 0" class="page-header with-menu header">
+    <div v-if="!editing && rules.length > 0" class="info">
         <b-row :no-gutters="true">
             <b-col>
-                <b>{{rules.length}}</b> Pipeline Rules
+                <div style="margin-top: 4px;"><b>{{rules.length}}</b> Pipeline Rules</div>
             </b-col>
-            <b-col :cols="4" style="position: relative; top: -5px; text-align: right;">
+            <b-col :cols="4" style="text-align: right;">
                 <small>Order by</small>
                 <b-dropdown :text="order" size="sm" :variant="'light'">
                     <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
@@ -18,16 +18,16 @@
                     <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
                 </b-dropdown>
             </b-col>
-            <b-col :cols="2" style="text-align: right;">
+            <b-col :cols="2" style="text-align: right; position: relative; top: 10px;">
                 <div class="date">Create Date</div>
             </b-col>
-            <b-col :cols="2" style="text-align: right;">
+            <b-col :cols="2" style="text-align: right; position: relative; top: 10px;">
                 <div class="date">Update Date</div>
             </b-col>
         </b-row>
     </div>
     <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
-    <div v-else class="page-content with-menu content" ref="scrolled">
+    <div v-else class="list" ref="scrolled">
         <!--list view-->
         <div class="margin20" v-if="rules.length == 0">
             <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
@@ -209,11 +209,6 @@ export default {
     mounted() {
         this.load();
     },
-    /*
-    destroyed() {
-        if(this.activetaskcount_int) clearInterval(this.activetaskcount_int);
-    },
-    */
 
     watch: {
         project: function() {
@@ -412,7 +407,7 @@ export default {
             this.editing = {
                 name: "",
                 config: {},
-                project: this.project,
+                project: this.project._id,
                 active: false,
                 removed: false,
             };
@@ -561,9 +556,8 @@ background-color: #eee;
 .rule-header {
 cursor: pointer;
 transition: background-color 0.3s;
-padding: 7px;
+padding: 4px 10px;
 padding-top: 10px;
-
 font-size: 88%;
 }
 .rule-header .custom-switch {
@@ -586,7 +580,6 @@ clear: both;
 .rule.rule-selected .rule-body {
 box-shadow: 2px 2px 3px rgba(0,0,0,0.2);
 }
-
 .expand-transition {
   transition: all .3s ease;
   height: 30px;
@@ -603,22 +596,21 @@ box-shadow: 2px 2px 3px rgba(0,0,0,0.2);
 cursor: pointer;
 background-color: #eee;
 }
-
-.header {
-top: 95px;
-padding: 10px;
-margin: 0px 20px;
+.info {
+top: 100px;
+padding: 8px 20px;
 color: #999;
 background-color: #f9f9f9;
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
-height: 40px;
 }
-.content {
-top: 95px;
-margin-top: 40px;
+.list {
 overflow-x: hidden; /*i can't figure out why there would be x scroll bar when a rule is active*/
+position: fixed;
+top: 140px;
+bottom: 0px;
+left: 200px;
+right: 0px;
 }
-
 .header, 
 .content {
 min-width: 500px;
@@ -630,7 +622,7 @@ background-color: #f9f9f9;
 font-size: 80%;
 }
 .section-header {
-background-color: #ddd; 
+background-color: #f4f4f4; 
 clear: both; 
 padding: 10px; 
 margin-bottom: 10px;

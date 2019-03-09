@@ -1,10 +1,5 @@
 <template>
 <div>
-    <pageheader>
-        <!--
-        <b-input v-model="query" placeholder="Search ..."/>
-        -->
-    </pageheader>
     <sidemenu active="/pubs"></sidemenu>
     <div class="page-content">
         <div class="header">
@@ -68,6 +63,9 @@ export default {
 <style scoped>
 .pub {
 margin-bottom: 10px;
+}
+.page-content {
+top: 0px;
 }
 .header {
 background-color: white;

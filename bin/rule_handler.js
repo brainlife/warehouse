@@ -355,31 +355,6 @@ function handle_rule(rule, cb) {
                         input._datasets[dataset.meta.subject].push(dataset);
                     });
 
-                    /*
-                    //TODO WHY can't I not do this filtering with mongo query?
-                    //find first dataset that matches all tags
-                    //var matching_dataset = null;
-                    datasets.forEach(dataset=>{
-                        let match = true;
-                        let tags = input.datatype_tags;
-                        if(rule.extra_datatype_tags) tags = tags.concat(rule.extra_datatype_tags[input.id]);
-                        tags.forEach(tag=>{
-                            if(tag[0] == "!") {
-                                //negative: make sure tag doesn't exist
-                                if(~dataset.datatype_tags.indexOf(tag.substring(1))) match = false;
-                            } else {
-                                //positive: make sure tag exists
-                                if(!~dataset.datatype_tags.indexOf(tag)) match = false;
-                            }
-                        });
-                        
-                        if(match) {
-                            if(!input._datasets[dataset.meta.subject]) input._datasets[dataset.meta.subject] = [];
-                            input._datasets[dataset.meta.subject].push(dataset);
-                        }
-                    });
-                    */
-
                     next_input(); 
                 });
             }, next);
@@ -470,8 +445,7 @@ function handle_rule(rule, cb) {
         var deps = [];
         var tasks = {};
 
-        var instance_name = "brainlife.rule subject:"+subject;
-        var instance_desc = "rule submission for subject "+subject;
+        //var instance_name = "brainlife.rule subject:"+subject;
         running++;
 
         //prepare for stage / app / archive
@@ -483,7 +457,9 @@ function handle_rule(rule, cb) {
                     headers: { authorization: "Bearer "+jwt },
                     qs: {
                         find: JSON.stringify({
-                            name: instance_name,
+                            //name: instance_name, //I need to key by the subject name
+                            //"config.rule": rule._id,
+                            "config.rule_subject": subject,
                             group_id: rule.project.group_id, 
                             "config.removing": {$exists: false},
                             "config.status": {$ne: "removed"},
@@ -507,11 +483,13 @@ function handle_rule(rule, cb) {
                     url: config.amaretti.api+'/instance', json: true, 
                     headers: { authorization: "Bearer "+jwt },
                     body: {
-                        name: instance_name,
-                        desc: instance_desc,
+                        //name: instance_name, //is this necessary?
+                        desc: subject,
                         group_id: rule.project.group_id, 
                         config: {
-                            brainlife: true,
+                            brainlife: true, //TODO is this still used?
+                            //rule: rule._id,
+                            rule_subject: subject,
                         }
                     },
                 }, (err, res, body)=>{
@@ -760,6 +738,7 @@ function handle_rule(rule, cb) {
                     body: {
                         instance_id: instance._id,
                         name: rule.app.name,
+                        desc: "submitted by pipeline rule:"+rule.name,
                         service: rule.app.github,
                         
                         //rule.app.github_branch is no longer used, but rule.branch might not be set for old rules

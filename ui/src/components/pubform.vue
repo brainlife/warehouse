@@ -86,7 +86,7 @@
     <br>
     <br>
     <br>
-    <div class="page-footer with-menu">
+    <div class="page-footer">
         <b-button type="button" @click="cancel">Cancel</b-button>
         <b-button type="submit" variant="primary">Submit</b-button>
     </div>

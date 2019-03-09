@@ -1,35 +1,35 @@
 <template>
 <div>
-    <pageheader>
-        <!--
-        <div class="search-box">
-            <b-form-input v-model="query" type="text" placeholder="Search" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
-            <icon name="search" class="search-icon" scale="1.5"/>
-        </div>
-        -->
-    </pageheader>
     <sidemenu active="/datatypes"></sidemenu>
-
     <div class="page-content" ref="scrolled">
         <div v-if="!selected">
             <div class="header">
-                <h2>Datatypes</h2>
-                <p style="opacity: 0.7;">
-                    Datatypes allows Apps to exchange data. Currently only the administrator can register new datatypes.
-                </p>
+                <b-container>
+                    <h2>Datatypes</h2>
+                    <p style="opacity: 0.7;">
+                        Datatypes allows Apps to exchange data. Currently only the administrator can register new datatypes.
+                    </p>
+                </b-container>
             </div>
-            <h4>neuro/</h4> 
-            <b-card-group columns style="margin: 10px;">
-                <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
-                    <datatype :datatype="datatype"/>
-                </b-card>
-            </b-card-group>
-            <h4>other</h4> 
-            <b-card-group columns style="margin: 10px;">
-                <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
-                    <datatype :datatype="datatype"/>
-                </b-card>
-            </b-card-group>
+
+            <h4><b-container>neuro/</b-container></h4> 
+            <b-container>
+                <b-card-group columns style="margin: 10px;">
+                    <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
+                        <datatype :datatype="datatype"/>
+                    </b-card>
+                </b-card-group>
+            </b-container>
+
+            <h4><b-container>other</b-container></h4> 
+            <b-container>
+                <b-card-group columns style="margin: 10px;">
+                    <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
+                        <datatype :datatype="datatype"/>
+                    </b-card>
+                </b-card-group>
+            </b-container>
+
             <b-button v-if="config.is_admin" class="button-fixed" @click="newdatatype" title="New Datatype">
                 <icon name="plus" scale="2"/>
             </b-button>
@@ -51,7 +51,6 @@
             </div>
             <br>
             <b-container>
-
                 <b-row>
                     <b-col cols="2">
                         <span class="form-header">README</span>
@@ -165,22 +164,22 @@
                         <span class="form-header">Apps</span>
                     </b-col>
                     <b-col>
-                        <p>
+                        <p v-if="input_apps.length == 0" style="opacity: 0.8">No App uses this datatype as input.</p>
+                        <p v-else>
                             <small style="opacity: 0.7">The following Apps uses this datatype for input.</small>
                         </p>
-                        <div class="apps-container">
+                        <div class="apps-container" style="border-left: 4px solid rgb(0, 123, 255); padding-left: 15px;">
                             <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
                         </div>
-                        <p v-if="input_apps.length == 0" style="opacity: 0.8">No App uses this datatype as input.</p>
                         <br>
 
-                        <p>
+                        <p v-if="output_apps.length == 0" style="opacity: 0.8">No App uses this datatype as output.</p>
+                        <p v-else>
                             <small style="opacity: 0.7">The following Apps outputs this datatype.</small>
                         </p>
-                        <div class="apps-container">
+                        <div class="apps-container" style="border-left: 4px solid rgb(40, 167, 69); padding-left: 15px;">
                             <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
                         </div>
-                        <p v-if="output_apps.length == 0" style="opacity: 0.8">No App uses this datatype as output.</p>
                         <br>
 
                     </b-col>
@@ -419,9 +418,12 @@ export default {
 </script>
 
 <style scoped>
+.page-content {
+top: 0px;
+}
 .page-content h2 {
 background-color: white;
-color: gray;
+color: #999;
 margin-bottom: 0px;
 padding: 10px 0px;
 }
@@ -442,52 +444,6 @@ color: #999;
 font-size: 17pt;
 font-weight: bold;
 }
-/*
-.datatype-list {
-position: fixed;
-top: 50px;
-bottom: 0px;
-left: 50px;
-width: 300px;
-background-color: #444;
-}
-.datatype-list h4 {
-font-size: 18px;
-padding: 20px 10px;
-text-transform: uppercase;
-margin-bottom: 0px;
-color: #777;
-font-weight: bold;
-}
-.datatype-list h5 {
-font-size: 15px;
-padding: 10px 10px;
-text-transform: uppercase;
-margin-bottom: 0px;
-color: #999;
-font-weight: bold;
-}
-.datatype-list .item {
-padding: 5px 10px;
-margin-bottom: 0px;
-color: white;
-transition: background-color 0.5s;
-font-size: 95%;
-}
-.datatype-list .item:hover {
-cursor: pointer;
-background-color: black;
-}
-.datatype-list .item.selected {
-background-color: #007bff;
-}
-.datatype-list:hover .button-fixed {
-opacity: 0.8;
-}
-.datatype-list:hover .button-fixed:hover {
-opacity: 1;
-}
-*/
 .header {
 padding: 20px;
 background-color: white;
@@ -519,8 +475,8 @@ padding: 10px;
 cursor: pointer;
 padding: 10px;
 border: none;
-box-shadow: 2px 2px 4px rgba(0,0,0,0.03);
-transition: box-shadow 1s;
+box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+transition: box-shadow 0.5s;
 }
 .datatype-card:hover {
 box-shadow: 4px 4px 8px rgba(0,0,0,0.2);

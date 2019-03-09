@@ -1,13 +1,19 @@
 <template> 
-<!--
+<!-- this is no longer an issue?
 v-select has some issue with clicking scrollbar closing the select dropdown..
 https://github.com/sagalbot/vue-select/issues/474
 PR > https://github.com/sagalbot/vue-select/pull/373
 -->
 <div v-if="options">
     <b-alert show variant="danger" v-if="options.length == 0 && required">You don't have any project that you can select.</b-alert>
-    <b-form-select v-if="options.length > 0" v-model="selected" :options="options" :placeholder-nowork="placeholder" :required="required">
-    </b-form-select>
+    <!--
+    <b-form-select v-if="options.length > 0" v-model="selected" :options="options" :placeholder-nowork="placeholder" :required="required"/>
+    -->
+    <v-select v-if="options.length > 0" v-model="selected" 
+        max-height="250px"
+        :options="options" 
+        :placeholder="placeholder" 
+        :required="required"/>
 </div>
 </template>
 
@@ -37,18 +43,22 @@ export default {
 
     watch: {
         selected: function() {
-            //console.log("changing select...");
             if(this.selected) {
                 console.log("new select", this.selected);
-                localStorage.setItem('last_projectid_used', this.selected);
-                this.$emit('input', this.selected);
+                localStorage.setItem('last_projectid_used', this.selected.value);
+                this.$emit('input', this.selected.value);
             } else {
                 this.$emit('input', null);
             }
         },
         value: function() {
+            /*
             if (this.selected != this.value) {
                 this.selected = this.value;
+            }
+            */
+            if(this.selected && this.selected.value != this.value) {
+                this.selected = this.options.find(it=>it.value == this.value);
             }
         }
     },
@@ -118,22 +128,24 @@ export default {
                 sort: 'name',
             }}).then(res=>{
                 this.options = [];
-                if(!this.required) this.options.push({value: null, text: this.placeholder||''});
+                if(!this.required) this.options.push({value: null, label: this.placeholder||''});
                 res.data.projects.forEach(project=>{
-                    this.options.push({value: project._id, text: project.name});
+                    this.options.push({value: project._id, label: project.name});
                 });
 
                 //first, select project that client has requested
                 let found = this.options.find(it=>it.value == this.value);
-                if(found) this.selected = found.value;
-                else {
+                if(found) {
+                    this.selected = found;
+                } else {
                     //if not, then try selecting the last project used
                     var last = localStorage.getItem('last_projectid_used');
                     found = this.options.find(it=>it.value == last);
-                    if(found) this.selected = found.value;
-                    else if(this.required && this.options.length > 0) {
+                    if(found) {
+                        this.selected = found;
+                    } else if(this.required && this.options.length > 0) {
                         //if we can't find it, and required field.. then select first one from the list
-                        this.selected = this.options[0].value;
+                        this.selected = this.options[0];
                     }
                 }
             });

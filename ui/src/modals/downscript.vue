@@ -91,6 +91,7 @@ export default {
         direct_download() {
             this.$notify({type: 'info', text: "Download will start soon.."});
             document.location = this.single_dataset_url;
+            this.$refs.modal.hide();
         },
 
         copy_downscript() {
@@ -107,12 +108,12 @@ export default {
 font-family: monospace; 
 background-color: #eee; 
 white-space: pre-wrap; 
-font-size: 70%;
+font-size: 65%;
 padding: 10px;
 overflow: auto;
 margin-bottom: 10px;
 width: 100%;
-height: 150px;
+height: 170px;
 border: none;
 }
 
