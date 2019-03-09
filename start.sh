@@ -19,4 +19,7 @@ pm2 start bin/event_handler.js --name warehouse-event --watch --ignore-watch="*.
 pm2 delete warehouse-appinfo
 pm2 start bin/appinfo.js --name warehouse-appinfo --watch --ignore-watch="*.log test *.sh ui example .git"
 
+pm2 delete warehouse-projectinfo
+pm2 start bin/projectinfo.js --name warehouse-projectinfo --watch --ignore-watch="*.log test *.sh ui example .git"
+
 pm2 save
