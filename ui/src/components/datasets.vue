@@ -1,85 +1,68 @@
 <template>
 <div>
     <div :class="{rightopen: selected_count}">
-        <div class="page-header with-menu header">
-            <div style="float: right; position: relative; top: -3px;">
+        <div class="table-header">
+            <div style="float: right; position: relative; top: 4px;">
                 <b-form-input id="filter" class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
-                <b-popover triggers="hover" target="filter" placement="bottom" title="Hint">
-                    <p>
-                        Enter terms to filter datasets. Terms will be applied for subject, datatype, description, and tags.
-                    </p>
-                    <p>
-                        You can prefix search terms with <b>!</b> to look for items that do not include the term. For example, entering <b>!acpc</b> will find all datasets that have no "acpc".
-                    </p>
-                </b-popover>
             </div>
-            <div style="margin-top: 2px;">
+
+            <div style="padding: 5px 0px; margin-bottom: 10px;">
                 <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
             </div>
-        </div>
 
-        <div class="page-content with-menu content">
-            <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
-
-            <b-row class="list-header">
+            <b-row class="table-column">
                 <b-col cols="2"><h4>Subject <small style="opacity: 0.5">/ Ses</small></h4></b-col>
-                <!--everything under subject is grouped, thus a odd layout-->
                 <b-col cols="10">
                     <b-row>
-                        <b-col cols="3"><h4 style="margin-left: 27px;">Datatype</h4></b-col>
+                        <b-col cols="3"><h4>Datatype</h4></b-col>
                         <b-col cols="3"><h4>Description</h4></b-col>
                         <b-col cols="3"><h4>Create&nbsp;Date</h4></b-col>
                         <b-col cols="3"><h4>Tags</h4></b-col>
                     </b-row>
                 </b-col>
             </b-row>
+        </div>
+
+        <div class="list" id="scrolled-area">
+            <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
 
             <!--start of dataset list-->
-            <div class="list" id="scrolled-area">
-                <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx">
-                    <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
-                        :style="{height: page_info[page_idx].height}">
-                        <!--show empty div to speed up rendering if it's outside the view-->
-                        <pre>{{page_info[page_idx].height}}</pre>
-                    </div>
-                    <b-row class="subjects" v-for="(datasets, subject) in page" :key="subject" v-else>
-                        <b-col cols="2">
-                            <strong>{{subject}}</strong>
-                        </b-col>
-                        <b-col cols="10">
-                            <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked, removed: dataset.removed}">
-                                <b-row>
-                                    <b-col cols="3" class="truncate">
-                                        <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
-                                        <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
-                                        <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
-                                        <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
-                                        <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
-                                        <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
-                                        <!--
-                                        <span class="text-primary" v-if="dataset.publications && dataset.publications.length > 0">
-                                            <icon name="book" scale="0.8"/>
-                                            <small v-if="dataset.publications.length > 1">{{dataset.publications.length}}</small>
-                                        </span>
-                                        -->
-                                    </b-col>
-                                    <b-col cols="3" class="truncate">
-                                        {{dataset.desc||'&nbsp;'}}
-                                    </b-col>
-                                    <b-col cols="3" class="truncate">
-                                        <time>{{new Date(dataset.create_date).toLocaleString()}}</time>
-                                    </b-col>
-                                    <b-col cols="3" class="truncate">
-                                        <tags :tags="dataset.tags"></tags> &nbsp;
-                                    </b-col>
-                                </b-row>
-                                <!--<p v-else>Removed</p>-->
-                            </div>
-                        </b-col>
-                    </b-row>
-                 </div> 
-            </div><!--scrolled-area-->
-
+            <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx">
+                <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
+                    :style="{height: page_info[page_idx].height}">
+                    <!--show empty div to speed up rendering if it's outside the view-->
+                    <pre>{{page_info[page_idx].height}}</pre>
+                </div>
+                <b-row class="subjects" v-for="(datasets, subject) in page" :key="subject" v-else>
+                    <b-col cols="2">
+                        <strong>{{subject}}</strong>
+                    </b-col>
+                    <b-col cols="10">
+                        <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked, removed: dataset.removed}">
+                            <b-row>
+                                <b-col cols="3" class="truncate">
+                                    <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
+                                    <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
+                                    <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
+                                    <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
+                                    <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
+                                    <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
+                                </b-col>
+                                <b-col cols="3" class="truncate">
+                                    {{dataset.desc||'&nbsp;'}}
+                                </b-col>
+                                <b-col cols="3" class="truncate">
+                                    <time>{{new Date(dataset.create_date).toLocaleString()}}</time>
+                                </b-col>
+                                <b-col cols="3" class="truncate">
+                                    <tags :tags="dataset.tags"></tags> &nbsp;
+                                </b-col>
+                            </b-row>
+                        </div>
+                    </b-col>
+                </b-row>
+                </div> 
+    
             <b-btn class="button-fixed" v-b-modal.uploader 
                 @click="set_uploader_options" v-if="isadmin() || ismember()"
                 title="Upload Dataset" 
@@ -87,7 +70,7 @@
                 <icon name="plus" scale="2"/>
             </b-btn>
 
-        </div><!--page-content-->
+        </div><!--list-->
     </div>
 
     <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
@@ -189,7 +172,6 @@ export default {
 
             query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
             ws: null, //websocket
-            //remove_remain: 0,
 
             //cache
             datatypes: null,
@@ -289,7 +271,6 @@ export default {
         //when user select different project, this gets called (mounted() won't be called anymore)
         project(nv, ov) {
             if(nv == ov) return; //why does this happen?
-            //console.log("project changed", nv, ov);
             this.query = ""; //clear query to avoid confusion
             if(this.loading) {
                 console.log("canceling load");
@@ -413,7 +394,9 @@ export default {
                     //lookup datatype ids that matches the query
                     let datatype_ids = [];
                     for(var id in this.datatypes) {
-                        if(this.datatypes[id].name.includes(q)) datatype_ids.push(id);
+                        let _q = q;
+                        if(q[0] == "!") _q = q.substring(1);
+                        if(this.datatypes[id].name.includes(_q)) datatype_ids.push(id);
                     }
 
                     function compose_ors(q) {
@@ -570,7 +553,6 @@ export default {
                 }
             });
             this.selected = {};
-            //this.persist_selected();
         },
 
         unselect(dataset) {
@@ -584,7 +566,6 @@ export default {
             });
             dataset.checked = false;
             Vue.delete(this.selected, dataset._id);
-            //this.persist_selected();
         },
 
         get_instance() {
@@ -674,26 +655,6 @@ export default {
                     }).catch(err=>{
                         this.$notify({type: "error", text: err.toString()})
                     });
-
-                    /*
-                    //TODO - it's the UI update that's slowing things down.. (also the ws messaging)
-                    async.eachOfLimit(this.selected, 1, (dataset, id, next_dataset)=>{
-                        dataset.checked = false;
-                        this.remove_remain--;
-                        if(!dataset._canedit) { 
-                            this.$notify({type: "error", text: "You don't have permission to remove this dataset: "+dataset._id});
-                            next_dataset();
-                        }
-                        this.$http.delete('dataset/'+id).then(res=>{
-                            count++;
-                            next_dataset();
-                        }).catch(next_dataset);
-                    }, err=>{
-                        if(err) return this.$notify({type: "error", text: err.toString()})
-                        this.$notify({type: "success", text: "Removed "+count+" datasets"});
-                        this.clear_selected();
-                    });
-                    */
                 });
             }
         },
@@ -707,7 +668,6 @@ export default {
                 instance_id: instance._id,
                 dataset_ids,
             }).then(res=>{
-                //console.dir(res.data);
                 this.clear_selected();
                 this.$router.push("/project/"+project_id+"/process/"+instance._id);
             });
@@ -717,17 +677,34 @@ export default {
 </script>
 
 <style scoped>
-
-.header {
-margin-top: 45px;
-padding: 10px;
+.table-header {
+transition: 0.2s right, 0.2s bottom, 0.2s left;
+position: fixed;
+top: 100px;
+left: 200px;
+right: 0px;
+overflow-x: hidden;
+padding-left: 10px;
+padding-right: 16px;
 color: #999;
-overflow: hidden;
 }
 
-.header,
-.content {
-min-width: 450px;
+.table-column {
+text-transform: uppercase;
+}
+
+.list {
+transition: 0.2s right, 0.2s bottom, 0.2s left;
+position: fixed;
+top: 165px;
+bottom: 0px;
+left: 200px;
+right: 0px;
+overflow-y: scroll;
+font-size: 12px;
+padding-left: 10px;
+background-color: white;
+overflow-x: hidden;
 }
 
 h4 {
@@ -736,24 +713,9 @@ font-weight: bold;
 margin-bottom: 5px;
 }
 
-.header h4 {
-font-size: 16px;
-font-weight: bold;
-color: #999;
-}
 
-.content {
-transition: 0.2s right, 0.2s bottom, 0.2s left;
-top: 100px;
-overflow-x: hidden;
-font-size: 12px;
-padding-left: 10px;
-margin-top: 40px;
-background-color: white;
-}
-
-.rightopen .page-content,
-.rightopen .page-header {
+.rightopen .list,
+.rightopen .table-header {
 right: 250px;
 }
 
@@ -817,11 +779,11 @@ right: 250px;
 .stats {
     opacity: 0.5;
 }
-.list .subjects {
+.list  .subjects {
     border-top: 1px solid #eee;
     padding: 5px 0px;
 }
-.list .truncate {
+.list  .truncate {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: fade clip; 
@@ -856,7 +818,7 @@ right: 300px;
 }
 .filter {
 opacity: 0.7;
-width: 50px;
+width: 100px;
 cursor: pointer;
 }
 .filter:focus {
@@ -870,14 +832,6 @@ opacity: 1;
 background-color: #2693ff;
 color: white;
 width: 100%;
-}
-.list-header {
-opacity: 0.4;
-padding-top: 8px;
-text-transform: uppercase;
-}
-.row {
-flex-wrap:nowrap;
 }
 </style>
 

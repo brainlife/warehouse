@@ -1,16 +1,31 @@
 <template>
 <div v-if="selected">
-    <pageheader/>
     <sidemenu active="/projects"/>
-    <projectmenu :active="selected._id" :projects="projects" @change="change_project"></projectmenu>
- 
-    <div class="page-header with-menu">
+    <div class="page-header">
+        <div style="float: right;" v-if="isadmin()">
+            <div @click="edit()" class="button">
+                <icon name="edit" scale="1.25"/>
+            </div>
+            <!-- (let user click the removed check box under edit)
+            <div @click="remove()" v-if="isadmin() && !selected.removed" class="button">
+                <icon name="trash" scale="1.25"/>
+            </div>
+            -->
+        </div>
+        <h4 style="margin-right: 150px;">
+            <!--<icon name="shield-alt" scale="1.5"  style="position: relative; top: -2px; opacity: 0.8;"/>-->
+            <!--<projectavatar :project="selected" :width="50" :height="50" style="position: absolute; top: 0; left: 0;"/>-->
+            <projectaccess :access="selected.access"/> 
+            {{selected.name}}
+        </h4>
+    </div>
+    <div class="sub-header">
         <b-tabs class="brainlife-tab" v-model="tab">
             <!--without setting active="true" on active tab, b-tabs emits change event back to tab 0 at mount-->
             <b-tab v-for="(tabinfo, idx) in tabs" :key="tabinfo.id" :title="tabinfo.label" :active="tab == idx"/>
         </b-tabs>
     </div>
-    <div class="page-content with-menu">
+    <div class="page-content">
         <!--detail-->
         <div v-if="tabs[tab].id == 'detail'">
             <div style="padding: 20px; background-color: #f0f0f0;">
@@ -19,19 +34,6 @@
                         <projectavatar :project="selected"/>
                     </b-col>
                     <b-col cols="10" style="background-color: rgb(240, 240, 240);"><!--hide avatar when screen is narrow-->
-                        <div style="float: right;" v-if="isadmin()">
-                            <div @click="edit()" class="button">
-                                <icon name="edit" scale="1.25"/>
-                            </div>
-                            <div @click="remove()" v-if="isadmin() && !selected.removed" class="button">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
-                        </div>
-
-                        <h4 style="color: #666; margin-bottom: 10px;">
-                            <projectaccess :access="selected.access"/> 
-                            {{selected.name}}
-                        </h4>
                         <p style="opacity: 0.8;">{{selected.desc}}</p>
                         <p style="opacity: 0.5;">
                             <icon name="calendar"/> Created on {{new Date(selected.create_date).toLocaleDateString()}}
@@ -40,7 +42,7 @@
                 </b-row>
             </div>
 
-            <b-alert :show="selected.removed" style="border-radius: 0px" variant="warning">This project has been removed.</b-alert>
+            <b-alert :show="selected.removed" style="border-radius: 0px" variant="secondary">This project has been removed.</b-alert>
             <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px" variant="secondary">This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.</b-alert>
             <div class="margin20">
                 <b-row v-if="selected.agreements && selected.agreements.length > 0">
@@ -97,14 +99,14 @@
                     </b-col>
                 </b-row>
 
-
                 <b-row v-if="selected.readme">
                     <b-col cols="2"> 
                         <span class="form-header">Readme</span>
                     </b-col>
                     <b-col cols="10">
                         <p class="text-muted" v-if="!selected.readme">No readme</p>
-                        <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
+                        <vue-markdown v-if="selected.readme" :source="selected.readme" class="box"></vue-markdown>
+                        <br>
                     </b-col>
                 </b-row>
                 
@@ -183,7 +185,6 @@ import Router from 'vue-router'
 import VueMarkdown from 'vue-markdown'
 
 import sidemenu from '@/components/sidemenu'
-import contactlist from '@/components/contactlist'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
@@ -204,7 +205,7 @@ import datatypeselecterModal from '@/modals/datatypeselecter'
 
 export default {
     components: { 
-        sidemenu, contactlist, 
+        sidemenu, 
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
         projectmenu, pubcard, datasets,
@@ -421,15 +422,22 @@ export default {
 
 <style scoped>
 .page-header {
-border-bottom: 1px solid #ccc;
-overflow: hidden;
-background-color: white;
-z-index: 1;
+padding: 10px 20px;    
+}
+.page-header h4 {
+opacity: 0.8;
+}
+.sub-header {
+position: fixed;
+top: 50px;
+height: 45px;
+left: 200px;  
+right: 0px; 
+background-color: white; 
 }
 .page-content {
-margin-top: 45px;
+top: 95px;
 }
-
 .datasets_link {
 color:#44f;
 cursor:pointer;
@@ -446,5 +454,10 @@ opacity: 0.6;
 }
 .pub:hover {
 background-color: #eee;
+}
+.box {
+background-color: white;
+padding: 20px;
+box-shadow: 2px 2px 3px #eee;
 }
 </style>

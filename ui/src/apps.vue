@@ -1,12 +1,12 @@
 <template>
 <div>
-    <pageheader>
+    <sidemenu active="/apps"></sidemenu>
+    <div class="page-header">
         <div class="search-box">
-            <b-form-input v-model="query" type="text" placeholder="Search" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
+            <b-form-input v-model="query" type="text" placeholder="Filter Apps" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
         </div>
-    </pageheader>
-    <sidemenu active="/apps"></sidemenu>
+    </div>
     <div class="group-list" v-if="app_groups">
         <h4>Categories</h4>
 
@@ -325,15 +325,16 @@ z-index: 1;
 opacity: 0.8;
 }
 .page-content {
+top: 50px;
 margin-left: 240px;
 }
 .group-list {
 position: fixed;
 top: 50px;
 bottom: 0px;
-left: 50px;
+left: 200px;
 width: 240px;
-background-color: #444;
+background-color: #eee;
 }
 .group-list h4 {
 font-size: 18px;
@@ -348,62 +349,15 @@ text-transform: uppercase;
 padding: 5px 10px;
 margin-bottom: 0px;
 font-size: 80%;
-color: white;
-transition: background-color 0.5s;
 }
 .group-list .item:hover {
 cursor: pointer;
-background-color: black;
+background-color: white;
 }
 .group-list .item.active {
 background-color: #007bff;
-}
-.search-box {
-position: fixed;
-top: 6px;
-/*width: 550px;*/
-padding-left: 290px;
-width: 100%;
-max-width: 1320px;
-padding-right: 300px;
-}
-.search-box .input {
-font-size: 120%;
-background-color: #fff6;
-border: none;
-transition: background-color 0.5s, color 0.5s;
-padding-left: 45px;
-}
-
-.search-box .input:focus,
-.search-box .input:not([value=""]) {
-background-color: white;
-color: gray;
-}
-
-.search-box .search-icon {
-position: absolute;
-top: 7px;
-left: 300px;
-z-index: -1;
-transition: color 0.5s;
-}
-.search-box .input::placeholder {
-font-weight: bold;
-}
-
-.search-box .search-icon,
-.search-box .input::placeholder {
 color: white;
-opacity: 0.5;
 }
-
-.input:focus ~ .search-icon,
-.input:not([value=""]) ~ .search-icon {
-color: gray;
-z-index: 2;
-}
-
 .newapps {
 background-color: #2693ff;
 padding-bottom: 30px;

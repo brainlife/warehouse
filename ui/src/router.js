@@ -3,13 +3,13 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import dashboard from '@/dashboard'
-//import download from '@/download'
 import view from '@/view'
 import novnc from '@/novnc'
 import apps from '@/apps'
 import appsgraph from '@/appsgraph'
 import app from '@/app'
 import appedit from '@/appedit'
+import projects from '@/projects'
 import project from '@/project'
 import projectedit from '@/projectedit'
 import datatypes from '@/datatypes'
@@ -45,7 +45,8 @@ export default new Router({
         {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true},
         {path: '/novnc/:taskid/:type/:datatype64/:subdir?', component: novnc, props: true},
 
-        {path: '/project', component: project},
+        {path: '/projects', component: projects}, 
+        {path: '/project', component: projects}, //deprecated by /projects (redirect?)
         {path: '/project/:id', component: project},
         {path: '/project/:id/edit', component: projectedit},
         {path: '/project/:id/:tab?/:subid?', component: project},

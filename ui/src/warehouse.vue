@@ -99,16 +99,20 @@ margin: 10px;
 }
 
 .page-header {
-height: 45px;
+height: 50px;
+box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
+z-index: 1;
+background-color: white;
 }
 .page-header,
 .page-content {
 position: fixed;
-left: 50px;
+left: 200px;
 right: 0px;
-top: 50px;
+top: 0px;
 }
 .page-content {
+top: 50px;
 bottom: 0px;
 overflow: auto;
 }
@@ -116,30 +120,20 @@ overflow: auto;
 text-align: right; 
 position: fixed; 
 height: 60px;
-left: 50px;
+left: 200px;
 right: 0px;
 bottom: 0px; 
 padding: 10px 30px;
 background-color: rgba(100,100,100,0.4);
+z-index: 2;
 }
 
 .page-footer.with-menu,
 .page-header.with-menu,
 .page-content.with-menu {
-left: 330px;
+left: 480px;
 transition: 0.2s left;
 }
-
-/*
-@media screen and (max-width: 850px) {
-    .page-header.with-menu,
-    .page-footer.with-menu,
-    .page-content.with-menu {
-        left: 200px;
-    }
-}
-*/
-
 code.hljs {
 font-size: 85%;
 }
@@ -300,17 +294,7 @@ position: relative;
 float: right;
 margin-top: 5px;
 }
-/*
-.brainlife-modal-footer {
-background-color: white;
-padding: 10px 20px;
-height: 60px;
-position: fixed;
-bottom: 30px;
-box-shadow: inset 0 2px 2px rgba(0,0,0,0.1);
-width: 100%;
-}
-*/
+
 small {
 font-size: 85%;
 opacity: 0.7;
@@ -393,11 +377,6 @@ font-size: 1rem;
 pre {
 margin-bottom: 0px;
 }
-/*
-.hljs {
-background-color: inherit;
-}
-*/
 
 /*default vue-animate.css effect is too slow*/
 .fade-enter-active, .fadeIn,
@@ -413,11 +392,6 @@ font-size: 90%;
 margin-bottom: 2px;
 }
 
-.fa-icon {
-position: relative;
-top: -0.1em;
-}
-
 /*perfectscrollbar mod*/
 .ps .ps__rail-y:hover,
 .ps .ps__rail-y:focus,
@@ -428,11 +402,52 @@ opacity: 0.9;
 .ps__thumb-y {
 width: 11px;
 }
-
-/* this fixes some issue but creates another.. (can't select):
-.ace_layer,
-.ace_gutter {
-z-index: inherit;
+.search-box {
+position: fixed;
+top: 6px;
+/*width: 550px;*/
+padding-left: 10px;
+width: 100%;
+max-width: 1320px;
+padding-right: 300px;
 }
-*/
+.search-box .input {
+font-size: 120%;
+background-color: #fff6;
+border: none;
+transition: background-color 0.5s, color 0.5s;
+padding-left: 45px;
+}
+
+.search-box .input:focus,
+.search-box .input:not([value=""]) {
+background-color: white;
+color: gray;
+box-shadow: none;
+}
+
+.search-box .search-icon {
+position: absolute;
+top: 7px;
+left: 20px;
+z-index: -1;
+transition: color 0.5s;
+}
+.search-box .input::placeholder {
+font-weight: bold;
+}
+
+.search-box .search-icon,
+.search-box .input::placeholder {
+color: black;
+opacity: 0.3;
+}
+.search-box .input:focus::placeholder {
+opacity: 0;
+}
+.input:focus ~ .search-icon,
+.input:not([value=""]) ~ .search-icon {
+color: gray;
+z-index: 2;
+}
 </style>

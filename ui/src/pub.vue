@@ -1,6 +1,5 @@
 <template>
 <div v-if="pub">
-    <pageheader/>
     <sidemenu active="/pubs"></sidemenu>
     <div class="page-content">
         <div class="header">
@@ -71,7 +70,7 @@
                                 <span class="form-header">Detail</span>
                             </b-col>
                             <b-col>
-                                <vue-markdown :source="pub.readme" class="readme"></vue-markdown>
+                                <vue-markdown :source="pub.readme" class="box"></vue-markdown>
                                 <br>
                             </b-col>
                         </b-row>  
@@ -254,6 +253,7 @@
                                 </div>
                             </div>
                             <br clear="both">
+                            <br>
                         </div>
 
                         <!--citations-->
@@ -261,8 +261,10 @@
                             <p style="opacity: 0.8;">
                                 Please use the following citations to cite these Apps.
                             </p>
-                            <div v-for="rec in apps" :key="rec.app.doi">
-                                <citation :doi="rec.app.doi"/>
+                            <div class="box">
+                                <div v-for="rec in apps" :key="rec.app.doi">
+                                    <citation :doi="rec.app.doi"/>
+                                </div>
                             </div>
                             <br>
                         </div>
@@ -516,10 +518,13 @@ color: white;
 </style>
 
 <style scoped>
+.page-content {
+top: 0px;
+}
 .header {
 background-color: white;
 margin-bottom: 30px;
-padding: 30px 0px 0px 0px;
+padding: 15px 0px 0px 0px;
 border-bottom: 1px solid #eee;
 }
 .topic {
@@ -594,7 +599,7 @@ position: absolute;
 bottom: 40px;
 right: 5px;
 }
-.readme {
+.box {
 background-color: white;
 padding: 20px;
 box-shadow: 2px 2px 3px #eee;

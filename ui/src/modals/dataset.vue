@@ -143,7 +143,7 @@
                             <b-col>
                                 <p>
                                     <contact :id="dataset.user_id"/> 
-                                    <span class="text-muted">at {{new Date(dataset.create_date).toLocaleString()}}</span>
+                                    <span class="text-muted"> <icon name="calendar"/> {{new Date(dataset.create_date).toLocaleString()}}</span>
                                 </p>
                             </b-col>
                         </b-row>
@@ -357,13 +357,6 @@ export default {
                         node.margin = 10;
                         node.font = {color: "#fff"};
                     }
-                    /*
-                    if(node._archive) {
-                        node.color = "#999";
-                        node.font = {size: 10, color: "#fff"};
-                        //node.mass = 0;
-                    }
-                    */
                 });
                 
                 this.prov.edges.forEach(edge=>{
@@ -382,20 +375,9 @@ export default {
                     Vue.nextTick(()=>{
                         var gph = new vis.Network(this.$refs.vis, res.data, {
                             
-                          layout: {
-                            randomSeed: 0,
-                                                           /*
-                            hierarchical: {
-                                direction:"DU",
-                                improvedLayout:true,
-                         
-                                levelSeparation: 100,
-                                sortMethod: "hubsize",
-  
-
-                            }
-                                                          */
-                          },
+                            layout: {
+                                randomSeed: 0,
+                            },
                             
                             //physics:{barnesHut:{/*gravitationalConstant:-3500, springConstant: 0.01, avoidOverlap: 0.02*/}},
                             physics:{
@@ -410,7 +392,7 @@ export default {
                             },
 
                             nodes: {
-                                shadow: true, //TODO - shadow is too string..
+                                shadow: true, //TODO - shadow is for string..
                                 borderWidth: 0,
                             },
                         });
@@ -423,6 +405,7 @@ export default {
                                 }
                                 if(node.startsWith("task.")) {
                                     let fullnode = this.prov.nodes.find(n=>n.id == node);
+                                    console.dir(fullnode);
                                     if(fullnode._app) this.$router.push("/app/"+fullnode._app);
                                 }
                             });

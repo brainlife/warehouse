@@ -125,10 +125,10 @@ export default {
     position: fixed;
     top: 50px;
     bottom: 0px;
+    left: 200px;
     width: 280px;
     background-color: #444;
     color: white;
-    left: 50px;
     transition: 0.2s width;
 }
 .header {
