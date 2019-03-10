@@ -420,9 +420,9 @@ export default {
 <style scoped>
 .page-content {
 top: 0px;
+background-color: #eee;
 }
 .page-content h2 {
-background-color: white;
 color: #999;
 margin-bottom: 0px;
 padding: 10px 0px;

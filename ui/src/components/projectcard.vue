@@ -1,8 +1,9 @@
 <template>
 <div class="projectcard" @click="open">
-    <projectavatar class="avatar" :project="project" :width="45" :height="45"/>
+    <projectavatar class="avatar" :project="project" :width="60" :height="60"/>
+    <div class="private" v-if="project.access == 'private'"><icon name="lock"/></div>
     <p class="title">
-        <projectaccess :access="project.access"/> 
+        <!--<projectaccess :access="project.access"/>-->
         {{project.name}}
     </p>
     <p class="desc">{{project.desc}}</p>
@@ -15,28 +16,29 @@
     </p>
     -->
     <div class="instances">
-        <b-progress :max="instance_count" height="20px">
+        <b-progress :max="instance_count" height="4px" v-if="instance_count > 0"> 
             <b-progress-bar v-for="(count, state) in project.stats.instances" :key="state" 
-                :variant="getvariant(state)" :value="count" :label="count.toString()" :title="count+' '+state+' processes'"/>
+                :variant="getvariant(state)" :value="count" :label-dis="count.toString()" :title="count+' '+state+' processes'"/>
         </b-progress>
+        <div v-else style="height: 4px"></div>
     </div>
     <div class="status">
         <b-row>
+            <b-col md="3" title="create date">
+                <icon name="calendar" scale="0.8"/>&nbsp;<small>{{new Date(project.create_date).toLocaleDateString()}}</small>
+            </b-col>
             <b-col md="3">
-                <span v-if="project.stats" title="unique subjects">
+                <span title="unique subjects">
                     <icon name="users" scale="0.8"/>&nbsp;{{project.stats.subjects}}
                 </span>
             </b-col>
             <b-col md="3">
-                <span v-if="project.stats" title="datasets">
+                <span title="datasets">
                     <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets}}
                 </span>
             </b-col>
             <b-col md="3" title="active pipeline rules">
                 <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
-            </b-col>
-            <b-col md="3" title="create date">
-                <icon name="calendar" scale="0.8"/>&nbsp;<small>{{new Date(project.create_date).toLocaleDateString()}}</small>
             </b-col>
         </b-row>
     </div>
@@ -69,6 +71,18 @@ export default {
     props: {
         project: { type: Object },
     },
+
+    created() {
+        //delete this.project.stats;
+        if(!this.project.stats) this.project.stats = {
+            instances: {},    
+            rules: {
+                active: 0,
+                inactive: 0,
+            }
+        }
+    },
+
     methods: {
         open() {
             this.$router.push("/project/"+this.project._id);
@@ -87,7 +101,6 @@ export default {
     },
     computed: {
         instance_count: function() {
-            if(!this.project.stats) return 0;
             let sum = 0;
             for(let state in this.project.stats.instances) {
                 //if(state == "others") continue; //ignore this for now.
@@ -106,6 +119,7 @@ border: none;
 cursor: pointer;
 box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 background-color: white;
+position: relative;
 /*
 transition: box-shadow 0.5s;
 */
@@ -121,17 +135,29 @@ filter: none;
 */
 .avatar {
 float: right;
-margin: 5px;
 position: relative;
-border-radius: 50%;
-border: 3px solid white;
+background: red;
+margin-left: 10px;
+margin-bottom: 10px;
 }
+
+.private {
+width: 40px;
+height: 40px;
+right: 0px;
+clip-path: polygon(0 0, 100% 0, 100% 100%);
+background:#e0e0e0;
+position: absolute;
+padding-left: 23px;
+}
+
 .title {
 font-weight: bold;
 padding: 5px;
 margin-bottom: 0px;
 height: 30px;
 overflow: hidden;
+color: #777;
 }
 .desc {
 padding: 5px;
@@ -149,9 +175,9 @@ height: 50px;
 overflow: hidden;
 }
 .status {
-background-color: #e0e0e0;
+background-color: #f7f7f7;
 padding: 4px 10px;
-color: #999;
+color: #bbb;
 clear: both;
 /*
 border-top: 1px solid #ddd;

@@ -80,10 +80,10 @@
                     <span class="form-header">Agreements</span>
                 </b-col> 
                 <b-col cols="9">
-                    <p class="text-muted"><small>List of agreements that user must agree before accessing datasets stored on this project (in markdown format)</small></p>
+                    <p class="text-muted"><small>List of agreements that user must agree before accessing datasets stored on this project</small></p>
                     <b-row v-for="(agreement, idx) in project.agreements" :key="idx">
                         <b-col>
-                            <b-form-textarea :rows="4" :max-rows="20" v-model="agreement.agreement" placeholder="Enter agreemenet text to be presented to the user"/>
+                            <b-form-textarea :rows="4" :max-rows="20" v-model="agreement.agreement" placeholder="Enter agreemenet text(markdown) to be presented to the user"/>
                             <br>
                         </b-col>
                         <b-col cols="1">

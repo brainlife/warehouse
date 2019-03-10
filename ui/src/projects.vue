@@ -44,19 +44,28 @@ export default {
             other_projects: [],
 
             query: "",
-
+            reload_int: null,
             config: Vue.config,
         }
     },
 
     mounted() {
-
         this.query = sessionStorage.getItem("projects.query");
         this.load();
+        this.reload_int = setInterval(()=>{
+            this.load();
+        }, 1000*60*5); //reload every 5 minutes (projectinfo is loaded every 5 minutes)
+    },
+
+    destroyed() {
+        console.log("clearing reload_int");
+        clearInterval(this.reload_int);
     },
 
     methods: {
         load() {
+            console.log("loading projects");
+
             let ands = [
                 {removed: false},
                 /*
@@ -85,8 +94,6 @@ export default {
                     ]});
                 });
             }
-            this.my_projects = [];
-            this.other_projects = [];
 
             //load all projects that user has summary access (including removed ones so we can open it)
             this.$http.get('project', {params: {
@@ -95,6 +102,8 @@ export default {
                 select: '-readme',
                 sort: 'name',
             }}).then(res=>{
+                this.my_projects = [];
+                this.other_projects = [];
                 res.data.projects.forEach(p=>{
                     if(p.admins.includes(Vue.config.user.sub) || p.members.includes(Vue.config.user.sub) || p.guests.includes(Vue.config.user.sub)) {
                         this.my_projects.push(p);
@@ -127,6 +136,9 @@ export default {
 </script>
 
 <style scoped>
+.page-content {
+background-color: #eee;
+}
 .group-title {
 color: #999;
 text-transform: uppercase;

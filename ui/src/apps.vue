@@ -252,7 +252,7 @@ export default {
                     });
                     apps.sort((a,b)=>new Date(b.create_date) - new Date(a.create_date));
                     //this.sorted_tags.unshift('_new');
-                    this.app_groups._new = apps.slice(0, 3);
+                    this.app_groups._new = apps.slice(0, 6);
                 }
 
                 this.$nextTick(()=>{
@@ -327,6 +327,7 @@ opacity: 0.8;
 .page-content {
 top: 50px;
 margin-left: 240px;
+background-color: #eee;
 }
 .group-list {
 position: fixed;

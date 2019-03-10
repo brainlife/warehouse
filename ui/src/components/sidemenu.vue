@@ -196,7 +196,7 @@ export default {
     color: #888;
     font-size: 8pt;
     transition: width 0.3s;
-    z-index: 2; /*1 would conflict with some page headers*/
+    /*z-index: 2; 1 would conflict with some page headers*/
     overflow: hidden;
     box-shadow: inset -3px 0px 3px rgba(0,0,0,0.2);
 }

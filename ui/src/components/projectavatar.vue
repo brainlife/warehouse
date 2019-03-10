@@ -31,8 +31,8 @@ export default {
         
     props: {
         project: { type: Object },
-        width: { type: Number, default: 120 },
-        height: { type: Number, default: 120 },
+        width: { type: Number, default: 150 },
+        height: { type: Number, default: 150 },
     }
 }
 </script>

@@ -57,7 +57,9 @@ export default {
 .agreement {
 background-color: #f0f0f0;
 padding: 10px;
+padding-left: 15px;
 margin-bottom: 10px;
 color: #666;
+border-left:4px solid #aaa;
 }
 </style>

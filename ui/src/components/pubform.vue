@@ -238,7 +238,7 @@ export default {
 <style scoped>
 h4 {
 color: #999;
-border-bottom: 1px solid #ddd;
+border-bottom: 1px solid #eee;
 padding-bottom: 10px;
 margin-bottom: 15px;
 }

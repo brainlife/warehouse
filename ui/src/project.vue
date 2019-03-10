@@ -12,6 +12,9 @@
             </div>
             -->
         </div>
+        <div @click="back()" class="button button-page">
+            <icon name="angle-left" scale="1.25"/>
+        </div>
         <h4 style="margin-right: 150px;">
             <!--<icon name="shield-alt" scale="1.5"  style="position: relative; top: -2px; opacity: 0.8;"/>-->
             <!--<projectavatar :project="selected" :width="50" :height="50" style="position: absolute; top: 0; left: 0;"/>-->
@@ -28,124 +31,124 @@
     <div class="page-content">
         <!--detail-->
         <div v-if="tabs[tab].id == 'detail'">
-            <div style="padding: 20px; background-color: #f0f0f0;">
+            <div style="padding: 20px; background-color: #f6f6f6; box-shadow: 0 0 3px #aaa;">
                 <b-row>
-                    <b-col cols="2">
+                    <b-col cols="3">
                         <projectavatar :project="selected"/>
                     </b-col>
-                    <b-col cols="10" style="background-color: rgb(240, 240, 240);"><!--hide avatar when screen is narrow-->
-                        <p style="opacity: 0.8;">{{selected.desc}}</p>
-                        <p style="opacity: 0.5;">
-                            <icon name="calendar"/> Created on {{new Date(selected.create_date).toLocaleDateString()}}
-                        </p>
+                    <b-col cols="9"><!--hide avatar when screen is narrow-->
+                        <p style="opacity: 0.8;">{{selected.desc||'no description.'}}</p>
                     </b-col>
                 </b-row>
             </div>
 
             <b-alert :show="selected.removed" style="border-radius: 0px" variant="secondary">This project has been removed.</b-alert>
             <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px" variant="secondary">This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.</b-alert>
-            <div class="margin20">
-                <b-row v-if="selected.agreements && selected.agreements.length > 0">
-                    <b-col cols="2"> 
-                        <span class="form-header">Agreements</span>
-                    </b-col>
-                    <b-col cols="10">
-                        <p> <small class="text-muted">You must consent to the following agreement(s) before accessing datasets on this project.</small> </p>
-                        <agreements :agreements="selected.agreements"/>
-                    </b-col>
-                </b-row>
-
+            <div style="margin: 20px;">
                 <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Admins</span>
-                    </b-col>
-                    <b-col>
+                    <b-col cols="3">
                         <p>
-                            <small class="text-muted">Users who can update name / desc / project members, share processes, and create rules / publications.</small>
+                            <icon name="calendar"/>&nbsp;&nbsp;&nbsp;{{new Date(selected.create_date).toLocaleDateString()}}
                         </p>
-                        <p v-for="c in selected.admins" :key="c._id">
-                            <contact :id="c"/>
-                        </p>
-                        <br>
-                    </b-col>
-                </b-row>
-                <b-row>
-                    <b-col cols="2"> 
-                        <span class="form-header">Members</span>
-                    </b-col>
-                    <b-col>
                         <p>
-                            <small class="text-muted">Users who have read/write access to datasets on this project, share processes, and create rules / publications.</small>
+                            <icon name="users"/>&nbsp;&nbsp;&nbsp;{{selected.stats.subjects}} <span style="opacity: 0.5">subjects</span>
                         </p>
-                        <p v-for="c in selected.members" :key="c._id">
-                            <contact :id="c"/>
+                        <p>
+                            <icon name="cubes"/>&nbsp;&nbsp;&nbsp;{{selected.stats.datasets}} <span style="opacity: 0.5">datasets</span>
                         </p>
-                        <p class="text-muted" v-if="selected.members.length == 0"><small>(No Members)</small></p>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row v-if="selected.access == 'private'">
-                    <b-col cols="2"> 
-                        <span class="form-header">Guests</span>
-                    </b-col>
-                    <b-col>
-                        <p> <small class="text-muted">Users who have read access to datasets on this project.</small> </p>
-                        <p v-for="c in selected.guests" :key="c._id">
-                            <contact :id="c"/>
+                        <p>
+                            <icon name="robot"/>&nbsp;&nbsp;&nbsp;{{selected.stats.rules.active}} <span style="opacity: 0.5">pipeline rules</span>
                         </p>
-                        <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>(No Guests)</small></p>
-                        <br>
+                        <p>
+                            <b>Processes</b>
+                            <b-progress :max="20" height="18px"> 
+                                <b-progress-bar v-for="(count, state) in selected.stats.instances" :key="state" 
+                                :variant="getvariant(state)" :value="count" :label="count.toString()" :title="count+' '+state+' processes'"/>
+                            </b-progress>
+                        </p>
+                    </b-col>
+
+                    <b-col cols="9">
+                        <div v-if="selected.agreements && selected.agreements.length > 0">
+                            <span class="form-header">Agreements</span>
+                            <p> <small class="text-muted">You must consent to the following agreement(s) before accessing datasets on this project.</small> </p>
+                            <agreements :agreements="selected.agreements"/>
+                        </div>
+
+                        <div>
+                            <span class="form-header">Admins</span>
+                            <p>
+                                <small class="text-muted">Users who can update name / desc / project members, share processes, and create rules / publications.</small>
+                            </p>
+                            <p v-for="c in selected.admins" :key="c._id">
+                                <contact :id="c"/>
+                            </p>
+                            <br>
+                        </div>
+
+                        <div>
+                            <span class="form-header">Members</span>
+                            <p>
+                                <small class="text-muted">Users who have read/write access to datasets on this project, share processes, and create rules / publications.</small>
+                            </p>
+                            <p v-for="c in selected.members" :key="c._id">
+                                <contact :id="c"/>
+                            </p>
+                            <p class="text-muted" v-if="selected.members.length == 0"><small>(No Members)</small></p>
+                            <br>
+                        </div>
+
+                        <div v-if="selected.access == 'private'">
+                            <span class="form-header">Guests</span>
+                            <p> <small class="text-muted">Users who have read access to datasets on this project.</small> </p>
+                            <p v-for="c in selected.guests" :key="c._id">
+                                <contact :id="c"/>
+                            </p>
+                            <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>(No Guests)</small></p>
+                            <br>
+                        </div>
+
+                        <div v-if="selected.readme">
+                            <span class="form-header">Readme</span>
+                            <p class="text-muted" v-if="!selected.readme">No readme</p>
+                            <vue-markdown v-if="selected.readme" :source="selected.readme" class="box"></vue-markdown>
+                            <br>
+                        </div>
+                        
+                        <div v-if="selected.datatype_groups">
+                            <span class="form-header">Datasets</span>
+                            <p class="text-muted">This project currently contains the following datasets</p>
+                            <b-card-group deck v-for="(group, datatype_id) in selected.datatype_groups" :key="datatype_id" style="margin-bottom: 10px;">
+                                <b-card header-tag="header">
+                                    <div slot="header">
+                                        <datatypetag :datatype="datatypes[datatype_id]"/>
+                                        <b>{{group.count}}</b> datasets <small style="opacity: 0.8">({{group.size|filesize}})</small>
+                                        on <b>{{group.subjects.size}}</b> subjects
+                                    </div>
+
+                                    <!--<p style="opacity: 0.5; margin-bottom: 5px">Tags</p>-->
+                                    <b-list-group>
+                                        <b-list-group-item v-for="(stats, tags_s) in group.datatype_tags" :key="tags_s" >
+                                            <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)"/>
+                                            <b>{{stats.count}}</b> datasets                             
+                                        </b-list-group-item>
+                                    </b-list-group>
+
+                                    <p style="opacity: 0.3">
+                                        TODO.. show product.json info
+                                    </p>
+                    
+                                </b-card>
+                            </b-card-group>
+                        </div>
+
                     </b-col>
                 </b-row>
-
-                <b-row v-if="selected.readme">
-                    <b-col cols="2"> 
-                        <span class="form-header">Readme</span>
-                    </b-col>
-                    <b-col cols="10">
-                        <p class="text-muted" v-if="!selected.readme">No readme</p>
-                        <vue-markdown v-if="selected.readme" :source="selected.readme" class="box"></vue-markdown>
-                        <br>
-                    </b-col>
-                </b-row>
-                
-                <b-row v-if="selected.datatype_groups">
-                    <b-col cols="2"> 
-                        <span class="form-header">Datasets</span>
-                    </b-col>
-                    <b-col cols="10">
-                        <p class="text-muted">This project currently contains the following datasets</p>
-                        <b-card-group deck v-for="(group, datatype_id) in selected.datatype_groups" :key="datatype_id" style="margin-bottom: 10px;">
-                            <b-card header-tag="header">
-                                <div slot="header">
-                                    <datatypetag :datatype="datatypes[datatype_id]"/>
-                                    <b>{{group.count}}</b> datasets <small style="opacity: 0.8">({{group.size|filesize}})</small>
-                                    on <b>{{group.subjects.size}}</b> subjects
-                                </div>
-
-                                <!--<p style="opacity: 0.5; margin-bottom: 5px">Tags</p>-->
-                                <b-list-group>
-                                    <b-list-group-item v-for="(stats, tags_s) in group.datatype_tags" :key="tags_s" >
-                                        <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)"/>
-                                        <b>{{stats.count}}</b> datasets                             
-                                    </b-list-group-item>
-                                </b-list-group>
-
-                                <p style="opacity: 0.3">
-                                    TODO.. show product.json info
-                                </p>
-                
-                            </b-card>
-                        </b-card-group>
-                    </b-col>
-                </b-row>
-
                 <hr>
                 <b-row>
-                    <b-col cols="2">
+                    <b-col cols="3">
                     </b-col>
-                    <b-col>
+                    <b-col cols="9">
                         <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
                     </b-col>
                 </b-row>
@@ -319,6 +322,10 @@ export default {
             this.$router.push('/project/'+this.selected._id+'/edit');
         },
 
+        back() {
+            this.$router.push('/projects');
+        },
+
         isguest() {
             if(!this.selected) return false;
             if(~this.selected.guests.indexOf(Vue.config.user.sub)) return true;
@@ -416,6 +423,16 @@ export default {
                 this.$forceUpdate();
             }).catch(console.error);
         },
+        getvariant(state) {
+            switch(state) {
+            case "running": return "primary";
+            case "requested": return "info";
+            case "finished": return "success";
+            case "stopped": return "secondary";
+            case "failed": return "danger";
+            default: return "dark";
+            }
+        },
     },
 }
 </script>
@@ -459,5 +476,26 @@ background-color: #eee;
 background-color: white;
 padding: 20px;
 box-shadow: 2px 2px 3px #eee;
+}
+/*
+.button-page {
+background-color: #fff;
+float: left; 
+position: absolute; 
+left: -17px;
+box-shadow: -4px 0 3px rgba(0,0,0,0.4);
+border-radius: 45%;
+width: 35px;
+height: 30px;
+}
+.button-page:hover {
+background-color: #bbb;
+}
+*/
+.button-page {
+float: left;
+position: relative;
+left: -10px;
+z-index: 1;
 }
 </style>
