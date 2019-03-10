@@ -160,6 +160,5 @@ transition: box-shadow 0.5s;
 }
 .projectcard:hover {
 box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-z-index: 1;
 }
 </style>
