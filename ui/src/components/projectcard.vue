@@ -17,28 +17,31 @@
     -->
     <div class="instances">
         <b-progress :max="instance_count" height="4px" v-if="instance_count > 0"> 
-            <b-progress-bar v-for="(count, state) in project.stats.instances" :key="state" 
-                :variant="getvariant(state)" :value="count" :label-dis="count.toString()" :title="count+' '+state+' processes'"/>
+            <b-progress-bar v-for="(count, state) in project.stats.instances" :key="state"
+                :variant="getvariant(state)" 
+                :animated="isanimated(state)"
+                :value="count" 
+                :label-dis="count.toString()" 
+                :title="count+' '+state+' processes'"/>
         </b-progress>
         <div v-else style="height: 4px"></div>
     </div>
     <div class="status">
-        <b-row>
+        <b-row v-if="project.stats">
+            <!--
             <b-col md="3" title="create date">
                 <icon name="calendar" scale="0.8"/>&nbsp;<small>{{new Date(project.create_date).toLocaleDateString()}}</small>
             </b-col>
-            <b-col md="3">
-                <span title="unique subjects">
-                    <icon name="users" scale="0.8"/>&nbsp;{{project.stats.subjects}}
-                </span>
+            -->
+            <b-col md="4" title="unique subjects">
+                <icon name="users" scale="0.8"/>&nbsp;{{project.stats.subjects}}
             </b-col>
-            <b-col md="3">
-                <span title="datasets">
-                    <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets}}
-                </span>
+            <b-col md="4" title="datasets">
+                <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets}}
             </b-col>
-            <b-col md="3" title="active pipeline rules">
+            <b-col md="4" title="active pipeline rules">
                 <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
+                <span v-if="project.stats.rules.inactive > 0">/ {{project.stats.rules.inactive+project.stats.rules.active}}</span>
             </b-col>
         </b-row>
     </div>
@@ -97,10 +100,19 @@ export default {
             case "failed": return "danger";
             default: return "dark";
             }
+        },
+        isanimated(state) {
+            switch(state) {
+            case "running": 
+            case "requested":           
+                return true;
+            }
+            return false;
         }
     },
     computed: {
         instance_count: function() {
+            if(!this.project.stats) return 0;
             let sum = 0;
             for(let state in this.project.stats.instances) {
                 //if(state == "others") continue; //ignore this for now.
@@ -136,7 +148,6 @@ filter: none;
 .avatar {
 float: right;
 position: relative;
-background: red;
 margin-left: 10px;
 margin-bottom: 10px;
 }
@@ -157,7 +168,7 @@ padding: 5px;
 margin-bottom: 0px;
 height: 30px;
 overflow: hidden;
-color: #777;
+color: #666;
 }
 .desc {
 padding: 5px;
@@ -171,7 +182,7 @@ padding-bottom: 5px;
 padding: 5px;
 margin-bottom: 5px;
 font-size: 90%;
-height: 50px;
+height: 30px;
 overflow: hidden;
 }
 .status {

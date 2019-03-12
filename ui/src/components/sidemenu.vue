@@ -75,10 +75,12 @@
         </li>
         <b-popover ref="usersettings" target="user">
             <b-list-group>
+                <!--
                 <b-list-group-item href="#"  @click="goaccount">                
                     <icon name="cog" scale="1.3"/>&nbsp;
                     Settings
                 </b-list-group-item>
+                -->
                 <b-list-group-item href="#" @click="signout">
                     <icon name="sign-out-alt" scale="1.3"/>&nbsp;
                     Signout                 
@@ -205,10 +207,9 @@ export default {
     color: white;
 
     background-color: white;
-    box-shadow: 0px 1px 1px rgba(0,0,0,0.3);
+    box-shadow: 0px 1px 1px rgba(0,0,0,0.2);
     background-image: linear-gradient(90deg, #2693ff, #159957);
     text-align: center;
-    box-shadow: inset -3px 0px 3px rgba(0,0,0,0.2);
 }
 .header img {
    

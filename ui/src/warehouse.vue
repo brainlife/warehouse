@@ -100,7 +100,7 @@ margin: 10px;
 
 .page-header {
 height: 50px;
-box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
+box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
 z-index: 1;
 background-color: white;
 }

@@ -7,18 +7,31 @@
             <icon name="search" class="search-icon" scale="1.5"/>
         </div>
     </div>
-    <div class="page-content">
+    <div class="page-content" v-if="my_projects">
         <h4 class="group-title">My Projects</h4>
         <div style="padding: 10px;">
             <projectcard v-for="project in my_projects" :project="project" :key="project._id"/>
         </div>
+        <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
+            Please create your project by clicking on the button at the bottom left corner of this page.
+        </p>
         <br clear="both">
 
-        <h4 class="group-title">Other Projects</h4>
-        <div style="padding: 10px;">
-            <projectcard v-for="project in other_projects" :project="project" :key="project._id" class="projectcard"/>
+        <div v-if="other_projects && other_projects.length > 0">
+            <h4 class="group-title">Other Projects</h4>
+            <div style="padding: 10px;">
+                <projectcard v-for="project in other_projects" :project="project" :key="project._id" class="projectcard"/>
+            </div>
+            <br clear="both">
         </div>
-        <br clear="both">
+
+        <div v-if="openneuro_projects && openneuro_projects.length > 0">
+            <h4 class="group-title">OpenNeuro Datasets</h4>
+            <div style="padding: 10px;">
+                <projectcard v-for="project in openneuro_projects" :project="project" :key="project._id" class="projectcard"/>
+            </div>
+            <br clear="both">
+        </div>
     </div>
 
     <b-button class="button-fixed" @click="go('/project/_/edit')" title="New Project">
@@ -40,8 +53,9 @@ export default {
     components: { sidemenu, pubcard, projectcard },
     data () {
         return {   
-            my_projects: [],
-            other_projects: [],
+            my_projects: null,
+            other_projects: null,
+            openneuro_projects: null,
 
             query: "",
             reload_int: null,
@@ -67,7 +81,7 @@ export default {
             console.log("loading projects");
 
             let ands = [
-                {removed: false},
+                {removed: false, "openneuro": {$exists: false}},
                 /*
                 {$or: [
                     { removed: false },
@@ -96,6 +110,7 @@ export default {
             }
 
             //load all projects that user has summary access (including removed ones so we can open it)
+            this.my_projects = null;
             this.$http.get('project', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500,
@@ -116,6 +131,21 @@ export default {
                 console.error(res);
                 this.$notify({type: 'error', text: res.data.message});
             });
+
+            //load openneuro project separately..
+            this.openneuro_projects = null;
+            ands[0] = {removed: false, "openneuro": {$exists: true}};
+            this.$http.get('project', {params: {
+                find: JSON.stringify({$and: ands}),
+                limit: 100,
+                select: '-readme',
+                sort: 'name',
+            }}).then(res=>{
+                this.openneuro_projects = res.data.projects;
+            }).catch(res=>{
+                console.error(res);
+                this.$notify({type: 'error', text: res.data.message});               
+            })
         },
 
         change_query_debounce() {
@@ -151,7 +181,7 @@ z-index: 1;
 opacity: 0.8;
 }
 .projectcard {
-width: 425px;
+width: 375px;
 float: left;
 margin-right: 10px;
 margin-bottom: 10px;

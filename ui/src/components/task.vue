@@ -76,7 +76,7 @@
                     <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :auto-update="60"/></time>
                 </small>
             </h4>
-            <i>{{task.status_msg.trim()}}</i>
+            <i>{{task.status_msg.trim()||'empty status message'}}</i>
         </div>
 
         <div style="background-color: #fafafa; color: #555;">

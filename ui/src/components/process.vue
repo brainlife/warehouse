@@ -121,7 +121,7 @@
 
                                 <!--show dataset status if it's not stored-->
                                 <small style="font-size: 80%; color: #2693ff;" v-if="dataset.status == 'storing'">
-                                    <icon name="cog" :spin="true"/> {{dataset.status_msg||dataset.status}}
+                                    <icon name="cog" :spin="true"/> {{dataset.status_msg||dataset.status||'no status'}}
                                 </small> 
                                 <span v-else-if="dataset.status == 'stored'"></span>
                                 <span v-else><statustag :status="dataset.status"/></span>

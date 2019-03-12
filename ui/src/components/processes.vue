@@ -52,7 +52,6 @@
             <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
         </div>
 
-
         <div v-if="instances.length > 0" style="clear: both;">
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
@@ -62,9 +61,11 @@
 
                     <timeago :since="instance.update_date" :auto-update="10" class="date"/>
                     <timeago :since="instance.create_date" :auto-update="10" class="date"/>
+                    <!-- I don't think this adds value
                     <div v-if="instance == selected" style="float: right; text-align: right;">
                         <contact v-for="id in unique_user_ids(instance)" :key="id" :id="id" size="tiny"/>
                     </div>
+                    -->
                     <div v-if="instance == selected" class="process-action instance-info" style="float: right; position: relative; top: -3px; margin-right: 5px;">
                         <div @click.stop="editdesc(instance)" class="button">
                             <icon name="edit"/>
@@ -366,7 +367,7 @@ export default {
 
         remove(instance) {
             if(confirm("Do you really want to remove this process and all tasks?")) {
-                //unselect
+                //unselect if selected
                 if(this.selected == instance) this.toggle_instance(instance);
 
                 //remove for real
@@ -437,7 +438,6 @@ export default {
                         if(event.msg.status == "removed") {
                             //removed!
                             this.instances.splice(idx, 1);
-
                         } else {
                             //must be normal update
                             for(var k in event.msg) this.instances[idx][k] = event.msg[k];

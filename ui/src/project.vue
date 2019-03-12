@@ -2,8 +2,11 @@
 <div v-if="selected">
     <sidemenu active="/projects"/>
     <div class="page-header">
-        <div style="float: right;" v-if="isadmin()">
-            <div @click="edit()" class="button">
+        <div style="float: right;">
+            <div @click="openneuro()" v-if="selected.openneuro" class="button">
+                OpenNeuro
+            </div>
+            <div @click="edit()" v-if="isadmin()" class="button">
                 <icon name="edit" scale="1.25"/>
             </div>
             <!-- (let user click the removed check box under edit)
@@ -15,7 +18,7 @@
         <div @click="back()" class="button button-page">
             <icon name="angle-left" scale="1.25"/>
         </div>
-        <h4 style="margin-right: 150px;">
+        <h4>
             <!--<icon name="shield-alt" scale="1.5"  style="position: relative; top: -2px; opacity: 0.8;"/>-->
             <!--<projectavatar :project="selected" :width="50" :height="50" style="position: absolute; top: 0; left: 0;"/>-->
             <projectaccess :access="selected.access"/> 
@@ -50,22 +53,24 @@
                         <p>
                             <icon name="calendar"/>&nbsp;&nbsp;&nbsp;{{new Date(selected.create_date).toLocaleDateString()}}
                         </p>
-                        <p>
-                            <icon name="users"/>&nbsp;&nbsp;&nbsp;{{selected.stats.subjects}} <span style="opacity: 0.5">subjects</span>
-                        </p>
-                        <p>
-                            <icon name="cubes"/>&nbsp;&nbsp;&nbsp;{{selected.stats.datasets}} <span style="opacity: 0.5">datasets</span>
-                        </p>
-                        <p>
-                            <icon name="robot"/>&nbsp;&nbsp;&nbsp;{{selected.stats.rules.active}} <span style="opacity: 0.5">pipeline rules</span>
-                        </p>
-                        <p>
-                            <b>Processes</b>
-                            <b-progress :max="20" height="18px"> 
-                                <b-progress-bar v-for="(count, state) in selected.stats.instances" :key="state" 
-                                :variant="getvariant(state)" :value="count" :label="count.toString()" :title="count+' '+state+' processes'"/>
-                            </b-progress>
-                        </p>
+                        <div v-if="selected.stats">
+                            <p>
+                                <icon name="users"/>&nbsp;&nbsp;&nbsp;{{selected.stats.subjects}} <span style="opacity: 0.5">subjects</span>
+                            </p>
+                            <p>
+                                <icon name="cubes"/>&nbsp;&nbsp;&nbsp;{{selected.stats.datasets}} <span style="opacity: 0.5">datasets</span>
+                            </p>
+                            <p>
+                                <icon name="robot"/>&nbsp;&nbsp;&nbsp;{{selected.stats.rules.active}} <span style="opacity: 0.5">pipeline rules</span>
+                            </p>
+                            <p>
+                                <b>Processes</b>
+                                <b-progress :max="20" height="18px"> 
+                                    <b-progress-bar v-for="(count, state) in selected.stats.instances" :key="state" 
+                                    :variant="getvariant(state)" :value="count" :label="count.toString()" :title="count+' '+state+' processes'"/>
+                                </b-progress>
+                            </p>
+                        </div>
                     </b-col>
 
                     <b-col cols="9">
@@ -326,6 +331,10 @@ export default {
             this.$router.push('/projects');
         },
 
+        openneuro() {
+            document.location = "https://openneuro.org/datasets/"+this.selected.openneuro.dataset_id;
+        },
+
         isguest() {
             if(!this.selected) return false;
             if(~this.selected.guests.indexOf(Vue.config.user.sub)) return true;
@@ -443,6 +452,10 @@ padding: 10px 20px;
 }
 .page-header h4 {
 opacity: 0.8;
+margin-right: 150px; 
+overflow: hidden; 
+white-space: nowrap; 
+text-overflow: ellipsis;
 }
 .sub-header {
 position: fixed;
