@@ -4,6 +4,7 @@
     <div class="page-header">
         <div style="float: right;">
             <div @click="openneuro()" v-if="selected.openneuro" class="button">
+                <icon name="external-link-alt" scale="1.25"/>
                 OpenNeuro
             </div>
             <div @click="edit()" v-if="isadmin()" class="button">
@@ -55,15 +56,15 @@
                         </p>
                         <div v-if="selected.stats">
                             <p>
-                                <icon name="users"/>&nbsp;&nbsp;&nbsp;{{selected.stats.subjects}} <span style="opacity: 0.5">subjects</span>
+                                <icon name="users"/>&nbsp;&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} <span style="opacity: 0.5">subjects</span>
                             </p>
                             <p>
-                                <icon name="cubes"/>&nbsp;&nbsp;&nbsp;{{selected.stats.datasets}} <span style="opacity: 0.5">datasets</span>
+                                <icon name="cubes"/>&nbsp;&nbsp;&nbsp;{{selected.stats.datasets.count}} <span style="opacity: 0.5">datasets</span>
                             </p>
                             <p>
                                 <icon name="robot"/>&nbsp;&nbsp;&nbsp;{{selected.stats.rules.active}} <span style="opacity: 0.5">pipeline rules</span>
                             </p>
-                            <p>
+                            <p v-if="!selected.openneuro">
                                 <b>Processes</b>
                                 <b-progress :max="20" height="18px"> 
                                     <b-progress-bar v-for="(count, state) in selected.stats.instances" :key="state" 
@@ -451,11 +452,7 @@ export default {
 padding: 10px 20px;    
 }
 .page-header h4 {
-opacity: 0.8;
 margin-right: 150px; 
-overflow: hidden; 
-white-space: nowrap; 
-text-overflow: ellipsis;
 }
 .sub-header {
 position: fixed;

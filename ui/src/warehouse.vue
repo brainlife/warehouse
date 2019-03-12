@@ -104,6 +104,14 @@ box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
 z-index: 1;
 background-color: white;
 }
+
+.page-header h4 {
+opacity: 0.8;
+overflow: hidden; 
+white-space: nowrap; 
+text-overflow: ellipsis;
+}
+
 .page-header,
 .page-content {
 position: fixed;

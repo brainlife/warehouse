@@ -6,6 +6,9 @@
         <!--<projectaccess :access="project.access"/>-->
         {{project.name}}
     </p>
+    <p class="datatypes">
+        <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="font-size: 90%; margin-right: 3px"/>
+    </p>
     <p class="desc">{{project.desc}}</p>
     <p class="contacts">
         <contact v-for="c in project.members" :key="c._id" :id="c" size="tiny"/>
@@ -16,7 +19,7 @@
     </p>
     -->
     <div class="instances">
-        <b-progress :max="instance_count" height="4px" v-if="instance_count > 0"> 
+        <b-progress :max="instance_count" height="4px" v-if="instance_count > 0 && !project.openneuro"> 
             <b-progress-bar v-for="(count, state) in project.stats.instances" :key="state"
                 :variant="getvariant(state)" 
                 :animated="isanimated(state)"
@@ -34,10 +37,10 @@
             </b-col>
             -->
             <b-col md="4" title="unique subjects">
-                <icon name="users" scale="0.8"/>&nbsp;{{project.stats.subjects}}
+                <icon name="users" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
             </b-col>
             <b-col md="4" title="datasets">
-                <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets}}
+                <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
             </b-col>
             <b-col md="4" title="active pipeline rules">
                 <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
@@ -52,11 +55,12 @@
 
 import projectaccess from '@/components/projectaccess'
 import projectavatar from '@/components/projectavatar'
+import datatypetag from '@/components/datatypetag'
 import contact from '@/components/contact'
 
 export default {
     components: {
-        projectavatar, contact, projectaccess,
+        projectavatar, contact, projectaccess, datatypetag,
     },
     watch: {
         /*
@@ -136,6 +140,14 @@ position: relative;
 transition: box-shadow 0.5s;
 */
 }
+.datatypes {
+height: 25px;
+padding: 0px 5px;
+margin-bottom: 0px;
+overflow: hidden; 
+white-space: nowrap; 
+text-overflow: ellipsis;
+}
 /*
 .projectcard img {
 filter: grayscale(100%);
@@ -169,6 +181,8 @@ margin-bottom: 0px;
 height: 30px;
 overflow: hidden;
 color: #666;
+white-space: nowrap; 
+text-overflow: ellipsis;
 }
 .desc {
 padding: 5px;
