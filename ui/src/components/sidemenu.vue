@@ -4,6 +4,7 @@
         <!--<icon name="home" scale="1.75" style="position: relative; top: -8px; margin-right: 5px;"/>-->
         <span class="title" @click="gohome">brainlife</span>
     </div>
+    <br>
     <ul class="items">
         <!-- currently being developped -->
         <li v-if="config.debug" 
@@ -11,7 +12,7 @@
             :class="{active: active == '/dashboard'}">
             <icon name="home" scale="1.3"/> <h4>Dashboard</h4>
         </li>
-        <li v-if="config.debug" class="divider"></li>
+        <!--<li v-if="config.debug" class="divider"></li>-->
 
         <!-- for everyone -->
         <li @click="go('/apps')"

@@ -251,7 +251,7 @@ export default {
     },
 
     mounted() {
-        var area = document.getElementById("scrolled-area").parentNode;
+        var area = document.getElementById("scrolled-area");
         area.addEventListener("scroll", this.page_scrolled);
 
         let subid = this.$route.params.subid;
@@ -358,7 +358,7 @@ export default {
         },
         
 		page_scrolled() {
-            var e = document.getElementById("scrolled-area").parentNode;
+            var e = document.getElementById("scrolled-area");
             var scroll_top = e.scrollTop;
             var client_height = e.clientHeight;
             var page_margin_bottom = e.scrollHeight - scroll_top - client_height;
@@ -474,7 +474,7 @@ export default {
 
                 //remember the page height
                 this.$nextTick(()=>{
-                    var h = document.getElementById("scrolled-area").parentNode.scrollHeight;
+                    var h = document.getElementById("scrolled-area").scrollHeight;
                     var prev = 0;
                     if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
                     this.page_info.push({top: prev, bottom: h, height: h-prev, visible: true});

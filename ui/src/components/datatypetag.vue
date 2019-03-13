@@ -13,6 +13,9 @@
 
 import Vue from 'vue'
 
+let cache_datatypes_loading = null;
+let cache_datatypes = null;
+
 export default {
     props: {
         datatype: [String, Object],
@@ -40,8 +43,26 @@ export default {
     computed: {
     },
 
-    mounted() {
-        this.init();
+    created() {
+        if(cache_datatypes) return this.init(); //cache already loaded.
+        if(cache_datatypes_loading) {
+            //someone else is loading.. wait for it
+            cache_datatypes_loading.then(()=>{
+                this.init();
+            });
+        } else {
+            //loading cache for the first time
+            cache_datatypes_loading = this.$http.get("datatype", {params: {
+                find: JSON.stringify(),
+                limit: 500,
+            }}).then(res=>{
+                cache_datatypes = {};
+                res.data.datatypes.forEach(datatype=>{
+                    cache_datatypes[datatype._id] = datatype;
+                });
+                this.init();
+            });
+        }
     },
 
     methods: {
@@ -51,18 +72,10 @@ export default {
             if(!this.datatype) return;
 
             //user could pass datatype as string(id) or an object
-            //TODO - I should cache datatype results?
             if(typeof this.datatype != "string") {
                 this.post_init(this.datatype);
             } else {
-                //if passed as string (id), dereference it from db
-                this.$http.get("datatype", {params: {
-                    find: JSON.stringify({
-                        _id: this.datatype,
-                    })
-                }}).then(res=>{
-                    this.post_init(res.data.datatypes[0]);
-                });
+                this.post_init(cache_datatypes[this.datatype]);
             }
         },
 

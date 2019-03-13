@@ -42,6 +42,9 @@
                     </b-col>
                     <b-col cols="9"><!--hide avatar when screen is narrow-->
                         <p style="opacity: 0.8;">{{selected.desc||'no description.'}}</p>
+                        <p class="datatypes">
+                            <datatypetag v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="margin-right: 3px"/>
+                        </p>
                     </b-col>
                 </b-row>
             </div>
@@ -54,7 +57,7 @@
                         <p>
                             <icon name="calendar"/>&nbsp;&nbsp;&nbsp;{{new Date(selected.create_date).toLocaleDateString()}}
                         </p>
-                        <div v-if="selected.stats">
+                        <div v-if="selected.stats && selected.stats.rules && selected.stats.datasets">
                             <p>
                                 <icon name="users"/>&nbsp;&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} <span style="opacity: 0.5">subjects</span>
                             </p>
@@ -486,6 +489,8 @@ background-color: #eee;
 background-color: white;
 padding: 20px;
 box-shadow: 2px 2px 3px #eee;
+margin-left: -20px;
+margin-top: 10px;
 }
 /*
 .button-page {

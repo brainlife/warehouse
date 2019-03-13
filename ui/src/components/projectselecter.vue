@@ -130,7 +130,9 @@ export default {
                 this.options = [];
                 if(!this.required) this.options.push({value: null, label: this.placeholder||''});
                 res.data.projects.forEach(project=>{
-                    this.options.push({value: project._id, label: project.name});
+                    let label = project.name;
+                    //if(project.openneuro) label = "OpenNeuro / "+label;
+                    this.options.push({value: project._id, label});
                 });
 
                 //first, select project that client has requested

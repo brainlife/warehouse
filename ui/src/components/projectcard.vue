@@ -30,21 +30,24 @@
         <div v-else style="height: 4px"></div>
     </div>
     <div class="status">
-        <b-row v-if="project.stats">
+        <b-row v-if="project.stats && project.stats.datasets && project.stats.rules">
             <!--
             <b-col md="3" title="create date">
                 <icon name="calendar" scale="0.8"/>&nbsp;<small>{{new Date(project.create_date).toLocaleDateString()}}</small>
             </b-col>
             -->
-            <b-col md="4" title="unique subjects">
+            <b-col md="3" title="unique subjects">
                 <icon name="users" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
             </b-col>
-            <b-col md="4" title="datasets">
-                <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
-            </b-col>
-            <b-col md="4" title="active pipeline rules">
+            <b-col md="3" title="active pipeline rules">
                 <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
                 <span v-if="project.stats.rules.inactive > 0">/ {{project.stats.rules.inactive+project.stats.rules.active}}</span>
+            </b-col>
+            <b-col md="3" title="number of datasets">
+                <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
+            </b-col>
+            <b-col md="3" title="total dataset size">
+                <span v-if="project.stats.datasets.size"><icon name="disk" scale="0.8"/>&nbsp;{{project.stats.datasets.size | filesize}}</span>
             </b-col>
         </b-row>
     </div>
