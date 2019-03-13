@@ -674,12 +674,14 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                                     project: d.storage_config.project,
                                     outdir: d._id,
                                     storage: d.storage_config.storage,
+                                    storage_config: d.storage_config.storage_config,
                                 }
                             } else {
                                 return {
                                     id: d.id,
                                     project: d.project,
                                     storage: d.storage,
+                                    storage_config: d.storage_config,
                                 }
                             }
                         }),
@@ -765,7 +767,7 @@ function stream_dataset(dataset, res, next) {
     system.stat(dataset, (err, stats)=>{
         clearTimeout(stat_timer);
         if(err) return next(err);
-        logger.debug("obtaining download stream", dataset.storage);
+        logger.debug("obtaining download stream %s", dataset.storage);
         system.download(dataset, (err, readstream, filename)=>{
             if(err) return next(err);
             //without attachment, the file will replace the current page (why?)
@@ -787,9 +789,14 @@ function stream_dataset(dataset, res, next) {
             //or do we need to switch to use Promise like upload?
             //readstream.on('end', ()=>{
 
+            /* not getting called?
+            res.on('error', err=>{
+                logger.error(err);
+            });
+            */
+
             res.on('finish', ()=>{
-                logger.debug("meter count", m.bytes);
-                logger.debug("dataset.size", dataset.size);
+                logger.debug("done piping.. meter count:%s dataset.size %d", m.bytes, dataset.size);
                 if(!dataset.size) {
                     /* this is not good idea.. as .tar file size might change if versionn of tar get updates
                     logger.debug("updating dataset size based on m.bytes");
@@ -798,10 +805,11 @@ function stream_dataset(dataset, res, next) {
                 } else { 
                     if(dataset.size != m.bytes) logger.warn("dataset.size doesn't match bytes transferred..");
                 }
+                if(m.bytes == 0) logger.warn("meter count is 0... something went wrong?");
 
                 if(!dataset.download_count) dataset.download_count = 1;
                 else dataset.download_count++;
-                logger.debug("download_count", dataset.download_count);
+                logger.debug("download_count %d", dataset.download_count);
 
                 dataset.save();
             });
@@ -923,16 +931,19 @@ router.get('/download/:id', jwt({
 }), function(req, res, next) {
     var id = req.params.id;
 
+    logger.debug("download requested for %s", id);
     if(!req.user) logger.warn("no auth request");
     db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
         if(err) return next(err);
-        if(!dataset) return res.status(404).json({message: "couldn't find the dataset specified"});
+        if(!dataset) {
+            res.status(404).json({message: "couldn't find the dataset specified"});
+            return;
+        }
         if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
         
         //app-stage can access any dataset
         if(req.user && req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('stage')) {
-            stream_dataset(dataset, res, next);
-            return next();
+            return stream_dataset(dataset, res, next);
         }
 
         //access control (I could do this in parallel?)
@@ -995,6 +1006,7 @@ router.get('/download/:id', jwt({
     });
 });
 
+//TODO - isn't this deprecated by app-stage/token based access control?
 //TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
 //doing so increases the chance of user misusing the token, but unless I use HTML5 File API
 //there isn't a good way to let user download files..
@@ -1189,8 +1201,11 @@ ${p.desc}`;
                     if(dataset.prov && dataset.prov.task && !isimporttask(dataset.prov.task)) {
                         //use service name as the pipeline name
                         pipeline = dataset.prov.task.service.replace(/\//g, '.');
+
+                        //if different runs are processed under different version, we will end up having different directory name for the same app
+                        //since branch_name is part of .brainlife.json, let's drop this for now.
                         //add branch at the end of pipeline name
-                        if(dataset.prov.task.service_branch) pipeline += "."+dataset.prov.task.service_branch;
+                        //if(dataset.prov.task.service_branch) pipeline += "."+dataset.prov.task.service_branch;
                     }
 
                     bidspath += "/"+pipeline;

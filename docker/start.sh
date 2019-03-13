@@ -6,6 +6,6 @@ pm2 start /app/api/warehouse.js
 pm2 start /app/bin/rule_handler.js
 pm2 start /app/bin/event_handler.js
 pm2 start /app/bin/appinfo.js
-pm2 start /app/bin/projectinfo.js
+#pm2 start /app/bin/projectinfo.js
 
 pm2 logs

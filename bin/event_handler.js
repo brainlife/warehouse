@@ -49,8 +49,8 @@ function subscribe() {
         //ensure queues/binds and subscribe to instance events
         next=>{
             logger.debug("subscribing to instance event");
+            //let's create permanent queue so that we don't miss event if event handler goes down
             acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
-                logger.debug("binding wf.instance > warehouse.instance");
                 instance_q.bind('wf.instance', '#');
                 instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
                     handle_instance(instance, err=>{
@@ -69,8 +69,8 @@ function subscribe() {
         //ensure queues/binds and subscribe to task events
         next=>{
             logger.debug("subscribing to task event");
+            //let's create permanent queue so that we don't miss event if event handler goes down
             acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
-                logger.debug("binding wf.task > warehouse.task");
                 task_q.bind('wf.task', '#');
                 task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
                     handle_task(task, err=>{
@@ -80,6 +80,25 @@ function subscribe() {
                             //TODO - maybe I should report the failed event to failed queue?
                         }
                         task_q.shift();
+                    });
+                });
+                next();
+            });
+        },
+
+        //dataset create events
+        next=>{
+            logger.debug("subscribing to dataset event");
+            //let's create permanent queue so that we don't miss event if event handler goes down
+            acon.queue('warehouse.dataset', {durable: true, autoDelete: false}, dataset_q=>{
+                dataset_q.bind('warehouse.dataset', '#');
+                dataset_q.subscribe({ack: true}, (dataset, head, dinfo, ack)=>{
+                    handle_dataset(dataset, err=>{
+                        if(err) {
+                            logger.error(err)
+                            //TODO - maybe I should report the failed event to failed queue?
+                        }
+                        dataset_q.shift();
                     });
                 });
                 next();
@@ -107,8 +126,6 @@ function emit_counts() {
         out += config.metrics.prefix+"."+key+" "+counts[key]+" "+new Date().getTime()/1000+"\n";
     }
     fs.writeFileSync(config.metrics.path, out);
-    //logger.debug("----------- "+config.metrics.path+" --------------");
-    //logger.debug(out);
 
     counts = {}; //reset all counters
 }
@@ -220,6 +237,44 @@ function handle_task(task, cb) {
     ], cb);
 }
 
+let debouncer = {};
+
+//run a given action as frequently as the specified delay
+function debounce(key, action, delay) {
+    let now = new Date().getTime();
+    let d = debouncer[key];
+    if(!d) {
+        d = {
+            lastrun: 0,
+            timeout: null,
+        };
+        debouncer[key] = d;
+    }
+
+    //logger.debug("debounc check %d %d", d.lastrun, now);
+    if(d.lastrun+delay < now) {
+        //hasn't run (for a while).. run it immediately
+        d.lastrun = now;
+        //logger.debug("hasn't run (a while).. running immediately");
+        action();
+    } else {
+        //debounce
+        //logger.debug("debouncing");
+        if(d.timeout) {
+            logger.debug("already scheduled.. skipping");
+            //clearTimeout(d.timeout);
+        } else {
+            let need_delay = d.lastrun + delay - now;
+            //logger.debug("recently ran.. delaying");
+            d.timeout = setTimeout(action, need_delay);
+            d.lastrun = now + need_delay;
+            setTimeout(()=>{
+                d.timeout = null;
+            }, need_delay);
+        }
+    }
+}
+
 function handle_instance(instance, cb) {
     logger.debug("%s instance:%s %s", (instance._status_changed?"+++":"---"), instance._id, instance.status);
 
@@ -231,9 +286,23 @@ function handle_instance(instance, cb) {
         inc_count("instance.user."+instance.user_id+"."+instance.status); 
         //number of instance events for each project
         if(instance.group_id) inc_count("instance.group."+instance.group_id+"."+instance.status); 
-    }
 
-    console.log(JSON.stringify(instance, null, 4));
+        debounce("update_project_stats."+instance.group_id, ()=>{
+            common.update_project_stats(instance.group_id);
+        }, 1000*2); 
+    }
+    //console.log(JSON.stringify(instance, null, 4));
+
+    cb();
+}
+
+function handle_dataset(dataset, cb) {
+    logger.debug("dataset:%s", dataset._id);
+    //logger.debug(JSON.stringify(dataset, null, 4));
+
+    debounce("update_dataset_stats."+dataset.project, ()=>{
+        common.update_dataset_stats(dataset.project);
+    }, 1000*30);  //counting datasets are bit more expensive.. let's debounce longer
 
     cb();
 }
