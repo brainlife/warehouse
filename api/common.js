@@ -14,8 +14,10 @@ const amqp = require("amqp");
 const config = require('./config');
 const logger = winston.createLogger(config.logger.winston);
 const db = require('./models');
+const mongoose = require('mongoose');
 
 //connect to redis - used to store various shared caches
+//TODO - user needs to call redis.quit();
 exports.redis = redis.createClient(config.redis.port, config.redis.server);
 exports.redis.on('error', err=>{throw err});
 
@@ -490,7 +492,6 @@ exports.doi_put_url = function(doi, url, cb) {
 //TODO - update cache from amqp events
 let cached_contacts = {};
 exports.cache_contact = function(cb) {
-    logger.info("loading all profiles from auth service");
     request({
         url: config.auth.api+"/profile", json: true,
         qs: {
@@ -637,5 +638,93 @@ exports.wait_for_event = function(exchange, key, cb) {
         });
     });
 }
+
+exports.update_dataset_stats = function(project_id, cb) {
+    logger.debug("updating dataset stats %s", project_id);
+
+    db.Datasets.aggregate()
+    .match({ removed: false, project: mongoose.Types.ObjectId(project_id), })
+    .group({_id: {
+        "subject": "$meta.subject", 
+        "datatype": "$datatype", 
+    }, count: {$sum: 1}, size: {$sum: "$size"} })
+    .sort({"_id.subject":1})
+    .exec((err, inventory)=>{
+        if(err) return next(err);
+        //console.dir(JSON.stringify(inventory, null, 4))
+        let subjects = new Set();
+        let datatypes = new Set();
+        let stats = {
+            subject_count: 0,
+            count: 0, 
+            size: 0,
+        }
+        inventory.forEach(item=>{
+            subjects.add(item._id.subject);
+            //some project contains dataset without datatype??
+            if(item._id.datatype) datatypes.add(item._id.datatype.toString());
+            stats.count += item.count;
+            stats.size += item.size;
+        });
+        stats.subject_count = subjects.size;
+        stats.datatypes = [...datatypes];
+        db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, (err, doc)=>{
+            if(cb) cb(err, doc);
+            console.dir(err);
+        });
+    });
+}
+
+exports.update_project_stats = function(group_id, cb) {
+    logger.debug("getting instance status counts from amretti for group_id:%s", group_id);
+    request.get({
+        url: config.amaretti.api+"/instance/count", json: true,
+        headers: { authorization: "Bearer "+config.warehouse.jwt },  //config.auth.jwt is deprecated
+        qs: {
+            find: JSON.stringify({status: {$ne: "removed"}, group_id}),
+        }
+    }, (err, res, counts)=>{
+        if(res.statusCode != 200) return next(counts);
+        stats = {};
+        counts.forEach(count=>{
+            switch(count._id) {
+            case "requested": 
+            case "finished": 
+            case "running": 
+            case "stopped": 
+            case "failed": 
+                stats[count._id] = count.count;
+                break;
+            default:
+                //stats.instances["others"] += count.count;
+            }
+        });
+        //console.dir(stats);
+        db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, (err, doc)=>{
+            if(cb) cb(err, doc);
+        });
+    });
+}
+
+exports.update_rule_stats = function(project_id, cb) {
+    logger.debug("updating rule stats for project_id:%s", project_id);
+    db.Rules.aggregate()
+    .match({removed: false, project: project_id})
+    .group({_id: { "active": "$active" }, count: {$sum: 1}})
+    .exec((err, ret)=>{
+        let rules = {
+            active: 0,
+            inactive: 0,
+        }
+        ret.forEach(rec=>{
+            if(rec._id.active) rules.active = rec.count;
+            else rules.inactive = rec.count;
+        });
+        db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.rules": rules}}, (err, doc)=>{
+            if(cb) cb(err, doc);
+        });
+    });
+}
+
 
 

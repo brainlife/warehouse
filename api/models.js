@@ -103,7 +103,7 @@ var projectSchema = mongoose.Schema({
     //list of agreemenets that user must agree before accessing datasets
     agreements: [ new mongoose.Schema({agreement: String}) ], 
     
-    //basic stats for this app (aggregated by bin/appinfo.js - most info comes from amaretti/service/info)
+    //basic stats for this app (aggregated by bin/projectinfo.js)
     stats: {
         //count of instances for each status
         instances: {
@@ -115,14 +115,28 @@ var projectSchema = mongoose.Schema({
             others: Number,  //probably empty, or null
         },
 
+        /*
         datasets: Number, //total number of datasets
         subjects: Number, //total number of subjects
+        */
+        datasets: {
+            //subjects: [String],
+            subject_count: Number,
+            datatypes: [{type: mongoose.Schema.Types.ObjectId, ref: "Datatypes"}],
+            count: Number,
+            size: Number,
+        },
 
         //count of pipeline rules
         rules: {
             active: Number, 
             inactive: Number, 
         },
+    },
+
+    //for openneuro proxy project (not set if it's not openneuro)
+    openneuro: {
+        dataset_id: String,
     },
     
     create_date: { type: Date, default: Date.now },
