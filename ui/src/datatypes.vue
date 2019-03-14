@@ -7,7 +7,7 @@
                 <b-container>
                     <h2>Datatypes</h2>
                     <p style="opacity: 0.7;">
-                        Datatypes allows Apps to exchange data. Currently only the administrator can register new datatypes.
+                        Datatypes allow Apps to exchange data. Please contact the Brainlife administrator to register new datatypes.
                     </p>
                 </b-container>
             </div>

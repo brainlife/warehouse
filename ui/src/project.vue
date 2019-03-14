@@ -53,22 +53,26 @@
             <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px" variant="secondary">This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.</b-alert>
             <div style="margin: 20px;">
                 <b-row>
-                    <b-col cols="3">
-                        <p>
-                            <icon name="calendar"/>&nbsp;&nbsp;&nbsp;{{new Date(selected.create_date).toLocaleDateString()}}
+                    <b-col cols="3" class="sideinfo">
+                        <p class="info">
+                            <icon name="calendar"/>
+                            {{new Date(selected.create_date).toLocaleDateString()}}
                         </p>
                         <div v-if="selected.stats && selected.stats.rules && selected.stats.datasets">
-                            <p>
-                                <icon name="users"/>&nbsp;&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} <span style="opacity: 0.5">subjects</span>
+                            <p class="info">
+                                <icon name="users"/>
+                                {{selected.stats.datasets.subject_count}} <span style="opacity: 0.5">subjects</span>
+                            </p>                           
+                            <p class="info">
+                                <icon name="cubes"/>     
+                                {{selected.stats.datasets.count}} <span style="opacity: 0.5">datasets</span>
                             </p>
-                            <p>
-                                <icon name="cubes"/>&nbsp;&nbsp;&nbsp;{{selected.stats.datasets.count}} <span style="opacity: 0.5">datasets</span>
+                            <p class="info">
+                                <icon name="robot"/>
+                                {{selected.stats.rules.active}} <span style="opacity: 0.5">pipeline rules</span>
                             </p>
-                            <p>
-                                <icon name="robot"/>&nbsp;&nbsp;&nbsp;{{selected.stats.rules.active}} <span style="opacity: 0.5">pipeline rules</span>
-                            </p>
-                            <p v-if="!selected.openneuro">
-                                <b>Processes</b>
+                            <p v-if="!selected.openneuro" class="info">
+                                <icon name="paper-plane"/>
                                 <b-progress :max="20" height="18px"> 
                                     <b-progress-bar v-for="(count, state) in selected.stats.instances" :key="state" 
                                     :variant="getvariant(state)" :value="count" :label="count.toString()" :title="count+' '+state+' processes'"/>
@@ -512,5 +516,15 @@ float: left;
 position: relative;
 left: -10px;
 z-index: 1;
+}
+
+p.info {
+position: relative;
+margin-left: 25px;
+}
+p.info .fa-icon {
+position: absolute;
+left: -25px;
+top: 2px;
 }
 </style>

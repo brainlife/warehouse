@@ -1,13 +1,8 @@
 <template>
 <p v-if="!instances" class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>
 <div v-else class="processes">
-        <!-- redundant with All(count)
-        <div class="process-count">
-            <b>{{instances.length}}</b> Processes
-        </div>
-        -->
 
-    <div class="info" v-if="instances.length > 1">
+    <div v-if="instances.length > 0" class="info">
         <!--header-->
         <div style="float: right;  margin-right: 15px; opacity: 0.8; position: relative; top: 5px;">
             <div class="date">
@@ -42,16 +37,19 @@
                 </b-button>
             </div>
         </div>
-
     </div>
 
     <div class="list" id="scrolled-area" ref="scrolled_area">
-        <div class="text-muted margin20" v-if="instances.length == 0">
-            <p>Here, you can submit series of apps with shared input and output datasets.</p>
-            <p>Output datasets will be removed within 25 days. Please archive any output dataset you'd like to keep.</p>
-            <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
-        </div>
 
+        <div v-if="instances.length == 0" class="text-muted margin20">
+            <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
+            <p>Output datasets will be removed within 25 days unless archived.</p>
+            <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
+            <a href="https://brainlife.io/docs/user/process/" target="doc">
+                <b-img src="https://brainlife.io/docs/img/processes.png" width="400px" thumbnail/>  
+            </a>
+        </div>
+        
         <div v-if="instances.length > 0" style="clear: both;">
             <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
                 <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
@@ -630,7 +628,7 @@ display: inline-block;
 .summary {
 color: white;
 background-color: gray;
-padding: 2px;
+padding: 2px 3px;
 text-align: center;
 position: relative;
 margin-right: 2px;
@@ -638,6 +636,7 @@ font-size: 65%;
 top: -2px;
 display: inline-block;
 transition: background-color 0.3s;
+border-radius: 10%;
 }
 .summary:hover {
 background-color: white;

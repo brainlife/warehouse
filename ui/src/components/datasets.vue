@@ -1,6 +1,8 @@
 <template>
 <div>
     <div :class="{rightopen: selected_count}">
+        <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
+
         <div class="table-header">
             <div style="float: right; position: relative; top: 4px;">
                 <b-form-input id="filter" class="filter" :class="{'filter-active': query != ''}" size="sm" v-model="query" placeholder="Filter" @input="change_query_debounce"></b-form-input>
@@ -24,10 +26,12 @@
         </div>
 
         <div class="list" id="scrolled-area">
-            <div v-if="loading" class="loading"><icon name="cog" spin scale="2"/></div>
-
+            <div v-if="!loading && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
+                Please upload datasets by clicking the button on the right bottom corner of the page. You can also copy datasets from another project.
+            </div>
+            
             <!--start of dataset list-->
-            <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx">
+            <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 12px;">
                 <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
                     :style="{height: page_info[page_idx].height}">
                     <!--show empty div to speed up rendering if it's outside the view-->
@@ -61,16 +65,16 @@
                         </div>
                     </b-col>
                 </b-row>
-                </div> 
-    
-            <b-btn class="button-fixed" v-b-modal.uploader 
-                @click="set_uploader_options" v-if="isadmin() || ismember()"
-                title="Upload Dataset" 
-                :class="{'selected-view-open':selected_count}">
-                <icon name="plus" scale="2"/>
-            </b-btn>
-
+            </div> 
         </div><!--list-->
+
+        <b-btn class="button-fixed" v-b-modal.uploader 
+            @click="set_uploader_options" v-if="isadmin() || ismember()"
+            title="Upload Dataset" 
+            :class="{'selected-view-open':selected_count}">
+            <icon name="plus" scale="2"/>
+        </b-btn>
+
     </div>
 
     <div class="selected-view" :class="{'selected-view-open':selected_count}" v-if="datatypes">
@@ -236,7 +240,7 @@ export default {
         }
     },
 
-    created() {
+    mounted() {
         //loading the entire datatype...
         return this.$http.get('datatype')
         .then(res=>{
@@ -248,9 +252,7 @@ export default {
         }).catch(err=>{
             console.error(err);
         });
-    },
 
-    mounted() {
         var area = document.getElementById("scrolled-area");
         area.addEventListener("scroll", this.page_scrolled);
 
@@ -265,6 +267,10 @@ export default {
                 }
             });
         }
+    },
+
+    destroyed() {
+        if(this.ws) this.ws.close();
     },
 
     watch: {
@@ -701,7 +707,6 @@ bottom: 0px;
 left: 200px;
 right: 0px;
 overflow-y: scroll;
-font-size: 12px;
 padding-left: 10px;
 background-color: white;
 overflow-x: hidden;
