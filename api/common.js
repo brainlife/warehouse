@@ -700,31 +700,58 @@ exports.update_project_stats = function(group_id, cb) {
             }
         });
         //console.dir(stats);
-        db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, (err, doc)=>{
-            if(cb) cb(err, doc);
+        db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true}, (err, project)=>{
+            if(err) return cb(err);
+
+            logger.debug("updating rule stats for project_id:%s", project._id.toString());
+            db.Rules.aggregate()
+            //.match({removed: false, project: project_id})
+            .match({removed: false, project})
+            .group({_id: { "active": "$active" }, count: {$sum: 1}})
+            .exec((err, ret)=>{
+                let rules = {
+                    active: 0,
+                    inactive: 0,
+                }
+                ret.forEach(rec=>{
+                    if(rec._id.active) rules.active = rec.count;
+                    else rules.inactive = rec.count;
+                });
+                db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.rules": rules}}, {new: true}, (err, project)=>{
+                    if(cb) cb(err, project);
+                });
+            });
         });
     });
 }
 
-exports.update_rule_stats = function(project_id, cb) {
-    logger.debug("updating rule stats for project_id:%s", project_id);
-    db.Rules.aggregate()
-    .match({removed: false, project: project_id})
-    .group({_id: { "active": "$active" }, count: {$sum: 1}})
-    .exec((err, ret)=>{
-        let rules = {
-            active: 0,
-            inactive: 0,
-        }
-        ret.forEach(rec=>{
-            if(rec._id.active) rules.active = rec.count;
-            else rules.inactive = rec.count;
+exports.update_rule_stats = function(rule_id, cb) {
+    logger.debug("update_rule_stats:%s", rule_id);
+    logger.debug(JSON.stringify({'config._rule.id': rule_id}, null, 4));
+    request.get({
+        url: config.amaretti.api+"/task", json: true,
+        qs: {
+            find: JSON.stringify({'config._rule.id': rule_id, status: {$ne: "removed"}}),
+            select: 'status', 
+            limit: 3000,
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt, },
+    }, (err, _res, body)=>{
+        if(err) return cb(err);
+        /*
+8|warehous | { tasks: 
+8|warehous |    [ { _id: '5c899b8c98cf8829f8df1c90', status: 'stop_requested' } ],
+8|warehous |   count: 1 }
+        */
+        let stats = {}
+        body.tasks.forEach(task=>{
+            if(stats[task.status] === undefined) stats[task.status] = 0;
+            stats[task.status]+=1;
         });
-        db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.rules": rules}}, (err, doc)=>{
-            if(cb) cb(err, doc);
+        db.Rules.findOneAndUpdate({_id: rule_id}, {$set: {"stats.tasks": stats}}, {new: true}, (err, rule)=>{
+            if(cb) cb(err, project);
         });
     });
 }
-
 
 

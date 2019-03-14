@@ -166,6 +166,13 @@ function handle_task(task, cb) {
         if(task.resource_id) inc_count("task.resource."+task.resource_id+"."+task.status); 
         //number of task change events for each project
         if(task._group_id) inc_count("task.group."+task._group_id+"."+task.status); 
+
+        if(task.config && task.config._rule) {
+            logger.debug("rule task status changed");
+            debounce("update_rule_stats."+task.config._rule.id, ()=>{
+                common.update_rule_stats(task.config._rule.id);
+            }, 1000*2); 
+        }
     }
 
     //handle event
@@ -233,6 +240,7 @@ function handle_task(task, cb) {
                 db.Rules.findOneAndUpdate({_id: task.config._rule.id}, {$set: {update_date: new Date()}}, next);
             } else next();
         },
+
 
     ], cb);
 }

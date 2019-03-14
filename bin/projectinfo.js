@@ -45,9 +45,11 @@ function handle_project(project, cb) {
         next=>{
             common.update_dataset_stats(project._id, next);
         },
+        /*
         next=>{
             common.update_rule_stats(project._id, next);
         },
+        */
     ], cb);
 }
 

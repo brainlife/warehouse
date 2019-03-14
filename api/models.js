@@ -14,16 +14,22 @@ const common = require("./common"); //circular?
 //mongoose.Promise = global.Promise; 
 if(config.mongoose_debug) mongoose.set("debug", true);
 
-let dataset_ex = null;
+let dataset_ex;
+let rule_ex;
 let amqp_conn = null;
 function init_amqp(cb) {
     logger.info("connecting to amqp..");
     common.get_amqp_connection((err, conn)=>{
         amqp_conn = conn;
         logger.info("amqp connection ready.. creating exchanges");
+
         amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
             dataset_ex = ex;
-            cb();
+
+            amqp_conn.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
+                rule_ex = ex;
+                cb();
+            });
         });
     });
 }
@@ -63,6 +69,25 @@ function dataset_event(dataset) {
     let project = dataset.project._id || dataset.project;
     let key = project+"."+dataset._id;
     dataset_ex.publish(key, dataset, {});
+}
+
+function rule_event(rule) {
+    if(!rule) {
+        logger.error("rule_event called with undefined rule");
+        return;
+    }
+    if(!rule_ex) {
+        logger.error("amqp not connected - but event handler called");
+        return;
+    }
+    if(!rule.project) {
+        logger.error("no project set - can't publish rule");
+        return;
+    }
+    let project = rule.project._id || rule.project;
+    let key = project+"."+rule._id;
+    logger.debug("publishing rule update: %s", key);
+    rule_ex.publish(key, rule, {});
 }
 
 exports.disconnect = function(cb) {
@@ -546,6 +571,19 @@ var ruleSchema = mongoose.Schema({
     //only process subjects that ends with this if set
     subject_match: String,
 
+    stats: {
+        tasks: {
+            requested: Number,
+            finished: Number,
+            running: Number, 
+            stopped: Number, 
+            failed: Number, 
+            removed: Number, 
+            stop_requested: Number,
+            running_sync: Number,
+        },
+    },
+
     //when the rule is first defined
     create_date: { type: Date, default: Date.now },
     update_date: { type: Date, default: Date.now }, //date which this document was last updated 
@@ -557,5 +595,18 @@ var ruleSchema = mongoose.Schema({
     active: { type: Boolean, default: true } ,
 
 }, {minimize: false}); //to keep empty config{} from disappearing
+
+ruleSchema.post('save', rule_event);
+ruleSchema.post('findOneAndUpdate', rule_event);
+ruleSchema.post('findOneAndRemove', rule_event);
+ruleSchema.post('remove', rule_event);
+
+//TODO not tested
+ruleSchema.pre('save', function(next) {
+    //console.log("updating rule....................................", this._id);
+    this.update_date = new Date;
+    next();
+});
 exports.Rules = mongoose.model('Rules', ruleSchema);
+
 

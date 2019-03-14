@@ -57,9 +57,12 @@ async function load_snapshot(dataset_id, snapshot_tag, cb) {
     return openneuro_list("snapshot", query, edges);
     */
     try  {
+        let query = "query { snapshot(datasetId: \""+dataset_id+"\" tag: \""+snapshot_tag+"\") { tag created description { Name  License } files {id filename size urls objectpath } } }";
+        console.log(query);
+        process.exit(1);
         let body = await rp({json: true, method: 'POST', 
             uri: 'https://openneuro.org/crn/graphql', 
-            body: {query: "query { snapshot(datasetId: \""+dataset_id+"\" tag: \""+snapshot_tag+"\") { tag created description { Name  License } files {id filename size urls objectpath } } }"},
+            body: {query},
         });
         //console.log("body---------");
         //console.dir(body);
@@ -456,9 +459,9 @@ function run() {
             // 
             // limit to a single dataset for now
             //
-            //if(dataset.id != "ds001499") return next_dataset(); //empty urls
+            if(dataset.id != "ds001499") return next_dataset(); //empty urls
             //if(dataset.id != "ds000224") return next_dataset(); 
-            if(dataset.id != "ds000115") return next_dataset(); 
+            //if(dataset.id != "ds000115") return next_dataset(); 
             //
             //
             ///////////////////////////////////////////////////////////////////////////////////////
