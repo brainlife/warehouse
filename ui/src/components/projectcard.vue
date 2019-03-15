@@ -47,7 +47,7 @@
                 <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
             </b-col>
             <b-col md="3" title="total dataset size">
-                <span v-if="project.stats.datasets.size"><icon name="disk" scale="0.8"/>&nbsp;{{project.stats.datasets.size | filesize}}</span>
+                <span v-if="project.stats.datasets.size"><!--<icon name="hdd" scale="0.8"/>&nbsp;-->{{project.stats.datasets.size | filesize}}</span>
             </b-col>
         </b-row>
     </div>

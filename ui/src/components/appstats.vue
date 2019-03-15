@@ -3,7 +3,7 @@
     <p>
         <img :src="config.api+'/app/'+appid+'/badge'" @click="show_badge_url('/app/'+appid+'/badge')" class="clickable"/>
     </p>
-    <div style="border: 1px solid #eee; background-color: white; padding: 10px 0px; max-width: 200px; text-align: center;">
+    <div style="padding: 10px 0px; max-width: 200px; text-align: center;">
         <p v-if="info.success_rate" v-b-tooltip.hover.d1000.right
             title="finished/(failed+finished). Same request could be re-submitted / rerun.">
             <span style="opacity: 0.5">Success Rate</span>
@@ -16,7 +16,6 @@
             <br>
             <b>{{info.success_rate.toFixed(1)}}%</b>
         </p>
-        <hr>
         <p>
             <span style="opacity: 0.5">Average Runtime</span>
             <br>

@@ -238,6 +238,8 @@ export default {
                 case "pid":                     
                 case ".gitignore":
                 case ".dockerignore":  
+                case "LICENSE":
+                case "README":
                     this.open_text(res.data, file, "text");
                     return;
                 case "Dockerfile":  

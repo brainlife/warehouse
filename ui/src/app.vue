@@ -256,7 +256,7 @@
                         <div v-if="readme">
                             <span class="form-header">README</span>
                             <p><small class="text-muted">From github repo / README.md</small></p>
-                            <vue-markdown :source="readme" class="readme"></vue-markdown>
+                            <vue-markdown :source="readme" class="box"></vue-markdown>
                         </div>
 
                         <vue-disqus shortname="brain-life" :identifier="app._id"/>
@@ -588,15 +588,18 @@ width: 100%;
 .resource-status .score {
 float: right;
 }
-.readme {
+.box {
 background-color: white;
 padding: 20px;
 box-shadow: 2px 2px 5px #eee;
 margin-bottom: 10px;
+margin-left: -20px;
+
 }
 .io-card {
 padding: 8px; 
 background-color: white; 
 margin-bottom: 5px; 
 }
+
 </style>

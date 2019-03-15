@@ -48,12 +48,19 @@
                         <b-col :cols="4">
                             <span>{{rule.app.name}}</span>
                             <small style="opacity: 0.5">{{rule.name}}</small>
-                        </b-col>
-                        <b-col :cols="2">
-                            <!--<contact :id="rule.user_id" size="tiny"/>-->
-                            <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
+                            <span v-if="rule.subject_match" title="Only handle subjects that matches this regex" style="float: right; margin-right: 10px;">
                                 <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
                             </span>
+                        </b-col>
+                        <b-col :cols="2">
+                            <b-progress v-if="rule.stats && task_count(rule) > 0" :max="task_count(rule)">
+                                <b-progress-bar v-for="(count, state) in rule.stats.tasks" :key="state"
+                                    :variant="getvariant(state)" 
+                                    :animated="isanimated(state)"
+                                    :value="count" 
+                                    :label="count.toString()" 
+                                    :title="count+' '+state+' tasks'"/>
+                            </b-progress>
                         </b-col>
                         <b-col :cols="2" style="text-align: right;">
                             <timeago :since="rule.create_date" :auto-update="10"/>
@@ -182,7 +189,6 @@ const async = require("async");
 var debounce = null;
 
 export default {
-    //mixins: [agreementMixin],
     props: [ 'project' ], 
     components: { 
         contact, tags, app,
@@ -200,7 +206,7 @@ export default {
             datatypes: null,
             projects: null,
 
-            //activetaskcount_int: null,
+            ws: null, //websocket
 
             config: Vue.config,
         }
@@ -208,6 +214,38 @@ export default {
 
     mounted() {
         this.load();
+
+        var url = Vue.config.event_ws+"/subscribe?jwt="+Vue.config.jwt;
+        if(this.ws) this.ws.close();
+        this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
+        this.ws.onopen = (e)=>{
+            this.ws.send(JSON.stringify({
+                bind: {
+                    ex: "warehouse.rule",
+                    key: this.project._id+".#",
+                }
+            }));
+        }
+
+        this.ws.onmessage=(json)=>{
+            var event = JSON.parse(json.data);
+            if(!event.dinfo) return; //??
+            switch(event.dinfo.exchange) {
+            case "warehouse.rule":
+                let newrule = event.msg;
+                let rule = this.rules.find(rule=>rule._id == newrule._id);
+                if(rule) {
+                    console.log("updating stats");
+                    console.dir(newrule);
+                    rule.stats = newrule.stats;
+                }
+            }
+        }
+    },
+
+    destroyed() {
+        console.log("closing ws");
+        if(this.ws) this.ws.close();
     },
 
     watch: {
@@ -285,6 +323,32 @@ export default {
     },
 
     methods: {
+        task_count: function(rule) {
+            if(!rule.stats) return 0;
+            let sum = 0;
+            for(let state in rule.stats.tasks) {
+                sum += rule.stats.tasks[state];
+            }
+            return sum;
+        },
+        getvariant(state) {
+            switch(state) {
+            case "running": return "primary";
+            case "requested": return "info";
+            case "finished": return "success";
+            case "stopped": return "secondary";
+            case "failed": return "danger";
+            default: return "dark";
+            }
+        },
+        isanimated(state) {
+            switch(state) {
+            case "running": 
+            case "requested":           
+                return true;
+            }
+            return false;
+        },
         /*
         get_activetaskcount() {
             if(!this.selected) return;
