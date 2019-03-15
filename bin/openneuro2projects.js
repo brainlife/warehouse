@@ -26,7 +26,7 @@ async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
         awaits.push(callback(array[index], index, array));
     }
-    await awaits;
+    await Promise.all(awaits);
 }
 
 async function list_datasets() {
@@ -273,7 +273,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                 user_id: admin_uid, 
                 project,
                 //datatype_tags: [], 
-                desc: group[0].filename, //just use the first one..
+                //desc: group[0].filename, //just use the first one..
                 tags: ["snapshot-"+snapshot.tag], 
                 storage: "url",
                 storage_config: {
