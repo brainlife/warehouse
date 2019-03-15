@@ -3,7 +3,7 @@
 
 const mongoose = require("mongoose");
 const winston = require("winston");
-const rp = require('request-promise');
+const rp = require('request-promise-native');
 const async = require('async');
 
 const config = require("../api/config");
@@ -18,6 +18,15 @@ let datatypes = {
     "neuro/anat/t2w": "594c0325fa1d2e5a1f0beda5",
     "neuro/dwi": "58c33c5fe13a50849b25879b",
     "neuro/func/task": "59b685a08e5d38b0b331ddc5",
+    "neuro/fmap": "5c390505f9109beac42b00df",
+}
+
+async function asyncForEach(array, callback) {
+    let awaits = [];
+    for (let index = 0; index < array.length; index++) {
+        awaits.push(callback(array[index], index, array));
+    }
+    await awaits;
 }
 
 async function list_datasets() {
@@ -34,7 +43,6 @@ async function list_datasets() {
         
         //load next page
         let all_query = "query { datasets("+page_query+") { "+edges+" pageInfo { hasNextPage endCursor } } }";
-        //console.log(all_query);
         let body = await rp({json: true, method: 'POST', 
             uri: 'https://openneuro.org/crn/graphql', 
             body: {query: all_query},
@@ -51,21 +59,12 @@ async function list_datasets() {
 
 async function load_snapshot(dataset_id, snapshot_tag, cb) {
     logger.debug("loading snapshot detail for tag:%s", snapshot_tag);
-    /*
-    let query = "datasetId: \""+dataset_id+"\" tag: \""+snapshot_tag+"\"";
-    let edges = "description { Name  License } files {id filename size urls objectpath }";
-    return openneuro_list("snapshot", query, edges);
-    */
     try  {
         let query = "query { snapshot(datasetId: \""+dataset_id+"\" tag: \""+snapshot_tag+"\") { tag created description { Name  License } files {id filename size urls objectpath } } }";
-        console.log(query);
-        process.exit(1);
         let body = await rp({json: true, method: 'POST', 
             uri: 'https://openneuro.org/crn/graphql', 
             body: {query},
         });
-        //console.log("body---------");
-        //console.dir(body);
         cb(null, body.data.snapshot);
     } catch(err) {
         cb(err);
@@ -88,8 +87,7 @@ function load_root_meta(files, cb) {
             logger.error(JSON.stringify(rootfile, null, 4));
             return;
         }
-        rootfile.body = await rp({json: is_json, method: 'GET', uri: rootfile.urls[0] });
-        //console.dir(rootfile.body);
+        rootfile.body = await rp({json: is_json, uri: rootfile.urls[0] });
     }, err=>{
         let rootmeta = {};
         rootfiles.forEach(file=>{
@@ -102,8 +100,6 @@ function load_root_meta(files, cb) {
 function group_files(files) {
     let groups = {}; //keyed by structual meta
     files.forEach(file=>{
-        //console.dir(file);
-
         if(file.urls.length == 0) {
             logger.error("urls is empty");
             logger.debug(JSON.stringify(file, null, 4));
@@ -124,20 +120,23 @@ function group_files(files) {
         
         //rest goes to the meta
         let meta = {};
+        let dir;
         filename_tokens.forEach(token=>{
             let token_parts = token.split("-");
             meta[token_parts[0]] = token_parts[1];
         });
-        //console.dir(meta);
 
         //directory org with file level meta
         let filename_meta = bids_filename.split("_");
         let filename = filename_meta.pop(); //T1w.nii.gz
         filename_meta.forEach(token=>{
             let token_parts = token.split("-");
+            if(token_parts[0] == "dir") {
+                dir = token_parts[1].toLowerCase(); //AP > ap
+                return; //for fmap/dir- we don't want to group different dir- together.
+            }
             meta[token_parts[0]] = token_parts[1];
         });
-        //console.log(filename);
 
         //rename "sub" to "subject" and "ses" to "session"
         if(meta.sub) {
@@ -148,13 +147,13 @@ function group_files(files) {
             meta.session = meta.ses;
             delete meta.ses;
         }
-        //console.dir(meta);
 
         let key = JSON.stringify({meta, modality});
         if(!groups[key]) groups[key] = [];
         groups[key].push({
             file,
             filename,
+            dir,
         });
     });
     return groups;
@@ -253,9 +252,16 @@ function compute_file_id(group) {
 function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
     async.eachOfSeries(groups, (group, _key, next_group)=>{
         let key = JSON.parse(_key); //meta/modality
+
+        ///////////////////////////////////////////////////////////////////////
+        //
+        //if(key.meta.subject != "010001") return next_group();
+        //
+        ///////////////////////////////////////////////////////////////////////
+
         let file_id = compute_file_id(group);
-        console.dir(key);
-        db.Datasets.findOne({removed: false, project, "storage_config.file_id": file_id}).exec((err, dataset)=>{
+        console.log("loading %s", file_id);
+        db.Datasets.findOne({removed: false, project, "storage_config.file_id": file_id}).exec(async (err, dataset)=>{
             if(err) return next_group(err);
             if(dataset) {
                 logger.debug("already registered %s", file_id);
@@ -320,12 +326,12 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                     dataset.datatype = datatypes["neuro/anat/t2w"];
                     if(rootmeta["T2w.json"]) Object.assign(dataset.meta, rootmeta["T2w.json"].body);
                 }
-                group.forEach(async item=>{
+                await asyncForEach(group, async item=>{
                     let body;
                     switch(item.filename) {
                     case "T1w.json":
                         logger.debug("loading T1w.json");
-                        body = await rp({ json: true, method: 'GET', uri: item.file.urls[0] });
+                        body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, body);
                         break;
                     case "T1w.nii.gz":
@@ -333,7 +339,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         break;
                     case "T2w.json":
                         logger.debug("loading T2w.json");
-                        body = await rp({ json: true, method: 'GET', uri: item.file.urls[0] });
+                        body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, body);
                         break;
                     case "T2w.nii.gz":
@@ -361,14 +367,12 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                 dataset.datatype = datatypes["neuro/func/task"];
                 dataset.datatype_tags = [key.meta.task];
                 let json_name = "task-"+key.meta.task+"_bold.json";
-                //logger.debug("using rootmeta %s", json_name);
-                //console.dir(rootmeta);
                 if(rootmeta[json_name]) Object.assign(dataset.meta, rootmeta[json_name].body);
-                group.forEach(async item=>{
+                await asyncForEach(group, async item=>{
                     switch(item.filename) {
                     case "bold.json":
                         //logger.debug("loading bold.json");
-                        let body = await rp({ json: true, method: 'GET', uri: item.file.urls[0] });
+                        let body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, body);
                         break;
 
@@ -396,10 +400,11 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                 if(rootmeta["dwi.json"]) Object.assign(dataset.meta, rootmeta["dwi.json"].body);
                 let has_bvecs = false;
                 let has_bvals = false;
-                group.forEach(async item=>{
+                await asyncForEach(group, async item=>{
+                    let body;
                     switch(item.filename) {
                     case "dwi.json":
-                        let body = await rp({ json: true, method: 'GET', uri: item.file.urls[0] });
+                        body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, body);
                         break;
                     case "dwi.nii.gz":
@@ -420,8 +425,6 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                 });
 
                 //some dwi shared bvecs/bvals stored on root
-                //console.dir(dataset.storage_config.files);
-                //console.dir(rootmeta);
                 if(!has_bvecs && rootmeta["dwi.bvec"]) {
                     dataset.storage_config.files.push({ local: "dwi.bvecs", url: rootmeta["dwi.bvec"].urls[0] });
                 }
@@ -430,13 +433,88 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                 }
                 
                 break;
+            case "fmap":
+                dataset.datatype = datatypes["neuro/fmap"];
+
+                //figure out datatype_tag (phasediff, epi, real, or 2phasemag)
+                group.forEach(item=>{
+                    switch(item.filename) {
+                    case "phase1.nii.gz": 
+                        dataset.datatype_tags = ["2phasemag"];
+                        break;
+                    case "phasediff.nii.gz":
+                        dataset.datatype_tags = ["phasediff"];
+                        break;
+                    case "epi.nii.gz":
+                        dataset.datatype_tags = ["epi"];
+                        break;
+                    case "fieldmap.nii.gz":
+                        dataset.datatype_tags = ["real"];
+                        break;
+                    }
+                });
+
+                //see https://bids.neuroimaging.io/bids_spec.pdf
+                //load files
+                await asyncForEach(group, async item=>{
+                    let body, name;
+                    switch(item.filename) {
+                    //phasediff things
+                    case "phasediff.json":
+                        body = await rp({ json: true, uri: item.file.urls[0] });
+                        Object.assign(dataset.meta, body);
+                        //fall through to store the json .. will be redundant with meta.. but just in case
+                    case "phasediff.nii.gz":
+                    case "magnitude1.nii.gz":
+                    case "magnitude2.nii.gz":
+                        dataset.storage_config.files.push({ local: item.filename, url: item.file.urls[0], });
+                        break;
+
+                    //2phasemag things
+                    case "phase1.json":
+                    case "phase2.json":
+                    case "magnitude1.json":
+                    case "magnitude2.json":
+                        body = await rp({ json: true, uri: item.file.urls[0] });
+                        name = item.filename.split(".")[0]; //phase1/phase2/magnitude1/magnitude2
+                        Object.assign(dataset.meta, {[name]: body});
+                        //fall through to store the json .. will be redundant with meta.. but just in case
+                    case "phase1.nii.gz":
+                    case "phase2.nii.gz":
+                        dataset.storage_config.files.push({ local: item.filename, url: item.file.urls[0], });
+                        break;
+                           
+                    //epi things
+                    case "epi.json":
+                        body = await rp({ json: true, uri: item.file.urls[0] });
+                        Object.assign(dataset.meta, {[item.dir]: body});
+                        //fall through to store the json .. will be redundant with meta.. but just in case
+                    case "epi.nii.gz":
+                        dataset.storage_config.files.push({ local: item.dir+"."+item.filename, url: item.file.urls[0], });
+                        break;
+                            
+                    //real things
+                    case "fieldmap.json":
+                        body = await rp({ json: true, uri: item.file.urls[0] });
+                        Object.assign(dataset.meta, body);
+                        //fall through to store the json .. will be redundant with meta.. but just in case
+                    case "magnitude.nii.gz":
+                    case "fieldmap.nii.gz":
+                        dataset.storage_config.files.push({ local: item.filename, url: item.file.urls[0], });
+                        break;
+                        
+                    default:
+                        logger.error("unknown file in fmap");
+                        logger.debug(JSON.stringify(item, null, 4));
+                    }
+                });
+
+                break;
             default: 
                 logger.warn("unknown modality - or maybe some cross-modality file?:"+key.modality);
                 logger.warn(JSON.stringify(group, null, 4));
                 return next_group();
             }
-            //console.log("final meta ----------");
-            //console.dir(dataset.meta);
 
             if(dataset.storage_config.files.length == 0) {
                 logger.error("no files.. bailing");
@@ -444,6 +522,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
             }
 
             //console.log(JSON.stringify(dataset, null, 4));
+            logger.info("saving dataset----------------");
             new db.Datasets(dataset).save(next_group);
         });
     }, cb);
@@ -459,8 +538,8 @@ function run() {
             // 
             // limit to a single dataset for now
             //
-            if(dataset.id != "ds001499") return next_dataset(); //empty urls
-            //if(dataset.id != "ds000224") return next_dataset(); 
+            //if(dataset.id != "ds001499") return next_dataset(); //empty urls
+            //if(dataset.id != "ds000221") return next_dataset(); 
             //if(dataset.id != "ds000115") return next_dataset(); 
             //
             //
