@@ -241,8 +241,9 @@ export default {
     },
 
     mounted() {
+
         //loading the entire datatype...
-        return this.$http.get('datatype')
+        this.$http.get('datatype')
         .then(res=>{
             this.datatypes = {};
             res.data.datatypes.forEach((d)=>{
