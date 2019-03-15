@@ -441,15 +441,25 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                     switch(item.filename) {
                     case "phase1.nii.gz": 
                         dataset.datatype_tags = ["2phasemag"];
+			if(rootmeta["phase1.json"]) Object.assign(dataset.meta, {phase1: rootmeta["phase1.json"].body});
+			if(rootmeta["phase2.json"]) Object.assign(dataset.meta, {phase2: rootmeta["phase2.json"].body});
+			if(rootmeta["magnitude1.json"]) Object.assign(dataset.meta, {magnitude1: rootmeta["magnitude1.json"].body});
+			if(rootmeta["magnitude2.json"]) Object.assign(dataset.meta, {magnitude2: rootmeta["magnitude2.json"].body});
                         break;
                     case "phasediff.nii.gz":
                         dataset.datatype_tags = ["phasediff"];
+			if(rootmeta["phasediff.json"]) Object.assign(dataset.meta, rootmeta["phasediff.json"].body);
+			if(rootmeta["magnitude1.json"]) Object.assign(dataset.meta, {magnitude1: rootmeta["magnitude1.json"].body});
+			if(rootmeta["magnitude2.json"]) Object.assign(dataset.meta, {magnitude2: rootmeta["magnitude2.json"].body});
                         break;
                     case "epi.nii.gz":
                         dataset.datatype_tags = ["epi"];
+			//TODO -- any root items?
                         break;
                     case "fieldmap.nii.gz":
                         dataset.datatype_tags = ["real"];
+			if(rootmeta["fieldmap.json"]) Object.assign(dataset.meta, rootmeta["fieldmap.json"].body);
+			if(rootmeta["magnitude.json"]) Object.assign(dataset.meta, {magnitude: rootmeta["magnitude.json"].body});
                         break;
                     }
                 });
@@ -540,6 +550,7 @@ function run() {
             //
             //if(dataset.id != "ds001499") return next_dataset(); //empty urls
             //if(dataset.id != "ds000221") return next_dataset(); 
+            if(dataset.id != "ds000224") return next_dataset(); 
             //if(dataset.id != "ds000115") return next_dataset(); 
             //
             //
