@@ -10,11 +10,6 @@
             <div @click="edit()" v-if="isadmin()" class="button">
                 <icon name="edit" scale="1.25"/>
             </div>
-            <!-- (let user click the removed check box under edit)
-            <div @click="remove()" v-if="isadmin() && !selected.removed" class="button">
-                <icon name="trash" scale="1.25"/>
-            </div>
-            -->
         </div>
         <div @click="back()" class="button button-page">
             <icon name="angle-left" scale="1.25"/>
@@ -35,7 +30,7 @@
     <div class="page-content">
         <!--detail-->
         <div v-if="tabs[tab].id == 'detail'">
-            <div style="padding: 20px; background-color: #f6f6f6; box-shadow: 0 0 3px #aaa;">
+            <div class="project-header">
                 <b-row>
                     <b-col cols="3">
                         <projectavatar :project="selected"/>
@@ -471,6 +466,11 @@ background-color: white;
 }
 .page-content {
 top: 95px;
+}
+.project-header {
+padding: 20px; 
+box-shadow: 0 0 2px #aaa;
+background-color: #eee;
 }
 .datasets_link {
 color:#44f;

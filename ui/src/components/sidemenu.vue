@@ -1,11 +1,23 @@
 <template>
 <div class="sidemenu">
-    <div class="header" :style="styles">
+    <div class="header" :style="styles" style="clip-path:url(#header-clip)">
         <!--<icon name="home" scale="1.75" style="position: relative; top: -8px; margin-right: 5px;"/>-->
         <span class="title" @click="gohome">brainlife</span>
     </div>
-    <br>
-    <ul class="items">
+    <svg height="0" width="0">
+        <defs>
+            <clipPath id="header-clip">
+                <!--
+                <circle cx="120" cy="-30" r="100" />
+                <circle cx="25" cy="30" r="40" />
+                <circle cx="195" cy="10" r="40" />
+                <circle cx="60" cy="55" r="10" />
+                -->
+                <rect width="200" height="50"/>
+            </clipPath>
+        </defs>
+    </svg>
+    <ul class="items" style="margin-top: -30px;">
         <!-- currently being developped -->
         <li v-if="config.debug" 
             @click="go('/dashboard')"
@@ -204,11 +216,8 @@ export default {
     box-shadow: inset -3px 0px 3px rgba(0,0,0,0.2);
 }
 .header {
-    height: 50px;
+    height: 75px;
     color: white;
-
-    background-color: white;
-    box-shadow: 0px 1px 1px rgba(0,0,0,0.2);
     background-image: linear-gradient(90deg, #2693ff, #159957);
     text-align: center;
 }
