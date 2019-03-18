@@ -640,10 +640,11 @@ exports.wait_for_event = function(exchange, key, cb) {
 }
 
 exports.update_dataset_stats = function(project_id, cb) {
-    logger.debug("updating dataset stats %s", project_id);
+    logger.debug("updating dataset stats project:%s", project_id);
+    project_id = mongoose.Types.ObjectId(project_id);
 
     db.Datasets.aggregate()
-    .match({ removed: false, project: mongoose.Types.ObjectId(project_id), })
+    .match({ removed: false, project: project_id, })
     .group({_id: {
         "subject": "$meta.subject", 
         "datatype": "$datatype", 
@@ -668,9 +669,8 @@ exports.update_dataset_stats = function(project_id, cb) {
         });
         stats.subject_count = subjects.size;
         stats.datatypes = [...datatypes];
-        db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, (err, doc)=>{
+        db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true}, (err, doc)=>{
             if(cb) cb(err, doc);
-            console.dir(err);
         });
     });
 }

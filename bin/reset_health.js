@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const winston = require('winston');
 const async = require('async');
 

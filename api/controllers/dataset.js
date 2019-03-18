@@ -489,8 +489,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
     let archive_task = null;
     let dataset = null;
 
-    //logger.debug("posting new dataset");
-
     async.series([
         //get the task to archive and check project
         next=>{
@@ -524,7 +522,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 }
             }
             if(!output) {
-                //console.dir(task.config);
                 return next("no config._outputs for id:"+req.body.output_id);
             }
 
@@ -539,21 +536,9 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
                 if(err) return next(err);
                 archive_task = _archive_task;
                 dataset = archive_task.config.datasets[0].dataset;
-                //dataset._archive_task_id = archive_task._id; //to let caller know about the archvie task (not stored in DB right now)
                 res.json(dataset); 
             });
         },
-
-        /* async registration is now deprecated
-        //wait for archive to be done
-        next=>{
-            logger.debug("waiting for archive task to finish");
-            common.wait_task(req, archive_task._id, err=>{
-                if(err) return next(err);
-                res.json(dataset);
-            });
-        }
-        */
 
     ], cb);
 });
@@ -1323,6 +1308,7 @@ router.post('/copy', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
             db.Datasets.insertMany(datasets,(err, docs)=>{
                 if(err) return next(err);
+                docs.map(db.dataset_event);
                 res.json(docs);
             });
         });

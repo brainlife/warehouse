@@ -22,6 +22,7 @@ let datatypes = {
 }
 
 async function asyncForEach(array, callback) {
+    logger.debug("handling "+array.length+" items in async");
     let awaits = [];
     for (let index = 0; index < array.length; index++) {
         awaits.push(callback(array[index], index, array));

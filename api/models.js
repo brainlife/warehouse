@@ -53,7 +53,7 @@ exports.init = (cb)=>{
     });
 }
 
-function dataset_event(dataset) {
+exports.dataset_event = function(dataset) {
     if(!dataset) {
         logger.error("dataset_event called with undefined dataset");
         return;
@@ -71,7 +71,7 @@ function dataset_event(dataset) {
     dataset_ex.publish(key, dataset, {});
 }
 
-function rule_event(rule) {
+exports.rule_event = function(rule) {
     if(!rule) {
         logger.error("rule_event called with undefined rule");
         return;
@@ -336,10 +336,11 @@ datasetSchema.post('validate', function() {
     }
 });
 
-datasetSchema.post('save', dataset_event);
-datasetSchema.post('findOneAndUpdate', dataset_event);
-datasetSchema.post('findOneAndRemove', dataset_event);
-datasetSchema.post('remove', dataset_event);
+//TODO - I think it's better to have each model handle this as it's not transparent when/which middleware hooks gets called
+datasetSchema.post('save', exports.dataset_event);
+datasetSchema.post('findOneAndUpdate', exports.dataset_event);
+datasetSchema.post('findOneAndRemove', exports.dataset_event);
+datasetSchema.post('remove', exports.dataset_event);
 datasetSchema.pre('save', function(next) {
     console.log("updating dataset....................................", this._id);
     this.update_date = new Date;
@@ -596,10 +597,10 @@ var ruleSchema = mongoose.Schema({
 
 }, {minimize: false}); //to keep empty config{} from disappearing
 
-ruleSchema.post('save', rule_event);
-ruleSchema.post('findOneAndUpdate', rule_event);
-ruleSchema.post('findOneAndRemove', rule_event);
-ruleSchema.post('remove', rule_event);
+ruleSchema.post('save', exports.rule_event);
+ruleSchema.post('findOneAndUpdate', exports.rule_event);
+ruleSchema.post('findOneAndRemove', exports.rule_event);
+ruleSchema.post('remove', exports.rule_event);
 
 //TODO not tested
 ruleSchema.pre('save', function(next) {
