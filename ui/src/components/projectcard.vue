@@ -6,7 +6,7 @@
         <!--<projectaccess :access="project.access"/>-->
         {{project.name}}
     </p>
-    <p class="datatypes">
+    <p class="datatypes" v-if="project.stats">
         <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="font-size: 90%; margin-right: 3px"/>
     </p>
     <p class="desc">{{project.desc}}</p>
