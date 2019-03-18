@@ -8,16 +8,18 @@
         </div>
     </div>
     <div class="page-content" v-if="my_projects">
-        <h4 class="group-title">My Projects</h4>
-        <div style="padding: 10px;">
-            <projectcard v-for="project in my_projects" :project="project" :key="project._id"/>
+        <div class="position: relative">
+            <h4 class="group-title">My Projects</h4>
+            <div style="padding: 10px;">
+                <projectcard v-for="project in my_projects" :project="project" :key="project._id"/>
+            </div>
+            <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
+                Please create your project by clicking on the button at the bottom left corner of this page.
+            </p>
+            <br clear="both">
         </div>
-        <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
-            Please create your project by clicking on the button at the bottom left corner of this page.
-        </p>
-        <br clear="both">
 
-        <div v-if="other_projects && other_projects.length > 0">
+        <div v-if="other_projects && other_projects.length > 0" style="position: relative;">
             <h4 class="group-title">Other Projects</h4>
             <div style="padding: 10px;">
                 <projectcard v-for="project in other_projects" :project="project" :key="project._id" class="projectcard"/>
@@ -25,7 +27,7 @@
             <br clear="both">
         </div>
 
-        <div v-if="openneuro_projects && openneuro_projects.length > 0">
+        <div v-if="openneuro_projects && openneuro_projects.length > 0" style="position: relative;">
             <h4 class="group-title">OpenNeuro Datasets</h4>
             <div style="padding: 10px;">
                 <projectcard v-for="project in openneuro_projects" :project="project" :key="project._id" class="projectcard"/>
