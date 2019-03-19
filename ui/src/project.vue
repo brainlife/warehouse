@@ -38,7 +38,7 @@
                     <b-col cols="9"><!--hide avatar when screen is narrow-->
                         <p style="opacity: 0.8;">{{selected.desc||'no description.'}}</p>
                         <p class="datatypes">
-                            <datatypetag v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="margin-right: 3px"/>
+                            <datatypetag v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="margin-right: 3px; margin-bottom: 3px;"/>
                         </p>
                     </b-col>
                 </b-row>
@@ -53,20 +53,20 @@
                             <icon name="calendar"/>
                             {{new Date(selected.create_date).toLocaleDateString()}}
                         </p>
-                        <div v-if="selected.stats && selected.stats.rules && selected.stats.datasets">
-                            <p class="info">
+                        <div v-if="selected.stats">
+                            <p class="info" v-if="selected.stats.datasets">
                                 <icon name="users"/>
                                 {{selected.stats.datasets.subject_count}} <span style="opacity: 0.5">subjects</span>
                             </p>                           
-                            <p class="info">
+                            <p class="info" v-if="selected.stats.datasets">
                                 <icon name="cubes"/>     
                                 {{selected.stats.datasets.count}} <span style="opacity: 0.5">datasets</span>
                             </p>
-                            <p class="info">
+                            <p class="info" v-if="selected.stats.rules">
                                 <icon name="robot"/>
                                 {{selected.stats.rules.active}} <span style="opacity: 0.5">pipeline rules</span>
                             </p>
-                            <p v-if="!selected.openneuro" class="info">
+                            <p v-if="!selected.openneuro && selected.stats.instances" class="info">
                                 <icon name="paper-plane"/>
                                 <b-progress :max="20" height="18px"> 
                                     <b-progress-bar v-for="(count, state) in selected.stats.instances" :key="state" 
