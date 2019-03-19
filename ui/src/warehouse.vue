@@ -462,4 +462,12 @@ opacity: 0;
 color: gray;
 z-index: 2;
 }
+
+.btn-outline-info.active,
+.bg-info {
+background-color: #50bfff !important;
+}
+.btn-outline-info {
+color: #50bfff;
+}
 </style>

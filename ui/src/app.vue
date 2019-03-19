@@ -229,8 +229,8 @@
                         </div>
 
                         <div v-if="config.user">
-                            <span class="form-header">Administrators</span>
-                            <p><small class="text-muted">List of users that can administer this App.</small></p>
+                            <span class="form-header">Maintaners</span>
+                            <p><small class="text-muted">List of users who currently maintains this App</small></p>
                             <p v-for="c in app.admins" :key="c._id">
                                 <contact :id="c"/>
                             </p>

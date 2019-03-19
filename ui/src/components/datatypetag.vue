@@ -99,7 +99,7 @@ export default {
             }
             var hash = this._datatype.name.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
             var numhash = Math.abs(hash+120)%360;
-            this.color = "hsl("+(numhash%360)+", 40%, 50%)"
+            this.color = "hsl("+(numhash%360)+", 40%, 60%)"
 
             this.ready = true;
         },
