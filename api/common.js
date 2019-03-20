@@ -702,17 +702,16 @@ exports.update_project_stats = function(group_id, cb) {
         //console.dir(stats);
         db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true}, (err, project)=>{
             if(err) return cb(err);
-
             logger.debug("updating rule stats for project_id:%s", project._id.toString());
             db.Rules.aggregate()
-            //.match({removed: false, project: project_id})
-            .match({removed: false, project})
+            .match({removed: false, project: project._id})
             .group({_id: { "active": "$active" }, count: {$sum: 1}})
             .exec((err, ret)=>{
                 let rules = {
                     active: 0,
                     inactive: 0,
                 }
+                //console.dir(ret);
                 ret.forEach(rec=>{
                     if(rec._id.active) rules.active = rec.count;
                     else rules.inactive = rec.count;

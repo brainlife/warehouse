@@ -8,7 +8,7 @@
         </div>
     </div>
     <div class="group-list" v-if="app_groups">
-        <h4>Categories</h4>
+        <h4 style="opacity: 0.7;">Categories</h4>
 
         <div v-if="app_groups['_new']">
             <p class="item" @click="jump('_new')" :class="{'active': active == '_new'}" title="Apps that are registered recently">
@@ -326,16 +326,16 @@ opacity: 0.8;
 }
 .page-content {
 top: 50px;
-margin-left: 240px;
+margin-right: 240px;
 background-color: #eee;
 }
 .group-list {
 position: fixed;
 top: 50px;
 bottom: 0px;
-left: 200px;
+right: 0px;
 width: 240px;
-background-color: #eee;
+background-color: #ddd;
 }
 .group-list h4 {
 font-size: 18px;

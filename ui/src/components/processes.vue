@@ -4,7 +4,7 @@
 
     <div v-if="instances.length > 0" class="info">
         <!--header-->
-        <div style="float: right;  margin-right: 15px; opacity: 0.8; position: relative; top: 5px;">
+        <div style="position: fixed; top: 65px; right: 60px;">
             <div class="date">
                 <small>Update Date</small>
             </div>
@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <div style="float: right;">
+        <div class="orderby">
             <small>Order by</small>
             <b-dropdown :text="order" size="sm" :variant="'light'">
                 <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
@@ -27,20 +27,18 @@
             </b-dropdown>
         </div>
 
-        <div style="margin-left: 5px;">
-            <!--<small>Show</small>-->
+        <div style="margin: 5px;">
             <div class="status-toggler">
                 <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">All ({{instances.length}})</b-button>
-                <b-button size="sm" v-for="state in ['running', 'finished', 'failed']"  :key="state"
+                <b-button size="sm" v-for="state in ['requested', 'running', 'finished', 'failed']"  :key="state"
                         :pressed="show == state" :variant="state2variant(state)" @click="show = state">
-                        {{state}} ({{instance_counts[state]||0}})
+                        <span style="opacity: 0.8">{{state.toUpperCase()}}</span> <b>{{instance_counts[state]||0}}</b>
                 </b-button>
             </div>
         </div>
     </div>
 
     <div class="list" id="scrolled-area" ref="scrolled_area">
-
         <div v-if="instances.length == 0" class="text-muted margin20">
             <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
             <p>Output datasets will be removed within 25 days unless archived.</p>
@@ -59,11 +57,6 @@
 
                     <timeago :since="instance.update_date" :auto-update="10" class="date"/>
                     <timeago :since="instance.create_date" :auto-update="10" class="date"/>
-                    <!-- I don't think this adds value
-                    <div v-if="instance == selected" style="float: right; text-align: right;">
-                        <contact v-for="id in unique_user_ids(instance)" :key="id" :id="id" size="tiny"/>
-                    </div>
-                    -->
                     <div v-if="instance == selected" class="process-action instance-info" style="float: right; position: relative; top: -3px; margin-right: 5px;">
                         <div @click.stop="editdesc(instance)" class="button">
                             <icon name="edit"/>
@@ -185,6 +178,7 @@ export default {
                 //convert odd status into "others"
                 let status = i.status;
                 switch(status) {
+                case "requested":
                 case "running":
                 case "finished":
                 case "failed":
@@ -279,6 +273,7 @@ export default {
 
         state2variant(state) {
             switch(state) {
+            case "requested": return "outline-info";
             case "failed": return "outline-danger";
             case "finished": return "outline-success";
             case "running": return "outline-primary";
@@ -489,13 +484,13 @@ height: 45px;
 }
 .info {
 z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
-padding: 8px 10px;
+padding: 10px;
 padding-right: 30px;
 }
 .list {
 position: fixed;
 bottom: 0px;
-top: 100px;
+top: 110px;
 left: 200px;
 right: 0px;
 margin-top: 40px;
@@ -678,6 +673,9 @@ display: inline-block;
     .process-count {
         display: none;
     }
+}
+.orderby {
+float: right;
 }
 </style>
 

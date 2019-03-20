@@ -1,30 +1,20 @@
 <template>
 <div v-if="ready">
     <div v-if="!editing && rules.length > 0" class="info">
-        <b-row :no-gutters="true">
-            <b-col>
-                <div style="margin-top: 4px;"><b>{{rules.length}}</b> Pipeline Rules</div>
-            </b-col>
-            <b-col :cols="4" style="text-align: right;">
-                <small>Order by</small>
-                <b-dropdown :text="order" size="sm" :variant="'light'">
-                    <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
-                    <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
-                    <b-dropdown-divider></b-dropdown-divider>
-                    <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
-                    <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
-                    <b-dropdown-divider></b-dropdown-divider>
-                    <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
-                    <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
-                </b-dropdown>
-            </b-col>
-            <b-col :cols="2" style="text-align: right; position: relative; top: 10px;">
-                <div class="date">Create Date</div>
-            </b-col>
-            <b-col :cols="2" style="text-align: right; position: relative; top: 10px;">
-                <div class="date">Update Date</div>
-            </b-col>
-        </b-row>
+        <span><b>{{rules.length}}</b> Pipeline Rules</span>
+        <div style="float: right">
+            <small>Order by</small>
+            <b-dropdown :text="order" size="sm" :variant="'light'">
+                <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
+                <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
+                <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
+                <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
+            </b-dropdown>
+        </div>
     </div>
     <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
     <div v-else class="list" ref="scrolled">
@@ -34,12 +24,26 @@
             <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brainlife.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
         </div>
         <div class="rules">
-            <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}" class="rule" v-if="rule.removed == false">
+            <b-row :no-gutters="true" style="padding-right: 20px; padding-bottom: 10px">
+                <b-col :cols="8"><!--placeholder--></b-col>
+                <b-col :cols="2" style="text-align: right;">
+                    <div class="date">Create Date</div>
+                </b-col>
+                <b-col :cols="2" style="text-align: right;">
+                    <div class="date">Update Date</div>
+                </b-col>
+            </b-row>
+
+            <div v-for="rule in sorted_rules" :key="rule._id" 
+                :id="rule._id" 
+                :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}"
+                class="rule" 
+                v-if="rule.removed == false">
                 <div class="rule-header" @click="toggle(rule)">
                     <b-row :no-gutters="true">
                         <b-col :cols="2" @click.stop="">
                             <b-form-checkbox switch v-model="rule.active" name="Online" @change="flip_switch(rule)" :disabled="rule.deactivating">
-                                <b style="position: relative; top: 3px;">
+                                <b style="position: relative; top: 2px; font-weight: bold;">
                                     <span v-if="rule.active" class="text-primary">Online</span>
                                     <span v-else class="text-secondary">Offline</span>
                                 </b>
@@ -47,20 +51,13 @@
                         </b-col>
                         <b-col :cols="4">
                             <span>{{rule.app.name}}</span>
-                            <small style="opacity: 0.5">{{rule.name}}</small>
-                            <span v-if="rule.subject_match" title="Only handle subjects that matches this regex" style="float: right; margin-right: 10px;">
-                                <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
-                            </span>
+                            <small>{{rule.name}}</small>
                         </b-col>
                         <b-col :cols="2">
-                            <b-progress v-if="rule.stats && task_count(rule) > 0" :max="task_count(rule)">
-                                <b-progress-bar v-for="(count, state) in rule.stats.tasks" :key="state"
-                                    :variant="getvariant(state)" 
-                                    :animated="isanimated(state)"
-                                    :value="count" 
-                                    :label="count.toString()" 
-                                    :title="count+' '+state+' tasks'"/>
-                            </b-progress>
+                            <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
+                                <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
+                            </span>                      
+                            <stateprogress v-if="rule.stats" :states="rule.stats.tasks" style="float: right; width: 100px"/>
                         </b-col>
                         <b-col :cols="2" style="text-align: right;">
                             <timeago :since="rule.create_date" :auto-update="10"/>
@@ -181,6 +178,7 @@ import app from '@/components/app'
 import datatypetag from '@/components/datatypetag'
 import ruleform from '@/components/ruleform'
 import rulelog from '@/components/rulelog'
+import stateprogress from '@/components/stateprogress'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
@@ -192,7 +190,7 @@ export default {
     props: [ 'project' ], 
     components: { 
         contact, tags, app,
-        datatypetag, ruleform, rulelog,
+        datatypetag, ruleform, rulelog, stateprogress,
     },
     data () {
         return {
@@ -323,52 +321,6 @@ export default {
     },
 
     methods: {
-        task_count: function(rule) {
-            if(!rule.stats) return 0;
-            let sum = 0;
-            for(let state in rule.stats.tasks) {
-                sum += rule.stats.tasks[state];
-            }
-            return sum;
-        },
-        getvariant(state) {
-            switch(state) {
-            case "running": return "primary";
-            case "requested": return "info";
-            case "finished": return "success";
-            case "stopped": return "secondary";
-            case "failed": return "danger";
-            default: return "dark";
-            }
-        },
-        isanimated(state) {
-            switch(state) {
-            case "running": 
-            case "requested":           
-                return true;
-            }
-            return false;
-        },
-        /*
-        get_activetaskcount() {
-            if(!this.selected) return;
-            //console.log("querying activetaskcount");
-            //load number of tasks submitted by this rule (and active)
-            this.$http.get(Vue.config.amaretti_api+"/task", {params: {
-                find: JSON.stringify({
-                    'config._rule.id': this.selected._id,
-                    'config._app': {$exists: true}, //don't count number of staging
-                    status: {$in: ["running", "running_sync", "requested"] }, //count active
-                    //status: {$ne: "removed"},
-                }),
-
-                limit: 0, //I just need a count.
-            }})
-            .then(res=>{
-                Vue.set(this.selected, 'activetaskcount', res.data.count);
-            });  
-        },
-        */
         load(cb) {
             let group_id = this.project.group_id;
             this.order = window.localStorage.getItem("pipelines.order."+group_id)||"create_date";
@@ -683,7 +635,8 @@ min-width: 500px;
 background-color: #f9f9f9;
 }
 .date {
-font-size: 80%;
+font-size: 85%;
+opacity: 0.5;
 }
 .section-header {
 background-color: #f4f4f4; 

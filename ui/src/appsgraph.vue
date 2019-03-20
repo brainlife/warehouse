@@ -1,6 +1,5 @@
 <template>
 <div>
-    <pageheader/>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-content">
         <div ref="vis" class="graph"/>
@@ -147,9 +146,9 @@ export default {
 
 <style scoped>
 .graph {
-background-color: #333;
+background-color: #ccc;
 position: fixed;
-top: 50px;
+top: 0px;
 bottom: 0px;
 width: 100%;
 }
