@@ -183,7 +183,7 @@ z-index: 1;
 opacity: 0.8;
 }
 .projectcard {
-width: 370px;
+width: 380px;
 float: left;
 margin-right: 10px;
 margin-bottom: 10px;
