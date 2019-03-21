@@ -19,6 +19,7 @@
     </p>
     -->
     <div class="instances">
+        <!--
         <b-progress :max="instance_count" height="4px" v-if="instance_count > 0 && !project.openneuro"> 
             <b-progress-bar v-for="(count, state) in project.stats.instances" :key="state"
                 :variant="getvariant(state)" 
@@ -27,27 +28,30 @@
                 :label-dis="count.toString()" 
                 :title="count+' '+state+' processes'"/>
         </b-progress>
+        -->
+        <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
+            :states="project.stats.instances" height="4px" :show_label="false"/>
         <div v-else style="height: 4px"></div>
     </div>
     <div class="status">
-        <b-row v-if="project.stats && project.stats.datasets && project.stats.rules">
+        <b-row v-if="project.stats">
             <!--
             <b-col md="3" title="create date">
                 <icon name="calendar" scale="0.8"/>&nbsp;<small>{{new Date(project.create_date).toLocaleDateString()}}</small>
             </b-col>
             -->
-            <b-col md="3" title="unique subjects">
+            <b-col md="3" title="unique subjects" v-if="project.stats.datasets">
                 <icon name="users" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
             </b-col>
-            <b-col md="3" title="active pipeline rules">
-                <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
-                <span v-if="project.stats.rules.inactive > 0">/ {{project.stats.rules.inactive+project.stats.rules.active}}</span>
-            </b-col>
-            <b-col md="3" title="number of datasets">
+            <b-col md="3" title="number of datasets" v-if="project.stats.datasets">
                 <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
             </b-col>
-            <b-col md="3" title="total dataset size">
+            <b-col md="3" title="total dataset size" v-if="project.stats.datasets">
                 <span v-if="project.stats.datasets.size"><!--<icon name="hdd" scale="0.8"/>&nbsp;-->{{project.stats.datasets.size | filesize}}</span>
+            </b-col>
+            <b-col md="3" title="active pipeline rules" v-if="project.stats.rules">
+                <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
+                <span v-if="project.stats.rules.inactive > 0">/ {{project.stats.rules.inactive+project.stats.rules.active}}</span>
             </b-col>
         </b-row>
     </div>
@@ -60,10 +64,11 @@ import projectaccess from '@/components/projectaccess'
 import projectavatar from '@/components/projectavatar'
 import datatypetag from '@/components/datatypetag'
 import contact from '@/components/contact'
+import stateprogress from '@/components/stateprogress'
 
 export default {
     components: {
-        projectavatar, contact, projectaccess, datatypetag,
+        projectavatar, contact, projectaccess, datatypetag, stateprogress,
     },
     watch: {
         /*
@@ -97,27 +102,9 @@ export default {
         open() {
             this.$router.push("/project/"+this.project._id);
         },
-
-        getvariant(state) {
-            switch(state) {
-            case "running": return "primary";
-            case "requested": return "info";
-            case "finished": return "success";
-            case "stopped": return "secondary";
-            case "failed": return "danger";
-            default: return "dark";
-            }
-        },
-        isanimated(state) {
-            switch(state) {
-            case "running": 
-            case "requested":           
-                return true;
-            }
-            return false;
-        }
     },
     computed: {
+        /*
         instance_count: function() {
             if(!this.project.stats) return 0;
             let sum = 0;
@@ -127,6 +114,7 @@ export default {
             }
             return sum;
         }
+        */
     },
 }
 </script>
@@ -150,6 +138,7 @@ margin-bottom: 0px;
 overflow: hidden; 
 white-space: nowrap; 
 text-overflow: ellipsis;
+font-size: 85%;
 }
 /*
 .projectcard img {
@@ -215,8 +204,5 @@ height: 30px;
 
 .progress {
 border-radius: 0;
-}
-.progress .bg-info {
-background-color: #50bfff !important;
 }
 </style>

@@ -68,10 +68,13 @@
                             </p>
                             <p v-if="!selected.openneuro && selected.stats.instances" class="info">
                                 <icon name="paper-plane"/>
+                                <!--
                                 <b-progress :max="20" height="18px"> 
                                     <b-progress-bar v-for="(count, state) in selected.stats.instances" :key="state" 
                                     :variant="getvariant(state)" :value="count" :label="count.toString()" :title="count+' '+state+' processes'"/>
                                 </b-progress>
+                                -->
+                                <stateprogress :states="selected.stats.instances"/>
                             </p>
                         </div>
                     </b-col>
@@ -209,6 +212,7 @@ import publications from '@/components/publications'
 import pipelines from '@/components/pipelines'
 import agreements from '@/components/agreements'
 import datatypetag from '@/components/datatypetag'
+import stateprogress from '@/components/stateprogress'
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -223,7 +227,7 @@ export default {
         processes, publications, pipelines,
         agreements, datatypetag,
 
-        newtaskModal, datatypeselecterModal,
+        newtaskModal, datatypeselecterModal, stateprogress,
     },
 
     data () {
@@ -453,9 +457,11 @@ export default {
 .page-header {
 padding: 10px 20px;    
 }
+
 .page-header h4 {
 margin-right: 150px; 
 }
+
 .sub-header {
 position: fixed;
 top: 50px;
@@ -467,11 +473,13 @@ background-color: white;
 .page-content {
 top: 95px;
 }
+
 .project-header {
 padding: 20px; 
 box-shadow: 0 0 2px #aaa;
 background-color: #eee;
 }
+
 .datasets_link {
 color:#44f;
 cursor:pointer;
