@@ -11,6 +11,7 @@ const request = require('request');
 const rp = require('request-promise-native');
 const meter = require('stream-meter');
 const mongoose = require('mongoose');
+const archiver = require('archiver');
 
 //mine
 const config = require('../config');
@@ -207,11 +208,112 @@ router.get('/inventory', jwt({secret: config.express.pubkey, credentialsRequired
 
 /**
  * @apiGroup Dataset
- * @api {get} /dataset/prov/:id     Get provenance
+ * @api {get} /dataset/prov/:id     Get provenance (edges/nodes)
  * @apiDescription                  Get provenance graph info
  *
  */
 router.get('/prov/:id', (req, res, next)=>{
+    let dataset_id = req.params.id;
+    generate_prov(dataset_id, (err, nodes, edges)=>{
+        if(err) return next(err);
+        res.json({nodes, edges});
+    });
+});
+
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/provscript/:id     Get provenance (.tar.gz)
+ * @apiDescription                  Get provenance scripts
+ *
+ */
+router.get('/provscript/:id', (req, res, next)=>{
+    let dataset_id = req.params.id;
+    let debug_config = "";
+    if(config.debug) debug_config = "BLHOST=dev1.soichi.us ";
+    generate_prov(dataset_id, (err, nodes, edges)=>{
+        if(err) return next(err);
+        let stage = "";
+        let run = "";
+
+        //use edges to update links in source datasets to task config input
+        edges.forEach(edge=>{
+            let node = nodes.find(node=>node.id == edge.to);
+            if(!node) return;
+            function replace_path(obj) {
+                for(let key in obj) {
+                    let value = obj[key];
+                    if(typeof value == "object") {
+                        //need to recurse into an object
+                        replace_path(value);
+                        continue;
+                    } 
+                    if(typeof value != "string") continue;
+                    let id_parts = edge.from.split(".");
+                    let pos = value.indexOf(id_parts[1]);
+                    if(~pos) {
+                        obj[key] = "../"+id_parts[0]+"."+value.substring(pos);
+                    }
+                }
+            }
+            replace_path(node._config);
+        });
+
+        //output scrips
+        while(nodes.length > 1) { 
+            let node = nodes.pop();
+            //script += "#"+JSON.stringify(node);
+            let id_parts = node.id.split(".");
+            if(id_parts[0] == "dataset") {
+                stage += "echo \"staging "+node.id+" ("+node.label.replace(/\n/g, ' ')+")\"\n";
+                stage += "[ ! -d "+node.id+" ] && "+debug_config+"bl dataset download -i "+id_parts[1]+" -d "+node.id+"\n\n";
+            } else if(id_parts[0] == "task") {
+                stage += "echo \"staging "+node.id+"\"\n";
+                stage += "[ ! -d "+node.id+" ] && curl -L https://github.com/"+node._service+"/archive/"+node._commit_id+".zip > "+node.id+".zip && unzip "+node.id+".zip && mv *"+node._commit_id+" "+node.id+" && rm "+node.id+".zip\n\n"; 
+
+                //install config.json and run main
+                run += "echo \"running task "+node.id+" ("+node._service+")\"\n";
+                run += "(\tcd "+node.id+"\n";
+                run += "\techo '"+JSON.stringify(node._config, null, 4)+"' > config.json\n";
+                run += "\ttime ./main\n"; 
+                run += ")\n\n";
+            }
+        }
+
+        let script = "#!/bin/bash\n\nset -e\n\n"+stage+"\n"+run;
+        res.setHeader('Content-disposition', 'attachment; filename=reproduce.sh');
+        res.setHeader('Content-Type', 'text/plain');
+        res.send(script);
+
+/*
+{
+"id": "dataset.5c104bead33e813cb4c8e40b"
+},
+{
+"id": "task.5c104baf60c6080c45c47fe2",
+"label": "brain-life/app-datanormalize(singularity)\nxflip:(null)\nyflip:(null)\nzflip:(null)\n",
+"_app": "5927293d7400b6be913e676e"
+},
+{
+"id": "dataset.596cbded604ff90887721ae4",
+"label": "HCP / 100307\nneuro/dwi \nunrelated"
+}
+*/
+        /*
+        let archive = archiver('tar');
+        let readme = ```
+        These scripts can be used to reproduce the brainlife dataset with id ${dataset_id}
+        ```;
+        archive.append(readme, {name: "README"});
+
+        archive.append(run, {name: "run.sh"});
+        archive.finalize();
+        archive.pipe(res); 
+        res.setHeader('Content-disposition', 'attachment; filename=prov.tar');
+        */
+    });
+});
+
+function generate_prov(origin_dataset_id, cb) {
     let datatypes = {};
     let nodes = [];
     let edges = [];
@@ -223,11 +325,6 @@ router.get('/prov/:id', (req, res, next)=>{
         request.get({
             url: config.amaretti.api+"/task/"+id,
             json: true,
-            /*
-            //task/:id api is now public.. 
-            headers: q authorization: req.headers.authorization, 
-            }
-            */
         }, (err, _res, task)=>{
             if(err) return cb(err);
             cb(null, task);
@@ -263,6 +360,25 @@ router.get('/prov/:id', (req, res, next)=>{
         return label; 
     }
 
+    //remove all keys that starts with _
+    function filterConfig(config) {
+        let _config = {};
+        for(let key in config) {
+            if(key.startsWith("_")) continue;
+            _config[key] = config[key];
+        }
+        return _config;
+    }
+
+    function taskInfo(task) {
+        return {
+            _app: (task.config?task.config._app:null),
+            _service: task.service,
+            _commit_id : task.commit_id,
+            _config: filterConfig(task.config),
+        };
+    }
+
     let datasets_analyzed = [];
     function load_dataset_prov(dataset, defer, cb) {
         let to = "dataset."+dataset._id;
@@ -294,11 +410,12 @@ router.get('/prov/:id', (req, res, next)=>{
                 else load_stage(to, dataset._id, cb);
             } else {
                 //should be a normal task..
-                add_node({
+                add_node(Object.assign({
                     id: "task."+task._id, 
                     label: compose_label(task),
-                    _app: (task.config?task.config._app:null),
-                });
+                }, taskInfo(task)));
+                //    _app: (task.config?task.config._app:null),
+                //});
 
                 let edge_label = datatypes[dataset.datatype].name+" "+dataset.datatype_tags.join(",");
                 let archived_dataset_id = null;
@@ -307,25 +424,6 @@ router.get('/prov/:id', (req, res, next)=>{
                     if(label_parts[2]) edge_label += "\n"+label_parts[2];//tags
                     archived_dataset_id = defer.node.id.split(".")[1];
                 }
-                /*
-                if(defer) {
-                    let label_parts = defer.node.label.split("\n");
-                    edges.push({
-                        from: "task."+task._id,
-                        to: defer.node.id,
-                        arrows: "to",
-                        label: label_parts[1],
-                    });
-                    defer.node.label = label_parts[0]+"\n"+label_parts[2];
-                    defer.node._archive = true;
-                    add_node(defer.node);
-                    edges.push({
-                        from: defer.node.id,
-                        to,
-                        arrows: "to",
-                    });
-                } else {*/
-
                 edges.push({
                     to,
                     from: "task."+task._id,
@@ -411,11 +509,11 @@ router.get('/prov/:id', (req, res, next)=>{
                     //task2task
                     let datatype = datatypes[input.datatype];
                     if(!datatype) datatype = {name: "unknown "+input.datatype};
-                    add_node({
+                    add_node(Object.assign({
                         id: "task."+input.task_id,
                         label: compose_label(dep_task),
-                        _app: dep_task.config._app,
-                    });
+                        //_app: dep_task.config._app,
+                    }, taskInfo(dep_task)));
                     edges.push({
                         from: "task."+input.task_id,
                         to: "task."+task._id,
@@ -443,22 +541,21 @@ router.get('/prov/:id', (req, res, next)=>{
         
         //start by loading *this dataset*
         db.Datasets
-        .findOne({ _id: req.params.id })
+        .findOne({ _id: origin_dataset_id })
         .populate('prov.app')
         .exec((err, dataset)=>{
             if(err) return cb(err);
-            if(!dataset) return res.status(404).end();
+            if(!dataset) return cb("no such dataset");
             this_dataset = dataset;
             nodes.push({
                 id: "dataset."+dataset._id, 
             });
             load_dataset_prov(dataset, null, err=>{
-                if(err) return next(err);
-                res.json({nodes, edges});
+                cb(err, nodes, edges);
             });
         })
     });
-});
+}
 
 /**
  * @apiGroup Dataset

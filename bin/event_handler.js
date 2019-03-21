@@ -171,7 +171,7 @@ function handle_task(task, cb) {
             logger.debug("rule task status changed");
             debounce("update_rule_stats."+task.config._rule.id, ()=>{
                 common.update_rule_stats(task.config._rule.id);
-            }, 1000*2); 
+            }, 1000); 
         }
     }
 
@@ -297,7 +297,7 @@ function handle_instance(instance, cb) {
 
         debounce("update_project_stats."+instance.group_id, ()=>{
             common.update_project_stats(instance.group_id);
-        }, 1000*2); 
+        }, 1000); 
     }
     //console.log(JSON.stringify(instance, null, 4));
 
@@ -310,7 +310,7 @@ function handle_dataset(dataset, cb) {
 
     debounce("update_dataset_stats."+dataset.project, ()=>{
         common.update_dataset_stats(dataset.project);
-    }, 1000*30);  //counting datasets are bit more expensive.. let's debounce longer
+    }, 1000*10);  //counting datasets are bit more expensive.. let's debounce longer
 
     cb();
 }

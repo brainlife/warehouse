@@ -24,7 +24,7 @@ db.init(function(err) {
 
 function run() {
     logger.info("querying projects");
-	db.Projects.find({ removed: false, }).exec((err, projects)=>{
+	db.Projects.find({ removed: false, openneuro: {$exists: false}}).exec((err, projects)=>{
 		if(err) throw err;
         async.eachSeries(projects, handle_project, err=>{
             if(err) logger.error(err);
