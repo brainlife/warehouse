@@ -6,11 +6,11 @@
             <div class="brainlife-modal-header-buttons">
                 <b-dropdown text="Download" v-if="dataset.storage" variant="outline-secondary" size="sm">
                     <b-dropdown-item @click="download">This Dataset</b-dropdown-item>
-                    <b-dropdown-divider />
-                    <b-dropdown-header>Provenance</b-dropdown-header>
-                    <b-dropdown-item @click="download_prov">provenance.json</b-dropdown-item>
-                    <b-dropdown-item @click="download_provscript">reproduce.sh</b-dropdown-item>
-                    <b-dropdown-item v-if="dataset.prov.task.commit_id" @click="download_app(dataset.prov.task)">
+                    <b-dropdown-divider v-if="dataset.prov"/>
+                    <b-dropdown-header v-if="dataset.prov">Provenance</b-dropdown-header>
+                    <b-dropdown-item v-if="dataset.prov" @click="download_prov">provenance.json</b-dropdown-item>
+                    <b-dropdown-item v-if="dataset.prov" @click="download_provscript">reproduce.sh (experimental)</b-dropdown-item>
+                    <b-dropdown-item v-if="dataset.prov && dataset.prov.task.commit_id" @click="download_app(dataset.prov.task)">
                         The version of the App used
                     </b-dropdown-item>
                 </b-dropdown>
