@@ -1,5 +1,3 @@
-'use strict';
-
 //contrib
 const express = require('express');
 const router = express.Router();
@@ -248,10 +246,18 @@ router.get('/provscript/:id', (req, res, next)=>{
                         continue;
                     } 
                     if(typeof value != "string") continue;
-                    let id_parts = edge.from.split(".");
-                    let pos = value.indexOf(id_parts[1]);
-                    if(~pos) {
-                        obj[key] = "../"+id_parts[0]+"."+value.substring(pos);
+                    if(edge._archived_dataset_id) { 
+                        let did = edge._archived_dataset_id;
+                        let pos = value.indexOf(did);
+                        if(~pos) {
+                            obj[key] = "../"+edge.from+value.substring(pos+did.length);
+                        }
+                    } else {
+                        let id_parts = edge.from.split(".");
+                        let pos = value.indexOf(id_parts[1]);
+                        if(~pos) {
+                            obj[key] = "../"+id_parts[0]+"."+value.substring(pos);
+                        }
                     }
                 }
             }
@@ -259,30 +265,36 @@ router.get('/provscript/:id', (req, res, next)=>{
         });
 
         //output scrips
-        while(nodes.length > 1) { 
+        while(nodes.length) { 
             let node = nodes.pop();
-            //script += "#"+JSON.stringify(node);
+            if(!node.label) continue; //"This Dataset" doesn't have label, and we don't need it (TODO make output link?)
             let id_parts = node.id.split(".");
             if(id_parts[0] == "dataset") {
                 stage += "echo \"staging "+node.id+" ("+node.label.replace(/\n/g, ' ')+")\"\n";
                 stage += "[ ! -d "+node.id+" ] && "+debug_config+"bl dataset download -i "+id_parts[1]+" -d "+node.id+"\n\n";
             } else if(id_parts[0] == "task") {
-                stage += "echo \"staging "+node.id+"\"\n";
+                stage += "echo \"staging "+node.id+" ("+node._service+")\"\n";
                 stage += "[ ! -d "+node.id+" ] && curl -L https://github.com/"+node._service+"/archive/"+node._commit_id+".zip > "+node.id+".zip && unzip "+node.id+".zip && mv *"+node._commit_id+" "+node.id+" && rm "+node.id+".zip\n\n"; 
 
                 //install config.json and run main
                 run += "echo \"running task "+node.id+" ("+node._service+")\"\n";
-                run += "(\tcd "+node.id+"\n";
+                run += "(\n\tcd "+node.id+"\n";
                 run += "\techo '"+JSON.stringify(node._config, null, 4)+"' > config.json\n";
                 run += "\ttime ./main\n"; 
                 run += ")\n\n";
             }
         }
 
-        let script = "#!/bin/bash\n\nset -e\n\n"+stage+"\n"+run;
         res.setHeader('Content-disposition', 'attachment; filename=reproduce.sh');
         res.setHeader('Content-Type', 'text/plain');
-        res.send(script);
+        res.send(`#!/bin/bash
+
+# By running this script, you can reproduce the output dataset id:${dataset_id}
+    
+set -e
+${stage}
+${run}
+`);
 
 /*
 {
@@ -376,6 +388,7 @@ function generate_prov(origin_dataset_id, cb) {
             _service: task.service,
             _commit_id : task.commit_id,
             _config: filterConfig(task.config),
+            _finish_date: task.finish_date,
         };
     }
 
@@ -495,7 +508,7 @@ function generate_prov(origin_dataset_id, cb) {
 
         if(!task.deps) return cb(); //just in case?
         if(!task.config) return cb(); 
-        async.eachSeries(task.config._inputs, (input, next_dep)=>{
+        async.each(task.config._inputs, (input, next_dep)=>{
             if(!input.task_id) return next_dep(); //old task didn't have this set?
             load_task(input.task_id, (err, dep_task)=>{
                 if(err) return next_dep(err);
@@ -551,6 +564,12 @@ function generate_prov(origin_dataset_id, cb) {
                 id: "dataset."+dataset._id, 
             });
             load_dataset_prov(dataset, null, err=>{
+                //order nodes by id to make them ordered chronologically - which prevents violating DAG
+                nodes.sort((a,b)=>{
+                    if(a._finish_date < b._finish_date) return 1;
+                    if(a._finish_date > b._finish_date) return -1;
+                    return 0;
+                });
                 cb(err, nodes, edges);
             });
         })
