@@ -64,7 +64,9 @@
                             </p>
                             <p class="info" v-if="selected.stats.rules">
                                 <icon name="robot"/>
-                                {{selected.stats.rules.active}} <span style="opacity: 0.5">pipeline rules</span>
+                                {{selected.stats.rules.active}} 
+                                <span v-if="selected.stats.rules.inactive">/ {{selected.stats.rules.inactive}}</span>
+                                <span style="opacity: 0.5">pipeline rules</span>
                             </p>
                             <p v-if="!selected.openneuro && selected.stats.instances" class="info">
                                 <icon name="paper-plane"/>
