@@ -4,6 +4,16 @@
     <b-container class="brainlife-modal">
         <div class="brainlife-modal-header">
             <div class="brainlife-modal-header-buttons">
+                <b-dropdown text="Download" v-if="dataset.storage" variant="outline-secondary" size="sm">
+                    <b-dropdown-item @click="download">This Dataset</b-dropdown-item>
+                    <b-dropdown-divider />
+                    <b-dropdown-header>Provenance</b-dropdown-header>
+                    <b-dropdown-item @click="download_prov">provenance.json</b-dropdown-item>
+                    <b-dropdown-item @click="download_provscript">reproduce.sh</b-dropdown-item>
+                    <b-dropdown-item v-if="dataset.prov.task.commit_id" @click="download_app(dataset.prov.task)">
+                        The version of the App used
+                    </b-dropdown-item>
+                </b-dropdown>
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.1"/>
                 </div>
@@ -13,9 +23,11 @@
                 <div class="button" @click="start_viewer(dataset.datatype)" v-if="config.user && dataset.storage" title="View Dataset">
                     <icon name="eye" scale="1.1"/>
                 </div>
+                <!--
                 <div class="button" @click="download" v-if="dataset.storage" title="Download Dataset">
                     <icon name="download" scale="1.1"/>
                 </div>
+                -->
                 <div class="button" @click="process" v-if="config.user && dataset.storage" title="Process">
                     <icon name="play" scale="1.1"/> 
                 </div>
@@ -86,13 +98,6 @@
                                     <taskconfig style="margin: 10px; margin-bottom: 40px;" :task="dataset.prov.task"/>
                                 </app>
                                 <br>
-                                <b-button block variant="outline-secondary" 
-                                    v-if="dataset.prov.task.commit_id" 
-                                    size="sm" style="margin-bottom: 10px"
-                                    title="Download the exact code used to produce this dataset"
-                                    @click="download_app(dataset.prov.task)">
-                                    Download App <small>{{dataset.prov.task.commit_id}}</small>
-                                </b-button>
                             </b-col>
                         </b-row>
                         <b-row v-if="resource">
@@ -198,8 +203,12 @@
                     <div v-if="prov.edges.length == 0">
                         <b-alert show variant="secondary">This dataset was uploaded by the user, and therefore has no provenance information.</b-alert>
                     </div>
-                    <div ref="vis" v-else style="height: 100%;"/>
-                    <small style="opacity: 0.5; position: absolute; bottom: 0; right: 0px; padding: 10px;">* Double click to open</small>
+                    <div v-else style="height: 100%">
+                        <div style="position: absolute; right: 10px; top: 10px; z-index: 1;">
+                            <span style="opacity: 0.6; margin-right: 10px;">Double click to open items</span>
+                        </div>
+                        <div ref="vis" style="height: 100%;"/>
+                    </div>
                 </div>
             </b-tab>
             <b-tab title="Apps">
@@ -464,6 +473,12 @@ export default {
         download_app(task) {
             let branch = task.branch||"master";
             document.location = "https://github.com/"+task.service+"/archive/"+task.commit_id+".zip";
+        },
+        download_prov() {
+            document.location = Vue.config.api+'/dataset/prov/'+this.dataset._id;
+        },
+        download_provscript() {
+            document.location = Vue.config.api+'/dataset/provscript/'+this.dataset._id;
         },
 
         process() {
