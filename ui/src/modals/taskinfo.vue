@@ -8,12 +8,12 @@
                         <icon name="times" scale="1.5"/>
                     </div>
                 </div>
+                <span style="float: right; opacity: 0.3; margin-top: 10px;">
+                    {{task.instance_id}} / {{task._id}}
+                </span>
                 <h4 style="margin-top: 5px;">
                     {{task.name}} 
-                    <span style="float: right;">
-                        <small style="opacity: 0.5">{{task._id}}</small>
-                        <b style="opacity: 0.5; position: relative; top: -8px; font-size: 60%;">t.{{task.config._tid}}</b>
-                    </span>
+                    <b style="opacity: 0.6; position: relative; top: -8px; font-size: 70%;">t.{{task.config._tid}}</b>
                 </h4>
             </div><!--header-->
 

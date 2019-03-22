@@ -2,7 +2,7 @@
 set -e
 set -x
 
-tag=1.3.27
+tag=1.3.28
 
 docker build -t soichih/warehouse ..
 docker tag soichih/warehouse soichih/warehouse:$tag
