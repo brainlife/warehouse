@@ -43,11 +43,9 @@
             <b-col md="3" title="unique subjects" v-if="project.stats.datasets">
                 <icon name="users" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
             </b-col>
-            <b-col md="3" title="number of datasets" v-if="project.stats.datasets">
+            <b-col md="6" title="number of datasets" v-if="project.stats.datasets">
                 <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
-            </b-col>
-            <b-col md="3" title="total dataset size" v-if="project.stats.datasets">
-                <span v-if="project.stats.datasets.size"><!--<icon name="hdd" scale="0.8"/>&nbsp;-->{{project.stats.datasets.size | filesize}}</span>
+                <span v-if="project.stats.datasets.size"> ({{project.stats.datasets.size | filesize}})</span>
             </b-col>
             <b-col md="3" title="active pipeline rules" v-if="project.stats.rules">
                 <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
@@ -70,18 +68,6 @@ export default {
     components: {
         projectavatar, contact, projectaccess, datatypetag, stateprogress,
     },
-    watch: {
-        /*
-        project: {
-            handler() {
-                console.log("project updated", this.project._id);
-                //if(this.project && this.project.avatar) this.avatar = this.project.avatar;
-                this.$forceUpdate();
-            },
-            deep: true
-        }
-        */
-    },
         
     props: {
         project: { type: Object },
@@ -102,19 +88,6 @@ export default {
         open() {
             this.$router.push("/project/"+this.project._id);
         },
-    },
-    computed: {
-        /*
-        instance_count: function() {
-            if(!this.project.stats) return 0;
-            let sum = 0;
-            for(let state in this.project.stats.instances) {
-                //if(state == "others") continue; //ignore this for now.
-                sum += this.project.stats.instances[state];
-            }
-            return sum;
-        }
-        */
     },
 }
 </script>
@@ -172,7 +145,7 @@ padding: 5px;
 margin-bottom: 0px;
 height: 30px;
 overflow: hidden;
-color: #666;
+color: #555;
 white-space: nowrap; 
 text-overflow: ellipsis;
 }
@@ -180,7 +153,7 @@ text-overflow: ellipsis;
 padding: 5px;
 font-size: 85%;
 opacity: 0.8;
-height: 55px;
+height: 40px;
 overflow: hidden;
 padding-bottom: 5px;
 }
@@ -196,10 +169,11 @@ background-color: #f7f7f7;
 padding: 4px 10px;
 color: #bbb;
 clear: both;
+font-size: 90%;
 /*
 border-top: 1px solid #ddd;
 */
-height: 30px;
+height: 25px;
 }
 
 .progress {

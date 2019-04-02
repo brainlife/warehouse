@@ -8,10 +8,21 @@
         </div>
     </div>
     <div class="page-content" v-if="my_projects">
+        <div class="mode-toggler">
+            <b-form-group>
+                <b-form-radio-group v-model="mode" buttons button-variant="outline-secondary">
+                    <b-form-radio value="tile"><icon name="th"/></b-form-radio>
+                    <b-form-radio value="list"><icon name="list"/></b-form-radio>
+                </b-form-radio-group>
+            </b-form-group>
+        </div>
         <div class="position: relative">
             <h4 class="group-title">My Projects</h4>
-            <div style="padding: 10px;">
+            <div style="padding: 10px;" v-if="mode == 'tile'">
                 <projectcard v-for="project in my_projects" :project="project" :key="project._id"/>
+            </div>
+            <div style="padding: 10px;" v-if="mode == 'list'">
+               <project v-for="project in my_projects" :project="project" :key="project._id"/>
             </div>
             <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
                 Please create your project by clicking on the button at the bottom left corner of this page.
@@ -21,16 +32,22 @@
 
         <div v-if="other_projects && other_projects.length > 0" style="position: relative;">
             <h4 class="group-title">Other Projects</h4>
-            <div style="padding: 10px;">
+            <div style="padding: 10px;" v-if="mode == 'tile'">
                 <projectcard v-for="project in other_projects" :project="project" :key="project._id" class="projectcard"/>
+            </div>
+            <div style="padding: 10px;" v-if="mode == 'list'">
+             <project v-for="project in other_projects" :project="project" :key="project._id"/>
             </div>
             <br clear="both">
         </div>
 
         <div v-if="openneuro_projects && openneuro_projects.length > 0" style="position: relative;">
             <h4 class="group-title">OpenNeuro Datasets</h4>
-            <div style="padding: 10px;">
+            <div style="padding: 10px;" v-if="mode == 'tile'">
                 <projectcard v-for="project in openneuro_projects" :project="project" :key="project._id" class="projectcard"/>
+            </div>
+            <div style="padding: 10px;" v-if="mode == 'list'">
+             <project v-for="project in openneuro_projects" :project="project" :key="project._id"/>
             </div>
             <br clear="both">
         </div>
@@ -46,13 +63,13 @@
 import Vue from 'vue'
 import pageheader from '@/components/pageheader'
 import sidemenu from '@/components/sidemenu'
-import pubcard from '@/components/pubcard'
 import projectcard from '@/components/projectcard'
+import project from '@/components/project'
 
 let query_debounce;
 
 export default {
-    components: { sidemenu, pubcard, projectcard },
+    components: { sidemenu, projectcard, project },
     data () {
         return {   
             my_projects: null,
@@ -60,6 +77,7 @@ export default {
             openneuro_projects: null,
 
             query: "",
+            mode: localStorage.getItem("projects.mode")||"tile",
             reload_int: null,
             config: Vue.config,
         }
@@ -73,6 +91,12 @@ export default {
         }, 1000*60*5); //reload every 5 minutes (projectinfo is loaded every 5 minutes)
     },
 
+    watch: {
+        mode() {
+            localStorage.setItem("projects.mode", this.mode);
+        }
+    },
+
     destroyed() {
         console.log("clearing reload_int");
         clearInterval(this.reload_int);
@@ -84,26 +108,12 @@ export default {
 
             let ands = [
                 {removed: false, "openneuro": {$exists: false}},
-                /*
-                {$or: [
-                    { removed: false },
-                    { removed: {$exists: false }},
-                ]}
-                */
             ];
             if(this.query) {
                 //split query into each token and allow for regex search on each token
                 //so that we can query against multiple fields simultanously
                 this.query.split(" ").forEach(q=>{
                     if(q === "") return;
-
-                    /*
-                    //lookup datatype ids that matches the query
-                    let datatype_ids = [];
-                    for(var id in this.datatypes) {
-                        if(this.datatypes[id].name.toLowerCase().includes(q.toLowerCase())) datatype_ids.push(id);
-                    }
-                    */
                     ands.push({$or: [
                         {"name": {$regex: q, $options: 'i'}},
                         {"desc": {$regex: q, $options: 'i'}},
@@ -131,7 +141,7 @@ export default {
             })
             .catch(res=>{
                 console.error(res);
-                this.$notify({type: 'error', text: res.data.message});
+                this.$notify({type: 'error', text: res.toString()});
             });
 
             //load openneuro project separately..
@@ -171,6 +181,17 @@ export default {
 .page-content {
 background-color: #eee;
 }
+.mode-toggler {
+position: fixed;
+top: 60px;
+right: 25px;
+z-index: 2;
+opacity: 0.5;
+transition: opacity 0.3s;
+}
+.mode-toggler:hover {
+opacity: 1;
+}
 .group-title {
 color: #999;
 text-transform: uppercase;
@@ -183,7 +204,7 @@ z-index: 1;
 opacity: 0.8;
 }
 .projectcard {
-width: 400px;
+width: 325px;
 float: left;
 margin-right: 10px;
 margin-bottom: 10px;

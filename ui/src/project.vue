@@ -37,9 +37,6 @@
                     </b-col>
                     <b-col cols="9"><!--hide avatar when screen is narrow-->
                         <p style="opacity: 0.8;">{{selected.desc||'no description.'}}</p>
-                        <p class="datatypes">
-                            <datatypetag v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="margin-right: 3px; margin-bottom: 3px;"/>
-                        </p>
                     </b-col>
                 </b-row>
             </div>
@@ -49,6 +46,12 @@
             <div style="margin: 20px;">
                 <b-row>
                     <b-col cols="3" class="sideinfo">
+                        <!-- seems redundant with datasets section
+                        <div class="datatypes">
+                            <div class="datatypes-header">Datatypes</div>
+                            <datatypetag v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="margin-right: 3px; margin-bottom: 3px;"/>
+                        </div>
+                        -->
                         <p class="info">
                             <icon name="calendar"/>
                             {{new Date(selected.create_date).toLocaleDateString()}}
@@ -506,21 +509,6 @@ box-shadow: 2px 2px 3px #eee;
 margin-left: -20px;
 margin-top: 10px;
 }
-/*
-.button-page {
-background-color: #fff;
-float: left; 
-position: absolute; 
-left: -17px;
-box-shadow: -4px 0 3px rgba(0,0,0,0.4);
-border-radius: 45%;
-width: 35px;
-height: 30px;
-}
-.button-page:hover {
-background-color: #bbb;
-}
-*/
 .button-page {
 float: left;
 position: relative;
@@ -536,5 +524,17 @@ p.info .fa-icon {
 position: absolute;
 left: -25px;
 top: 2px;
+}
+.datatypes {
+padding: 10px;
+box-shadow: 1px 1px 3px #ddd;
+margin-bottom: 10px;
+}
+.datatypes .datatypes-header {
+opacity: 0.5; 
+font-weight: bold; 
+font-size: 85%;
+margin-bottom: 5px; 
+text-transform: uppercase;    
 }
 </style>
