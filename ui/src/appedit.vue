@@ -444,6 +444,12 @@ Normally, the App description is automatically pulled from github repo descripti
                     <b-button size="sm" @click="add_dataset(output_datasets)" variant="success">Add Output</b-button>
                 </p>
             </div>
+
+            <!--make sure submit area won't cover the Add Output button-->
+            <br>
+            <br>
+            <br>
+            <br>
         </b-container>
         </b-form>
 

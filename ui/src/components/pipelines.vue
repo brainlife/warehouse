@@ -233,8 +233,8 @@ export default {
                 let newrule = event.msg;
                 let rule = this.rules.find(rule=>rule._id == newrule._id);
                 if(rule) {
-                    console.log("updating stats");
-                    console.dir(newrule);
+                    //console.log("updating stats");
+                    //console.dir(newrule);
                     rule.stats = newrule.stats;
                 }
             }

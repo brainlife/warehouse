@@ -176,6 +176,7 @@ export default {
 
             query: "", //localStorage.getItem('datasets.query'), //I don't think I should persist .. causes more confusing
             ws: null, //websocket
+            removing: false,
 
             //cache
             datatypes: null,
@@ -209,7 +210,7 @@ export default {
                 if(this.selected[did].size) {
                     size += this.selected[did].size;
                 } else {
-                    console.log("size not set for dataset", did);
+                    //console.log("size not set for dataset", did);
                 }
             }
             return size;
@@ -337,6 +338,7 @@ export default {
             this.ws.onmessage = (json)=>{
                 var event = JSON.parse(json.data);
                 if(!event.dinfo) return; //??
+                if(this.removing) return; //ignore rush of removed datasets events that slows down UI update
                 switch(event.dinfo.exchange) {
                 case "warehouse.dataset":
                     let dataset = event.msg;
@@ -357,7 +359,6 @@ export default {
                             old_dataset.removed = dataset.removed;
                             old_dataset.status = dataset.status;
                             if(dataset.removed) this.unselect(dataset);
-                            this.$forceUpdate(); //need this because I am not inside vue hook?
                         }
                     });
                  } 
@@ -465,7 +466,7 @@ export default {
                     if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
                     if(dataset.meta && dataset.meta.session) subject += " / " + dataset.meta.session;
                     last_subject = subject;
-                    if(!groups[subject]) groups[subject] = [];
+                    if(!groups[subject]) Vue.set(groups, subject, []);
                     groups[subject].push(dataset);
                 });
 
@@ -477,7 +478,8 @@ export default {
                     delete groups[last_subject];
                 }
 
-                this.pages.push(groups);
+                //this.pages.push(groups);
+                Vue.set(this.pages, this.pages.length, groups);
 
                 //remember the page height
                 this.$nextTick(()=>{
@@ -652,15 +654,19 @@ export default {
             if(confirm("Do you really want to remove all selected datasets?")) {
                 this.check_agreements(this.project, ()=>{
                     this.$notify({type: "info", text: "Removing all selected datasets.."});
+                    this.removing = true;
                     axios({
                         method: 'delete',
                         url: '/dataset',
                         data: { ids: Object.keys(this.selected) },
                     }).then(res=>{
                         this.$notify({type: "success", text: "Removed "+res.data.removed+" datasets"});
+                        Object.values(this.selected).forEach(dataset=>{dataset.removed = true;});
                         this.clear_selected();
+                        this.removing = false;
                     }).catch(err=>{
                         this.$notify({type: "error", text: err.toString()})
+                        this.removing = false;
                     });
                 });
             }
@@ -823,9 +829,11 @@ color: white;
 right: 300px;
 }
 .filter {
+float: right;
 opacity: 0.7;
-width: 100px;
+width: 50%;
 cursor: pointer;
+transition: width 0.3s;
 }
 .filter:focus {
 opacity: 1;
