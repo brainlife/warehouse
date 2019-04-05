@@ -20,8 +20,8 @@
     <div v-else class="list" ref="scrolled">
         <!--list view-->
         <div class="margin20" v-if="rules.length == 0">
-            <p class="text-muted">Pipeline rule allows you to automate bulk submission of your processes based on defined criterias.</p>
-            <p class="text-muted">This feature could potentially launch large number of processes. Please read our <a href="https://brainlife.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
+            <p class="text-muted">Pipeline rules allow you to automate bulk submissions of your processes based on defined criterias.</p>
+            <p class="text-muted">This feature could potentially launch a large number of processes. Please read our <a href="https://brainlife.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
         </div>
         <div class="rules" v-else>
             <b-row :no-gutters="true" style="padding-right: 20px; padding-bottom: 10px">

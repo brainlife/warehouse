@@ -9,7 +9,7 @@
         <div style="float: left; padding: 6px 8px" @click="poke">
             <statusicon :status="task.status" scale="1.5"/>
         </div>
-        <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 5px;">
+        <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px;">
             <div style="float: right;">
                 <div class="button" style="opacity: 0.7" v-if="editing_desc === null" @click="edit_desc" title="Edit Notes"><icon name="edit"/></div>
                 <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid" @click="openinfo"><icon name="info"/></div>
@@ -76,7 +76,7 @@
                     <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :auto-update="60"/></time>
                 </small>
             </h4>
-            <i>{{task.status_msg.trim()||'empty status message'}}</i>
+            <i style="font-size: 95%;">{{task.status_msg.trim()||'empty status message'}}</i>
         </div>
 
         <div style="background-color: #fafafa; color: #555;">
@@ -345,7 +345,7 @@ font-size: 19px;
 font-weight: bold;
 }
 h4 {
-font-size: 15px;
+font-size: 14px;
 font-weight: bold;
 margin-bottom: 2px;
 }

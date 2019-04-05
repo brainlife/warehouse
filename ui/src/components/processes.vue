@@ -5,32 +5,21 @@
     <div class="instances" v-if="instances">
         <!--instances list-->
         <div class="instances-header">
-            <!--header-->
-            <!--
-            <div style="position: fixed; top: 65px; right: 60px;">
-                <div class="date">
-                    <small>Update Date</small>
-                </div>
-                <div class="date">
-                    <small>Create Date</small>
-                </div>
-            </div>
-            -->
 
             <b-button-group style="background-color: white;">
                 <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">
-                    <span style="font-size: 85%;">All&nbsp;<b>{{instances.length}}</b></span>
+                    <span style="font-size: 80%;">All&nbsp;<b>{{instances.length}}</b></span>
                 </b-button>
                 <b-button size="sm" v-for="state in ['requested', 'running', 'finished', 'failed']"  :key="state"
                         :pressed="show == state" :variant="state2variant(state)" @click="show = state">
-                        <span style="font-size: 85%;">{{state.toUpperCase()}}&nbsp;<b>{{instance_counts[state]||0}}</b></span>
+                        <span style="font-size: 80%;">{{state.toUpperCase()}}&nbsp;<b>{{instance_counts[state]||0}}</b></span>
                 </b-button>
             </b-button-group>
 
             <div style="padding-top: 10px;">
                 <div style="float: right;">
                     <!--<small><icon name="sort"/></small>-->
-                    <b-dropdown :text="order" size="sm" right :variant="'light'">
+                    <b-dropdown :text="order" size="sm" right variant="outline-secondary">
                         <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
                         <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
                         <b-dropdown-divider></b-dropdown-divider>
@@ -51,6 +40,14 @@
                     </b-form-input>
                 </div>
             </div>
+            <div style="padding-top: 5px; padding-right: 5px;">
+                <div class="date">
+                    <small>Update Date</small>
+                </div>
+                <div class="date">
+                    <small>Create Date</small>
+                </div>
+            </div>
         </div>
 
         <div class="instances-list" ref="instances-list">
@@ -68,7 +65,7 @@
                 <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing">
                     <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
                         <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
-                            <statusicon :status="instance.status" :scale="0.75"/>
+                            <statusicon :status="instance.status" :scale="0.6" style="top: -3px"/>
                         </div>
 
                         <timeago :since="instance.update_date" :auto-update="10" class="date"/>
@@ -109,9 +106,12 @@
 
         <b-button class="button-fixed" @click="newinstance" title="Create New Process"><icon name="plus" scale="2"/></b-button>     
     </div>
-    <process :project="project" :instance="selected" v-if="selected" class="process" 
-            @updatedesc="updatedesc" @remove="toggle_instance(selected)"/>
-    <p v-if="!selected" class="nosel-note">Please create / select process to open.</p>
+    <transition   
+        name="fade">
+        <process transition="slide" :project="project" :instance="selected" v-if="selected" class="process" 
+                @updatedesc="updatedesc" @remove="toggle_instance(selected)"/>
+        <p v-if="!selected" class="nosel-note">Please create / select process to open.</p>  
+    </transition>
 </div>
 </template>
 
@@ -382,19 +382,6 @@ export default {
             });
         },
 
-        /*
-        editdesc(instance) {
-            //Vue.set(instance, 'edit', true);
-            var desc = prompt("Please enter description", instance.desc);
-            if(desc != null) {
-                Vue.set(instance, 'desc',  desc);
-                this.$http.put(Vue.config.wf_api+'/instance/'+instance._id, instance).then(res=>{
-                    this.$notify({ text: 'Updated description', type: 'success' });
-                });
-            }
-        },
-        */
-
         newinstance() {
             var desc = prompt("Please enter process description");
             if(!desc) return;
@@ -411,23 +398,6 @@ export default {
                 this.toggle_instance(instance);
             }).catch(this.notify_error);
         },
-
-        /*
-        remove(instance) {
-            if(confirm("Do you really want to remove this process and all tasks?")) {
-                //unselect if selected
-                if(this.selected == instance) this.toggle_instance(instance);
-
-                //remove for real
-                this.$http.delete(Vue.config.wf_api+'/instance/'+instance._id).then(res=>{
-                    this.$notify({type: "success", text: "Removing the process.."});
-                }).catch(err=>{
-                    console.error(err);
-                    this.notify_error(err);
-                });
-            }
-        },
-        */
 
         instance_class(instance) {
             let a = ["instance-header"];
@@ -533,14 +503,6 @@ margin: 40px;
 opacity: 0.5;
 font-size: 170%;
 }
-/*
-.header {
-top: 95px;
-padding: 6px 10px;
-color: #999;
-height: 45px;
-}
-*/
 .instances {
 position: fixed;
 bottom: 0px;
@@ -552,21 +514,20 @@ background-color: #bbb;
 .instances-header {
 padding: 10px;
 position: fixed;
-height: 100px;
+height: 110px;
 top: 95px;
 left: 200px;
 width: 500px;
-background-color: #f9f9f9;
+background-color: #f6f6f6;
 z-index: 1; /*for dropdown menu to go on top*/
 }
 .instances-list {
 position: fixed;
 bottom: 0px;
-top: 195px;
+top: 205px;
 left: 200px;
 width: 500px;
-background-color: #f5f5f5;
-box-shadow: inset 0 0 3px #aaa;
+background-color: white;
 }
 
 .process {
@@ -575,33 +536,34 @@ top: 95px;
 bottom: 0px;
 left: 700px;
 right: 0px;
-background-color: #f0f0f0;
+background-color: #eee;
 overflow: auto;
 }
 
 .instance-header {
-border-bottom: 1px solid #ddd;
-min-height: 32px;
-padding: 3px 15px;
+border-bottom: 1px solid rgba(0,0,0,0.1);
+padding: 4px 15px;
+color: #333;
+transition: background-color 0.2s, color 0.2s;
 }
 
 .instance-info {
 display:inline-block;
 vertical-align:middle;
 }
-.instance-header.instance-active {
-background-color: white;
-color: #007bff;
-}
 .instance-header:hover {
 cursor: pointer;
-background-color: white;
+background-color: #eee;
 }
-
+.instance-header.instance-active {
+color: white;
+background-color: #007bff;
+box-shadow: 0 0 5px #aaa;
+}
 .instance-desc {
-font-size: 95%;
-margin-top: 3px;
+font-size: 90%;
 padding-left: 3px;
+margin-left: 25px;
 }
 
 .button-fixed {
@@ -619,16 +581,14 @@ transition: opacity 0.5s;
 }
 
 .instance-status {
-width: 22px;
-height: 22px;
+width: 16px;
+height: 16px;
 text-align: center;
-border-radius: 11px;
+border-radius: 8px;
 display: inline-block;
-margin-right: 10px;
 background-color: gray;
+margin-right: 10px;
 color: white;
-line-height: 150%;
-margin-top: 2px;
 }
 
 .instance-finished .instance-status {
@@ -648,7 +608,7 @@ background-color: #868e96;
 }
 
 .instance-undefined .instance-status {
-background-olor: #464a4e;
+background-color: #464a4e;
 }
 
 .instance-requested .instance-status {
@@ -701,7 +661,8 @@ float: right;
 width: 110px;
 text-align: right;
 font-size: 88%;
-line-height: 200%;
+margin-right: 10px;
+opacity: 0.7;
 }
 #scrolled-area {
 overflow-x: hidden;
@@ -728,6 +689,6 @@ right: 0px;
 overflow: auto;
 padding: 30px;
 font-size: 125%;
-opacity: 0.5;
 }
+
 </style>

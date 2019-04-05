@@ -35,6 +35,7 @@
         </div>
     </div>
 
+    <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking "Stage New dataset" button below.</b-alert>
     <div class="task-area" v-if="!loading && tasks" v-for="task in tasks" :key="task._id">
         <!--task-id and toggler-->
         <div style="float: right;" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
