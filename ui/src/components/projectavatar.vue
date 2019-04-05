@@ -1,5 +1,6 @@
 <template>
-<img :style="imgstyle" v-lazy="project.avatar || 'https://api.adorable.io/avatars/'+width+'/'+project._id+'.png'" 
+<img :style="imgstyle" 
+    v-lazy="project.avatar || 'https://api.adorable.io/avatars/'+width+'/'+project._id+'.png'" 
     :width="width" :height="height">
 </img>
 </template>
@@ -15,6 +16,9 @@ export default {
                 //styles.boxShadow = "1px 1px 5px rgba(0,0,0,0.4)";
             }
             */
+            if(!this.project.avatar) {
+                styles.filter = "saturate(50%) opacity(40%)";
+            }
             return styles;
         }
     },

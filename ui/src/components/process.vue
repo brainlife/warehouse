@@ -1,7 +1,8 @@
 <template>
-<div v-if="projects && instance">
+<div v-if="projects && instance" ref="process">
 
     <!--task list to show on the right hand side-->
+    <!--
     <div class="task-tabs">
         <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
             <div class="task-tab-title">
@@ -15,9 +16,26 @@
             </div>
         </div>
     </div>
-
+    -->
     <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-    <div class="task-area" v-if="tasks" v-for="task in tasks" :key="task._id">
+
+    <div v-if="!loading" style="padding: 10px;">
+        <div class="instance-action">
+            <!--
+            <div @click.stop="editdesc()" class="button">
+                <icon name="edit"/>
+            </div>
+            -->
+            <div @click.stop="remove()" class="button">
+                <icon name="trash"/>
+            </div>
+        </div>
+        <div style="margin-right: 40px;">
+            <b-form-textarea v-model="desc" @input="updatedesc" placeholder="Enter process description" rows="2" max-rows="4"></b-form-textarea>
+        </div>
+    </div>
+
+    <div class="task-area" v-if="!loading && tasks" v-for="task in tasks" :key="task._id">
         <!--task-id and toggler-->
         <div style="float: right;" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
             <icon name="caret-down" v-if="task.show"/><icon name="caret-right" v-else/> 
@@ -145,6 +163,9 @@
             </b>
         </div>
     </div>
+    <!--make sure the bottom end of task-area won't be overwrapped-->
+    <br>
+    <br>
 
     <div class="new-action">
         <b-row no-gutters>
@@ -163,15 +184,11 @@
 <script>
 import Vue from 'vue'
 
-import sidemenu from '@/components/sidemenu'
 import message from '@/components/message'
 import task from '@/components/task'
-import filebrowser from '@/components/filebrowser'
 import tags from '@/components/tags'
-import pageheader from '@/components/pageheader'
 import app from '@/components/app'
 import appname from '@/components/appname'
-import projectselecter from '@/components/projectselecter'
 import statusicon from '@/components/statusicon'
 import statustag from '@/components/statustag'
 import mute from '@/components/mute' //deprecate?
@@ -191,11 +208,10 @@ export default {
     props: [ 'project', 'instance' ],
 
     components: { 
-        sidemenu, task, 
+        task, 
         message, tags, 
-        filebrowser, pageheader, 
         app, 
-        projectselecter, statusicon, mute,
+        statusicon, mute,
         datatypetag, appname, statustag,
         product, 
     },
@@ -210,6 +226,7 @@ export default {
             selected_task_id: null,
             
             ws: null, //websocket
+            desc: "",
 
             loading: false,
             config: Vue.config,
@@ -217,6 +234,7 @@ export default {
     },
 
     mounted() {
+
         //don't forget to add remove listener on destroyed (debug loader won't destroy parent.. so you will end up with bunch of the same event firing)
         this.$root.$on('datasetselecter.submit', this.submit_stage);
         this.$root.$on('newtask.submit', this.submit_task);
@@ -307,6 +325,10 @@ export default {
     },
 
     methods: {
+        updatedesc() {
+            this.$emit("updatedesc", this.desc);
+        },
+
         findtask(id) {
             var found = null;
             this.tasks.forEach(task=>{
@@ -319,7 +341,7 @@ export default {
             var elem = document.getElementById(id);
             if(!elem) return; //maybe not loaded yet?
             var top = elem.offsetTop-header.clientHeight;
-            document.getElementById("scrolled-area").scrollTop = top;
+            this.$refs.process.scrollTop = top;
         },
         open_dataset(id) {
             console.log("opening datset", id);
@@ -429,6 +451,7 @@ export default {
 
                 this.tasks = res.data.tasks;
                 this.loading = false;
+                this.desc = this.instance.desc;
 
                 //loading archived datasets for all tasks
                 var task_ids = this.tasks.map(task=>task._id); 
@@ -547,6 +570,36 @@ export default {
             c.push("task-tab-"+task.status);
             return c;
         },
+
+        /*
+        editdesc() {
+            //Vue.set(instance, 'edit', true);
+            var desc = prompt("Please enter description", this.instance.desc);
+            if(desc != null) {
+                Vue.set(this.instance, 'desc',  desc);
+                this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, this.instance).then(res=>{
+                    this.$notify({ text: 'Updated description', type: 'success' });
+                });
+            }
+        },
+        */
+
+        remove() {
+            if(confirm("Do you really want to remove this process and all tasks?")) {
+                //unselect if selected
+                //if(this.selected == this.instance) this.toggle_instance(instance);
+
+                //remove for real
+                this.$http.delete(Vue.config.wf_api+'/instance/'+this.instance._id).then(res=>{
+                    this.$notify({type: "success", text: "Removing the process.."});
+                    this.$emit("remove"); 
+                }).catch(err=>{
+                    console.error(err);
+                    this.notify_error(err);
+                });
+            }
+        },
+
     },
 }
 </script>
@@ -574,7 +627,7 @@ padding: 10px;
 background-color: #fff;
 }
 .task {
-margin-bottom: 10px;
+box-shadow: 1px 1px 5px #ccc;
 }
 .task-desc {
 margin-top: 5px;
@@ -641,29 +694,13 @@ box-shadow: 0px 2px 4px #ccc;
 margin-bottom: 1px;
 }
 
-.new-action,
-.task-area {
-margin-right: 310px;
-box-shadow: 0px 2px 4px #ccc;
-transition: margin-right 0.5s;
-z-index: 6;
-}
-
-@media (max-width: 950px) {
-    .new-action,
-    .task-area {
-        margin-right: 0px;
-    }
-}
-@media (min-width: 950px) and (max-width: 1200px) {
-    .new-action,
-    .task-area {
-        margin-right: 40px;
-    }
-}
 .new-action {
-position: sticky; bottom: 0px;
 background-color: white;
+position: fixed;
+bottom: 0px;
+left: 700px;
+right: 0px;
+z-index: 6;
 }
 
 .new-action-button {
@@ -737,10 +774,15 @@ border-left: 2px solid gray;
 cursor: pointer;
 }
 .loading {
-bottom: 100px;
+position: absolute;
 padding: 10px 20px;
 font-size: 125%;
 color: #999;
-background-color: white;
+}
+.task-area {
+padding: 10px;
+}
+.instance-action {
+float: right;
 }
 </style>

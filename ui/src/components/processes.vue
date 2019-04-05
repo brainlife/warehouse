@@ -1,94 +1,125 @@
 <template>
-<p v-if="!instances" class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>
-<div v-else class="processes">
-
-    <div v-if="instances.length > 0" class="info">
-        <!--header-->
-        <div style="position: fixed; top: 65px; right: 60px;">
-            <div class="date">
-                <small>Update Date</small>
+<div>
+    <!--no instance contents-->
+    <p v-if="!instances" class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>
+    <div class="instances" v-if="instances">
+        <!--instances list-->
+        <div class="instances-header">
+            <!--header-->
+            <!--
+            <div style="position: fixed; top: 65px; right: 60px;">
+                <div class="date">
+                    <small>Update Date</small>
+                </div>
+                <div class="date">
+                    <small>Create Date</small>
+                </div>
             </div>
-            <div class="date">
-                <small>Create Date</small>
-            </div>
-        </div>
+            -->
 
-        <div class="orderby">
-            <small>Order by</small>
-            <b-dropdown :text="order" size="sm" :variant="'light'">
-                <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
-                <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
-                <b-dropdown-divider></b-dropdown-divider>
-                <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
-                <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
-                <b-dropdown-divider></b-dropdown-divider>
-                <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
-                <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
-            </b-dropdown>
-        </div>
-
-        <div style="margin: 5px;">
-            <div class="status-toggler">
-                <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">All ({{instances.length}})</b-button>
+            <b-button-group style="background-color: white;">
+                <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">
+                    <span style="font-size: 85%;">All&nbsp;<b>{{instances.length}}</b></span>
+                </b-button>
                 <b-button size="sm" v-for="state in ['requested', 'running', 'finished', 'failed']"  :key="state"
                         :pressed="show == state" :variant="state2variant(state)" @click="show = state">
-                        <span style="opacity: 0.8">{{state.toUpperCase()}}</span> <b>{{instance_counts[state]||0}}</b>
+                        <span style="font-size: 85%;">{{state.toUpperCase()}}&nbsp;<b>{{instance_counts[state]||0}}</b></span>
                 </b-button>
+            </b-button-group>
+
+            <div style="padding-top: 10px;">
+                <div style="float: right;">
+                    <!--<small><icon name="sort"/></small>-->
+                    <b-dropdown :text="order" size="sm" right :variant="'light'">
+                        <b-dropdown-item @click="order = 'create_date'">Create Date (new first)</b-dropdown-item>
+                        <b-dropdown-item @click="order = '-create_date'">Create Date (old first)</b-dropdown-item>
+                        <b-dropdown-divider></b-dropdown-divider>
+                        <b-dropdown-item @click="order = 'update_date'">Update Date (new first)</b-dropdown-item>
+                        <b-dropdown-item @click="order = '-update_date'">Update Date (old first)</b-dropdown-item>
+                        <b-dropdown-divider></b-dropdown-divider>
+                        <b-dropdown-item @click="order = '-desc'">Description (a-z)</b-dropdown-item>
+                        <b-dropdown-item @click="order = 'desc'">Description (z-a)</b-dropdown-item>
+                    </b-dropdown>
+                </div>
+
+                <div style="margin-right: 140px; position: relative;">
+                    <icon name="search" style="position: absolute; top: 7px; left: 10px; color: #ccc;"/>
+                    <b-form-input class="filter" 
+                        @input="change_query"
+                        :class="{'filter-active': query != ''}" 
+                        size="sm" v-model="query" style="padding-left: 30px;">
+                    </b-form-input>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="list" id="scrolled-area" ref="scrolled_area">
-        <div v-if="instances.length == 0" class="text-muted margin20">
-            <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
-            <p>Output datasets will be removed within 25 days unless archived.</p>
-            <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
-            <a href="https://brainlife.io/docs/user/process/" target="doc">
-                <b-img src="https://brainlife.io/docs/img/processes.png" width="400px" thumbnail/>  
-            </a>
-        </div>
-        
-        <div v-if="instances.length > 0" style="clear: both;">
-            <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing" class="instance-item">
-                <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
-                    <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
-                        <statusicon :status="instance.status" :scale="0.75"/>
-                    </div>
+        <div class="instances-list" ref="instances-list">
+            <!--no instances show help doc-->
+            <div v-if="instances.length == 0" style="margin: 20px; opacity: 0.7">
+                <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
+                <p>Output datasets will be removed within 25 days unless archived.</p>
+                <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
+                <a href="https://brainlife.io/docs/user/process/" target="doc">
+                    <b-img src="https://brainlife.io/docs/img/processes.png" width="400px" thumbnail/>  
+                </a>
+            </div>
+            <!--show list-->
+            <div v-if="instances.length > 0">
+                <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing">
+                    <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
+                        <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
+                            <statusicon :status="instance.status" :scale="0.75"/>
+                        </div>
 
-                    <timeago :since="instance.update_date" :auto-update="10" class="date"/>
-                    <timeago :since="instance.create_date" :auto-update="10" class="date"/>
-                    <div v-if="instance == selected" class="process-action instance-info" style="float: right; position: relative; top: -3px; margin-right: 5px;">
-                        <div @click.stop="editdesc(instance)" class="button">
-                            <icon name="edit"/>
+                        <timeago :since="instance.update_date" :auto-update="10" class="date"/>
+                        <timeago :since="instance.create_date" :auto-update="10" class="date"/>
+                        <!--
+                        <div v-if="instance == selected" class="process-action instance-info" style="float: right; position: relative; top: -3px; margin-right: 5px;">
+                            <div @click.stop="editdesc(instance)" class="button">
+                                <icon name="edit"/>
+                            </div>
+                            <div @click.stop="remove(instance)" class="button">
+                                <icon name="trash"/>
+                            </div>
                         </div>
-                        <div @click.stop="remove(instance)" class="button">
-                            <icon name="trash"/>
-                        </div>
-                    </div>
-                    <div class="instance-desc">
-                        <icon name="robot" v-if="instance.config.rule_subject" style="opacity: 0.5"/>
-                        {{instance.desc}}
-                        <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
-                        &nbsp;
-                        <div v-if="instance.config && instance.config.summary" style="display: contents; opacity: 0.8;">
-                            <span v-for="summary in instance.config.summary" v-if="summary.service!='soichih/sca-product-raw' && summary.service!='brainlife/app-stage' && summary.name" 
-                                :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" @click.stop="select_task(instance, summary)" :key="summary.task_id">
-                                {{summary.name.substring(0,4).trim()}}
-                            </span>
+                        -->
+                        <div class="instance-desc">
+                            <icon name="robot" v-if="instance.config.rule_subject" style="opacity: 0.5"/>
+                            <!--<b>{{instance.name}}</b>-->
+                            {{instance.desc}}
+                            <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
+                            &nbsp;
+                            <div v-if="instance.config && instance.config.summary" style="display: contents; opacity: 0.8;">
+                                <span v-for="summary in instance.config.summary" v-if="summary.service!='soichih/sca-product-raw' && summary.service!='brainlife/app-stage' && summary.name" 
+                                    :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" @click.stop="select_task(instance, summary)" :key="summary.task_id">
+                                    {{summary.name.substring(0,4).trim()}}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <process v-if="instance == selected" :project="project" :instance="instance" class="process" ref="process" />
             </div>
+            <!--prevent list to hide add process list -->
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
         </div>
-        <br>
+
+        <b-button class="button-fixed" @click="newinstance" title="Create New Process"><icon name="plus" scale="2"/></b-button>     
     </div>
-    <b-button class="button-fixed" @click="newinstance" title="Create New Process"><icon name="plus" scale="2"/></b-button>
+    <process :project="project" :instance="selected" v-if="selected" class="process" 
+            @updatedesc="updatedesc" @remove="toggle_instance(selected)"/>
+    <p v-if="!selected" class="nosel-note">Please create / select process to open.</p>
 </div>
 </template>
 
 <script>
 import Vue from 'vue'
+
+import 'perfect-scrollbar/css/perfect-scrollbar.css'
+import PerfectScrollbar from 'perfect-scrollbar'
 
 import statusicon from '@/components/statusicon'
 import contact from '@/components/contact'
@@ -98,7 +129,8 @@ import agreementMixin from '@/mixins/agreement'
 
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
-var debounce = null;
+var debounce;
+var ps;
 
 export default {
     mixins: [agreementMixin],
@@ -124,15 +156,17 @@ export default {
 
     computed: {
         sorted_and_filtered_instances: function() {
-
-            //apply filter
+            //apply filter and query
             let filtered = this.instances.filter(i=>{
+                //apply filter first
+                if(this.query && !i.desc.toLowerCase().includes(this.query.toLowerCase())) return false; //filtered by query..
+
                 if(!this.show) return true; //show all
-                if(this.selected == i) return true; //always show selected one
+                //if(this.selected == i) return true; //always show selected one
                 if(i.status == this.show) return true;
                 return false;
             });
-    
+
             //then sort
             let order = 1;
             let field = this.order;
@@ -224,6 +258,7 @@ export default {
             let group_id = this.project.group_id;
             if(this.show) window.localStorage.setItem("processes.show."+group_id, this.show);
             else window.localStorage.removeItem("processes.show."+group_id);
+            this.$refs["instances-list"].scrollTop = 0;
         },
 
         '$route': function() {
@@ -253,6 +288,16 @@ export default {
     },
 
     methods: {
+        updatedesc(desc) {
+            this.selected.desc = desc;
+            clearTimeout(debounce);
+            debounce = setTimeout(()=>{
+                this.$http.put(Vue.config.wf_api+'/instance/'+this.selected._id, this.selected).then(res=>{
+                    this.$notify({ text: 'Updated description', type: 'success' });
+                });
+            }, 500);
+        },
+
         load() {
             this.check_agreements(this.project, ()=>{
                 let group_id = this.project.group_id;
@@ -265,6 +310,10 @@ export default {
                     });
                 });
             });
+        },
+
+        change_query() {
+            this.$refs["instances-list"].scrollTop = 0;
         },
 
         capitalize(string) {
@@ -290,8 +339,8 @@ export default {
         scrollto(instance) {
             var elem = document.getElementById(instance._id);
             var top = elem.offsetTop;
-            if (this.$refs.scrolled_area) {
-                this.$refs.scrolled_area.scrollTop = top;
+            if (this.$refs["instances-list"]) {
+                this.$refs["instances-list"].scrollTop = top;
             }
         },
 
@@ -300,21 +349,25 @@ export default {
                 //if jumping to instance below currently selected, I should adjust current scroll position
                 this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
                 this.selected = instance;
+                /*
                 this.$nextTick(()=>{
                     this.scrollto(instance);
                 });
+                */
             } else {
                 //close!
                 this.$router.push("/project/"+this.project._id+"/process");
+                /*
                 this.$nextTick(()=>{
                     //if process header is outside or view, scroll back to it
                     var elem = document.getElementById(instance._id);
                     if(elem) { //could go missing
                         var top = elem.offsetTop;
-                        var area = this.$refs.scrolled_area;
+                        var area = this.$refs["instances-list"];
                         if(elem.offsetTop < area.scrollTop) area.scrollTop = top;
                     }
                 });
+                */
                 this.selected = null;
             }
         },
@@ -325,11 +378,11 @@ export default {
                 this.toggle_instance(instance);
             }
             this.$nextTick(()=>{
-                //console.log("showtask", summary.task_id);
                 this.$root.$emit('showtask', summary.task_id);
             });
         },
 
+        /*
         editdesc(instance) {
             //Vue.set(instance, 'edit', true);
             var desc = prompt("Please enter description", instance.desc);
@@ -340,6 +393,7 @@ export default {
                 });
             }
         },
+        */
 
         newinstance() {
             var desc = prompt("Please enter process description");
@@ -358,6 +412,7 @@ export default {
             }).catch(this.notify_error);
         },
 
+        /*
         remove(instance) {
             if(confirm("Do you really want to remove this process and all tasks?")) {
                 //unselect if selected
@@ -372,6 +427,7 @@ export default {
                 });
             }
         },
+        */
 
         instance_class(instance) {
             let a = ["instance-header"];
@@ -399,6 +455,10 @@ export default {
                 //debug.. 
                 //this.instances = res.data.instances.concat(res.data.instances).concat(res.data.instances);
                 this.instances = res.data.instances;
+
+                this.$nextTick(()=>{
+                    ps = new PerfectScrollbar(this.$refs["instances-list"]);
+                });
 
                 this.selected = this.instances.find(it=>it._id == this.$route.params.subid);
                 if(this.selected) {
@@ -468,96 +528,84 @@ export default {
 </script>
 
 <style scoped>
-
 .loading {
 margin: 40px;
 opacity: 0.5;
 font-size: 170%;
 }
-
+/*
 .header {
 top: 95px;
 padding: 6px 10px;
 color: #999;
-z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
 height: 45px;
 }
-.info {
-z-index: 1; /*needed to make sort order dropdown box to show up on top of page-content*/
-padding: 10px;
-padding-right: 30px;
-}
-.list {
+*/
+.instances {
 position: fixed;
 bottom: 0px;
-top: 110px;
+top: 95px;
 left: 200px;
 right: 0px;
-margin-top: 40px;
-overflow-y: scroll;
+background-color: #bbb;
+}
+.instances-header {
+padding: 10px;
+position: fixed;
+height: 100px;
+top: 95px;
+left: 200px;
+width: 500px;
+background-color: #f9f9f9;
+z-index: 1; /*for dropdown menu to go on top*/
+}
+.instances-list {
+position: fixed;
+bottom: 0px;
+top: 195px;
+left: 200px;
+width: 500px;
+background-color: #f5f5f5;
+box-shadow: inset 0 0 3px #aaa;
+}
+
+.process {
+position: fixed;
+top: 95px;
+bottom: 0px;
+left: 700px;
+right: 0px;
+background-color: #f0f0f0;
+overflow: auto;
 }
 
 .instance-header {
-padding: 3px 15px;
-background-color: white;
-box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-margin-left: 20px;
-margin-right: 20px;
+border-bottom: 1px solid #ddd;
 min-height: 32px;
-z-index: 7; /*app desc/github name shows up on top without it - and ace editor*/
-transition: margin 0.3s, background-color 0.3s;
+padding: 3px 15px;
 }
 
 .instance-info {
 display:inline-block;
 vertical-align:middle;
 }
-
+.instance-header.instance-active {
+background-color: white;
+color: #007bff;
+}
 .instance-header:hover {
 cursor: pointer;
-background-color: #eee;
-}
-
-.instance-active {
-margin: 0px;
-padding: 15px;
-position: sticky; top: 0px; 
-box-shadow: none;
-white-space: inherit;
-background-color: #f0f0f0;
-}
-
-.instance-item {
-clear: both;
-}
-
-.instance-item:not(:first-child) .instance-active {
-margin-top: 20px;
+background-color: white;
 }
 
 .instance-desc {
 font-size: 95%;
-white-space: nowrap; 
-overflow: hidden; 
-text-overflow: ellipsis;
 margin-top: 3px;
 padding-left: 3px;
 }
 
-.instance-active .instance-desc {
-white-space: inherit;
-text-overflow: inherit;
-}
-
-.process {
-padding-bottom: 20px;
-margin-bottom: 20px;
-background-color: #f0f0f0;
-border-bottom: 1px solid #e0e0e0;
-}
-
 .button-fixed {
-right: 30px;
+left: 600px;
 }
 
 .table-header th {
@@ -568,12 +616,6 @@ padding: 8px 0px;
 display: none;
 opacity: 0;
 transition: opacity 0.5s;
-}
-
-.instance-active .process-action,
-.instance-header:hover .process-action {
-display: block;
-opacity: 1;
 }
 
 .instance-status {
@@ -674,14 +716,18 @@ display: inline-block;
         display: none;
     }
 }
-.orderby {
-float: right;
+.filter.filter-active {
+background-color: #2693ff40;
 }
-</style>
-
-<style>
-.processes .status-toggler .btn {
-border: none;
-margin-left: 5px;
+.nosel-note {
+position: fixed;
+top: 95px;
+bottom: 0px;
+left: 700px;
+right: 0px;
+overflow: auto;
+padding: 30px;
+font-size: 125%;
+opacity: 0.5;
 }
 </style>

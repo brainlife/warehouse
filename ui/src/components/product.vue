@@ -15,7 +15,7 @@
         <b-tab v-for="(p, $idx) in plots" :title="p.name||$idx" :key="$idx">
             <vue-plotly v-if="tab == $idx" :data="p.data" :layout="p.layout" :options="p.options" ref="plotrefs" :autoResize="true" :watchShallow="true"/>
         </b-tab>
-        <b-tab title="JSON" v-if="others">
+        <b-tab title="JSON" v-if="others" style="margin-right: 30px;">
             <editor v-model="others" @init="editorInit" lang="json"></editor>
         </b-tab>
     </b-tabs>

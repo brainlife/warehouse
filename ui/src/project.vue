@@ -474,6 +474,8 @@ height: 45px;
 left: 200px;  
 right: 0px; 
 background-color: white; 
+box-shadow: 0px 0px 2px #ccc;
+z-index: 1;
 }
 .page-content {
 top: 95px;

@@ -340,25 +340,8 @@ background-color: #eee;
 color: #2185d0;
 }
 
-/*
-.hljs {
-min-height: 35px;
-}
-.file-content pre {
-font-family: 'monospace';
-margin-bottom: 5px;
-padding: 0px;
-box-shadow: 1px 1px 3px #bbb;
-border-left: 15px solid #444;
-}
-.file-content .hljs {
-max-height: 425px;
-}
-*/
-
-
 .file-content {
-position: relative;
+margin-right: 30px;
 }
 .file-content-buttons {
 position: absolute; 

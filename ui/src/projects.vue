@@ -22,7 +22,7 @@
                 <projectcard v-for="project in my_projects" :project="project" :key="project._id"/>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-               <project v-for="project in my_projects" :project="project" :key="project._id"/>
+                <project v-for="project in my_projects" :project="project" :key="project._id"/>
             </div>
             <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
                 Please create your project by clicking on the button at the bottom left corner of this page.
@@ -36,7 +36,7 @@
                 <projectcard v-for="project in other_projects" :project="project" :key="project._id" class="projectcard"/>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-             <project v-for="project in other_projects" :project="project" :key="project._id"/>
+                <project v-for="project in other_projects" :project="project" :key="project._id"/>
             </div>
             <br clear="both">
         </div>
@@ -47,7 +47,7 @@
                 <projectcard v-for="project in openneuro_projects" :project="project" :key="project._id" class="projectcard"/>
             </div>
             <div style="padding: 10px;" v-if="mode == 'list'">
-             <project v-for="project in openneuro_projects" :project="project" :key="project._id"/>
+                <project v-for="project in openneuro_projects" :project="project" :key="project._id"/>
             </div>
             <br clear="both">
         </div>

@@ -7,11 +7,12 @@
         {{project.name}}
     </p>
     <p class="datatypes" v-if="project.stats">
-        <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="font-size: 90%; margin-right: 3px"/>
+        <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" 
+            style="font-size: 85%; margin-right: 2px"/>
     </p>
     <p class="desc">{{project.desc}}</p>
-    <p class="contacts">
-        <contact v-for="c in project.members" :key="c._id" :id="c" size="tiny"/>
+    <p class="contacts" style="margin-left: 5px;">
+        <contact v-for="c in project.members" :key="c._id" :id="c" size="tiny" style="margin-left: -5px"/>
     </p>
     <!--
     <p class="contacts">
@@ -101,7 +102,13 @@ box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 background-color: white;
 position: relative;
 /*
-transition: box-shadow 0.5s;
+transition: filter 0.5s;
+filter: saturate(20%);
+*/
+}
+.projectcard:hover {
+/*
+filter: saturate(100%);
 */
 }
 .datatypes {
