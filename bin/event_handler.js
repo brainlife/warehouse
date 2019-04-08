@@ -240,8 +240,6 @@ function handle_task(task, cb) {
                 db.Rules.findOneAndUpdate({_id: task.config._rule.id}, {$set: {update_date: new Date()}}, next);
             } else next();
         },
-
-
     ], cb);
 }
 
@@ -308,8 +306,9 @@ function handle_dataset(dataset, cb) {
     logger.debug("dataset:%s", dataset._id);
     //logger.debug(JSON.stringify(dataset, null, 4));
 
-    debounce("update_dataset_stats."+dataset.project, ()=>{
-        common.update_dataset_stats(dataset.project);
+    let pid = dataset.project._id||dataset.project; //unpopulate project if necessary
+    debounce("update_dataset_stats."+pid, ()=>{
+        common.update_dataset_stats(pid);
     }, 1000*10);  //counting datasets are bit more expensive.. let's debounce longer
 
     cb();

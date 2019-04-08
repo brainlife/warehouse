@@ -74,7 +74,29 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
             });
         });
     });
+});
 
+/**
+ * @apiGroup App
+ * @api {get} /app/:id          Get App
+ * @apiDescription              Get App detail (no AC as long as a valid App ID is given - requires login)
+ *
+ * @apiParam {String} [select]  Fields to load - multiple fields can be entered with %20 as delimiter
+ * @apiParam {String} [populate] Relational fields to populate
+ *
+ * @apiHeader {String} [authorization]
+ *                              A valid JWT token "Bearer: xxxxx"
+ * @apiSuccess {Object}         App detail
+ */
+router.get('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+    db.Apps.findById(req.params.id)
+    .select(req.query.select)
+    .populate(req.query.populate || '')
+    .exec((err, app)=>{
+        if(err) return next(err);
+        if(!app) return next("no such app");
+        res.json(app);
+    });
 });
 
 //experimental
@@ -102,7 +124,6 @@ router.get('/:id/metrics', /*jwt({secret: config.express.pubkey, credentialsRequ
     db.Apps.findById(req.params.id).select('github').lean().exec((err, app)=>{
         if(err) return next(err);
         if(!app) return next("no such app");
-        console.dir(app);
         let service = common.sensu_name(app.github);
         request.get({url: config.metrics.api+"/render", qs: {
             target: "prod.amaretti.service."+service,
@@ -110,6 +131,7 @@ router.get('/:id/metrics', /*jwt({secret: config.express.pubkey, credentialsRequ
             noNullPoints: "true"
         }, json: true }, (err, _res, json)=>{
             if(err) return next(err);
+            if(json.length == 0) return res.json([]); //maybe not reported recently?
             let points = json[0].datapoints;
             /*
             //TODO - insert artificial 0 value if timestams jumps more than 90 seconds (should be reported every 60 seconds)
