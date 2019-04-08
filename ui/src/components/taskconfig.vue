@@ -124,10 +124,13 @@ export default {
 <style scoped>
 tr.default {
 opacity:.6;
-transition: opacity 0.3s;
 }
-tr.default:hover {
+tr:hover {
 opacity: inherit; 
+color: #007bff;
+}
+pre {
+color: inherit;
 }
 td,th {
 vertical-align: top;

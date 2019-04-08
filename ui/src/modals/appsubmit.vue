@@ -489,7 +489,7 @@ export default {
 
                 //aggregate meta
                 //TODO - this just concatenate *all* meta from all input datasets.. I should probaby do something smarter..
-                let meta = download_task.config._outputs.reduce((meta, dataset)=>{
+                let meta = config._inputs.reduce((meta, dataset)=>{
                     for(var k in dataset.meta) if(!meta[k]) meta[k] = dataset.meta[k]; //use first one
                     return meta;
                 }, {});

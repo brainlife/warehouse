@@ -12,12 +12,12 @@ export default {
             if(cached_app) cb(null, cached_app);
             else {
                 //console.log("no cache.. loading new");
-                this.$http.get('app', {params: {
-                    find: JSON.stringify({_id: id}),
+                this.$http.get('app/'+id, {params: {
+                    //find: JSON.stringify({_id: id}),
                     populate: 'inputs.datatype outputs.datatype',
-                    limit: 1,
+                    //limit: 1,
                 }}).then(res=>{
-                    let app = res.data.apps[0];
+                    let app = res.data;
                     this.set_cache(id, app);
                     cb(null, app);
                 }).catch(cb);

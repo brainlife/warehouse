@@ -49,13 +49,6 @@
 import Vue from 'vue'
 export default {
     props: [ 'spec', 'value' ],
-    /*
-    watch: {
-        value: function() {
-            console.log("spec changed"); 
-        },
-    },
-    */
     mounted: function() {
         console.log("setting defaults");
         for(var k in this.spec) {
@@ -81,15 +74,5 @@ export default {
             return spec_arr;
         },
     },
-    
-    methods: {
-        /*
-        //prevent vue-form-input's value from getting changed accidentally by use mouse-wheeling on top of focused
-        //number input
-        handle_scroll: function(evt) {
-            evt.target.blur();
-        }
-        */
-    }
 }
 </script>

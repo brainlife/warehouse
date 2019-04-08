@@ -200,6 +200,9 @@ cursor: pointer;
 position: relative;
 top: -0.1em;
 }
+.button-fixed .fa-icon {
+top: 0;
+}
 
 .button {
 display: inline-block;

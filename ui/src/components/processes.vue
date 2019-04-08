@@ -110,7 +110,7 @@
         name="fade">
         <process transition="slide" :project="project" :instance="selected" v-if="selected" class="process" 
                 @updatedesc="updatedesc" @remove="toggle_instance(selected)"/>
-        <p v-if="!selected" class="nosel-note">Please create / select process to open.</p>  
+        <p v-if="instances && !selected" class="nosel-note">Please create / select process to open.</p>  
     </transition>
 </div>
 </template>
@@ -423,9 +423,7 @@ export default {
                 limit: 3000,
             }}).then(res=>{
                 //debug.. 
-                //this.instances = res.data.instances.concat(res.data.instances).concat(res.data.instances);
                 this.instances = res.data.instances;
-
                 this.$nextTick(()=>{
                     ps = new PerfectScrollbar(this.$refs["instances-list"]);
                 });

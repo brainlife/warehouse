@@ -43,7 +43,7 @@
                     <icon name="cog" spin></icon> Loading..
                 </span>
                 <!-- controls -->
-                <div v-if="file.content">
+                <div v-if="file.content" style="position: relative;">
                     <div v-if="file.content != '(empty)\n'" class="file-content-buttons">
                         <div class="button" @click="download_file(file)" title="Download"><icon name="download" scale="0.8"/></div>
                         <div class="button" @click="refresh_file(file)" title="Refresh"><icon name="sync-alt" scale="0.8"/></div>
@@ -339,31 +339,20 @@ background-color: #eee;
 .fileitem.fileitem-viewing {
 color: #2185d0;
 }
-
 .file-content {
 margin-right: 30px;
 }
 .file-content-buttons {
 position: absolute; 
 top: 3px; 
-right: 20px; 
+right: 10px; 
 opacity: 0;
 transition: opacity 0.3s;
-z-index: 3;
+z-index: 1;
 }
 .file-content:hover .file-content-buttons {
 opacity: 0.7;
 }
-/*
-.file-content-buttons .button:hover {
-background-color: gray;
-}
-
-.file-content-buttons .button {
-color: white;
-}
-*/
-
 .buttons {
 padding-top: 5px;
 opacity: 0.5;
