@@ -156,12 +156,14 @@
                             <b-col cols="3"><span class="form-header">Download Count</span></b-col>
                             <b-col>
                                 <p><b>{{dataset.download_count}}</b> times</p>
+                                <!--
                                 <p>
                                     <small style="opacity: 0.8;">
                                         You can download this dataset via <a href="https://github.com/brain-life/cli" target="doc">Brainlife CLI</a>
                                     </small>
                                     <pre class="code">$ bl dataset download --id {{dataset._id}}</pre>
                                 </p>
+                                -->
                             </b-col>
                         </b-row>
 

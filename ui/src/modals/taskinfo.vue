@@ -42,7 +42,9 @@
                             </tr>
                             <tr v-if="task.finish_date">
                                 <th>Finished</th>
-                                <td>{{new Date(this.task.finish_date).toLocaleString()}}</td>
+                                <td>{{new Date(this.task.finish_date).toLocaleString()}} 
+                                    <span class="text-muted"> (runtime {{getruntime}})</span>
+                                </td>
                             </tr>
                             <tr v-if="task.fail_date">
                                 <th>Failed</th>
@@ -59,17 +61,19 @@
                                     For subject:<b>{{task.config._rule.subject}}</b></small>
                                 </td>
                             </tr>
-                            <tr v-if="task.next_date" style="opacity: 0.6;">
-                                <th>Next&nbsp;Chk</th>
-                                <td>In {{((new Date(this.task.next_date).getTime() - new Date().getTime())/1000).toFixed(0)}} secs</td>
-                            </tr>
+                            <!-- this confuses people with job walltime
                             <tr v-if="task.max_runtime">
                                 <th>Max Runtime</th>
                                 <td>{{task.max_runtime/(1000*60)}} mins</td>
                             </tr>
+                            -->
                             <tr v-if="resource">
                                 <th>Resource</th>
                                 <td>{{resource.name}} <small>{{resource.config.username}}@{{resource.config.hostname}} {{resource.desc}}</small></td>
+                            </tr>
+                            <tr v-if="task.next_date" style="opacity: 0.3;">
+                                <th>Next&nbsp;Chk</th>
+                                <td>in {{((new Date(this.task.next_date).getTime() - new Date().getTime())/(1000*60)).toFixed(0)}} mins</td>
                             </tr>
                             </table>
                         </b-col>
@@ -112,8 +116,11 @@
                             </tr>
                             <tr v-if="smon.info.walltime_requested">
                                 <th>Requested Walltime</th>
-                                <td>
-                                    {{smon.info.walltime_requested}} secs
+                                <td v-if="smon.info.walltime_requested < 3600*60">
+                                    {{smon.info.walltime_requested/60}} mins
+                                </td>
+                                <td v-else>
+                                    {{smon.info.walltime_requested/3600}} hours
                                 </td>
                             </tr>
                             </table>
@@ -471,6 +478,10 @@ export default {
             }
         },
         */
+       getruntime() {
+            let diff = new Date(new Date(this.task.finish_date) - new Date(this.task.start_date));
+            return diff.toISOString().substr(11, 8);
+       }
     },
 
     filters: {

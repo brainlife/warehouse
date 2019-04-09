@@ -7,7 +7,7 @@
             <icon name="search" class="search-icon" scale="1.5"/>
         </div>
     </div>
-    <div class="group-list" v-if="app_groups">
+    <div class="group-list" v-if="app_groups" ref="group-list">
         <h4 style="opacity: 0.7;">Categories</h4>
 
         <div v-if="app_groups['_new']">
@@ -132,7 +132,11 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import app from '@/components/app'
 
-let query_debounce = null;
+import 'perfect-scrollbar/css/perfect-scrollbar.css'
+import PerfectScrollbar from 'perfect-scrollbar'
+
+let query_debounce;
+var ps;
 
 export default {
     components: { sidemenu, pageheader, app },
@@ -260,6 +264,10 @@ export default {
                         this.jump(document.location.hash.substring(1));
                     }
                     this.update_active();
+
+                    let grouplist = this.$refs["group-list"];
+                    ps = new PerfectScrollbar(grouplist);
+                    grouplist.scrollTop = 0;
                 });
             }, res=>{
                 console.error(res);
@@ -379,6 +387,9 @@ transition: all 0.3s ease;
 .app:hover {
 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
 /*top: -5px;*/
+}
+.button-fixed {
+right: 280px;
 }
 </style>
 

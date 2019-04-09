@@ -30,6 +30,12 @@
         <b-col>Datasets</b-col>
         <b-col cols="9">
             <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
+            <p v-if="is_subject_mixed" class="text-muted">
+                <br>
+                You have selected datasets belonging to a different subject. Normally, you should create 
+                a separate process for each subject. If you'd like to run bulk processing, you can setup
+                <a href="https://brainlife.io/docs/user/pipeline/" target="doc">pipeline rules</a>. 
+            </p>
         </b-col>
     </b-row>
     <br>
@@ -87,6 +93,21 @@ export default {
             this.$refs.psel.load_projects();
             this.$refs.modal.show()
         });
+    },
+
+    computed: {
+        is_subject_mixed() {
+            if(!this.datasets) return false;
+            let subject = null;
+            let diff = false;
+            this.datasets.forEach(did=>{
+                let dataset = this.alldatasets[did];
+                console.log(dataset.meta.subject);
+                if(!subject) subject = dataset.meta.subject;
+                else if(subject != dataset.meta.subject) diff = true;
+            });
+            return diff;
+        }
     },
 
     methods: {
