@@ -70,7 +70,7 @@
                                 <span class="form-header">Detail</span>
                             </b-col>
                             <b-col>
-                                <vue-markdown :source="pub.readme" class="box"></vue-markdown>
+                                <vue-markdown :source="pub.readme" class="readme box"></vue-markdown>
                                 <br>
                             </b-col>
                         </b-row>  

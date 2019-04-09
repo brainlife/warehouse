@@ -127,7 +127,7 @@
                         <div v-if="selected.readme">
                             <span class="form-header">Readme</span>
                             <p class="text-muted" v-if="!selected.readme">No readme</p>
-                            <vue-markdown v-if="selected.readme" :source="selected.readme" class="box"></vue-markdown>
+                            <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme box"></vue-markdown>
                             <br>
                         </div>
                         
