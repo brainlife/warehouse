@@ -30,12 +30,12 @@
         <b-col>Datasets</b-col>
         <b-col cols="9">
             <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
-            <p v-if="is_subject_mixed" class="text-muted">
-                <br>
-                You have selected datasets belonging to a different subject. Normally, you should create 
-                a separate process for each subject. If you'd like to run bulk processing, you can setup
-                <a href="https://brainlife.io/docs/user/pipeline/" target="doc">pipeline rules</a>. 
-            </p>
+            <b-alert :show="is_subject_mixed" variant="info" style="margin-top: 10px;" dismissible> 
+                <icon name="info-circle"/> You have selected datasets from more than one subject. 
+                Processes are most effective when used for only a few subjects at a time. 
+                If you would like to run processes on a large amount of subjects (i.e., bulk processing), try <a href="https://brainlife.io/docs/user/pipeline/" target="doc">pipeline rules</a>. 
+                Pipeline rules allow you to easily run the same process on a large amount of subjects.              
+            </b-alert>
         </b-col>
     </b-row>
     <br>
