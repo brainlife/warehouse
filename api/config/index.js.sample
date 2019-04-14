@@ -227,8 +227,7 @@ function connect_dc(cb) {
     }
 }
 
-//TODO - I should implement some kind of connection queue otherwise
-//I could run out of concurrent connection
+//TODO - I should try connection queue agagin
 function connect_wrangler(cb) {
     var conn = new ssh2.Client();
     conn.on('ready', function() {
@@ -362,16 +361,71 @@ exports.storage_systems.wrangler = {
                 });
                 stream.on('close', code=>{
                     conn.end();
-                    console.log("read stream closed");
                 });
                 //I believe listening to stream is required for close event to fire..?
                 stream.stderr.on('data', data=>{
                     console.error(data.toString());
                 });
-                cb(null, stream, filename);
+                cb(err, stream, filename);
             });
         });
     },
+
+    remove: (dataset, cb)=>{
+        connect_wrangler((err, conn, sftp)=>{
+            console.log("got wrangler streams for remove");
+            if(err) return cb(err);
+            let _path = get_wrangler_archive_path(dataset);
+
+            conn.exec("ls "+_path, (err, stream)=>{
+                if(err) {
+                    conn.end();
+                    return cb(err);
+                }
+                stream.on('error', err=>{
+                    console.error(err);
+                });
+                stream.on('close', (code, signal)=>{
+                    if(code == 2) {
+                        console.log("no such file.. probabaly removed already? odd");
+                        conn.end(); 
+                        cb(); 
+                    } else if(code != 0) {
+                        conn.end(); 
+                        cb("ls for rm failed with code:"+code);
+                    } else {
+                        //file exists .. removing!
+                        conn.exec("rm "+_path, (err, stream)=>{
+                            if(err) {
+                                conn.end();
+                                return cb(err);
+                            }
+                            stream.on('error', err=>{
+                                console.error(err);
+                            });
+                            stream.on('close', (code, signal)=>{
+                                conn.end(); 
+                                if(code == 0) return cb(null);
+                                else cb("rm failed with code:"+code);
+                            });
+                            stream.on('data', data=>{
+                                console.log(data.toString());
+                            });
+                            stream.stderr.on('data', data=>{
+                                console.error(data.toString());
+                            });
+                        });
+                    }
+                });
+                stream.on('data', data=>{
+                    console.log("ls:"+data.toString());
+                });
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+            });
+        });
+    }
 } 
 
 function get_copysource_dataset(dataset) {

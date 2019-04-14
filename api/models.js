@@ -307,9 +307,9 @@ var datasetSchema = mongoose.Schema({
     product: mongoose.Schema.Types.Mixed,
 
     //storing - dataset is currently being archived (default)
-    //stored dataset is stored on storage system
-    //failed failed to archive to storage system
-    //removed dataset is removed from storage system
+    //stored -  dataset is stored on storage system
+    //failed -  failed to archive to storage system (remove_datastes.js will remove it in a week)
+    //removed - (freed) dataset is freed from storage system (remove_dataset.js will free)
     status: { type: String, default: "storing" },
     status_msg: String,
 

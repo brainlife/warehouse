@@ -210,7 +210,7 @@ function handle_task(task, cb) {
                 logger.info("handling app-archive envets");
                 async.eachSeries(task.config.datasets, (dataset_config, next_dataset)=>{
                     let _set = {
-                        status_msg: task.status_msg,
+                        status_msg: task.status_msg+ " ("+task._id.toString()+")",
                     };
                     switch(task.status) {
                     case "finished":
