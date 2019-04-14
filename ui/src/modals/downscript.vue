@@ -10,20 +10,32 @@
         <br>
     </div>
  
-    <p>Copy and paste the following command on your bash terminal where you want to download the datasets.</p>
-    <div class="downscript-area">
-        <textarea class="downscript" ref="downscript" readonly>{{downscript}}</textarea>
-        <b-btn @click="copy_downscript" size="sm" variant="secondary" class="downscript-copy"><icon name="copy"/></b-btn>
+
+    <div style="border-left: 5px solid #eee; padding-left: 10px;">
+        <h5>BIDS</h5>
+        <p>Copy and paste the following command on your bash terminal where you want to download the datasets.</p>
+        <div class="downscript-area">
+            <textarea class="downscript" ref="downscript" readonly>{{downscript}}</textarea>
+            <b-btn @click="copy_downscript" size="sm" variant="secondary" class="downscript-copy"><icon name="copy"/></b-btn>
+        </div>
+
+        <p class="text-muted">
+            The above command will download selected datasets inside sub directories for each subject. 
+            The command will also create <a href="http://bids.neuroimaging.io" target="_bids">BIDS</a> a directory (/bids) containing symbolic links to organize downloaded files into a BIDS derivative format - for BIDS compatible datatypes.
+        </p>
+
+        <p class="text-muted">
+            For Windows users, please install <a href="https://itsfoss.com/install-bash-on-windows/">bash shell</a> before running the above command.
+        </p>
     </div>
 
-    <p class="text-muted">
-        The above command will download selected datasets inside sub directories for each subject. 
-        The command will also create <a href="http://bids.neuroimaging.io" target="_bids">BIDS</a> a directory (/bids) containing symbolic links to organize downloaded files into a BIDS derivative format - for BIDS compatible datatypes.
-    </p>
-
-    <p class="text-muted">
-        For Windows users, please install <a href="https://itsfoss.com/install-bash-on-windows/">bash shell</a> before running the above command.
-    </p>
+    <div style="border-left: 5px solid #eee; padding-left: 10px;" v-if="query && query.find && query.find._id">
+        <h5>CLI</h5>
+        <p class="text-muted">
+            You can also download this dataset via <a href="https://brainlife.io/docs/cli/download/">Brainlife CLI</a>
+            <pre class="code">bl dataset download --id {{query.find._id[0]}}</pre>
+        </p>
+    </div>
 
     <div slot="modal-footer">
         <b-button variant="primary" @click="close">Close</b-button>
@@ -113,7 +125,7 @@ padding: 10px;
 overflow: auto;
 margin-bottom: 10px;
 width: 100%;
-height: 170px;
+height: 180px;
 border: none;
 }
 
@@ -129,5 +141,9 @@ transition: opacity 0.3s;
 }
 .downscript-area:hover .downscript-copy {
 opacity: 1;
+}
+.code {
+padding: 10px;
+background-color: #eee;
 }
 </style>

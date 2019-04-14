@@ -71,24 +71,25 @@
                                 <span v-if="selected.stats.rules.inactive">/ {{selected.stats.rules.inactive}}</span>
                                 <span style="opacity: 0.5">pipeline rules</span>
                             </p>
-                            <p v-if="!selected.openneuro && selected.stats.instances" class="info">
-                                <icon name="paper-plane"/>
-                                <!--
-                                <b-progress :max="20" height="18px"> 
-                                    <b-progress-bar v-for="(count, state) in selected.stats.instances" :key="state" 
-                                    :variant="getvariant(state)" :value="count" :label="count.toString()" :title="count+' '+state+' processes'"/>
-                                </b-progress>
-                                -->
-                                <stateprogress :states="selected.stats.instances"/>
-                            </p>
                         </div>
                     </b-col>
 
                     <b-col cols="9">
+                        <div v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0">
+                            <span class="form-header">Processes</span>
+                            <p>
+                                <small class="text-muted">Processes are used to run analysis.</small>
+                            </p>
+                            <p>
+                                <stateprogress :states="selected.stats.instances"/>
+                            </p>
+                        </div>
+
                         <div v-if="selected.agreements && selected.agreements.length > 0">
                             <span class="form-header">Agreements</span>
                             <p> <small class="text-muted">You must consent to the following agreement(s) before accessing datasets on this project.</small> </p>
                             <agreements :agreements="selected.agreements"/>
+                            <br>
                         </div>
 
                         <div>
@@ -127,7 +128,7 @@
                         <div v-if="selected.readme">
                             <span class="form-header">Readme</span>
                             <p class="text-muted" v-if="!selected.readme">No readme</p>
-                            <vue-markdown v-if="selected.readme" :source="selected.readme" class="box"></vue-markdown>
+                            <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme box"></vue-markdown>
                             <br>
                         </div>
                         

@@ -65,7 +65,7 @@
 
             <!--input-->
             <div slot="input" v-if="task.config._inputs">
-                <div v-for="(input, idx) in task.config._inputs" :key="idx" style="padding: 10px;">
+                <div v-for="(input, idx) in task.config._inputs" :key="idx" class="input">
                     <small style="opacity: 0.6; float: right;">{{input.id}}</small>
                     <b v-if="input.meta.subject">{{input.meta.subject}}</b>
                     <div style="display: inline-block;" v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
@@ -91,8 +91,10 @@
 
             <!--output-->
             <div slot="output">
-                <div v-for="(output, idx) in task.config._outputs" :key="idx" style="padding: 10px;">
-                    <div class="float-right" style="position: relative; top: -5px; margin-left: 10px">
+                <div v-for="(output, idx) in task.config._outputs" :key="idx" class="output">
+                    <small style="opacity: 0.6; float: right;">{{output.id}}</small>
+
+                    <div class="output-actions">
                         <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
                             <icon name="cubes"/>
                         </div>
@@ -105,7 +107,6 @@
                         </div>
                     </div>
 
-                    <small style="opacity: 0.6; float: right;">{{output.id}}</small>
                     <b v-if="output.meta.subject">{{output.meta.subject}}</b>
                     <small v-if="output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
                     <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
@@ -565,12 +566,14 @@ export default {
             this.$root.$emit("datasetselecter.open");
         },
 
+        /*
         get_tasktab_class(task) {
             let c = ["task-tab"];
             if(task.service == 'soichih/sca-product-raw' || task.service == 'brainlife/app-stage') c.push("task-tab-stage");
             c.push("task-tab-"+task.status);
             return c;
         },
+        */
 
         /*
         editdesc() {
@@ -728,6 +731,7 @@ color: #28a745;
 .new-action-button-newdataset:hover {
 background-color: #28a745;
 }
+/*
 .task-tabs {
 float: right;
 width: 300px;
@@ -774,6 +778,7 @@ border-left: 2px solid gray;
 .task-tab:hover {
 cursor: pointer;
 }
+*/
 .loading {
 position: absolute;
 padding: 10px 20px;
@@ -785,5 +790,22 @@ padding: 10px;
 }
 .instance-action {
 float: right;
+}
+.input, 
+.output {
+padding: 6px 10px; 
+font-size: 92%;
+position: relative;
+}
+.output .output-actions {
+opacity: 0;
+transition: opacity 0.5s;
+background-color: #fcfcfc;
+position: absolute;
+right: 0px;
+top: 3px;
+}
+.output:hover .output-actions {
+opacity: 1;
 }
 </style>

@@ -30,6 +30,12 @@
         <b-col>Datasets</b-col>
         <b-col cols="9">
             <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
+            <b-alert :show="is_subject_mixed" variant="info" style="margin-top: 10px;" dismissible> 
+                <icon name="info-circle"/> You have selected datasets from more than one subject. 
+                Processes are most effective when used for only a few subjects at a time. 
+                If you would like to run processes on a large amount of subjects (i.e., bulk processing), try <a href="https://brainlife.io/docs/user/pipeline/" target="doc">pipeline rules</a>. 
+                Pipeline rules allow you to easily run the same process on a large amount of subjects.              
+            </b-alert>
         </b-col>
     </b-row>
     <br>
@@ -87,6 +93,21 @@ export default {
             this.$refs.psel.load_projects();
             this.$refs.modal.show()
         });
+    },
+
+    computed: {
+        is_subject_mixed() {
+            if(!this.datasets) return false;
+            let subject = null;
+            let diff = false;
+            this.datasets.forEach(did=>{
+                let dataset = this.alldatasets[did];
+                console.log(dataset.meta.subject);
+                if(!subject) subject = dataset.meta.subject;
+                else if(subject != dataset.meta.subject) diff = true;
+            });
+            return diff;
+        }
     },
 
     methods: {

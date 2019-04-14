@@ -1,7 +1,7 @@
 <template>
 <div>
     <div v-for="agreement in agreements" class="agreement">
-        <vue-markdown :source="agreement.agreement"/>
+        <vue-markdown :source="agreement.agreement" class="readme"/>
         <b-form-checkbox @change="update_agreements(agreement._id)" v-model="user_agreements[agreement._id]">I Agree</b-form-checkbox>
     </div>
 </div>

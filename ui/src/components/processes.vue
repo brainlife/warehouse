@@ -263,7 +263,7 @@ export default {
 
         '$route': function() {
             var subid = this.$route.params.subid;
-            if(subid) {
+            if(subid && this.instances) {
                 var selected = this.instances.find(it=>it._id == subid);
                 if(this.selected && this.selected._id != subid) {
                     //update
@@ -303,6 +303,15 @@ export default {
                 let group_id = this.project.group_id;
                 this.order = window.localStorage.getItem("processes.order."+group_id)||"create_date";
                 this.show = window.localStorage.getItem("processes.show."+group_id)||null;
+                
+                if(!this.$route.params.subid) {
+                    let previous_instance = window.localStorage.getItem("processes.previous_instance."+group_id);
+                    console.log("replacing to " + previous_instance);
+                    if(previous_instance) {
+                        this.$router.replace("./process/"+previous_instance);
+                    }
+                }
+
                 this.load_instances(err=>{
                     if(err) return this.notify_error(err);
                     this.subscribe_instance_update(err=>{
@@ -369,6 +378,13 @@ export default {
                 });
                 */
                 this.selected = null;
+            }
+
+            //reset previous_instance id
+            if(this.selected) {
+                window.localStorage.setItem("processes.previous_instance."+this.project.group_id, this.selected._id);
+            } else {
+                window.localStorage.removeItem("processes.previous_instance."+this.project.group_id);
             }
         },
 
@@ -542,7 +558,7 @@ overflow: auto;
 border-bottom: 1px solid rgba(0,0,0,0.1);
 padding: 4px 15px;
 color: #333;
-transition: background-color 0.2s, color 0.2s;
+/*transition: background-color 0.2s, color 0.2s;*/
 }
 
 .instance-info {
@@ -556,7 +572,7 @@ background-color: #eee;
 .instance-header.instance-active {
 color: white;
 background-color: #007bff;
-box-shadow: 0 0 5px #aaa;
+/*box-shadow: 0 0 5px #aaa;*/
 }
 .instance-desc {
 font-size: 90%;

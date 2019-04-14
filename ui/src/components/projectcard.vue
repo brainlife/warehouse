@@ -19,21 +19,6 @@
         <b>Members</b> <contact v-for="c in project.members" :key="c._id" :id="c" size="small"/>
     </p>
     -->
-    <div class="instances">
-        <!--
-        <b-progress :max="instance_count" height="4px" v-if="instance_count > 0 && !project.openneuro"> 
-            <b-progress-bar v-for="(count, state) in project.stats.instances" :key="state"
-                :variant="getvariant(state)" 
-                :animated="isanimated(state)"
-                :value="count" 
-                :label-dis="count.toString()" 
-                :title="count+' '+state+' processes'"/>
-        </b-progress>
-        -->
-        <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
-            :states="project.stats.instances" height="4px" :show_label="false"/>
-        <div v-else style="height: 4px"></div>
-    </div>
     <div class="status">
         <b-row v-if="project.stats">
             <!--
@@ -53,6 +38,11 @@
                 <span v-if="project.stats.rules.inactive > 0">/ {{project.stats.rules.inactive+project.stats.rules.active}}</span>
             </b-col>
         </b-row>
+    </div>
+    <div class="instances">
+        <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
+            :states="project.stats.instances" height="2px" :show_label="false"/>
+        <div v-else style="height: 2px"></div>
     </div>
 </div>
 </template>

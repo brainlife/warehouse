@@ -5,11 +5,11 @@
             <projectavatar class="avatar" :project="project" :width="25" :height="25"/>
             <div class="header-row">
                 <projectaccess :access="project.access"/>
-                <small style="float: right;" v-if="project.stats.datasets">
+                <div style="float: right; font-size: 90%; opacity: 0.9;" v-if="project.stats.datasets">
                     <icon name="users" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
                     <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
                     <span v-if="project.stats.datasets.size" style="opacity: 0.8; font-size: 85%;"> ({{project.stats.datasets.size | filesize}})</span>
-                </small>
+                </div>
                 <span class="title">
                     {{project.name}}
                 </span>
@@ -17,10 +17,12 @@
             </div>
         </b-col>
         <b-col md="2" title="active pipeline rules" v-if="project.stats.rules" style="font-size: 85%;">
+            <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
+                :states="project.stats.instances" height="12px"/>
+            <!--
             <icon name="robot" scale="0.8"/>&nbsp;{{project.stats.rules.active}}
             <span v-if="project.stats.rules.inactive > 0">/ {{project.stats.rules.inactive+project.stats.rules.active}}</span>
-            <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
-                :states="project.stats.instances" height="4px" :show_label="false"/>
+            -->
         </b-col>
         <b-col md="3">
             <div class="datatypes" v-if="project.stats">

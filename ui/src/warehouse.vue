@@ -466,6 +466,7 @@ z-index: 2;
 }
 
 .btn-outline-info.active,
+.btn-outline-info:hover,
 .bg-info {
 background-color: #50bfff !important;
 }
