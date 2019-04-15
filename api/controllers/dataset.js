@@ -1164,7 +1164,6 @@ router.delete('/:id?', jwt({secret: config.express.pubkey}), function(req, res, 
     if(!Array.isArray(ids)) ids = [ ids ];
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
-        //logger.debug("getting dataset");
         async.eachSeries(ids, (id, next_id)=>{
             db.Datasets.findById(id, (err, dataset)=>{
                 if(err) return next_id(err);
@@ -1172,7 +1171,6 @@ router.delete('/:id?', jwt({secret: config.express.pubkey}), function(req, res, 
                 if(!canedit(req.user, dataset, canwrite_project_ids)) return next_id("can't edit:"+id);
                 dataset.remove_date = new Date();
                 dataset.removed = true;
-                //logger.debug("updating %s", id);
                 dataset.save(next_id);
             });
         }, err=>{

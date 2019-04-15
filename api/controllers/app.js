@@ -92,9 +92,11 @@ router.get('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     db.Apps.findById(req.params.id)
     .select(req.query.select)
     .populate(req.query.populate || '')
+    .lean()
     .exec((err, app)=>{
         if(err) return next(err);
         if(!app) return next("no such app");
+        app._canedit = canedit(req.user, app);
         res.json(app);
     });
 });
