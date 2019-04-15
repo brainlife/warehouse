@@ -258,7 +258,9 @@ export default {
             let group_id = this.project.group_id;
             if(this.show) window.localStorage.setItem("processes.show."+group_id, this.show);
             else window.localStorage.removeItem("processes.show."+group_id);
-            this.$refs["instances-list"].scrollTop = 0;
+            if (this.$refs["instances-list"]) {
+                this.$refs["instances-list"].scrollTop = 0;
+            }
         },
 
         '$route': function() {
