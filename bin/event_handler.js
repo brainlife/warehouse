@@ -41,7 +41,7 @@ db.init(err=>{
         logger.info("connected to redis");
     });
 
-    setInterval(emit_counts, 1000*config.metrics.interval); 
+    setInterval(emit_counts, 1000*config.metrics.counts.interval); 
 });
 
 function subscribe() {
@@ -123,9 +123,9 @@ function emit_counts() {
     //emit graphite metrics
     let out = "";
     for(let key in counts) {
-        out += config.metrics.prefix+"."+key+" "+counts[key]+" "+new Date().getTime()/1000+"\n";
+        out += config.metrics.counts.prefix+"."+key+" "+counts[key]+" "+new Date().getTime()/1000+"\n";
     }
-    fs.writeFileSync(config.metrics.path, out);
+    fs.writeFileSync(config.metrics.counts.path, out);
 
     counts = {}; //reset all counters
 }
