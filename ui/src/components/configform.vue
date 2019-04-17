@@ -28,9 +28,8 @@
                     :disabled="v.readonly" :required="!v.optional" 
                     v-model="value[v.id]" :placeholder="v.placeholder">
                     <option :value="null" v-if="v.optional">(don't specify)</option>
-                    <option v-for="(option, idx) in v.options" :key="idx" :value="option.value">
+                    <option v-for="(option, idx) in v.options" :key="idx" :value="option.value" :title="option.desc">
                         {{option.label}} <small>({{option.value}})</small>
-                        <span v-if="option.desc"> - {{option.desc}}</span>
                     </option>
                 </b-form-select>
 
