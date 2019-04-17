@@ -706,6 +706,9 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                             return;
                         } 
 
+                        inc_download_count(dataset);
+                        dataset.save();
+
                         datasets.push(dataset);
                     });
 
@@ -908,14 +911,18 @@ function stream_dataset(dataset, res, next) {
                 }
                 if(m.bytes == 0) logger.warn("meter count is 0... something went wrong?");
 
-                if(!dataset.download_count) dataset.download_count = 1;
-                else dataset.download_count++;
-                logger.debug("download_count %d", dataset.download_count);
-
+                inc_download_count(dataset);
                 dataset.save();
             });
         });
     });
+}
+
+function inc_download_count(dataset) {
+    if(!dataset.download_count) dataset.download_count = 1;
+    else dataset.download_count++;
+    //dataset.download_date = new Date(); //redundant with update_date
+    logger.debug("download_count %d", dataset.download_count);
 }
 
 //caches agreements for each project

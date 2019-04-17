@@ -317,9 +317,9 @@ var datasetSchema = mongoose.Schema({
 
     create_date: { type: Date, default: Date.now }, //date when this dataset was registered
     backup_date: Date, //date when this dataset was copied to the SDA (not set if it's not yet backed up)
-    download_date: Date, //last time this dataset was downloaded
+    //download_date: { type: Date, default: Date.now } , //last time this dataset was downloaded (or staged) (redundant with update_date as updating download_count should update it)
     remove_date: Date, //date when this dataset was removed
-    update_date: { type: Date, index: true }, //date which this document was last updated (used by rule handler)
+    update_date: { type: Date, index: true }, //date which this document was last updated (used by rule handler, and to see when this dataset was last downloaded / used /touched, etc..)
 
     removed: { type: Boolean, default: false},
 

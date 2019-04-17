@@ -66,9 +66,11 @@ exports.warehouse = {
 }
 
 exports.metrics = {
-    interval: 300, //emit every 5min
-    path: "/usr/local/graphite.5min/warehouse.counts", 
-    prefix: "dev.warehouse", 
+    counts: {
+        interval: 300, //emit every 5min
+        path: "/usr/local/graphite.5min/warehouse.counts", 
+        prefix: "dev.warehouse", 
+    },
 
     //graphite api (https://graphite-api.readthedocs.io/en/latest/api.html#the-metrics-api)
     //curl http://10.0.0.10/metrics/find?query=test.*
@@ -376,8 +378,7 @@ exports.storage_systems.wrangler = {
             console.log("got wrangler streams for remove");
             if(err) return cb(err);
             let _path = get_wrangler_archive_path(dataset);
-
-            conn.exec("ls "+_path, (err, stream)=>{
+            conn.exec("rm -f "+_path, (err, stream)=>{
                 if(err) {
                     conn.end();
                     return cb(err);
@@ -386,39 +387,12 @@ exports.storage_systems.wrangler = {
                     console.error(err);
                 });
                 stream.on('close', (code, signal)=>{
-                    if(code == 2) {
-                        console.log("no such file.. probabaly removed already? odd");
-                        conn.end(); 
-                        cb(); 
-                    } else if(code != 0) {
-                        conn.end(); 
-                        cb("ls for rm failed with code:"+code);
-                    } else {
-                        //file exists .. removing!
-                        conn.exec("rm "+_path, (err, stream)=>{
-                            if(err) {
-                                conn.end();
-                                return cb(err);
-                            }
-                            stream.on('error', err=>{
-                                console.error(err);
-                            });
-                            stream.on('close', (code, signal)=>{
-                                conn.end(); 
-                                if(code == 0) return cb(null);
-                                else cb("rm failed with code:"+code);
-                            });
-                            stream.on('data', data=>{
-                                console.log(data.toString());
-                            });
-                            stream.stderr.on('data', data=>{
-                                console.error(data.toString());
-                            });
-                        });
-                    }
+                    conn.end(); 
+                    if(code == 0) return cb(null);
+                    else cb("rm failed with code:"+code);
                 });
                 stream.on('data', data=>{
-                    console.log("ls:"+data.toString());
+                    console.log(data.toString());
                 });
                 stream.stderr.on('data', data=>{
                     console.error(data.toString());
