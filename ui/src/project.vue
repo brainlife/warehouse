@@ -42,7 +42,7 @@
             </div>
 
             <b-alert :show="selected.removed" style="border-radius: 0px" variant="secondary">This project has been removed.</b-alert>
-            <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px" variant="secondary">This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.</b-alert>
+            <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px; color: #888;" variant="secondary">This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.</b-alert>
             <div style="margin: 20px;">
                 <b-row>
                     <b-col cols="3" class="sideinfo">
@@ -242,7 +242,7 @@ export default {
 
             tabs: [
                 {id: "detail", label: "Detail"},
-                {id: "dataset", label: "Datasets"},
+                {id: "dataset", label: "Archive"},
                 {id: "process", label: "Processes"},
                 {id: "pipeline", label: "Pipelines"},
                 {id: "pub", label: "Publications"},

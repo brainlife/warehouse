@@ -1,7 +1,7 @@
 <template>
 <div v-if="ready">
-    <div v-if="!editing && rules.length > 0" class="info">
-        <span><b>{{rules.length}}</b> Pipeline Rules</span>
+    <div v-if="!editing && nonremoved_rule_count > 0" class="info">
+        <span><b>{{nonremoved_rule_count}}</b> Pipeline Rules</span>
         <div style="float: right">
             <small>Order by</small>
             <b-dropdown :text="order" size="sm" :variant="'light'">
@@ -16,10 +16,10 @@
             </b-dropdown>
         </div>
     </div>
-    <ruleform :value="editing" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
+    <ruleform :value="editing" :new_output_tags="['rule'+rules.length]" v-if="editing" @cancel="cancel_edit" @submit="submit"/>
     <div v-else class="list" ref="scrolled">
         <!--list view-->
-        <div class="margin20" v-if="rules.length == 0">
+        <div class="margin20" v-if="nonremoved_rule_count == 0">
             <p class="text-muted">Pipeline rules allow you to automate bulk submissions of your processes based on defined criterias.</p>
             <p class="text-muted">This feature could potentially launch a large number of processes. Please read our <a href="https://brainlife.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
         </div>
@@ -34,8 +34,7 @@
                 </b-col>
             </b-row>
 
-            <div v-for="rule in sorted_rules" :key="rule._id" 
-                :id="rule._id" 
+            <div v-for="rule in sorted_rules" :key="rule._id" :id="rule._id" 
                 :class="{'rule-removed': rule.removed, 'rule-selected': selected == rule, 'rule-inactive': !rule.active}"
                 class="rule" 
                 v-if="rule.removed == false">
@@ -277,6 +276,11 @@ export default {
     },
 
     computed: {
+
+        nonremoved_rule_count() {
+            return this.rules.filter(rule=>rule.removed == false).length;    
+        },
+
         sorted_rules() {
 
             //then sort
@@ -329,7 +333,7 @@ export default {
             this.$http.get('rule', {params: {
                 find: JSON.stringify({
                     project: this.project._id,
-                    removed: false,
+                    //removed: false, //I need all rules so that I can get the total count
                 }),
                 populate: 'app', 
                 sort: 'create_date', 
@@ -458,6 +462,7 @@ export default {
             Vue.nextTick(()=>{
                 //scroll to the selected rule (TODO - I think I should delay until animation is over?)
                 if(this.selected) {
+                    //console.log("searching for ", this.selected._id)
                     var elem = document.getElementById(this.selected._id);
                     this.$refs.scrolled.scrollTop = elem.offsetTop;
                 }

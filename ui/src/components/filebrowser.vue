@@ -345,7 +345,7 @@ margin-right: 30px;
 .file-content-buttons {
 position: absolute; 
 top: 3px; 
-right: 10px; 
+right: 20px; 
 opacity: 0;
 transition: opacity 0.3s;
 z-index: 1;

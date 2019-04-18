@@ -138,35 +138,35 @@ box-shadow: none;
 background-color: inherit;
 }
 .header {
-margin-right: 10px;
-margin-left: 10px;
+margin-right: 7px;
+margin-left: 7px;
 }
 .name {
 color: #666;
 padding: 0px;
-padding-top: 10px;
+padding-top: 7px;
 margin-bottom: 0px;
 transition: color 0.5s;
 }
 .desc {
-opacity: 0.8;
+opacity: 0.9;
 margin-top: 0px;
-padding: 10px;
+padding: 7px;
 margin-bottom: 32px;
 transition: color 0.5s;
-font-size: 90%;
+font-size: 86%;
 }
 .image {
 width: 100%;
 display: block;
 }
 h4 {
-font-size: 15px;
+font-size: 14px;
 font-weight: bold;
 padding-bottom: 0px;
 }
 h5 {
-font-size: 13px;
+font-size: 12px;
 }
 .compact .name {
 padding: 0px;
@@ -195,8 +195,7 @@ height: 100%;
 box-shadow: inset -5px -10px 10px white;
 }
 .datatypes {
-font-size: 80%;
-margin: 3px 0px;
+font-size: 78%;
 }
 .datatype {
 display: inline-block;

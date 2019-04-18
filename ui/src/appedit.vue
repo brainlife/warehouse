@@ -273,7 +273,7 @@ Normally, the App description is automatically pulled from github repo descripti
                             </b-row>
                         </b-card>
                         <br>
-                        <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm">Add Enum Option</b-button>
+                        <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm">Add Option</b-button>
                     </b-card>
                 </div>
             </div>
@@ -282,7 +282,7 @@ Normally, the App description is automatically pulled from github repo descripti
                     <b-dropdown-item @click="add_param('string')">String</b-dropdown-item>
                     <b-dropdown-item @click="add_param('number')">Number</b-dropdown-item>
                     <b-dropdown-item @click="add_param('boolean')">Boolean</b-dropdown-item>
-                    <b-dropdown-item @click="add_param('enum')">Enum</b-dropdown-item>
+                    <b-dropdown-item @click="add_param('enum')">Enum (Multiple Choice)</b-dropdown-item>
                     <!--integer is deprecated-->
                 </b-dropdown>
             </p>
@@ -392,9 +392,8 @@ Normally, the App description is automatically pulled from github repo descripti
                     <b-card>
                            <b-row>
                             <b-col>
-                                <b-input-group prepend="ID">
-                                    <b-form-input type="text" v-model="output.id" required />
-                                </b-input-group>
+                                <div class="text-muted">Output Directory</div>
+                                <b-form-input type="text" v-model="output.id" required />
                             </b-col>
                             <b-col cols="7">
                                  <div style="float: right;">
@@ -410,7 +409,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                 </div>
                             </b-col>
                         </b-row>
-                        <small class="text-muted">You should output files in a subdirectory with this ID as the directory name (unless you set "Output on root" below.)</small>
+                        <!--<small class="text-muted">You should output files in a subdirectory with this ID as the directory name (unless you set "Output on root" below.)</small>-->
                         <b-row>
                             <b-col>
                                 <div class="text-muted">Datatype</div>
@@ -433,7 +432,7 @@ Normally, the App description is automatically pulled from github repo descripti
                         </b-row>
                         
                         <br>
-                        <b-form-checkbox v-model="output.output_on_root">(DEPRECATED) Output files on the root of workdir (instead of inside the subdirectory with ID of this output as the directory name)</b-form-checkbox>
+                        <b-form-checkbox v-model="output.output_on_root">(DEPRECATED) ignore output directory. Output files will be stored on the root of workdir.</b-form-checkbox>
                         <div v-if="output.output_on_root">
                             <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/direcory name to avoid more than 1 output to collide.</small></div>
                             <b-form-textarea v-model="output._files" :rows="3" :placeholder="default_outmap(output.datatype)"></b-form-textarea>

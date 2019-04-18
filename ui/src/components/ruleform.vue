@@ -5,7 +5,6 @@
         <b-form-group label="Name *" horizontal>
             <b-form-input required v-model="rule.name" type="text" placeholder="Please enter name for this rule (used for output dataset description)"></b-form-input>
         </b-form-group>
-
         <!--
         <b-form-group horizontal>
             <b-form-checkbox v-model="rule.active">Active</b-form-checkbox>
@@ -14,7 +13,7 @@
         -->
 
         <b-form-group label="App *" horizontal>
-            <v-select required v-model="rule.app" label="name" :filterable="false" :options="apps" @search="search_app">
+            <v-select required v-model="rule.app" label="name" :filterable="false" :options="apps" @search="search_app" placeholder="Please enter App name to search">
                 <template slot="no-options">please enter App name / desc to search</template>
                 <template slot="option" slot-scope="app">
                     <app :app="app" :compact="true" :clickable="false"/>
@@ -107,24 +106,15 @@
                                 <p>
                                     <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
                                     <small class="text-muted">Output tags allows you can easily query for specific set of datasets on subsequent rules.</small>
-                                    <!--
-                                    <small v-if="rule.output_tags_neg_count[output.id]">{{rule.output_tags_neg_count[output.id]}} datasets needs to be generated</small>
-                                    -->
-                                </p>
-                                <p>
-                                    <b-form-checkbox v-model="rule.archive[output.id].do">Archive Output</b-form-checkbox>
                                 </p>
                             </b-col>
                         </b-row>
-                        <b-row v-if="rule.archive[output.id].do">
-                            <b-col>
-                            </b-col>
-                            <b-col :cols="9">
-                                <p>
-                                    <b-form-textarea :rows="2" v-model="rule.archive[output.id].desc" placeholder="Description for archived dataset"/>
-                                </p>
-                            </b-col>
-                        </b-row> 
+                        <p>
+                            <b-form-checkbox v-model="rule.archive[output.id].do">Archive Output</b-form-checkbox>
+                        </p>
+                        <p v-if="rule.archive[output.id].do">
+                            <b-form-textarea :rows="2" v-model="rule.archive[output.id].desc" placeholder="Description for archived dataset"/>
+                        </p>
                     </b-card>
                 </div><!--border-->
             </b-form-group>
@@ -159,6 +149,7 @@ let debounce = null;
 export default {
     props: {
         value: { type: Object },
+        //new_output_tags: { type: Array }, //output_datasets tags for new output
     },
 
     components: { 
@@ -352,9 +343,15 @@ export default {
                 input.edit_extra_tags = (this.rule.extra_datatype_tags[input.id].length > 0);
             });
             this.rule.app.outputs.forEach(output=>{
-                if(!this.rule.output_tags[output.id]) Vue.set(this.rule.output_tags, output.id, []);
+                if(!this.rule.output_tags[output.id]) Vue.set(this.rule.output_tags, output.id, [this.compose_output_tag()]);
                 if(!this.rule.archive[output.id]) Vue.set(this.rule.archive, output.id, {do: true, desc: ""}); //archive all by default
             });
+        },
+
+        compose_output_tag() {
+            let tag = this.rule.name||"noname";
+            tag = tag.toLowerCase().replace(/\W/g, '_');
+            return tag;
         },
 
         ensure_config_exists() {

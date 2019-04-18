@@ -134,6 +134,10 @@ bottom: 0px;
 padding: 10px 30px;
 background-color: rgba(100,100,100,0.4);
 z-index: 2;
+pointer-events: none;
+}
+.page-footer .btn {
+pointer-events: auto;
 }
 
 .page-footer.with-menu,

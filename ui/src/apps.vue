@@ -45,7 +45,7 @@
             <div v-if="app_groups['_new']" class="newapps" id="_new" style="position: relative">
                 <h4 class="group-title colored">New Apps</h4> 
                 <div v-for="app in app_groups['_new']" :key="app._id" class="app">
-                    <app :app="app" height="246px" class="app-card"/>
+                    <app :app="app" height="220px" class="app-card"/>
                 </div>
                 <!--
                 <div v-if="tag == '_new'" style="clear: both; color: white; padding: 20px; padding-bottom: 0px;">
@@ -61,7 +61,7 @@
             <div v-for="tag in sorted_tags" :id="tag" style="position: relative;" :key="tag">
                 <h4 class="group-title">{{tag}} <!--<small style="float: right;">{{app_groups[tag].length}} Apps</small>--> </h4> 
                 <div v-for="app in app_groups[tag]" :key="app._id" class="app">
-                    <app :app="app" height="246px" class="app-card"/>
+                    <app :app="app" height="220px" class="app-card"/>
                 </div>
                 <br clear="both">
             </div>
@@ -86,7 +86,7 @@
             <div style="position: relative;" id="_mine" class="bg-success" v-if="my_apps && my_apps.length > 0">
                 <h4 class="group-title colored">My Apps <!--<small style="float: right">{{my_apps.length}} Apps</small>--> </h4> 
                 <div v-for="app in my_apps" :key="app._id" class="app">
-                    <app :app="app" height="246px" class="app-card"/>
+                    <app :app="app" height="220px" class="app-card"/>
                 </div>
                 <br clear="both">
                 <!--
@@ -378,11 +378,11 @@ color: white;
 .app {
 margin-left: 10px;
 margin-bottom: 10px;
-width: 350px;
+width: 325px;
 float: left;
 position: relative;
 top: 0;
-transition: all 0.3s ease;
+transition: box-shadow 0.3s ease;
 }
 .app:hover {
 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
