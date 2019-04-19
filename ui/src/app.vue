@@ -1,8 +1,16 @@
 <template>
-<div v-if="app">
+<div>
     <sidemenu active="/apps"></sidemenu>
-    <div class="page-content">
-        <b-alert :show="app.removed" variant="secondary">This App has been removed.</b-alert>
+    <div v-if="noaccess" class="page-content">
+        <b-container>
+            <h3 style="padding: 50px 0 15px 0;opacity: 0.7"><icon name="lock" class="text-danger" scale="1.5"/> Private App</h3>
+            <b-alert show variant="secondary">
+                The App you are trying access is a private App (belongs to a specific brainlife project). You must be logged in and also must be a member 
+                of the project to which this App belongs. Please contact the current maintainer of this App.
+            </b-alert>
+        </b-container>
+    </div>
+    <div v-if="app" class="page-content">
         <div class="header">
             <b-container>
                 <b-row>
@@ -38,16 +46,8 @@
                         </p>
                     </b-col>
                 </b-row>
-
-                <!--
-                <b-tabs class="brainlife-tab" v-model="tab_index">
-                    <b-tab title="Detail"/>
-                    <b-tab>
-                        <template slot="title">Execute</template>
-                    </b-tab>
-                </b-tabs>
-                -->
             </b-container>
+            <b-alert :show="app.removed" variant="secondary">This App has been removed.</b-alert>
         </div><!--header-->
 
         <b-container>
@@ -58,11 +58,6 @@
                         <p> 
                             <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
                         </p>
-                        <!--
-                        <p>
-                            <contact :id="app.user_id" size="small"/> 
-                        </p>
-                        -->
                         <p>
                             <doibadge :doi="app.doi" v-if="app.doi"/>
                         </p>
@@ -230,49 +225,14 @@
 
                     </b-col>
                 </b-row>
-
-                <!--
-                <div class="side-card">
-                    <center>
-                        <span class="text-muted">Badges</span>
-                        <br>
-                        <br>
-                        <img :src="'https://img.shields.io/badge/brainlife.io-app-green.svg'" @click="show_badge_url()"><br>
-                    </center>
-                </div>
-                -->
             </div>
 
-            <!--
-            <div v-if="tab_index == 1">
-                <p><small class="text-muted">From github repo / README.md</small></p>
-                <vue-markdown v-if="readme" :source="readme" class="readme"></vue-markdown>
-            </div>
-            <div v-if="tab_index == 1">
-                <appsubmit v-if="config.user" :id="app._id"/>
-                <p v-else class="text-muted">Please login to execute the App.</p>
-            </div>
-            <div v-if="tab_index == 3">
-                <p class="text-muted">No test status available yet.</p>
-            </div>
-            -->
             <br>
             <br>
             <br>
             <br>
             <br>
         </b-container>
-
-        <!--
-        <br>
-        <b-card v-if="config.debug">
-            <div slot="header">Debug</div>
-            <h3>App</h3>
-            <pre v-highlightjs="JSON.stringify(app, null, 4)"><code class="json hljs"></code></pre>
-            <h3>Preferred Resource</h3>
-            <pre v-highlightjs="JSON.stringify(preferred_resource, null, 4)"><code class="json hljs"></code></pre>
-        </b-card>
-        -->
     </div><!--page-content-->
 </div>
 </template>
@@ -315,6 +275,8 @@ export default {
     data () {
         return {
             app: null,
+            noaccess: false,
+
             preferred_resource: null,
             resources: null,
             readme: null,
@@ -340,6 +302,11 @@ export default {
             limit: 500, //TODO - this is not sustailable
         }})
         .then(res=>{
+            if(res.data.apps.length == 0) {
+                this.noaccess = true;
+                throw "private app";
+            }
+
             this.app = res.data.apps[0];
             if(this.config.user) this.find_resources(this.app.github);
 
