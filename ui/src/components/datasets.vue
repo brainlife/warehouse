@@ -45,6 +45,7 @@
                         <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked, removed: dataset.removed}">
                             <b-row>
                                 <b-col cols="3" class="truncate">
+                                    <small v-if="dataset.size" style="float: right;">{{dataset.size|filesize}}</small>
                                     <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
                                     <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
                                     <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
@@ -53,7 +54,7 @@
                                     <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
-                                    {{dataset.desc||'&nbsp;'}}
+                                    <span style="">{{dataset.desc||'&nbsp;'}}</span>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
                                     <time>{{new Date(dataset.create_date).toLocaleString()}}</time>

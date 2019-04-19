@@ -277,6 +277,7 @@ export default {
                 case "jpeg":
                 case "jpg":
                 case "gif":
+                case "svg":
                     Vue.set(file, 'image_src', url);
                     Vue.set(file, 'view', true);
                     return;
