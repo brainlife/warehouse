@@ -1,7 +1,7 @@
 <template>
 <div id="warehouse">
     <router-view/>
-    <notifications position="bottom right"/>
+    <notifications position="top right"/>
     <modals/>
 
 </div>

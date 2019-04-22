@@ -298,8 +298,8 @@ exports.storage_systems.wrangler = {
                 let disk_quota = parseInt(stats[2]);
                 let files_used = parseInt(stats[4]);
                 let files_quota = parseInt(stats[6]);
-                if(disk_used / disk_quota > 0.8) return cb("disk >80% used");
-                if(files_used / files_quota > 0.8) return cb("files >80% used");
+                if(disk_used / disk_quota > 0.85) return cb("disk >85% used");
+                if(files_used / files_quota > 0.85) return cb("files >85% used");
                 cb();
             });
         });

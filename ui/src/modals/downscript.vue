@@ -1,44 +1,46 @@
 <template>
 <b-modal :no-close-on-backdrop='true' title="Download Datasets" ref="modal" size="lg">
-     <div v-if="single_dataset_url">
-        <p>
-            <b-button block variant="secondary" @click="direct_download">
-                Download to your computer
-            </b-button>
-        </p>
-        <center style="opacity: 0.7; font-weight: bold;">or</center>
+    <div v-if="single_dataset_url">
+        <b-row>
+            <b-col>
+                <p style="opacity: 0.8; min-height: 40px">Click the below button to download to your browser.</p>
+                <b-button block variant="secondary" @click="direct_download">
+                    <icon name="download"/> Download
+                </b-button>
+            </b-col>
+            <b-col v-if="query && query.find && query.find._id">
+                <p style="opacity: 0.8; min-height: 40px;">Or, copy and paste the following command where you want to download this dataset
+                    using <a href="https://brainlife.io/docs/cli/download/">Brainlife CLI</a>.</p>
+                <pre class="code">bl dataset download --id {{query.find._id[0]}}</pre>
+            </b-col>
+        </b-row>
+    </div>
+    <div v-if="single_dataset_url">
+        <br>
+        <br>
+        <center style="opacity: 0.7; font-weight: bold;">OR</center>
         <br>
     </div>
- 
 
-    <div style="border-left: 5px solid #eee; padding-left: 10px;">
-        <h5>BIDS</h5>
-        <p>Copy and paste the following command on your bash terminal where you want to download the datasets.</p>
+    <div class="subsection">
+        <h5>BIDS Download</h5>
+        <p class="text-muted">
+            Copy and paste the following command to your terminal on a computer where you want to download selected datasets.
+            This command will also create <a href="http://bids.neuroimaging.io" target="_bids">BIDS</a> a directory (/bids) 
+            containing symbolic links to organize downloaded files into a BIDS derivative format (for BIDS compatible datatypes).
+        </p>
         <div class="downscript-area">
             <textarea class="downscript" ref="downscript" readonly>{{downscript}}</textarea>
             <b-btn @click="copy_downscript" size="sm" variant="secondary" class="downscript-copy"><icon name="copy"/></b-btn>
         </div>
 
         <p class="text-muted">
-            The above command will download selected datasets inside sub directories for each subject. 
-            The command will also create <a href="http://bids.neuroimaging.io" target="_bids">BIDS</a> a directory (/bids) containing symbolic links to organize downloaded files into a BIDS derivative format - for BIDS compatible datatypes.
-        </p>
-
-        <p class="text-muted">
-            For Windows users, please install <a href="https://itsfoss.com/install-bash-on-windows/">bash shell</a> before running the above command.
-        </p>
-    </div>
-
-    <div style="border-left: 5px solid #eee; padding-left: 10px;" v-if="query && query.find && query.find._id">
-        <h5>CLI</h5>
-        <p class="text-muted">
-            You can also download this dataset via <a href="https://brainlife.io/docs/cli/download/">Brainlife CLI</a>
-            <pre class="code">bl dataset download --id {{query.find._id[0]}}</pre>
+            For Windows users, you will need to install <a href="https://itsfoss.com/install-bash-on-windows/">bash shell</a> before running the command.
         </p>
     </div>
 
     <div slot="modal-footer">
-        <b-button variant="primary" @click="close">Close</b-button>
+        <b-button variant="primary" @click="close">Cancel</b-button>
     </div>
 </b-modal>
 </template>
@@ -120,13 +122,14 @@ export default {
 font-family: monospace; 
 background-color: #eee; 
 white-space: pre-wrap; 
-font-size: 65%;
+font-size: 68%;
 padding: 10px;
 overflow: auto;
 margin-bottom: 10px;
 width: 100%;
 height: 180px;
 border: none;
+color: #000; /*only needed for firefox?*/
 }
 
 .downscript-area {
@@ -145,5 +148,9 @@ opacity: 1;
 .code {
 padding: 10px;
 background-color: #eee;
+}
+.subsection {
+box-shadow: inset 4px 0 4px #e0e0e0;
+padding: 20px;
 }
 </style>
