@@ -46,7 +46,7 @@
                 This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.
             </b-alert>
             
-            <b-alert v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size < selected.quota" show variant="danger">
+            <b-alert v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size > selected.quota" show variant="danger">
                 This project is currently over quota for archive storage. 
                 (<b>{{selected.stats.datasets.size|filesize}}</b> stored with <b>{{selected.quota|filesize}}</b> project quota)
                 Please remove any data derivatives that are no longer needed for subsequent data processing. You may not be able to 

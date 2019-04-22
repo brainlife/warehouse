@@ -57,7 +57,8 @@
                                     <span style="">{{dataset.desc||'&nbsp;'}}</span>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
-                                    <small v-if="dataset.size" style="float: right;">{{dataset.size|filesize}}</small>
+                                    <small v-if="dataset.size" style="float: right;" :class="{'text-danger': dataset.size > 1000000000}">
+                                        {{dataset.size|filesize}}</small>
                                     <time>{{new Date(dataset.create_date).toLocaleString()}}</time>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
