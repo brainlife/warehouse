@@ -10,6 +10,7 @@
 
             <div style="padding: 5px 0px; margin-bottom: 10px;">
                 <b>{{total_subjects}}</b> Subjects &nbsp;&nbsp;&nbsp; <b>{{total_datasets}}</b> Datasets
+                <span v-if="total_size">({{total_size|filesize}})</span>
             </div>
 
             <b-row class="table-column">
@@ -53,9 +54,11 @@
                                     <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
-                                    {{dataset.desc||'&nbsp;'}}
+                                    <span style="">{{dataset.desc||'&nbsp;'}}</span>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
+                                    <small v-if="dataset.size" style="float: right;" :class="{'text-danger': dataset.size > 1000000000}">
+                                        {{dataset.size|filesize}}</small>
                                     <time>{{new Date(dataset.create_date).toLocaleString()}}</time>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
@@ -165,6 +168,7 @@ export default {
 
             total_datasets: null, //number of datasets for this project
             total_subjects: null, //number of subjects for this project
+            total_size: null,
 
             page_info: [], //{top/bottom/visible/}
             loading: false,
@@ -204,6 +208,7 @@ export default {
         selected_count() {
             return Object.keys(this.selected).length;
         },
+
         selected_size() {
             var size = 0;
             for(var did in this.selected) {
@@ -311,6 +316,7 @@ export default {
             this.page_info = [];
             this.last_groups = {};
             this.total_datasets = null;
+            this.total_size = null;
             this.total_subjects = null;
             this.load();
 
@@ -450,13 +456,15 @@ export default {
                     find: JSON.stringify({$and: this.get_mongo_query()}),
                     skip: loaded,
                     limit: 250,  //needs to be bigger than the largest dataset per subject (bigger == slower for vue to render)
-                    sort: 'meta.subject meta.session -create_date'
+                    sort: 'meta.subject meta.session -create_date',
+                    select: 'create_date datatype datatype_tags desc size tags meta.subject meta.session meta.run status removed project',
                 },
                 cancelToken: source.token
             })
             .then(res=>{
                 this.loading = false;
                 this.total_datasets = res.data.count;
+                this.total_size = res.data.size;
                 var groups = this.last_groups; //start with the last subject group from previous load
 
                 var last_subject = null;

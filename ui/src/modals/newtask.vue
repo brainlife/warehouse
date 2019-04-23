@@ -24,18 +24,18 @@
             <b-tabs v-else class="brainlife-tab">
                 <b-tab title="Popular" v-if="apps.length > 9">
                     <div class="apps">
-                        <div style="width: 33%; float: left;" v-for="app in most_popular_apps" :key="app._id">
-                            <div @click="selectapp(app)" style="margin-bottom: 10px; margin-right: 10px;">
-                                <app :app="app" :clickable="false" class="clickable" height="270px"/>
+                        <div v-for="app in most_popular_apps" :key="app._id">
+                            <div class="app" @click="selectapp(app)">
+                                <app :app="app" :clickable="false" class="clickable" height="230px"/>
                             </div>
                         </div>
                     </div>
                 </b-tab>
                 <b-tab title="All">
                     <div class="apps">
-                        <div style="width: 33%; float: left;" v-for="app in apps" :key="app._id">
-                            <div @click="selectapp(app)" style="margin-bottom: 10px; margin-right: 10px;">
-                                <app :app="app" :clickable="false" class="clickable" height="270px"/>
+                        <div v-for="app in apps" :key="app._id">
+                            <div class="app" @click="selectapp(app)">
+                                <app :app="app" :clickable="false" class="clickable" height="230px"/>
                             </div>
                         </div>
                     </div>
@@ -535,5 +535,16 @@ top: 45px;
 left: 0;
 right: 0;
 bottom: 0px;
+}
+.app {
+width: calc(33% - 10px); 
+float: left;
+transition: box-shadow 0.3s ease;
+margin-right: 10px;
+margin-bottom: 10px;
+}
+.app:hover {
+box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+/*top: -5px;*/
 }
 </style>

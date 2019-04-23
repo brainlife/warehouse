@@ -112,20 +112,20 @@ Normally, the App description is automatically pulled from github repo descripti
             </h4>
             <div>
                 <div v-for="(param, idx) in config_params" v-if="param.pid" :key="param.pid" style="margin:5px;">
-                    <b-card v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
+                    <b-card>
                          <div class="right-buttons">
                             <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
-                                <icon name="arrow-up" scale="1.25"/>
+                                <icon name="arrow-up"/>
                             </div>
                             <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
-                                <icon name="arrow-down" scale="1.25" />
+                                <icon name="arrow-down"/>
                             </div>
                             <div class="button button-danger" @click="config_params.splice(idx, 1)">
-                                <icon name="trash" scale="1.25"/>
+                                <icon name="trash"/>
                             </div>
                         </div>
-                        <h4>{{param.type|capitalize}}</h4>
-                        <b-row>
+                        <h5>{{param.type|capitalize}}</h5>
+                        <b-row v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
                             <b-col>
                                 <b-form-group>
                                     <b-input-group prepend="config.json key">
@@ -176,21 +176,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                 </b-form-group>
                             </b-col>
                         </b-row>
-                    </b-card>
-                    <b-card v-if="param.type == 'boolean'">
-                        <div class="right-buttons">
-                            <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
-                                <icon name="arrow-up" scale="1.25"/>
-                            </div>
-                            <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
-                                <icon name="arrow-down" scale="1.25" />
-                            </div>
-                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
-                        </div>
-                        <h4>{{param.type|capitalize}}</h4>
-                        <b-row>
+                        <b-row v-if="param.type == 'boolean'">
                             <b-col>
                                 <b-form-group>
                                     <b-input-group prepend="Key">
@@ -212,68 +198,56 @@ Normally, the App description is automatically pulled from github repo descripti
                                 <b-form-input type="text" v-model="param.desc"></b-form-input>
                             </b-col>
                         </b-row>
-                    </b-card>
-                    <b-card v-else-if="param.type == 'enum'">
-                         <div class="right-buttons">
-                            <div class="button" v-if="idx > 0 && config_params.length > 1" @click="move_param_up(idx)">
-                                <icon name="arrow-up" scale="1.25"/>
-                            </div>
-                            <div class="button" v-if="idx < config_params.length - 1 && config_params.length > 1" @click="move_param_down(idx)">
-                                <icon name="arrow-down" scale="1.25" />
-                            </div>
-                            <div class="button button-danger" @click="config_params.splice(idx, 1)">
-                                <icon name="trash" scale="1.25"/>
-                            </div>
-                        </div>
-                        <h4>{{param.type|capitalize}}</h4>
-                        <b-row>
-                            <b-col>
-                                <b-form-group>
-                                    <b-input-group prepend="Key">
-                                        <b-form-input type="text" v-model="param.id"></b-form-input>
-                                    </b-input-group>
-                                </b-form-group>
-                                <b-form-group v-if="param.options.length">
-                                    <b-input-group prepend="Default Value">
-                                        <b-form-select :options="param.options.map(o => o.value)" v-model="param.default"></b-form-select>
-                                    </b-input-group>
-                                </b-form-group>
-                                <b-form-group v-if="param.default !== ''">
-                                    <b-form-checkbox v-model="param.readonly">Read Only 
-                                    <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
-                                </b-form-group>
-                                <b-form-group>
-                                    <b-form-checkbox v-model="param.optional">Optional Configuration<br>
-                                    <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
-                                </b-form-group>
-                            </b-col>
-                            <b-col sm="7">
-                                <div class="text-muted">Description</div>
-                                <b-form-textarea v-model="param.desc" :rows="4"></b-form-textarea>
-                            </b-col>
-                        </b-row>
-                        <b>Options</b>
-                        <b-card v-for="(option, idx) in param.options" :key="idx" style="margin-bottom: 5px; margin-top: 5px;">
-                            <div class="button" @click="param.options.splice(idx, 1)" style="float: right">
-                                <icon name="trash"/>
-                            </div>
+                        <div v-else-if="param.type == 'enum'">
                             <b-row>
-                                <b-col cols="2">
-                                    <div class="text-muted">Value</div>
-                                    <b-form-input type="text" v-model="option.value"></b-form-input>
-                                </b-col>
                                 <b-col>
-                                    <div class="text-muted">Label</div>
-                                    <b-form-input type="text" v-model="option.label"></b-form-input>
+                                    <b-form-group>
+                                        <b-input-group prepend="Key">
+                                            <b-form-input type="text" v-model="param.id"></b-form-input>
+                                        </b-input-group>
+                                    </b-form-group>
+                                    <b-form-group v-if="param.options.length">
+                                        <b-input-group prepend="Default Value">
+                                            <b-form-select :options="param.options.map(o => o.value)" v-model="param.default"></b-form-select>
+                                        </b-input-group>
+                                    </b-form-group>
+                                    <b-form-group v-if="param.default !== ''">
+                                        <b-form-checkbox v-model="param.readonly">Read Only 
+                                        <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
+                                    </b-form-group>
+                                    <b-form-group>
+                                        <b-form-checkbox v-model="param.optional">Optional Configuration<br>
+                                        <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
+                                    </b-form-group>
                                 </b-col>
-                                <b-col>
+                                <b-col sm="7">
                                     <div class="text-muted">Description</div>
-                                    <b-form-input type="text" v-model="option.desc"></b-form-input>
+                                    <b-form-textarea v-model="param.desc" :rows="4"></b-form-textarea>
                                 </b-col>
                             </b-row>
-                        </b-card>
-                        <br>
-                        <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm">Add Enum Option</b-button>
+                            <b>Options</b>
+                            <b-card v-for="(option, idx) in param.options" :key="idx" style="margin-bottom: 5px; margin-top: 5px;">
+                                <div class="button" @click="param.options.splice(idx, 1)" style="float: right">
+                                    <icon name="trash"/>
+                                </div>
+                                <b-row>
+                                    <b-col cols="2">
+                                        <div class="text-muted">Value</div>
+                                        <b-form-input type="text" v-model="option.value"></b-form-input>
+                                    </b-col>
+                                    <b-col>
+                                        <div class="text-muted">Label</div>
+                                        <b-form-input type="text" v-model="option.label"></b-form-input>
+                                    </b-col>
+                                    <b-col>
+                                        <div class="text-muted">Description</div>
+                                        <b-form-input type="text" v-model="option.desc"></b-form-input>
+                                    </b-col>
+                                </b-row>
+                            </b-card>
+                            <br>
+                            <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm">Add Enum Option</b-button>
+                        </div>
                     </b-card>
                 </div>
             </div>
@@ -282,7 +256,7 @@ Normally, the App description is automatically pulled from github repo descripti
                     <b-dropdown-item @click="add_param('string')">String</b-dropdown-item>
                     <b-dropdown-item @click="add_param('number')">Number</b-dropdown-item>
                     <b-dropdown-item @click="add_param('boolean')">Boolean</b-dropdown-item>
-                    <b-dropdown-item @click="add_param('enum')">Enum</b-dropdown-item>
+                    <b-dropdown-item @click="add_param('enum')">Enum (Multiple Choice)</b-dropdown-item>
                     <!--integer is deprecated-->
                 </b-dropdown>
             </p>
@@ -392,9 +366,8 @@ Normally, the App description is automatically pulled from github repo descripti
                     <b-card>
                            <b-row>
                             <b-col>
-                                <b-input-group prepend="ID">
-                                    <b-form-input type="text" v-model="output.id" required />
-                                </b-input-group>
+                                <div class="text-muted">Output Directory</div>
+                                <b-form-input type="text" v-model="output.id" required />
                             </b-col>
                             <b-col cols="7">
                                  <div style="float: right;">
@@ -410,7 +383,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                 </div>
                             </b-col>
                         </b-row>
-                        <small class="text-muted">You should output files in a subdirectory with this ID as the directory name (unless you set "Output on root" below.)</small>
+                        <!--<small class="text-muted">You should output files in a subdirectory with this ID as the directory name (unless you set "Output on root" below.)</small>-->
                         <b-row>
                             <b-col>
                                 <div class="text-muted">Datatype</div>
@@ -433,7 +406,7 @@ Normally, the App description is automatically pulled from github repo descripti
                         </b-row>
                         
                         <br>
-                        <b-form-checkbox v-model="output.output_on_root">(DEPRECATED) Output files on the root of workdir (instead of inside the subdirectory with ID of this output as the directory name)</b-form-checkbox>
+                        <b-form-checkbox v-model="output.output_on_root">(DEPRECATED) ignore output directory. Output files will be stored on the root of workdir.</b-form-checkbox>
                         <div v-if="output.output_on_root">
                             <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/direcory name to avoid more than 1 output to collide.</small></div>
                             <b-form-textarea v-model="output._files" :rows="3" :placeholder="default_outmap(output.datatype)"></b-form-textarea>
@@ -989,5 +962,8 @@ transition: transform .45s;
 float: right;
 position: relative;
 z-index: 1;
+}
+h5 {
+font-size: 18px;
 }
 </style>

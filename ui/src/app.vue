@@ -1,8 +1,16 @@
 <template>
-<div v-if="app">
+<div>
     <sidemenu active="/apps"></sidemenu>
-    <div class="page-content">
-        <b-alert :show="app.removed" variant="secondary">This App has been removed.</b-alert>
+    <div v-if="noaccess" class="page-content">
+        <b-container>
+            <h3 style="padding: 50px 0 15px 0;opacity: 0.7"><icon name="lock" class="text-danger" scale="1.5"/> Private App</h3>
+            <b-alert show variant="secondary">
+                The App you are trying access is a private App (belongs to a specific brainlife project). You must be logged in and also must be a member 
+                of the project to which this App belongs. Please contact the current maintainer of this App.
+            </b-alert>
+        </b-container>
+    </div>
+    <div v-if="app" class="page-content">
         <div class="header">
             <b-container>
                 <b-row>
@@ -38,16 +46,8 @@
                         </p>
                     </b-col>
                 </b-row>
-
-                <!--
-                <b-tabs class="brainlife-tab" v-model="tab_index">
-                    <b-tab title="Detail"/>
-                    <b-tab>
-                        <template slot="title">Execute</template>
-                    </b-tab>
-                </b-tabs>
-                -->
             </b-container>
+            <b-alert :show="app.removed" variant="secondary">This App has been removed.</b-alert>
         </div><!--header-->
 
         <b-container>
@@ -58,11 +58,6 @@
                         <p> 
                             <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
                         </p>
-                        <!--
-                        <p>
-                            <contact :id="app.user_id" size="small"/> 
-                        </p>
-                        -->
                         <p>
                             <doibadge :doi="app.doi" v-if="app.doi"/>
                         </p>
@@ -82,15 +77,6 @@
                                         <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
                                         <div v-if="app.inputs" style="padding: 5px">
                                             <div v-for="input in app.inputs" :key="input.id" class="io-card">
-                                                <!--
-                                                <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
-                                                <p style="color: #222; margin-top: 5px; margin-bottom: 0px;">
-                                                    <small>{{input.datatype.desc}}</small>
-                                                </p>
-                                                <small style="position: relative" v-if="input.datatype.files"> 
-                                                    <pre v-highlightjs v-if="input.datatype.files"><code class="json hljs">{{input.datatype.files}}</code></pre>
-                                                </small>
-                                                -->
                                                 <small style="opacity: 0.5; float: right;">{{input.id}}</small><!--internal output id-->
                                                 <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags">
                                                     <template slot="tag_extra">
@@ -99,24 +85,6 @@
                                                     </template>
                                                 </datatype>
                                             </div>
-                        
-                                            <!--
-                                            <b-col cols="6" v-for="(con, key) in app.config" :key="key" v-if="con.type == 'input'">
-                                                <div style="padding: 5px; background-color: white; margin-bottom: 5px;">
-                                                    <small style="opacity: 0.5; float: right;">{{con.input_id}}</small>
-                                                    <datatypetag :datatype="find_by_id(app.inputs, con.input_id).datatype" :tags="find_by_id(app.inputs, con.input_id).datatype_tags"/>
-                                                    <span v-if="find_by_id(app.inputs, con.input_id).optional" class="text-muted">(optional)</span>
-                                                    <span class="text-muted" v-if="find_by_id(app.inputs, con.input_id).multi">(multi)</span>
-                                                    <b>config.json key: {{key}}</b>
-                                                    <p style="color: #222;">
-                                                        <small>{{find_by_id(app.inputs, con.input_id).datatype.desc}}</small>
-                                                    </p>
-                                                    <p>
-                                                        <datatypefile :file="find_by_id(find_by_id(app.inputs, con.input_id).datatype.files, con.file_id)"/>
-                                                    </p>
-                                                </div>
-                                            </b-col>
-                                            -->
                                         </div>
                                     </div>
                                 </b-col>
@@ -130,12 +98,6 @@
                                         <div v-if="app.outputs" style="padding: 5px;">
                                             <div v-for="output in app.outputs" :key="output.id" class="io-card">
                                                 <small style="opacity: 0.5; float: right;">{{output.id}}</small><!--internal output id-->
-                                                <!--
-                                                <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
-                                                <p style="color: #222; margin-top: 5px; margin-bottom: 0px">
-                                                    <small>{{output.datatype.desc}}</small>
-                                                </p>
-                                                -->
                                                 <datatype :datatype="output.datatype" 
                                                         :datatype_tags="output.datatype_tags" 
                                                         :tag_pass="output.datatype_tags_pass">
@@ -230,7 +192,7 @@
 
                         <div v-if="config.user">
                             <span class="form-header">Maintaners</span>
-                            <p><small class="text-muted">List of users who currently maintains this App</small></p>
+                            <p><small class="text-muted">List of users who currently maintains this App.</small></p>
                             <p v-for="c in app.admins" :key="c._id">
                                 <contact :id="c"/>
                             </p>
@@ -245,26 +207,24 @@
                             </p>
                             <br>
                         </div>
-                        <!-- not very useful
+ 
                         <div v-if="info">
                             <span class="form-header">App execution history.</span>
                             <p><small class="text-muted">Activity over the last 180 days.</small></p>
                             <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true" :watchShallow="true"/>
                             <br>
                         </div>
-                        -->
 
                         <div v-if="readme">
                             <span class="form-header">README</span>
                             <p><small class="text-muted">From github repo / README.md</small></p>
-                            <vue-markdown :source="readme" class="readme box"></vue-markdown>
+                            <vue-markdown :source="readme" class="box"></vue-markdown>
                         </div>
 
                         <vue-disqus shortname="brain-life" :identifier="app._id"/>
 
                     </b-col>
                 </b-row>
-
             </div>
 
             <br>
@@ -273,7 +233,6 @@
             <br>
             <br>
         </b-container>
-
     </div><!--page-content-->
 </div>
 </template>
@@ -316,6 +275,8 @@ export default {
     data () {
         return {
             app: null,
+            noaccess: false,
+
             preferred_resource: null,
             resources: null,
             readme: null,
@@ -335,14 +296,18 @@ export default {
         });
 
         //load app
-        this.$http.get('app/'+this.$route.params.id, {params: {
-            //find: JSON.stringify({_id: this.$route.params.id}),
+        this.$http.get('app', {params: {
+            find: JSON.stringify({_id: this.$route.params.id}),
             populate: 'inputs.datatype outputs.datatype projects',
-            //limit: 500, //TODO - this is not sustailable
+            limit: 500, //TODO - this is not sustailable
         }})
         .then(res=>{
-            //this.app = res.data.apps[0];
-            this.app = res.data;
+            if(res.data.apps.length == 0) {
+                this.noaccess = true;
+                throw "private app";
+            }
+
+            this.app = res.data.apps[0];
             if(this.config.user) this.find_resources(this.app.github);
 
             //then load service info
@@ -369,7 +334,7 @@ export default {
             if(!this.resources) return [];
             return this.resources.filter(r=>r.gids.length > 0);
         },
-        /*
+
         hist_data() {
             let dstart = new Date(new Date().getTime() - 3600*1000*24*this.info.hist.failed.length);
             let days = [];
@@ -419,7 +384,6 @@ export default {
                 },
             }
         }, 
-        */
     },
 
     methods: {

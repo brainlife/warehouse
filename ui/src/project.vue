@@ -42,7 +42,17 @@
             </div>
 
             <b-alert :show="selected.removed" style="border-radius: 0px" variant="secondary">This project has been removed.</b-alert>
-            <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px" variant="secondary">This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.</b-alert>
+            <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px; color: #888;" variant="secondary">
+                This project is listed for all users but only the members of the project can access its datasets, processes, and pipelines.
+            </b-alert>
+            
+            <b-alert v-if="(ismember()||isadmin()||isguest()) && selected.stats && selected.stats.datasets && selected.stats.datasets.size > selected.quota" show variant="danger">
+                This project is currently over quota for archive storage. 
+                (<b>{{selected.stats.datasets.size|filesize}}</b> stored with <b>{{selected.quota|filesize}}</b> project quota)
+                Please remove any data derivatives that are no longer needed for subsequent data processing. You may not be able to 
+                run new process / archive output datasets until you reduce the archive usage.
+            </b-alert>
+
             <div style="margin: 20px;">
                 <b-row>
                     <b-col cols="3" class="sideinfo">
@@ -57,24 +67,34 @@
                             {{new Date(selected.create_date).toLocaleDateString()}}
                         </p>
                         <div v-if="selected.stats">
-                            <p class="info" v-if="selected.stats.datasets">
+                            <p class="info" v-if="selected.stats.datasets && selected.stats.datasets.subject_count">
                                 <icon name="users"/>
-                                {{selected.stats.datasets.subject_count}} <span style="opacity: 0.5">subjects</span>
+                                {{selected.stats.datasets.subject_count}} <span style="opacity: 0.6">Subjects</span>
                             </p>                           
-                            <p class="info" v-if="selected.stats.datasets">
+                            <p class="info" v-if="selected.stats.datasets && selected.stats.datasets.count">
                                 <icon name="cubes"/>     
-                                {{selected.stats.datasets.count}} <span style="opacity: 0.5">datasets</span>
+                                {{selected.stats.datasets.count}} <span style="opacity: 0.6">Datasets</span>
+                            </p>
+                            <p class="info" v-if="selected.stats.datasets && selected.stats.datasets.size">                           
+                                <span>{{selected.stats.datasets.size|filesize}}</span> <span style="opacity: 0.6">Total</span> 
+                                <br>                          
+                                <span>{{selected.quota|filesize}}</span> <span style="opacity: 0.6">Quota</span> 
                             </p>
                             <p class="info" v-if="selected.stats.rules">
                                 <icon name="robot"/>
                                 {{selected.stats.rules.active}} 
-                                <span v-if="selected.stats.rules.inactive">/ {{selected.stats.rules.inactive}}</span>
-                                <span style="opacity: 0.5">pipeline rules</span>
+                                <!--<span v-if="selected.stats.rules.inactive">/ {{selected.stats.rules.inactive}}</span>-->
+                                <span style="opacity: 0.6">Pipeline Rules</span>
+                            </p>
+                            <p class="info"  v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0">
+                                <icon name="paper-plane"/>
+                                <stateprogress :states="selected.stats.instances"/>
                             </p>
                         </div>
                     </b-col>
 
                     <b-col cols="9">
+                        <!--
                         <div v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0">
                             <span class="form-header">Processes</span>
                             <p>
@@ -84,6 +104,7 @@
                                 <stateprogress :states="selected.stats.instances"/>
                             </p>
                         </div>
+                        -->
 
                         <div v-if="selected.agreements && selected.agreements.length > 0">
                             <span class="form-header">Agreements</span>
@@ -242,7 +263,7 @@ export default {
 
             tabs: [
                 {id: "detail", label: "Detail"},
-                {id: "dataset", label: "Datasets"},
+                {id: "dataset", label: "Archive"},
                 {id: "process", label: "Processes"},
                 {id: "pipeline", label: "Pipelines"},
                 {id: "pub", label: "Publications"},

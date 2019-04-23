@@ -17,7 +17,7 @@ export default {
             }
             */
             if(!this.project.avatar) {
-                styles.filter = "saturate(50%) opacity(40%)";
+                styles.filter = "saturate(40%) opacity(40%)";
             }
             return styles;
         }

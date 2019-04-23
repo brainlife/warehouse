@@ -277,6 +277,7 @@ export default {
                 case "jpeg":
                 case "jpg":
                 case "gif":
+                case "svg":
                     Vue.set(file, 'image_src', url);
                     Vue.set(file, 'view', true);
                     return;
@@ -345,7 +346,7 @@ margin-right: 30px;
 .file-content-buttons {
 position: absolute; 
 top: 3px; 
-right: 10px; 
+right: 20px; 
 opacity: 0;
 transition: opacity 0.3s;
 z-index: 1;

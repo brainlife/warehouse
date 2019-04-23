@@ -69,8 +69,11 @@ export default {
         if(!this.taskid) return;
         //this starts the wait loop for specified taskid
         this.wait(this.taskid, task=>{
-            console.log("done waiting");
-            //this.task = task;
+            //compose window title (same code in novnc.vue)
+            let output = this.task.config._outputs.find(output=>output.subdir == this.subdir);
+            if(output) {
+                document.title = output.meta.subject + " "+output.datatype_tags.join(" ");
+            }
         });
         
     },
