@@ -62,6 +62,14 @@ export default {
                 .then(res=>{
                     console.log("query result", res.data.tasks);
                     if(res.data.tasks.length == 0) {
+
+                        //compose window title (same code in view.vue)
+                        let title = "brainlife";
+                        let output = this.task.config._outputs.find(output=>output.subdir == this.subdir);
+                        if(output) {
+                            title = output.meta.subject + " "+output.datatype_tags.join(" ");
+                        }
+
                         //submit novnc service for the first time!
                         this.$http.post(Vue.config.wf_api+'/task', {
                             instance_id: instance._id,
@@ -70,11 +78,11 @@ export default {
                             max_runtime: 3600*1000, //1 hour should be enough?
                             config: {
                                 _tid: -1,
-                                //"input_instance_id": this.instanceid,
-                                "input_instance_id": this.task.instance_id,
-                                "input_task_id": this.taskid,
-                                "type": this.type,
-                                "subdir": this.subdir,
+                                input_instance_id: this.task.instance_id,
+                                input_task_id: this.taskid,
+                                type: this.type,
+                                subdir: this.subdir,
+                                title,
                             },
                             deps: [ this.taskid ], 
                         })
