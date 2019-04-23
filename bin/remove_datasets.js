@@ -47,15 +47,14 @@ function remove_from_removed_projects(cb) {
         .limit(limit) 
         .exec((err,datasets)=>{
             if(err) return cb(err);
-            logger.debug("orphaned datasets needs removed: "+datasets.length);
+            logger.debug("orphaned datasets needs removed: %d", datasets.length);
             let count = 0;
             async.eachSeries(datasets, (dataset, next_dataset)=>{
                 count++;
-                logger.debug("removing orphaned dataset %d %s"+count+dataset._id.toString());
+                logger.debug("removing orphaned dataset %d %s", count, dataset._id.toString());
                 dataset.remove_date = new Date();
                 dataset.removed = true;
                 dataset.save(next_dataset);
-                next_dataset();
             }, cb);
         });
 
