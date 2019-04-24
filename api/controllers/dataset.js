@@ -85,7 +85,10 @@ function construct_dataset_query(query, canread_project_ids) {
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     let skip = req.query.skip||0;
     let limit = req.query.limit||100; //this means if user set it to "0", no limit
-    if(req.query.find) req.query.find = JSON.parse(req.query.find);
+    if(req.query.find) {
+        req.query.find = JSON.parse(req.query.find);
+        //cast_mongoid(req.query.find);
+    }
 
     let populate = ''; //'all' by default?
     if(req.query.populate) {
@@ -101,7 +104,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         let query = construct_dataset_query(req.query, canread_project_ids);
-        //console.log(JSON.stringify(query, null, 4));
         db.Datasets.find(query)
         .populate(populate)
         .select(req.query.select)
@@ -111,12 +113,34 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);
+
+            //set _canedit flags
+            datasets.forEach(rec=>{
+                rec._canedit = canedit(req.user, rec, canwrite_project_ids);
+            });
+
+            /*
             db.Datasets.countDocuments(query).exec((err, count)=>{
                 if(err) return next(err);
-                datasets.forEach(rec=>{
-                    rec._canedit = canedit(req.user, rec, canwrite_project_ids);
-                });
-                res.json({datasets: datasets, count: count});
+                res.json({datasets, count});
+            });
+            */
+
+            //count and get total size
+            cast_mongoid(query);
+            db.Datasets.aggregate()
+            .match(query)
+            .group({_id: null, count: {$sum: 1}, size: {$sum: "$size"} })
+            .exec((err, stats)=>{
+                if(err) return next(err);
+                //logger.debug(JSON.stringify(stats, null, 4));
+                let count = 0;
+                let size = 0;
+                if(stats.length == 1) {
+                    count = stats[0].count;
+                    size = stats[0].size;
+                }
+                res.json({ datasets, count, size, });
             });
         });
     });
@@ -138,6 +162,7 @@ router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired:
     var find = {};
     if(req.query.find) {
         find = JSON.parse(req.query.find);
+        cast_mongoid(find);
     }
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
         if(err) return next(err);
