@@ -67,8 +67,20 @@
                                 <b-col>Project</b-col>
                                 <b-col :cols="9">
                                     <p>
-                                    <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(From this project)"/>
-                                    <small class="text-muted">Look for datasets in this project</small>
+                                        <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(From this project)"/>
+                                        <small class="text-muted">Look for datasets in this project</small>
+                                    </p>
+                                </b-col>
+                            </b-row> 
+                            <b-row>
+                                <b-col>Subject</b-col>
+                                <b-col :cols="9">
+                                    <p>
+                                        <!--
+                                        <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(From this project)"/>
+                                        <small class="text-muted">Look for datasets in this project</small>
+                                        -->
+                                        <b-form-input v-model="rule.input_subject[input.id]" placeholder="(Use the matching subject)"/>
                                     </p>
                                 </b-col>
                             </b-row> 
@@ -171,6 +183,7 @@ export default {
 
                 subject_match: "", 
                 input_project_override: {},
+                input_subject: {},
                 input_selection: {},
                 extra_datatype_tags: {},
                 config: {},
@@ -317,6 +330,7 @@ export default {
                 subject_match: "", 
                 output_tags: {}, 
                 input_project_override: {},
+                input_subject: {},
                 input_selection: {},
                 extra_datatype_tags: {},
                 config: {},
@@ -333,6 +347,7 @@ export default {
             this.rule.app.inputs.forEach(input=>{
                 if(!this.rule.input_tags[input.id]) Vue.set(this.rule.input_tags, input.id, []);
                 if(!this.rule.input_project_override[input.id]) Vue.set(this.rule.input_project_override, input.id, null);
+                if(!this.rule.input_subject[input.id]) Vue.set(this.rule.input_subject, input.id, null);
                 if(!this.rule.extra_datatype_tags[input.id]) Vue.set(this.rule.extra_datatype_tags, input.id, []);
 
                 if(!this.rule.input_tags_count[input.id]) Vue.set(this.rule.input_tags_count, input.id, null);
@@ -376,16 +391,22 @@ export default {
             var output_ids = this.rule.app.outputs.map(it=>it.id);
             var input_tags = {};
             var output_tags = {};
+            var input_subject = {};
             var input_project_override = {};
             input_ids.forEach(id=>{
                 if(this.rule.input_tags[id].length > 0) input_tags[id] = this.rule.input_tags[id];
+                input_subject[id] = this.rule.input_subject[id];
                 input_project_override[id] = this.rule.input_project_override[id];
             });
 
-            //remove null values for project override
+            //remove null values for subject/project override
             for(var id in input_project_override) {
                 if(!input_project_override[id]) delete input_project_override[id];
             }
+            for(var id in input_subject) {
+                if(!input_subject[id]) delete input_subject[id];
+            }
+
             output_ids.forEach(id=>{
                 if(this.rule.output_tags[id].length > 0) output_tags[id] = this.rule.output_tags[id];
             });
@@ -401,6 +422,7 @@ export default {
                 input_tags,
                 output_tags,
                 input_project_override,
+                input_subject,
             });
             this.$emit("submit", rule);
         },
