@@ -498,6 +498,7 @@ export default {
 
         download(task, output) {
             var url = Vue.config.wf_api+'/task/download/'+task._id+'/';
+            this.$notify({type: 'info', text: "Download should start soon.."});
             if(output.subdir) url+=output.subdir;
             url+='?at='+Vue.config.jwt;
             document.location = url;
