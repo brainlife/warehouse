@@ -11,7 +11,7 @@ export default {
             let cached_app = this.get_cache(id);
             if(cached_app) cb(null, cached_app);
             else {
-                //console.log("no cache.. loading new");
+                console.log("no cache.. loading "+id);
                 this.$http.get('app/'+id, {params: {
                     //find: JSON.stringify({_id: id}),
                     populate: 'inputs.datatype outputs.datatype',

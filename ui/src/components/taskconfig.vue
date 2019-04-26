@@ -57,7 +57,6 @@ export default {
         },
     },
 
-
     methods: {
         load: function() {
             if(this.task) {
@@ -71,6 +70,10 @@ export default {
         },
 
         load_config: function(config) {
+            if(!config._app) {
+                console.error("can't load config without _app set");
+                return;
+            }
             this.appcache(config._app, (err, app)=>{
                 //create key/value of scalar config
                 this.taskconfig = {};
