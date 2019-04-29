@@ -674,10 +674,11 @@ background-color: #28a745;
 
 .date {
 float: right;
-width: 110px;
+width: 90px;
 text-align: right;
-font-size: 88%;
-margin-right: 10px;
+font-size: 80%;
+margin-top: 1px;
+margin-right: 7px;
 opacity: 0.7;
 }
 #scrolled-area {
