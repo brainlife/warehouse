@@ -1234,6 +1234,7 @@ router.post('/downscript', jwt({secret: config.express.pubkey, credentialsRequir
         .populate('datatype project', 'name desc admins members bids') //mixed in with datatype/project model fields...
         .skip(+skip)
         .limit(+limit)
+        .sort('meta.subject')
 		.lean()
 		.exec((err, datasets)=>{
             if(err) return next(err);

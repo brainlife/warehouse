@@ -396,6 +396,8 @@ function handle_rule(rule, cb) {
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var output_missing = false;
         rule.app.outputs.forEach(output=>{
+            //TODO - I should ignore missing output if user doesn't want to archive it?
+
             if(!~output._subjects.indexOf(subject)) {
                 rlogger.debug("output dataset not yet created for id:"+output.id);
                 output_missing = true;
@@ -407,7 +409,7 @@ function handle_rule(rule, cb) {
         }
 
 
-        //make sure we have all datasets we need
+        //make sure we have all input datasets we need
         let inputs = {};
         let missing = false;
         rule.app.inputs.forEach(input=>{
