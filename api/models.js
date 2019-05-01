@@ -543,13 +543,15 @@ var ruleSchema = mongoose.Schema({
     //project to look for input datasets and store generated datasets to
     project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
+    //subject to look for each input id (if not set, it should match the same subject group)
+    input_subject: mongoose.Schema.Types.Mixed,
     //any tags to look for each input id (object with key(output id)=>array(tags))
     input_tags: mongoose.Schema.Types.Mixed,
     
     //if user wants to override where the input data comes from, specify projects IDs keyed by input id
     input_project_override: mongoose.Schema.Types.Mixed,
 
-    //EXPERIMENTAL .. specify input selection strategy
+    //specify input selection strategy
     //options are..
     //          (default) looks for the *latest* datasets that it finds
     //          ignore: submit without this dataset (used for optional input dataset)

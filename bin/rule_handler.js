@@ -117,6 +117,7 @@ function handle_rule(rule, cb) {
     let rlogger = logger;
 
     if(!rule.input_tags) rule.input_tags = {};
+    if(!rule.input_subject) rule.input_subject = {};
     if(!rule.output_tags) rule.output_tags = {};
     
     //prepare for stage / app / archive
@@ -329,6 +330,10 @@ function handle_rule(rule, cb) {
                     if(neg_tags.length > 0) tag_query.push({tags: {$nin: neg_tags}});
                 }
 
+                if(rule.input_subject[input.id]) {
+                    query["meta.subject"] = rule.input_subject[input.id];
+                } 
+
                 //handle datatype_tags
                 let datatype_tags = input.datatype_tags;
                 if(rule.extra_datatype_tags && rule.extra_datatype_tags[input.id]) datatype_tags = datatype_tags.concat(rule.extra_datatype_tags[input.id]);
@@ -408,7 +413,6 @@ function handle_rule(rule, cb) {
             return next_subject();
         }
 
-
         //make sure we have all input datasets we need
         let inputs = {};
         let missing = false;
@@ -417,11 +421,16 @@ function handle_rule(rule, cb) {
                 let selection_method = rule.input_selection[input.id];
                 if(selection_method == "ignore") return; //we don't need this input
             }
-            if(!input._datasets[subject]) {
+
+            let _subject = subject;
+            if(rule.input_subject[input.id]) {
+                _subject = rule.input_subject[input.id]; //override to look for different subject
+            }
+            if(!input._datasets[_subject]) {
                 missing = true;
                 rlogger.info("missing input for "+input.id);
             } else {
-                inputs[input.id] = input._datasets[subject][0]; //use the first one for now.. (TODO for multiinput, we could grab all?)
+                inputs[input.id] = input._datasets[_subject][0]; //use the first one for now.. (TODO for multiinput, we could grab all?)
             }
         });
         if(missing) {
@@ -490,7 +499,6 @@ function handle_rule(rule, cb) {
                         group_id: rule.project.group_id, 
                         config: {
                             brainlife: true, //TODO is this still used?
-                            //rule: rule._id,
                             rule_subject: subject,
                         }
                     },
