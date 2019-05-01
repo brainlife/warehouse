@@ -15,7 +15,7 @@
             </b-col>
         </b-row>
     </div>
-    <div v-if="single_dataset_url">
+    <div v-if="single_dataset_url" style="border-bottom: 1px solid #eee;">
         <br>
         <br>
         <center style="opacity: 0.7; font-weight: bold;">OR</center>
@@ -150,7 +150,6 @@ padding: 10px;
 background-color: #eee;
 }
 .subsection {
-box-shadow: inset 4px 0 4px #e0e0e0;
 padding: 20px;
 }
 </style>

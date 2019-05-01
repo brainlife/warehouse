@@ -26,12 +26,12 @@
 
 <script>
 import Vue from 'vue'
-import pageheader from '@/components/pageheader'
+//import pageheader from '@/components/pageheader'
 import sidemenu from '@/components/sidemenu'
 import pubcard from '@/components/pubcard'
 
 export default {
-    components: { pageheader, sidemenu, pubcard },
+    components: { sidemenu, pubcard },
     data () {
         return {
             pubs: [],

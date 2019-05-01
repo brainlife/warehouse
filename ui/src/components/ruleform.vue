@@ -13,6 +13,7 @@
         -->
 
         <b-form-group label="App *" horizontal>
+            <p class="text-muted">Submit the following App on all matching subjects.</p>
             <v-select required v-model="rule.app" label="name" :filterable="false" :options="apps" @search="search_app" placeholder="Please enter App name to search">
                 <template slot="no-options">please enter App name / desc to search</template>
                 <template slot="option" slot-scope="app">
@@ -40,8 +41,7 @@
                 </b-card>
             </b-form-group>
             <b-form-group label="Inputs" horizontal>
-                <p class="text-muted">Look for subjects that has the following input datasets.</p>
-
+                <p class="text-muted">For each subject, look for input datasets with the following criteria.</p>
                 <div style="border-left: 4px solid rgb(0, 123, 355); padding-left: 10px;">
                     <p>
                         <b-input-group prepend="Subject Filter" title="Only process subjects that matches this regex">
@@ -105,7 +105,7 @@
             </b-form-group>
 
             <b-form-group label="Outputs" horizontal>
-                <p class="text-muted">Submit the App if the following dataset <b>does not</b> exist.</p>
+                <p class="text-muted">Submit the App if the following dataset <b>does not</b> exist in the archive.</p>
                 <div style="border-left: 4px solid rgb(40, 167, 69); padding-left: 10px;">
                     <b-card v-for="output in rule.app.outputs" :key="output._id" class="card">
                         <div slot="header">
@@ -117,7 +117,7 @@
                             <b-col :cols="9">
                                 <p>
                                     <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
-                                    <small class="text-muted">Output tags allows you can easily query for specific set of datasets on subsequent rules.</small>
+                                    <small class="text-muted">Output tags allows you to easily identify specific set of datasets on subsequent rules.</small>
                                 </p>
                             </b-col>
                         </b-row>
@@ -230,6 +230,14 @@ export default {
                 }, 300)
             }, deep: true,
         },
+        "rule.input_subject": {
+            handler: function() {
+                clearTimeout(debounce);
+                debounce = setTimeout(()=>{
+                    this.query_matching_datasets();
+                }, 300)
+            }, deep: true,
+        },
         "rule.extra_datatype_tags": {
             handler: function(v) {
                 this.query_matching_datasets();
@@ -276,6 +284,8 @@ export default {
                     removed: false,
                 }
                 if(this.rule.subject_match != "") find["meta.subject"] = {$regex: this.rule.subject_match};
+                //override if subject name is specified
+                if(this.rule.input_subject[id]) find["meta.subject"] = this.rule.input_subject[id];
 
                 //handle dataset (negative)tags
                 //TODO - I think I can simplify this by combining $in and $nin like.. "{tags: {$all: ["test", "dev"], $nin: ["xyz123"]}}"
@@ -364,7 +374,7 @@ export default {
         },
 
         compose_output_tag() {
-            let tag = this.rule.name||"noname";
+            let tag = this.rule.name||new Date().toLocaleDateString();
             tag = tag.toLowerCase().replace(/\W/g, '_');
             return tag;
         },

@@ -111,7 +111,7 @@
                         <div class="section-header">
                             On
                             <div style="display: inline-block; width: 300px;">
-                                <b-input-group prepend="Subjects" size="sm" title="Only process subjects that matches this regex">
+                                <b-input-group prepend="Subject" size="sm" title="Only process subjects that matches this regex">
                                     <b-form-input v-model="rule.subject_match_edit" type="text" placeholder="(All)"></b-form-input>
                                     <b-input-group-append v-if="rule.subject_match != rule.subject_match_edit">
                                         <b-btn variant="primary" @click="update_subject_match(rule)"><icon name="check"/></b-btn>
@@ -120,11 +120,12 @@
                                 </b-input-group>
                             </div>
                             <small style="opacity: 0.5">(regex)</small>
-                            that have the following set of archived datasets
+                            subject with the following set of archived datasets available
                         </div>
                         <div style="margin-left: 30px;">
                             <p v-for="input in rule.app.inputs" :key="input.id">
                                 <small style="float: right; margin-right: 10px;">{{input.id}}</small>
+                                <b v-if="rule.input_subject">{{rule.input_subject[input.id]}}</b>
                                 <datatypetag :datatype="datatypes[input.datatype]" :tags="all_datatype_tags(rule, input)" v-if="datatypes"/>
                                 <span v-if="rule.input_tags && rule.input_tags[input.id] && rule.input_tags[input.id].length > 0" style="opacity: 0.8">
                                     <!--<small class="text-muted">with tags</small> <tags :tags="rule.input_tags[input.id]"/>-->
