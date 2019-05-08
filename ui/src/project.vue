@@ -153,6 +153,7 @@
                             <br>
                         </div>
                         
+                        <!--
                         <div v-if="selected.datatype_groups">
                             <span class="form-header">Datasets</span>
                             <p class="text-muted">This project currently contains the following datasets</p>
@@ -164,7 +165,6 @@
                                         on <b>{{group.subjects.size}}</b> subjects
                                     </div>
 
-                                    <!--<p style="opacity: 0.5; margin-bottom: 5px">Tags</p>-->
                                     <b-list-group>
                                         <b-list-group-item v-for="(stats, tags_s) in group.datatype_tags" :key="tags_s" >
                                             <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)"/>
@@ -179,7 +179,7 @@
                                 </b-card>
                             </b-card-group>
                         </div>
-
+                        -->
                     </b-col>
                 </b-row>
                 <hr>

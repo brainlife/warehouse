@@ -28,30 +28,28 @@
 
             </b-col>
             <b-col>
-                <b-row v-for="ps in form.inputs[input.id]" :key="ps.id" style="margin-bottom: 5px;">
-                    <b-col cols="5">
-                        <projectselecter 
-                            v-model="ps.project" 
-                            :datatype="input.datatype"
-                            :datatype_tags="input.datatype_tags"
-                            :required="true"
-                            placeholder="Select Project" 
-                            @input="ps.dataset = null"/>
-                    </b-col>
-                    <b-col cols="6">
-                        <select2 
-                            v-if="ps.project"
-                            v-model="ps.dataset" 
-                            :dataAdapter="debounce_fetch_datasets(input, ps)" 
-                            :allowClear="input.optional"
-                            :multiple="false" 
-                            :placeholder="'Select Input Dataset'" 
-                            @input="makesure_null_exists(input)"/>
-                    </b-col>
-                    <b-col cols="1" v-if="input.multi && ps.dataset">
-                        <div class="button button-danger" @click="remove_input(input, ps)" size="sm"><icon name="trash"/></div>
-                    </b-col>
-                </b-row>
+                <div v-for="ps in form.inputs[input.id]" :key="ps.id" style="margin-bottom: 5px; margin-right: 50px;">
+
+                    <div class="button button-danger" style="float: right;" @click="remove_input(input, ps)" size="sm"><icon name="trash"/></div>
+                    <projectselecter 
+                        v-model="ps.project" 
+                        :datatype="input.datatype"
+                        :datatype_tags="input.datatype_tags"
+                        :required="true"
+                        placeholder="Select Project" 
+                        @input="ps.dataset = null"/>
+                    <select2 
+                        v-if="ps.project"
+                        v-model="ps.dataset" 
+                        :dataAdapter="debounce_fetch_datasets(input, ps)" 
+                        :allowClear="input.optional"
+                        :multiple="false" 
+                        :placeholder="'Select Input Dataset'" 
+                        @input="makesure_null_exists(input)"/>
+                    <!--
+                    <v-select @search="fetch_datasets(input.id)" :options="datasets[input.id]"/>
+                    -->
+                </div>
                 <b-row>
                     <b-col cols="5">
                         <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
@@ -92,18 +90,7 @@
                 <b-button variant="primary" type="submit" style="float: right;">Submit</b-button>
             </b-col>
         </b-row>
-        <!--
-        <hr>
-        <b-row>
-            <b-col cols="3"></b-col>
-            <b-col>
-                <div style="float: right">
-                    <b-button variant="primary" type="submit">Submit</b-button>
-                </div>
-            </b-col>
-        </b-row>
-        <br>
-        -->
+
     </b-form>
 
 </b-container>
@@ -216,6 +203,15 @@ export default {
     },
 
     methods: {
+        /*
+        fetch_datasets(input) {
+            console.log("func");
+            return (search, loading)=>{
+                loading(true);
+                console.log(search);
+            }
+        },
+        */
         fetch_datasets: function(input, ps, params, cb) {
             // essentially the same code from datasetselecter.vue
             if (!params.page) params.page = 1;
@@ -447,23 +443,6 @@ export default {
                     _outputs: [],
                 });
     
-                //update config._inputs for main app
-                /*
-                config._inputs.forEach(input=>{
-                    input.task_id = download_task._id;
-
-                    //enumerate json keys associated with this input
-                    input.keys = [];
-                    for(var input_id in this.form.inputs) {
-                        for(var key in this.app.config) {
-                            if(this.app.config[key].input_id == input_id) {
-                                input.keys.push(key); 
-                            }
-                        }
-                    }
-                    //TODO input.id = ...
-                });
-                */
                 for(let input_id in this.form.inputs) {
 
                     //find config.json key mapped to this input

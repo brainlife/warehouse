@@ -105,28 +105,33 @@
             </b-form-group>
 
             <b-form-group label="Outputs" horizontal>
-                <p class="text-muted">Submit the App if the following dataset <b>does not</b> exist in the archive.</p>
+                <!--<p class="text-muted">Submit the App if the following dataset <b>does not</b> exist in the archive.</p>-->
                 <div style="border-left: 4px solid rgb(40, 167, 69); padding-left: 10px;">
                     <b-card v-for="output in rule.app.outputs" :key="output._id" class="card">
                         <div slot="header">
                             <small class="text-muted" style="float: right">{{output.id}}</small>
                             <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
                         </div>
-                        <b-row>
-                            <b-col>Dataset Tags</b-col>
-                            <b-col :cols="9">
-                                <p>
-                                    <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
-                                    <small class="text-muted">Output tags allows you to easily identify specific set of datasets on subsequent rules.</small>
-                                </p>
-                            </b-col>
-                        </b-row>
                         <p>
-                            <b-form-checkbox v-model="rule.archive[output.id].do">Archive Output</b-form-checkbox>
+                            <b-form-checkbox v-model="rule.archive[output.id].do">Submit the App if this output dataset does not exist (and archive the output).</b-form-checkbox>
                         </p>
-                        <p v-if="rule.archive[output.id].do">
-                            <b-form-textarea :rows="2" v-model="rule.archive[output.id].desc" placeholder="Description for archived dataset"/>
-                        </p>
+                        <div v-if="rule.archive[output.id].do">
+                            <b-row v-if="rule.archive[output.id].do">
+                                <b-col>Dataset Tags</b-col>
+                                <b-col :cols="9">
+                                    <p>
+                                        <tageditor v-model="rule.output_tags[output.id]" placeholder="(any tags)" :options="output_dataset_tags[output.id]"/>
+                                        <small class="text-muted">Tags to add to the archived dataset. Tags are important as they allow you to specify input datasets on subsequent rules.</small>
+                                    </p>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col>Description</b-col>
+                                <b-col :cols="9">
+                                    <b-form-textarea :rows="2" v-model="rule.archive[output.id].desc" placeholder="Description for archived dataset"/>
+                                </b-col>
+                            </b-row>
+                        </div>
                     </b-card>
                 </div><!--border-->
             </b-form-group>
