@@ -401,7 +401,11 @@ function handle_rule(rule, cb) {
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
         var output_missing = false;
         rule.app.outputs.forEach(output=>{
-            //TODO - I should ignore missing output if user doesn't want to archive it?
+            //I should ignore missing output if user doesn't want to archive it?
+            if(!rule.archive[output.id] || !rule.archive[output.id].do) {
+                rlogger.debug(output.id+" not archvied - skip");
+                return;
+            }
 
             if(!~output._subjects.indexOf(subject)) {
                 rlogger.debug("output dataset not yet created for id:"+output.id);
