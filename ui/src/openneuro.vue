@@ -1,0 +1,80 @@
+<template>
+<div>
+    <sidemenu active="/projects"></sidemenu>
+    <div class="page-content">
+        <img src="@/assets/images/openneuro.png" height="40px" align="left" style="margin-top: 10px;"/>
+        <h2>/ {{$route.params.id}}</h2>
+        <br>
+        <p>
+            This dataset is not yet exposed through brainlife.io. 
+        </p>
+
+        <p>
+            Please contact <a target="mail" :href="'mailto:brlife@iu.edu?subject=Please expose openneuro '+$route.params.id+' on brainlife.io'">brainlife administrators</a> and request
+            to make this dataset available through brainlife so that you and other users of brainlife.io can analyze this dataset using brainlife.io Apps.
+        </p>
+
+    </div>
+    <div class="page-content page-subcontent">
+        <p style="margin-top: 30px;">
+            <img src="@/assets/images/logo.svg" height="100px" style="position: relative; float: left; top: -25px;"/>
+            <a href="https://brainlife.io" style="font-size: 150%; margin-left: 20px;">What is brainlife?</a>
+        </p>
+    </div>
+</div>
+</template>
+
+<script>
+import Vue from 'vue'
+import sidemenu from '@/components/sidemenu'
+
+export default {
+    components: { sidemenu },
+    data () {
+        return {
+            pubs: [],
+            config: Vue.config,
+        }
+    },
+
+    created: function() {
+        this.$http.get('project', {params: {
+            find: JSON.stringify({ 
+                removed: false,
+                "openneuro.dataset_id": this.$route.params.id,
+            }),
+        }})
+        .then(res=>{
+            //redirect if we are hosting this project
+            if(res.data.count > 0) {
+                let project = res.data.projects[0];
+                this.$router.push("/project/"+project._id);
+            }
+        }, res=>{
+            console.error(res);
+        });
+    },
+
+    methods: {
+    }
+}
+</script>
+
+<style scoped>
+.page-content {
+top: 0px;
+background-color: #fff;
+padding: 10px 20px;
+}
+.page-content h2 {
+color: #999;
+margin-bottom: 0px;
+padding: 10px 0px;
+}
+.page-subcontent {
+height: 120px;
+top: inherit;
+bottom: 0px;
+background-color: #e0e0e0;
+}
+</style>

@@ -168,6 +168,8 @@
     <!--make sure the bottom end of task-area won't be overwrapped-->
     <br>
     <br>
+    <br>
+    <br>
 
     <div class="new-action">
         <b-row no-gutters>

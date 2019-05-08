@@ -16,6 +16,7 @@ import datatypes from '@/datatypes'
 import pubs from '@/pubs'
 import pub from '@/pub'
 import admin from '@/admin'
+import openneuro from '@/openneuro'
 
 import test from '@/test'
 import missing from '@/missing'
@@ -50,6 +51,7 @@ export default new Router({
         {path: '/project/:id', component: project},
         {path: '/project/:id/edit', component: projectedit},
         {path: '/project/:id/:tab?/:subid?', component: project},
+        {path: '/openneuro/:id', component: openneuro},
 
         {path: '/datatypes', component: datatypes, meta: {public: true}},
         {path: '/datatypes/:id', component: datatypes, meta: {public: true}},

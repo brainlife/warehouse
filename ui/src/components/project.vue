@@ -16,7 +16,7 @@
                 <div class="desc">{{project.desc||'no description'}}</div>
             </div>
         </b-col>
-        <b-col md="2" title="active pipeline rules" v-if="project.stats.rules" style="font-size: 85%; margin-top: 2px;">
+        <b-col md="2" style="font-size: 85%; margin-top: 2px;">
             <stateprogress v-if="project.stats && project.stats.instances && !project.openneuro" 
                 :states="project.stats.instances" height="15px"/>
             <!--

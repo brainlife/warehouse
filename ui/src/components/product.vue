@@ -18,6 +18,9 @@
         <b-tab title="JSON" v-if="others" style="margin-right: 30px;">
             <editor v-model="others" @init="editorInit" lang="json"></editor>
         </b-tab>
+        <b-tab v-for="(p, $idx) in images" :title="p.name||$idx" :key="$idx">
+            <img v-if="p.type == 'image/png'" :src="'data:'+p.type+';base64, '+p.base64" width="50%"/>
+        </b-tab>
     </b-tabs>
 </div>
 </template>
@@ -51,11 +54,16 @@ export default {
         },
         alerts() {
             if(!this.product.brainlife) return [];
-            return this.product.brainlife.filter(p=>p.type != 'plotly'); //hacky..
+            let alert_types = ["error", "info", "danger", "warning", "success"];
+            return this.product.brainlife.filter(p=>alert_types.includes(p.type)); 
         },
         plots() {
             if(!this.product.brainlife) return [];
             return this.product.brainlife.filter(p=>p.type == 'plotly');
+        },
+        images() {
+            if(!this.product.brainlife) return [];
+            return this.product.brainlife.filter(p=>p.type.startsWith('image/'));
         },
     },
 

@@ -208,12 +208,14 @@
                             <br>
                         </div>
  
+                        <!-- I am going to replace this with graphite data
                         <div v-if="info">
                             <span class="form-header">App execution history.</span>
                             <p><small class="text-muted">Activity over the last 180 days.</small></p>
                             <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true" :watchShallow="true"/>
                             <br>
                         </div>
+                        -->
 
                         <div v-if="readme">
                             <span class="form-header">README</span>
@@ -335,6 +337,7 @@ export default {
             return this.resources.filter(r=>r.gids.length > 0);
         },
 
+/*
         hist_data() {
             let dstart = new Date(new Date().getTime() - 3600*1000*24*this.info.hist.failed.length);
             let days = [];
@@ -384,6 +387,7 @@ export default {
                 },
             }
         }, 
+*/
     },
 
     methods: {
