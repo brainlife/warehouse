@@ -203,7 +203,7 @@ export default {
     },
 
     methods: {
-        /*
+/*
         fetch_datasets(input) {
             console.log("func");
             return (search, loading)=>{
@@ -211,7 +211,7 @@ export default {
                 console.log(search);
             }
         },
-        */
+*/
         fetch_datasets: function(input, ps, params, cb) {
             // essentially the same code from datasetselecter.vue
             if (!params.page) params.page = 1;

@@ -131,8 +131,8 @@
                             <li v-for="dataset in findarchived(task, output)" :key="dataset._id" @click="open_dataset(dataset._id)" class="clickable">
                                 <timeago class="text-muted" style="float: right" :since="dataset.create_date" :auto-update="10"/>
 
-                                <icon name="cubes"></icon>
-                                <mute>{{dataset.desc||'(no desc)'}}<!-- <small style="font-size: 50%">{{dataset._id}}</small>--></mute>
+                                <icon name="cubes"/>
+                                <mute>{{dataset.desc||'(no desc)'}}</mute>
 
                                 <tags :tags="dataset.tags"/>
                                 <span class="text-muted" v-if="dataset.project != project._id">
