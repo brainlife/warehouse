@@ -183,11 +183,14 @@ router.get('/distinct', jwt({secret: config.express.pubkey, credentialsRequired:
 
 //mongoose doesn't cast object id on aggregate pipeline .. https://github.com/Automattic/mongoose/issues/1399
 //somewhat futile attempt to convert all string that looks like objectid to objectid.
+//mongoose.Types.ObjectId.isValid byitself doesn't work (https://github.com/Automattic/mongoose/issues/1959#issuecomment-97583033) 
+//const checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
 function cast_mongoid(node) {
     for(var k in node) {
         var v = node[k];
         if(v === null) continue;
-        if(typeof v == 'string' && mongoose.Types.ObjectId.isValid(v)) node[k] = mongoose.Types.ObjectId(v);
+        if(typeof v == 'string' && mongoose.Types.ObjectId.isValid(v) && v.length == 24) node[k] = mongoose.Types.ObjectId(v);
+        //if(typeof v == 'string' && v.match(checkForHexRegExp)) node[k] = mongoose.Types.ObjectId(v);
         if(typeof v == 'object') cast_mongoid(v); //recurse
     }
 }
@@ -1032,7 +1035,6 @@ function get_user_agreements(sub, authorization, cb) {
         cache[sub] = obj;
     });
 }
-
 
 //TODO - since I can't let <a> pass jwt token via header, I have to expose it via URL.
 //doing so increases the chance of user misusing the token, but unless I use HTML5 File API

@@ -23,7 +23,9 @@ exports.redis.on('error', err=>{throw err});
 
 //TODO - should be called something like "get_project_accessiblity"?
 exports.getprojects = function(user, cb) {
-    if(user === undefined) return cb(null, [], []);
+    //let's allow access to public project from un-authenticated user so that they can browser public projects on brainlife
+    //if(user === undefined) return cb(null, [], []);
+    
     //string has sub() so I can't just do if(user.sub)
     if(typeof user == 'object') user = user.sub.toString();
     
@@ -46,8 +48,8 @@ exports.getprojects = function(user, cb) {
 
         //user has write access if they are listed in members/admins
         let canwrite_projects = projects.filter(p=>{
-            if(p.members.includes(user)) return true;
-            if(p.admins.includes(user)) return true;
+            if(user && p.members.includes(user)) return true;
+            if(user && p.admins.includes(user)) return true;
             return false;
         });
         let canwrite_ids = canwrite_projects.map(p=>p._id);
@@ -748,7 +750,7 @@ exports.update_rule_stats = function(rule_id, cb) {
             stats[task.status]+=1;
         });
         db.Rules.findOneAndUpdate({_id: rule_id}, {$set: {"stats.tasks": stats}}, {new: true}, (err, rule)=>{
-            if(cb) cb(err, project);
+            if(cb) cb(err, rule);
         });
     });
 }

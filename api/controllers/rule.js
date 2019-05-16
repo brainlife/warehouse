@@ -189,7 +189,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             delete req.body.user_id;
             delete req.body.project;
             delete req.body.create_date;
-
+            
             //update rule record
             for(let k in req.body) rule[k] = req.body[k];
             rule.update_date = new Date();

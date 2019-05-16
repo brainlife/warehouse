@@ -65,7 +65,7 @@ function run(sftp, cb) {
             let path = config.sda.basedir+"/"+dataset.project.toString()+"/"+filename;
             sftp.stat(path, (err, stats)=>{
                 if(err) return next_dataset(err);
-                console.dir(stats);
+                //console.dir(stats);
                 dataset.size = stats.size;
                 dataset.save(next_dataset);
             });
