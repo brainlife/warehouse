@@ -16,8 +16,8 @@
 
     </div>
     <div class="page-content page-subcontent">
-        <p style="margin-top: 30px;">
-            <img src="@/assets/images/logo.svg" height="100px" style="position: relative; float: left; top: -25px;"/>
+        <p style="margin-top: 30px; float: right;">
+            <img src="@/assets/images/logo.svg" height="100px" style="position: relative; float: right; top: -25px;"/>
             <a href="https://brainlife.io" style="font-size: 150%; margin-left: 20px;">What is brainlife?</a>
         </p>
     </div>
@@ -37,7 +37,7 @@ export default {
         }
     },
 
-    created: function() {
+    mounted: function() {
         this.$http.get('project', {params: {
             find: JSON.stringify({ 
                 removed: false,
@@ -48,6 +48,7 @@ export default {
             //redirect if we are hosting this project
             if(res.data.count > 0) {
                 let project = res.data.projects[0];
+                console.log("redirecting to "+project._id);
                 this.$router.push("/project/"+project._id);
             }
         }, res=>{
@@ -75,6 +76,7 @@ padding: 10px 0px;
 height: 120px;
 top: inherit;
 bottom: 0px;
-background-color: #e0e0e0;
+background-color: #f9f9f9;
+overflow: hidden;
 }
 </style>

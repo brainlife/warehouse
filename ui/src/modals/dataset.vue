@@ -4,7 +4,8 @@
     <b-container class="brainlife-modal">
         <div class="brainlife-modal-header">
             <div class="brainlife-modal-header-buttons">
-                <b-dropdown text="Download" v-if="dataset.storage" variant="outline-secondary" size="sm">
+                <span v-if="!config.user" style="opacity: 0.8">Please register/signin to download/visualize this dataset</span>
+                <b-dropdown text="Download" v-if="config.user && dataset.storage" variant="outline-secondary" size="sm">
                     <b-dropdown-item @click="download">This Dataset</b-dropdown-item>
                     <b-dropdown-divider v-if="dataset.prov"/>
                     <b-dropdown-header v-if="dataset.prov">Provenance</b-dropdown-header>

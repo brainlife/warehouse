@@ -97,8 +97,10 @@ export default {
             }
         },
         loadprofile() {
+            if(!Vue.config.user) return;
+
             if(profiles === null) {
-                //TODO -- do soemthing smarter..
+                //TODO -- this is utterly bad.. only load the contact we need
                 profiles = this.$http.get(Vue.config.auth_api+'/profile?limit=3000');
             }
             profiles.then(res=>{

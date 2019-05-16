@@ -86,7 +86,7 @@
                                 <!--<span v-if="selected.stats.rules.inactive">/ {{selected.stats.rules.inactive}}</span>-->
                                 <span style="opacity: 0.6">Pipeline Rules</span>
                             </p>
-                            <p class="info"  v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0">
+                            <p class="info" v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0" title="Tasks">
                                 <icon name="paper-plane"/>
                                 <stateprogress :states="selected.stats.instances"/>
                             </p>
@@ -113,7 +113,7 @@
                             <br>
                         </div>
 
-                        <div>
+                        <div v-if="config.user">
                             <span class="form-header">Admins</span>
                             <p>
                                 <small class="text-muted">Users who can update name / desc / project members, share processes, and create rules / publications.</small>
@@ -124,7 +124,7 @@
                             <br>
                         </div>
 
-                        <div>
+                        <div v-if="config.user">
                             <span class="form-header">Members</span>
                             <p>
                                 <small class="text-muted">Users who have read/write access to datasets on this project, share processes, and create rules / publications.</small>
@@ -136,7 +136,7 @@
                             <br>
                         </div>
 
-                        <div v-if="selected.access == 'private'">
+                        <div v-if="config.user && selected.access == 'private'">
                             <span class="form-header">Guests</span>
                             <p> <small class="text-muted">Users who have read access to datasets on this project.</small> </p>
                             <p v-for="c in selected.guests" :key="c._id">
@@ -262,11 +262,13 @@ export default {
             selected: null, 
 
             tabs: [
+/*
                 {id: "detail", label: "Detail"},
                 {id: "dataset", label: "Archive"},
                 {id: "process", label: "Processes"},
                 {id: "pipeline", label: "Pipelines"},
                 {id: "pub", label: "Publications"},
+*/
             ],
 
             tab: 0, //initial tab
@@ -312,6 +314,14 @@ export default {
     },
 
     mounted() {
+        this.tabs.push({id: "detail", label: "Detail"});
+        if(Vue.config.user) {
+            this.tabs.push({id: "dataset", label: "Archive"});
+            this.tabs.push({id: "process", label: "Processes"});
+            this.tabs.push({id: "pipeline", label: "Pipelines"});
+            this.tabs.push({id: "pub", label: "Publications"});
+        }
+
         //load all projects that user has summary access (including removed ones so we can open it)
         this.$http.get('project', {params: {
             limit: 500,
@@ -370,18 +380,21 @@ export default {
         },
 
         isguest() {
+            if(!Vue.config.user) return false;
             if(!this.selected) return false;
             if(~this.selected.guests.indexOf(Vue.config.user.sub)) return true;
             return false;
         },
 
         isadmin() {
+            if(!Vue.config.user) return false;
             if(!this.selected) return false;
             if(~this.selected.admins.indexOf(Vue.config.user.sub)) return true;
             return false;
         },
 
         ismember() {
+            if(!Vue.config.user) return false;
             if(!this.selected) return false;
             if(~this.selected.members.indexOf(Vue.config.user.sub)) return true;
             return false;

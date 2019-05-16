@@ -705,7 +705,7 @@ margin-bottom: 1px;
 background-color: white;
 position: fixed;
 bottom: 0px;
-left: 700px;
+left: 600px;
 right: 0px;
 z-index: 6;
 }

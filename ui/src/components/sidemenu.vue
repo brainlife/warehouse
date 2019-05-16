@@ -32,13 +32,13 @@
             <icon name="th-large" scale="1.3"/>
             <h4>Apps</h4>
         </li>
-
-        <!-- only for authenticated users -->
-        <li v-if="config.user" @click="go('/projects')"
+        <li @click="go('/projects')"
             :class="{active: active == '/projects'}">
             <icon name="shield-alt" scale="1.3"/>
             <h4>Projects</h4>
         </li>
+
+        <!-- only for authenticated users -->
 
         <li @click="go('/pubs');"
             :class="{active: active == '/pubs'}">

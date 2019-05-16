@@ -30,7 +30,7 @@
                     style="font-size: 85%; margin-right: 2px"/>
             </div>
         </b-col>
-        <b-col md="1">
+        <b-col md="1" v-if="config.user">
             <div class="contacts">
                 <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -5px"/>
             </div>
@@ -40,6 +40,8 @@
 </template>
 
 <script>
+
+import Vue from 'vue'
 
 import projectaccess from '@/components/projectaccess'
 import projectavatar from '@/components/projectavatar'
@@ -54,6 +56,12 @@ export default {
         
     props: {
         project: { type: Object },
+    },
+
+    data() {
+        return {
+            config: Vue.config,
+        }
     },
 
     created() {

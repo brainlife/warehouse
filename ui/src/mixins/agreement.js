@@ -8,8 +8,8 @@ export default {
             user_agreements: {},
         }
     },
+
     created: function() {
-        //console.log("mixin/agreement created");
         this.load_agreement();
         this.$root.$on("agreements.updated", (id, b)=>{
             Vue.set(this.user_agreements, id, b);
@@ -20,6 +20,7 @@ export default {
         load_agreement: async function() {
             let agreements = await this.get_user_agreements();
             for(let id in agreements) {
+                //this.$nofity("Agreement updated"); //this.$notifhy is not available in mixin?
                 Vue.set(this.user_agreements, id, agreements[id]);
             }
         },  
