@@ -30,9 +30,9 @@
                     style="font-size: 85%; margin-right: 2px"/>
             </div>
         </b-col>
-        <b-col md="1">
+        <b-col md="1" v-if="config.user">
             <div class="contacts">
-                <contact v-for="c in project.members" :key="c._id" :id="c" size="tiny" style="margin-left: -5px"/>
+                <contact v-for="c in contacts" :key="c._id" :id="c" size="tiny" style="margin-left: -5px"/>
             </div>
         </b-col>
     </b-row>
@@ -40,6 +40,8 @@
 </template>
 
 <script>
+
+import Vue from 'vue'
 
 import projectaccess from '@/components/projectaccess'
 import projectavatar from '@/components/projectavatar'
@@ -51,21 +53,15 @@ export default {
     components: {
         projectavatar, contact, projectaccess, datatypetag, stateprogress,
     },
-    watch: {
-        /*
-        project: {
-            handler() {
-                console.log("project updated", this.project._id);
-                //if(this.project && this.project.avatar) this.avatar = this.project.avatar;
-                this.$forceUpdate();
-            },
-            deep: true
-        }
-        */
-    },
         
     props: {
         project: { type: Object },
+    },
+
+    data() {
+        return {
+            config: Vue.config,
+        }
     },
 
     created() {
@@ -96,6 +92,9 @@ export default {
             return sum;
         }
         */
+        contacts() {
+            return [...new Set([...this.project.admins, ...this.project.members])];
+        }
     },
 }
 </script>

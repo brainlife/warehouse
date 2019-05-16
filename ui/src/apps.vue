@@ -3,7 +3,7 @@
     <sidemenu active="/apps"></sidemenu>
     <div class="page-header">
         <div class="search-box">
-            <b-form-input v-model="query" type="text" placeholder="Filter Apps" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
+            <b-form-input v-model="query" type="text" placeholder="Search Apps" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
         </div>
     </div>

@@ -11,7 +11,7 @@
             style="font-size: 85%; margin-right: 2px"/>
     </p>
     <p class="desc">{{project.desc}}</p>
-    <p class="contacts" style="margin-left: 5px;">
+    <p v-if="config.user" class="contacts" style="margin-left: 5px;">
         <contact v-for="c in project.members" :key="c._id" :id="c" size="tiny" style="margin-left: -5px"/>
     </p>
     <!--
@@ -49,6 +49,8 @@
 
 <script>
 
+import Vue from 'vue'
+
 import projectaccess from '@/components/projectaccess'
 import projectavatar from '@/components/projectavatar'
 import datatypetag from '@/components/datatypetag'
@@ -62,6 +64,12 @@ export default {
         
     props: {
         project: { type: Object },
+    },
+
+    data() {
+        return {
+            config: Vue.config,
+        }
     },
 
     created() {

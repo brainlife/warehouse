@@ -25,30 +25,45 @@
                 <span class="text-muted" v-else>(optional)</span>
 
                 <span v-if="input.multi">(multi)</span>
-
             </b-col>
             <b-col>
-                <div v-for="ps in form.inputs[input.id]" :key="ps.id" style="margin-bottom: 5px; margin-right: 50px;">
-
-                    <div class="button button-danger" style="float: right;" @click="remove_input(input, ps)" size="sm"><icon name="trash"/></div>
-                    <projectselecter 
-                        v-model="ps.project" 
-                        :datatype="input.datatype"
-                        :datatype_tags="input.datatype_tags"
-                        :required="true"
-                        placeholder="Select Project" 
-                        @input="ps.dataset = null"/>
-                    <select2 
-                        v-if="ps.project"
-                        v-model="ps.dataset" 
-                        :dataAdapter="debounce_fetch_datasets(input, ps)" 
-                        :allowClear="input.optional"
-                        :multiple="false" 
-                        :placeholder="'Select Input Dataset'" 
-                        @input="makesure_null_exists(input)"/>
-                    <!--
-                    <v-select @search="fetch_datasets(input.id)" :options="datasets[input.id]"/>
-                    -->
+                <div v-for="(ps, $idx) in form.inputs[input.id]" :key="ps.id" style="margin-bottom: 5px; margin-right: 50px;">
+                    <div v-if="input.multi" class="button button-danger" style="float: right;" @click="remove_input(input, ps)" size="sm"><icon name="trash"/></div>
+                    <div style="padding-right: 50px">
+                        <projectselecter 
+                            v-model="ps.project" 
+                            :datatype="input.datatype"
+                            :datatype_tags="input.datatype_tags"
+                            :required="true"
+                            placeholder="Select Project" 
+                            @input="change_project(input, ps)" style="margin-bottom: 5px;"/>
+    <!--
+                        <select2 
+                            v-if="ps.project" v-model="ps.dataset" 
+                            :dataAdapter="debounce_fetch_datasets(input, ps)" 
+                            :allowClear="input.optional"
+                            :multiple="false" 
+                            :placeholder="'Select Input Dataset'" 
+                            @input="add_new_input(input)"/>
+    -->
+                        <v-select v-if="ps.project" v-model="ps.dataset" :loading="ps.loading" 
+                            @search="fetch_datasets(input, ps, $event)" 
+                            @input="add_new_input(input)"
+                            :options="datasets[input.id]" placeholder="Select/Search Input Dataset">
+                            <template slot="option" slot-scope="option">
+                                <b>{{option.subject}}</b>
+                                <small v-if="option.datatype_tags"><b>{{option.datatype_tags.toString()}}</b></small>
+                                <span v-if="option.tags.length > 0">
+                                    |
+                                    <small>{{option.tags.toString()}}</small>
+                                </span>
+                                <small style="opacity: 0.4; font-size: 80%">
+                                    <time>{{new Date(option.create_date).toLocaleString()}}</time>
+                                    <!--{{option.id}}-->
+                                </small>
+                            </template>
+                        </v-select>
+                    </div>
                 </div>
                 <b-row>
                     <b-col cols="5">
@@ -174,7 +189,7 @@ export default {
                 //initialize input datasets array (with null as first item)
                 for(var idx in this.app.inputs) {
                     var input = this.app.inputs[idx];
-                    Vue.set(this.form.inputs, input.id, [{id: new Date().getTime(), project: null, dataset: null}]);
+                    Vue.set(this.form.inputs, input.id, [{id: new Date().getTime(), project: null, dataset: null, loading: false}]);
                 }
 
                 return this.$http.get(Vue.config.wf_api + '/resource/best', {params: {
@@ -203,22 +218,16 @@ export default {
     },
 
     methods: {
-        /*
-        fetch_datasets(input) {
-            console.log("func");
-            return (search, loading)=>{
-                loading(true);
-                console.log(search);
-            }
+        change_project(input, ps) {
+            ps.dataset = null;
+            this.fetch_datasets(input, ps, null);
         },
-        */
-        fetch_datasets: function(input, ps, params, cb) {
+
+        fetch_datasets(input, ps, search) {
+            ps.loading = true;
+
             // essentially the same code from datasetselecter.vue
-            if (!params.page) params.page = 1;
             var dropdown_items = [];
-            
-            let limit = 100;
-            let skip = (params.page - 1) * limit;
             let find_raw = {
                 project: ps.project,
                 datatype: input.datatype._id,
@@ -227,32 +236,42 @@ export default {
                 status: {$in: ["stored", "archived"]},
             };
 
-            if (params.term) find_raw.$text = { $search: params.term };
+            if(search) find_raw.$text = {$search: search};
             
             this.$http.get('dataset', { params: {
                 find: JSON.stringify(find_raw),
                 sort: "project meta.subject -create_date",
                 populate: "datatype",
                 datatype_tags: input.datatype_tags,
-                limit,
-                skip
+                limit: 100,
             }})
             .then(res => {
                 res.data.datasets.forEach(dataset => {
                     var subject = "N/A";
                     if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
 
+                    let label = subject;
+                    if(dataset.datatype_tags && dataset.datatype_tags.length > 0) label += ' '+dataset.datatype_tags;
+                    if(dataset.tags.length > 0) label +=' | '+dataset.tags; 
+
                     // add dropdown menu item
                     dropdown_items.push({
                         id: dataset._id,
-                        text: subject,
+                        label,
+
+                        subject: subject,
                         date: dataset.create_date,
                         datatype: dataset.datatype,
                         datatype_tags: dataset.datatype_tags,
                         tags: dataset.tags,
+                        create_date: dataset.create_date,
                     });
                 });
 
+                ps.loading = false;
+                this.datasets[input.id] = dropdown_items;
+
+                /*
                 // let select2 know that we're done retrieving items
                 cb({
                     results: dropdown_items,
@@ -261,9 +280,13 @@ export default {
                         more: skip + res.data.datasets.length < res.data.count,
                     },
                 });
+                */
+            }).catch(err=>{
+                console.error(err);
+                ps.loading = false;
             });
         },
-        
+
         // wait a bit (unless interrupted by more keystrokes), then calls fetch_datasets
         debounce_fetch_datasets(input, ps) {
             let debounce;
@@ -315,11 +338,11 @@ export default {
                                                 if(input.multi) {
                                                     obj[k] = [];
                                                     pss.forEach(ps=>{
-                                                        obj[k].push("../"+download_task_id+"/"+ps.dataset+"/"+(file.filename||file.dirname));
+                                                        obj[k].push("../"+download_task_id+"/"+ps.dataset.id+"/"+(file.filename||file.dirname));
                                                     });
                                                 } else {
                                                     //single (pick first one)
-                                                    obj[k] = "../"+download_task_id+"/"+pss[0].dataset+"/"+(file.filename||file.dirname)
+                                                    obj[k] = "../"+download_task_id+"/"+pss[0].dataset.id+"/"+(file.filename||file.dirname)
                                                 }
                                             }
                                         });
@@ -335,21 +358,21 @@ export default {
             }
 
             handle_obj(config);
-            console.log("generated config", config);
+            //console.log("generated config", config);
             return config;
         },
 
         remove_input(input, ps) {
             let idx = this.form.inputs[input.id].indexOf(ps);
             this.form.inputs[input.id].splice(idx, 1);
-            this.makesure_null_exists(input);
+            if(this.form.inputs[input.id].length == 0) this.add_new_input(input);
         },
 
-        makesure_null_exists(input) {
+        add_new_input(input) {
             if(!input.multi) return;
             let pss = this.form.inputs[input.id];
             if(!pss.find(ps=>(ps.dataset == null))) {
-                pss.push({project: null, dataset: null, id: new Date().getTime()});
+                pss.push({project: null, dataset: null, id: new Date().getTime(), loading: false});
             }
         },
 
@@ -386,7 +409,7 @@ export default {
             var all_dataset_ids = [];
             for(var input_id in this.form.inputs) {
                 this.form.inputs[input_id].forEach(ps=>{
-                    all_dataset_ids.push(ps.dataset);
+                    all_dataset_ids.push(ps.dataset.id);
                 });
             }
 
@@ -454,8 +477,8 @@ export default {
                     }
 
                     //for each input, find dataset that's staged and use dataset information from it
-                    this.form.inputs[input_id].forEach(input=>{
-                        let dataset = download_task.config._outputs.find(output=>output.dataset_id == input.dataset);
+                    this.form.inputs[input_id].forEach(ps=>{
+                        let dataset = download_task.config._outputs.find(output=>output.dataset_id == ps.dataset.id);
                         config._inputs.push(
                             Object.assign({}, dataset, {
                                 id: input_id,
@@ -492,7 +515,7 @@ export default {
 					var tags = [];
                     if(output.datatype_tags_pass) {
                         this.form.inputs[output.datatype_tags_pass].forEach(ps=>{
-                            let dataset = download_task.config._outputs.find(out=>out.dataset_id == ps.dataset);
+                            let dataset = download_task.config._outputs.find(out=>out.dataset_id == ps.dataset.id);
 							if(dataset.datatype_tags) tags = tags.concat(dataset.datatype_tags);
                         }); 
                     }

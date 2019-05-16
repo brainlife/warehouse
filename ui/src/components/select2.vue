@@ -71,7 +71,7 @@ export default {
     //watch for parent value/options change and apply
     watch: {
         value: function(value) {
-            //console.log("select2: parent value changed to", value);
+            console.log("select2: parent value changed to", value);
 
             //check to make sure we aren't updateing controller with the same value
             //this happens if user change value on UI, which triggers change, and parent

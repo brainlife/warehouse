@@ -6,9 +6,6 @@ PR > https://github.com/sagalbot/vue-select/pull/373
 -->
 <div v-if="options">
     <b-alert show variant="danger" v-if="options.length == 0 && required">You don't have any project that you can select.</b-alert>
-    <!--
-    <b-form-select v-if="options.length > 0" v-model="selected" :options="options" :placeholder-nowork="placeholder" :required="required"/>
-    -->
     <v-select v-if="options.length > 0" v-model="selected" 
         max-height="250px"
         :options="options" 
@@ -52,11 +49,6 @@ export default {
             }
         },
         value: function() {
-            /*
-            if (this.selected != this.value) {
-                this.selected = this.value;
-            }
-            */
             if(this.selected && this.selected.value != this.value) {
                 this.selected = this.options.find(it=>it.value == this.value);
             }

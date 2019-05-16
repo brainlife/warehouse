@@ -2,7 +2,10 @@
 <div>
     <div v-for="agreement in agreements" class="agreement">
         <vue-markdown :source="agreement.agreement" class="readme"/>
-        <b-form-checkbox @change="update_agreements(agreement._id)" v-model="user_agreements[agreement._id]">I Agree</b-form-checkbox>
+        <b-form-checkbox :disabled="!config.user" @change="update_agreements(agreement._id)" v-model="user_agreements[agreement._id]">
+            I Agree
+            <small v-if="!config.user">(Please register/signin first to agree)</small>
+        </b-form-checkbox>
     </div>
 </div>
 </template>
@@ -10,6 +13,7 @@
 <script>
 
 import Vue from 'vue'
+
 import VueMarkdown from 'vue-markdown'
 import agreementMixin from '@/mixins/agreement'
 
@@ -20,9 +24,19 @@ export default {
     },
     props: [ 'agreements' ],
 
+    data() {
+        return {
+            config: Vue.config,
+        }
+    },
+
     methods: {
 
-        update_agreements: function(id) {
+        update_agreements(id, evt) {
+            if(!Vue.config.user) {
+                alert('please signup/login first');
+                return;
+            }
             //somehow @change event gets fired before this.agreements is updated.. 
             this.$nextTick(function() {
                 //console.log("agreements changed - saving", this.user_agreements);

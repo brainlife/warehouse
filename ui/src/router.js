@@ -46,12 +46,12 @@ export default new Router({
         {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true},
         {path: '/novnc/:taskid/:type/:datatype64/:subdir?', component: novnc, props: true},
 
-        {path: '/projects', component: projects}, 
-        {path: '/project', component: projects}, //deprecated by /projects (redirect?)
-        {path: '/project/:id', component: project},
+        {path: '/project', component: projects, meta: {public: true}}, //deprecated by /projects (redirect?)
+        {path: '/projects', component: projects, meta: {public: true}}, 
+        {path: '/project/:id', component: project, meta: {public: true}},
         {path: '/project/:id/edit', component: projectedit},
         {path: '/project/:id/:tab?/:subid?', component: project},
-        {path: '/openneuro/:id', component: openneuro},
+        {path: '/openneuro/:id', component: openneuro, meta: {public: true}},
 
         {path: '/datatypes', component: datatypes, meta: {public: true}},
         {path: '/datatypes/:id', component: datatypes, meta: {public: true}},

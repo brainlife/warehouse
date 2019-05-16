@@ -3,7 +3,7 @@
     <sidemenu active="/projects"/>
     <div class="page-header">
         <div class="search-box">
-            <b-form-input v-model="query" type="text" placeholder="Filter Projects" @input="change_query_debounce" class="input"/>
+            <b-form-input v-model="query" type="text" placeholder="Search Projects" @input="change_query_debounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
         </div>
     </div>
@@ -16,7 +16,7 @@
                 </b-form-radio-group>
             </b-form-group>
         </div>
-        <div class="position: relative">
+        <div v-if="config.user" class="position: relative">
             <h4 class="group-title">My Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
                 <projectcard v-for="project in my_projects" :project="project" :key="project._id"/>
@@ -27,11 +27,11 @@
             <p v-if="my_projects.length == 0 && query == ''" style="margin: 20px;">
                 Please create your project by clicking on the button at the bottom left corner of this page.
             </p>
-            <br clear="both">
+            <br v-if="my_projects.length > 0" clear="both">
         </div>
 
         <div v-if="other_projects && other_projects.length > 0" style="position: relative;">
-            <h4 class="group-title">Other Projects</h4>
+            <h4 class="group-title">Public<small>/Protected</small> Projects</h4>
             <div style="padding: 10px;" v-if="mode == 'tile'">
                 <projectcard v-for="project in other_projects" :project="project" :key="project._id" class="projectcard"/>
             </div>
@@ -43,6 +43,9 @@
 
         <div v-if="openneuro_projects && openneuro_projects.length > 0" style="position: relative;">
             <h4 class="group-title">OpenNeuro Datasets</h4>
+            <p style="opacity: 0.8; margin: 20px;">
+                Only the projects with large number of downloads are linked to Brainlife. Please contact Brainlife Administrator to add other Openneuro dataset.
+            </p>
             <div style="padding: 10px;" v-if="mode == 'tile'">
                 <projectcard v-for="project in openneuro_projects" :project="project" :key="project._id" class="projectcard"/>
             </div>
@@ -53,7 +56,7 @@
         </div>
     </div>
 
-    <b-button class="button-fixed" @click="go('/project/_/edit')" title="New Project">
+    <b-button class="button-fixed" @click="newproject" title="New Project">
         <icon name="plus" scale="2"/>
     </b-button>
 </div>
@@ -132,7 +135,11 @@ export default {
                 this.my_projects = [];
                 this.other_projects = [];
                 res.data.projects.forEach(p=>{
-                    if(p.admins.includes(Vue.config.user.sub) || p.members.includes(Vue.config.user.sub) || p.guests.includes(Vue.config.user.sub)) {
+                    if(Vue.config.user && (
+                        p.admins.includes(Vue.config.user.sub) || 
+                        p.members.includes(Vue.config.user.sub) || 
+                        p.guests.includes(Vue.config.user.sub))
+                    ) {
                         this.my_projects.push(p);
                     } else {
                         this.other_projects.push(p);
@@ -172,6 +179,14 @@ export default {
         
         go(path) {
             this.$router.push(path);
+        },
+
+        newproject() {
+            if(Vue.config.user) {
+                this.$router.push('/project/_/edit');
+            } else {
+                alert('Please signup/login first to create a new project');
+            }
         },
     }
 }

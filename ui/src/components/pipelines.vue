@@ -25,7 +25,10 @@
         </div>
         <div class="rules" v-else>
             <b-row :no-gutters="true" style="padding-right: 20px; padding-bottom: 10px">
-                <b-col :cols="8"><!--placeholder--></b-col>
+                <b-col :cols="6"><!--placeholder--></b-col>
+                <b-col :cols="2">
+                    <span style="width: 95px; float: right; opacity: 0.5; font-size: 85%;">Jobs</span>
+                </b-col>
                 <b-col :cols="2" style="text-align: right;">
                     <div class="date">Create Date</div>
                 </b-col>
@@ -448,6 +451,9 @@ export default {
             delete this.editing._id;
             this.editing.name = rule.name+" - copy";
             this.editing.active = false; //should deactivate if it's active
+
+            //reset some things
+            delete this.editing.stats;
         },
 
         update_subject_match(rule) {

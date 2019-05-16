@@ -64,9 +64,11 @@
             <div v-if="instances.length > 0">
                 <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing">
                     <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
+                        <!--
                         <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
                             <statusicon :status="instance.status" :scale="0.6" style="top: -3px"/>
                         </div>
+                        -->
 
                         <timeago :since="instance.update_date" :auto-update="10" class="date"/>
                         <timeago :since="instance.create_date" :auto-update="10" class="date"/>
@@ -533,7 +535,7 @@ position: fixed;
 height: 110px;
 top: 95px;
 left: 200px;
-width: 500px;
+width: 400px;
 background-color: #f6f6f6;
 z-index: 1; /*for dropdown menu to go on top*/
 }
@@ -542,7 +544,7 @@ position: fixed;
 bottom: 0px;
 top: 205px;
 left: 200px;
-width: 500px;
+width: 400px;
 background-color: white;
 }
 
@@ -550,7 +552,7 @@ background-color: white;
 position: fixed;
 top: 95px;
 bottom: 0px;
-left: 700px;
+left: 600px;
 right: 0px;
 background-color: #eee;
 overflow: auto;
@@ -558,7 +560,7 @@ overflow: auto;
 
 .instance-header {
 border-bottom: 1px solid rgba(0,0,0,0.1);
-padding: 4px 15px;
+padding: 4px 8px;
 color: #333;
 /*transition: background-color 0.2s, color 0.2s;*/
 }
@@ -579,11 +581,11 @@ background-color: #007bff;
 .instance-desc {
 font-size: 90%;
 padding-left: 3px;
-margin-left: 25px;
+margin-left: 0px;
 }
 
 .button-fixed {
-left: 600px;
+left: 500px;
 }
 
 .table-header th {
@@ -674,7 +676,7 @@ background-color: #28a745;
 
 .date {
 float: right;
-width: 90px;
+width: 80px;
 text-align: right;
 font-size: 80%;
 margin-top: 1px;
