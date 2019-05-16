@@ -4,9 +4,9 @@
     <b-container class="brainlife-modal">
         <div class="brainlife-modal-header">
             <div class="brainlife-modal-header-buttons">
-                <span v-if="!config.user" style="opacity: 0.8">Please register/signin to download/visualize this dataset</span>
-                <b-dropdown text="Download" v-if="config.user && dataset.storage" variant="outline-secondary" size="sm">
-                    <b-dropdown-item @click="download">This Dataset</b-dropdown-item>
+                <!--<span v-if="!config.user" style="opacity: 0.8">Please register/signin to download/visualize this dataset</span>-->
+                <b-dropdown text="Download" v-if="dataset.storage" variant="outline-secondary" size="sm">
+                    <b-dropdown-item @click="download">This Dataset <small v-if="dataset.size">({{dataset.size|filesize}})</small></b-dropdown-item>
                     <b-dropdown-divider v-if="dataset.prov"/>
                     <b-dropdown-header v-if="dataset.prov">Provenance</b-dropdown-header>
                     <b-dropdown-item v-if="dataset.prov" @click="download_prov">provenance.json</b-dropdown-item>
@@ -18,10 +18,10 @@
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.1"/>
                 </div>
-                <div class="button" @click="copy" v-if="config.user && dataset.storage" title="Copy">
+                <div class="button" @click="copy" v-if="dataset.storage" title="Copy">
                     <icon name="copy" scale="1.1"/> 
                 </div>
-                <div class="button" @click="start_viewer(dataset.datatype)" v-if="config.user && dataset.storage" title="View Dataset">
+                <div class="button" @click="start_viewer(dataset.datatype)" v-if="dataset.storage" title="View Dataset">
                     <icon name="eye" scale="1.1"/>
                 </div>
                 <!--
@@ -29,7 +29,7 @@
                     <icon name="download" scale="1.1"/>
                 </div>
                 -->
-                <div class="button" @click="process" v-if="config.user && dataset.storage" title="Process">
+                <div class="button" @click="process" v-if="dataset.storage" title="Process">
                     <icon name="play" scale="1.1"/> 
                 </div>
                 <div class="button" @click="close" style="margin-left: 20px; opacity: 0.8;">
@@ -467,6 +467,7 @@ export default {
         },
 
         download() {
+            if(!Vue.config.user) return alert("Please Signup/Login first to download this dataset");
             this.check_agreements(this.dataset.project, ()=>{
                 let query = {_id: [this.dataset._id]};
                 this.$root.$emit("downscript.open", {find: query});
@@ -485,6 +486,7 @@ export default {
         },
 
         process() {
+            if(!Vue.config.user) return alert("Please Signup/Login first to run analysis with this dataset");
             this.check_agreements(this.dataset.project, ()=>{
                 this.$root.$emit('instanceselecter.open', opt=>{
                     if(opt.instance) {
@@ -511,6 +513,7 @@ export default {
         },
 
         copy() {
+            if(!Vue.config.user) return alert("Please Signup/Login first to copy this dataset");
             this.check_agreements(this.dataset.project, ()=>{
                 this.$root.$emit('copytarget.open', opt=>{
                     this.$http.post('dataset/copy', {
@@ -525,6 +528,7 @@ export default {
         },
 
         submit_process(project_id, instance) {
+            if(!Vue.config.user) return alert("Please Signup/Login first to analyze this dataset");
             this.check_agreements(this.dataset.project, ()=>{
                 this.$http.post('dataset/stage', {
                     instance_id: instance._id,
@@ -657,7 +661,7 @@ export default {
         },
 
         start_viewer(datatype) {
-            //console.dir(datatype);
+            if(!Vue.config.user) return alert("Please Signup/Login first to visualize this dataset");
             this.check_agreements(this.dataset.project, ()=>{
                 this.find_staged_task((task, subdir)=>{
                     if(task) {
