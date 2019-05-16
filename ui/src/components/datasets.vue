@@ -301,12 +301,14 @@ export default {
 	methods: {
         isadmin() {
             if(!this.project) return false;
+            if(!Vue.config.user) return false;
             if(~this.project.admins.indexOf(Vue.config.user.sub)) return true;
             return false;
         },
 
         ismember() {
             if(!this.project) return false;
+            if(!Vue.config.user) return false;
             if(~this.project.members.indexOf(Vue.config.user.sub)) return true;
             return false;
         },

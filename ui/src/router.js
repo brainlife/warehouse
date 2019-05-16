@@ -50,7 +50,7 @@ export default new Router({
         {path: '/projects', component: projects, meta: {public: true}}, 
         {path: '/project/:id', component: project, meta: {public: true}},
         {path: '/project/:id/edit', component: projectedit},
-        {path: '/project/:id/:tab?/:subid?', component: project},
+        {path: '/project/:id/:tab?/:subid?', component: project, meta: {public: true}},
         {path: '/openneuro/:id', component: openneuro, meta: {public: true}},
 
         {path: '/datatypes', component: datatypes, meta: {public: true}},
