@@ -374,6 +374,7 @@ function handle_rule(rule, cb) {
     ], err=>{
         if(err) return cb(err);
         rlogger.debug("done processing rule");
+        //common.update_rule_stats(rule._id, cb);
         cb();
     });
 
@@ -402,7 +403,7 @@ function handle_rule(rule, cb) {
         var output_missing = false;
         rule.app.outputs.forEach(output=>{
             //I should ignore missing output if user doesn't want to archive it?
-            if(!rule.archive[output.id] || !rule.archive[output.id].do) {
+            if(!rule.archive || !rule.archive[output.id] || !rule.archive[output.id].do) {
                 rlogger.debug(output.id+" not archvied - skip");
                 return;
             }
@@ -472,8 +473,6 @@ function handle_rule(rule, cb) {
                     headers: { authorization: "Bearer "+jwt },
                     qs: {
                         find: JSON.stringify({
-                            //name: instance_name, //I need to key by the subject name
-                            //"config.rule": rule._id,
                             "config.rule_subject": subject,
                             group_id: rule.project.group_id, 
                             "config.removing": {$exists: false},
@@ -602,8 +601,7 @@ function handle_rule(rule, cb) {
                             if(task.service == "soichih/sca-product-raw" || task.service == "brainlife/app-stage") {
                                 if(isalive(task)) {
                                     output = task.config._outputs.find(o=>o.dataset_id == input._id);
-                                    //if(output) rlogger.debug("found task");
-                                    break;
+                                    if(output) break;
                                 }
                             }
                         }
