@@ -296,6 +296,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
             //set datatype / files
             switch(key.modality) {
             case "anat":
+                dataset.datatype_tags = ["defaced"];
                 //check if it's t1 or t2..
                 let t1 = false;
                 let t2 = false;
