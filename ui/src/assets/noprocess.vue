@@ -17,6 +17,9 @@
                 </b-list-group-item>
 
                 <b-list-group-item>
+                    <iframe width="444" height="250" style="float: right; margin-left: 20px;"
+                        src="https://www.youtube.com/embed/NTNyf1xjNME" frameborder="0" 
+                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                     <h5>2. Analyze Single Subject</h5>
                     <p>Before you bulk process datasets on this project, you probably want to run your analysis on a fewer subjects to test it.</p>
                     <p>
@@ -27,10 +30,12 @@
                     <p>
                         Process is used to stage your input dataset and group your data derivatives. You can select an App that you'd like to run by clicking <b>Submit New App</b> button at the bottom of th process page. Please read our <a href="https://brainlife.io/docs/user/process/" target="doc">documentation</a> for more info.
                     </p>
-                    <iframe width="560" height="315" src="https://www.youtube.com/embed/NTNyf1xjNME" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                 </b-list-group-item>
 
                 <b-list-group-item>
+                    <iframe width="444" height="250" style="float: right; margin-left: 20px;"
+                        src="https://www.youtube.com/embed/Ewy3ahCVUzw" frameborder="0" 
+                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                     <h5>3. Bulk Process (Analyze all Subjects)</h5>
                     <p>Once you know which Apps to run with which options, you can analyze all subjects using <b>Pipeline</b>.</p>
                     <p>On your private project, click <b>Pipelines</b> tab, then click the <b-btn style="border-radius: 50%;" size="sm" variant="secondary"><icon name="plus"/></b-btn> button to create a new pipelie rule. Enter any name you'd like, and select the App you want to run. Under the <b>Inputs</b> section, update the Project field to the project that contains the datasets that you'd like to use as input. Click Submit. 
@@ -38,7 +43,6 @@
                     <p>
                         You should now see an entry on the pipeline main page. Click the toggle switch ( <b-form-checkbox style="display: inline;" switch/>) to enable your pipeline rule. After a few minutes, you should start seeing your processes created for each subjects. All output will be archived to your project once the jobs are completed. Please see <a href="https://brainlife.io/docs/user/pipeline/" target="doc">documentation</a> for more information.
                     </p>
-                    <iframe width="560" height="315" src="https://www.youtube.com/embed/Ewy3ahCVUzw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                     
                 </b-list-group-item>
 
