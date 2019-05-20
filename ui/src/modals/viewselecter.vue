@@ -16,7 +16,7 @@
             </b-col>
         </b-row>
         <div style="opacity: 0.7">
-            <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+datatype.name+' datatype&body=Hello. Please add ??? UI to handle this datatype.'" target="_blank" style="float: right;">Suggest a new visualization tool</a>
+            <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+datatype.name+' datatype&body=Hello. Please add ??? UI to handle this datatype.'" target="_blank" style="float: right;">Suggest a new visualization tool for this datatype</a>
             <h4>
                 <b-badge variant="dark">Web UI</b-badge>
                 <b-badge variant="success">VNC</b-badge>

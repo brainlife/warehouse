@@ -199,7 +199,7 @@
         </div>
 
         <div v-if="tabs[tab].id == 'process'">
-            <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access processes. Please contact the project admins to give you access.</b-alert>
+            <noprocess v-if="!(ismember()||isadmin())"/>
             <processes :project="selected" v-else/>
         </div>
 
@@ -240,6 +240,7 @@ import pipelines from '@/components/pipelines'
 import agreements from '@/components/agreements'
 import datatypetag from '@/components/datatypetag'
 import stateprogress from '@/components/stateprogress'
+import noprocess from '@/assets/noprocess'
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -253,6 +254,8 @@ export default {
         projectmenu, pubcard, datasets,
         processes, publications, pipelines,
         agreements, datatypetag,
+
+        noprocess,
 
         newtaskModal, datatypeselecterModal, stateprogress,
     },
