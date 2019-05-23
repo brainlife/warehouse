@@ -59,7 +59,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
     } else {
         find.access = "public"; //guest can only see public projects
     }
-    //console.log(JSON.stringify(find, null, 4));
 
     db.Projects.find(find)
     .select(select)

@@ -323,33 +323,141 @@ set -e
 ${stage}
 ${run}
 `);
+    });
+});
 
-/*
-{
-"id": "dataset.5c104bead33e813cb4c8e40b"
-},
-{
-"id": "task.5c104baf60c6080c45c47fe2",
-"label": "brain-life/app-datanormalize(singularity)\nxflip:(null)\nyflip:(null)\nzflip:(null)\n",
-"_app": "5927293d7400b6be913e676e"
-},
-{
-"id": "dataset.596cbded604ff90887721ae4",
-"label": "HCP / 100307\nneuro/dwi \nunrelated"
-}
-*/
-        /*
+/**
+ * @apiGroup Dataset
+ * @api {get} /dataset/boutique/:id Generate boutique package
+ * @apiDescription                  Generate .tar containing boutique descriptor, and run.sh
+ *
+ */
+router.get('/boutique/:id', (req, res, next)=>{
+    let dataset_id = req.params.id;
+    //let debug_config = "";
+    //if(config.debug) debug_config = "BLHOST=dev1.soichi.us ";
+    generate_prov(dataset_id, (err, nodes, edges)=>{
+        if(err) return next(err);
+
+        //README
+        let readme = `
+This boutique descriptor that can be used to run the workflow used to generate the brainlife dataset: ${dataset_id}
+        `;
         let archive = archiver('tar');
-        let readme = ```
-        These scripts can be used to reproduce the brainlife dataset with id ${dataset_id}
-        ```;
         archive.append(readme, {name: "README"});
 
-        archive.append(run, {name: "run.sh"});
-        archive.finalize();
-        archive.pipe(res); 
-        res.setHeader('Content-disposition', 'attachment; filename=prov.tar');
-        */
+        let config_jsons = [];
+        let b_inputs = [];
+        let b_files = [];
+        let input_dataset_ids = [];
+
+        console.dir(nodes);
+
+        //run.sh
+        let run = "";
+        while(nodes.length) { 
+            let node = nodes.pop();
+            if(!node.label) continue; //"This Dataset" doesn't have label, and we don't need it (TODO make output link?)
+            let id_parts = node.id.split(".");
+            if(id_parts[0] == "dataset") {
+                //stage += "echo \"staging "+node.id+" ("+node.label.replace(/\n/g, ' ')+")\"\n";
+                //stage += "[ ! -d "+node.id+" ] && "+debug_config+"bl dataset download -i "+id_parts[1]+" -d "+node.id+"\n\n";
+                /*
+                b_inputs.push({
+                    id: node.id+"."+id_parts[1], 
+                    name: node.label,
+                    optional: false,  //TODO - pull from app config?
+                    type: "File", 
+                    "value-key": "["+node.id+"."+id_parts[1]+"]"
+                });
+                */
+                input_dataset_ids.push(id_parts[1]);
+            } else if(id_parts[0] == "task") {
+                run += "echo \"staging "+node.id+" ("+node._service+")\"\n";
+                run += "[ ! -d "+node.id+" ] && curl -L https://github.com/"+node._service+"/archive/"+node._commit_id+".zip > "+node.id+".zip && unzip "+node.id+".zip && mv *"+node._commit_id+" "+node.id+" && rm "+node.id+".zip\n\n"; 
+
+                //install config.json and run main
+                run += "echo \"running task "+node.id+" ("+node._service+")\"\n";
+                run += "(\n\tcd "+node.id+"\n";
+                //run += "\techo '"+JSON.stringify(node._config, null, 4)+"' > config.json\n";
+                run += "\ttime ./main\n"; 
+                run += ")\n\n";
+
+                let app_config =  {};
+                for(let k in node._config) {
+                    let vkey = "["+node.id+"."+k+"]";
+                    let v = node._config[k];
+                    if(typeof v == "string" && v.startsWith("../")) { //TODO - we need a better to detect if this is parameter input or not..
+                        //see if the input belongs to staged input
+                        let pos = null;
+                        input_dataset_ids.forEach(dataset_id=>{
+                            if(!~pos) pos = v.indexOf(dataset_id);
+                        });
+                        if(~pos) {
+                            //using staged input!
+                            if(!b_inputs.find(input=>input.id == k)) {
+                                b_inputs.push({
+                                    id: k, //node.id+"."+k, 
+                                    name: node.id+"."+k+" "+v.substr(pos+25),
+                                    optional: false, //TODO - pull from app config?
+                                    type: "File",  //TODO - pull from app config?
+                                    "value-key": vkey,
+                                });
+                            }
+                            app_config[k] = vkey;
+                        } else {
+                            //must be using output from other app
+                            app_config[k] = v;
+                        }
+                    } else {
+                        //must be parameter input
+                        b_inputs.push({
+                            id: node.id+"."+k, 
+                            name: node.label+" "+k,
+                            optional: false, //TODO - pull from app config?
+                            type: "String",  //TODO - pull from app config?
+                            "value-key": vkey,
+                        });
+                        app_config[k] = vkey;
+                    }
+                }
+
+                b_files.push({
+                    id: "config."+node.id,
+                    name: "config.json for "+node.label,
+                    type: "Configuration File", //TODO really?
+                    "path-template": node.id+"/config.json",
+                    "file-template": JSON.stringify(app_config, null, 4).split("\n"), //can't I just enter string?
+                });
+            }
+        }
+
+        b_files.push({
+            id: "run",
+            name: "run.sh",
+            type: "Configuration File", //TODO really?
+            "path-template": "run.sh",
+            "file-template": run.split("\n"), //can't I just enter string?
+        });
+        //archive.append(run, {name: "run.sh"});
+
+        //boutique.json
+
+        //archive.finalize();
+        //archive.pipe(res); 
+        res.setHeader('Content-disposition', 'attachment; filename=boutique.'+dataset_id+'.json');
+        res.send(JSON.stringify({
+            "command-line": "./run.sh",
+            name: "workflow generated from dataset:"+dataset_id, //TODO
+            description: "TODO - workflow description?", //TODO
+            "schema-version": "0.5",
+            "suggested-resources": { "cpu-cores": 8, "ram": 16, "walltime-estimate": 120 }, //TODO
+            "error-codes": [{code: 1, description: "failed"}],
+            "tags": { "brainlife": "brainlife" }, //TODO
+            "tool-version": "v1", //TODO
+            inputs: b_inputs,
+            "output-files": b_files,
+        }, null, 4));
     });
 });
 
@@ -397,7 +505,7 @@ function generate_prov(origin_dataset_id, cb) {
         label += dataset.meta.subject + "\n";
         label += datatype_name + "\n";
         label += dataset.tags.join(" ");
-        return label; 
+        return label.trim(); 
     }
 
     //remove all keys that starts with _
@@ -424,8 +532,6 @@ function generate_prov(origin_dataset_id, cb) {
     function load_dataset_prov(dataset, defer, cb) {
         let to = "dataset."+dataset._id;
         if(defer) to = defer.to;
-
-        //console.log("loading dataset prov", dataset._id.toString()); 
         if(!dataset.prov.task) {
             //leaf dataset.. we are done!
             if(defer) {
@@ -455,8 +561,6 @@ function generate_prov(origin_dataset_id, cb) {
                     id: "task."+task._id, 
                     label: compose_label(task),
                 }, taskInfo(task)));
-                //    _app: (task.config?task.config._app:null),
-                //});
 
                 let edge_label = datatypes[dataset.datatype].name+" "+dataset.datatype_tags.join(",");
                 let archived_dataset_id = null;
@@ -505,17 +609,10 @@ function generate_prov(origin_dataset_id, cb) {
             //dataset to dataset links are formed when user *copy* dataset to another project
             let label = null;
             if(to.indexOf("dataset.") === 0) label = "copy";
-
             let defer = {
                 node: {
                     id: "dataset."+dataset_id, 
                     label: compose_dataset_label(dataset),
-                    /*
-                    label:  dataset.project.name+" / "+ 
-                            dataset.meta.subject + "\n"+
-                            datatype_name + "\n"+
-                            dataset.tags.join(" ")
-                    */
                 },
                 edge: {
                     from: "dataset."+dataset_id,
@@ -1465,5 +1562,4 @@ router.post('/copy', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 });
  
 module.exports = router;
-
 

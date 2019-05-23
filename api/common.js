@@ -681,13 +681,18 @@ exports.update_project_stats = function(group_id, cb) {
     logger.debug("getting instance status counts from amretti for group_id:%s", group_id);
     request.get({
         url: config.amaretti.api+"/instance/count", json: true,
-        headers: { authorization: "Bearer "+config.warehouse.jwt },  //config.auth.jwt is deprecated
         qs: {
             find: JSON.stringify({status: {$ne: "removed"}, group_id}),
-        }
+        },
+        headers: { authorization: "Bearer "+config.warehouse.jwt, },
     }, (err, res, counts)=>{
-        if(res.statusCode != 200) return next(counts);
-        stats = {};
+        if(res.statusCode != 200) {
+            logger.error("failed to query");
+            if(cb) cb(res.body);
+            return;
+        }
+        stats = counts[0]; //there should be only 1
+        /*
         counts.forEach(count=>{
             switch(count._id) {
             case "requested": 
@@ -702,6 +707,8 @@ exports.update_project_stats = function(group_id, cb) {
             }
         });
         //console.dir(stats);
+        */
+
         db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true}, (err, project)=>{
             if(err) return cb(err);
             logger.debug("updating rule stats for project_id:%s", project._id.toString());
