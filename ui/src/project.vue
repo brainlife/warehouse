@@ -199,7 +199,7 @@
         </div>
 
         <div v-if="tabs[tab].id == 'process'">
-            <b-alert show variant="secondary" v-if="!(ismember()||isadmin())">Only the admins or members of this project can access processes. Please contact the project admins to give you access.</b-alert>
+            <noprocess v-if="!(ismember()||isadmin())"/>
             <processes :project="selected" v-else/>
         </div>
 
@@ -240,6 +240,7 @@ import pipelines from '@/components/pipelines'
 import agreements from '@/components/agreements'
 import datatypetag from '@/components/datatypetag'
 import stateprogress from '@/components/stateprogress'
+import noprocess from '@/assets/noprocess'
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -253,6 +254,8 @@ export default {
         projectmenu, pubcard, datasets,
         processes, publications, pipelines,
         agreements, datatypetag,
+
+        noprocess,
 
         newtaskModal, datatypeselecterModal, stateprogress,
     },
@@ -315,8 +318,8 @@ export default {
 
     mounted() {
         this.tabs.push({id: "detail", label: "Detail"});
+        this.tabs.push({id: "dataset", label: "Archive"});
         if(Vue.config.user) {
-            this.tabs.push({id: "dataset", label: "Archive"});
             this.tabs.push({id: "process", label: "Processes"});
             this.tabs.push({id: "pipeline", label: "Pipelines"});
             this.tabs.push({id: "pub", label: "Publications"});
@@ -340,7 +343,6 @@ export default {
                 let ids = Object.keys(this.projects); 
                 project_id = localStorage.getItem("last_projectid_used");
                 if(!this.projects[project_id]) project_id = ids[0];
-                //this.$router.replace("/project/"+project_id);
             }
             this.open_project(this.projects[project_id]);
     

@@ -99,7 +99,7 @@
             <p>
                 <b-btn size="sm" variant="outline-secondary" @click="copy"><icon name="copy" scale="0.8"/> Copy</b-btn>
             </p>
-            <p>
+            <p v-if="config.user">
                 <!-- 
                     I can't add  v-if="isadmin() || ismember()" here.. because user could mix datasets from other project.
                     I need to analyze which dataset can be edited
@@ -301,12 +301,14 @@ export default {
 	methods: {
         isadmin() {
             if(!this.project) return false;
+            if(!Vue.config.user) return false;
             if(~this.project.admins.indexOf(Vue.config.user.sub)) return true;
             return false;
         },
 
         ismember() {
             if(!this.project) return false;
+            if(!Vue.config.user) return false;
             if(~this.project.members.indexOf(Vue.config.user.sub)) return true;
             return false;
         },
@@ -603,6 +605,7 @@ export default {
         },
 
         process() {
+            if(!Vue.config.user) return alert("Please Sign Up/Login first to run analysis on this dataset");
             this.check_agreements(this.project, ()=>{
                 this.$root.$emit('instanceselecter.open', opt=>{
                     if(opt.instance) {
@@ -630,6 +633,7 @@ export default {
         },
 
         copy() {
+            if(!Vue.config.user) return alert("Please Sign Up/Login first to copy this dataset");
             this.check_agreements(this.project, ()=>{
                 this.$root.$emit('copytarget.open', opt=>{
                     let dataset_ids = [];
@@ -648,6 +652,7 @@ export default {
         },
 
         downscript() {
+            if(!Vue.config.user) return alert("Please Sign Up/Login first to download this dataset");
             this.check_agreements(this.project, ()=>{
                 let ids = [];
                 for(let id in this.selected) {

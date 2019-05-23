@@ -102,11 +102,11 @@
         </b-popover>
 
         <li v-if="!config.user" @click="login">
-            <icon name="brands/slack" scale="1.3"/>
+            <icon name="sign-in-alt" scale="1.3"/>
             <h4>Login</h4>
         </li>
         <li v-if="!config.user" @click="signup">
-            <icon name="brands/slack" scale="1.3"/>
+            <icon name="file-signature" scale="1.3"/>
             <h4>Sign Up</h4>
         </li>
 
@@ -174,6 +174,7 @@ export default {
             document.location = "/auth#!/settings/account";
         },
         signout() {
+            sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
             document.location = "/auth#!/signout";
         },
         reportbug() {
@@ -183,6 +184,7 @@ export default {
             document.location = "/";
         },
         login() {
+            sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
             document.location = "/auth";
         },
         signup() {
