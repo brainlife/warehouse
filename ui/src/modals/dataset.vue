@@ -14,6 +14,7 @@
                     <b-dropdown-item v-if="dataset.prov && dataset.prov.task.commit_id" @click="download_app(dataset.prov.task)">
                         The version of the App used
                     </b-dropdown-item>
+                    <b-dropdown-item v-if="dataset.prov" @click="download_boutique">Boutique descriptor (experimental)</b-dropdown-item>
                 </b-dropdown>
                 <div class="button" @click="remove" v-if="dataset._canedit && !dataset.removed" title="Remove Dataset">
                     <icon name="trash" scale="1.1"/>
@@ -480,6 +481,9 @@ export default {
         },
         download_prov() {
             document.location = Vue.config.api+'/dataset/prov/'+this.dataset._id;
+        },
+        download_boutique() {
+            document.location = Vue.config.api+'/dataset/boutique/'+this.dataset._id;
         },
         download_provscript() {
             document.location = Vue.config.api+'/dataset/provscript/'+this.dataset._id;

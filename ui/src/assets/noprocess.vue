@@ -11,7 +11,7 @@
                     <h5>1. Create Private Project</h5>
                     <p>This project is read-only. Please create a new project to analyze the datasets in this
                     project.
-                    <p>To create a new project, go to the [main brainlife.io/projects](https://brainlife.io/projects) page. You can do that by clicking the <b>&lt;</b> button at the top of this page. 
+                    <p>To create a new project, go to the main projects page by clicking the <b>&lt;</b> button at the top of this page. 
                         Once on the main brainlife.io/projects page click the <b-btn style="border-radius: 40%;" size="sm" variant="secondary"><icon name="plus"/></b-btn> button
                         (see bottom right corner).</p>
                 </b-list-group-item>
@@ -64,9 +64,11 @@ export default {
     },
 
     methods: {
+        /*
         newproject() {
             this.$router.push('/project/_/edit');
         }
+        */
     },
 
 }
