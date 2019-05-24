@@ -12,7 +12,7 @@
                 </b-button>
                 <b-button size="sm" v-for="state in ['requested', 'running', 'finished', 'failed']"  :key="state"
                         :pressed="show == state" :variant="state2variant(state)" @click="show = state">
-                        <span style="font-size: 80%;">{{state.toUpperCase()}}&nbsp;<b>{{instance_counts[state]||0}}</b></span>
+                        <span style="font-size: 75%;">{{state.toUpperCase()}}&nbsp;<b>{{instance_counts[state]||0}}</b></span>
                 </b-button>
             </b-button-group>
 
@@ -160,12 +160,17 @@ export default {
         sorted_and_filtered_instances: function() {
             //apply filter and query
             let filtered = this.instances.filter(i=>{
-                //apply filter first
+                //apply query filter
                 if(this.query && !i.desc.toLowerCase().includes(this.query.toLowerCase())) return false; //filtered by query..
 
+                //apply state filter
                 if(!this.show) return true; //show all
-                //if(this.selected == i) return true; //always show selected one
-                if(i.status == this.show) return true;
+                if(i.config && i.config.counts) {
+                    if(i.config.counts[this.show] > 0) return true;
+                } else {
+                   //for old instances (not using counts)
+                   if(i.status == this.show) return true; 
+                }
                 return false;
             });
 
@@ -210,20 +215,29 @@ export default {
 
         instance_counts: function() {
             let counts = {};
+
             this.instances.forEach(i=>{
-                //convert odd status into "others"
-                let status = i.status;
-                switch(status) {
-                case "requested":
-                case "running":
-                case "finished":
-                case "failed":
-                    break;
-                default:
-                    status = "others";
+                if(i.config && i.config.counts) {
+                    for(let state in i.config.counts) {
+                        if(!counts[state]) counts[state] = i.config.counts[state];
+                        else counts[state] += i.config.counts[state];
+                    }
+                } else {
+                    //we used to use "instance" status... let's count as 1 for each instances with different status
+                    let status = i.status;
+                    switch(status) {
+                    case "requested":
+                    case "running":
+                    case "finished":
+                    case "failed":
+                        break;
+                    default:
+                        //convert odd status into "others"
+                        status = "others";
+                    }
+                    if(!counts[status]) counts[status] = 1;
+                    else counts[status]+=1;
                 }
-                if(!counts[status]) counts[status] = 1;
-                else counts[status]+=1;
             });
             return counts;
         },
