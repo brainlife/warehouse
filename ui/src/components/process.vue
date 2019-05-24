@@ -67,7 +67,7 @@
             <div slot="input" v-if="task.config._inputs">
                 <div v-for="(input, idx) in task.config._inputs" :key="idx" class="input">
                     <small style="opacity: 0.6; float: right;">{{input.id}}</small>
-                    <b v-if="input.meta.subject">{{input.meta.subject}}</b>
+                    <b v-if="input.meta && input.meta.subject">{{input.meta.subject}}</b>
                     <div style="display: inline-block;" v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <span style="opacity: 0.5;">
@@ -79,7 +79,7 @@
                         </span>
                     </div>
                     <div v-else style="display: inline-block;">
-                        <small v-if="input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
+                        <small v-if="input.meta && input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <span style="opacity: 0.5;">
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
@@ -107,8 +107,8 @@
                         </div>
                     </div>
 
-                    <b v-if="output.meta.subject">{{output.meta.subject}}</b>
-                    <small v-if="output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
+                    <b v-if="output.meta && output.meta.subject">{{output.meta.subject}}</b>
+                    <small v-if="output.meta && output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
                     <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
                     <mute>
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>

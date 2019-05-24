@@ -89,8 +89,9 @@
                             <span v-if="!instance.desc" style="opacity: 0.4;">No Description ({{instance._id}})</span>
                             &nbsp;
                             <div v-if="instance.config && instance.config.summary" style="display: contents; opacity: 0.8;">
-                                <span v-for="summary in instance.config.summary" v-if="summary.service!='soichih/sca-product-raw' && summary.service!='brainlife/app-stage' && summary.name" 
-                                    :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" @click.stop="select_task(instance, summary)" :key="summary.task_id">
+                                <span v-for="summary in get_nonstaging_summary(instance)" 
+                                    :class="summary_class(summary)" :title="summary.name+' (t.'+summary.tid+')'" 
+                                    @click.stop="select_task(instance, summary)" :key="summary.task_id">
                                     {{summary.name.substring(0,4).trim()}}
                                 </span>
                             </div>
@@ -162,16 +163,25 @@ export default {
             let filtered = this.instances.filter(i=>{
                 //apply query filter
                 if(this.query && !i.desc.toLowerCase().includes(this.query.toLowerCase())) return false; //filtered by query..
-
+                
                 //apply state filter
+                /*
                 if(!this.show) return true; //show all
                 if(i.config && i.config.counts) {
                     if(i.config.counts[this.show] > 0) return true;
                 } else {
                    //for old instances (not using counts)
                    if(i.status == this.show) return true; 
+                   //f(this.show == "all finished" && i.status == "all finished") return true;
                 }
-                return false;
+                */
+                if(!this.show) return true; //show all
+                let summary = this.get_nonstaging_summary(i);
+                let match = false;
+                summary.forEach(summary=>{
+                    if(summary.status == this.show) match = true;
+                });
+                return match;
             });
 
             //then sort
@@ -217,6 +227,7 @@ export default {
             let counts = {};
 
             this.instances.forEach(i=>{
+                /*
                 if(i.config && i.config.counts) {
                     for(let state in i.config.counts) {
                         if(!counts[state]) counts[state] = i.config.counts[state];
@@ -226,9 +237,9 @@ export default {
                     //we used to use "instance" status... let's count as 1 for each instances with different status
                     let status = i.status;
                     switch(status) {
+                    case "finished":
                     case "requested":
                     case "running":
-                    case "finished":
                     case "failed":
                         break;
                     default:
@@ -238,6 +249,12 @@ export default {
                     if(!counts[status]) counts[status] = 1;
                     else counts[status]+=1;
                 }
+                */
+                let summary = this.get_nonstaging_summary(i);
+                summary.forEach(summary=>{
+                    if(!counts[summary.status]) counts[summary.status] = 1;
+                    else counts[summary.status]+=1;                  
+                });
             });
             return counts;
         },
@@ -351,6 +368,7 @@ export default {
             switch(state) {
             case "requested": return "outline-info";
             case "failed": return "outline-danger";
+            //case "all finished": return "outline-success";
             case "finished": return "outline-success";
             case "running": return "outline-primary";
             case "others": return "outline-secondary";
@@ -522,8 +540,15 @@ export default {
                 if(id && !ids.includes(id)) ids.push(id);
             });
             return ids;
-    
         },
+
+        get_nonstaging_summary(instance) {
+            if(!instance.config || !instance.config.summary) return [];
+            return instance.config.summary.filter(summary=>{
+                if(summary.service!='soichih/sca-product-raw' && summary.service!='brainlife/app-stage' && summary.name) return true;
+                return false;
+            });
+        }
     },
 }
 
