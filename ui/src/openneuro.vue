@@ -49,7 +49,7 @@ export default {
             if(res.data.count > 0) {
                 let project = res.data.projects[0];
                 console.log("redirecting to "+project._id);
-                this.$router.push("/project/"+project._id);
+                this.$router.push("/project/"+project._id+"/process");
             }
         }, res=>{
             console.error(res);
