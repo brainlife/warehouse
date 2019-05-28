@@ -334,9 +334,7 @@ ${run}
  */
 router.get('/boutique/:id', (req, res, next)=>{
     let dataset_id = req.params.id;
-    //let debug_config = "";
-    //if(config.debug) debug_config = "BLHOST=dev1.soichi.us ";
-    generate_prov(dataset_id, (err, nodes, edges)=>{
+    generate_prov(dataset_id, async (err, nodes, edges)=>{
         if(err) return next(err);
 
         //README
@@ -351,26 +349,43 @@ This boutique descriptor that can be used to run the workflow used to generate t
         let b_files = [];
         let input_dataset_ids = [];
 
-        console.dir(nodes);
+        //load all app details
+        let app_ids = [];
+        nodes.forEach(node=>{
+            if(node._app && !app_ids.includes(node._app)) app_ids.push(node._app);
+        });
+        app_ids.map(id=>new mongoose.Types.ObjectId(id));
+        let apps = await db.Apps.find({_id: {$in: app_ids}}).lean();
 
-        //run.sh
-        let run = "";
+        //let output_datatype = nodes[0]._datatype;
+        let b_test = {
+            name: "test1",
+            invocation: {},
+            assertions: {
+                "exit-code": 0,
+                "output-files": [
+                    {
+                        //"id": "datatype_"+output_datatype,
+                        "id": "output",
+                        //md5-reference": "0868f0b9bf25d4e6a611be8f02a880b5"
+                    }
+                ]
+            },
+        };
+
+        let output_node = nodes[0];
+
+        //generate various content
+        let run = "#!/bin/bash\n";
         while(nodes.length) { 
-            let node = nodes.pop();
+            let node = nodes.pop(); //nodes are stored in "reverse" order.. to go from the bottom
             if(!node.label) continue; //"This Dataset" doesn't have label, and we don't need it (TODO make output link?)
+
+            let app = apps.find(app=>app._id == node._app);
+            //console.dir(app);
+
             let id_parts = node.id.split(".");
             if(id_parts[0] == "dataset") {
-                //stage += "echo \"staging "+node.id+" ("+node.label.replace(/\n/g, ' ')+")\"\n";
-                //stage += "[ ! -d "+node.id+" ] && "+debug_config+"bl dataset download -i "+id_parts[1]+" -d "+node.id+"\n\n";
-                /*
-                b_inputs.push({
-                    id: node.id+"."+id_parts[1], 
-                    name: node.label,
-                    optional: false,  //TODO - pull from app config?
-                    type: "File", 
-                    "value-key": "["+node.id+"."+id_parts[1]+"]"
-                });
-                */
                 input_dataset_ids.push(id_parts[1]);
             } else if(id_parts[0] == "task") {
                 run += "echo \"staging "+node.id+" ("+node._service+")\"\n";
@@ -379,30 +394,46 @@ This boutique descriptor that can be used to run the workflow used to generate t
                 //install config.json and run main
                 run += "echo \"running task "+node.id+" ("+node._service+")\"\n";
                 run += "(\n\tcd "+node.id+"\n";
-                //run += "\techo '"+JSON.stringify(node._config, null, 4)+"' > config.json\n";
                 run += "\ttime ./main\n"; 
                 run += ")\n\n";
 
-                let app_config =  {};
+                let app_config = {};
+                let task_id = id_parts[1];
                 for(let k in node._config) {
                     let vkey = "["+node.id+"."+k+"]";
                     let v = node._config[k];
+                    let b_id = task_id+"_"+k;
                     if(typeof v == "string" && v.startsWith("../")) { //TODO - we need a better to detect if this is parameter input or not..
                         //see if the input belongs to staged input
                         let pos = null;
                         input_dataset_ids.forEach(dataset_id=>{
                             if(!~pos) pos = v.indexOf(dataset_id);
                         });
-                        if(~pos) {
+                        console.log("pos "+pos);
+                        if(pos !== null && ~pos) {
                             //using staged input!
+
+                            //setup b_inputs for input dataset if we haven't already
                             if(!b_inputs.find(input=>input.id == k)) {
-                                b_inputs.push({
-                                    id: k, //node.id+"."+k, 
-                                    name: node.id+"."+k+" "+v.substr(pos+25),
-                                    optional: false, //TODO - pull from app config?
-                                    type: "File",  //TODO - pull from app config?
-                                    "value-key": vkey,
-                                });
+                                //console.dir(Object.values(app.config));
+                                if(!app.config[k]) {
+                                    console.error(k+" is not defined in the app.config.. maybe config changed?");
+                                    console.dir(node);
+                                } else {
+                                    let input_config = app.inputs.find(input=>input.id == app.config[k].input_id);
+                                    if(!input_config) {
+                                        console.error("couldn't find input config for "+k);
+                                    } else {
+                                        b_inputs.push({
+                                            id: b_id,
+                                            name: node.id+"."+k+" "+v.substr(pos+25), //skip instance name (but keep task id)
+                                            optional: input_config.optional,
+                                            type: "File",  //TODO - pull from app config?
+                                            "value-key": vkey,
+                                        });
+                                        b_test.invocation[b_id] = "/testdata/"+v.substr(pos+53); //skip instance and task_id
+                                    }
+                                }
                             }
                             app_config[k] = vkey;
                         } else {
@@ -411,23 +442,68 @@ This boutique descriptor that can be used to run the workflow used to generate t
                         }
                     } else {
                         //must be parameter input
-                        b_inputs.push({
-                            id: node.id+"."+k, 
+                        let b_input = {
+                            id: b_id,
                             name: node.label+" "+k,
-                            optional: false, //TODO - pull from app config?
-                            type: "String",  //TODO - pull from app config?
+                            optional: true,
                             "value-key": vkey,
-                        });
-                        app_config[k] = vkey;
+                        }
+
+                        //app.config might not exist anymore
+                        if(app.config[k]) {
+                            b_input["default-value"] = app.config[k].default;
+                            let unwrap = false;
+                            switch(app.config[k].type) {
+                            case "string": b_input.type = "String"; break;
+                            case "enum": b_input.type = "String"; break;
+                            case "boolean": 
+                                b_input.type = "String"; 
+                                b_input["value-choices"] = ["true", "false"];
+                                b_input["default-value"] = app.config[k].default.toString();
+                                b_input["value-key"] = b_input["value-key"];
+                                unwrap = true;
+                                break;
+                            case "integer": 
+                                b_input.type = "Number"; 
+                                break;
+                            }
+                            b_inputs.push(b_input);
+                            app_config[k] = vkey;
+                            if(unwrap) app_config[k] = "__unwrap__"+vkey;
+
+                            b_test.invocation[b_id] = app.config[k].default;
+                        } else {
+                            logger.error("no app.config for "+k);
+                        }
                     }
                 }
 
+                let lines = JSON.stringify(app_config, null, 4).split("\n");
+                //TODO - wnwrap __unwrap__ string
+                /*
+                let regex = /__unwrap__/gi, result, indices = [];
+                while ((result = regex.exec(json))) {
+                    //indices.push(result.index);
+                }
+                */
+                let filtered_json = "";
+                lines.forEach(line=>{
+                    pos = line.indexOf("__unwrap__");
+                    if(~pos) {
+                        let end = line.indexOf("\"", pos+10);
+                        let newline = ""
+                        newline = line.substring(0, pos-1); //grab before __unwrap
+                        newline += line.substring(pos+10, end); //grab after __unwrap__" until end quote
+                        newline += line.substring(end+1); //grab the rest
+                        filtered_json += newline;
+                    } else filtered_json += line;
+                }); 
+            
                 b_files.push({
-                    id: "config."+node.id,
+                    id: task_id+"_config",
                     name: "config.json for "+node.label,
-                    type: "Configuration File", //TODO really?
                     "path-template": node.id+"/config.json",
-                    "file-template": JSON.stringify(app_config, null, 4).split("\n"), //can't I just enter string?
+                    "file-template": filtered_json.split("\n"), //can't I just enter string?
                 });
             }
         }
@@ -435,28 +511,37 @@ This boutique descriptor that can be used to run the workflow used to generate t
         b_files.push({
             id: "run",
             name: "run.sh",
-            type: "Configuration File", //TODO really?
             "path-template": "run.sh",
             "file-template": run.split("\n"), //can't I just enter string?
         });
-        //archive.append(run, {name: "run.sh"});
 
-        //boutique.json
-
-        //archive.finalize();
-        //archive.pipe(res); 
+        let output = {
+            id: "output",
+            name: "Dataset output"+dataset_id,
+            "path-template": "task."+output_node._prov.task._id,
+            //_prov: output_node._prov,
+        }
+        if(output_node._prov.subdir) output["path-template"] += "/"+output_node._prov.subdir;
+        b_files.push(output);
+        
+        //ship it!
         res.setHeader('Content-disposition', 'attachment; filename=boutique.'+dataset_id+'.json');
+        res.setHeader('Content-Type', 'application/json');
         res.send(JSON.stringify({
-            "command-line": "./run.sh",
+            "command-line": "bash run.sh",
             name: "workflow generated from dataset:"+dataset_id, //TODO
             description: "TODO - workflow description?", //TODO
             "schema-version": "0.5",
             "suggested-resources": { "cpu-cores": 8, "ram": 16, "walltime-estimate": 120 }, //TODO
             "error-codes": [{code: 1, description: "failed"}],
-            "tags": { "brainlife": "brainlife" }, //TODO
+            "tags": { 
+                "source": "brainlife", 
+                "dataset_id": dataset_id, //nobody uses this yet
+            }, //only works for the new version of boutique
             "tool-version": "v1", //TODO
             inputs: b_inputs,
             "output-files": b_files,
+            tests: [ b_test ],
         }, null, 4));
     });
 });
@@ -613,6 +698,7 @@ function generate_prov(origin_dataset_id, cb) {
                 node: {
                     id: "dataset."+dataset_id, 
                     label: compose_dataset_label(dataset),
+                    _datatype: dataset.datatype,
                 },
                 edge: {
                     from: "dataset."+dataset_id,
@@ -687,6 +773,8 @@ function generate_prov(origin_dataset_id, cb) {
             this_dataset = dataset;
             nodes.push({
                 id: "dataset."+dataset._id, 
+                _datatype: dataset.datatype,
+                _prov: dataset.prov,
             });
             load_dataset_prov(dataset, null, err=>{
                 //order nodes by id to make them ordered chronologically - which prevents violating DAG
