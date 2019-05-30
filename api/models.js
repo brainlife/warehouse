@@ -123,7 +123,7 @@ var projectSchema = mongoose.Schema({
     access: {type: String, default: "private" },
 
     //for a private project, list it for everyone to see the summary
-    listed: { type: Boolean, default: false},
+    listed: {type: Boolean, default: false},
 
     //list of agreemenets that user must agree before accessing datasets
     agreements: [ new mongoose.Schema({agreement: String}) ], 
@@ -150,13 +150,24 @@ var projectSchema = mongoose.Schema({
             datatypes: [{type: mongoose.Schema.Types.ObjectId, ref: "Datatypes"}],
             count: Number,
             size: Number,
+
         },
+
+        //resource usage stats
+        resources: [{
+            resource_id: String, //amaretti resource_idy
+            service: String, //amaretti service (github)
+            //app_id: {type: mongoose.Schema.Types.ObjectId, ref: "Apps"},
+            count: Number, //number of time this app/resource pair appears for stored datasets
+            total_walltime: Number, //msec for total walltime 
+        }],
 
         //count of pipeline rules
         rules: {
             active: Number, 
             inactive: Number, 
         },
+
     },
 
     quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)
