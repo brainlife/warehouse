@@ -497,6 +497,7 @@ export default {
             if(this.selected.stats && this.selected.stats.resources) {
                 let data_obj = {};
                 this.total_walltime = 0;
+                let services = [];
                 this.selected.stats.resources.forEach(stat=>{
                     if(stat.total_walltime == 0) return;
                     this.total_walltime += stat.total_walltime;
@@ -504,25 +505,27 @@ export default {
                         data_obj[stat.resource_id] = {
                             x: [], //walltime
                             y: [], //list of apps for this resource
+                            text: [], //count?
                             name: stat.resource_id+" (private)",
                             type: "bar",
                             orientation: 'h'
                         };
                     }
-                    let x = data_obj[stat.resource_id].x;
-                    let y = data_obj[stat.resource_id].y;
-                    if(!x.includes(stat.service)) {
-                        x.push(stat.total_walltime/(3600*1000));
-                        y.push(stat.service);
-                        //TODO - what should I do with count?
+                    let d = data_obj[stat.resource_id];
+                    if(!services.includes(stat.service)) services.push(stat.service);
+                    if(!d.x.includes(stat.service)) {
+                        d.x.push(stat.total_walltime/(3600*1000));
+                        d.y.push(stat.service);
+                        d.text.push(stat.count.toString()+" tasks");
                     }
                 });
                 
                 //query resource info
                 //console.dir(Object.keys(data_obj));
+                let resource_ids = Object.keys(data_obj);
                 this.$http.get(Vue.config.amaretti_api+"/resource", {params: {
                     find: JSON.stringify({
-                        _id: {$in: Object.keys(data_obj)},
+                        _id: {$in: resource_ids},
                     }),
                     select: 'name',
                 }})
@@ -550,7 +553,8 @@ export default {
                             l: 240,
                             pad: 10
                         },
-                        height: 600,
+                        height: 17*services.length+120,
+                        //autosize: true,
                     };
 
                     let options = {
