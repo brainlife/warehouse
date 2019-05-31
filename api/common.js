@@ -641,20 +641,19 @@ exports.wait_for_event = function(exchange, key, cb) {
     });
 }
 
-exports.update_dataset_stats = function(project_id, cb) {
+exports.update_dataset_stats = async function(project_id, cb) {
     logger.debug("updating dataset stats project:%s", project_id);
     project_id = mongoose.Types.ObjectId(project_id);
 
-    db.Datasets.aggregate()
-    .match({ removed: false, project: project_id, })
-    .group({_id: {
-        "subject": "$meta.subject", 
-        "datatype": "$datatype", 
-    }, count: {$sum: 1}, size: {$sum: "$size"} })
-    .sort({"_id.subject":1})
-    .exec((err, inventory)=>{
-        if(err) return next(err);
-        //console.dir(JSON.stringify(inventory, null, 4))
+    try {
+        //create inventory stats
+        let inventory = await db.Datasets.aggregate()
+            .match({ removed: false, project: project_id, })
+            .group({_id: {
+                "subject": "$meta.subject", 
+                "datatype": "$datatype", 
+            }, count: {$sum: 1}, size: {$sum: "$size"} })
+            .sort({"_id.subject":1});
         let subjects = new Set();
         let datatypes = new Set();
         let stats = {
@@ -671,27 +670,88 @@ exports.update_dataset_stats = function(project_id, cb) {
         });
         stats.subject_count = subjects.size;
         stats.datatypes = [...datatypes];
-        db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true}, (err, doc)=>{
-            if(cb) cb(err, doc);
+
+        /*
+        //compute resource usage statistics
+        let resource_stats = await db.Datasets.aggregate()
+            .match({ removed: false, project: project_id, "prov.task.config._app": {$exists: true}})
+            .group({_id: {"app_id": "$prov.task.config._app", "resource_id": "$prov.task.resource_id"} , count: {$sum: 1}})
+        stats.resources = resource_stats.map(raw=>{
+            return {
+                app_id: raw._id.app_id,
+                resource_id: raw._id.resource_id,
+                count: raw.count,
+            }
         });
-    });
+        console.dir(stats);
+        */
+        let doc = await db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true});
+
+        if(cb) cb(null, doc);
+    } catch(err) {
+        if(cb) cb(err);
+        else logger.error(err);
+    }
 }
 
-exports.update_project_stats = function(group_id, cb) {
-    logger.debug("getting instance status counts from amretti for group_id:%s", group_id);
-    request.get({
-        url: config.amaretti.api+"/instance/count", json: true,
-        qs: {
-            find: JSON.stringify({status: {$ne: "removed"}, group_id}),
-        },
-        headers: { authorization: "Bearer "+config.warehouse.jwt, },
-    }, (err, res, counts)=>{
+exports.update_project_stats = async function(group_id, cb) {
+    try {
+        logger.debug("getting instance status counts from amretti for group_id:%s", group_id);
+        let counts = await rp.get({
+            url: config.amaretti.api+"/instance/count", json: true,
+            qs: {
+                find: JSON.stringify({status: {$ne: "removed"}, group_id}),
+            },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
+        });
+        let stats = counts[0]; //there should be only 1
+        let project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true});
+
+        logger.debug("updating rule stats for project_id:%s", project._id.toString());
+        stats = await db.Rules.aggregate()
+            .match({removed: false, project: project._id})
+            .group({_id: { "active": "$active" }, count: {$sum: 1}});
+        let rules = {
+            active: 0,
+            inactive: 0,
+        }
+        stats.forEach(rec=>{
+            if(rec._id.active) rules.active = rec.count;
+            else rules.inactive = rec.count;
+        });
+
+        //TODO query task/resource_service_count api
+        let resources = await rp.get({
+            url: config.amaretti.api+"/task/resource_usage", json: true,
+            qs: {
+                find: JSON.stringify({status: {$ne: "finished"}, _group_id: group_id}),
+            },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
+        });
+        let resource_stats = resources.map(raw=>{
+            return {
+                service: raw._id.service,
+                resource_id: raw._id.resource_id,
+                count: raw.count,
+                total_walltime: raw.total_walltime,
+            }
+        });
+
+        project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.rules": rules, "stats.resources": resource_stats}}, {new: true});
+        logger.debug("all done for updating project stats");
+        if(cb) cb(null, project);
+
+    } catch (err) {
+        if(cb) cb(err);
+        else logger.error(err);
+    }
+    /*
         if(res.statusCode != 200) {
             logger.error("failed to query");
             if(cb) cb(res.body);
             return;
         }
-        stats = counts[0]; //there should be only 1
+    */
         /*
         counts.forEach(count=>{
             switch(count._id) {
@@ -708,29 +768,6 @@ exports.update_project_stats = function(group_id, cb) {
         });
         //console.dir(stats);
         */
-
-        db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true}, (err, project)=>{
-            if(err) return cb(err);
-            logger.debug("updating rule stats for project_id:%s", project._id.toString());
-            db.Rules.aggregate()
-            .match({removed: false, project: project._id})
-            .group({_id: { "active": "$active" }, count: {$sum: 1}})
-            .exec((err, ret)=>{
-                let rules = {
-                    active: 0,
-                    inactive: 0,
-                }
-                //console.dir(ret);
-                ret.forEach(rec=>{
-                    if(rec._id.active) rules.active = rec.count;
-                    else rules.inactive = rec.count;
-                });
-                db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.rules": rules}}, {new: true}, (err, project)=>{
-                    if(cb) cb(err, project);
-                });
-            });
-        });
-    });
 }
 
 exports.update_rule_stats = function(rule_id, cb) {

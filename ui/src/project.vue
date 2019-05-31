@@ -75,11 +75,13 @@
                                 <icon name="cubes"/>     
                                 {{selected.stats.datasets.count}} <span style="opacity: 0.6">Datasets</span>
                             </p>
-                            <p class="info" v-if="selected.stats.datasets && selected.stats.datasets.size">                           
-                                <span>{{selected.stats.datasets.size|filesize}}</span> <span style="opacity: 0.6">Total</span> 
-                                <br>                          
-                                <span>{{selected.quota|filesize}}</span> <span style="opacity: 0.6">Quota</span> 
-                            </p>
+                            <div class="info" v-if="selected.stats.datasets && selected.stats.datasets.size">                           
+                                <p style="margin-left: 25px;">
+                                    <span>{{selected.stats.datasets.size|filesize}}</span> <span style="opacity: 0.6">Total</span> <br>
+                                    <span>{{selected.quota|filesize}}</span> <span style="opacity: 0.6">Quota</span> <br>
+                                </p>
+                            </div>
+                            
                             <p class="info" v-if="selected.stats.rules">
                                 <icon name="robot"/>
                                 {{selected.stats.rules.active}} 
@@ -152,7 +154,14 @@
                             <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme box"></vue-markdown>
                             <br>
                         </div>
-                        
+
+                        <div v-if="resource_usage && total_walltime > 0">      
+                            <span class="form-header">Resource Usage</span>     
+                            <small>Total Walltime: <b>{{(total_walltime/(3600*1000)).toFixed(2)}} hours</b></small>               
+                            <vue-plotly :data="resource_usage.data" :layout="resource_usage.layout" :options="resource_usage.options"
+                                 ref="resource_usage" :autoResize="true" :watchShallow="true"/>
+                        </div>
+
                         <!--
                         <div v-if="selected.datatype_groups">
                             <span class="form-header">Datasets</span>
@@ -224,6 +233,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import VueMarkdown from 'vue-markdown'
+import VuePlotly from '@statnett/vue-plotly'
 
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
@@ -241,6 +251,7 @@ import agreements from '@/components/agreements'
 import datatypetag from '@/components/datatypetag'
 import stateprogress from '@/components/stateprogress'
 import noprocess from '@/assets/noprocess'
+import resource from '@/components/resource'
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -255,7 +266,7 @@ export default {
         processes, publications, pipelines,
         agreements, datatypetag,
 
-        noprocess,
+        noprocess, resource, VuePlotly,
 
         newtaskModal, datatypeselecterModal, stateprogress,
     },
@@ -263,6 +274,8 @@ export default {
     data () {
         return {
             selected: null, 
+            resource_usage: null,
+            total_walltime: 0,
 
             tabs: [
 /*
@@ -476,10 +489,100 @@ export default {
                 res.data.datatypes.forEach((d)=>{
                     this.datatypes[d._id] = d;
                 });
-
                 Vue.set(this.selected, "datatype_groups", groups);
                 this.$forceUpdate();
             }).catch(console.error);
+
+            //create resource usage graph
+            if(this.selected.stats && this.selected.stats.resources) {
+                let data_obj = {};
+                this.total_walltime = 0;
+                let services = [];
+                this.selected.stats.resources.forEach(stat=>{
+                    if(stat.total_walltime == 0) return;
+                    this.total_walltime += stat.total_walltime;
+                    if(!data_obj[stat.resource_id]) {
+                        data_obj[stat.resource_id] = {
+                            x: [], //walltime
+                            y: [], //list of apps for this resource
+                            text: [], //count?
+                            name: stat.resource_id+" (private)",
+                            type: "bar",
+                            orientation: 'h'
+                        };
+                    }
+                    let d = data_obj[stat.resource_id];
+                    if(!services.includes(stat.service)) services.push(stat.service);
+                    if(!d.x.includes(stat.service)) {
+                        d.x.push(stat.total_walltime/(3600*1000));
+                        d.y.push(stat.service);
+                        d.text.push(stat.count.toString()+" tasks");
+                    }
+                });
+                
+                //query resource info
+                //console.dir(Object.keys(data_obj));
+                let resource_ids = Object.keys(data_obj);
+                this.$http.get(Vue.config.amaretti_api+"/resource", {params: {
+                    find: JSON.stringify({
+                        _id: {$in: resource_ids},
+                    }),
+                    select: 'name',
+                }})
+                .then(res=>{
+                    //console.dir(res.data.resources);
+                    //set resource names
+                    res.data.resources.forEach(resource=>{
+                        data_obj[resource._id].name = resource.name;
+                    });
+
+                    //create plotly graph
+                    var data = Object.values(data_obj);
+                    var layout = {
+                        yaxis: {title: 'Apps'},
+                        xaxis: {
+                            title: 'Total Walltime (hour)',  
+                            type: 'log',
+                            //autorange: true
+                            showgrid: true,
+                        },
+                        barmode: 'relative',
+                        //title: 'Relative Barmode'
+                        margin: {
+                            t: 30,
+                            l: 240,
+                            pad: 10
+                        },
+                        height: 17*services.length+120,
+                        //autosize: true,
+                    };
+
+                    let options = {
+                        //until my PR gets accepted, we need to resize this ... https://github.com/statnett/vue-plotly/pull/18
+                        toImageButtonOptions: {
+                            width: 1200,
+                            height: 600,
+                        },
+                        
+                        modeBarButtonsToAdd: [{
+                            name: 'SVG',
+
+                            //TODO - I should find a better logo for svg export
+                            icon: {
+                                'width': 1792,
+                                'path': 'M1344 1344q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm256 0q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm128-224v320q0 40-28 68t-68 28h-1472q-40 0-68-28t-28-68v-320q0-40 28-68t68-28h465l135 136q58 56 136 56t136-56l136-136h464q40 0 68 28t28 68zm-325-569q17 41-14 70l-448 448q-18 19-45 19t-45-19l-448-448q-31-29-14-70 17-39 59-39h256v-448q0-26 19-45t45-19h256q26 0 45 19t19 45v448h256q42 0 59 39z',
+                                'ascent': 1792,
+                                'descent': 0,
+                            },
+                            click: ()=>{
+                                let plot = this.$refs.resource_usage;
+                                plot.downloadImage({format: 'svg'/*, height: plot.$el.clientHeight, width: plot.$el.clientWidth*/});
+                            }
+                        }],
+                    }
+                    this.resource_usage = {options, data, layout};
+                });
+            }
         },
         getvariant(state) {
             switch(state) {
