@@ -233,7 +233,14 @@ export default {
         load_smon() {
             this.loading = true;
             this.smon.info = null;
-            this.$http.get(Vue.config.amaretti_api+'/task/download/'+this.task._id+'/_smon.out').then(res=>{
+            this.$http.get(Vue.config.amaretti_api+'/task/download/'+this.task._id+'/_smon.out', {
+                //if _smon.out only contains a single entry, axios will parse it as json.. which fails with .split("\n") below.
+                //let's prevent any transformation.
+                transformResponse: (res) => {
+                    return res;
+                },
+            }).then(res=>{
+                console.dir(res);
                 let records = res.data.split("\n");
 
                 //first record should be host/job info
