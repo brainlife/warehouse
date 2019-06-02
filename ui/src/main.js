@@ -217,6 +217,10 @@ new Vue({
         this.$on("refresh_jwt", ()=>{
             this.refresh_jwt();
         });
+
+        if(!Vue.config.jwt) {
+            return this.ready = true;
+        }
         
         this.ensure_myproject();
 
@@ -237,6 +241,8 @@ new Vue({
 
     methods: {
         async ensure_myproject() {
+            if(!Vue.config.jwt) return;
+            
             //make sure user has create at least 1 project
             var res = await this.$http.get('project', {params: {
                 //find: {$or: [{admins: Vue.config.user.sub}, {members: Vue.config.user.sub}]},
