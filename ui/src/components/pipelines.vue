@@ -22,6 +22,9 @@
         <div class="margin20" v-if="nonremoved_rule_count == 0">
             <p class="text-muted">Pipeline rules allow you to automate bulk submissions of your processes based on defined criterias.</p>
             <p class="text-muted">This feature could potentially launch a large number of processes. Please read our <a href="https://brainlife.io/docs/user/pipeline/" target="doc">Documentation</a> for more information.</p>
+           <iframe width="444" height="250" src="https://www.youtube.com/embed/Ewy3ahCVUzw" frameborder="0" 
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
         </div>
         <div class="rules" v-else>
             <b-row :no-gutters="true" style="padding-right: 20px; padding-bottom: 10px">

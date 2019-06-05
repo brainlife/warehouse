@@ -56,9 +56,15 @@
                 <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
                 <p>Output datasets will be removed within 25 days unless archived.</p>
                 <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
+                <!-- 
                 <a href="https://brainlife.io/docs/user/process/" target="doc">
                     <b-img src="https://brainlife.io/docs/img/processes.png" width="400px" thumbnail/>  
                 </a>
+                -->
+                <iframe width="360" height="225"
+                    src="https://www.youtube.com/embed/u9Qlh0-iaAk" frameborder="0" 
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
             </div>
             <!--show list-->
             <div v-if="instances.length > 0">

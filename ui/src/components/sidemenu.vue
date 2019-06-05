@@ -1,7 +1,6 @@
 <template>
 <div class="sidemenu">
-    <div class="header" :style="styles" style="clip-path:url(#header-clip)">
-        <!--<icon name="home" scale="1.75" style="position: relative; top: -8px; margin-right: 5px;"/>-->
+    <div class="header" :style="styles">
         <span class="title" @click="gohome">brainlife</span>
     </div>
     <svg height="0" width="0">
@@ -218,14 +217,16 @@ export default {
     box-shadow: inset -3px 0px 3px rgba(0,0,0,0.2);
 }
 .header {
-    height: 75px;
+    height: 50px;
     color: white;
     background-image: linear-gradient(90deg, #2693ff, #159957);
     text-align: center;
+    margin-bottom: 25px;
 }
+/*
 .header img {
-   
 }
+*/
 .title {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 24pt;

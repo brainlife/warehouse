@@ -554,7 +554,8 @@ export default {
                             pad: 10
                         },
                         height: 17*services.length+120,
-                        //autosize: true,
+                        //paper_bgcolor: 'rgba(0,0,0,0)',
+                        //plot_bgcolor: 'rgba(0,0,0,0)',
                     };
 
                     let options = {

@@ -18,7 +18,7 @@
 
                 <b-list-group-item>
                     <iframe width="444" height="250" style="float: right; margin-left: 20px;"
-                        src="https://www.youtube.com/embed/NTNyf1xjNME" frameborder="0" 
+                        src="https://www.youtube.com/embed/u9Qlh0-iaAk" frameborder="0" 
                         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                     <h5>2. Analyze Single Subject</h5>
                     <p>You can test run several brainlife.io/apps on a few subjects.</p>

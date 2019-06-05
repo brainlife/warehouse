@@ -174,10 +174,10 @@
     <div class="new-action">
         <b-row no-gutters>
             <b-col>
-                <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="play"/>&nbsp;&nbsp;Submit New App</div>
+                <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="play"/>&nbsp;&nbsp;Submit App</div>
             </b-col>
             <b-col>
-                <div class="new-action-button new-action-button-newdataset" @click="newdataset"><icon name="cube"/>&nbsp;&nbsp;Stage New Dataset</div>
+                <div class="new-action-button new-action-button-newdataset" @click="newdataset"><icon name="cube"/>&nbsp;&nbsp;Stage Dataset</div>
             </b-col>
         </b-row>
     </div>
@@ -708,6 +708,7 @@ bottom: 0px;
 left: 600px;
 right: 0px;
 z-index: 6;
+height: 45px;
 }
 
 .new-action-button {
