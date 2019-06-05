@@ -128,7 +128,7 @@ export default {
             this.my_projects = null;
             this.$http.get('project', {params: {
                 find: JSON.stringify({$and: ands}),
-                limit: 500,
+                limit: 500, //TODO implement paging eventually
                 select: '-readme',
                 sort: 'name',
             }}).then(res=>{

@@ -3,7 +3,6 @@
     <router-view/>
     <notifications position="top right"/>
     <modals/>
-
 </div>
 </template>
 
@@ -17,16 +16,14 @@ export default {
     components: {
         modals,
     },
+
     data() {
         return {
             config: Vue.config,
         }
     },
-    mounted() {
-        this.$root.$emit("refresh_jwt");
-        setInterval(()=>{
-            this.$root.$emit("refresh_jwt");
-        }, 1000*1800);  //refresh in half an hour
+
+    async mounted() {
     },
 }
 

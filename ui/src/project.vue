@@ -332,8 +332,8 @@ export default {
     mounted() {
         this.tabs.push({id: "detail", label: "Detail"});
         this.tabs.push({id: "dataset", label: "Archive"});
+        this.tabs.push({id: "process", label: "Processes"});
         if(Vue.config.user) {
-            this.tabs.push({id: "process", label: "Processes"});
             this.tabs.push({id: "pipeline", label: "Pipelines"});
             this.tabs.push({id: "pub", label: "Publications"});
         }

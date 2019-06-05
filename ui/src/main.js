@@ -131,9 +131,8 @@ Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.productionTip = false;
 Vue.config.debug_doi = "10.25663/bl.p.3";
 
-
 //Vue.http.options.root = Vue.config.api; //default root for $http
-axios.defaults.baseURL= Vue.config.api; //default root for $http
+axios.defaults.baseURL = Vue.config.api; //default root for $http
 
 if (process.env.NODE_ENV == "development") {
     Vue.config.debug = true;
@@ -151,6 +150,8 @@ function jwt_decode_brainlife(jwt) {
 
     Vue.config.is_admin = isadmin();
     if(Vue.config.is_admin) console.log("user is admin!");
+
+    console.log(Vue.config.user);
 }
 
 function isadmin() {
@@ -195,28 +196,81 @@ if (!Vue.config.debug) {
     Vue.use(VueAnalytics, { id: 'UA-118407195-1', router })
 }
 
+//create main component
 new Vue({
-    el: '#warehouse',
+    el: '#app',
     router,
-    template: '<warehouse/>',
+    template: `
+    <warehouse v-if="ready"/>
+    `,
+    data() {
+        return {
+            ready: false,
+        }
+    },
     components: { warehouse },
 
     mounted() {
-        //console.log("starting jwt token interval");
-        setInterval(()=>{
-            this.refresh_jwt();
-        }, 1000*3600); //every 1hour?
 
+        //allow child component to refresh jwt
+        //project/submit (adding project requires jwt scope change for ac)
         this.$on("refresh_jwt", ()=>{
             this.refresh_jwt();
         });
 
+        if(!Vue.config.jwt) {
+            return this.ready = true;
+        }
+        
+        this.ensure_myproject();
+
+        //refresh jwt on page refresh (and to get new jwt after creating new project)
+        //this.$root.$emit("refresh_jwt");
         this.refresh_jwt(err=>{
-            this.load_profile();
+            this.load_profile(err=>{
+                this.ready = true;
+            });
         });
+
+        //refresh in half an hour
+        console.log("starting auto-jwt refresh");
+        setInterval(()=>{
+            this.$root.$emit("refresh_jwt");
+        }, 1000*1800);
     },
 
     methods: {
+        async ensure_myproject() {
+            if(!Vue.config.jwt) return;
+            
+            //make sure user has create at least 1 project
+            var res = await this.$http.get('project', {params: {
+                //find: {$or: [{admins: Vue.config.user.sub}, {members: Vue.config.user.sub}]},
+                find: { user_id: Vue.config.user.sub },
+                limit: 1, //I just need count (0 means all)
+            }});
+
+            console.log("checking project", res.data.projects);
+            if(res.data.projects.length == 0) {
+                //let's create a default project
+                console.log("need to create default project");
+                res = await this.$http.post('project', {
+                    name: "My Default Project",
+                    desc: "Please use this project for testing purpose. You can update this project, or create new projects",
+                    access: "private",
+                    admins: [Vue.config.user.sub],
+                    members: [],
+                    agreements: [],
+                });
+                //console.dir(res);
+
+                //we don't have good way of invalidating all projects loaded by the time we finish creating project.
+                //we need to reload page..
+                //(well.. as long as we don't redirect to a page that loads project list, we should be fine..)
+                //location.reload();
+            }
+        },
+
         refresh_jwt(cb) {
             if(!Vue.config.jwt) return;
             console.log("refreshing token");
@@ -234,17 +288,17 @@ new Vue({
                     sessionStorage.setItem('auth_redirect', document.location.href);
                     document.location = Vue.config.auth_signin;
                 }
+                if(cb) cb(err);
             });
         },
 
-        load_profile() {
+        load_profile(cb) {
             if(!Vue.config.jwt) return;
             console.log("loading private profile");
             this.$http.get(Vue.config.profile_api+"/private").then(res=>{
                 Vue.config.profile = res.data;
-            }).catch(err=>{
-                console.error(err); 
-            });
+                cb();
+            }).catch(cb);
         },
     },
 })
