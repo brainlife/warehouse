@@ -320,6 +320,8 @@ router.get('/provscript/:id', (req, res, next)=>{
 # By running this script, you can reproduce the output dataset id:${dataset_id}
     
 set -e
+set -x
+
 ${stage}
 ${run}
 `);
@@ -376,7 +378,9 @@ This boutique descriptor that can be used to run the workflow used to generate t
         let output_node = nodes[0];
 
         //generate various content
-        let run = "#!/bin/bash\n";
+        let run = "#!/bin/bash\n\n";
+        run += "set -e\n";
+        run += "set -x\n\n";
         while(nodes.length) { 
             let node = nodes.pop(); //nodes are stored in "reverse" order.. to go from the bottom
             if(!node.label) continue; //"This Dataset" doesn't have label, and we don't need it (TODO make output link?)
@@ -389,7 +393,7 @@ This boutique descriptor that can be used to run the workflow used to generate t
                 input_dataset_ids.push(id_parts[1]);
             } else if(id_parts[0] == "task") {
                 run += "echo \"staging "+node.id+" ("+node._service+")\"\n";
-                run += "[ ! -d "+node.id+" ] && curl -L https://github.com/"+node._service+"/archive/"+node._commit_id+".zip > "+node.id+".zip && unzip "+node.id+".zip && mv *"+node._commit_id+" "+node.id+" && rm "+node.id+".zip\n\n"; 
+                run += "mkdir -p "+node.id+" && curl -L https://github.com/"+node._service+"/archive/"+node._commit_id+".zip > app.zip && unzip app.zip && mv *"+node._commit_id+"/* "+node.id+" && rm app.zip\n\n"; 
 
                 //install config.json and run main
                 run += "echo \"running task "+node.id+" ("+node._service+")\"\n";
@@ -406,10 +410,9 @@ This boutique descriptor that can be used to run the workflow used to generate t
                     if(typeof v == "string" && v.startsWith("../")) { //TODO - we need a better to detect if this is parameter input or not..
                         //see if the input belongs to staged input
                         let pos = null;
-                        input_dataset_ids.forEach(dataset_id=>{
-                            if(!~pos) pos = v.indexOf(dataset_id);
+                        input_dataset_ids.forEach(id=>{
+                            pos = v.indexOf(id);
                         });
-                        console.log("pos "+pos);
                         if(pos !== null && ~pos) {
                             //using staged input!
 
@@ -463,6 +466,7 @@ This boutique descriptor that can be used to run the workflow used to generate t
                                 b_input["value-key"] = b_input["value-key"];
                                 unwrap = true;
                                 break;
+                            case "number": 
                             case "integer": 
                                 b_input.type = "Number"; 
                                 break;
@@ -471,7 +475,12 @@ This boutique descriptor that can be used to run the workflow used to generate t
                             app_config[k] = vkey;
                             if(unwrap) app_config[k] = "__unwrap__"+vkey;
 
-                            b_test.invocation[b_id] = app.config[k].default;
+                            //convert default value to string - boutique invocation value needs to be string accordint to tristan
+                            let def = app.config[k].default;
+                            if(def === null) def = "null";
+                            if(def.toString) def = def.toString();
+
+                            b_test.invocation[b_id] = def;
                         } else {
                             logger.error("no app.config for "+k);
                         }
@@ -479,13 +488,6 @@ This boutique descriptor that can be used to run the workflow used to generate t
                 }
 
                 let lines = JSON.stringify(app_config, null, 4).split("\n");
-                //TODO - wnwrap __unwrap__ string
-                /*
-                let regex = /__unwrap__/gi, result, indices = [];
-                while ((result = regex.exec(json))) {
-                    //indices.push(result.index);
-                }
-                */
                 let filtered_json = "";
                 lines.forEach(line=>{
                     pos = line.indexOf("__unwrap__");
@@ -523,6 +525,8 @@ This boutique descriptor that can be used to run the workflow used to generate t
         }
         if(output_node._prov.subdir) output["path-template"] += "/"+output_node._prov.subdir;
         b_files.push(output);
+
+        let author = common.deref_contact(output_node._user_id);
         
         //ship it!
         res.setHeader('Content-disposition', 'attachment; filename=boutique.'+dataset_id+'.json');
@@ -530,6 +534,7 @@ This boutique descriptor that can be used to run the workflow used to generate t
         res.send(JSON.stringify({
             "command-line": "bash run.sh",
             name: "workflow generated from dataset:"+dataset_id, //TODO
+            author: author.fullname,
             description: "TODO - workflow description?", //TODO
             "schema-version": "0.5",
             "suggested-resources": { "cpu-cores": 8, "ram": 16, "walltime-estimate": 120 }, //TODO
@@ -607,7 +612,7 @@ function generate_prov(origin_dataset_id, cb) {
         return {
             _app: (task.config?task.config._app:null),
             _service: task.service,
-            _commit_id : task.commit_id,
+            _commit_id : (task.commit_id||"master"),
             _config: filterConfig(task.config),
             _finish_date: task.finish_date,
         };
@@ -775,6 +780,7 @@ function generate_prov(origin_dataset_id, cb) {
                 id: "dataset."+dataset._id, 
                 _datatype: dataset.datatype,
                 _prov: dataset.prov,
+                _user_id: dataset.user_id,
             });
             load_dataset_prov(dataset, null, err=>{
                 //order nodes by id to make them ordered chronologically - which prevents violating DAG
@@ -1252,10 +1258,16 @@ router.get('/download/:id', jwt({
     var id = req.params.id;
 
     logger.debug("download requested for %s", id);
+    if(config.debug) {
+        logger.debug("Authoriziation token given");
+        console.dir(req.headers);
+        console.dir(req.user);
+    }
     if(!req.user) logger.warn("no auth request");
     db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
         if(err) return next(err);
         if(!dataset) {
+            logger.debug("no such dataset:"+id);
             res.status(404).json({message: "couldn't find the dataset specified"});
             return;
         }
@@ -1268,7 +1280,7 @@ router.get('/download/:id', jwt({
 
         //access control (I could do this in parallel?)
         async.series([
-            //
+            
             //check project access
             cb=>{
                 //we don't need to check project access if it's a published dataset
@@ -1320,7 +1332,9 @@ router.get('/download/:id', jwt({
             },
 
         ], err=>{
+            logger.debug(err);
             if(err) return res.status(403).json({err});
+            logger.debug("streaming..");
             stream_dataset(dataset, res, next);
         });
     });
@@ -1496,7 +1510,8 @@ ${p.desc}`;
                 if(dataset.meta.session) path += ".ses-"+dataset.meta.session;
 
                 path+="/";
-                path+="dt-"+dataset.datatype.name.replace(/\//g, '-');
+                path+=common.dataset_to_filename(dataset);
+                /*
                 dataset.datatype_tags.forEach(tag=>{
                     //null is getting injected into datatype_tags.. until I find where it's coming from, 
                     //I need to patch this by ignoring this
@@ -1506,7 +1521,7 @@ ${p.desc}`;
                 });
                 if(dataset.meta.run) path += ".run-"+dataset.meta.run;
                 path+= ".id-"+dataset._id;
-
+                */
                 script += "mkdir -p \""+path+"\"\n";
                 script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
                 script += "curl ";

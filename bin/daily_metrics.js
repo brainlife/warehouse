@@ -39,6 +39,8 @@ db.init(async function(err) {
     let today = new Date();
     await count_apps(today); 
     await count_dataset(today); 
-    db.disconnect();
+    db.disconnect(err=>{
+        process.exit(0);
+    });
 });
 

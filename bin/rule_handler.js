@@ -734,7 +734,8 @@ function handle_rule(rule, cb) {
                     if(output.datatype_tags_pass) {
 						//TODO - how is multi input handled here?
             			var dataset = inputs[output.datatype_tags_pass];
-                        if(dataset.datatype_tags) tags = dataset.datatype_tags; //could be null?
+                        if(!dataset) logger.error("datatype_tags_pass set but can't find the input:"+output.datatype_tags_pass);
+                        if(dataset && dataset.datatype_tags) tags = dataset.datatype_tags; //could be null?
                     }
                     //.. and add app specified output tags at the end
                     if(output.datatype_tags) tags = tags.concat(output.datatype_tags);
