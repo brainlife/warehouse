@@ -254,7 +254,7 @@ new Vue({
             if(res.data.projects.length == 0) {
                 //let's create a default project
                 console.log("need to create default project");
-                res = await this.$http.post('project', {
+                await this.$http.post('project', {
                     name: "My Default Project",
                     desc: "Please use this project for testing purpose. You can update this project, or create new projects",
                     access: "private",
