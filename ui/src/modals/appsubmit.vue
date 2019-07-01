@@ -243,7 +243,7 @@ export default {
                 sort: "project meta.subject -create_date",
                 populate: "datatype",
                 datatype_tags: input.datatype_tags,
-                limit: 100,
+                limit: 300, //100 too small for bold500
             }})
             .then(res => {
                 res.data.datasets.forEach(dataset => {
