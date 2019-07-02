@@ -1,4 +1,5 @@
 <template>
+<!--
 <div v-if="ready" class="dt" @click="click"
     v-b-popover.hover.top.d1000.html="'<small>'+_datatype.desc+'</small>'" :title="'<small><b>'+_datatype.name+'</b></small>'">
     <div class="dot" :style="{backgroundColor: color}">{{name}}</div
@@ -6,6 +7,16 @@
         <span v-if="tag && tag[0] == '!'" class="text-danger"><b-badge variant="danger">not</b-badge> {{tag.substring(1)}}</span>
         <span v-else>{{tag}}</span>
     </div>
+</div>
+-->
+<div v-if="ready" class="dt" :class="{'dt-clickable': clickable}" @click="click"
+    v-b-popover.hover.top.d1000.html="'<small>'+_datatype.desc+'</small>'" :title="'<small><b>'+_datatype.name+'</b></small>'">
+    <span class="dot" :style="{backgroundColor: color}"></span> {{name}}
+    <div class="tags" v-if="tags" v-for="(tag, idx) in tags" :key="idx">
+        <span v-if="tag && tag[0] == '!'" class="text-danger"><b-badge variant="danger">not</b-badge> {{tag.substring(1)}}</span>
+        <span v-else>{{tag}}</span>
+    </div>
+
 </div>
 </template>
 
@@ -116,13 +127,21 @@ export default {
 .dt {
     display: inline-block;
     white-space: nowrap;
+}
+.dt-clickable {
     cursor: pointer;
+}
+.dt-clickable:hover {
+    color: #2693ff;
 }
 .dot {
     display: inline-block;
-    padding: 0px 5px;
-    margin: 0px;
+    position: relative;
+    top: 0.1em;
     color: white;
+    height: 0.8em;
+    width: 0.8em;
+    border-radius: 50%;
 }
 .tags {
     display: inline-block;
