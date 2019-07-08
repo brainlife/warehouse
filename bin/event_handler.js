@@ -200,6 +200,8 @@ function handle_task(task, cb) {
                     });
                 }, err=>{
                     if(err) return next(err);
+
+                    //archive outputs not yet archived
                     common.archive_task_outputs(task, outputs, next);
                 });
             } else next();
@@ -210,9 +212,12 @@ function handle_task(task, cb) {
                 logger.info("handling app-archive envets");
                 async.eachSeries(task.config.datasets, (dataset_config, next_dataset)=>{
                     let _set = {
-                        status_msg: task.status_msg+ " ("+task._id.toString()+")",
+                        status_msg: task.status_msg,
                     };
                     switch(task.status) {
+                    case "requested":
+                        _set.archive_task_id = task._id;
+                        break;
                     case "finished":
                         _set.status = "stored";
                         if(dataset_config.storage) _set.storage = dataset_config.storage;

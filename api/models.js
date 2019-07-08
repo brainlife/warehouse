@@ -177,6 +177,10 @@ var projectSchema = mongoose.Schema({
     openneuro: {
         dataset_id: String,
     },
+
+    //project can store datasets on project specific storage. {resource_id}
+    storage: String,  //default to warehouse config.archive.storage_default
+    storage_config: mongoose.Schema.Types.Mixed, 
     
     create_date: { type: Date, default: Date.now },
 
@@ -326,6 +330,7 @@ var datasetSchema = mongoose.Schema({
     //removed - (freed) dataset is freed from storage system (remove_dataset.js will free)
     status: { type: String, default: "storing" },
     status_msg: String,
+    archive_task_id: String, //amaretti task that was used to archive the data
 
     download_count: { type: Number, default: 0}, //number of time this dataset was downloaded
 
@@ -366,7 +371,13 @@ datasetSchema.index({project: 1, 'prov.task.instance_id': 1, removed: 1});
 datasetSchema.index({project: 1, update_date: 1, removed: 1}); //rule to query the lastest dataset touched
 datasetSchema.index({'prov.task_id': 1, 'prov.output_id': 1, removed: 1}); //for event_handler
 datasetSchema.index({datatype: 1, removed: 1}); //for searching projects that provides distinct datatypes
+
+//for some reason..  dataset query can't use the index that has "meta.run".. sort index has to match exactly?
+datasetSchema.index({'meta.subject': 1, 'meta.session': 1, 'meta.run': 1, create_date: -1});
+datasetSchema.index({'meta.subject': 1, 'meta.session': 1, create_date: -1}); 
+
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //

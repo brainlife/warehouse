@@ -867,11 +867,11 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             if(req.body.tags) output.tags = output.tags.concat(req.body.tags).unique();
 
             logger.debug("submitting archive task");
-            common.archive_task_outputs(task, [output], (err, _archive_task)=>{
+            common.archive_task_outputs(task, [output], (err, datasets, _archive_task)=>{
                 if(err) return next(err);
                 archive_task = _archive_task;
-                dataset = archive_task.config.datasets[0].dataset;
-                res.json(dataset); 
+                //dataset = archive_task.config.datasets[0].dataset;
+                res.json(datasets[0].dataset); //there should be only 1 dataset being archived via this API, so return [0]
             });
         },
 
@@ -987,6 +987,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     //desc : "archiving",
                     service : "brainlife/app-stage",
                     instance_id : req.body.instance_id,
+                    preferred_resource_id: config.archive.storage_config.resource_id,
                     config: {
                         datasets: datasets.map(d=>{
                             if(d.storage == "copy") {
@@ -1162,32 +1163,6 @@ function get_project_agreements(project_id, cb) {
         cb(null, cache.agreements);
     });
 }
-
-/*
-//caches agreements for each user
-let user_agreement_cache = {};
-function get_user_agreements(sub, authorization, cb) {
-    let now = new Date().getTime();
-    let cache = user_agreement_cache[sub];
-    if(cache && cache.timeout > now) return cb(null, cache.agreements);
-    
-    //load user profile
-    console.log("loading profile agagin", cache);
-    request.get({ 
-        url: config.profile.api+"/private/"+sub, json: true, 
-        headers: { authorization }
-    }, (err, _res, profile)=>{
-        if(err) return cb(err);
-        //console.dir(profile);
-        cache = {
-            agreements: profile.agreements,
-            timeout: now + 1000*3600,
-        }
-        user_agreement_cache[sub] = cache;
-        cb(null, cache.agreements);
-    });
-}
-*/
 
 let cache;
 function get_user_agreements(sub, authorization, cb) { 
@@ -1453,19 +1428,6 @@ set +e #stop the script if anything fails
                 if(!projects[d.project._id]) projects[d.project._id] = d.project;
             });
             
-            //construct dataset_description.json
-/*{
-"Name": "The mother of all experiments",
-"BIDSVersion":  "1.0.1",
-"License": "CC0",
-"Authors": ["Paul Broca", "Carl Wernicke"],
-"Acknowledgements": "Special thanks to Korbinian Brodmann for help in formatting this dataset in BIDS. We thank Alan Lloyd Hodgkin and Andrew Huxley for helpful comments and discussions about the experiment and manuscript; Hermann Ludwig Helmholtz for administrative support; and Claudius Galenus for providing data for the medial-to-lateral index analysis.",
-"HowToAcknowledge": "Please cite this paper: https://www.ncbi.nlm.nih.gov/pubmed/001012092119281",
-"Funding": ["National Institute of Neuroscience Grant F378236MFH1", "National Institute of Neuroscience Grant 5RMZ0023106"],
-"ReferencesAndLinks": ["https://www.ncbi.nlm.nih.gov/pubmed/001012092119281", "Alzheimer A., & Kraepelin, E. (2015). Neural correlates of presenile dementia in humans. Journal of Neuroscientific Data, 2, 234001. http://doi.org/1920.8/jndata.2015.7"],
-"DatasetDOI": "10.0.2.3/dfjj.10"
-}*/
-
             //construct project info
             for(let project_id in projects) {
                 let p = projects[project_id];
@@ -1511,17 +1473,6 @@ ${p.desc}`;
 
                 path+="/";
                 path+=common.dataset_to_filename(dataset);
-                /*
-                dataset.datatype_tags.forEach(tag=>{
-                    //null is getting injected into datatype_tags.. until I find where it's coming from, 
-                    //I need to patch this by ignoring this
-                    if(!tag) return; 
-
-                    path+=".tag-"+tag.replace(/\./g, '-'); //'.' is used as delimiter
-                });
-                if(dataset.meta.run) path += ".run-"+dataset.meta.run;
-                path+= ".id-"+dataset._id;
-                */
                 script += "mkdir -p \""+path+"\"\n";
                 script += "echo downloading dataset:"+dataset._id+" to "+path+"\n";
                 script += "curl ";
@@ -1560,11 +1511,6 @@ ${p.desc}`;
                             if(!tag) return;  //patch for null tag injected
                             source_keywords+="_tag-"+tag.replace(/_/g, ''); //_ is delimiter
                         });
-                        /* dataset tags are entered by user, so there is higher risk of invalid char corrupting the filename..
-                        dataset.tags.forEach(tag=>{
-                            source_keywords+="_tag-"+tag.replace(/_/g, '');
-                        });
-                        */
 
                         //func has TaskName as part of source keywords..
                         if(dataset.meta.TaskName) {
