@@ -62,33 +62,40 @@
                             <datatypetag v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="margin-right: 3px; margin-bottom: 3px;"/>
                         </div>
                         -->
-                        <p class="info">
+                        <p class="info" title="Project creation date">
                             <icon name="calendar"/>
                             {{new Date(selected.create_date).toLocaleDateString()}}
                         </p>
-                        <div v-if="selected.stats">
+                        <div v-if="selected.stats" title="Number of subjects stored in archvie">
                             <p class="info" v-if="selected.stats.datasets && selected.stats.datasets.subject_count">
                                 <icon name="users"/>
                                 {{selected.stats.datasets.subject_count}} <span style="opacity: 0.6">Subjects</span>
                             </p>                           
-                            <p class="info" v-if="selected.stats.datasets && selected.stats.datasets.count">
+                            <p class="info" v-if="selected.stats.datasets && selected.stats.datasets.count" title="Number of datasets stored in archive">
                                 <icon name="cubes"/>     
                                 {{selected.stats.datasets.count}} <span style="opacity: 0.6">Datasets</span>
                             </p>
-                            <div class="info" v-if="selected.stats.datasets && selected.stats.datasets.size">                           
+                            <div class="info" v-if="selected.stats.datasets && selected.stats.datasets.size" title="Total size of data stored in archive">                           
                                 <p style="margin-left: 25px;">
                                     <span>{{selected.stats.datasets.size|filesize}}</span> <span style="opacity: 0.6">Total</span> <br>
                                     <span>{{selected.quota|filesize}}</span> <span style="opacity: 0.6">Quota</span> <br>
                                 </p>
                             </div>
+
+                            <div class="info" v-if="selected.storage == 'project'" title="Storage resource used to archive data for this project">
+                                <icon name="cube" style="float: left; margin-top: 3px;"/>     
+                                <p style="margin-left: 25px;">
+                                    <resource :id="selected.storage_config.resource_id"/>
+                                </p>
+                            </div>
                             
-                            <p class="info" v-if="selected.stats.rules">
+                            <p class="info" v-if="selected.stats.rules" title="Number of pipeline rules configured for this project">
                                 <icon name="robot"/>
                                 {{selected.stats.rules.active}} 
                                 <!--<span v-if="selected.stats.rules.inactive">/ {{selected.stats.rules.inactive}}</span>-->
                                 <span style="opacity: 0.6">Pipeline Rules</span>
                             </p>
-                            <p class="info" v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0" title="Tasks">
+                            <p class="info" v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0" title="Tasks currently running">
                                 <icon name="paper-plane"/>
                                 <stateprogress :states="selected.stats.instances"/>
                             </p>
@@ -137,6 +144,7 @@
                             <p class="text-muted" v-if="selected.members.length == 0"><small>(No Members)</small></p>
                             <br>
                         </div>
+
 
                         <div v-if="config.user && selected.access == 'private'">
                             <span class="form-header">Guests</span>
