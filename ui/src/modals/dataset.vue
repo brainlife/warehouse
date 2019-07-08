@@ -112,10 +112,11 @@
                                 </p>
                             </b-col>
                         </b-row>              
-                        <b-row v-if="dataset.prov && dataset.prov.task && dataset.prov.task.product">
+                        <b-row v-if="dataset.product">
                             <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
                             <b-col cols="9">
-                                <product :product="dataset.prov.task.product"/>
+                                <!--<product :product="dataset.prov.task.product"/>-->
+                                <product :product="dataset.product"/>
                                 <br>
                             </b-col>
                         </b-row>
@@ -124,17 +125,15 @@
                             <b-col cols="3"><span class="form-header">Archived in</span></b-col>
                             <b-col>
                                 <p>
-                                    <span style="color: #2693ff;" v-if="dataset.status == 'storing'">
-                                        <icon name="cog" :spin="true"/> <b>{{dataset.status_msg||'Storing ...'}}</b> 
-                                    </span> 
                                     <span v-if="dataset.status == 'stored'">
                                         <b>
                                             {{dataset.storage}} <span v-if="dataset.storage == 'copy'">- {{dataset.storage_config.storage}}</span>
                                         </b>
                                         <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                     </span> 
-                                    <span v-if="dataset.status == 'failed'" style="color: red;">
-                                        <icon name="exclamation-triangle"/> Failed to store on warehouse
+                                    <span v-if="(dataset.status == 'failed' || dataset.status == 'storing')">
+                                        <!--<icon name="exclamation-triangle"/> Failed to store on warehouse-->
+                                        <task :task="dataset.archive_task" v-if="dataset.archive_task"/>
                                     </span> 
                                     <span v-if="!dataset.status">
                                         Status is unknown
@@ -158,14 +157,6 @@
                             <b-col cols="3"><span class="form-header">Download Count</span></b-col>
                             <b-col>
                                 <p><b>{{dataset.download_count}}</b> times</p>
-                                <!--
-                                <p>
-                                    <small style="opacity: 0.8;">
-                                        You can download this dataset via <a href="https://github.com/brain-life/cli" target="doc">Brainlife CLI</a>
-                                    </small>
-                                    <pre class="code">$ bl dataset download --id {{dataset._id}}</pre>
-                                </p>
-                                -->
                             </b-col>
                         </b-row>
 
@@ -267,7 +258,7 @@ export default {
         app, tags, datatype, 
         metadata, pageheader, appavatar,
         datatypetag, task, pubcard, 
-        tageditor, taskconfig, product,
+        tageditor, taskconfig, product, task,
 
         editor: require('vue2-ace-editor'),
     },
@@ -319,7 +310,6 @@ export default {
             if(this.tab_index == 1 && this.prov == null) {
                 this.load_prov();
             }
-
             if(this.tab_index == 2 && this.apps == null) {
                 this.load_apps();
             }
@@ -377,9 +367,7 @@ export default {
                     let lines = edge.label.split("\n");
                     if(lines[0].startsWith("neuro/")) lines[0] = lines[0].substring(6);
                     if(edge._archived_dataset_id) {
-                        //lines[0]=lines[0]+"\n📦 ";
                         lines[1] = "📦 "+(lines[1]?lines[1]:'');
-                        //edge.color = {highlight:"#159957"};
                     }
                     edge.label = lines.join("\n");
                 })
@@ -556,8 +544,18 @@ export default {
             }
         },
 
+        load_archive_task() {
+            if(!this.dataset.archive_task_id) return; //no task_id
+            if(this.dataset.archive_task) return; //already loaded
+            console.log("loading dataset. archive_task");
+            this.$http.get(Vue.config.amaretti_api+'/task/'+this.dataset.archive_task_id).then(res=>{
+                console.log("loaded archive_task_id");
+                console.dir(res);
+                this.dataset.archive_task = res.data; 
+            });
+        },
+
         load_status(id) {
-            //console.log("loading dataset status");
             if(!this.dataset) return; //route changed before timeout was fired?
             this.$http.get('dataset', {params: {
                 find: JSON.stringify({_id: id}),
@@ -574,11 +572,13 @@ export default {
                 this.dataset.storage = dataset.storage;
                 this.dataset.desc = dataset.desc;
                 this.dataset.stats = dataset.stats;
+                this.dataset.archive_task_id = dataset.archive_task_id;
                 if(this.dataset.status == "storing") {
                     setTimeout(()=>{ this.load_status(id); }, 5000);
                 } else {
                     this.$notify({type: "success", text: "Dataset successfully stored on "+dataset.storage});
                 }
+                this.load_archive_task(); 
             });
         },
 
@@ -611,6 +611,7 @@ export default {
                 if(this.dataset.status == "storing") {
                     setTimeout(()=>{ this.load_status(id); }, 5000);
                 }
+                this.load_archive_task(); 
 
                 Vue.set(this.dataset, '_meta',  JSON.stringify(this.dataset.meta, null, 4));
                 Vue.set(this.dataset, '_meta_dirty',  false);
@@ -651,6 +652,7 @@ export default {
                 console.error(err);
             });
         },
+
 
         load_resource() {
             if(!this.dataset.prov || !this.dataset.prov.task) return;
@@ -735,28 +737,6 @@ export default {
             }
             this.$http.post(Vue.config.amaretti_api+'/instance', instance).then(res=>{
                 let instance_id = res.data._id;
-
-/*
-                var download = [];
-                download.push({
-                    url: Vue.config.api+"/dataset/download/"+this.dataset._id+"?at="+Vue.config.jwt,
-                    untar: "auto",
-                    dir: this.dataset._id,
-                });
-
-                //remove in 48 hours (abcd-novnc should terminate in 24 hours)
-                var remove_date = new Date();
-                remove_date.setDate(remove_date.getDate()+2);
-
-                console.log("submitting staging task");
-                return this.$http.post(Vue.config.amaretti_api+'/task', {
-                    instance_id,
-                    name: "brainlife.download",
-                    service: "soichih/sca-product-raw",
-                    config: { download, _tid: -2 },
-                    remove_date: remove_date,
-                }).then(res=>res.data.task);
-*/
                 return this.$http.post('dataset/stage', {
                     instance_id: instance_id,
                     dataset_ids: [ this.dataset._id ],

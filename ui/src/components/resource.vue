@@ -1,7 +1,7 @@
 <template>
-<div>
-{{id}}
-{{_resource}} resource!
+<div v-if="resource_obj">
+    <span>{{resource_obj.name}}</span><br>
+    <span style="font-size: 80%; opacity: 0.7;">{{resource_obj.config.desc}}</span>
 </div>
 </template>
 
@@ -19,15 +19,15 @@ export default {
     },
     data() {
         return {
-            _resource: null
+            resource_obj: null
         }
     },
     created: function() {
-        if(this.resource) this._resource = this.resource;
+        if(this.resource) this.resource_obj = this.resource;
         if(this.id) {
-            console.log("resolving id", id);
+            console.log("resolving id", this.id);
             this.resource_cache(this.id, (err, resource)=>{
-                this._resource = resource;
+                this.resource_obj = resource;
             });
         }
     },

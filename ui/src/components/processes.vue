@@ -233,29 +233,6 @@ export default {
             let counts = {};
 
             this.instances.forEach(i=>{
-                /*
-                if(i.config && i.config.counts) {
-                    for(let state in i.config.counts) {
-                        if(!counts[state]) counts[state] = i.config.counts[state];
-                        else counts[state] += i.config.counts[state];
-                    }
-                } else {
-                    //we used to use "instance" status... let's count as 1 for each instances with different status
-                    let status = i.status;
-                    switch(status) {
-                    case "finished":
-                    case "requested":
-                    case "running":
-                    case "failed":
-                        break;
-                    default:
-                        //convert odd status into "others"
-                        status = "others";
-                    }
-                    if(!counts[status]) counts[status] = 1;
-                    else counts[status]+=1;
-                }
-                */
                 let summary = this.get_nonstaging_summary(i);
                 summary.forEach(summary=>{
                     if(!counts[summary.status]) counts[summary.status] = 1;
