@@ -161,8 +161,8 @@ exports.issue_archiver_jwt = async function(user_id, cb) {
     return user_jwt;
 }
 
-//submits brainlife/app-archive
-exports.archive_task_outputs = function(task, outputs, cb) {
+//register new dataset and submits brainlife/app-archive to archive data for it
+exports.archive_task_outputs = async function(task, outputs, cb) {
     if(!Array.isArray(outputs)) {
         return cb("archive_task_outputs/outputs is not array "+JSON.stringify(outputs, null, 4));
     }
@@ -173,44 +173,43 @@ exports.archive_task_outputs = function(task, outputs, cb) {
     outputs.forEach(output=>{
         if(output.archive) project_ids.push(output.archive.project);
     });
+    
+    //archive_task_outputs handles multiple output datasets, but they should all belong to the same project.
+    //if not, app-archive will fail..
+    if(project_ids.length != 1) return cb("archive_task_outputs can't handle request with mixed projects");
+    let project = await db.Projects.findById(project_ids[0]);
+    let storage = project.storage||config.archive.storage_default;
+    let storage_config = project.storage_config||config.archive.storage_config;
 
     //check project access
     exports.validate_projects(task.user_id, project_ids, err=>{
         if(err) return cb(err);
-        
-        //register datasets
         let datasets = []; 
         async.eachSeries(outputs, (output, next_output)=>{
             if(!output.archive) return next_output();
-            register_dataset(task, output, products[output.id], (err, dataset)=>{
+            register_dataset(task, output, products[output.id], async (err, dataset)=>{
                 if(err || !dataset) return next_output(); //couldn't register, or already registered
                 let dir =  "../"+task._id;
-                //dataset.prov.task = dataset.prov.task._id; //unpopulate prov as it will be somewhat redundant (cli/bl-dataset-upload wants this)
                 let dataset_config = {
                     project: output.archive.project,
                     dir,
                     dataset, //need to pass the dataet for .brainlife.io
 
-                    storage: config.archive.storage_default,
-                    
-                    //TODO - should let config/index.js generate this?
-                    //storage_config: { path: dataset.project+"/"+dataset._id+".tar" },
+                    //should be the same across all requested dataset (these are set by event_handler when app-achive finishes successfully)
+                    storage,
+                    storage_config,
                 }
                 if(output.subdir) {
                     //new subdir outputs
-                    dataset_config.dir+="/"+output.subdir,
-                    datasets.push(dataset_config);
-                    next_output();
+                    dataset_config.dir+="/"+output.subdir;
                 } else {
                     //old method - need to lookup datatype first
-                    db.Datatypes.findById(output.datatype, (err, datatype)=>{
-                        if(err) return next_output(err);
-                        dataset_config.files = datatype.files;
-                        dataset_config.files_override = output.files;
-                        datasets.push(dataset_config);
-                        next_output();
-                    });
+                    let datatype = await db.Datatypes.findById(output.datatype);
+                    dataset_config.files = datatype.files;
+                    dataset_config.files_override = output.files;
                 }
+                datasets.push(dataset_config);
+                next_output();
             });
         }, async err=>{
             if(err) return cb(err);
@@ -226,8 +225,6 @@ exports.archive_task_outputs = function(task, outputs, cb) {
                     json: true,
                     body: {
                         deps : [ task._id ],
-                        //name : "archiving",
-                        //desc : "archiving",
                         service : "brainlife/app-archive",
                         instance_id : task.instance_id,
                         config: {
@@ -235,13 +232,17 @@ exports.archive_task_outputs = function(task, outputs, cb) {
                         },
                         max_runtime: 1000*3600, //1 hour should be enough for most..
                         remove_date,
+                        preferred_resource_id: storage_config.resource_id,
                     },
                     headers: {
                         authorization: "Bearer "+user_jwt,
                     }
                 });
+
+                //note: archive_task_id is set by event_handler while setting other things like status, desc, status_msg, etc..
+
                 logger.info("submitted archive_task:"+archive_task.task._id);
-                cb(null, archive_task.task);
+                cb(null, datasets, archive_task.task);
             } catch(err) {
                 cb(err);
             }
@@ -670,23 +671,7 @@ exports.update_dataset_stats = async function(project_id, cb) {
         });
         stats.subject_count = subjects.size;
         stats.datatypes = [...datatypes];
-
-        /*
-        //compute resource usage statistics
-        let resource_stats = await db.Datasets.aggregate()
-            .match({ removed: false, project: project_id, "prov.task.config._app": {$exists: true}})
-            .group({_id: {"app_id": "$prov.task.config._app", "resource_id": "$prov.task.resource_id"} , count: {$sum: 1}})
-        stats.resources = resource_stats.map(raw=>{
-            return {
-                app_id: raw._id.app_id,
-                resource_id: raw._id.resource_id,
-                count: raw.count,
-            }
-        });
-        console.dir(stats);
-        */
         let doc = await db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true});
-
         if(cb) cb(null, doc);
     } catch(err) {
         if(cb) cb(err);
@@ -696,7 +681,7 @@ exports.update_dataset_stats = async function(project_id, cb) {
 
 exports.update_project_stats = async function(group_id, cb) {
     try {
-        logger.debug("getting instance status counts from amretti for group_id:%s", group_id);
+        logger.debug("getting instance status counts from amaretti for group_id:%s", group_id);
         let counts = await rp.get({
             url: config.amaretti.api+"/instance/count", json: true,
             qs: {
@@ -705,6 +690,8 @@ exports.update_project_stats = async function(group_id, cb) {
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
         let stats = counts[0]; //there should be only 1
+        logger.debug("update-project-stats-----------------------------------------------")
+        logger.debug(JSON.stringify(stats, null, 4));
         let project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true});
 
         logger.debug("updating rule stats for project_id:%s", project._id.toString());
@@ -745,29 +732,6 @@ exports.update_project_stats = async function(group_id, cb) {
         if(cb) cb(err);
         else logger.error(err);
     }
-    /*
-        if(res.statusCode != 200) {
-            logger.error("failed to query");
-            if(cb) cb(res.body);
-            return;
-        }
-    */
-        /*
-        counts.forEach(count=>{
-            switch(count._id) {
-            case "requested": 
-            case "finished": 
-            case "running": 
-            case "stopped": 
-            case "failed": 
-                stats[count._id] = count.count;
-                break;
-            default:
-                //stats.instances["others"] += count.count;
-            }
-        });
-        //console.dir(stats);
-        */
 }
 
 exports.update_rule_stats = function(rule_id, cb) {
@@ -799,4 +763,15 @@ exports.update_rule_stats = function(rule_id, cb) {
     });
 }
 
-
+exports.dataset_to_filename = function(dataset) {
+    let path ="dt-"+dataset.datatype.name.replace(/\//g, '-');
+    dataset.datatype_tags.forEach(tag=>{
+        //null is getting injected into datatype_tags.. until I find where it's coming from, 
+        //I need to patch this by ignoring this
+        if(!tag) return; 
+        path+=".tag-"+tag.replace(/\./g, '-'); //'.' is used as delimiter
+    });
+    if(dataset.meta.run) path += ".run-"+dataset.meta.run;
+    path+= ".id-"+dataset._id;
+    return path;
+}

@@ -12,7 +12,7 @@ const ssh2 = require('ssh2');
 const request = require('request');
 
 exports.mongodb = "mongodb://localhost/warehouse";
-exports.mongoose_debug = false;
+exports.mongoose_debug = true;
 
 exports.debug = true; 
 
@@ -29,8 +29,6 @@ exports.github = {
 
 exports.amaretti = {
     api: "https://dev1.soichi.us/api/amaretti",
-    //jwt used to query things from workflow service as admin (TODO - I can't find any use for it?)
-    //jwt: fs.readFileSync(__dirname+'/warehouse.jwt', 'ascii').trim(),
 }
 exports.wf = exports.amaretti; //deprecated (use amaretti)
 
@@ -40,9 +38,6 @@ exports.profile = {
 
 exports.auth = {
     api: "https://dev1.soichi.us/api/auth",
-   
-    //jwt used to request auth service to issue new user jwt to be used to submit tasks onbehalf of the user
-    //jwt: fs.readFileSync(__dirname+'/auth.jwt', 'ascii').trim(),
 }
 
 exports.warehouse = {
@@ -118,14 +113,19 @@ exports.datacite = {
 //  storage system where we can archive data
 exports.storage_systems = {};
 
+/*
 //pick default storage (TODO - deprecate thsi and use archive.storage_default instead
 exports.storage_default = function() {
     //return "jetstream";
     return "wrangler";
 }
+*/
 
 exports.archive = {
     storage_default: "wrangler",  
+    storage_config: {
+        resource_id: "59ea931df82bb308c0197c3d", //wrangler
+    },
     gid: 137, //warehouse group enabled to access storage service
 }
 
@@ -272,12 +272,12 @@ function get_wrangler_archive_path(dataset) {
 }
 
 exports.storage_systems.wrangler = {
-    need_backup: true,
+    need_backup: true, //need_backup if it's our storage (not openneuro)
     test: cb=>{
         connect_wrangler((err, conn, sftp)=>{
             if(err) return cb(err);
             console.log("loading quota.info from wrangler homedir.. should be created by cron..");
-            let stream = sftp.createReadStream("quota.info");
+            let stream = sftp.createReadStream("quota.info", {encoding: "ascii"});
             let content = "";
             stream.on('readable', function() {
                 //could be called multiple times..
@@ -315,7 +315,8 @@ exports.storage_systems.wrangler = {
         });
     },
 
-    //TODO - with app-archive in place, I don't think we use this anymore
+    /*
+    //TODO - with app-archive in place, we don't use this anymore
     upload: (dataset, cb)=>{
         connect_wrangler((err, conn, sftp)=>{
             console.log("got wrangler streams for uplload");
@@ -347,6 +348,7 @@ exports.storage_systems.wrangler = {
             });
         });
     },
+    */
 
     download: (dataset, cb)=>{
         connect_wrangler((err, conn, sftp)=>{
@@ -399,6 +401,83 @@ exports.storage_systems.wrangler = {
                 });
             });
         });
+    }
+} 
+
+exports.storage_systems.project = {
+    need_backup: true, //need_backup if it's our storage (not openneuro)
+    test: cb=>{
+        console.log("project/test - todo");
+        cb();
+    }, 
+
+    stat: (dataset, cb)=>{
+        cb();
+    },
+
+    download: (dataset, cb)=>{
+        let resource_id = dataset.storage_config.resource_id; 
+        let path = dataset.project+"/"+dataset._id+".tar";
+        let stream = request.get({
+            url: exports.amaretti.api+"/resource/archive/download/"+resource_id+"/"+path, 
+            headers: {Authorization: "Bearer "+ exports.warehouse.jwt}
+        });
+        cb(null, stream, dataset._id+".tar");
+        /*
+        connect_wrangler((err, conn, sftp)=>{
+            if (err) {
+                conn.end();
+                return cb(err);
+            }
+            let path = get_wrangler_archive_path(dataset);
+            let filename = path.split("/").pop();
+            console.debug(["loading...", path, filename]);
+            conn.exec("cat "+path, (err, stream)=>{
+                stream.on('error', err=>{
+                    console.error("stream failed but train has already left the station", err);
+                });
+                stream.on('close', code=>{
+                    conn.end();
+                });
+                //I believe listening to stream is required for close event to fire..?
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+                cb(err, stream, filename);
+            });
+        });
+        */
+    },
+
+    remove: (dataset, cb)=>{
+        console.log("project/remove - todo");
+        /*
+        connect_wrangler((err, conn, sftp)=>{
+            console.log("got wrangler streams for remove");
+            if(err) return cb(err);
+            let _path = get_wrangler_archive_path(dataset);
+            conn.exec("rm -f "+_path, (err, stream)=>{
+                if(err) {
+                    conn.end();
+                    return cb(err);
+                }
+                stream.on('error', err=>{
+                    console.error(err);
+                });
+                stream.on('close', (code, signal)=>{
+                    conn.end(); 
+                    if(code == 0) return cb(null);
+                    else cb("rm failed with code:"+code);
+                });
+                stream.on('data', data=>{
+                    console.log(data.toString());
+                });
+                stream.stderr.on('data', data=>{
+                    console.error(data.toString());
+                });
+            });
+        });
+        */
     }
 } 
 

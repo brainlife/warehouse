@@ -60,10 +60,12 @@ exports.express = {
 //  storage system where we can archive data
 exports.storage_systems = {};
 
+/*
 //pick default storage
 exports.storage_default = function() {
     return "jetstream";
 }
+*/
 
 //
 //  jetstream

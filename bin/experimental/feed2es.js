@@ -11,7 +11,7 @@ const db = require('../../api/models');
 console.log("connecting to db");
 db.init(err=>{
     let es = new elasticsearch.Client({
-      host: 'localhost:9200',
+      host: '10.0.0.11:9200',
       log: 'trace'
     });
     /*
@@ -29,7 +29,9 @@ db.init(err=>{
     previous_date.setDate(previous_date.getDate()-30); //pick last 30 days?
     console.log("querying since", previous_date);
     db.Datasets.find({
-        //project: "5aaeb3dc7bc1d95ea21f2cb0",
+
+        project: "5cfe85f62daec10035f3f528", //DevTI
+
         removed: false,
         status: "stored",
         product: {$exists: true}, 
