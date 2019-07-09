@@ -386,7 +386,6 @@ transition: box-shadow 0.3s ease;
 }
 .app:hover {
 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-/*top: -5px;*/
 }
 .button-fixed {
 right: 280px;

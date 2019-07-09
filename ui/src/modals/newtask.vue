@@ -8,19 +8,19 @@
                 <icon name="times" scale="1.5"/>
             </div>
         </div>
-        <h4 style="margin-top: 5px;">Submit New App</h4>
+        <h4 style="margin-top: 5px;">Submit App</h4>
     </div><!--header-->
 
     <!--app selection page--> 
     <div v-if="!app" class="app-selecter">
-        <div v-if="apps">
-            <!--
-            <div style="padding: 20px; padding-bottom: 0px;">
-                <span v-if="apps.length > 0" style="opacity: 0.8;">You can submit following application with currently available dataset.</span>
-                <span v-else style="opacity: 0.8">You have no application to submit with currently staged datasets.<br><br>Please try staging more datasets.</span>
+        <div v-if="apps.all">
+            <b-alert v-if="apps.all.length == 0" show variant="secondary">No App can be submitted with currently staged datasets.</b-alert>
+            <div v-else>
+                <icon name="search" class="search-icon" scale="1.3"/>
+                <input class="search" v-model="filter" placeholder="Filter Apps" @change="update_lists"/>
             </div>
-            -->
-            <b-alert v-if="apps.length == 0" show variant="secondary">You have no application to submit with currently staged datasets. Please try staging more datasets.</b-alert>
+
+            <!--
             <b-tabs v-else class="brainlife-tab">
                 <b-tab title="Popular" v-if="apps.length > 9">
                     <div class="apps">
@@ -41,6 +41,35 @@
                     </div>
                 </b-tab>
             </b-tabs>
+            -->
+            <div class="apps">
+                <!-- if there are too many apps, show popular and non-popular separately-->
+                <div v-if="apps.filtered.length > 9">
+                    <h3><icon name="fire-alt"/> Popular</h3>
+                    <div v-for="app in apps.popular" :key="app._id">
+                        <div class="app" @click="selectapp(app)">
+                            <app :app="app" :clickable="false" class="clickable" height="230px"/>
+                        </div>
+                    </div>
+                    <br style="clear: both"/>
+                    <h3>Others</h3>
+                    <div v-for="app in apps.not_popular" :key="app._id">
+                        <div class="app" @click="selectapp(app)">
+                            <app :app="app" :clickable="false" class="clickable" height="230px"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!--show everything together if there are less than 9-->
+                <div v-else>
+                    <div v-for="app in apps.filtered" :key="app._id">
+                        <div class="app" @click="selectapp(app)">
+                            <app :app="app" :clickable="false" class="clickable" height="230px"/>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
         </div> 
 
         <br clear="both">
@@ -177,9 +206,17 @@ export default {
         return {
             open: false,
 
-            apps: null, //applications user can run with selected data
+            filter: "",
+
             app: null, //selected
             tags: [],
+
+            apps: {
+                all: [], //applications user can run with selected data
+                filtered: [],
+                popular: [],
+                not_popular: [],
+            },
 
             alltags: [], 
 
@@ -219,6 +256,12 @@ export default {
             this.archive.enable = false;
             this.tags = [];
             this.desc = "";
+            this.filter = "";
+
+            this.apps.all = [];
+            this.apps.filtered = [];
+            this.apps.popular = [];
+            this.apps.not_popular = [];
 
             //create list of all datatypes that user has staged / generated
             var datatype_ids = [];
@@ -247,7 +290,6 @@ export default {
             }})
             .then(res=>{
                 //now, pick apps that we have *all* input datasets that matches the input datatype/tags
-                this.apps = [];
                 res.data.apps.forEach(app=>{
                     var match = true;
                     app.inputs.forEach(input=>{
@@ -265,14 +307,10 @@ export default {
                         }); 
                         if(!matching_dataset) match = false;
                     });
-                    if(match) {
-                        //console.log("can run", app.name);
-                        this.apps.push(app);
-                    }
+                    if(match) this.apps.all.push(app);
                 });
-            }).catch(err=>{
-                console.error(err);
-            });
+                this.update_lists();
+            }).catch(console.error);
         });
 
         //TODO - call removeEventListener in destroy()? Or I should do this everytime modal is shown/hidden?
@@ -281,6 +319,7 @@ export default {
                 this.open = false;
             }
         });
+
     },
 
     destroyed() {
@@ -288,19 +327,37 @@ export default {
     },
 
     computed: {
-        most_popular_apps() {
-            return this.apps
-                .map(a=>{
-                    if(!a.stats) a.stats = {users: 0};
-                    return a;
-                })
-                .sort((a,b)=>b.stats.users-a.stats.users)
-                .slice(0, 9)
-                .sort((a,b)=>b.name-a.name);
-        }
+    },
+
+    watch: {
+        filter(v, ov) {
+            this.update_lists();
+        },
     },
 
     methods: {
+        update_lists() {
+            console.log("update lists");
+            //apply filter
+            if(!this.filter) this.apps.filtered = this.apps.all.sort((a,b)=>a.name - b.name);
+            let l_filter = this.filter.toLowerCase();
+            this.apps.filtered = this.apps.all.filter(app=>{
+                let match = false;
+                if(app.name.toLowerCase().includes(l_filter)) match = true;
+                if(app.desc.toLowerCase().includes(l_filter)) match = true;
+
+                //TODO - allow searching for datatype like apps page?
+                return match;
+            });
+
+            let popular_ordered = this.apps.filtered.map(a=>{
+                if(!a.stats) a.stats = {users: 0};
+                return a;
+            }).sort((a,b)=>b.stats.users-a.stats.users)
+
+            this.apps.popular = popular_ordered.slice(0, 9);
+            this.apps.not_popular = popular_ordered.slice(9);
+        },
 
         selectapp(app) {
             this.app = app;
@@ -529,6 +586,7 @@ background-color: #f9f9f9;
 }
 .apps {
 padding: 20px;
+padding-top: 10px;
 overflow: auto;
 position: absolute;
 top: 45px;
@@ -545,6 +603,29 @@ margin-bottom: 10px;
 }
 .app:hover {
 box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-/*top: -5px;*/
+}
+.search {
+width: 100%;
+padding: 5px;
+padding-left: 50px;
+font-size: 120%;
+height: 45px;
+border: none;
+color: #666;
+}
+.search:focus {
+outline: none;
+}
+.search-icon {
+position: absolute;
+left: 15px;
+top: 12px;
+opacity: 0.2;
+}
+.apps h3 {
+margin-bottom: 10px;
+opacity: 0.5;
+font-size: 170%;
+font-weight: bold;
 }
 </style>

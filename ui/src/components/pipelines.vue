@@ -97,7 +97,7 @@
                         </div>
                         <b-row>
                             <b-col>
-                                <app :app="rule.app" :compact="true" :clickable="false" style="margin-left: 10px; margin-bottom: 10px;" :branch="rule.branch||'master'"/>
+                                <app :app="rule.app" :compact="true" style="margin-left: 10px; margin-bottom: 10px;" :branch="rule.branch||'master'"/>
                             </b-col>
                             <b-col>
                                 <table class="table table-sm" style="font-size: 85%; background-color: #fbfbfb;">
