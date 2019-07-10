@@ -1,19 +1,12 @@
 
-/////////////////////////////////////// css /////////////////////////////////////
-
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.min.css'
-
-//is this for vue-element?
-//import '../theme/index.css' 
 
 import 'select2/dist/css/select2.css'
 import 'highlight.js/styles/default.css'
 
 import 'katex/dist/katex.min.css'
 import 'vue2-animate/dist/vue2-animate.min.css'
-
-/////////////////////////////////////// js /////////////////////////////////////
 
 //3rd parties
 import 'jquery/dist/jquery.js'
@@ -22,9 +15,6 @@ import Vue from 'vue'
 
 import vSelect from 'vue-select' 
 import VueHighlightJS from 'vue-highlightjs'
-
-//import Element from 'element-ui'
-//import locale from 'element-ui/lib/locale/lang/en'
 
 import Notifications from 'vue-notification' //override element-ui ugly $notify..
 import 'vue-awesome/icons'
@@ -39,13 +29,9 @@ import VueTimeago from 'vue-timeago'
 import SocialSharing from 'vue-social-sharing';
 
 import VueAnalytics from 'vue-analytics'
-//import Meta from 'vue-meta'
 
 import axios from 'axios'
 import VueAxios from 'vue-axios'
-
-//import VueClipboard from 'vue-clipboard2'
-//Vue.use(VueClipboard)
 
 Vue.component('v-select', vSelect)
 Vue.component('icon', Icon)
@@ -54,9 +40,7 @@ import VueDisqus from 'vue-disqus'
 
 Vue.use(VueDisqus)
 Vue.use(VueHighlightJS)
-//Vue.use(VueResource)
 Vue.use(VueAxios, axios)
-//Vue.use(Element, {locale})
 Vue.use(Notifications);
 Vue.use(VueLazyload)
 Vue.use(BootstrapVue);
@@ -68,7 +52,6 @@ Vue.use(VueTimeago, {
         'en-US': require('vue-timeago/locales/en-US.json')
     }
 });
-//Vue.use(Meta);
 
 /////////////////////////////////////// main /////////////////////////////////////
 

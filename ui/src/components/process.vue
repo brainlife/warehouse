@@ -66,7 +66,6 @@
             <!--input-->
             <div slot="input" v-if="task.config._inputs">
                 <div v-for="(input, idx) in task.config._inputs" :key="idx" class="input">
-                    <small style="opacity: 0.6; float: right;">{{input.id}}</small>
                     <b v-if="input.meta && input.meta.subject">{{input.meta.subject}}</b>
                     <div style="display: inline-block;" v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
@@ -86,14 +85,13 @@
                         </span>
                         <b-badge variant="danger">Removed</b-badge>
                     </div>
+                    <small class="ioid">({{input.id}})</small>
                 </div>
             </div>
 
             <!--output-->
             <div slot="output">
                 <div v-for="(output, idx) in task.config._outputs" :key="idx" class="output">
-                    <small style="opacity: 0.6; float: right;">{{output.id}}</small>
-
                     <div class="output-actions">
                         <div class="button" v-if="output.dataset_id" @click="open_dataset(output.dataset_id)" title="Show Dataset Detail">
                             <icon name="cubes"/>
@@ -106,6 +104,7 @@
                             <div class="button" title="Archive" @click="open_archiver(task, output)"><icon name="archive"/></div>
                         </div>
                     </div>
+
 
                     <b v-if="output.meta && output.meta.subject">{{output.meta.subject}}</b>
                     <small v-if="output.meta && output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
@@ -124,6 +123,7 @@
                     <span class="text-muted" v-if="output.dataset_id && output.project != project._id">
                         <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> <b>{{projectname(output.project)}}</b>
                     </span>
+                    <small class="ioid">({{output.id}})</small>
 
                     <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
                         <div class="archived-datasets-title">Archived Datasets</div>
@@ -802,14 +802,14 @@ font-size: 92%;
 position: relative;
 }
 .output .output-actions {
-opacity: 0;
 transition: opacity 0.5s;
 background-color: #fcfcfc;
-position: absolute;
-right: 0px;
-top: 3px;
+float: right;
+position: relative;
+top: -3px;
 }
-.output:hover .output-actions {
-opacity: 1;
+span.ioid {
+opacity: 0.6;
+margin-right: 5px;
 }
 </style>
