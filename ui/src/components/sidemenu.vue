@@ -174,7 +174,7 @@ export default {
         },
         signout() {
             sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
-            document.location = "/auth#!/signout";
+            document.location = Vue.config.auth_signout;
         },
         reportbug() {
             window.open("https://github.com/brain-life/warehouse/issues", "github");

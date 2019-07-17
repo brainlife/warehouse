@@ -111,6 +111,7 @@ Vue.config.event_api = apihost+"/api/event";
 Vue.config.profile_api = apihost+"/api/profile";
 Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
+Vue.config.auth_signout = "/auth#!/signout";
 Vue.config.productionTip = false;
 Vue.config.debug_doi = "10.25663/bl.p.3";
 
@@ -119,6 +120,17 @@ axios.defaults.baseURL = Vue.config.api; //default root for $http
 
 if (process.env.NODE_ENV == "development") {
     Vue.config.debug = true;
+    
+    //do crosssite auth between localhost and dev1 auth
+    Vue.config.auth_signin = "https://dev1.soichi.us/auth#!/signin?app=localhost";
+    Vue.config.auth_signout = "https://dev1.soichi.us/auth#!/signout?app=localhost";
+
+    //intercept jwt sent via url parameter
+    var urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.has('jwt')) {
+        localStorage.setItem("jwt", urlParams.get('jwt'));
+        window.location.search = "";
+    }
 }
 
 function jwt_decode_brainlife(jwt) {
@@ -159,6 +171,7 @@ router.beforeEach(function (to, from, next) {
         document.location = "/404";
         return;
     }
+
 
     // redirect to auth unless route is public
     if (!to.meta) to.meta = {};
@@ -265,12 +278,10 @@ new Vue({
                 if(cb) cb();
             }).catch(err=>{
                 console.error("failed to referesh token");
-                if(!Vue.config.debug) {
-                    console.error("redirecting to auth service");
-                    console.error(err); 
-                    sessionStorage.setItem('auth_redirect', document.location.href);
-                    document.location = Vue.config.auth_signin;
-                }
+                console.error("redirecting to auth service");
+                console.error(err); 
+                sessionStorage.setItem('auth_redirect', document.location.href);
+                document.location = Vue.config.auth_signin;
                 if(cb) cb(err);
             });
         },
