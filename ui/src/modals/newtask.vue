@@ -14,34 +14,17 @@
     <!--app selection page--> 
     <div v-if="!app" class="app-selecter">
         <div v-if="apps.all">
-            <b-alert v-if="apps.all.length == 0" show variant="secondary">No App can be submitted with currently staged datasets.</b-alert>
+            <!--
+            <div v-if="loading" style="margin: 30px; opacity: 0.5; font-size: 200%; padding-top: 30px;">
+                <icon name="cog" scale="2" spin/> Loading ...
+            </div>
+            -->
+            <b-alert v-if="!loading && apps.all.length == 0" show variant="secondary">No App can be submitted with currently staged datasets.</b-alert>
             <div v-else>
                 <icon name="search" class="search-icon" scale="1.3"/>
                 <input class="search" v-model="filter" placeholder="Filter Apps" @change="update_lists"/>
             </div>
 
-            <!--
-            <b-tabs v-else class="brainlife-tab">
-                <b-tab title="Popular" v-if="apps.length > 9">
-                    <div class="apps">
-                        <div v-for="app in most_popular_apps" :key="app._id">
-                            <div class="app" @click="selectapp(app)">
-                                <app :app="app" :clickable="false" class="clickable" height="230px"/>
-                            </div>
-                        </div>
-                    </div>
-                </b-tab>
-                <b-tab title="All">
-                    <div class="apps">
-                        <div v-for="app in apps" :key="app._id">
-                            <div class="app" @click="selectapp(app)">
-                                <app :app="app" :clickable="false" class="clickable" height="230px"/>
-                            </div>
-                        </div>
-                    </div>
-                </b-tab>
-            </b-tabs>
-            -->
             <div class="apps">
                 <!-- if there are too many apps, show popular and non-popular separately-->
                 <div v-if="apps.filtered.length > 9">
@@ -208,6 +191,7 @@ export default {
 
             filter: "",
 
+            loading: false,
             app: null, //selected
             tags: [],
 
@@ -263,6 +247,8 @@ export default {
             this.apps.popular = [];
             this.apps.not_popular = [];
 
+            this.loading = true;
+
             //create list of all datatypes that user has staged / generated
             var datatype_ids = [];
             this.datasets.forEach(dataset=>{
@@ -310,6 +296,7 @@ export default {
                     if(match) this.apps.all.push(app);
                 });
                 this.update_lists();
+                this.loading = false;
             }).catch(console.error);
         });
 
@@ -326,9 +313,6 @@ export default {
         this.$root.$off("newtask.open");
     },
 
-    computed: {
-    },
-
     watch: {
         filter(v, ov) {
             this.update_lists();
@@ -343,8 +327,8 @@ export default {
             let l_filter = this.filter.toLowerCase();
             this.apps.filtered = this.apps.all.filter(app=>{
                 let match = false;
-                if(app.name.toLowerCase().includes(l_filter)) match = true;
-                if(app.desc.toLowerCase().includes(l_filter)) match = true;
+                if(app.name && app.name.toLowerCase().includes(l_filter)) match = true;
+                if(app.desc && app.desc.toLowerCase().includes(l_filter)) match = true;
 
                 //TODO - allow searching for datatype like apps page?
                 return match;

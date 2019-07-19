@@ -816,7 +816,7 @@ right: 250px;
 .loading {
     position: fixed;
     bottom: 25px;
-    left: 380px; 
+    left: 230px; 
     z-index: 10;
     opacity: 0.5;  
 }

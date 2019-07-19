@@ -27,7 +27,7 @@
     "jquery": "^3.4.1",
     "jwt-decode": "^2.2.0",
     "katex": "^0.6.0",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.14",
     "md5": "^2.2.1",
     "perfect-scrollbar": "^1.4.0",
     "plotly.js": "^1.48.3",

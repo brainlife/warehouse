@@ -39,7 +39,6 @@
         </b-col>
     </b-row>
     <br>
-
 </b-modal>
 </template>
 
@@ -90,8 +89,10 @@ export default {
         this.$root.$on("datasetselecter.open", ()=>{
             if(!this.$refs.modal) return console.log("received datasetselecter.open but this.$refs.modal not yet initialized");
             this.project = null;
-            this.$refs.psel.load_projects();
             this.$refs.modal.show()
+            Vue.nextTick(function () {
+                this.$refs.psel.load_projects();
+            })
         });
     },
 

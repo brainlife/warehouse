@@ -577,7 +577,8 @@ bottom: 0px;
 left: 600px;
 right: 0px;
 background-color: #eee;
-overflow: auto;
+overflow-y: auto;
+overflow-x: hidden;
 }
 
 .instance-header {

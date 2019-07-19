@@ -57,11 +57,11 @@
                         <b-col :cols="4">
                             <span>{{rule.app.name}}</span>
                             <small>{{rule.name}}</small>
-                        </b-col>
-                        <b-col :cols="2">
                             <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
                                 <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
                             </span>                      
+                        </b-col>
+                        <b-col :cols="2" style="text-align: right;">
                             <stateprogress v-if="rule.stats" :states="rule.stats.tasks" style="float: right; width: 100px"/>
                         </b-col>
                         <b-col :cols="2" style="text-align: right;">

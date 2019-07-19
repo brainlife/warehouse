@@ -72,8 +72,8 @@
                             <b-row>
                                 <!--input-->
                                 <b-col>
-                                    <div style="height: 100%; border: 3px solid #007bff; border-radius: 5px;">
-                                        <div style="background-color: #007bff; padding: 5px 15px; font-weight: bold; color: white;">Input</div>
+                                    <div style="height: 100%; border: 2px solid #007bff; border-radius: 4px;">
+                                        <div style="background-color: #007bffd0; padding: 5px 15px; font-weight: bold; color: white;">Input</div>
                                         <b-alert show variant="primary" v-if="!app.inputs || app.inputs.length == 0">No Input</b-alert>
                                         <div v-if="app.inputs" style="padding: 5px">
                                             <div v-for="input in app.inputs" :key="input.id" class="io-card">
@@ -92,8 +92,8 @@
                                 <!--output-->
                                 <b-col>
                                     <icon name="arrow-right" style="position: absolute; top: 50%; left: -10px; opacity: 0.5" scale="1.5"/>
-                                    <div style="height: 100%; border: 3px solid #28a745; border-radius: 5px;">
-                                        <div style="background-color: #28a745; padding: 5px 15px; font-weight: bold; color: white;">Output</div>
+                                    <div style="height: 100%; border: 2px solid #28a745; border-radius: 4px;">
+                                        <div style="background-color: #28a745d0; padding: 5px 15px; font-weight: bold; color: white;">Output</div>
                                         <b-alert show variant="success" v-if="!app.outputs || app.outputs.length == 0">No Output</b-alert>
                                         <div v-if="app.outputs" style="padding: 5px;">
                                             <div v-for="output in app.outputs" :key="output.id" class="io-card">

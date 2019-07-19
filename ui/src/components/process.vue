@@ -297,6 +297,7 @@ export default {
             this.tasks.forEach(task=>{
                 if(task.status == "removed") return;
                 if(task.status == "stopped") return;
+                if(task.status == "failed") return; //this is bit tricky.. but if task failed, let's consider it to be failed
                 if(!task.config._outputs) return; //probably only needed during dev.
                 task.config._outputs.forEach(output=>{
                     datasets.push({

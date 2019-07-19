@@ -142,8 +142,11 @@
                     <div v-if="smon.cpu.data">
                         <vue-plotly :data="smon.cpu.data" :layout="smon.cpu.layout" :autoResize="true" :watchShallow="true"/>
                     </div>
-                    <div v-if="smon.memory.data">
-                        <vue-plotly :data="smon.memory.data" :layout="smon.memory.layout" :autoResize="true" :watchShallow="true"/>
+                    <div v-if="smon.memory_rss.data">
+                        <vue-plotly :data="smon.memory_rss.data" :layout="smon.memory_rss.layout" :autoResize="true" :watchShallow="true"/>
+                    </div>
+                    <div v-if="smon.memory_vsz.data">
+                        <vue-plotly :data="smon.memory_vsz.data" :layout="smon.memory_vsz.layout" :autoResize="true" :watchShallow="true"/>
                     </div>
                     <div v-if="smon.disk.data">
                         <vue-plotly :data="smon.disk.data" :layout="smon.disk.layout" :autoResize="true" :watchShallow="true"/>
@@ -203,7 +206,12 @@ export default {
                     layout: null,
                 },
 
-                memory: {
+                memory_rss: {
+                    data: null,
+                    layout: null,
+                },
+
+                memory_vsz: {
                     data: null,
                     layout: null,
                 },
@@ -249,7 +257,7 @@ export default {
                 let end_date = null;
 
                 function shorten(long) {
-                    if(long.length < 40) return long;
+                    if(long.length < 50) return long;
                     let tokens = long.split(" ");
                     let short = "";
                     tokens.forEach(t=>{
@@ -259,7 +267,7 @@ export default {
                         }
                         short+=".."+t.substring(t.length-20)+" ";
                     });
-                    if(short.length > 40) short = short.substring(0, 40)+"...";
+                    if(short.length > 50) short = short.substring(0, 50)+"...";
                     return short;
                 }
 
@@ -273,7 +281,8 @@ export default {
                     fill: 'tozeroy'
                 }; 
                 let pcpus = {};
-                let memory = {};
+                let memory_rss = {};
+                let memory_vsz = {};
                 records.forEach(record_json=>{
                     if(record_json == "") return;
                     try {
@@ -332,9 +341,13 @@ export default {
                             pcpus[p.pid].x.push(time);
                             pcpus[p.pid].y.push(p.pcpu);
 
-                            if(!memory[p.pid]) memory[p.pid] = {x: [], y: [], name: shorten(p.cmd), mode: 'lines', stackgroup: 'memory', line: {width: 0} }
-                            memory[p.pid].x.push(time);
-                            memory[p.pid].y.push((p.rss*1024)/(1000*1000)); //convert kiloBytes to MB
+                            if(!memory_rss[p.pid]) memory_rss[p.pid] = {x: [], y: [], name: shorten(p.cmd), mode: 'lines', stackgroup: 'memory', line: {width: 0} }
+                            memory_rss[p.pid].x.push(time);
+                            memory_rss[p.pid].y.push((p.rss*1024)/(1000*1000*1000)); //convert kiloBytes to GB
+
+                            if(!memory_vsz[p.pid]) memory_vsz[p.pid] = {x: [], y: [], name: shorten(p.cmd), mode: 'lines', stackgroup: 'memory', line: {width: 0} }
+                            memory_vsz[p.pid].x.push(time);
+                            memory_vsz[p.pid].y.push((p.vsz*1024)/(1000*1000*1000)); //convert kiloBytes to GB
                         });
                     } catch(err) {
                         //parse error?
@@ -369,7 +382,7 @@ export default {
 
                 this.smon.cpu.data = [];
                 for(let pid in pcpus) {
-                    //look for non-0
+                    //ignore process with all near-0 memory usage
                     let non0 = pcpus[pid].y.find(y=>y>0.5);
                     if(non0) this.smon.cpu.data.push(pcpus[pid]);
                 }
@@ -415,22 +428,28 @@ export default {
                     ]
                 };
 
-                this.smon.memory.data = [];
-                for(let pid in memory) {
-                    //look for non-0
-                    let non0 = memory[pid].y.find(y=>y>10); //10MB min
-                    if(non0) this.smon.memory.data.push(memory[pid]);
+                this.smon.memory_rss.data = [];
+                for(let pid in memory_rss) {
+                    //ignore process with all near-0 memory usage
+                    let non0 = memory_rss[pid].y.find(y=>y>0.01); //10MB min 
+                    if(non0) this.smon.memory_rss.data.push(memory_rss[pid]);
                 }
-                this.smon.memory.layout = {
+                this.smon.memory_vsz.data = [];
+                for(let pid in memory_vsz) {
+                    //ignore process with all near-0 memory usage
+                    let non0 = memory_vsz[pid].y.find(y=>y>0.01); //10MB min
+                    if(non0) this.smon.memory_vsz.data.push(memory_vsz[pid]);
+                }
+                this.smon.memory_rss.layout = {
                     title: "Memory Usage (RSS)",
                     xaxis: {
                         range: [begin_date, end_date],
                     },
                     yaxis: {
-                        title: 'MB',
+                        title: 'GB',
                         overlaying: "y",
                         //side: "right",
-                        type: 'log',
+                        //type: 'log',
                     },
                     showlegend: true,
                     //paper_bgcolor: "#000",
@@ -453,9 +472,9 @@ export default {
                             type: 'rect',
                             //xref: 'paper',
                             x0: begin_date,
-                            y0: this.smon.info.memory_requested/(1000*1000)*0.95,
+                            y0: this.smon.info.memory_requested/(1000*1000*1000)*0.95,
                             x1: end_date,
-                            y1: this.smon.info.memory_requested/(1000*1000),
+                            y1: this.smon.info.memory_requested/(1000*1000*1000),
                             fillcolor: 'rgba(255, 0, 0, 0.5)',
                             line: {
                                 width: 0,
@@ -464,6 +483,10 @@ export default {
                 
                     ]
                 };
+                this.smon.memory_vsz.layout = Object.assign({}, this.smon.memory_rss.layout, {
+                    title: "Virtual Memory Usage (VSZ)",
+                });
+
                 this.loading = false;
             }).catch(err=>{
                 this.loading = false;

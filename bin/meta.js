@@ -13,6 +13,9 @@ const logger = winston.createLogger(config.logger.winston);
 const db = require('../api/models');
 const common = require('../api/common');
 
+//TODO - don't let anything write to stdout other than the meta.json.
+//better option is to specify where to write it, and write to that file
+config.mongoose_debug = false;
 
 //suppress non error out
 config.logger.winston.transports[0].level = 'error';
