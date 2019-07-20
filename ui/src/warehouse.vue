@@ -59,22 +59,20 @@ background-color: #f9f9f9;
 color: #555;
 font-size: 14px;
 }
+.select2-container, .form-control {
+font-size: 14px;
+}
+.dropdown-menu {
+font-size: inherit;
+}
 
 /*adjust bootstrap font sizes*/
 .input-group-text {
 font-size: 14px;
 }
 
-.form-control,
-.custom-select {
-font-size: inherit;
-}
-
 legend {
 font-size: 1.1rem;
-}
-.dropdown-menu {
-font-size: inherit;
 }
 /*needed to keep iframe 100% with for view*/
 html,body {
@@ -314,12 +312,13 @@ small {
 font-size: 85%;
 opacity: 0.7;
 }
+
 .col-form-label,
 .form-header {
 text-transform: uppercase;
 opacity: 0.9;
 font-weight: bold;
-font-size: 95%;
+font-size: 13px;
 }
 
 .vs__actions button.clear {
