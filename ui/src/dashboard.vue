@@ -3,6 +3,7 @@
     <sidemenu active="/dashboard"></sidemenu>
     <div class="page-content">
         <h5>Resources</h5>
+        <small>This graph shows number of jobs executed on resources that you have access to</small>
         <!--
         <b-row v-for="resource in resources" :key="resource._id">
             <b-col cols="6">

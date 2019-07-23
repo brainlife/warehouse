@@ -20,7 +20,7 @@
                     <b-col cols="9" style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right; position: relative; z-index: 3">
                             <span class="button" @click="download_app()" title="Download App"><icon name="download" scale="1.25"/></span>
-                            <span class="button" @click="go_github()" title="github"><icon name="brands/github" scale="1.25"/></span>
+                            <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button"" title="github"><icon name="brands/github" scale="1.25"/></span></a>
                             <span class="button" @click="copy()" v-if="app._canedit" title="Copy"><icon name="copy" scale="1.25"/></span>
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
@@ -409,9 +409,11 @@ export default {
             this.$router.push(path);
         },
 
+        /*
         go_github() {
             document.location = "https://github.com/"+this.app.github;
         },
+        */
 
         download_app() {
             var branch = this.app.github_branch||"master";
