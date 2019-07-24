@@ -704,12 +704,10 @@ margin-bottom: 1px;
 
 .new-action {
 background-color: white;
-position: fixed;
+position: sticky;
 bottom: 0px;
 left: 600px;
-right: 0px;
 z-index: 6;
-height: 45px;
 }
 
 .new-action-button {

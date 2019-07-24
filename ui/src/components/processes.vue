@@ -609,11 +609,10 @@ padding-left: 3px;
 margin-left: 0px;
 }
 
-/*
 .button-fixed {
-left: 500px;
+/*left: 500px;*/
+transition: background-color 0.3s, transform 0.5s, box-shadow 0.5s, opacity 0.5s;
 }
-*/
 
 .table-header th {
 padding: 8px 0px;
