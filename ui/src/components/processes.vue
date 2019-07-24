@@ -4,9 +4,8 @@
     <p v-if="!instances" class="loading"><icon name="cog" spin scale="1.5"/> Loading..</p>
     <div class="instances" v-if="instances">
         <!--instances list-->
-        <div class="instances-header">
-
-            <b-button-group style="background-color: white;">
+        <div class="instances-header" :style="{width: splitter_pos-200+'px'}">
+            <b-button-group style="background-color: white">
                 <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">
                     <span style="font-size: 80%;">All&nbsp;<b>{{instances.length}}</b></span>
                 </b-button>
@@ -50,44 +49,23 @@
             </div>
         </div>
 
-        <div class="instances-list" ref="instances-list">
+        <div class="instances-list" ref="instances-list" :style="{width: splitter_pos-200+'px'}">
             <!--no instances show help doc-->
             <div v-if="instances.length == 0" style="margin: 20px; opacity: 0.7">
                 <p>Here, you can submit a series of Apps to analyze dataset one subject at a time.</p>
                 <p>Output datasets will be removed within 25 days unless archived.</p>
                 <p>To learn about how to submit processes, please refer to our <a href="https://brainlife.io/docs/user/process/" target="doc">Documentation</a>.</p>
-                <!-- 
-                <a href="https://brainlife.io/docs/user/process/" target="doc">
-                    <b-img src="https://brainlife.io/docs/img/processes.png" width="400px" thumbnail/>  
-                </a>
-                -->
                 <iframe width="360" height="225"
                     src="https://www.youtube.com/embed/u9Qlh0-iaAk" frameborder="0" 
                     allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
             </div>
             <!--show list-->
             <div v-if="instances.length > 0">
                 <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing">
                     <div class="instance-header" :class="instance_class(instance)" @click="toggle_instance(instance)" :id="instance._id+'-header'">
-                        <!--
-                        <div class="instance-status" :class="'instance-status-'+instance.status" style="float: left;">
-                            <statusicon :status="instance.status" :scale="0.6" style="top: -3px"/>
-                        </div>
-                        -->
 
                         <timeago :since="instance.update_date" :auto-update="10" class="date"/>
                         <timeago :since="instance.create_date" :auto-update="10" class="date"/>
-                        <!--
-                        <div v-if="instance == selected" class="process-action instance-info" style="float: right; position: relative; top: -3px; margin-right: 5px;">
-                            <div @click.stop="editdesc(instance)" class="button">
-                                <icon name="edit"/>
-                            </div>
-                            <div @click.stop="remove(instance)" class="button">
-                                <icon name="trash"/>
-                            </div>
-                        </div>
-                        -->
                         <div class="instance-desc">
                             <icon name="robot" v-if="instance.config.rule_subject" style="opacity: 0.5"/>
                             <!--<b>{{instance.name}}</b>-->
@@ -115,11 +93,19 @@
 
         <b-button class="button-fixed" @click="newinstance" title="Create New Process"><icon name="plus" scale="2"/></b-button>     
     </div>
-    <transition   
-        name="fade">
-        <process transition="slide" :project="project" :instance="selected" v-if="selected" class="process" 
-                @updatedesc="updatedesc" @remove="toggle_instance(selected)"/>
-        <p v-if="instances && !selected" class="nosel-note">Please create / select process to open.</p>  
+    <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"/>
+    <!-- oesn't work anymore
+    <p v-if="instances && !selected" class="nosel-note" :style="{left: splitter_pos+10+'px'}"/>{{splitter_pos}} Please create / select process to open.</p>  
+    -->
+    <transition name="fade">
+        <process transition="slide" 
+                :project="project" 
+                :instance="selected" 
+                v-if="selected" 
+                class="process" 
+                @updatedesc="updatedesc" 
+                @remove="toggle_instance(selected)"
+                :style="{left: splitter_pos+10+'px'}"/>
     </transition>
 </div>
 </template>
@@ -154,6 +140,7 @@ export default {
             show: null, //null == all
             
             selected: null,
+            splitter_pos: window.localStorage.getItem("splitter_pos") || 600,
 
             query: "",
             apps: null, //keyed by _id
@@ -229,7 +216,7 @@ export default {
             });
         },
 
-        instance_counts: function() {
+        instance_counts() {
             let counts = {};
 
             this.instances.forEach(i=>{
@@ -242,7 +229,7 @@ export default {
             return counts;
         },
 
-        instance_filter_label: function() {
+        instance_filter_label() {
             if(!this.show) return "All ("+this.instances.length+")";
             return this.capitalize(this.show)+" ("+(this.instance_counts[this.show]||0)+")";
         },
@@ -339,6 +326,29 @@ export default {
             });
         },
 
+        init_splitter() {
+            let splitter = this.$refs.splitter;
+
+            if(!splitter) {
+                console.error("refs.splitter not initialized");
+                return;
+            }
+
+            let start_x;
+            splitter.onpointerdown = e=>{
+                splitter.onpointermove = e=>{
+                    this.splitter_pos = e.clientX + start_x;
+                };
+                splitter.setPointerCapture(e.pointerId);    
+                start_x = e.clientX - this.splitter_pos;
+            };
+            splitter.onpointerup = e=>{
+                window.localStorage.setItem("splitter_pos", this.splitter_pos);
+                splitter.onpointermove = null;
+                splitter.setPointerCapture(e.pointerId);    
+            };
+        },
+
         change_query() {
             this.$refs["instances-list"].scrollTop = 0;
         },
@@ -351,7 +361,6 @@ export default {
             switch(state) {
             case "requested": return "outline-info";
             case "failed": return "outline-danger";
-            //case "all finished": return "outline-success";
             case "finished": return "outline-success";
             case "running": return "outline-primary";
             case "others": return "outline-secondary";
@@ -377,25 +386,9 @@ export default {
                 //if jumping to instance below currently selected, I should adjust current scroll position
                 this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
                 this.selected = instance;
-                /*
-                this.$nextTick(()=>{
-                    this.scrollto(instance);
-                });
-                */
             } else {
                 //close!
                 this.$router.push("/project/"+this.project._id+"/process");
-                /*
-                this.$nextTick(()=>{
-                    //if process header is outside or view, scroll back to it
-                    var elem = document.getElementById(instance._id);
-                    if(elem) { //could go missing
-                        var top = elem.offsetTop;
-                        var area = this.$refs["instances-list"];
-                        if(elem.offsetTop < area.scrollTop) area.scrollTop = top;
-                    }
-                });
-                */
                 this.selected = null;
             }
 
@@ -424,7 +417,6 @@ export default {
                 desc,
                 config: {
                     brainlife: true,
-                    //type: "v2", //deprecated..
                 },
                 group_id: this.project.group_id,
             }).then(res=>{
@@ -461,6 +453,9 @@ export default {
                 this.instances = res.data.instances;
                 this.$nextTick(()=>{
                     ps = new PerfectScrollbar(this.$refs["instances-list"]);
+                    console.log("init_splitter...........");
+                    console.dir(this);
+                    this.init_splitter();
                 });
 
                 this.selected = this.instances.find(it=>it._id == this.$route.params.subid);
@@ -557,7 +552,6 @@ position: fixed;
 height: 110px;
 top: 95px;
 left: 200px;
-width: 400px;
 background-color: #f6f6f6;
 z-index: 1; /*for dropdown menu to go on top*/
 }
@@ -574,11 +568,19 @@ background-color: white;
 position: fixed;
 top: 95px;
 bottom: 0px;
-left: 600px;
 right: 0px;
 background-color: #eee;
 overflow-y: auto;
 overflow-x: hidden;
+}
+
+.splitter {
+position: fixed;
+top: 95px;
+bottom: 0px;
+width: 10px;
+cursor: ew-resize;
+background-color: #eee;
 }
 
 .instance-header {
@@ -722,15 +724,15 @@ display: inline-block;
 .filter.filter-active {
 background-color: #2693ff40;
 }
+/*
 .nosel-note {
 position: fixed;
 top: 95px;
 bottom: 0px;
-left: 700px;
 right: 0px;
 overflow: auto;
 padding: 30px;
 font-size: 125%;
 }
-
+*/
 </style>

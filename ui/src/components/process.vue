@@ -792,6 +792,7 @@ color: #999;
 }
 .task-area {
 padding: 10px;
+padding-left: 1px;
 }
 .instance-action {
 float: right;

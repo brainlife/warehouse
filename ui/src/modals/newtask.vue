@@ -117,7 +117,9 @@
         
         <configform :spec="app.config" v-model="config"/>
 
-        <advanced :app='app' v-model='advanced'></advanced>
+        <advanced :app='app' v-model='advanced'>
+            <configform :spec="app.config" v-model="config" :advanced="true"/>
+        </advanced>
 
         <b-row>
             <b-col cols="3">Notes</b-col>

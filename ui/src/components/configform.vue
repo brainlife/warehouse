@@ -1,6 +1,6 @@
 <template>
 <div>
-    <b-row v-for="(v,idx) in sorted_spec" :key="idx" v-if="v.type && v.type != 'input'">
+    <b-row v-for="(v,idx) in sorted_spec" :key="idx" v-if="v.type && v.type != 'input' && advanced == v.advanced">
         <b-col cols="3" class="text-muted">{{v.id}} <span v-if="!v.optional">*</span></b-col>
         <b-col>
             <b-form-group>
@@ -47,13 +47,11 @@
 <script>
 import Vue from 'vue'
 export default {
-    props: [ 'spec', 'value' ],
+    props: [ 'spec', 'value', 'advanced' ],
     mounted: function() {
-        console.log("setting defaults");
         for(var k in this.spec) {
             var v = this.spec[k];
             if(v.type && v.type != "input" && this.value[k] === undefined) {
-                console.log(k, v.default);
                 Vue.set(this.value, k, v.default);
             }
         }

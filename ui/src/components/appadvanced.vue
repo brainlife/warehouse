@@ -11,6 +11,8 @@
     </b-row>
     
     <div v-if="show">
+        <slot/>
+        <hr>
         <b-row>
             <b-col cols="3" class="text-muted">Preferred Resource</b-col>
             <b-col>
@@ -54,7 +56,6 @@ export default {
             service: this.app.github
         }})
         .then(res => {
-
             this.preferrable_resources = res.data.considered.map(resource => {
                 return {
                     value: resource.id,
@@ -64,9 +65,6 @@ export default {
             this.preferrable_resources.unshift({ value: null, text: "(None)" });
             this.preferrable_resources.sort((a, b) => a.score > b.score);
 
-            //this.preferred_resource = this.value.preferred_resource; //leave it none
-            //if(!this.value.preferred_resource && res.data.resource) this.preferred_resource = res.data.resource._id;
-            
             return this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', { headers: { Authorization: null } });
         })
         .then(res => {

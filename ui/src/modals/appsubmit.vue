@@ -37,15 +37,6 @@
                             :required="true"
                             placeholder="Select Project" 
                             @input="change_project(input, ps)" style="margin-bottom: 5px;"/>
-    <!--
-                        <select2 
-                            v-if="ps.project" v-model="ps.dataset" 
-                            :dataAdapter="debounce_fetch_datasets(input, ps)" 
-                            :allowClear="input.optional"
-                            :multiple="false" 
-                            :placeholder="'Select Input Dataset'" 
-                            @input="add_new_input(input)"/>
-    -->
                         <v-select v-if="ps.project" v-model="ps.dataset" :loading="ps.loading" 
                             @search="fetch_datasets(input, ps, $event)" 
                             @input="add_new_input(input)"
@@ -96,7 +87,9 @@
             </b-col>
         </b-row>
         
-        <advanced :app='app' v-model='form.advanced'></advanced>
+        <advanced :app='app' v-model='form.advanced'>
+            <configform :spec="app.config" v-model="form.config" :advanced="true"/>
+        </advanced>
     
         <hr>
         <b-row>

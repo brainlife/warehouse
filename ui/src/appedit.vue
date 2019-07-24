@@ -128,7 +128,7 @@ Normally, the App description is automatically pulled from github repo descripti
                         <b-row v-if="param.type == 'integer' || param.type == 'number' || param.type == 'string'">
                             <b-col>
                                 <b-form-group>
-                                    <b-input-group prepend="config.json key">
+                                    <b-input-group prepend="config.json key *">
                                         <b-form-input type="text" v-model="param.id" required/>
                                     </b-input-group>
                                 </b-form-group>
@@ -144,16 +144,26 @@ Normally, the App description is automatically pulled from github repo descripti
 
                                 <b-form-group v-if="param.default !== ''">
                                     <b-form-checkbox v-model="param.readonly">Read Only<br>
-                                    <small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
+                                        <small class="text-muted">Value will be fixed to the default value and user can not change it</small>
+                                    </b-form-checkbox>
                                 </b-form-group>
 
                                 <b-form-group>
                                     <b-form-checkbox v-model="param.optional">Optional Configuration<br>
-                                    <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
+                                        <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small>
+                                    </b-form-checkbox>
                                 </b-form-group>
 
                                 <b-form-group v-if="param.type == 'string'">
-                                    <b-form-checkbox v-model="param.multiline">Multiline</b-form-checkbox>
+                                    <b-form-checkbox v-model="param.multiline">Multi-line<br>
+                                        <small class="text-muted">Allow user to enter text in multiple line</small>
+                                    </b-form-checkbox>
+                                </b-form-group>
+
+                                <b-form-group v-if="param.optional || param.default">
+                                    <b-form-checkbox v-model="param.advanced">Advanced Option<br>
+                                        <small class="text-muted">Show this option under <b>advanced</b> configuration section.</small>
+                                    </b-form-checkbox>
                                 </b-form-group>
 
                                 <div v-if="!param.readonly && (param.type == 'number' || param.type == 'integer')">
@@ -219,6 +229,11 @@ Normally, the App description is automatically pulled from github repo descripti
                                         <b-form-checkbox v-model="param.optional">Optional Configuration<br>
                                         <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
                                     </b-form-group>
+                                    <b-form-group v-if="param.optional || param.default">
+                                        <b-form-checkbox v-model="param.advanced">Advanced Option<br>
+                                            <small class="text-muted">Show this option under <b>advanced</b> configuration section.</small>
+                                        </b-form-checkbox>
+                                    </b-form-group>
                                 </b-col>
                                 <b-col sm="7">
                                     <div class="text-muted">Description</div>
@@ -246,13 +261,13 @@ Normally, the App description is automatically pulled from github repo descripti
                                 </b-row>
                             </b-card>
                             <br>
-                            <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm">Add Enum Option</b-button>
+                            <b-button @click="param.options.push({ desc: '', label: '', value: '' })" size="sm" variant="outline-secondary">Add Enum Option</b-button>
                         </div>
                     </b-card>
                 </div>
             </div>
             <p>
-                <b-dropdown size="sm" text="Add Configuration Parameter" variant="secondary">
+                <b-dropdown size="sm" text="Add Configuration Parameter">
                     <b-dropdown-item @click="add_param('string')">String</b-dropdown-item>
                     <b-dropdown-item @click="add_param('number')">Number</b-dropdown-item>
                     <b-dropdown-item @click="add_param('boolean')">Boolean</b-dropdown-item>
@@ -295,7 +310,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                         </div>
                                     </div>
                                     <b-form-checkbox v-model="input.optional">
-                                        Optional 
+                                        Optional Configuration
                                         <small class="text-muted">user can submit this App without this input specified</small>
                                     </b-form-checkbox>
                                     <b-form-checkbox v-model="input.multi">
@@ -795,6 +810,7 @@ export default {
                 id: '', 
                 type, 
                 placeholder: '', 
+                advanced: false,
                 desc: '', 
                 default: '', 
                 _order: max_order + 1, 
