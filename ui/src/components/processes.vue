@@ -140,7 +140,7 @@ export default {
             show: null, //null == all
             
             selected: null,
-            splitter_pos: window.localStorage.getItem("splitter_pos") || 600,
+            splitter_pos: parseInt(window.localStorage.getItem("splitter_pos"))||600,
 
             query: "",
             apps: null, //keyed by _id
@@ -237,6 +237,13 @@ export default {
     },
 
     mounted: function() {
+        /*
+        let pos = window.localStorage.getItem("splitter_pos");
+        if(pos) {
+            console.log("updating splitter_pos", pos);
+            this.splitter_pos = pos;
+        }
+        */
         this.load();
     },
 
@@ -338,6 +345,7 @@ export default {
             splitter.onpointerdown = e=>{
                 splitter.onpointermove = e=>{
                     this.splitter_pos = e.clientX + start_x;
+                    if(this.splitter_pos < 400) this.splitter_pos = 400;
                 };
                 splitter.setPointerCapture(e.pointerId);    
                 start_x = e.clientX - this.splitter_pos;
@@ -375,6 +383,7 @@ export default {
 
         scrollto(instance) {
             var elem = document.getElementById(instance._id);
+            if(!elem) return; //sometime user might be selecting instance that's not listed in the list due to filtering
             var top = elem.offsetTop;
             if (this.$refs["instances-list"]) {
                 this.$refs["instances-list"].scrollTop = top;
@@ -453,8 +462,8 @@ export default {
                 this.instances = res.data.instances;
                 this.$nextTick(()=>{
                     ps = new PerfectScrollbar(this.$refs["instances-list"]);
-                    console.log("init_splitter...........");
-                    console.dir(this);
+                    //console.log("init_splitter...........");
+                    //console.dir(this);
                     this.init_splitter();
                 });
 
@@ -554,7 +563,12 @@ top: 95px;
 left: 200px;
 background-color: #f6f6f6;
 z-index: 1; /*for dropdown menu to go on top*/
+overflow: hidden;
 }
+.instances-header .btn {
+padding: .3rem .4rem;
+}
+
 .instances-list {
 position: fixed;
 bottom: 0px;
@@ -581,8 +595,11 @@ bottom: 0px;
 width: 10px;
 cursor: ew-resize;
 background-color: #eee;
+transition: background-color 0.3s;
 }
-
+.splitter:hover {
+background-color: #ddd;
+}
 .instance-header {
 border-bottom: 1px solid rgba(0,0,0,0.1);
 padding: 4px 8px;

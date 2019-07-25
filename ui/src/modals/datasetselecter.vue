@@ -88,10 +88,10 @@ export default {
     mounted() {
         this.$root.$on("datasetselecter.open", ()=>{
             if(!this.$refs.modal) return console.log("received datasetselecter.open but this.$refs.modal not yet initialized");
-            if(!this.$refs.psel) return console.log("received datasetselecter.open but this.$refs.psel not yet initialized");
             this.project = null;
             this.$refs.modal.show()
-            Vue.nextTick(function () {
+            Vue.nextTick(()=>{
+                if(!this.$refs.psel) return console.log("received datasetselecter.open but this.$refs.psel not yet initialized");
                 this.$refs.psel.load_projects();
             })
         });

@@ -166,10 +166,6 @@
         </div>
     </div>
     <!--make sure the bottom end of task-area won't be overwrapped-->
-    <br>
-    <br>
-    <br>
-    <br>
 
     <div class="new-action">
         <b-row no-gutters>
@@ -344,7 +340,7 @@ export default {
         scrollto(id) {
             var header = document.getElementsByClassName("instance-active")[0];
             var elem = document.getElementById(id);
-            if(!elem) return; //maybe not loaded yet?
+            if(!elem || !header) return; //maybe not loaded yet?
             var top = elem.offsetTop-header.clientHeight;
             this.$refs.process.scrollTop = top;
         },
@@ -706,7 +702,6 @@ margin-bottom: 1px;
 background-color: white;
 position: sticky;
 bottom: 0px;
-left: 600px;
 z-index: 6;
 }
 
