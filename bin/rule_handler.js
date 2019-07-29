@@ -351,7 +351,8 @@ function handle_rule(rule, cb) {
                 console.log(JSON.stringify(query, null, 4));
                 db.Datasets.find(query)
                 .populate('datatype')
-                .sort("create_date")
+                .sort("-create_date")
+                .select("project prov.task._id prov.output_id prov.subdir datatype meta datatype_tags tags")
                 .lean()
                 .exec((err, datasets)=>{
                     if(err) return next_input(err);
@@ -568,7 +569,7 @@ function handle_rule(rule, cb) {
 
                     function canuse_source() {
                         var task = null;
-                        if(input.prov && input.prov.task_id) task = tasks[input.prov.task_id];
+                        if(input.prov && input.prov.task && input.prov.task._id) task = tasks[input.prov.task._id];
                         if(isalive(task)) {
                             rlogger.debug("found the task generated the input dataset for output:"+input.prov.output_id);
 
@@ -582,7 +583,7 @@ function handle_rule(rule, cb) {
                                 task_id: task._id,
                                 subdir: input.prov.subdir,
                                 dataset_id: input._id,
-                                prov: null, //remove dataset prov
+                                //prov: null, //remove dataset prov
                                 keys,
 
                                 files: output_detail.files, //needed by process_input_config to map to correct output
@@ -655,7 +656,7 @@ function handle_rule(rule, cb) {
                     if(!task_stage) return next("failed to submit staging task");
                     next_tid++;
 
-                    //reset task_id 
+                    //reset task_id  (TODO - what is this for?)
                     _app_inputs.forEach(input=>{
                         if(!input.task_id) input.task_id = task_stage._id;
                     });

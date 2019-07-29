@@ -122,13 +122,14 @@ router.get('/:id/badge', (req, res, next)=>{
 });
 
 //experimental
+//   used by: ui dashboard
 router.get('/:id/metrics', /*jwt({secret: config.express.pubkey, credentialsRequired: false}),*/ (req, res, next)=>{
     db.Apps.findById(req.params.id).select('github').lean().exec((err, app)=>{
         if(err) return next(err);
         if(!app) return next("no such app");
         let service = common.sensu_name(app.github);
         request.get({url: config.metrics.api+"/render", qs: {
-            target: "prod.amaretti.service."+service,
+            target: config.metrics.service_prefix+"."+service,
             format: "json",
             noNullPoints: "true"
         }, json: true }, (err, _res, json)=>{
@@ -162,6 +163,7 @@ router.get('/:id/metrics', /*jwt({secret: config.express.pubkey, credentialsRequ
  *
  * @apiParam {String} [github]   Github org/name
  * @apiParam {String} [github_branch]   Github default branch/tag name
+ * @apiParam {String} [deprecated_by]   App ID that this App was deprecated by
  *
  * @apiParam {Object} [config]   configuration template
  *
@@ -252,6 +254,8 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiParam {String[]} [projects]  List of project IDs that this app should be exposed in 
  *
  * @apiParam {String} [dockerhub]  
+ * @apiParam {String} [deprecated_by]   App ID that this App was deprecated by
+ * @apiParam {Boolean} [removed]  Set it to true if this App is removed
  *
  * @apiParam {String[]} [admins]  List of admins (auth sub)
  *
@@ -293,9 +297,10 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     case "outputs":
                     case "projects":
                     case "retry":
-                    //case "references":
                     case "removed":
+                    case "deprecated_by":
                         app[k] = req.body[k];    
+                        if(req.body[k] === null) app[k] = undefined; //remove 
                         break;
                     default:
                         logger.debug("can't update %s", k);
@@ -366,7 +371,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiGroup App
  * @api {delete} /app/:id
  *                              Remove registered app (only by the user registered it)
- * @apiDescription              Mark the application as removed
+ * @apiDescription              Mark the application as removed (redundant with put?)
  *
  * @apiHeader {String} authorization 
  *                              A valid JWT token "Bearer: xxxxx"

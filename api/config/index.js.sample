@@ -67,6 +67,8 @@ exports.metrics = {
         prefix: "dev.warehouse", 
     },
 
+    service_prefix: "dev.amaretti.service",
+    
     //graphite api (https://graphite-api.readthedocs.io/en/latest/api.html#the-metrics-api)
     //curl http://10.0.0.10/metrics/find?query=test.*
     //curl -o test.png http://10.0.0.10/render?target=prod.amaretti.service.*&height=800&width=600 

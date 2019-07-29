@@ -75,9 +75,23 @@ exports.validate_projects = function(user, project_ids, cb) {
     });
 }
 
+function escape_dot(obj) {
+    if(typeof obj == "object") {
+        for(let key in obj) {
+            escape_dot(obj[key]);
+            if(key.includes(".")) {
+                let newkey = key.replace(/\./g, '-');
+                obj[newkey] = obj[key];
+                delete obj[key];
+            }
+        }
+    }
+    return obj;
+}
+
 //TODO should inline this?
 function register_dataset(task, output, product, cb) {
-    new db.Datasets({
+    db.Datasets.create({
         user_id: task.user_id,
         project: output.archive.project,
         desc: output.archive.desc,
@@ -89,17 +103,17 @@ function register_dataset(task, output, product, cb) {
 
         //status: "waiting",
         status_msg: "Waiting for the archiver ..",
-        product,
-        
+        product: escape_dot(product),
+
         prov: {
-            task, 
-            output_id: output.id, 
+            task,
+            output_id: output.id,
             subdir: output.subdir, //optional
 
             instance_id: task.instance_id, //deprecated use prov.task.instance_id
             task_id: task._id, //deprecated. use prov.task._id
         },
-    }).save(cb); 
+    }, cb);
 }
 
 //wait for a task to terminate .. finish/fail/stopped/removed
@@ -171,12 +185,13 @@ exports.archive_task_outputs = async function(task, outputs, cb) {
     //get all project ids set by user
     let project_ids = [];
     outputs.forEach(output=>{
-        if(output.archive) project_ids.push(output.archive.project);
+        if(output.archive && !~project_ids.indexOf(output.archive.project)) project_ids.push(output.archive.project);
     });
     
     //archive_task_outputs handles multiple output datasets, but they should all belong to the same project.
     //if not, app-archive will fail..
-    if(project_ids.length != 1) return cb("archive_task_outputs can't handle request with mixed projects");
+    if(project_ids.length == 0) return cb(); //nothing to archive?
+    if(project_ids.length > 1) return cb("archive_task_outputs can't handle request with mixed projects");
     let project = await db.Projects.findById(project_ids[0]);
     let storage = project.storage||config.archive.storage_default;
     let storage_config = project.storage_config||config.archive.storage_config;
@@ -240,7 +255,6 @@ exports.archive_task_outputs = async function(task, outputs, cb) {
                 });
 
                 //note: archive_task_id is set by event_handler while setting other things like status, desc, status_msg, etc..
-
                 logger.info("submitted archive_task:"+archive_task.task._id);
                 cb(null, datasets, archive_task.task);
             } catch(err) {
@@ -711,7 +725,7 @@ exports.update_project_stats = async function(group_id, cb) {
         let resources = await rp.get({
             url: config.amaretti.api+"/task/resource_usage", json: true,
             qs: {
-                find: JSON.stringify({status: {$ne: "finished"}, _group_id: group_id}),
+                find: JSON.stringify({/*status: {$ne: "finished"},*/ _group_id: group_id}),
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });

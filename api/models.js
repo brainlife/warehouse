@@ -375,6 +375,7 @@ datasetSchema.index({datatype: 1, removed: 1}); //for searching projects that pr
 //for some reason..  dataset query can't use the index that has "meta.run".. sort index has to match exactly?
 datasetSchema.index({'meta.subject': 1, 'meta.session': 1, 'meta.run': 1, create_date: -1});
 datasetSchema.index({'meta.subject': 1, 'meta.session': 1, create_date: -1}); 
+datasetSchema.index({create_date: -1});  //for rule_handler- finding input
 
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 
@@ -498,6 +499,7 @@ var appSchema = mongoose.Schema({
 
         optional: { type: Boolean, default: false}, //input is optional (false for arra means requires at least one)
         multi: { type: Boolean, default: false}, //array input
+        advanced: { type: Boolean, default: false}, //advanced option (show under advanced section)
     })],
 
     //output files for this application
@@ -523,6 +525,7 @@ var appSchema = mongoose.Schema({
     },
     
     removed: { type: Boolean, default: false} ,
+    deprecated_by: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'}, //if set, this app is deprecated
 
     create_date: { type: Date, default: Date.now },
 }, {minimize: false}); //to keep empty config{} from disappearing
