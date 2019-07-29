@@ -14,7 +14,7 @@
 
         <b-form-group label="App *" horizontal>
             <p class="text-muted">Submit the following App on all matching subjects.</p>
-            <v-select required v-model="rule.app" label="name" :filterable="false" :options="apps" @search="search_app" placeholder="Please enter App name to search">
+            <v-select required v-model="rule.app" label="name" :filterable="false" :options="search_apps" @search="search_app" placeholder="Please enter App name to search">
                 <template slot="no-options">please enter App name / desc to search</template>
                 <template slot="option" slot-scope="app">
                     <app :app="app" :compact="true" :clickable="false"/>
@@ -147,7 +147,7 @@
 
     <div class="page-footer">
         <b-button type="button" @click="cancel">Cancel</b-button>
-        <b-button type="submit" variant="primary">Submit</b-button>
+        <b-button type="submit" variant="primary" :disabled="!rule.app">Submit</b-button>
     </div>
 </b-form>
 </template>
@@ -161,9 +161,12 @@ import tageditor from '@/components/tageditor'
 import projectselecter from '@/components/projectselecter'
 import configform from '@/components/configform'
 
+import search_app_mixin from '@/mixins/searchapp'
+
 let debounce = null;
 
 export default {
+    mixins: [ search_app_mixin ],
     props: {
         value: { type: Object },
         //new_output_tags: { type: Array }, //output_datasets tags for new output
@@ -176,10 +179,13 @@ export default {
     data() {
         return {
             rule: {
+                /*
                 app: {
                     inputs: [],
                     outputs: [],
                 },
+                */
+                app: null, 
                 input_tags: {},
                 output_tags: {},
                 archive: {},
@@ -195,7 +201,6 @@ export default {
 
                 branch: null,
             },
-            apps: [],
             ready: false,
             input_dataset_tags: {},
             output_dataset_tags: {},
@@ -357,6 +362,9 @@ export default {
 
         ensure_ids_exists() {
             if(!this.rule.app) return;
+            
+            //if(!this.rule.app.inputs) this.rule.app.inputs = [];
+            //if(!this.rule.app.outputs) this.rule.app.outputs = [];
 
             //ensure input.id exists on various objects (if not set)
             this.rule.app.inputs.forEach(input=>{
@@ -442,36 +450,9 @@ export default {
             this.$emit("submit", rule);
         },
 
-        search_app(search, loading) {
-            loading(true);
-            clearTimeout(debounce);
-            debounce = setTimeout(()=>{
-                this.$http.get('app', {params: {
-                    find: JSON.stringify({
-                        $or: [
-                            { name: {$regex: search, $options: 'i' }},
-                            { desc: {$regex: search, $options: 'i' }},
-                            { service: {$regex: search, $options: 'i' }},
-
-                            //$text index search can't do substring search, which is not very intuitive
-                            //https://stackoverflow.com/questions/24343156/mongodb-prefix-wildcard-fulltext-search-text-find-part-with-search-string
-                            //{ '$text': {'$search': search} },
-                        ],
-                        removed: false,
-                    }),
-                    populate: 'inputs.datatype outputs.datatype contributors', //to display app detail
-                    limit: 500, //TODO - this is not sustailable
-                }})
-                .then(res=>{
-                    this.apps = res.data.apps;
-                    //console.log("search result:", search, this.apps);
-                    loading(false);
-                });
-            }, 300);
-        },
 
         load_dataset_tags() {
-            
+            if(!this.rule.app) return null;
             this.rule.app.inputs.forEach(input=>{
                 input.datatype_id = input.datatype._id || input.datatype; //parent component passes app.input without populating datatype sometimes?
                 this.$http.get('dataset/distinct', {params: {

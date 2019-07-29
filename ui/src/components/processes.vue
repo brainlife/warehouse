@@ -555,6 +555,7 @@ left: 200px;
 right: 0px;
 background-color: #bbb;
 }
+
 .instances-header {
 padding: 10px;
 position: fixed;
@@ -563,10 +564,10 @@ top: 95px;
 left: 200px;
 background-color: #f6f6f6;
 z-index: 1; /*for dropdown menu to go on top*/
-overflow: hidden;
 }
+
 .instances-header .btn {
-padding: .3rem .4rem;
+padding: .15rem .3rem;
 }
 
 .instances-list {

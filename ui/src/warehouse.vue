@@ -59,7 +59,9 @@ background-color: #f9f9f9;
 color: #555;
 font-size: 14px;
 }
-.select2-container, .form-control {
+.select2-container, 
+.form-control,
+.custom-select {
 font-size: 14px;
 }
 .dropdown-menu {
@@ -316,7 +318,7 @@ opacity: 0.7;
 .col-form-label,
 .form-header {
 text-transform: uppercase;
-opacity: 0.9;
+opacity: 0.6;
 font-weight: bold;
 font-size: 13px;
 }

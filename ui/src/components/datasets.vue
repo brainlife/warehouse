@@ -18,7 +18,7 @@
                 <b-col cols="10">
                     <b-row>
                         <b-col cols="3"><h4>Datatype</h4></b-col>
-                        <b-col cols="3"><h4>Description</h4></b-col>
+                        <b-col cols="3"><h4>App/Description</h4></b-col>
                         <b-col cols="3"><h4>Create&nbsp;Date</h4></b-col>
                         <b-col cols="3"><h4>Tags</h4></b-col>
                     </b-row>
@@ -54,6 +54,7 @@
                                     <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
+                                    <small style="font-size: 80%;" v-if="dataset.prov && dataset.prov.task && dataset.prov.task.name">{{dataset.prov.task.name}} / </small>
                                     <span style="">{{dataset.desc||'&nbsp;'}}</span>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
@@ -459,7 +460,7 @@ export default {
                     skip: loaded,
                     limit: 250,  //needs to be bigger than the largest dataset per subject (bigger == slower for vue to render)
                     sort: 'meta.subject meta.session -create_date',
-                    select: 'create_date datatype datatype_tags desc size tags meta.subject meta.session meta.run status removed project',
+                    select: 'create_date datatype datatype_tags prov.task.name desc size tags meta.subject meta.session meta.run status removed project',
                 },
                 cancelToken: source.token
             })

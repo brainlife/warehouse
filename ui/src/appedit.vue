@@ -105,7 +105,6 @@ Normally, the App description is automatically pulled from github repo descripti
                 </b-col>
             </b-row>
 
-
             <h4>
                 <a style="float: right;" href="https://brainlife.io/docs/apps/register/#configuration-parameters" target="doc"><icon name="book"/></a>
                 Configuration
@@ -433,7 +432,31 @@ Normally, the App description is automatically pulled from github repo descripti
                 </p>
             </div>
 
+            <hr>
+
+            <b-form-group label="Deprecated By" horizontal>
+                <small>This App has been deprecated(obsoleted) by the following App.</small>
+                <v-select required v-model="app.deprecated_by" label="name" :filterable="false" :options="search_apps" @search="search_app" placeholder="Please enter App name to search(1)">
+                    <template slot="no-options">please enter App name / desc to search (2)</template>
+                    <template slot="option" slot-scope="app">
+                        <app :app="app" :compact="true" :clickable="false"/>
+                    </template>
+                    <template slot="selected-option" slot-scope="app">
+                        {{app.name}}
+                    </template>
+                </v-select>
+                <app v-if="app.deprecated_by" :app="app.deprecated_by" :compact="true" :clickable="false" style="margin-top: 5px;"/>
+            </b-form-group>
+            
+            <b-form-group label="" horizontal>
+                <b-form-checkbox v-if="app._id" v-model="app.removed">Removed <small>This App won't be listed as available Apps, but users can still find it through a direct URL / DOI</small></b-form-checkbox>
+            </b-form-group>
+
             <!--make sure submit area won't cover the Add Output button-->
+            <br>
+            <br>
+            <br>
+            <br>
             <br>
             <br>
             <br>
@@ -474,18 +497,22 @@ import datatypeselecter from '@/components/datatypeselecter'
 import trueorfalse from '@/components/trueorfalse'
 import tageditor from '@/components/tageditor'
 import datatype from '@/components/datatype'
+import app from '@/components/app'
+
+import search_app_mixin from '@/mixins/searchapp'
 
 let debounce;
 
 export default {
+    mixins: [ search_app_mixin ],
     components: { 
         sidemenu, contactlist, 
         pageheader, multiprojectselecter,
-        datatypeselecter, trueorfalse, tageditor, datatype,
+        datatypeselecter, trueorfalse, tageditor, datatype, app,
 
         editor: require('vue2-ace-editor'),
     },
-    data () {
+    data() {
         return {
             app: {
                 config: {},
@@ -872,10 +899,13 @@ export default {
                     console.error(err);
                     this.submitting = false;
                 } else {
+                    let app_submitting = Object({}, this.app);
+                    if(this.app.deprecated_by) app_submitting.deprecated_by = this.app.deprecated_by._id; //deref
+
                     //now ready to submit
                     if(this.app._id) {
                         //update
-                        this.$http.put('app/' + this.app._id, this.app)
+                        this.$http.put('app/' + this.app._id, app_submitting)
                         .then(res=>{
                             this.$router.push("/app/" + this.app._id);
                             this.submitting = false;
@@ -886,7 +916,7 @@ export default {
                         });
                     } else {
                         //new
-                        this.$http.post('app', this.app)
+                        this.$http.post('app', app_submitting)
                         .then(res => {
                             this.$router.push("/app/" + res.data._id);
                             this.submitting = false;

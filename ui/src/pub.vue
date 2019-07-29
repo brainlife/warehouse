@@ -172,7 +172,11 @@
                             </b-col>
                             <b-col cols="3">
                                 <b-card>
-                                    <div class='altmetric-embed' data-badge-type='medium-donut' data-badge-details="right" data-hide-no-mentions="false" :data-doi="pub.doi||config.debug_doi"></div>
+                                    <div class='altmetric-embed' 
+                                        data-badge-type='medium-donut' 
+                                        data-badge-details="right" 
+                                        data-hide-no-mentions="false" 
+                                        :data-doi="pub.doi||config.debug_doi"></div>
                                 </b-card>
                             </b-col>
                         </b-row>

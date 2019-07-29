@@ -58,11 +58,15 @@
                         <p> 
                             <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
                         </p>
-                        <p>
+                        <p v-if="app.doi">
                             <doibadge :doi="app.doi" v-if="app.doi"/>
+                            <div style="padding: 10px 0px; max-width: 200px; text-align: center;"
+                                class='altmetric-embed'
+                                data-badge-type='donut' 
+                                :data-doi="app.doi"></div>
+                                <!--data-hide-no-mentions="true"-->
                         </p>
                         <appstats :info="info" :appid="app._id"/>
-
                     </b-col>
                     <b-col cols="9">
                         <!--input/output-->
@@ -312,10 +316,18 @@ export default {
             this.app = res.data.apps[0];
             if(this.config.user) this.find_resources(this.app.github);
 
+            Vue.nextTick(()=>{
+                console.log("initializing altemtric badge");
+                //re-initialize altmetric badge - now that we have badge <div> placed
+                _altmetric_embed_init(this.$el);
+            });
+
             //then load service info
             return this.$http.get(Vue.config.wf_api+'/service/info', {params: {
                 service: this.app.github,
             }});
+
+
         }).then(res=>{
             this.info = res.data;
 

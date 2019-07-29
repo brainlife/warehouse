@@ -113,7 +113,7 @@ Vue.config.event_ws = apihost_ws+"/api/event";
 Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.auth_signout = "/auth#!/signout";
 Vue.config.productionTip = false;
-Vue.config.debug_doi = "10.25663/bl.p.3";
+Vue.config.debug_doi = "10.25663/bl.p.3"; //o3d publication
 
 //Vue.http.options.root = Vue.config.api; //default root for $http
 axios.defaults.baseURL = Vue.config.api; //default root for $http

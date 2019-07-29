@@ -37,12 +37,10 @@
                     <icon name="times" scale="1.5"/>
                 </div>
             </div>
-            <h4>
-                <div style="display: inline-block; border: 4px solid white; box-shadow: 3px 3px 3px rgba(0,0,0,0.3); background-color: white;">
-                    <div v-if="dataset.meta" style="display: inline-block; padding: 0px 10px; color: #999;">{{dataset.meta.subject}}</div>
-                    <datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
-                </div>
-            </h4>
+            <h5 style="margin-top: 8px;">
+                <span v-if="dataset.meta" style="color: #999;">{{dataset.meta.subject}}</span>&nbsp;
+                <datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+            </h5>
         </div><!--header-->
         <b-tabs class="brainlife-tab" v-model="tab_index">
             <b-tab title="Details">
