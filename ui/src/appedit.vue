@@ -436,8 +436,8 @@ Normally, the App description is automatically pulled from github repo descripti
 
             <b-form-group label="Deprecated By" horizontal>
                 <small>This App has been deprecated(obsoleted) by the following App.</small>
-                <v-select required v-model="app.deprecated_by" label="name" :filterable="false" :options="search_apps" @search="search_app" placeholder="Please enter App name to search(1)">
-                    <template slot="no-options">please enter App name / desc to search (2)</template>
+                <v-select v-model="app.deprecated_by" label="name" :filterable="false" :options="search_apps" @search="search_app" placeholder="Please enter App name to search">
+                    <!--<template slot="no-options">please enter App name / desc to search (2)</template>-->
                     <template slot="option" slot-scope="app">
                         <app :app="app" :compact="true" :clickable="false"/>
                     </template>
@@ -585,11 +585,12 @@ export default {
                         this.ready = true;
                     } else {
                         //finally time to load app to edit
-                        this.$http.get('app', {params: {
-                            find: JSON.stringify({_id: this.$route.params.id}),
-                            limit: 1,
+                        this.$http.get('app/'+this.$route.params.id, {params: {
+                            //find: JSON.stringify({_id: this.$route.params.id}),
+                            //limit: 1,
+                            populate: 'deprecated_by',
                         }}).then(res=>{
-                            this.app = res.data.apps[0];
+                            this.app = res.data;
                             this.convert_config_to_ui();
                             this.load_branches();
                             if(this.$route.params.mode == 'copy') {
@@ -899,7 +900,7 @@ export default {
                     console.error(err);
                     this.submitting = false;
                 } else {
-                    let app_submitting = Object({}, this.app);
+                    let app_submitting = Object.assign({}, this.app);
                     if(this.app.deprecated_by) app_submitting.deprecated_by = this.app.deprecated_by._id; //deref
 
                     //now ready to submit

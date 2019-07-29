@@ -368,7 +368,8 @@ background-color: #007bff;
 color: white;
 }
 .newapps {
-background-color: #2693ff;
+/*background-color: #2693ff;*/
+background-image: linear-gradient(#1966b3, #2693ff);
 padding-bottom: 30px;
 }
 .group-title.colored {

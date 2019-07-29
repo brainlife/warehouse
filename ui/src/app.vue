@@ -13,6 +13,9 @@
     <div v-if="app" class="page-content">
         <div class="header">
             <b-container>
+                <div @click="back()" class="button" style="position: absolute; left: 20px; top: 8px; opacity: 0.7;">
+                    <icon name="angle-left" scale="2"/>
+                </div>
                 <b-row>
                     <b-col cols="3">
                         <appavatar :app="app" style="margin-bottom: 20px;" :width="200" :height="200"/>
@@ -421,6 +424,10 @@ export default {
             this.$router.push(path);
         },
 
+        back() {
+            this.$router.push('/apps');
+        },
+
         /*
         go_github() {
             document.location = "https://github.com/"+this.app.github;
@@ -497,6 +504,8 @@ background-color: white;
 margin-bottom: 30px;
 padding: 15px 0px 0px 0px;
 border-bottom: 1px solid #eee;
+position: sticky;
+top: 0;
 z-index: 2;
 }
 .topic {
