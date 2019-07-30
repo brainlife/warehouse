@@ -12,7 +12,7 @@
                 </b-container>
             </div>
 
-            <h4><b-container>neuro/</b-container></h4> 
+            <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
             <b-container>
                 <b-card-group columns style="margin: 10px;">
                     <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
@@ -21,7 +21,7 @@
                 </b-card-group>
             </b-container>
 
-            <h4><b-container>other</b-container></h4> 
+            <h4 class="header-sticky"><b-container>other</b-container></h4> 
             <b-container>
                 <b-card-group columns style="margin: 10px;">
                     <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="select(datatype)" class="datatype-card">
@@ -36,7 +36,7 @@
         </div>
 
         <div v-if="selected">
-            <div class="header">
+            <div class="header header-sticky">
                 <b-container>
                     <div style="float: right;">
                         <span class="button" @click="edit" v-if="canedit && !editing" title="Edit"><icon name="edit" scale="1.25"/></span>
@@ -46,7 +46,7 @@
                         <datatypetag v-else :datatype="selected" :trimname="!!(~selected.name.indexOf('neuro/'))"/>
                     </h2>
                     <b-form-textarea v-if="editing" v-model="selected.desc" :rows="2"></b-form-textarea>
-                    <p v-else style="opacity: 0.8">{{selected.desc}}</p>
+                    <p v-else style="opacity: 0.6">{{selected.desc}}</p>
                 </b-container>
             </div>
             <br>
@@ -426,6 +426,7 @@ background-color: #eee;
 color: #999;
 margin-bottom: 0px;
 padding: 10px 0px;
+font-size: 20pt;
 }
 .page-content h3 {
 background-color: white;
@@ -436,19 +437,23 @@ margin-bottom: 0px;
 .page-content h4 {
 padding: 15px 20px;
 background-color: white;
-position: sticky;
-top: 0px;
-z-index: 1;
 opacity: 0.8;
 color: #999;
 font-size: 17pt;
 font-weight: bold;
 }
 .header {
-padding: 20px;
+padding: 10px;
 background-color: white;
 border-bottom: 1px solid #eee;
 }
+.header-sticky {
+position: sticky;
+top: 0px;
+z-index: 1;
+box-shadow: 0 0 1px #ccc;
+}
+
 .apps-container {
 display: flex;
 flex-wrap: wrap;

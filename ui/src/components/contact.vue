@@ -89,9 +89,9 @@ export default {
                 return "//www.gravatar.com/avatar/"+md5(this.profile.email)+"?s="+size;  
             } else {
                 //generate avatar for user who doesn't have email set..
-                //return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=22";
-                //return "//www.gravatar.com/avatar/"+md5(this.fullname)+"?d=robohash&s=22";
-                //return "https://api.adorable.io/avatars/22/"+this.fullname.replace(" ", "")+".png";
+                //return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=20";
+                //return "//www.gravatar.com/avatar/"+md5(this.fullname)+"?d=robohash&s=20";
+                //return "https://api.adorable.io/avatars/20/"+this.fullname.replace(" ", "")+".png";
                 var key = (this.fullname||this.email||this.id);
                 return "https://api.adorable.io/avatars/"+size+"/"+key+".png";
             }
@@ -142,20 +142,20 @@ export default {
 <style scoped>
 .contact {
 display: inline-block;
-height: 22px;
+height: 20px;
 margin-right: 10px;
-font-size: 12px;
+font-size: 11px;
 color: #555;
 font-weight: 700;
 white-space: nowrap;
-line-height: 22px;
+line-height: 20px;
 box-shadow: 1px 1px 2px rgba(0,0,0,0.15);
 margin-right: 5px;
 cursor: pointer;
 }
 .contact img {
 float: left;
-height: 22px;
+height: 20px;
 }
 .name, .email {
 display: inline-block;

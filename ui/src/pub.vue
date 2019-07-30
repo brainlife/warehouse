@@ -19,9 +19,6 @@
                             {{pub.name}} 
                         </h4>
                         <p class="text">{{pub.desc}}</p>
-                        <p style="line-height: 200%;">
-                            <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
-                        </p>
                     </b-col>
                 </b-row>
                 <br>
@@ -40,14 +37,14 @@
 
         <!--main content-->
         <b-container>
-            <b-row>
-                <b-col>
-                    <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
-                    <!-- detail -->
-                    <div v-if="tab_index == 0">
+            <b-alert :show="pub.removed" variant="secondary">This publication has been removed</b-alert>
+            <!-- detail -->
+            <div v-if="tab_index == 0">
+                <b-row>
+                    <b-col cols="10">
                         <b-row>
                             <b-col cols="2">
-                                <span class="form-header">Created On</span>
+                                <span class="form-header">Published On</span>
                             </b-col>
                             <b-col>
                                 <p><time>{{new Date(pub.create_date).toLocaleDateString()}}</time></p>
@@ -141,6 +138,7 @@
                                 <br>
                             </b-col>
                         </b-row>
+                        <!--
                         <b-row>
                             <b-col cols="2">
                                 <span class="form-header">Social</span>
@@ -180,6 +178,7 @@
                                 </b-card>
                             </b-col>
                         </b-row>
+                        -->
 
                         <hr>
                         <b-row>
@@ -189,93 +188,109 @@
                                 <vue-disqus shortname="brain-life" :identifier="pub._id"/>
                             </b-col>
                         </b-row>
-                    </div>
 
-                    <div v-if="tab_index > 0">
-                        <!-- release -->
-                        <p style="opacity: 0.7; float: right;"><span style="opacity: 0.5">Released on</span> <time>{{new Date(release.create_date).toLocaleDateString()}}</time></p>
+                    </b-col>
+                    <b-col cols="2">
+                        <p>
+                            <span class="form-header">Topics</span>
+                        </p>
+                        <p style="line-height: 190%;">
+                            <b-badge v-for="topic in pub.tags" :key="topic" class="topic">{{topic}}</b-badge>
+                        </p>
+                        <div class='altmetric-embed' 
+                            data-badge-type='medium-donut' 
+                            data-badge-details="right" 
+                            data-hide-no-mentions="false" 
+                            :data-doi="pub.doi||config.debug_doi"></div>
+                    </b-col>
+                </b-row>
 
-                        <div v-if="dataset_groups">
-                            <span class="button" @click="downscript({})">
-                                <b>{{total.subjects}}</b> Subjects <span style="opacity: 0.2">|</span> 
-                                <b>{{total.count}} Datasets</b> <span v-if="total.size"> ({{total.size|filesize}} Total)</span>
-                                <icon name="download" scale="0.8" style="opacity: 0.5; position: relative; top: -2px;"/> 
+            </div>
+
+            <div v-if="tab_index > 0">
+                <!-- release -->
+                <p style="opacity: 0.7; float: right;"><span style="opacity: 0.5">Released on</span> <time>{{new Date(release.create_date).toLocaleDateString()}}</time></p>
+
+                <div v-if="dataset_groups">
+                    <span class="button" @click="downscript({})">
+                        <b>{{total.subjects}}</b> Subjects <span style="opacity: 0.2">|</span> 
+                        <b>{{total.count}} Datasets</b> <span v-if="total.size"> ({{total.size|filesize}} Total)</span>
+                        <icon name="download" scale="0.8" style="opacity: 0.5; position: relative; top: -2px;"/> 
+                    </span>
+                </div>
+                <div v-else style="opacity: 0.5">Loading ... <icon name="cog" spin/></div>
+
+                <div class="group" v-for="(group, subject) in dataset_groups" :key="subject">
+                    <b-row>
+                        <b-col cols="2">
+                            <span class="button" @click="downscript({'meta.subject': subject})">
+                                <b>{{subject}}</b>
+                                <icon name="download" class="download-subject" scale="0.8"/>
                             </span>
-                        </div>
-                        <div v-else style="opacity: 0.5">Loading ... <icon name="cog" spin/></div>
-
-                        <div class="group" v-for="(group, subject) in dataset_groups" :key="subject">
-                            <b-row>
-                                <b-col cols="2">
-                                    <span class="button" @click="downscript({'meta.subject': subject})">
-                                        <b>{{subject}}</b>
-                                        <icon name="download" class="download-subject" scale="0.8"/>
-                                    </span>
-                                </b-col>
-                                <b-col>
-                                    <div v-for="(datatype, datatype_id) in group.datatypes" :key="datatype_id">
-                                        <b-row v-for="(block, datatype_tags_s) in datatype.datatype_tags" :key="datatype_tags_s" style="margin-bottom: 3px;">
-                                            <div @click="toggle(block, subject, datatype_id, JSON.parse(datatype_tags_s))" class="toggler">
-                                                <div style="width: 20px; display: inline-block;" class="text-muted">
-                                                    <icon name="caret-right" v-if="!block.show"/> 
-                                                    <icon name="caret-down" v-if="block.show"/> 
-                                                </div>
-                                                <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)" :clickable="false"/>
-                                                &nbsp;
-                                                <!--<span class="text-muted">{{datatypes[datatype_id].desc}}</span>-->
-                                                <small class="text-muted" style="float: right;">{{block.count}} datasets <span v-if="block.size">{{block.size|filesize}}</span></small>
-                                            </div>
-                                            <transition name="fadeHeight">
-                                                <b-list-group class="datasets" v-if="block.show && block.datasets">
-                                                    <b-list-group-item v-for="(dataset, idx) in block.datasets" :key="idx" class="dataset" @click="view(dataset._id)">
-                                                        {{dataset.desc}}
-                                                        <span v-if="!dataset.desc" class="text-muted">{{dataset._id}}.tar.gz</span>
-                                                        <tags :tags="dataset.tags"/>
-                                                        <div style="float: right; width: 90px; text-align: right">{{new Date(dataset.create_date).toLocaleDateString()}}</div>
-                                                        <div style="float: right; width: 90px;"><span v-if="dataset.size" class="text-muted">{{dataset.size|filesize}}</span>&nbsp;</div>
-                                                        <div style="float: right; width: 90px;"><span v-if="dataset.download_count" class="text-muted"><icon name="download"/> {{dataset.download_count}} times</span>&nbsp;</div>
-                                                        <!--<td>{{dataset.storage}}</td>-->
-                                                    </b-list-group-item>
-                                                </b-list-group>
-                                            </transition>
-                                        </b-row>
+                        </b-col>
+                        <b-col>
+                            <div v-for="(datatype, datatype_id) in group.datatypes" :key="datatype_id">
+                                <b-row v-for="(block, datatype_tags_s) in datatype.datatype_tags" :key="datatype_tags_s" style="margin-bottom: 3px;">
+                                    <div @click="toggle(block, subject, datatype_id, JSON.parse(datatype_tags_s))" class="toggler">
+                                        <div style="width: 20px; display: inline-block;" class="text-muted">
+                                            <icon name="caret-right" v-if="!block.show"/> 
+                                            <icon name="caret-down" v-if="block.show"/> 
+                                        </div>
+                                        <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(datatype_tags_s)" :clickable="false"/>
+                                        &nbsp;
+                                        <!--<span class="text-muted">{{datatypes[datatype_id].desc}}</span>-->
+                                        <small class="text-muted" style="float: right;">{{block.count}} datasets <span v-if="block.size">{{block.size|filesize}}</span></small>
                                     </div>
-                                </b-col>
-                            </b-row>
-                        </div>
-
-                        <hr>
-
-                        <!--apps-->
-                        <div>
-                            <p style="opacity: 0.8;">
-                                The following Apps were used to generate the files in this release.
-                            </p>
-                            <div v-for="rec in apps" :key="rec.app.doi" style="width: 33%; float: left;">
-                                <div style="margin-right: 10px; margin-bottom: 10px; position: relative;">
-                                    <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
-                                </div>
+                                    <transition name="fadeHeight">
+                                        <b-list-group class="datasets" v-if="block.show && block.datasets">
+                                            <b-list-group-item v-for="(dataset, idx) in block.datasets" :key="idx" class="dataset" @click="view(dataset._id)">
+                                                {{dataset.desc}}
+                                                <span v-if="!dataset.desc" class="text-muted">{{dataset._id}}.tar.gz</span>
+                                                <tags :tags="dataset.tags"/>
+                                                <div style="float: right; width: 90px; text-align: right">{{new Date(dataset.create_date).toLocaleDateString()}}</div>
+                                                <div style="float: right; width: 90px;"><span v-if="dataset.size" class="text-muted">{{dataset.size|filesize}}</span>&nbsp;</div>
+                                                <div style="float: right; width: 90px;"><span v-if="dataset.download_count" class="text-muted"><icon name="download"/> {{dataset.download_count}} times</span>&nbsp;</div>
+                                                <!--<td>{{dataset.storage}}</td>-->
+                                            </b-list-group-item>
+                                        </b-list-group>
+                                    </transition>
+                                </b-row>
                             </div>
-                            <br clear="both">
-                            <br>
-                        </div>
+                        </b-col>
+                    </b-row>
+                </div>
 
-                        <!--citations-->
-                        <div>
-                            <p style="opacity: 0.8;">
-                                Please use the following citations to cite these Apps.
-                            </p>
-                            <div class="box">
-                                <div v-for="rec in apps" :key="rec.app.doi">
-                                    <citation :doi="rec.app.doi"/>
-                                </div>
-                            </div>
-                            <br>
+                <hr>
+
+                <!--apps-->
+                <div>
+                    <p style="opacity: 0.8;">
+                        The following Apps were used to generate the files in this release.
+                    </p>
+                    <div v-for="rec in apps" :key="rec.app.doi" style="width: 33%; float: left;">
+                        <div style="margin-right: 10px; margin-bottom: 10px; position: relative;">
+                            <app :app="rec.app" height="270px" :branch="rec.service_branch||'master'"></app>
                         </div>
                     </div>
-                    
-                </b-col>
-            </b-row>
+                    <br clear="both">
+                    <br>
+                </div>
+
+                <!--citations-->
+                <div>
+                    <p style="opacity: 0.8;">
+                        Please use the following citations to cite these Apps.
+                    </p>
+                    <div class="box">
+                        <div v-for="rec in apps" :key="rec.app.doi">
+                            <citation :doi="rec.app.doi"/>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+
+
         </b-container>
         <br>
         <br>
@@ -530,6 +545,9 @@ background-color: white;
 margin-bottom: 30px;
 padding: 15px 0px 0px 0px;
 border-bottom: 1px solid #eee;
+position: sticky;
+top: 0px;
+z-index: 1;
 }
 .topic {
 padding: 6px; 
