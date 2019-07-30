@@ -300,7 +300,7 @@ export default {
                         task,
                         id: output.id,
                         idx: datasets.length, //for filtered list to find the index (may not be the same as did if dataset is removed)
-                        dataset_id: output.dataset_id, //only set if it's archived (or from stage in)
+
                         datatype: output.datatype,
                         datatype_tags: output.datatype_tags,
                         desc: output.desc,
@@ -309,6 +309,10 @@ export default {
                         create_date: output.create_date,
                         subdir: output.subdir, //set if the dataset is stored under subdir of task_dir
                         files: output.files, //set if output file mapping (file id=>path under the task_dir/subdir)
+
+                        //only set if it's archived (or from stage in)
+                        dataset_id: output.dataset_id, 
+                        project: output.project,
                     });
                 });
             }); 

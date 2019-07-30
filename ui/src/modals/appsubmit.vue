@@ -444,6 +444,8 @@ export default {
                 }); 
             }).then(res=>{
                 instance = res.data;
+
+                //TODO - similar code exists on UI cli/util.js runApp()
                 return this.$http.post('dataset/stage', {
                     instance_id: instance._id,
                     dataset_ids: all_dataset_ids,
@@ -472,6 +474,8 @@ export default {
                     //for each input, find dataset that's staged and use dataset information from it
                     this.form.inputs[input_id].forEach(ps=>{
                         let dataset = download_task.config._outputs.find(output=>output.dataset_id == ps.dataset.id);
+                        console.log("using download_task _outputs dataset info");
+                        console.dir(dataset);
                         config._inputs.push(
                             Object.assign({}, dataset, {
                                 id: input_id,

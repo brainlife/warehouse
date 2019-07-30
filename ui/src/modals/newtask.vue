@@ -80,7 +80,7 @@
                             <v-select :onChange="change_input(input)" 
                                 placeholder="Select Input Dataset"
                                 v-model="input.selected[idx]" 
-                                :options="vsel(filter_datasets(input))">
+                                :options="wrap_with_label(filter_datasets(input))">
                                 <span slot="no-options">No dataset available for this datatype / tags</span>
 
                                 <template slot="option" slot-scope="option">
@@ -231,8 +231,6 @@ export default {
             //receive info from client
             this.datasets = info.datasets;
             this.project = info.project;
-
-            console.log("requested to open newtask modal");
             this.open = true;
 
             //reset form
@@ -323,7 +321,6 @@ export default {
 
     methods: {
         update_lists() {
-            console.log("update lists");
             //apply filter
             if(!this.filter) this.apps.filtered = this.apps.all.sort((a,b)=>a.name - b.name);
             let l_filter = this.filter.toLowerCase();
@@ -353,7 +350,7 @@ export default {
             this.app.inputs.forEach(input=>{
                 var input_copy = Object.assign({
                     selected: [null], 
-                    options: this.vsel(this.filter_datasets(input)),
+                    options: this.wrap_with_label(this.filter_datasets(input)),
                 }, input);
                 Vue.set(this.inputs, input.id, input_copy);
                 this.preselect_single_items(input_copy);
@@ -438,7 +435,7 @@ export default {
             return lib.filter_datasets(this.datasets, input);
         },
 
-        vsel(datasets) {
+        wrap_with_label(datasets) {
             return datasets.map(dataset=>{
                 return { label: this.compose_label(dataset), dataset };
             });
@@ -478,10 +475,13 @@ export default {
                         meta: dataset.meta,
                         tags: dataset.tags,
                         datatype: dataset.datatype,
-                        dataset_id: dataset._id,
                         datatype_tags: dataset.datatype_tags,
-                        project: dataset.project,
                         keys,
+
+                        //only set if input is staged in
+                        //dataset_id: dataset._id,
+                        project: dataset.project,
+                        dataset_id: dataset.dataset_id,
                     });
 
                     //aggregating meta from all inputs -  if 2 inputs has different value for the same meta, keep the first one..
