@@ -375,7 +375,7 @@ datasetSchema.index({datatype: 1, removed: 1}); //for searching projects that pr
 //for some reason..  dataset query can't use the index that has "meta.run".. sort index has to match exactly?
 datasetSchema.index({'meta.subject': 1, 'meta.session': 1, 'meta.run': 1, create_date: -1});
 datasetSchema.index({'meta.subject': 1, 'meta.session': 1, create_date: -1}); 
-datasetSchema.index({create_date: -1});  //for rule_handler- finding input
+//datasetSchema.index({create_date: -1});  //for rule_handler- finding input
 
 exports.Datasets = mongoose.model('Datasets', datasetSchema);
 

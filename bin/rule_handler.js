@@ -347,15 +347,23 @@ function handle_rule(rule, cb) {
                 if(neg_tags.length > 0) tag_query.push({datatype_tags: {$nin: neg_tags}});
                 if(tag_query.length > 0) query.$and = tag_query;
 
-                console.log("finding input-------------------");
-                console.log(JSON.stringify(query, null, 4));
+                //console.log("finding input-------------------");
+                //console.log(JSON.stringify(query, null, 4));
                 db.Datasets.find(query)
                 .populate('datatype')
-                .sort("-create_date")
-                .select("project prov.task._id prov.output_id prov.subdir datatype meta datatype_tags tags")
+                //.sort("-create_date") //this add whopping 4 seconds to the query sometimes
+                .select("create_date project prov.task._id prov.output_id prov.subdir datatype meta datatype_tags tags")
                 .lean()
                 .exec((err, datasets)=>{
                     if(err) return next_input(err);
+
+                    //sorting myself is *much* faster than letting mongo do it.. I am not sure why.. maybe -create_date index was broken?
+                    //make new dataset first
+                    datasets.sort((a,b)=>{
+                        if(a.create_date > b.create_date) return -1;
+                        if(a.create_date < b.create_date) return 1;
+                        return 0;
+                    })
                     datasets.forEach(dataset=>{
                         if(!input._datasets[dataset.meta.subject]) input._datasets[dataset.meta.subject] = [];
                         input._datasets[dataset.meta.subject].push(dataset);
