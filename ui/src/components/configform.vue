@@ -47,7 +47,14 @@
 <script>
 import Vue from 'vue'
 export default {
-    props: [ 'spec', 'value', 'advanced' ],
+    props: {
+        spec: Object,
+        value: Object,
+        advanced: {
+            type: Boolean,
+            default: false,
+        }
+    },
     mounted: function() {
         for(var k in this.spec) {
             var v = this.spec[k];

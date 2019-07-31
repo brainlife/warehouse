@@ -43,7 +43,7 @@
                         </p>
                     </b-col>
                     <b-col cols="2">
-                        <div style="text-align: center">
+                        <div style="text-align: center; position: relative; top: -5px;">
                             <b-btn @click="execute" variant="primary"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
                         </div>
                     </b-col>
