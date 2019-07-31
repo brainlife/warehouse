@@ -52,10 +52,9 @@ function run() {
 }
 
 function handle_app(app, cb) {
-    logger.debug("...................................... %s %s", app.name, app._id.toString());
+    logger.debug("....................... %s %s", app.name, app._id.toString());
 
     async.series([
-
         //caching serviceinfo
         next=>{
             request.get({
@@ -69,6 +68,8 @@ function handle_app(app, cb) {
                 if(err) return next(err);
                 if(res.statusCode != 200) return next("couldn't obtain service stats "+res.statusCode);
 
+                console.log("before-------------");
+                console.log(JSON.stringify(app.stats, null, 4));
                 common.pull_appinfo(app.github, (err, gitinfo)=>{
                     if(err) return next(err);
                     Object.assign(app, gitinfo);
@@ -77,6 +78,7 @@ function handle_app(app, cb) {
                         app.stats.requested = info.counts.requested;
                         app.stats.users = info.users;
                         app.stats.success_rate = info.success_rate;
+                        app.markModified('stats');
                     }
 
                     /*
@@ -87,6 +89,7 @@ function handle_app(app, cb) {
                     });
                     */
                     
+                    console.log("after-------------");
                     console.log(JSON.stringify(app.stats, null, 4));
                     next();
                 });
@@ -101,7 +104,7 @@ function handle_app(app, cb) {
                 if(err) return next(err);
                 app.doi = doi;
                 let metadata = common.compose_app_datacite_metadata(app);
-                console.dir(metadata);
+                console.log(JSON.stringify(metadata, null, 4));
                 common.doi_post_metadata(metadata, err=>{
                     if(err) return next(err);
                     let url = config.warehouse.url+"/app/"+app._id;  
