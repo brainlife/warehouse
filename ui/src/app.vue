@@ -61,7 +61,7 @@
                             <p v-if="app.doi">
                                 <doibadge :doi="app.doi" v-if="app.doi"/>
                             </p>
-                            <p>
+                            <p v-if="app.stats.requested">
                                 <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable"/>
                             </p>
                             <p style="line-height: 190%;">

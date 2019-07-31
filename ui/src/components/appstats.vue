@@ -18,7 +18,7 @@
             <br>
             <b>{{info.success_rate.toFixed(1)}}%</b>
         </p>
-        <p>
+        <p v-if="info.runtime_mean">
             <span style="opacity: 0.5">Average Runtime</span>
             <br>
             <b>{{Math.round(info.runtime_mean/(1000*60))}} <small style="opacity: 0.8">(&plusmn;{{Math.round(info.runtime_std/(1000*60))}})</small> mins</b>
@@ -43,17 +43,21 @@ export default {
 
     computed: {
 
+        /*
         success_rate_color() {
             if(this.info.success_rate < 50) return "text-danger"; 
             if(this.info.success_rate < 80) return "text-warning"; 
             if(this.info.success_rate < 95) return "text-secondary"; 
             return "text-success"; 
         },
+        */
 
+        /*
         show_badge_url(badge) {
             let badge_url = this.config.api+"/app/"+this.appid+"/badge";
             prompt("Markdown Content", "[![Brainlife]("+badge_url+")]("+document.location+")");
         }
+        */
     },
 }
 </script>
