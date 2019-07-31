@@ -348,9 +348,9 @@ exports.compose_app_datacite_metadata = function(app) {
         creators.push(`<creator><creatorName>${xmlescape(contact.fullname)}</creatorName></creator>`);
     });
 
-    //datacite requires at least 1 creator
+    //datacite requires at least 1 creator.. if we fail to find at least 1 admin contact, let's use franco's name
     if(creators.length == 0) {
-        creators.push(`<creator><creatorName>Soichi Hayashi</creatorName></creator>`);
+        creators.push(`<creator><creatorName>Franco Pestilli</creatorName></creator>`);
     }
 
     let contributors = [];
