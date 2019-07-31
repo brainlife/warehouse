@@ -33,7 +33,7 @@
             <div class="project-header">
                 <b-row>
                     <b-col cols="3">
-                        <projectavatar :project="selected"/>
+                        <projectavatar :project="selected" :height="120" :width="120"/>
                     </b-col>
                     <b-col cols="9"><!--hide avatar when screen is narrow-->
                         <p style="opacity: 0.8;">{{selected.desc||'no description.'}}</p>
@@ -165,6 +165,7 @@
 
                         <div v-if="resource_usage && total_walltime > 0">      
                             <span class="form-header">Resource Usage</span>     
+                            <br>
                             <small>Total Walltime: <b>{{(total_walltime/(3600*1000)).toFixed(2)}} hours</b></small>               
                             <vue-plotly :data="resource_usage.data" :layout="resource_usage.layout" :options="resource_usage.options"
                                  ref="resource_usage" :autoResize="true" :watchShallow="true"/>
@@ -632,8 +633,11 @@ top: 95px;
 
 .project-header {
 padding: 20px; 
-box-shadow: 0 0 2px #aaa;
-background-color: #eee;
+box-shadow: 0 0 2px #ccc;
+background-color: #f6f6f6;
+position: sticky;
+top: 0;
+z-index: 2;
 }
 
 .datasets_link {

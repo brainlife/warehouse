@@ -13,11 +13,14 @@
     <div v-if="app" class="page-content">
         <div class="header">
             <b-container>
+                <div @click="back()" class="button" style="position: absolute; left: 20px; top: 8px; opacity: 0.7;">
+                    <icon name="angle-left" scale="2"/>
+                </div>
                 <b-row>
-                    <b-col cols="3">
-                        <appavatar :app="app" style="margin-bottom: 20px;" :width="200" :height="200"/>
+                    <b-col cols="2">
+                        <appavatar :app="app" style="margin-bottom: 20px;"/>
                     </b-col>
-                    <b-col cols="9" style="background-color: white;"><!--hide avatar when screen is narrow-->
+                    <b-col cols="8" style="background-color: white;"><!--hide avatar when screen is narrow-->
                         <div style="float: right; position: relative; z-index: 3">
                             <span class="button" @click="download_app()" title="Download App"><icon name="download" scale="1.25"/></span>
                             <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button"" title="github"><icon name="brands/github" scale="1.25"/></span></a>
@@ -25,25 +28,24 @@
                             <span class="button" @click="go('/app/'+app._id+'/edit')" v-if="app._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
                             <span class="button" @click="remove()" v-if="app._canedit" title="Remove"><icon name="trash" scale="1.25"/></span>
                         </div>
-                        <h4 style="margin-bottom: 3px;">
+                        <h5 style="margin-bottom: 3px;">
                             <b-badge v-if="app.projects && app.projects.length > 0" variant="danger" title="Private App">
                                 <icon name="lock" scale="0.8"/>
                             </b-badge>
                             {{app.name}}
-                        </h4>
+                        </h5>
                         <h6 style="opacity: 0.8;">
                             <a target="github" :href="'https://github.com/'+app.github+'/tree/'+(app.github_branch||'master')" style="color: gray;">{{app.github}}</a>
                             <small><b-badge variant="secondary" v-if="app.github_branch" style="position: relative; top: -2px"><icon name="code-branch" scale="0.6"/> {{app.github_branch}}</b-badge></small>
                         </h6>
-                        <p class="text">
+                        <p style="opacity: 0.85">
                             {{app.desc_override||app.desc}}
                         </p>
-                        <p>
-                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                        </p>
-                        <p style="float: right;">
+                    </b-col>
+                    <b-col cols="2">
+                        <div style="text-align: center; position: relative; top: -5px;">
                             <b-btn @click="execute" variant="primary"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
-                        </p>
+                        </div>
                     </b-col>
                 </b-row>
             </b-container>
@@ -54,21 +56,23 @@
             <!-- detail -->
             <div v-if="tab_index == 0">
                 <b-row>
-                    <b-col cols="3">
-                        <p> 
-                            <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
-                        </p>
-                        <p v-if="app.doi">
-                            <doibadge :doi="app.doi" v-if="app.doi"/>
-                            <div style="padding: 10px 0px; max-width: 200px; text-align: center;"
-                                class='altmetric-embed'
-                                data-badge-type='donut' 
-                                :data-doi="app.doi"></div>
-                                <!--data-hide-no-mentions="true"-->
-                        </p>
-                        <appstats :info="info" :appid="app._id"/>
+                    <b-col cols="2">
+                        <div style="float: right">
+                            <p v-if="app.doi">
+                                <doibadge :doi="app.doi" v-if="app.doi"/>
+                            </p>
+                            <p>
+                                <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable"/>
+                            </p>
+                            <p style="line-height: 190%;">
+                                <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                            </p>
+                            <p style="opacity: 0.7" title="Registration Date"> 
+                                <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
+                            </p>
+                        </div>
                     </b-col>
-                    <b-col cols="9">
+                    <b-col cols="8">
                         <!--input/output-->
                         <!-- <span class="form-header">Input/Output</span>-->
                         <p><small class="text-muted">This app uses the following input/output datatypes</small></p>
@@ -224,12 +228,19 @@
                         <div v-if="readme">
                             <span class="form-header">README</span>
                             <p><small class="text-muted">From github repo / README.md</small></p>
-                            <vue-markdown :source="readme" class="box"></vue-markdown>
+                            <vue-markdown :source="readme" class="readme box"></vue-markdown>
                         </div>
 
                         <vue-disqus shortname="brain-life" :identifier="app._id"/>
 
                     </b-col>
+
+                    <b-col cols="2">
+                        <appstats :info="info" :appid="app._id"/>
+                        <div style="padding: 10px 0px; max-width: 200px; text-align: center;" class='altmetric-embed' data-badge-type='donut' :data-doi="app.doi"/>
+                        <!--data-hide-no-mentions="true"-->
+                    </b-col>
+
                 </b-row>
             </div>
 
@@ -421,6 +432,10 @@ export default {
             this.$router.push(path);
         },
 
+        back() {
+            this.$router.push('/apps');
+        },
+
         /*
         go_github() {
             document.location = "https://github.com/"+this.app.github;
@@ -497,6 +512,8 @@ background-color: white;
 margin-bottom: 30px;
 padding: 15px 0px 0px 0px;
 border-bottom: 1px solid #eee;
+position: sticky;
+top: 0;
 z-index: 2;
 }
 .topic {
