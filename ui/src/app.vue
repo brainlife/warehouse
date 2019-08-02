@@ -13,7 +13,7 @@
     <div v-if="app" class="page-content">
         <div class="header">
             <b-container>
-                <div @click="back()" class="button" style="position: absolute; left: 20px; top: 8px; opacity: 0.7;">
+                <div @click="back()" class="button" style="position: absolute; left: 20px; top: 8px; opacity: 0.7; z-index: 1">
                     <icon name="angle-left" scale="2"/>
                 </div>
                 <b-row>
@@ -41,10 +41,14 @@
                         <p style="opacity: 0.85">
                             {{app.desc_override||app.desc}}
                         </p>
+                        <p v-if="app.doi || app.stats.requested">
+                            <doibadge :doi="app.doi" v-if="app.doi"/>
+                            <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable" v-if="app.stats.requested"/>
+                        </p>
                     </b-col>
                     <b-col cols="2">
-                        <div style="text-align: center; position: relative; top: -5px;">
-                            <b-btn @click="execute" variant="primary"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
+                        <div style="position: relative; top: -2px;">
+                            <b-btn @click="execute" variant="primary" size="sm"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
                         </div>
                     </b-col>
                 </b-row>
@@ -57,22 +61,18 @@
             <div v-if="tab_index == 0">
                 <b-row>
                     <b-col cols="2">
-                        <div style="float: right">
-                            <p v-if="app.doi">
-                                <doibadge :doi="app.doi" v-if="app.doi"/>
-                            </p>
-                            <p v-if="app.stats.requested">
-                                <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable"/>
-                            </p>
-                            <p style="line-height: 190%;">
-                                <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                            </p>
-                            <p style="opacity: 0.7" title="Registration Date"> 
-                                <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
-                            </p>
-                        </div>
+                        <p>
+                            <span class="form-header">Topics</span>
+                        </p>
+                        <p style="line-height: 190%;">
+                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                        </p>
+                        <p style="opacity: 0.7" title="Registration Date"> 
+                            <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
+                        </p>
                     </b-col>
                     <b-col cols="8">
+
                         <!--input/output-->
                         <!-- <span class="form-header">Input/Output</span>-->
                         <p><small class="text-muted">This app uses the following input/output datatypes</small></p>
@@ -236,9 +236,26 @@
                     </b-col>
 
                     <b-col cols="2">
-                        <appstats :info="info" :appid="app._id"/>
-                        <div style="padding: 10px 0px; max-width: 200px; text-align: center;" class='altmetric-embed' data-badge-type='donut' :data-doi="app.doi"/>
-                        <!--data-hide-no-mentions="true"-->
+                        <div v-if="info">
+                            <p v-if="info.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+                                <p>
+                                    <span class="form-header">Success Rate</span>
+                                </p>
+                                <svg width="70" height="70">
+                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
+                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
+                                        :stroke-dasharray="info.success_rate*(140/100)+' '+(100-info.success_rate)*(140/100)" stroke-dashoffset="-105"/>
+                                </svg>
+                                <b>{{info.success_rate.toFixed(1)}}%</b>
+                            </p>
+                            <p v-if="info.runtime_mean">
+                                <p>
+                                    <span class="form-header">Average Runtime</span>
+                                </p>
+                                <b>{{Math.round(info.runtime_mean/(1000*60))}}</b> (&plusmn;{{Math.round(info.runtime_std/(1000*60))}}) mins
+                            </p>
+                        </div>
+                        <div class='altmetric-embed' data-badge-type='donut' :data-doi="app.doi" data-hide-no-mentions="true"/>
                     </b-col>
 
                 </b-row>
@@ -267,7 +284,6 @@ import datatypetag from '@/components/datatypetag'
 import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
-import appstats from '@/components/appstats'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
 import VuePlotly from '@statnett/vue-plotly'
@@ -278,7 +294,7 @@ export default {
         tags, datatype, appavatar,
         VueMarkdown, statustag, 
         datatypetag, datatypefile,
-        appstats, projectavatar,
+        projectavatar,
         doibadge, VuePlotly,
     },
 
