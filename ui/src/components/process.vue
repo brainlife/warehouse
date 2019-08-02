@@ -556,7 +556,7 @@ export default {
 
         set_viewsel_options(task, output) {
             let datatype = this.datatypes[output.datatype];
-            this.$root.$emit("viewselecter.open", { datatype, task, subdir: output.subdir });
+            this.$root.$emit("viewselecter.open", { datatype, task, subdir: output.subdir, files: output.files });
         },
 
         newtask() {

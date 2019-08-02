@@ -667,9 +667,9 @@ export default {
         start_viewer(datatype) {
             if(!Vue.config.user) return alert("Please Signup/Login first to visualize this dataset");
             this.check_agreements(this.dataset.project, ()=>{
-                this.find_staged_task((task, subdir)=>{
+                this.find_staged_task((task, subdir, files)=>{
                     if(task) {
-                        this.$root.$emit("viewselecter.open", { datatype, task, subdir });
+                        this.$root.$emit("viewselecter.open", { datatype, task, subdir, files });
                     } else {
                         this.create_stage_task((err, task, subdir)=>{
                             if(err) return this.$notify({type: "error", text: err.toString()});
@@ -711,7 +711,7 @@ export default {
                     let task = res.data.tasks[0];
                     if(task) {
                         console.log("task that produced this dataset still exists... using it");
-                        return cb(task, this.dataset.prov.subdir);
+                        return cb(task, this.dataset.prov.subdir, this.dataset.prov.files);
                     }
                     cb(null); //didn't find it
                 });
