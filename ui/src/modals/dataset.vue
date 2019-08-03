@@ -283,7 +283,6 @@ export default {
     created() {
         console.log("modal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", opt=>{
-            //console.log("opening dataset", opt);
             this.back = opt.back;
             this.load(opt.id);
         });
@@ -711,7 +710,9 @@ export default {
                     let task = res.data.tasks[0];
                     if(task) {
                         console.log("task that produced this dataset still exists... using it");
-                        return cb(task, this.dataset.prov.subdir, this.dataset.prov.files);
+                        //look for dataset/files in case app was using deprecated filemapping
+                        let output = task.config._outputs.find(output=>output.id == this.dataset.prov.output_id);
+                        return cb(task, this.dataset.prov.subdir, output.files);
                     }
                     cb(null); //didn't find it
                 });
