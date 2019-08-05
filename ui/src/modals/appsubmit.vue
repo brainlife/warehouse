@@ -11,10 +11,9 @@
         <h4 style="margin-top: 5px;">Execute App</h4>
     </div><!--header-->
 
-    <b-form v-if="app" class="submit-form" @submit="submit">
-        <p>
-            <app :app="app" :clickable="false" style="margin: -20px; margin-bottom: 0px;"/>
-        </p>
+    <b-form v-if="app" @submit="submit">
+    <div class="submit-form">
+        <app :app="app" :clickable="false" style="margin: -20px; position: sticky; top: -20px; margin-bottom: 20px; z-index: 1"/>
         <b-alert :show="this.no_resource || true" variant="secondary" style="margin: -20px; margin-bottom: 10px">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
         <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
             <b-col cols="3">
@@ -90,15 +89,11 @@
         <advanced :app='app' v-model='form.advanced'>
             <configform :spec="app.config" v-model="form.config" :advanced="true"/>
         </advanced>
-    
-        <hr>
-        <b-row>
-            <b-col cols="3" class="text-muted"></b-col>
-            <b-col>
-                <b-button variant="primary" type="submit" style="float: right;">Submit</b-button>
-            </b-col>
-        </b-row>
 
+    </div><!--submit-form-->
+    <div class="form-action">
+        <b-button variant="primary" type="submit">Submit</b-button>
+    </div>
     </b-form>
 
 </b-container>
@@ -577,8 +572,19 @@ left: 0px;
 right: 0px;
 top: 60px;
 padding: 20px;
-bottom: 0px;
+bottom: 60px;
 overflow: auto;
 background-color: #f9f9f9;
+}
+.form-action {
+position: absolute;
+bottom: 0px;
+left: 0px;
+right: 0px;
+height: 60px;
+box-shadow: inset 0px 1px 1px #ddd;
+background-color: #eee;
+padding: 10px 20px;
+text-align: right;
 }
 </style>

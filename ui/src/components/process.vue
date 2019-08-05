@@ -570,28 +570,6 @@ export default {
             this.$root.$emit("datasetselecter.open");
         },
 
-        /*
-        get_tasktab_class(task) {
-            let c = ["task-tab"];
-            if(task.service == 'soichih/sca-product-raw' || task.service == 'brainlife/app-stage') c.push("task-tab-stage");
-            c.push("task-tab-"+task.status);
-            return c;
-        },
-        */
-
-        /*
-        editdesc() {
-            //Vue.set(instance, 'edit', true);
-            var desc = prompt("Please enter description", this.instance.desc);
-            if(desc != null) {
-                Vue.set(this.instance, 'desc',  desc);
-                this.$http.put(Vue.config.wf_api+'/instance/'+this.instance._id, this.instance).then(res=>{
-                    this.$notify({ text: 'Updated description', type: 'success' });
-                });
-            }
-        },
-        */
-
         remove() {
             if(confirm("Do you really want to remove this process and all tasks?")) {
                 //unselect if selected
@@ -733,54 +711,6 @@ color: #28a745;
 .new-action-button-newdataset:hover {
 background-color: #28a745;
 }
-/*
-.task-tabs {
-float: right;
-width: 300px;
-transition: margin-right 0.5s;
-}
-@media screen and (max-width: 1200px) {
-    .task-tabs {
-        margin-right: -300px;
-    }
-}
-.task-tab {
-font-size: 90%;
-background-color: white;
-box-shadow: 1px 1px 2px #ccc;
-margin-bottom: 5px;
-padding: 5px;
-padding-left: 10px;
-}
-.task-tab-title {
-position: relative;
-top: -2px;
-}
-.task-tab-stage {
-opacity: 0.7;
-background-color: #eee;
-}
-.task-tab-failed {
-border-left: 2px solid #c00;
-}
-.task-tab-finished {
-border-left: 2px solid #28a745;
-}
-.task-tab-waiting,
-.task-tab-requested {
-border-left: 2px solid #50bfff;
-}
-.task-tab-running {
-border-left: 2px solid #007bff;
-}
-.task-tab-stop_requested,
-.task-tab-stopped {
-border-left: 2px solid gray;
-}
-.task-tab:hover {
-cursor: pointer;
-}
-*/
 .loading {
 position: absolute;
 padding: 10px 20px;

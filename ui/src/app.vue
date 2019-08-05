@@ -73,6 +73,11 @@
                     </b-col>
                     <b-col cols="8">
 
+                        <b-card v-if="app.deprecated_by" no-body
+                            header="This App has been deprecated by the following App" border-variant="danger" header-bg-variant="danger" header-text-variant="white">
+                            <app :appid="app.deprecated_by"/>
+                        </b-card>
+
                         <!--input/output-->
                         <!-- <span class="form-header">Input/Output</span>-->
                         <p><small class="text-muted">This app uses the following input/output datatypes</small></p>
@@ -274,6 +279,7 @@
 <script>
 import Vue from 'vue'
 
+import app from '@/components/app'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
@@ -295,7 +301,7 @@ export default {
         VueMarkdown, statustag, 
         datatypetag, datatypefile,
         projectavatar,
-        doibadge, VuePlotly,
+        doibadge, VuePlotly, app,
     },
 
     metaInfo: {
@@ -323,51 +329,25 @@ export default {
         }
     },
 
+    watch: {
+        '$route': function() {
+            var app_id = this.$route.params.id;
+            console.log("route update", app_id);
+            if(app_id && this.app && app_id != this.app._id) {
+                console.log("reopening different app");
+                this.open_app();
+            }
+        },
+    },
+
     mounted: function() {
+        console.log("app mounted");
+
         this.$on('editor-update', c=>{
             console.log("update", c);
         });
 
-        //load app
-        this.$http.get('app', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'inputs.datatype outputs.datatype projects',
-            limit: 500, //TODO - this is not sustailable
-        }})
-        .then(res=>{
-            if(res.data.apps.length == 0) {
-                this.noaccess = true;
-                throw "private app";
-            }
-
-            this.app = res.data.apps[0];
-            if(this.config.user) this.find_resources(this.app.github);
-
-            Vue.nextTick(()=>{
-                console.log("initializing altemtric badge");
-                //re-initialize altmetric badge - now that we have badge <div> placed
-                _altmetric_embed_init(this.$el);
-            });
-
-            //then load service info
-            return this.$http.get(Vue.config.wf_api+'/service/info', {params: {
-                service: this.app.github,
-            }});
-
-
-        }).then(res=>{
-            this.info = res.data;
-
-            //then load github README
-            var branch = this.app.github_branch||"master";
-            return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
-        }).then(res=>{
-            if(res.status == "200") return res.text()
-        }).then(readme=>{
-            this.readme = readme;
-        }).catch(err=>{
-            console.error(err);
-        });
+        this.open_app();
     },
 
     computed: {
@@ -439,6 +419,47 @@ export default {
          * (in the last example, whitespace is automatically trimmed)
          */
         trimGit: (text) => text.replace(/^[ \t]*(https?:\/\/)?github\.com\/?/g, ''),
+
+        open_app() {
+            //load app
+            this.$http.get('app', {params: {
+                find: JSON.stringify({_id: this.$route.params.id}),
+                populate: 'inputs.datatype outputs.datatype projects',
+                limit: 500, //TODO - this is not sustailable
+            }})
+            .then(res=>{
+                if(res.data.apps.length == 0) {
+                    this.noaccess = true;
+                    throw "private app";
+                }
+
+                this.app = res.data.apps[0];
+                if(this.config.user) this.find_resources(this.app.github);
+
+                Vue.nextTick(()=>{
+                    console.log("initializing altemtric badge");
+                    //re-initialize altmetric badge - now that we have badge <div> placed
+                    _altmetric_embed_init(this.$el);
+                });
+
+                //then load service info
+                return this.$http.get(Vue.config.wf_api+'/service/info', {params: {
+                    service: this.app.github,
+                }});
+            }).then(res=>{
+                this.info = res.data;
+                //then load github README
+                var branch = this.app.github_branch||"master";
+                return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
+            }).then(res=>{
+                if(res.status == "200") return res.text()
+            }).then(readme=>{
+                this.readme = readme;
+            }).catch(err=>{
+                console.error(err);
+            });
+        },
+
         
         copy() {
             this.$router.push('/app/'+this.app._id+'/copy');
