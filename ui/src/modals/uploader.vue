@@ -344,10 +344,12 @@ export default {
 
             //create validator config
             var config = {
+                //_app: (no app id for validator)
                 _outputs: [{
                     id: "output",
                     datatype: this.datatype._id,
                     datatype_tags: this.datatype_tags,
+                    meta: this.meta,
                 }]
             };
             this.datatype.files.forEach(file=>{
