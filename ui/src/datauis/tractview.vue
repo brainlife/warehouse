@@ -7,7 +7,7 @@
 import Vue from 'vue'
 
 export default {
-    props: ['task', 'subdir'],
+    props: ['task', 'subdir'], //deprecated by uiconfig (see volumeviewer)
     data()  {
         return {
             ready: false,

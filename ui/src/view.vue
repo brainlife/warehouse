@@ -8,7 +8,7 @@
         <lifestats v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"></lifestats>
         <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"></evaluator>
         <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"></images>
-        <volumeviewer v-else-if="type == 'volumeviewer'" :task="task" :subdir="subdir" :datatype="datatype"></volumeviewer>
+        <volumeviewer v-else-if="type == 'volumeviewer'" :uiconfig="uiconfig"></volumeviewer>
         <nnview v-else-if="type == 'nnview'" :task="task" :subdir="subdir" :datatype="datatype"></nnview>
         
         <div v-else-if="type == 'raw'" style="padding: 10px 0px; background-color: white; height: 100%; overflow: auto;">
@@ -45,7 +45,7 @@ import wait from '@/mixins/wait'
 
 export default {
     mixins: [ wait ],
-    props: [ /*'instanceid',*/ 'taskid', 'type', 'datatype64', 'subdir' ],
+    props: [ 'taskid', 'type', 'datatype64', 'subdir' ], //deprecated - use uiconfig
     components: { 
         dtiinit, freesurfer, tractview, 
         lifestats, lifeview, evaluator, images, 
@@ -55,7 +55,7 @@ export default {
 
     data() {
         return {
-            //task: null, //input task
+            uiconfig: null,
         }
     },
 
@@ -66,7 +66,9 @@ export default {
     },
 
     mounted() {
-        if(!this.taskid) return;
+        this.uiconfig = JSON.parse(atob(window.location.hash.substring(1)));
+
+        if(!this.taskid) return; //TODO - why does this happen?
         //this starts the wait loop for specified taskid
         this.wait(this.taskid, task=>{
             //compose window title (same code in novnc.vue)
@@ -75,7 +77,6 @@ export default {
                 document.title = output.meta.subject + " "+output.datatype_tags.join(" ");
             }
         });
-        
     },
     computed: {
         datatype() {

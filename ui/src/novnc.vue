@@ -25,7 +25,7 @@ const novnc_task_name="brainlife.novnc";
 
 export default {
     mixins: [ wait ],
-    props: [ /*'instanceid',*/ 'taskid', 'type', 'subdir' ],
+    //props: [ 'taskid', 'type', 'subdir' ], //deprecatd - use uiconfig
     components: { 
         task
     },
@@ -35,10 +35,23 @@ export default {
             instance: null,
             error: null,
             novnc_task: null, //novnc task for novnc based views
+
+            //set from uiconfig
+            taskid: null,
+            type: null,
+            subdir: null,
+            files: null, //for deprecated output structure
         }
     },
 
     mounted: function() {
+        //parse uiconfig
+        let uiconfig = JSON.parse(atob(window.location.hash.substring(1)));
+        this.taskid = uiconfig.task_id;
+        this.type = uiconfig.type;
+        this.subdir = uiconfig.subdir;
+        this.files = uiconfig.files;
+
         this.wait(this.taskid, ()=>{
             this.open_novnc();
         });
@@ -82,6 +95,7 @@ export default {
                                 input_task_id: this.taskid,
                                 type: this.type,
                                 subdir: this.subdir,
+                                files: this.files,
                                 title,
                             },
                             deps: [ this.taskid ], 
@@ -172,11 +186,9 @@ export default {
                 }
                 var msg = event.msg;
                 if(!msg || !msg._id) return; //odd..
-                //if(~msg.name.indexOf(novnc_task_name)) {
                 console.log("novnc_task updated", msg);
                 this.novnc_task = msg;
                 this.check_status();
-                //}
             }
         }
     }

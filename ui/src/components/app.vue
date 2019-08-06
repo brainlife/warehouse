@@ -1,10 +1,11 @@
 <template>
-<div v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable}" @click="click">
+<div v-if="app_" class="appcard" :class="{'compact': compact, 'clickable': clickable, 'deprecated': app_.deprecated_by}" @click="click">
     <div v-if="compact">
         <appavatar :app="app_" style="float: left; margin-right: 10px;" :width="78" :height="78"/>
         <div style="max-height: 75px; overflow: hidden;">
             <h4 class="name">
                 <icon v-if="app_.projects && app_.projects.length > 0" scale="0.9" name="lock" title="not working.." class="text-danger"/>
+                <icon v-if="app_.deprecated_by" scale="0.9" name="ban" title="deprecated" class="text-danger"/>
                 {{app_.name}} <span class="github" style="font-weight: normal;">{{app_.github}}</span> 
                 <b-badge>{{branch||app_.github_branch}}</b-badge>
             </h4>
@@ -17,6 +18,11 @@
         <div class="header">
             <h4 class="name">
                 <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
+                <b-badge v-if="app_.deprecated_by" variant="danger" :id="'dep_'+app_.deprecated_by">Deprecated</b-badge>
+                <b-popover :target="'dep_'+app_.deprecated_by" triggers="click" title="Deprecated By">
+                    <!-- TODO I should show the content of the app!-->
+                    <a :href="'/app/'+app_.deprecated_by">{{app_.deprecated_by}}</a>
+                </b-popover>
                 {{app_.name}}
             </h4>
             <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>
@@ -99,15 +105,29 @@ export default {
         if(this.appid) this.load_app();
         if(this.app) this.app_ = this.app;
     },
+
     methods: {
         load_app() {
             this.appcache(this.appid, (err, app)=>{
                 this.app_ = app;
+
+/*
+                //deref deprecated_by
+                console.dir(app);
+                if(this.app_.deprecated_by) {
+                    console.log("loading deprecated bhydeprecatedbh");
+                    this.appcache(this.app_.deprecated_by, (err, deprecated_by)=>{
+                        console.log("loadded deprecatedbh");
+                        this.app_.deprecated_by_ = deprecated_by;
+                    });
+                }
+*/
             });
         },
 
         click() {
             if(this.clickable) {
+                console.log("rerounting to "+this.app_._id);
                 this.$router.push('/app/'+this.app_._id);
                 this.$emit("open", this.app_._id);
             }
@@ -215,5 +235,8 @@ color: #bbb;
 height: 32px;
 background-color: #f7f7f7;
 line-height: 100%;
+}
+.deprecated {
+opacity: 0.5;
 }
 </style>

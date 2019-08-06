@@ -1,6 +1,6 @@
 <template>
 <div>
-    <b-row v-for="(v,idx) in sorted_spec" :key="idx" v-if="v.type && v.type != 'input' && advanced == v.advanced">
+    <b-row v-for="(v,idx) in sorted_spec" :key="idx" v-if="v.type && v.type != 'input' && advanced == !!(v.advanced)">
         <b-col cols="3" class="text-muted">{{v.id}} <span v-if="!v.optional">*</span></b-col>
         <b-col>
             <b-form-group>

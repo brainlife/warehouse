@@ -43,8 +43,10 @@ export default new Router({
         {path: '/app/:id', component: app, meta: {public: true}},
         {path: '/app/:id/:mode', component: appedit},
 
-        {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true},
+        {path: '/view/:taskid/:type/:datatype64/:subdir?', component: view, props: true}, //deprecated by /view?config=
+        {path: '/view', component: view, props: true},
         {path: '/novnc/:taskid/:type/:datatype64/:subdir?', component: novnc, props: true},
+        {path: '/novnc', component: novnc, props: true}, //deprecated by /novnc?config=
 
         {path: '/project', component: projects, meta: {public: true}}, //deprecated by /projects (redirect?)
         {path: '/projects', component: projects, meta: {public: true}}, 

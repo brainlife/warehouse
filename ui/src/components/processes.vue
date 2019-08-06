@@ -342,10 +342,21 @@ export default {
             }
 
             let start_x;
+            let new_x;
+            let x_update_timer;
             splitter.onpointerdown = e=>{
                 splitter.onpointermove = e=>{
-                    this.splitter_pos = e.clientX + start_x;
-                    if(this.splitter_pos < 400) this.splitter_pos = 400;
+                    new_x = e.clientX + start_x;
+                    if(new_x < 400) new_x = 400;
+                    if(x_update_timer) {
+                        console.log("skipping update");
+                        return; //timer already called..
+                    }
+                    x_update_timer = setTimeout(()=>{
+                        console.log("updating");
+                        this.splitter_pos = new_x;  
+                        x_update_timer = null;
+                    }, 100); //don't update more frequently than every 100msec (still too long?)
                 };
                 splitter.setPointerCapture(e.pointerId);    
                 start_x = e.clientX - this.splitter_pos;

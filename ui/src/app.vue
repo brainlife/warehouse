@@ -13,7 +13,7 @@
     <div v-if="app" class="page-content">
         <div class="header">
             <b-container>
-                <div @click="back()" class="button" style="position: absolute; left: 20px; top: 8px; opacity: 0.7;">
+                <div @click="back()" class="button" style="position: absolute; left: 20px; top: 8px; opacity: 0.7; z-index: 1">
                     <icon name="angle-left" scale="2"/>
                 </div>
                 <b-row>
@@ -41,10 +41,14 @@
                         <p style="opacity: 0.85">
                             {{app.desc_override||app.desc}}
                         </p>
+                        <p v-if="app.doi || app.stats.requested">
+                            <doibadge :doi="app.doi" v-if="app.doi"/>
+                            <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable" v-if="app.stats.requested"/>
+                        </p>
                     </b-col>
                     <b-col cols="2">
-                        <div style="text-align: center; position: relative; top: -5px;">
-                            <b-btn @click="execute" variant="primary"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
+                        <div style="position: relative; top: -2px;">
+                            <b-btn @click="execute" variant="primary" size="sm"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
                         </div>
                     </b-col>
                 </b-row>
@@ -57,22 +61,23 @@
             <div v-if="tab_index == 0">
                 <b-row>
                     <b-col cols="2">
-                        <div style="float: right">
-                            <p v-if="app.doi">
-                                <doibadge :doi="app.doi" v-if="app.doi"/>
-                            </p>
-                            <p>
-                                <img :src="config.api+'/app/'+app._id+'/badge'" @click="show_badge_url('/app/'+app._id+'/badge')" class="clickable"/>
-                            </p>
-                            <p style="line-height: 190%;">
-                                <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
-                            </p>
-                            <p style="opacity: 0.7" title="Registration Date"> 
-                                <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
-                            </p>
-                        </div>
+                        <p>
+                            <span class="form-header">Topics</span>
+                        </p>
+                        <p style="line-height: 190%;">
+                            <b-badge v-for="tag in app.tags" :key="tag" class="topic">{{tag}}</b-badge>
+                        </p>
+                        <p style="opacity: 0.7" title="Registration Date"> 
+                            <icon name="calendar"/>&nbsp;&nbsp;{{new Date(app.create_date).toLocaleDateString()}}
+                        </p>
                     </b-col>
                     <b-col cols="8">
+
+                        <b-card v-if="app.deprecated_by" no-body
+                            header="This App has been deprecated by the following App" border-variant="danger" header-bg-variant="danger" header-text-variant="white">
+                            <app :appid="app.deprecated_by"/>
+                        </b-card>
+
                         <!--input/output-->
                         <!-- <span class="form-header">Input/Output</span>-->
                         <p><small class="text-muted">This app uses the following input/output datatypes</small></p>
@@ -236,9 +241,26 @@
                     </b-col>
 
                     <b-col cols="2">
-                        <appstats :info="info" :appid="app._id"/>
-                        <div style="padding: 10px 0px; max-width: 200px; text-align: center;" class='altmetric-embed' data-badge-type='donut' :data-doi="app.doi"/>
-                        <!--data-hide-no-mentions="true"-->
+                        <div v-if="info">
+                            <p v-if="info.success_rate" v-b-tooltip.hover.d1000.right title="finished/(failed+finished). Same request could be re-submitted / rerun.">
+                                <p>
+                                    <span class="form-header">Success Rate</span>
+                                </p>
+                                <svg width="70" height="70">
+                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#666" stroke-width="15"/>
+                                    <circle :r="140/(2*Math.PI)" cx="35" cy="35" fill="transparent" stroke="#28a745" stroke-width="15" 
+                                        :stroke-dasharray="info.success_rate*(140/100)+' '+(100-info.success_rate)*(140/100)" stroke-dashoffset="-105"/>
+                                </svg>
+                                <b>{{info.success_rate.toFixed(1)}}%</b>
+                            </p>
+                            <p v-if="info.runtime_mean">
+                                <p>
+                                    <span class="form-header">Average Runtime</span>
+                                </p>
+                                <b>{{Math.round(info.runtime_mean/(1000*60))}}</b> (&plusmn;{{Math.round(info.runtime_std/(1000*60))}}) mins
+                            </p>
+                        </div>
+                        <div class='altmetric-embed' data-badge-type='donut' :data-doi="app.doi" data-hide-no-mentions="true"/>
                     </b-col>
 
                 </b-row>
@@ -257,6 +279,7 @@
 <script>
 import Vue from 'vue'
 
+import app from '@/components/app'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
@@ -267,7 +290,6 @@ import datatypetag from '@/components/datatypetag'
 import appavatar from '@/components/appavatar'
 import VueMarkdown from 'vue-markdown'
 import statustag from '@/components/statustag'
-import appstats from '@/components/appstats'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
 import VuePlotly from '@statnett/vue-plotly'
@@ -278,8 +300,8 @@ export default {
         tags, datatype, appavatar,
         VueMarkdown, statustag, 
         datatypetag, datatypefile,
-        appstats, projectavatar,
-        doibadge, VuePlotly,
+        projectavatar,
+        doibadge, VuePlotly, app,
     },
 
     metaInfo: {
@@ -307,51 +329,25 @@ export default {
         }
     },
 
+    watch: {
+        '$route': function() {
+            var app_id = this.$route.params.id;
+            console.log("route update", app_id);
+            if(app_id && this.app && app_id != this.app._id) {
+                console.log("reopening different app");
+                this.open_app();
+            }
+        },
+    },
+
     mounted: function() {
+        console.log("app mounted");
+
         this.$on('editor-update', c=>{
             console.log("update", c);
         });
 
-        //load app
-        this.$http.get('app', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-            populate: 'inputs.datatype outputs.datatype projects',
-            limit: 500, //TODO - this is not sustailable
-        }})
-        .then(res=>{
-            if(res.data.apps.length == 0) {
-                this.noaccess = true;
-                throw "private app";
-            }
-
-            this.app = res.data.apps[0];
-            if(this.config.user) this.find_resources(this.app.github);
-
-            Vue.nextTick(()=>{
-                console.log("initializing altemtric badge");
-                //re-initialize altmetric badge - now that we have badge <div> placed
-                _altmetric_embed_init(this.$el);
-            });
-
-            //then load service info
-            return this.$http.get(Vue.config.wf_api+'/service/info', {params: {
-                service: this.app.github,
-            }});
-
-
-        }).then(res=>{
-            this.info = res.data;
-
-            //then load github README
-            var branch = this.app.github_branch||"master";
-            return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
-        }).then(res=>{
-            if(res.status == "200") return res.text()
-        }).then(readme=>{
-            this.readme = readme;
-        }).catch(err=>{
-            console.error(err);
-        });
+        this.open_app();
     },
 
     computed: {
@@ -423,6 +419,47 @@ export default {
          * (in the last example, whitespace is automatically trimmed)
          */
         trimGit: (text) => text.replace(/^[ \t]*(https?:\/\/)?github\.com\/?/g, ''),
+
+        open_app() {
+            //load app
+            this.$http.get('app', {params: {
+                find: JSON.stringify({_id: this.$route.params.id}),
+                populate: 'inputs.datatype outputs.datatype projects',
+                limit: 500, //TODO - this is not sustailable
+            }})
+            .then(res=>{
+                if(res.data.apps.length == 0) {
+                    this.noaccess = true;
+                    throw "private app";
+                }
+
+                this.app = res.data.apps[0];
+                if(this.config.user) this.find_resources(this.app.github);
+
+                Vue.nextTick(()=>{
+                    console.log("initializing altemtric badge");
+                    //re-initialize altmetric badge - now that we have badge <div> placed
+                    _altmetric_embed_init(this.$el);
+                });
+
+                //then load service info
+                return this.$http.get(Vue.config.wf_api+'/service/info', {params: {
+                    service: this.app.github,
+                }});
+            }).then(res=>{
+                this.info = res.data;
+                //then load github README
+                var branch = this.app.github_branch||"master";
+                return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
+            }).then(res=>{
+                if(res.status == "200") return res.text()
+            }).then(readme=>{
+                this.readme = readme;
+            }).catch(err=>{
+                console.error(err);
+            });
+        },
+
         
         copy() {
             this.$router.push('/app/'+this.app._id+'/copy');

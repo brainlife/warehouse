@@ -59,112 +59,111 @@
     </div>
 
     <!--app configuration page--> 
-    <b-form v-if="app" class="submit-form" @submit="submit" style="padding: 20px;">
-        <!--<app :app="app" :compact="false" />-->
-        <app :app="app" :clickable="false" style="margin: -20px; margin-bottom: 0px;"/>
-        <br>
+    <b-form v-if="app" class="submit-form" @submit="submit">
+        <div class="form-body">
+            <div class="selected-app">
+                <app :app="app" :clickable="false"/>
+            </div>
+            <div style="margin: 20px">
+                <!--<app :app="app" :compact="false" />-->
 
-        <!--input-->
-        <b-row v-for="(input, input_id) in inputs" :key="input_id" style="margin-bottom: 5px;">
-            <b-col cols="3">
-                <span style="opacity: 0.8">{{input_id}}</span>
-                <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
-                <span v-if="input.optional" style="opacity: 0.8">(optional)</span>
-                <span v-else>*</span>
-                <span v-if="input.multi" style="opacity: 0.8">(multi)</span>
-            </b-col>
-            <b-col>
-                <b-form-group>
-                    <b-row v-for="(it, idx) in input.selected" style="margin-bottom: 5px;" :key="idx">
-                        <b-col>
-                            <v-select :onChange="change_input(input)" 
-                                placeholder="Select Input Dataset"
-                                v-model="input.selected[idx]" 
-                                :options="wrap_with_label(filter_datasets(input))">
-                                <span slot="no-options">No dataset available for this datatype / tags</span>
-
-                                <template slot="option" slot-scope="option">
-                                    <span v-if="option.dataset.task.status != 'finished'">({{option.dataset.task.status}})</span>
-                                    {{option.dataset.task.name}} (t.{{option.dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
-                                    <b>{{option.dataset.meta.subject}}</b> 
-                                    <small v-if="option.dataset.datatype_tags">{{option.dataset.datatype_tags.toString()}}</small>
-                                    <span v-if="option.dataset.tags.length > 0">
-                                        |
-                                        <small>{{option.dataset.tags.toString()}}</small>
-                                    </span>
-                                </template>
-                            </v-select>
-                        </b-col>
-                        <b-col cols="1" v-if="input.multi">
-                            <div class="button button-danger" v-if="input.selected[idx]"
-                                @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
-                        </b-col>
-                    </b-row>
-                    <!--
-                    <b-row v-if='input.multi'>
-                        <b-col cols="5">
-                            <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
-                        </b-col>
-                        <b-col cols="6" style="text-align:right;">
-                            <b-button :size="'sm'" :variant="'secondary'" @click="input.selected.push(null)">Add Dataset</b-button>
-                        </b-col>
-                    </b-row>
-                    -->
-                    <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
-                </b-form-group>
-            </b-col>
-        </b-row>
-        
-        <configform :spec="app.config" v-model="config"/>
-
-        <advanced :app='app' v-model='advanced'>
-            <configform :spec="app.config" v-model="config" :advanced="true"/>
-        </advanced>
-
-        <b-row>
-            <b-col cols="3">Notes</b-col>
-            <b-col>
-                <b-form-textarea placeholder="Optional" v-model="desc" :rows="2"/>
-                <br>
-            </b-col>
-        </b-row>
-
-        <b-row v-if="this.app.outputs.length > 0">
-            <b-col cols="3"></b-col>
-            <b-col>
-                <b-row>
+                <!--input-->
+                <b-row v-for="(input, input_id) in inputs" :key="input_id" style="margin-bottom: 5px;">
+                    <b-col cols="3">
+                        <span style="opacity: 0.8">{{input_id}}</span>
+                        <datatypetag :datatype="input.datatype" :tags="input.datatype_tags"/>
+                        <span v-if="input.optional" style="opacity: 0.8">(optional)</span>
+                        <span v-else>*</span>
+                        <span v-if="input.multi" style="opacity: 0.8">(multi)</span>
+                    </b-col>
                     <b-col>
-                        <div v-if="!archive.enable">
-                            <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
-                        </div>
-                        <b-card v-if="archive.enable" style="margin-bottom: 10px;">
-                            <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
-                            <p>
-                                <b>Dataset Description</b>
-                                <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="2"/>
-                            </p>
-                            <p>
-                                <b>Dataset Tags</b>
-                                <tageditor placeholder="Optional" v-model="tags" :options="alltags"/>
-                                <small style="opacity: 0.8">Description / tags will be applied to all output datasets</small>
-                            </p>
-                        </b-card>
+                        <b-form-group>
+                            <b-row v-for="(it, idx) in input.selected" style="margin-bottom: 5px;" :key="idx">
+                                <b-col>
+                                    <v-select :onChange="change_input(input)" 
+                                        placeholder="Select Input Dataset"
+                                        v-model="input.selected[idx]" 
+                                        :options="wrap_with_label(filter_datasets(input))">
+                                        <span slot="no-options">No dataset available for this datatype / tags</span>
+
+                                        <template slot="option" slot-scope="option">
+                                            <span v-if="option.dataset.task.status != 'finished'">({{option.dataset.task.status}})</span>
+                                            {{option.dataset.task.name}} (t.{{option.dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
+                                            <b>{{option.dataset.meta.subject}}</b> 
+                                            <small v-if="option.dataset.datatype_tags">{{option.dataset.datatype_tags.toString()}}</small>
+                                            <span v-if="option.dataset.tags.length > 0">
+                                                |
+                                                <small>{{option.dataset.tags.toString()}}</small>
+                                            </span>
+                                        </template>
+                                    </v-select>
+                                </b-col>
+                                <b-col cols="1" v-if="input.multi">
+                                    <div class="button button-danger" v-if="input.selected[idx]"
+                                        @click="input.selected.splice(idx, 1)" size="sm"><icon name="trash"/></div>
+                                </b-col>
+                            </b-row>
+                            <!--
+                            <b-row v-if='input.multi'>
+                                <b-col cols="5">
+                                    <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
+                                </b-col>
+                                <b-col cols="6" style="text-align:right;">
+                                    <b-button :size="'sm'" :variant="'secondary'" @click="input.selected.push(null)">Add Dataset</b-button>
+                                </b-col>
+                            </b-row>
+                            -->
+                            <small v-if="input.desc" style="opacity: 0.8; white-space: pre-wrap;">{{input.desc}}</small>
+                        </b-form-group>
                     </b-col>
                 </b-row>
-            </b-col>
-        </b-row>
+                
+                <configform :spec="app.config" v-model="config"/>
 
-        <hr>
-        <b-row>
-            <b-col cols="3"></b-col>
-            <b-col>
-                <div style="float: right">
-                    <b-button @click="back">Back</b-button>
-                    <b-button variant="primary" :disabled="!valid" type="submit">Submit</b-button>
-                </div>
-            </b-col>
-        </b-row>
-        <br>
+                <advanced :app='app' v-model='advanced'>
+                    <configform :spec="app.config" v-model="config" :advanced="true"/>
+                </advanced>
+
+                <b-row>
+                    <b-col cols="3">Notes</b-col>
+                    <b-col>
+                        <b-form-textarea placeholder="Optional" v-model="desc" :rows="2"/>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="this.app.outputs.length > 0">
+                    <b-col cols="3"></b-col>
+                    <b-col>
+                        <b-row>
+                            <b-col>
+                                <div v-if="!archive.enable">
+                                    <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
+                                </div>
+                                <b-card v-if="archive.enable" style="margin-bottom: 10px;">
+                                    <b-form-checkbox v-model="archive.enable">Archive all output datasets when finished</b-form-checkbox>
+                                    <p>
+                                        <b>Dataset Description</b>
+                                        <b-form-textarea placeholder="Optional" v-model="archive.desc" :rows="2"/>
+                                    </p>
+                                    <p>
+                                        <b>Dataset Tags</b>
+                                        <tageditor placeholder="Optional" v-model="tags" :options="alltags"/>
+                                        <small style="opacity: 0.8">Description / tags will be applied to all output datasets</small>
+                                    </p>
+                                </b-card>
+                            </b-col>
+                        </b-row>
+                    </b-col>
+                </b-row>
+            </div>
+            <br>
+        </div><!--form-body-->
+
+        <div class="form-action">
+            <b-button @click="back">Back</b-button>
+            <b-button variant="primary" :disabled="!valid" type="submit">Submit</b-button>
+        </div>
     </b-form>
 </b-container>
 </div>
@@ -567,8 +566,35 @@ left: 0px;
 right: 0px;
 top: 60px;
 bottom: 0px;
-overflow: auto;
 background-color: #f9f9f9;
+}
+.app-selecter {
+overflow: auto;
+}
+.form-body {
+position: absolute;
+top: 0px;
+bottom: 0px;
+left: 0px;
+right: 0px;
+overflow: auto;
+margin-bottom: 60px;
+}
+.form-action {
+position: absolute;
+bottom: 0px;
+left: 0px;
+right: 0px;
+height: 60px;
+box-shadow: inset 0px 1px 1px #ddd;
+background-color: #eee;
+padding: 10px 20px;
+text-align: right;
+}
+.selected-app {
+position: sticky;
+top: 0px;
+z-index: 1;
 }
 .apps {
 padding: 20px;

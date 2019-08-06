@@ -1,8 +1,8 @@
 <template>
 <b-modal :no-close-on-backdrop='true' title="Select Viewer" ref="modal" id="viewSelecter" size="lg" hide-footer>
-    <div v-if="datatype">
+    <div v-if="opt">
         <b-row>
-            <b-col cols="4" v-for="(view, idx) in datatype.uis" :key="idx" style="margin-bottom: 20px;">
+            <b-col cols="4" v-for="(view, idx) in opt.datatype.uis" :key="idx" style="margin-bottom: 20px;">
                 <b-card 
                     :header-bg-variant="view.docker?'success':'dark'" 
                     header-text-variant="white" 
@@ -16,7 +16,7 @@
             </b-col>
         </b-row>
         <div style="opacity: 0.7">
-            <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+datatype.name+' datatype&body=Hello. Please add ??? UI to handle this datatype.'" target="_blank" style="float: right;">Suggest a new visualization tool for this datatype</a>
+            <a :href="'mailto:brlife@iu.edu?subject=Requesting new visualization tool for '+opt.datatype.name+' datatype&body=Hello. Please add ??? UI to handle this datatype.'" target="_blank" style="float: right;">Suggest a new visualization tool for this datatype</a>
             <h4>
                 <b-badge variant="dark">Web UI</b-badge>
                 <b-badge variant="success">VNC</b-badge>
@@ -34,29 +34,54 @@ export default {
     data () {
         return {
             //set by viewselecter.open
-            datatype: null,
-            task: null, 
-            subdir: null,
+            //datatype: null,
+            //task: null, 
+            //subdir: null,
+            //files: null, //set for datatypes that still stores things on the root with files mapping
+            opt: null,
             config: Vue.config,
-            //view_catalog: {}, 
+
         } 
     },
     mounted() {
         this.$root.$on("viewselecter.open", opt=>{
-            this.datatype = opt.datatype;
-            this.task = opt.task;
-            this.subdir = opt.subdir;
+            //console.log("viewselecter opened with");
+            //console.dir(opt);
+
+            //this.datatype = opt.datatype;
+            //this.task = opt.task;
+            //this.subdir = opt.subdir;
+            //this.files = opt.files;
+
+            this.opt = opt;
             this.$refs.modal.show();
+
         });
     },
 
 	methods: {
         select(view) {
             this.$refs.modal.hide(); 
+
             let path = "/view/"
             if(view.docker) path = "/novnc/";
-            path += this.task._id+'/'+view.ui+'/'+btoa(this.datatype.name);
-            if(this.subdir) path += '/'+this.subdir;
+
+            //I will deprecate these in favor of ?config= parameters (TODO all datauis needs to switch to use config)
+            path += this.opt.task._id+'/'+view.ui+'/'+btoa(this.opt.datatype.name);
+            if(this.opt.subdir) path += '/'+this.opt.subdir;
+
+            //uiconfig is the new kid in the block
+            let uiconfig = {
+                //docker: view.docker,
+                task_id: this.opt.task._id,
+                type: view.ui,
+                datatype: this.opt.datatype.name,
+                subdir: this.opt.subdir,
+                files: this.opt.files,
+            }
+            path += "#"+btoa(JSON.stringify(uiconfig));
+
+            //launch the viewer`
             window.open(path, "", "width=1200,height=800,resizable=no,menubar=no"); 
         }
     }

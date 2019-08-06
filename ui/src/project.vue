@@ -306,7 +306,6 @@ export default {
 
     watch: {
         '$route': function() {
-            //console.log("route changed");
             var project_id = this.$route.params.id;
             if(project_id && this.selected && project_id != this.selected._id) {
                 this.open_project(this.projects[project_id]);
