@@ -75,17 +75,6 @@
 
                 <!--rule body-->
                 <div v-if="selected == rule" transition="expand">
-                    <!--
-                    <div v-if="rule.active" style="margin: 0px 10px;">
-                        <b-btn @click="deactivate(rule)" variant="outline-danger" size="sm" v-if="!rule.deactivating"><icon name="times"/> Deactivate </b-btn>
-                        <b-btn variant="outline-danger" size="sm" v-if="rule.deactivating"><icon name="cog" :spin="true"/> Deactivating</b-btn>
-                        <small style="opacity: 0.8; padding: 10px;"><b>{{rule.activetaskcount||0}}</b> Active Tasks</small>
-                    </div>
-                    <div v-else style="margin: 0px 10px;">
-                        <b-btn @click="activate(rule)" variant="outline-success" size="sm" v-if="!rule.active"><icon name="play"/> Activate </b-btn>
-                    </div>
-                    -->
-
                     <div class="rule-body">
                         <div class="section-header">
                             <div style="float: right; position: relative; top: -4px;">
@@ -239,8 +228,6 @@ export default {
                 let newrule = event.msg;
                 let rule = this.rules.find(rule=>rule._id == newrule._id);
                 if(rule) {
-                    //console.log("updating stats");
-                    //console.dir(newrule);
                     rule.stats = newrule.stats;
                 }
             }
@@ -270,15 +257,6 @@ export default {
         selected: function() {
             if(!this.selected) return;
             Vue.set(this.selected, 'subject_match_edit', this.selected.subject_match);
-
-            /*
-            //start activetaskcount query
-            if(this.activetaskcount_int) clearInterval(this.activetaskcount_int);
-            this.activetaskcount_int = setInterval(()=>{
-                this.get_activetaskcount();    
-            }, 5000);
-            this.get_activetaskcount();
-            */
         },
     },
 
@@ -481,8 +459,6 @@ export default {
 
         submit(rule) {
             rule.project = this.project._id; //rule editor doesn't set project id.
-            console.log("submitting rule");
-            console.dir(rule);
             if(rule._id) {
                 //update
                 this.$http.put('rule/'+rule._id, rule).then(res=>{

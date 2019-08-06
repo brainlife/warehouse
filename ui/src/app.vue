@@ -95,6 +95,7 @@
                                                     <template slot="tag_extra">
                                                         <span v-if="input.multi" style="opacity: 0.8">(multi)</span>
                                                         <span v-if="input.optional" style="opacity: 0.8">(optional)</span>
+                                                        <p v-if="input.desc" style="margin-bottom: 0px; font-size: 80%;">{{input.desc}}</p>
                                                     </template>
                                                 </datatype>
                                             </div>
@@ -116,6 +117,7 @@
                                                         :tag_pass="output.datatype_tags_pass">
                                                     <template slot="tag_extra">
                                                         <span v-if="output.datatype_tags_pass" title="tag pass through from this input dataset">+ <b>{{output.datatype_tags_pass}}</b></span>
+                                                        <p v-if="output.desc" style="margin-bottom: 0px; font-size: 80%;">{{output.desc}}</p>
                                                     </template>
                                                 </datatype>
                                                 <small style="position: relative" v-if="output.output_on_root && output.files"> 

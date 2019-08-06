@@ -295,6 +295,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                     <b-input-group prepend="ID">
                                         <b-form-input type="text" v-model="input.id" required />
                                     </b-input-group>
+                                    <small class="text-muted">Not the key used in config.json</small>
                                 </b-col>
                                 <b-col cols="7">
                                      <div class="right-buttons">
@@ -333,7 +334,7 @@ Normally, the App description is automatically pulled from github repo descripti
                             </b-row>
 
                             <span class="text-muted">Description (optional)</span>
-                            <b-form-textarea v-model="input.desc" placeholder="Enter description to show for this field" :rows="3" :max-rows="6"/>
+                            <b-form-textarea v-model="input.desc" placeholder="Describe what this input dataset is used for" :rows="3" :max-rows="6"/>
 
                             <div v-if="input.datatype">
                                 <br><b>File Mapping</b><br>
@@ -376,27 +377,31 @@ Normally, the App description is automatically pulled from github repo descripti
                 Output
             </h4>
             <div style="border-left: 4px solid #28a745; padding-left: 10px;">
-                <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px;">
+                <div v-for="(output, idx) in output_datasets" v-if="output.pid" :key="output.pid" style="margin-bottom: 10px; position: relative;">
                     <b-card>
-                           <b-row>
-                            <b-col>
+                         <div style="position: absolute; right: 20px; top: 5px;">
+                            <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
+                                <icon name="arrow-up" />
+                            </div>
+                            <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
+                                <icon name="arrow-down" />
+                            </div>
+                            <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
+                                <icon name="trash"/>
+                            </div>
+                        </div>
+                        <b-row>
+                            <b-col cols="5">
                                 <div class="text-muted">Output Directory</div>
                                 <b-form-input type="text" v-model="output.id" required />
                             </b-col>
                             <b-col cols="7">
-                                 <div style="float: right;">
-                                    <div class="button" v-if="idx > 0 && output_datasets.length > 1" @click="swap_outputs(idx, idx - 1)">
-                                        <icon name="arrow-up" />
-                                    </div>
-                                    <div class="button" v-if="idx < output_datasets.length - 1 && output_datasets.length > 1" @click="swap_outputs(idx, idx + 1)">
-                                        <icon name="arrow-down" />
-                                    </div>
-                                    <div class="button button-danger" @click="output_datasets.splice(idx, 1)">
-                                        <icon name="trash"/>
-                                    </div>
-                                </div>
+                                <span class="text-muted">Description (optional)</span>
+                                <b-form-textarea v-model="output.desc" placeholder="Describe what this output dataset can be used for" :rows="2" :max-rows="6"/>
                             </b-col>
                         </b-row>
+                        <br>
+
                         <!--<small class="text-muted">You should output files in a subdirectory with this ID as the directory name (unless you set "Output on root" below.)</small>-->
                         <b-row>
                             <b-col>
@@ -404,22 +409,23 @@ Normally, the App description is automatically pulled from github repo descripti
                                 <datatypeselecter v-model="output.datatype"></datatypeselecter>
                                 <datatype :datatype="datatypes[output.datatype]" style="margin-top: 5px;" v-if="output.datatype" :clickable="false"/>
                             </b-col>
-                            <b-col cols="7" v-if="output.datatype">
-                                <div class="text-muted">Datatype Tags</div>
-                                <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
-                                <small class="text-muted">Set these datatype tags on this output dataset</small>
+                            <b-col cols="7">
+                                <div v-if="output.datatype">
+                                    <div class="text-muted">Datatype Tags</div>
+                                    <tageditor v-model="output.datatype_tags" :options="datatypes[output.datatype]._tags" />
+                                    <small class="text-muted">Set these datatype tags on this output dataset</small>
 
-                                <div class="text-muted">Datatype Tags Passthrough</div>
-                                <b-form-select v-model="output.datatype_tags_pass">
-                                    <option :value="null">(No Pass)</option>
-                                    <option v-for="input in input_datasets" :key="input.id" :value="input.id">{{input.id}}</option>
-                                </b-form-select>
-                                <small class="text-muted">Add all datatype tags from the input dataset specified</small>
-                                
+                                    <div class="text-muted">Datatype Tags Passthrough</div>
+                                    <b-form-select v-model="output.datatype_tags_pass">
+                                        <option :value="null">(No Pass)</option>
+                                        <option v-for="input in input_datasets" :key="input.id" :value="input.id">{{input.id}}</option>
+                                    </b-form-select>
+                                    <small class="text-muted">Add all datatype tags from the input dataset specified</small>
+                                </div>
                             </b-col>
                         </b-row>
-                        
                         <br>
+                        <b-form-checkbox v-model="output.archive">Archive this output by default. <small>Uncheck this if this output is rarely used / archived.</small></b-form-checkbox>
                         <b-form-checkbox v-model="output.output_on_root">(DEPRECATED) ignore output directory. Output files will be stored on the root of workdir.</b-form-checkbox>
                         <div v-if="output.output_on_root">
                             <div class="text-muted" style="margin-top: 3px;">Datatype File Mapping <small>Optional override of file/direcory name to avoid more than 1 output to collide.</small></div>
@@ -868,6 +874,7 @@ export default {
                 datatype: null,
                 datatype_tags: [],
                 datatype_tags_pass: null,
+                archive: true,
                 files: [],
             });
         },

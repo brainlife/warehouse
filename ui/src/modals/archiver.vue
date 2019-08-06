@@ -89,6 +89,7 @@ export default {
 
     methods: {
         submit(evt) {
+            this.$refs.archiver.hide();
             evt.preventDefault();
 
             //TODO - project should be a required field, but somehow form validation isn't fireing. 
@@ -122,12 +123,12 @@ export default {
             }).then(res=>{
                 this.$root.$emit('archiver.submit', res.data);
                 this.$notify({text: "Archiving requested.."});
-                this.$refs.archiver.hide();
             }).catch(err=>{
                 console.error(err);
                 this.$notify({text: err, type: "error"});
             });
         },
+
         editorInit() {
             require('brace/mode/json')
             //require('brace/theme/chrome')
@@ -152,4 +153,8 @@ export default {
 }
 </script>
 <style scoped>
+h5 {
+font-size: 13pt;
+}
+
 </style>
