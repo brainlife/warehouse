@@ -106,7 +106,23 @@ function register_dataset(task, output, product, cb) {
         product: escape_dot(product),
 
         prov: {
-            task,
+            //only store the most important things
+            task: {
+                _id: task._id,
+                name: task.name,
+                config: task.config,
+                service: task.service,
+                service_branch: task.service_branch,
+
+                instance_id: task.instance_id,
+                resource_id: task.resource_id,
+                commit_id: task.commit_id,
+                user_id: task.user_id,
+
+                create_date: task.create_date,
+                start_date: task.start_date,
+                finish_date: task.finish_date,
+            },
             output_id: output.id,
             subdir: output.subdir, //optional
 
