@@ -30,6 +30,16 @@ async function asyncForEach(array, callback) {
     await Promise.all(awaits);
 }
 
+async function get_dataset(id) {
+    let edges = "id name public created snapshots { tag created } analytics { downloads views }";
+    let query = "query { dataset(id:\""+id+"\") { "+edges+" } }";
+    let body = await rp({json: true, method: 'POST',
+        uri: 'https://openneuro.org/crn/graphql',
+        body: {query},
+    });
+	return body.data.dataset;
+}
+
 async function list_datasets() {
     logger.debug("listing datasets from openneuro");
     let edges = "edges { node { id name public created snapshots { tag created } analytics { downloads views } } }";
@@ -543,21 +553,13 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
 function run() {
     db.init(async err=>{
         if(err) throw err;
-        let datasets = await list_datasets();
+        //load all datasets
+        //let datasets = await list_datasets();
+
+        //specific dataset
+        let datasets = [await get_dataset("ds001454")];
+
         async.eachSeries(datasets, (dataset, next_dataset)=>{
-
-            ///////////////////////////////////////////////////////////////////////////////////////
-            // 
-            // limit to a single dataset for now
-            //
-            //if(dataset.id != "ds001499") return next_dataset(); //empty urls
-            //if(dataset.id != "ds000221") return next_dataset(); 
-            //if(dataset.id != "ds000224") return next_dataset(); 
-            //if(dataset.id != "ds000115") return next_dataset(); 
-            //
-            //
-            ///////////////////////////////////////////////////////////////////////////////////////
-
             console.log("%s %s", dataset.id, dataset.name);
             //find the latest snapshot
             dataset.snapshots.sort((a,b)=>{
@@ -571,6 +573,8 @@ function run() {
                 logger.warn("no snapshots for dataset:%s", dataset.id);
                 return next_dataset();
             }
+
+            //TODO - can I pass this to the graphql query?
             if(dataset.analytics.downloads < 30) {
                 logger.info("low download count.. skipping");
                 return next_dataset();
