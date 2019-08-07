@@ -484,7 +484,6 @@ export default {
                 if(dataset.prov.task_id != task._id) return false;
                 if(dataset.prov.output_id != output.id) return false;
                 return true;
-                //return (dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
             });
         },
 

@@ -89,7 +89,6 @@ export default {
 
     methods: {
         submit(evt) {
-            this.$refs.archiver.hide();
             evt.preventDefault();
 
             //TODO - project should be a required field, but somehow form validation isn't fireing. 
@@ -121,8 +120,9 @@ export default {
 
                 await: false, //request to not wait for dataset to be archived before returning
             }).then(res=>{
-                this.$root.$emit('archiver.submit', res.data);
+                //this.$root.$emit('archiver.submit', res.data); //dataset event should be delivered via event bus
                 this.$notify({text: "Archiving requested.."});
+                this.$refs.archiver.hide();
             }).catch(err=>{
                 console.error(err);
                 this.$notify({text: err, type: "error"});
