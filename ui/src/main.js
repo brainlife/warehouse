@@ -172,7 +172,6 @@ router.beforeEach(function (to, from, next) {
         return;
     }
 
-
     // redirect to auth unless route is public
     if (!to.meta) to.meta = {};
     if (!to.meta.public && !Vue.config.jwt) {
