@@ -171,7 +171,7 @@
                             </p>
 
                             <b-row>
-                                <b-col cols="4" v-for="resource in resources" :key="resource._id">
+                                <b-col cols="6" v-for="resource in resources" :key="resource._id">
                                     <div class="resource" v-b-popover.hover.d500="resource.info.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
                                         <p style="padding: 10px; margin-bottom: 0px;">
                                             <icon v-if="resource.gids.length > 0" name="users" style="opacity: 0.4; float: right"/>
@@ -205,23 +205,28 @@
                             <br>
                         </div>
 
-                        <div v-if="config.user">
-                            <span class="form-header">Maintaners</span>
-                            <p><small class="text-muted">List of users who currently maintains this App.</small></p>
-                            <p v-for="c in app.admins" :key="c._id">
-                                <contact :id="c"/>
-                            </p>
-                            <br>
-                        </div>
-
-                        <div v-if="app.contributors.length > 0">
-                            <span class="form-header">Contributors</span>
-                            <p><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
-                            <p v-for="dev in app.contributors" :key="dev._id">
-                                <contact :fullname="dev.name" :email="dev.email"/>
-                            </p>
-                            <br>
-                        </div>
+                        <b-row>
+                            <b-col>
+                                <div v-if="config.user">
+                                    <span class="form-header">Maintaners</span>
+                                    <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
+                                    <p v-for="c in app.admins" :key="c._id">
+                                        <contact :id="c"/>
+                                    </p>
+                                    <br>
+                                </div>
+                            </b-col>
+                            <b-col>
+                                <div v-if="app.contributors.length > 0">
+                                    <span class="form-header">Contributors</span>
+                                    <p style="height: 30px;"><small class="text-muted">List of code contributors.({{app.github}}).</small></p>
+                                    <p v-for="dev in app.contributors" :key="dev._id" style="margin-bottom: 8px;">
+                                        <contact :fullname="dev.name" :email="dev.email"/>
+                                    </p>
+                                    <br>
+                                </div>
+                            </b-col>
+                        </b-row>
  
                         <!-- I am going to replace this with graphite data
                         <div v-if="info">

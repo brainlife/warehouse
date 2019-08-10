@@ -49,7 +49,7 @@
                     <b-alert :show="!dataset.removed && dataset.status == 'storing'" variant="secondary"><icon name="cog" spin/> Archiving Dataset .. Please wait for a minute before you can interact with this dataset.</b-alert>
                     <!-- detail -->
                     <div class="margin20">
-                        <b-row>
+                        <b-row v-if="dataset.desc || dataset._canedit">
                             <b-col cols="3">
                                 <span class="form-header">Description</span>
                             </b-col>

@@ -89,16 +89,17 @@
                                 </p>
                             </div>
                             
-                            <p class="info" v-if="selected.stats.rules" title="Number of pipeline rules configured for this project">
+                            <p class="info" v-if="!selected.openneuro && get_total(selected.stats.instances) > 0" title="Tasks currently running">
+                                <icon name="paper-plane"/>
+                                <stateprogress :states="selected.stats.instances" style="width: 60%"/>
+                            </p>
+
+                            <p class="info" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
                                 <icon name="robot"/>
                                 {{selected.stats.rules.active}} 
-                                <!--<span v-if="selected.stats.rules.inactive">/ {{selected.stats.rules.inactive}}</span>-->
                                 <span style="opacity: 0.6">Pipeline Rules</span>
                             </p>
-                            <p class="info" v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0" title="Tasks currently running">
-                                <icon name="paper-plane"/>
-                                <stateprogress :states="selected.stats.instances"/>
-                            </p>
+
                         </div>
                     </b-col>
 
@@ -114,7 +115,6 @@
                             </p>
                         </div>
                         -->
-
                         <div v-if="selected.agreements && selected.agreements.length > 0">
                             <span class="form-header">Agreements</span>
                             <p> <small class="text-muted">You must consent to the following agreement(s) before accessing datasets on this project.</small> </p>
@@ -122,48 +122,56 @@
                             <br>
                         </div>
 
-                        <div v-if="config.user">
-                            <span class="form-header">Admins</span>
-                            <p>
-                                <small class="text-muted">Users who can update name / desc / project members, share processes, and create rules / publications.</small>
-                            </p>
-                            <p v-for="c in selected.admins" :key="c._id">
-                                <contact :id="c"/>
-                            </p>
-                            <br>
-                        </div>
+                        <b-row>
+                            <b-col>
+                                <div v-if="config.user">
+                                    <span class="form-header">Admins</span>
+                                    <p style="height: 50px;">
+                                        <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
+                                    </p>
+                                    <p v-for="c in selected.admins" :key="c._id">
+                                        <contact :id="c"/>
+                                    </p>
+                                    <br>
+                                </div>
+                            </b-col>
 
-                        <div v-if="config.user">
-                            <span class="form-header">Members</span>
-                            <p>
-                                <small class="text-muted">Users who have read/write access to datasets on this project, share processes, and create rules / publications.</small>
-                            </p>
-                            <p v-for="c in selected.members" :key="c._id">
-                                <contact :id="c"/>
-                            </p>
-                            <p class="text-muted" v-if="selected.members.length == 0"><small>(No Members)</small></p>
-                            <br>
-                        </div>
+                            <b-col>
+                                <div v-if="config.user">
+                                    <span class="form-header">Members</span>
+                                    <p style="height: 50px;">
+                                        <small class="text-muted">Read/Write access to datasets, share processes, and create rules / publications.</small>
+                                    </p>
+                                    <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
+                                        <contact :id="c"/>
+                                    </p>
+                                    <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
+                                    <br>
+                                </div>
+                            </b-col>
 
-
-                        <div v-if="config.user && selected.access == 'private'">
-                            <span class="form-header">Guests</span>
-                            <p> <small class="text-muted">Users who have read access to datasets on this project.</small> </p>
-                            <p v-for="c in selected.guests" :key="c._id">
-                                <contact :id="c"/>
-                            </p>
-                            <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>(No Guests)</small></p>
-                            <br>
-                        </div>
+                            <b-col>
+                                <div v-if="config.user && selected.access == 'private'">
+                                    <span class="form-header">Guests</span>
+                                    <p style="height: 50px;">
+                                        <small class="text-muted">Read access to dataset.</small>
+                                    </p>
+                                    <p v-for="c in selected.guests" :key="c._id">
+                                        <contact :id="c"/>
+                                    </p>
+                                    <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>No Guests</small></p>
+                                    <br>
+                                </div>
+                            </b-col>
+                        </b-row>
 
                         <div v-if="selected.readme">
-                            <span class="form-header">Readme</span>
-                            <p class="text-muted" v-if="!selected.readme">No readme</p>
+                            <!--<span class="form-header">Readme</span>-->
                             <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme box"></vue-markdown>
                             <br>
                         </div>
 
-                        <div v-if="resource_usage && total_walltime > 0">      
+                        <div v-if="resource_usage && total_walltime > 3600*1000">      
                             <span class="form-header">Resource Usage</span>     
                             <br>
                             <small>Total Walltime: <b>{{(total_walltime/(3600*1000)).toFixed(2)}} hours</b></small>               
@@ -390,6 +398,15 @@ export default {
     },
 
     methods: {
+        get_total(instances) {
+            if(!instances) return 0;
+            let counts = 0;
+            for(let key in instances) {
+                counts += instances[key];
+            }
+            return counts;
+        },
+
         edit() {
             this.$router.push('/project/'+this.selected._id+'/edit');
         },

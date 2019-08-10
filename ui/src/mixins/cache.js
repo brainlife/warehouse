@@ -12,7 +12,6 @@ export default {
 
     methods: {
         get_cache: function(id) {
-            //console.log("looking for ", id);
             if(cache_[id]) {
                 let now = (new Date()).getTime();
                 if(cache_[id].exp < now) return null;
