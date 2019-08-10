@@ -35,7 +35,7 @@
         </div>
 
         <p class="text-muted">
-            For Windows users, you will need to install <a href="https://itsfoss.com/install-bash-on-windows/">bash shell</a> before running the command.
+            For Windows users, you will need to install <a href="https://www.windowscentral.com/how-install-bash-shell-command-line-windows-10" target="_blank">BASH shell</a> before running the command.
         </p>
     </div>
 
