@@ -14,23 +14,27 @@ const common = require("./common"); //circular?
 //mongoose.Promise = global.Promise; 
 if(config.mongoose_debug) mongoose.set("debug", true);
 
+let amqp_conn = null;
+
+//deprecated by warehouse_ex
 let dataset_ex;
 let rule_ex;
-let amqp_conn = null;
+
 function init_amqp(cb) {
     logger.info("connecting to amqp..");
     common.get_amqp_connection((err, conn)=>{
         amqp_conn = conn;
         logger.info("amqp connection ready.. creating exchanges");
 
+        //deprecated by warehouse_ex
         amqp_conn.exchange("warehouse.dataset", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
             dataset_ex = ex;
-
-            amqp_conn.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
-                rule_ex = ex;
-                cb();
-            });
         });
+        amqp_conn.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
+            rule_ex = ex;
+        });
+
+        cb();
     });
 }
 
@@ -520,6 +524,10 @@ var appSchema = mongoose.Schema({
 
     //basic stats for this app (aggregated by bin/appinfo.js - most info comes from amaretti/service/info)
     stats: {
+        serviceinfo: Object,
+        gitinfo: Object,
+        
+        //DEPRECTED - stats.serviceinfo / stats.gitinfo
         requested: Number, //number of times this app was requested
         users: Number, //number of users who used this app
         stars: Number, //github stars

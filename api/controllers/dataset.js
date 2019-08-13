@@ -1244,6 +1244,8 @@ router.get('/download/:id', jwt({
             return;
         }
         if(!dataset.storage) return next("dataset:"+dataset._id+" doesn't have storage field set");
+
+        common.publish("dataset.download."+req.user.sub+"."+dataset.project+"."+dataset._id, {headers: req.headers});
         
         //app-stage can access any dataset
         if(req.user && req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('stage')) {

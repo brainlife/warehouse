@@ -67,30 +67,24 @@ function handle_app(app, cb) {
             }, (err, res, info)=>{
                 if(err) return next(err);
                 if(res.statusCode != 200) return next("couldn't obtain service stats "+res.statusCode);
+                app.stats.serviceinfo = info;
 
-                console.log("before-------------");
-                console.log(JSON.stringify(app.stats, null, 4));
                 common.pull_appinfo(app.github, (err, gitinfo)=>{
                     if(err) return next(err);
-                    Object.assign(app, gitinfo);
-
+                    //Object.assign(app, gitinfo); //TODO which fields is this setting?
+                    app.stats.gitinfo = gitinfo; //stars
+                    
+                    /*
                     if(info) {
+                        //deprecated..
                         app.stats.requested = info.counts.requested;
                         app.stats.users = info.users;
                         app.stats.success_rate = info.success_rate;
+
                         app.markModified('stats');
                     }
-
-                    /*
-                    //all existing app should have this set to true for now
-                    app.outputs.forEach(output=>{
-                        //console.dir(JSON.stringify(output, null, 4));
-                        output.output_on_root = true;
-                    });
                     */
-                    
-                    console.log("after-------------");
-                    console.log(JSON.stringify(app.stats, null, 4));
+                    app.markModified('stats');
                     next();
                 });
             });

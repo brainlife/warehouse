@@ -129,7 +129,10 @@ function register_dataset(task, output, product, cb) {
             instance_id: task.instance_id, //deprecated use prov.task.instance_id
             task_id: task._id, //deprecated. use prov.task._id
         },
-    }, cb);
+    }, (err, _dataset)=>{
+        if(!err) exports.publish("dataset.create."+task.user_id+"."+output.archive.project+"."+_dataset._id, {});
+        cb(err, _dataset);
+    });
 }
 
 //wait for a task to terminate .. finish/fail/stopped/removed
@@ -639,10 +642,14 @@ exports.sensu_name = function(name) {
 }
 
 let amqp_conn;
+let warehouse_ex;
 exports.get_amqp_connection = function(cb) {
     if(amqp_conn) return cb(null, amqp_conn); //already connected
     amqp_conn = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
     amqp_conn.once("ready", ()=>{
+        amqp_conn.exchange("warehouse", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
+            warehouse_ex = ex;
+        });
         cb(null, amqp_conn);
     });
     amqp_conn.on("error", err=>{
@@ -810,3 +817,10 @@ exports.dataset_to_filename = function(dataset) {
     path+= ".id-"+dataset._id;
     return path;
 }
+
+exports.publish = (key, message, cb)=>{
+    message.timestamp = (new Date().getTime())/1000; //it's crazy that amqp doesn't set this?
+    warehouse_ex.publish(key, message, {}, cb);
+}
+
+
