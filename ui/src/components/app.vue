@@ -43,23 +43,23 @@
         <slot/>
         <div class="stats" v-if="app_.stats">
             <span class="stat" v-b-tooltip.hover.d500 title="Number of time this App was requested">
-                <icon name="play" scale="0.8"/> {{app_.stats.requested}}
+                <icon name="play" scale="0.8"/> {{app_.stats.serviceinfo.counts.requested}}
                 &nbsp;
                 &nbsp;
             </span>
             <span class="stat" v-b-tooltip.hover.d500 title="Number of unique users who requested this App">
-                <icon name="user" scale="0.8"/> {{app_.stats.users}}
+                <icon name="user" scale="0.8"/> {{app_.stats.serviceinfo.users}}
                 &nbsp;
                 &nbsp;
             </span>
-            <span class="stat" v-b-tooltip.hover.d500 title="github stars" v-if="app_.stats.stars">
-                <icon name="star" scale="0.8"/> {{app_.stats.stars}}
+            <span class="stat" v-b-tooltip.hover.d500 title="github stars" v-if="app_.stats.gitinfo">
+                <icon name="star" scale="0.8"/> {{app_.stats.gitinfo.stats.stars}}
                 &nbsp;
                 &nbsp;
             </span>
             <span class="stat" style="float: right;" v-b-tooltip.hover.d500 
-                title="success rate = finished/(failed+finished)" v-if="app_.stats.success_rate">
-                <icon name="check-circle" scale="0.8"/> {{app_.stats.success_rate.toFixed(1)}}%
+                title="success rate = finished/(failed+finished)" v-if="app_.stats.serviceinfo.success_rate">
+                <icon name="check-circle" scale="0.8"/> {{app_.stats.serviceinfo.success_rate.toFixed(1)}}%
             </span>
         </div>
     </div>

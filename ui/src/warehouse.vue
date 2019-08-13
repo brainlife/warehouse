@@ -321,6 +321,8 @@ text-transform: uppercase;
 opacity: 0.6;
 font-weight: bold;
 font-size: 13px;
+margin-bottom: 5px;
+display: block;
 }
 
 .vs__actions button.clear {
