@@ -493,7 +493,7 @@ export default {
                     var output_req = {
                         id: output.id,
                         datatype: output.datatype._id,
-                        desc: output.id+ " from "+this.app.name,
+                        desc: output.desc||this.app.name,
                         meta,
                     };
 

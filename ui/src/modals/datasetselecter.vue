@@ -1,7 +1,7 @@
 <template>
 <b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit" ok-only>
     <b-row>
-        <b-col>From Project</b-col>
+        <b-col><span class="form-header">From Project</span></b-col>
         <b-col cols="9">
             <projectselecter ref="psel" v-model="project" :required="true"></projectselecter>
         </b-col>
@@ -11,14 +11,14 @@
     <div style="background-color: #eee; padding: 15px; opacity: 0.8;">
         <p><b>Filter</b></p>
         <b-row v-if="subjects">
-            <b-col>Subjects</b-col>
+            <b-col><span class="form-header">Subject</span></b-col>
             <b-col cols="9">
                 <select2 style="width: 100%; max-width: 100%;" v-model="selected_subjects" :options="subjects" :multiple="true"></select2>
             </b-col>
         </b-row>
         <br>
         <b-row v-if="datatypes_s2">
-            <b-col>Datatype</b-col>
+            <b-col><span class="form-header">Datatype</span></b-col>
             <b-col cols="9">
                 <select2 style="width: 100%; max-width: 100%;" v-model="selected_datatypes" :options="datatypes_s2" :multiple="true"></select2>
             </b-col>
@@ -27,7 +27,7 @@
     <br>
 
     <b-row>
-        <b-col>Datasets</b-col>
+        <b-col><span class="form-header">Datasets</span></b-col>
         <b-col cols="9">
             <select2 style="width: 100%; max-width: 100%;" v-model="datasets" :dataAdapter="debounce_grab_datasets" :multiple="true"></select2>
             <b-alert :show="is_subject_mixed" variant="info" style="margin-top: 10px;" dismissible> 

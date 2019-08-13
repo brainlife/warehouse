@@ -120,7 +120,7 @@ export default {
 
                 await: false, //request to not wait for dataset to be archived before returning
             }).then(res=>{
-                this.$root.$emit('archiver.submit', res.data);
+                //this.$root.$emit('archiver.submit', res.data); //dataset event should be delivered via event bus
                 this.$notify({text: "Archiving requested.."});
                 this.$refs.archiver.hide();
             }).catch(err=>{
@@ -128,6 +128,7 @@ export default {
                 this.$notify({text: err, type: "error"});
             });
         },
+
         editorInit() {
             require('brace/mode/json')
             //require('brace/theme/chrome')
@@ -152,4 +153,8 @@ export default {
 }
 </script>
 <style scoped>
+h5 {
+font-size: 13pt;
+}
+
 </style>

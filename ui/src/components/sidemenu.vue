@@ -1,4 +1,5 @@
 <template>
+
 <div class="sidemenu">
     <div class="header" :style="styles">
         <span class="title" @click="gohome">brainlife</span>
@@ -184,7 +185,7 @@ export default {
         },
         login() {
             sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
-            document.location = "/auth";
+            document.location = Vue.config.auth_signin;
         },
         signup() {
             document.location = "/auth/#!/signup";

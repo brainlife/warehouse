@@ -47,14 +47,8 @@
         <task :task="task" class="task" v-if="task.show">
             <!--header-->
             <div slot="header" class="task-header">
-                <div v-if="task.config._app && task.show" style="margin-right: 30px;">
-                    <app :appid="task.config._app" :branch="task.service_branch||'master'" :compact="true">
-                        <!-- moved to components/task
-                        <div v-if="task.desc" class="task-desc">
-                            {{task.desc}}
-                        </div>
-                        -->
-                    </app>
+                <div v-if="task.app && task.show" style="margin-right: 30px;">
+                    <app :app="task.app" :branch="task.service_branch||'master'" :compact="true"/>
                 </div>
                 <div v-else>
                     <h4 style="margin: 0px;" class="text-muted">
@@ -67,14 +61,14 @@
             <div slot="input" v-if="task.config._inputs">
                 <div v-for="(input, idx) in task.config._inputs" :key="idx" class="input">
                     <b v-if="input.meta && input.meta.subject">{{input.meta.subject}}</b>
-                    <div style="display: inline-block;" v-if="findtask(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
+                    <div style="display: inline-block;" v-if="find_task(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
                         <span style="opacity: 0.5;">
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
-                            <statusicon v-if="findtask(input.task_id).status != 'finished'" :status="findtask(input.task_id).status"/>
+                            <statusicon v-if="find_task(input.task_id).status != 'finished'" :status="find_task(input.task_id).status"/>
                             <icon style="margin: 0 5px" name="arrow-left" scale="0.8"/> 
-                            <b>t.{{findtask(input.task_id).config._tid}}</b>
-                            {{findtask(input.task_id).name}}
+                            <b>t.{{find_task(input.task_id).config._tid}}</b>
+                            {{find_task(input.task_id).name}}
                         </span>
                     </div>
                     <div v-else style="display: inline-block;">
@@ -85,7 +79,7 @@
                         </span>
                         <b-badge variant="danger">Removed</b-badge>
                     </div>
-                    <small class="ioid">({{input.id}})</small>
+                    <small class="ioid" v-if="task.app">({{compose_desc(task.app.inputs, input.id)}})</small>
                 </div>
             </div>
 
@@ -123,7 +117,7 @@
                     <span class="text-muted" v-if="output.dataset_id && output.project != project._id">
                         <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> <b>{{projectname(output.project)}}</b>
                     </span>
-                    <small class="ioid">({{output.id}})</small>
+                    <small class="ioid" v-if="task.app">({{compose_desc(task.app.outputs, output.id)}})</small>
 
                     <div v-if="findarchived(task, output).length > 0" class="archived-datasets">
                         <div class="archived-datasets-title">Archived Datasets</div>
@@ -160,7 +154,7 @@
                 <statusicon :status="task.status"/>
             </div>
             <b>
-                <appname v-if="task.config._app" :appid="task.config._app"/>
+                <appname v-if="task.app" :app="task.app"/>
                 <span v-else class="text-muted">{{task.name}}</span>
             </b>
         </div>
@@ -195,6 +189,8 @@ import mute from '@/components/mute' //deprecate?
 import datatypetag from '@/components/datatypetag'
 import product from '@/components/product'
 
+import appcache from '@/mixins/appcache'
+
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 const lib = require('../lib');
@@ -205,6 +201,7 @@ let cache_datatypes = null;
 let cache_projects = null;
 
 export default {
+    mixins: [appcache],
     props: [ 'project', 'instance' ],
 
     components: { 
@@ -334,13 +331,21 @@ export default {
             this.$emit("updatedesc", this.desc);
         },
 
-        findtask(id) {
+        find_task(id) {
             var found = null;
             this.tasks.forEach(task=>{
                 if(task._id == id) found = task;
             });
             return found;
         },
+
+        compose_desc(iolist, id) {
+            let entry = iolist.find(it=>it.id == id);
+            let desc = id;
+            if(entry && entry.desc) desc += " / "+entry.desc;
+            return desc;
+        },
+
         scrollto(id) {
             var header = document.getElementsByClassName("instance-active")[0];
             var elem = document.getElementById(id);
@@ -349,7 +354,6 @@ export default {
             this.$refs.process.scrollTop = top;
         },
         open_dataset(id) {
-            console.log("opening datset", id);
             this.$root.$emit('dataset.view', {id});
         },
 
@@ -458,9 +462,17 @@ export default {
                 this.loading = false;
                 this.desc = this.instance.desc;
 
+                //load app detail
+                this.tasks.forEach(task=>{
+                    if(task.config._app) this.appcache(task.config._app, (err, app)=>{
+                        task.app = app;
+                    });
+                });
+
                 //loading archived datasets for all tasks
                 var task_ids = this.tasks.map(task=>task._id); 
                 this.$http.get('dataset', {params: {
+                    select: '-product',
                     find: JSON.stringify({
                         project: this.project._id,
                         removed: false,
@@ -484,7 +496,6 @@ export default {
                 if(dataset.prov.task_id != task._id) return false;
                 if(dataset.prov.output_id != output.id) return false;
                 return true;
-                //return (dataset.prov.task_id == task._id && dataset.prov.output_id == output.id);
             });
         },
 

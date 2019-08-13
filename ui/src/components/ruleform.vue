@@ -57,6 +57,7 @@
                             <span class="text-muted" v-if="input.optional">(optional)</span>
                             <div class="button" v-if="!input.edit_extra_tags" @click="edit_etag(input)" style="position: absolute; top: 7px;"><icon name="plus" scale="0.8"/></div>
                             <tageditor v-if="input.edit_extra_tags" v-model="rule.extra_datatype_tags[input.id]" placeholder="(enter extra datatype tags)" style="margin-top: 2px;"/>
+                            <p v-if="input.desc" style="margin-bottom: 0px;"><small>{{input.desc}}</small></p>
                         </div>
                         <p v-if="input.optional">
                             <b-form-checkbox v-model="rule.input_selection[input.id]" value="ignore">Do not use this input</b-form-checkbox>
@@ -111,6 +112,7 @@
                         <div slot="header">
                             <small class="text-muted" style="float: right">{{output.id}}</small>
                             <datatypetag :datatype="output.datatype" :tags="output.datatype_tags"/>
+                            <p v-if="output.desc" style="margin-bottom: 0px;"><small>{{output.desc}}</small></p>
                         </div>
                         <p>
                             <b-form-checkbox v-model="rule.archive[output.id].do">Submit the App if this output dataset does not exist (and archive the output).</b-form-checkbox>
@@ -363,9 +365,6 @@ export default {
         ensure_ids_exists() {
             if(!this.rule.app) return;
             
-            //if(!this.rule.app.inputs) this.rule.app.inputs = [];
-            //if(!this.rule.app.outputs) this.rule.app.outputs = [];
-
             //ensure input.id exists on various objects (if not set)
             this.rule.app.inputs.forEach(input=>{
                 if(!this.rule.input_tags[input.id]) Vue.set(this.rule.input_tags, input.id, []);
@@ -382,7 +381,7 @@ export default {
             });
             this.rule.app.outputs.forEach(output=>{
                 if(!this.rule.output_tags[output.id]) Vue.set(this.rule.output_tags, output.id, [this.compose_output_tag()]);
-                if(!this.rule.archive[output.id]) Vue.set(this.rule.archive, output.id, {do: true, desc: ""}); //archive all by default
+                if(!this.rule.archive[output.id]) Vue.set(this.rule.archive, output.id, {do: output.archive, desc: ""}); 
             });
         },
 

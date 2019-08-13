@@ -109,14 +109,8 @@ export default {
             require('brace/mode/html')
             require('brace/mode/dockerfile')
 
-            /* too much visual noise?
-            //dark theme
-            require('brace/theme/monokai')
-            editor.setTheme("ace/theme/monokai");
-            */
-
             require('brace/theme/dawn')
-            editor.setTheme("ace/theme/dawn");
+            //editor.setTheme("ace/theme/dawn");
 
             editor.container.style.lineHeight = 1.25;
             editor.renderer.updateFontSize();

@@ -343,6 +343,9 @@ export default {
 
             let start_x;
             let new_x;
+
+
+            /* this doesn't seem to help all that much..
             let x_update_timer;
             splitter.onpointerdown = e=>{
                 splitter.onpointermove = e=>{
@@ -361,6 +364,18 @@ export default {
                 splitter.setPointerCapture(e.pointerId);    
                 start_x = e.clientX - this.splitter_pos;
             };
+            */
+
+            splitter.onpointerdown = e=>{
+                splitter.onpointermove = e=>{
+                    new_x = e.clientX + start_x;
+                    if(new_x < 400) new_x = 400;
+                    this.splitter_pos = new_x;  
+                };
+                splitter.setPointerCapture(e.pointerId);    
+                start_x = e.clientX - this.splitter_pos;
+            };
+
             splitter.onpointerup = e=>{
                 window.localStorage.setItem("splitter_pos", this.splitter_pos);
                 splitter.onpointermove = null;

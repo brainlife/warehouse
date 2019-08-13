@@ -110,18 +110,6 @@ export default {
         load_app() {
             this.appcache(this.appid, (err, app)=>{
                 this.app_ = app;
-
-/*
-                //deref deprecated_by
-                console.dir(app);
-                if(this.app_.deprecated_by) {
-                    console.log("loading deprecated bhydeprecatedbh");
-                    this.appcache(this.app_.deprecated_by, (err, deprecated_by)=>{
-                        console.log("loadded deprecatedbh");
-                        this.app_.deprecated_by_ = deprecated_by;
-                    });
-                }
-*/
             });
         },
 
