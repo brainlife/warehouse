@@ -405,6 +405,9 @@ export default {
                             //new task?
                             this.$notify("new t."+task.config._tid+"("+task.name+") "+task.status_msg);
                             task.show = true;
+                            if(task.config._app) this.appcache(task.config._app, (err, app)=>{
+                                task.app = app;
+                            });
                             this.tasks.push(task); 
                             Vue.nextTick(()=>{
                                 this.scrollto(task._id);

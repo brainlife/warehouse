@@ -5,13 +5,14 @@
     </slot>
 
     <!--status indicator-->
-    <div class="status-card" :class="task.status" style="border: none;">
+    <div class="status-card" :class="task.status" style="position: relative;">
+        <div v-if="estimated_remain(task)" class="remain" :style="{width: (estimated_remain(task)*100)+'%'}"/>
         <div style="float: left; padding: 6px 8px" @click="poke">
             <statusicon :status="task.status" scale="1.5"/>
         </div>
-        <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px;">
+        <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px; position: relative;">
             <div style="float: right;">
-                <div class="button" style="opacity: 0.7" v-if="editing_desc === null" @click="edit_desc" title="Edit Notes"><icon name="edit"/></div>
+                <div class="button" style="opacity: 0.7" v-if="!editing_desc" @click="editing_desc = true" title="Edit Notes"><icon name="edit"/></div>
                 <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid" @click="openinfo"><icon name="info"/></div>
                 <b-popover :target="'popover'+task.config._tid" triggers="hover">
                     <template slot="title"><span class="text-muted"><small>ID</small> {{task._id}}</span></template>
@@ -64,7 +65,7 @@
                 </div>
                 <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop" title="Stop Task"><icon name="stop"/></div>
                 <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove" title="Remove Task"><icon name="trash"/></div>
-            </div>
+            </div><!--float right-->
             <h4>
                 <strong style="text-transform: uppercase;">{{task.status}}</strong>
                 <small>
@@ -79,14 +80,14 @@
             <i style="font-size: 95%;">{{task.status_msg.trim()||'empty status message'}}</i>
         </div>
 
-        <div style="background-color: #fafafa; color: #555;">
-            <div class="note" v-if="task.desc || editing_desc !== null">
-                <div v-if="task.desc && editing_desc == null" @click="edit_desc" class="note-text">
+        <div style="background-color: #fafafa; color: #555; position: relative;">
+            <div class="note" v-if="task.desc || editing_desc">
+                <div v-if="task.desc && !editing_desc" @click="editing_desc = true" class="note-text">
                     <vue-markdown :source="task.desc" class="readme" style="margin: 0px 5px;"/>
                 </div>
-                <div v-if="editing_desc !== null" style="position: relative;">
-                    <b-form-textarea ref="desc_editor" v-model="editing_desc" placeholder="Enter Notes in Markdown" :rows="3" style="border: none; border-radius: 0; padding-right: 100px"/>
-                    <div class="button" @click="update_desc" style="position: absolute; top: 0; right: 0px; background-color: #666; margin: 5px;"><icon name="check"/> Save</div>
+                <div v-if="editing_desc" style="position: relative;">
+                    <div class="button" @click="editing_desc = false" style="position: absolute; top: 0; right: 0px; background-color: #666; margin: 5px;"><icon name="times"/></div>
+                    <b-form-textarea ref="desc_editor" v-model="task.desc" placeholder="Enter Notes in Markdown" :rows="3" style="background-color: #f0f0f0; border: none; border-radius: 0;"/>
                 </div>
             </div>
 
@@ -145,6 +146,7 @@ import contact from '@/components/contact'
 import VueMarkdown from 'vue-markdown'
 
 let resource_cache = {};
+let desc_debounce = null;
 
 export default {
     props: ['task'],
@@ -158,7 +160,7 @@ export default {
                 input: true,
             },
             show_masked_config: false,
-            editing_desc: null,
+            editing_desc: false,
             desc: null,
 
             resource: null,
@@ -168,12 +170,17 @@ export default {
     },
 
     watch: {
-        'task': {
+        task: {
             deep: true,
             handler: function() {
                 this.load_resource_info(this.task.resource_id);
             }
-        }
+        },
+        'task.desc'(nv, ov) {
+            if(nv == null || ov == null) return;
+            clearTimeout(desc_debounce);
+            desc_debounce = setTimeout(this.update_desc, 2000);
+        },
     },
 
     mounted() {
@@ -201,7 +208,8 @@ export default {
             var d = new Date();
             var i = this.remove_date.getTime() - d.getTime();
             return Math.round(i/(3600*24*1000));
-        }
+        },
+
     },
 
     filters: {
@@ -235,6 +243,7 @@ export default {
                 Vue.set(this.activeSections, section, true);
             } else this.activeSections[section] = !this.activeSections[section];
         },
+
         rerun() {
             this.$http.put(Vue.config.wf_api+'/task/rerun/'+this.task._id)
             .then(res=>{
@@ -244,6 +253,7 @@ export default {
                 this.$notify({ text: err.body.message, type: 'error'});
             });
         },
+
         stop() {
             this.$http.put(Vue.config.wf_api+'/task/stop/'+this.task._id)
             .then(res=>{
@@ -253,6 +263,7 @@ export default {
                 console.error(err); 
             });
         },
+
         remove() {
             this.$http.delete(Vue.config.wf_api+'/task/'+this.task._id)
             .then(res=>{
@@ -263,6 +274,7 @@ export default {
                 console.error(err); 
             });
         },
+
         poke() {
             this.$http.put(Vue.config.wf_api+'/task/poke/'+this.task._id)
             .then(res=>{
@@ -272,15 +284,18 @@ export default {
                 console.error(err); 
             });
         },
+
+        /*
         edit_desc() {
             this.editing_desc = this.task.desc||"";
             this.$nextTick(()=>{
                 this.$refs.desc_editor.focus();
             });
         },
+        */
+
         update_desc() {
-            this.task.desc = this.editing_desc;
-            this.editing_desc = null;
+            console.log(this.task.desc);
             this.$http.put(Vue.config.wf_api+'/task/'+this.task._id, {desc: this.task.desc})
             .then(res=>{
                 this.$notify({text: "Note successfully updated", type: 'success'});
@@ -288,8 +303,22 @@ export default {
                 console.error(err); 
             });
         },
+
         openinfo() {
             this.$root.$emit("taskinfo.open", {task: this.task, resource: this.resource});
+        },
+
+        estimated_remain(task) {
+            if(task.status != "running") return null;
+            if(!task.app) return null;
+            if(!task.app.stats) return null;
+            if(!task.app.stats.serviceinfo) return null;
+            let runtime_mean = task.app.stats.serviceinfo.runtime_mean;
+            let runtime_std = task.app.stats.serviceinfo.runtime_std;
+            let runtime = new Date().getTime() - new Date(task.start_date).getTime();
+            let remain = 1-runtime/(runtime_mean+runtime_std/3);
+            if(remain < 0) remain = 0; //making taking longer than expected?
+            return remain;
         },
     },
 }
@@ -301,6 +330,7 @@ background-color: #fafafa;
 }
 .status-card {
 padding: 5px 0 0 4px;
+border: none;
 }
 .status-card.finished {
 color: white;
@@ -392,5 +422,14 @@ background-color: white;
 .note-text:hover {
 background-color: #fafafa;
 cursor: pointer;
+}
+.remain {
+background-color: #0003; 
+width: 0%; 
+position: absolute; 
+height: 100%; 
+top: 0; 
+right: 0px;
+transition: width 10s;
 }
 </style>
