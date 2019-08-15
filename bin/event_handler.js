@@ -349,22 +349,7 @@ function handle_event(msg, head, dinfo, cb) {
     cb();
 }
 
-function invite_slack_user(email, fullname) {
-    /*
-    curl -X POST 'https://YOUR-SLACK-TEAM.slack.com/api/users.admin.invite' \
-        --data 'email=EMAIL&token=TOKEN&set_active=true' \
-        --compressed
-    */
-
-    //parse fullname into first and last name
-    let nametokens = fullname.split(" ");
-    let first_name = nametokens[0];
-    let last_name = "";
-    if(nametokens.length > 0) {
-        nametokens.shift();
-        last_name = nametokens.join(" ");
-    }
-
+function invite_slack_user(email, real_name) {
     //https://github.com/ErikKalkoken/slackApiDoc/blob/master/users.admin.invite.md
     //TODO - I can't get first_name / last_name to work
     logger.debug("sending slack invite to "+email);
@@ -372,10 +357,7 @@ function invite_slack_user(email, fullname) {
         method: "POST",
         uri: "https://brainlife.slack.com/api/users.admin.invite",
         form:{
-            token: config.slack.token, email, first_name, last_name, resend: true, //channels: "general,apps",
-        },  
-        headers: {
-            //Authorization: "Bearer xoxp-133192445953-133872566722-727889496357-7c33e0380cf21b1f63efa430e39f9dbf",
+            token: config.slack.token, email, real_name, resend: true, //channels: "general,apps",
         },  
     }).then(res=>{
         console.dir(res);
