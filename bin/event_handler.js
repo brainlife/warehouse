@@ -50,6 +50,7 @@ function subscribe() {
         next=>{
             logger.debug("subscribing to instance event");
             //let's create permanent queue so that we don't miss event if event handler goes down
+            //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.instance', {durable: true, autoDelete: false}, instance_q=>{
                 instance_q.bind('wf.instance', '#');
                 instance_q.subscribe({ack: true}, (instance, head, dinfo, ack)=>{
@@ -68,8 +69,7 @@ function subscribe() {
      
         //ensure queues/binds and subscribe to task events
         next=>{
-            logger.debug("subscribing to task event");
-            //let's create permanent queue so that we don't miss event if event handler goes down
+            //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.task', {durable: true, autoDelete: false}, task_q=>{
                 task_q.bind('wf.task', '#');
                 task_q.subscribe({ack: true}, (task, head, dinfo, ack)=>{
@@ -88,8 +88,7 @@ function subscribe() {
 
         //dataset create events
         next=>{
-            logger.debug("subscribing to dataset event");
-            //let's create permanent queue so that we don't miss event if event handler goes down
+            //TODO - why can't I use warehouse queue for this?
             acon.queue('warehouse.dataset', {durable: true, autoDelete: false}, dataset_q=>{
                 dataset_q.bind('warehouse.dataset', '#');
                 dataset_q.subscribe({ack: true}, (dataset, head, dinfo, ack)=>{
@@ -99,6 +98,24 @@ function subscribe() {
                             //TODO - maybe I should report the failed event to failed queue?
                         }
                         dataset_q.shift();
+                    });
+                });
+                next();
+            });
+        },
+
+        //handle other misc events all together..
+        next=>{
+            acon.queue('warehouse', {durable: true, autoDelete: false}, q=>{
+                q.bind('auth', 'user.create.*');
+                q.bind('auth', 'user.login.*');
+                q.subscribe({ack: true}, (msg, head, dinfo, ack)=>{
+                    handle_event(msg, head, dinfo, err=>{
+                        if(err) {
+                            logger.error(err)
+                            //TODO - maybe I should report the failed event to failed queue?
+                        }
+                        q.shift();
                     });
                 });
                 next();
@@ -318,4 +335,51 @@ function handle_dataset(dataset, cb) {
 
     cb();
 }
+
+function handle_event(msg, head, dinfo, cb) {
+    logger.debug(JSON.stringify(msg, null, 4));
+    let exchange = dinfo.exchange;
+    let keys = dinfo.routingKey.split(".");
+    if(dinfo.exchange == "auth" && dinfo.routingKey.startsWith("user.create.")) {
+        let sub = keys[2];
+        let email = msg.email;
+        let fullname = msg.fullname;
+        invite_slack_user(email, fullname);
+    }
+    cb();
+}
+
+function invite_slack_user(email, fullname) {
+    /*
+    curl -X POST 'https://YOUR-SLACK-TEAM.slack.com/api/users.admin.invite' \
+        --data 'email=EMAIL&token=TOKEN&set_active=true' \
+        --compressed
+    */
+
+    //parse fullname into first and last name
+    let nametokens = fullname.split(" ");
+    let first_name = nametokens[0];
+    let last_name = "";
+    if(nametokens.length > 0) {
+        nametokens.shift();
+        last_name = nametokens.join(" ");
+    }
+
+    //https://github.com/ErikKalkoken/slackApiDoc/blob/master/users.admin.invite.md
+    //TODO - I can't get first_name / last_name to work
+    logger.debug("sending slack invite to "+email);
+    request({
+        method: "POST",
+        uri: "https://brainlife.slack.com/api/users.admin.invite",
+        form:{
+            token: config.slack.token, email, first_name, last_name, resend: true, //channels: "general,apps",
+        },  
+        headers: {
+            //Authorization: "Bearer xoxp-133192445953-133872566722-727889496357-7c33e0380cf21b1f63efa430e39f9dbf",
+        },  
+    }).then(res=>{
+        console.dir(res);
+    }); 
+}
+
 

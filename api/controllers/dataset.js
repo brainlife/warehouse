@@ -1,3 +1,4 @@
+
 //contrib
 const express = require('express');
 const router = express.Router();
@@ -85,10 +86,7 @@ function construct_dataset_query(query, canread_project_ids) {
 router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false}), (req, res, next)=>{
     let skip = req.query.skip||0;
     let limit = req.query.limit||100; //this means if user set it to "0", no limit
-    if(req.query.find) {
-        req.query.find = JSON.parse(req.query.find);
-        //cast_mongoid(req.query.find);
-    }
+    if(req.query.find) req.query.find = JSON.parse(req.query.find);
 
     let populate = ''; //'all' by default?
     if(req.query.populate) {
@@ -119,13 +117,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 rec._canedit = canedit(req.user, rec, canwrite_project_ids);
             });
 
-            /*
-            db.Datasets.countDocuments(query).exec((err, count)=>{
-                if(err) return next(err);
-                res.json({datasets, count});
-            });
-            */
-
             //count and get total size
             cast_mongoid(query);
             db.Datasets.aggregate()
@@ -133,7 +124,6 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
             .group({_id: null, count: {$sum: 1}, size: {$sum: "$size"} })
             .exec((err, stats)=>{
                 if(err) return next(err);
-                //logger.debug(JSON.stringify(stats, null, 4));
                 let count = 0;
                 let size = 0;
                 if(stats.length == 1) {
@@ -190,7 +180,6 @@ function cast_mongoid(node) {
         var v = node[k];
         if(v === null) continue;
         if(typeof v == 'string' && mongoose.Types.ObjectId.isValid(v) && v.length == 24) node[k] = mongoose.Types.ObjectId(v);
-        //if(typeof v == 'string' && v.match(checkForHexRegExp)) node[k] = mongoose.Types.ObjectId(v);
         if(typeof v == 'object') cast_mongoid(v); //recurse
     }
 }
@@ -367,9 +356,7 @@ This boutique descriptor that can be used to run the workflow used to generate t
                 "exit-code": 0,
                 "output-files": [
                     {
-                        //"id": "datatype_"+output_datatype,
                         "id": "output",
-                        //md5-reference": "0868f0b9bf25d4e6a611be8f02a880b5"
                     }
                 ]
             },
@@ -418,7 +405,6 @@ This boutique descriptor that can be used to run the workflow used to generate t
 
                             //setup b_inputs for input dataset if we haven't already
                             if(!b_inputs.find(input=>input.id == k)) {
-                                //console.dir(Object.values(app.config));
                                 if(!app.config[k]) {
                                     console.error(k+" is not defined in the app.config.. maybe config changed?");
                                     console.dir(node);
@@ -521,7 +507,6 @@ This boutique descriptor that can be used to run the workflow used to generate t
             id: "output",
             name: "Dataset output"+dataset_id,
             "path-template": "task."+output_node._prov.task._id,
-            //_prov: output_node._prov,
         }
         if(output_node._prov.subdir) output["path-template"] += "/"+output_node._prov.subdir;
         b_files.push(output);
@@ -741,7 +726,6 @@ function generate_prov(origin_dataset_id, cb) {
                     add_node(Object.assign({
                         id: "task."+input.task_id,
                         label: compose_label(dep_task),
-                        //_app: dep_task.config._app,
                     }, taskInfo(dep_task)));
                     edges.push({
                         from: "task."+input.task_id,
@@ -868,7 +852,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             logger.debug("submitting archive task");
             common.archive_task_outputs(task, [output], (err, datasets, archive_task)=>{
                 if(err) return next(err);
-                //dataset = archive_task.config.datasets[0].dataset;
                 res.json(datasets[0].dataset); //there should be only 1 dataset being archived via this API, so return [0]
             });
         },
@@ -952,7 +935,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     }),
                     select: 'config._tid', //I just need max _tid
                     limit: 1000, //should be enough.. for now 
-                    //sort: 'create_date',
                 },
             }, (err, _res, body)=>{
                 next_tid = body.tasks.reduce((m,v)=>{ 
