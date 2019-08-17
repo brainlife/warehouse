@@ -41,7 +41,7 @@
         </div>
         <div class="desc">{{app_.desc_override||app_.desc||'no description..'}}</div>
         <slot/>
-        <div class="stats" v-if="app_.stats">
+        <div class="stats" v-if="app_.stats && app_.stats.serviceinfo">
             <span class="stat" v-b-tooltip.hover.d500 title="Number of time this App was requested">
                 <icon name="play" scale="0.8"/> {{app_.stats.serviceinfo.counts.requested}}
                 &nbsp;

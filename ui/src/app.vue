@@ -487,7 +487,8 @@ export default {
         },
 
         back() {
-            this.$router.push('/apps');
+            //this.$router.push('/apps');
+            this.$router.go(-1);
         },
 
         /*
