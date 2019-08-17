@@ -150,8 +150,7 @@
                                 </div>
                             </b-col>
 
-                            <b-col>
-                                <div v-if="config.user && selected.access == 'private'">
+                            <b-col v-if="config.user && selected.access == 'private' && selected.guests.length > 0">
                                     <span class="form-header">Guests</span>
                                     <p style="height: 50px;">
                                         <small class="text-muted">Read access to dataset.</small>
@@ -161,7 +160,6 @@
                                     </p>
                                     <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>No Guests</small></p>
                                     <br>
-                                </div>
                             </b-col>
                         </b-row>
 
