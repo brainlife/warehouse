@@ -172,7 +172,7 @@ export default {
         },
 
         //subordiante of click method.. this and click methods are ugly..
-        open_text(data, file, lang) {
+        open_text(data, file, lang, scroll_to_bottom) {
             //sometime data arrives as nyumber.. and editor hates it
             if(typeof data === 'number') data = data.toString();
 
@@ -186,11 +186,11 @@ export default {
             Vue.set(file, 'lang', lang);
             Vue.set(file, 'view', true);
 
-            //scroll to the buttom of the <pre>
-            this.$nextTick(()=>{
+            if(scroll_to_bottom) this.$nextTick(()=>{
                 let id = this.files.indexOf(file);
-                let pre = this.$refs["file."+id][0];
-                pre.scrollTop = pre.scrollTopMax;
+                let editor = this.$refs["file."+id][0].editor;
+                let lines = editor.session.doc.$lines.length;
+                editor.scrollToLine(lines, false, true); //false=center, true=animate
             });   
         },
 
@@ -245,16 +245,18 @@ export default {
                 }
 
                 //known file extensions?
-                var tokens = file.filename.split(".");
-                var ext = tokens[tokens.length-1];
+                let tokens = file.filename.split(".");
+                let ext = tokens[tokens.length-1];
+                let scroll_to_bottom = false;
                 switch(ext) {
+                case "log":
+                case "err": 
+                    scroll_to_bottom = true;
                 case "txt": 
                 case "csv": 
-                case "err": 
-                case "log":
                 case "bvals": 
                 case "bvecs":
-                    this.open_text(res.data, file, "text");
+                    this.open_text(res.data, file, "text", scroll_to_bottom);
                     return;
                 case "md": return this.open_text(res.data, file, "markdown");
                 case "json": 

@@ -18,7 +18,6 @@
         </defs>
     </svg>
     <ul class="items" style="margin-top: -30px;">
-        <!-- currently being developped -->
         <li v-if="config.debug" 
             @click="go('/dashboard')"
             :class="{active: active == '/dashboard'}">
@@ -52,10 +51,14 @@
             <h4>Datatypes</h4>
         </li>
         
-        <li v-if="config.user" @click="setting">
+        <li v-if="config.user" @click="setting_old">
             <icon name="cog" scale="1.3"/>
             <h4>Settings</h4>
         </li>
+        <li v-if="config.user && config.debug" @click="go('/settings')" :class="{active: active == '/settings'}">
+            <icon name="cog" scale="1.3"/>
+            <h4>Settings (new)</h4>
+        </li>    
     </ul>
 
     <!--admin items-->
@@ -70,30 +73,13 @@
 
     <!--bottom-->
     <ul class="items items-bottom">
-        <!--
-        <b-dropdown variant="link" size="lg" no-caret>
-            <template slot="button-content">
-                <li v-if="config.user" @click="login">
-                    <img :src="gurl"/>&nbsp;{{config.user.profile.fullname||config.user.profile.username}}
-                </li>
-            </template>
-            <b-dropdown-item @click="goaccount">Settings</b-dropdown-item>
-            <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item @click="signout">Signout</b-dropdown-item>           
-        </b-dropdown>
-        -->
-        <li v-if="config.user" @click="open_usersettings" id="user">
+        <li v-if="config.user" @click="open_usersettings" id="user" style="white-space: nowrap">
             <icon name="caret-right" style="float: right; margin-right: 10px; margin-top: 2px;" scale="1.25"/>
-            <img :src="gurl" width="18px" class="avatar"/>&nbsp;<h4>{{config.user.profile.fullname||config.user.profile.username}}</h4>
+            <img :src="gurl" width="18px" class="avatar"/>
+            <h4>{{config.user.profile.fullname||config.user.profile.username}}</h4>
         </li>
         <b-popover ref="usersettings" target="user">
             <b-list-group>
-                <!--
-                <b-list-group-item href="#"  @click="goaccount">                
-                    <icon name="cog" scale="1.3"/>&nbsp;
-                    Settings
-                </b-list-group-item>
-                -->
                 <b-list-group-item href="#" @click="signout">
                     <icon name="sign-out-alt" scale="1.3"/>&nbsp;
                     Signout                 
@@ -161,7 +147,7 @@ export default {
         }
     },
     methods: {
-        setting() {
+        setting_old() {
             window.open("/auth/#!/settings/account", "_blank");
         },
         go(page) {
@@ -169,9 +155,6 @@ export default {
         },
         doc() {
             window.open("https://brainlife.io/docs/", "brainlife doc");
-        },
-        goaccount() {
-            document.location = "/auth#!/settings/account";
         },
         signout() {
             sessionStorage.setItem('auth_redirect', window.location); //TODO - un-tested.. as to if this gets back here
@@ -250,18 +233,18 @@ export default {
 .items li {
     text-align: left;
     margin: 0px;
-    padding: 10px 0px;
+    padding: 8px 0px;
     transition: background-color 0.2s, color 0.2s;
     padding-left: 15px;
 }
 .items li h4 {
     display: inline-block;
-    font-size: 15px;
+    font-size: 13px;
     margin-left: 12px;
     position: relative;
     top: 2px;
 }
-.items li:hover {
+.items li:not(.divider):hover {
     background-color: #1c1c1c;
     color: white;
     cursor: pointer;

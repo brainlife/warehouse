@@ -2,6 +2,10 @@
 <div>
     <sidemenu active="/dashboard"></sidemenu>
     <div class="page-content">
+        <h5>New Members</h5>
+        <small>Please say hi to these members!</small>
+        {{recent_users}}
+
         <h5>Resources</h5>
         <small>This graph shows number of jobs executed on resources that you have access to</small>
         <!--
@@ -41,6 +45,7 @@ export default {
 
     data () {
         return {
+            recent_users: [],
             resources: null,
             config: Vue.config,
         }
@@ -48,14 +53,24 @@ export default {
 
     mounted() {
         console.log("loading resources");
-        let find = {
+        let find = JSON.stringify({
             status: {$ne: "removed"},
             active: true,
-        };
-        this.$http.get(Vue.config.amaretti_api+'/resource', {params: {find: JSON.stringify(find)}}).then(res=>{
+        });
+        this.$http.get(Vue.config.amaretti_api+'/resource', {params: {find}}).then(res=>{
             this.resources = res.data.resources;
             this.update_resource_vis();
         }).catch(console.error);
+
+        /*
+        find = JSON.stringify({
+        });
+        this.$http.get(Vue.config.auth_api, {params: {find}}).then(res=>{
+            this.resources = res.data.resources;
+            this.update_resource_vis();
+        }).catch(console.error);
+        */
+
     },
 
     methods: {
