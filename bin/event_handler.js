@@ -344,7 +344,7 @@ function handle_event(msg, head, dinfo, cb) {
         let sub = keys[2];
         let email = msg.email;
         let fullname = msg.fullname;
-        //invite_slack_user(email, fullname);
+        invite_slack_user(email, fullname);
 
         //set public profile
         logger.debug("--------------------------------------------------------");
