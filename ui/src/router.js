@@ -17,6 +17,7 @@ import pubs from '@/pubs'
 import pub from '@/pub'
 import admin from '@/admin'
 import openneuro from '@/openneuro'
+import settings from '@/settings'
 
 import test from '@/test'
 import missing from '@/missing'
@@ -60,6 +61,8 @@ export default new Router({
 
         {path: '/pubs', component: pubs, meta: {public: true}},
         {path: '/pub/:id', component: pub, meta: {public: true}},
+
+        {path: '/settings', component: settings},
 
         {path: '/test', component: test},
         {path: '/404', component: missing, meta: {public: true}},
