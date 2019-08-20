@@ -344,7 +344,19 @@ function handle_event(msg, head, dinfo, cb) {
         let sub = keys[2];
         let email = msg.email;
         let fullname = msg.fullname;
-        invite_slack_user(email, fullname);
+        //invite_slack_user(email, fullname);
+
+        //set public profile
+        logger.debug("--------------------------------------------------------");
+        logger.debug(JSON.stringify(msg._profile, null, 4));
+        request.put({
+            url: config.profile.api+"/public/"+sub, 
+            body: msg._profile,
+            headers: { Authorization: 'Bearer '+config.warehouse.jwt, },
+            json: true,
+        }, (err, res, body)=>{
+            console.log("published profile");
+        });
     }
     cb();
 }

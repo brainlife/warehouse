@@ -48,8 +48,8 @@ exports.init = (cb)=>{
             useNewUrlParser: true,
             
             //TODO - isn't auto_reconnect set by default?
-            auto_reconnect: true, 
-            reconnectTries: Number.MAX_VALUE
+            //auto_reconnect: true, 
+            //reconnectTries: Number.MAX_VALUE
         }, err=>{
             if(err) return cb(err);
             logger.info("connected to mongo");
