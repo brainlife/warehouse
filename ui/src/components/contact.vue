@@ -105,7 +105,7 @@ export default {
             }
             profiles.then(res=>{
                 res.data.profiles.forEach((profile)=>{
-                    if(profile.id == this.id) this.profile = profile;
+                    if(profile.sub == this.id) this.profile = profile;
                 });
             
             }).catch(err=>{
@@ -128,7 +128,7 @@ export default {
 
         show() {
             if(!this.public) {
-                this.$http.get(Vue.config.profile_api+'/public/'+this.profile.id).then(res=>{
+                this.$http.get(Vue.config.profile_api+'/public/'+this.profile.sub).then(res=>{
                     this.public = res.data;
                 }).catch(err=>{
                     console.log("couldn't load profile");

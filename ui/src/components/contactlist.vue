@@ -1,7 +1,7 @@
 <template>
 <div v-if="profiles">
     <select2 style="width: 100%;" v-model="values" :options="profiles" :multiple="true"></select2>
-</div><!--root-->
+</div>
 </template>
 
 <script>
@@ -9,7 +9,7 @@
 import Vue from 'vue'
 import select2 from '@/components/select2' //TODO - use vue-select instead
 
-var profiles = null;
+let profiles = null;
 
 export default {
     props: ['value'],
@@ -41,7 +41,7 @@ export default {
         profiles.then(res=>{
             this.profiles = [];
             res.data.profiles.forEach(profile=>{
-                this.profiles.push({id: profile.id, text: profile.fullname + "<"+profile.email+">"});
+                this.profiles.push({id: profile.sub, text: profile.fullname + "<"+profile.email+">"});
             });
         }, res=>{
             console.error(res);

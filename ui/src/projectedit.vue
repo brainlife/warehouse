@@ -165,7 +165,6 @@ import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import license from '@/components/license'
 import VueMarkdown from 'vue-markdown'
-//import {public_project_consent} from '@/consents'
 
 export default {
     components: { sidemenu, contactlist, pageheader, license, VueMarkdown },
@@ -177,14 +176,9 @@ export default {
                 desc: "",
                 access: "private",
                 admins: [Vue.config.user.sub],
-                //members: [Vue.config.user.sub],
                 members: [],
-                //license: "ccby.40",
                 agreements: [],
             },
-
-            //public_project_consent,
-            //consent: false,
 
             submitting: false,
 
@@ -205,13 +199,7 @@ export default {
         } 
     },
 
-    computed: {
-    },
-
     methods: {
-        changeadmins(admins) {
-            //this.project.admins = admins;
-        },
 
         cancel() {
             if(this.project._id) this.$router.push('/project/'+this.project._id);
@@ -220,7 +208,6 @@ export default {
 
         remove_agreement(idx) {
             this.project.agreements.splice(idx, 1);
-            //this.$forceUpdate();
         },
 
         submit(evt) {
