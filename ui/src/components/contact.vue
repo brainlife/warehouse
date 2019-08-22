@@ -128,7 +128,7 @@ export default {
 
         show() {
             if(!this.public) {
-                this.$http.get(Vue.config.profile_api+'/public/'+this.profile.id).then(res=>{
+                this.$http.get(Vue.config.profile_api+'/public/'+this.profile.sub).then(res=>{
                     this.public = res.data;
                 }).catch(err=>{
                     console.log("couldn't load profile");
