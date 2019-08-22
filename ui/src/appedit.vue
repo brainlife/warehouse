@@ -188,7 +188,7 @@ Normally, the App description is automatically pulled from github repo descripti
                         <b-row v-if="param.type == 'boolean'">
                             <b-col>
                                 <b-form-group>
-                                    <b-input-group prepend="Key">
+                                    <b-input-group prepend="config.json key *">
                                         <b-form-input type="text" v-model="param.id"></b-form-input>
                                     </b-input-group>
                                 </b-form-group>
@@ -211,7 +211,7 @@ Normally, the App description is automatically pulled from github repo descripti
                             <b-row>
                                 <b-col>
                                     <b-form-group>
-                                        <b-input-group prepend="Key">
+                                        <b-input-group prepend="config.json key *">
                                             <b-form-input type="text" v-model="param.id"></b-form-input>
                                         </b-input-group>
                                     </b-form-group>
@@ -345,17 +345,17 @@ Normally, the App description is automatically pulled from github repo descripti
                                             <icon name="trash"/>
                                         </div>
                                         <b-row>
-                                            <b-col v-if="input.datatype" cols="6">
-                                                <b-input-group prepend="file/dir">
-                                                    <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="file.file_id" required/>
+                                            <b-col cols="5">
+                                                <b-input-group prepend="config.json key">
+                                                    <b-form-input type="text" v-model="file.id" required/>
                                                 </b-input-group>
                                             </b-col>
-                                            <b-col cols="1">
-                                                <icon name="arrow-right"/>
+                                            <b-col cols="2">
+                                                <center>will point to</center>
                                             </b-col>
-                                            <b-col cols="5">
-                                                <b-input-group prepend="key">
-                                                    <b-form-input type="text" v-model="file.id" required/>
+                                            <b-col v-if="input.datatype" cols="5">
+                                                <b-input-group prepend="file/dir">
+                                                    <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="file.file_id" required/>
                                                 </b-input-group>
                                             </b-col>
                                         </b-row>

@@ -124,6 +124,7 @@ export default {
         },
  
         check_status() {
+            console.log("checking status "+this.novnc_task.status);
             if(this.novnc_task.status == "running") {
                 //load url.txt
                 var url = Vue.config.wf_api+'/task/download/'+this.novnc_task._id+'/url.txt?at='+Vue.config.jwt;

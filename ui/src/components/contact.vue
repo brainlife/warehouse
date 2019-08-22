@@ -105,7 +105,7 @@ export default {
             }
             profiles.then(res=>{
                 res.data.profiles.forEach((profile)=>{
-                    if(profile.id == this.id) this.profile = profile;
+                    if(profile.sub == this.id) this.profile = profile;
                 });
             
             }).catch(err=>{

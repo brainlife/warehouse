@@ -189,7 +189,8 @@ export default {
             return finds;
         },
 
-        load() {
+        load() {    
+            console.time("loading");
             this.app_groups = {};
             this.sorted_tags = [];
             this.apps = null;
@@ -227,6 +228,8 @@ export default {
                 });
             }
 
+            console.log("getting apps");
+            console.timeLog("loading");
             this.$http.get('app', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500, //TODO - this is not sustailable
@@ -234,6 +237,8 @@ export default {
             }})
             .then(res=>{
                 this.apps = res.data.apps;
+                console.log("organizing apps");
+                console.timeLog("loading");
 
                 //organize apps into various tags
                 res.data.apps.forEach(app=>{
@@ -259,13 +264,20 @@ export default {
                     this.app_groups._new = apps.slice(0, 6);
                 }
 
+                console.log("waitng for nexttick");
+                console.timeLog("loading");
                 this.$nextTick(()=>{
                     if(document.location.hash) {
                         this.jump(document.location.hash.substring(1));
                     }
+                    console.log("updating active");
+                    console.timeLog("loading");
                     this.update_active();
 
                     let grouplist = this.$refs["group-list"];
+
+                    console.log("setting scrollbar");
+                    console.timeLog("loading");
                     ps = new PerfectScrollbar(grouplist);
                     grouplist.scrollTop = 0;
                 });
@@ -368,9 +380,8 @@ background-color: #007bff;
 color: white;
 }
 .newapps {
-/*background-color: #2693ff;*/
 background-image: linear-gradient(#1966b3, #2693ff);
-background-attachment: fixed;
+/*background-attachment: fixed; ... this causes flickering*/
 padding-bottom: 30px;
 }
 .group-title.colored {
