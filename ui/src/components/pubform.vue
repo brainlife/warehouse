@@ -23,7 +23,7 @@
         </div>
     </b-form-group>
     <b-form-group label="Fundings" horizontal>
-        <b-row v-for="(funding, idx) in pub.fundings" :key="idx" style="margin-bottom: 3px;">
+        <b-row v-for="(funding, idx) in pub.fundings" :key="idx" style="margin-bottom: 5px;">
             <b-col>
                 <b-input-group prepend="Funder">
                     <b-form-select :options="['NSF', 'NIH', 'DOE', 'DOD']" required v-model="funding.funder"/>

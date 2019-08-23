@@ -3,22 +3,24 @@
     <!--<h4>Select Datasets</h4>-->
     <b-alert v-if="Object.keys(datatype_groups).length == 0" show variant="danger">There are no datasets to publish</b-alert>
     <p v-else class="text-muted">Please select datasets you'd like to publish (and make them publically downloadable)</p>
-    <div v-for="(group, datatype_id) in datatype_groups" :key="datatype_id" v-if="datatypes">
-        <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 1px 5px; margin: 1px; transition: all 0.3s">
-            <b-row>
-                <b-col cols="1">
-                    <b-form-checkbox v-model="stat.include"/>
-                </b-col>
-                <b-col>
-                    <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)"/>
-                </b-col>
-                <b-col>
-                    <small>{{datatypes[datatype_id].desc}}</small>
-                </b-col>
-                <b-col>
-                     <b>{{stat.count}}</b> <span style="opacity: 0.8">datasets</span> ({{stat.size|filesize}})
-                </b-col>
-            </b-row>
+    <div style="height: 400px; overflow-y: scroll; overflow-x: hidden;">
+        <div v-for="(group, datatype_id) in datatype_groups" :key="datatype_id" v-if="datatypes">
+            <div v-for="(stat, tags_s) in group.datatype_tags" :key="tags_s" :class="{included: stat.include}" style="padding: 1px 5px; margin: 1px; transition: all 0.3s">
+                <b-row>
+                    <b-col cols="1">
+                        <b-form-checkbox v-model="stat.include"/>
+                    </b-col>
+                    <b-col>
+                        <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)"/>
+                    </b-col>
+                    <b-col>
+                        <small>{{datatypes[datatype_id].desc}}</small>
+                    </b-col>
+                    <b-col>
+                         <b>{{stat.count}}</b> <span style="opacity: 0.8">datasets</span> ({{stat.size|filesize}})
+                    </b-col>
+                </b-row>
+            </div>
         </div>
     </div>
     <br>

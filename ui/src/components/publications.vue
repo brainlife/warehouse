@@ -139,7 +139,7 @@ export default {
             this.editing = {
                 //defaults
                 name: "",
-                desc: "hello",
+                desc: "",
                 tags: [],
                 readme: "",
                 license: "ccby.40",

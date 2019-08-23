@@ -279,6 +279,7 @@ border-radius: 0;
 }
 .modal-dialog {
 box-shadow: 0 0 20px #000;
+font-size: 11pt;
 }
 .brainlife-modal {
 background-color: #fff;

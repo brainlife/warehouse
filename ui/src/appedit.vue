@@ -42,12 +42,12 @@ Normally, the App description is automatically pulled from github repo descripti
 
             <b-row>
                 <b-col cols="3">
-                    <span class="form-header">Admins</span>
+                    <span class="form-header">Maintainers</span>
                 </b-col> 
                 <b-col>
                     <contactlist v-model="app.admins"></contactlist>
                     <p>
-                        <small class="text-muted">Users who can update this application registration</small>
+                        <small class="text-muted">Users who are currently maintaining this App on brainlife.</small>
                     </p>
                 </b-col>
             </b-row>
