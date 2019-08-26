@@ -20,7 +20,7 @@
                     <b-col cols="2">
                         <appavatar :app="app" style="margin-bottom: 20px;"/>
                     </b-col>
-                    <b-col cols="8" style="background-color: white;"><!--hide avatar when screen is narrow-->
+                    <b-col cols="8"><!--hide avatar when screen is narrow-->
                         <div style="float: right; position: relative; z-index: 3">
                             <span class="button" @click="download_app()" title="Download App"><icon name="download" scale="1.25"/></span>
                             <a :href="'https://github.com/'+app.github" :target="app.github"><span class="button"" title="github"><icon name="brands/github" scale="1.25"/></span></a>
@@ -357,7 +357,6 @@ export default {
             return this.resources.filter(r=>r.gids.length > 0);
         },
 
-
 /*
         hist_data() {
             let dstart = new Date(new Date().getTime() - 3600*1000*24*this.info.hist.failed.length);
@@ -456,15 +455,6 @@ export default {
                     _altmetric_embed_init(this.$el);
                 });
 
-                /*
-                //then load service info
-                return this.$http.get(Vue.config.amaretti_api+'/service/info', {params: {
-                    service: this.app.github,
-                }});
-            }).then(res=>{
-                this.info = res.data;
-                */
-
                 //then load github README
                 var branch = this.app.github_branch||"master";
                 return fetch("https://raw.githubusercontent.com/"+this.app.github+"/"+branch+"/README.md")
@@ -477,7 +467,6 @@ export default {
             });
         },
 
-        
         copy() {
             this.$router.push('/app/'+this.app._id+'/copy');
         },
@@ -490,12 +479,6 @@ export default {
             //this.$router.push('/apps');
             this.$router.go(-1);
         },
-
-        /*
-        go_github() {
-            document.location = "https://github.com/"+this.app.github;
-        },
-        */
 
         download_app() {
             var branch = this.app.github_branch||"master";
@@ -562,6 +545,7 @@ export default {
 .page-content {
 top: 0px;
 }
+
 .header {
 background-color: white;
 margin-bottom: 30px;
@@ -571,6 +555,7 @@ position: sticky;
 top: 0;
 z-index: 2;
 }
+
 .topic {
 padding: 8px; 
 background-color: #eee;
