@@ -6,21 +6,14 @@ import cache from '@/mixins/cache'
 export default {
     mixins: [ cache ], 
     methods: {
-        appcache: function(id, cb) {
-            let cached_app = this.get_cache(id);
-            if(cached_app) cb(null, cached_app);
-            else {
-                console.log("no cache.. loading "+id);
-                this.$http.get('app/'+id, {params: {
-                    //find: JSON.stringify({_id: id}),
+        appcache: async function(id, cb) {
+            let res = await this._cache(id, ()=>{
+                return this.$http.get('app/'+id, {params: {
                     populate: 'inputs.datatype outputs.datatype',
-                    //limit: 1,
-                }}).then(res=>{
-                    let app = res.data;
-                    this.set_cache(id, app);
-                    cb(null, app);
-                }).catch(cb);
-            }
+                }});
+            }, (err, res)=>{
+                cb(null, res.data);
+            });
         },  
     }
 }
