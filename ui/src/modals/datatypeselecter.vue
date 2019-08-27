@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Select Datatypes" ref="modal" size="lg" @ok="submit" ok-only>
+<b-modal title="Select Datatypes" id="uploader" ref="modal" size="lg" @ok="submit" ok-only>
     <!--<h4>Select Datasets</h4>-->
     <b-alert v-if="Object.keys(datatype_groups).length == 0" show variant="danger">There are no datasets to publish</b-alert>
     <p v-else class="text-muted">Please select datasets you'd like to publish (and make them publically downloadable)</p>
@@ -42,7 +42,6 @@ export default {
             project: null,
             datatype_groups: {},
             datatypes: null, 
-            //selected: null, 
             
             config: Vue.config,
         }
@@ -52,21 +51,14 @@ export default {
         this.$root.$on("datatypeselecter.open", opt=>{
             if(!this.$refs.modal) return console.log("received datatypeselecter.open but this.$refs.modal not yet initialized");
             this.project = opt.project;
-            this.$refs.modal.show()
+            console.log("opening");
+            this.$refs.modal.show();
         });
     },
 
     methods: {
-        close: function() {
-            console.log("resetting datasetselecter");
-            this.project = null;
-            this.datatype_groups = {};
-            this.datatypes = null;
-            this.$refs.modal.hide()
-        },
-
         submit: function(evt) {
-            evt.preventDefault();
+            //evt.preventDefault();
 
             //create list of datatype / tags that we want to publish 
             let sets = []
@@ -86,7 +78,13 @@ export default {
             }
 
             this.$root.$emit("datatypeselecter.submit", sets);
-            this.close();
+
+            this.project = null;
+            this.datatype_groups = {};
+            this.datatypes = null;
+
+            console.log("hiding modal");
+            //this.$refs.modal.hide();
         },
     },
 
@@ -116,7 +114,6 @@ export default {
                         groups[datatype].datatype_tags[datatype_tags_s] = {size: 0, count: 0, include: false};
                     }
                     let name = datatype+"."+datatype_tags.join(":");
-                    //if(selected.includes(name)) groups[datatype].datatype_tags[datatype_tags_s].include = true;
                     groups[datatype].datatype_tags[datatype_tags_s].size += rec.size;
                     groups[datatype].datatype_tags[datatype_tags_s].count += rec.count;
                     groups[datatype].size += rec.size;

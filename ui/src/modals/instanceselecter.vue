@@ -24,7 +24,6 @@
     <br>
     <div slot="modal-footer">
         <b-button variant="primary" v-if="isvalid()" @click="submit">Submit</b-button>
-        <!--<b-button @click="cancel">Cancel</b-button>-->
     </div>
 </b-modal>
 </template>
@@ -57,60 +56,22 @@ export default {
 
     watch: {
         project: function() {
-            //refresh instance list
-            this.instances = [];
-            if(!this.project) return;
-            if(!this.projects) return;
-            var project = this.projects[this.project];
-            if(!project) {
-                console.error("can't find", this.project, "in project list", this.projects);
-                return;
-            }
-            this.$http.get(Vue.config.wf_api+'/instance', {params: {
-                find: JSON.stringify({
-                    "config.brainlife": true,
-                    status: {$ne: "removed"},
-                    group_id: project.group_id,
-                    "config.removing": {$exists: false},
-                }),
-                limit: 1000,
-                sort: '-create_date',
-            }}).then(res=>{
-                res.data.instances.forEach(instance=>{
-                    instance._label = instance.desc||'('+instance._id+')';
-                    this.instances.push(instance);
-                });
-                this.instance = this.instances[0];//might be empty
-            });
+            this.load_instances();
         },
     },
 
     mounted() {
-        this.$root.$on("instanceselecter.open", cb=>{
+        this.$root.$on("instanceselecter.open", async cb=>{
             this.submit_cb = cb;
             this.$refs.modal.show()
             this.shown = true;
             this.instance = null;
             this.desc = "";
+
+            await this.load_projects();
+            await this.load_instances();
         });
 
-        this.$http.get('project', {params: {
-            find: JSON.stringify({ 
-                $or: [
-                  {members: Vue.config.user.sub},
-                  {admins: Vue.config.user.sub},
-                ],
-                removed: false,
-            }),
-            limit: 500,
-            select: 'group_id',
-        }})
-        .then(res=>{
-            this.projects = {};
-            res.data.projects.forEach((p)=>{
-                this.projects[p._id] = p;
-            });
-        });
     },
 
     methods: {
@@ -133,8 +94,59 @@ export default {
             this.$refs.modal.hide();
             this.shown = false;
         },
+
+        load_projects: function() {
+            return new Promise((resolve, reject)=>{
+                this.$http.get('project', {params: {
+                    find: JSON.stringify({ 
+                        $or: [
+                          {members: Vue.config.user.sub},
+                          {admins: Vue.config.user.sub},
+                        ],
+                        removed: false,
+                    }),
+                    limit: 500,
+                    select: 'group_id',
+                }})
+                .then(res=>{
+                    this.projects = {};
+                    res.data.projects.forEach((p)=>{
+                        this.projects[p._id] = p;
+                    });
+                    resolve();
+                }).catch(reject);
+            });
+        }, 
+        
+        load_instances: function() { 
+            return new Promise((resolve, reject)=>{
+                this.instances = [];
+                if(!this.project) return reject();
+                if(!this.projects) return reject();
+                var project = this.projects[this.project];
+                if(!project) {
+                    console.error("can't find", this.project, "in project list", this.projects);
+                    return reject();
+                }
+                this.$http.get(Vue.config.wf_api+'/instance', {params: {
+                    find: JSON.stringify({
+                        "config.brainlife": true,
+                        status: {$ne: "removed"},
+                        group_id: project.group_id,
+                        "config.removing": {$exists: false},
+                    }),
+                    limit: 1000,
+                    sort: '-create_date',
+                }}).then(res=>{
+                    res.data.instances.forEach(instance=>{
+                        instance._label = instance.desc||'('+instance._id+')';
+                        this.instances.push(instance);
+                    });
+                    this.instance = this.instances[0];//might be empty
+                    resolve();
+                }).catch(reject);
+            });
+        },
     },
 } 
 </script>
-<style scoped>
-</style>

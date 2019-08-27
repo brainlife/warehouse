@@ -5,27 +5,36 @@ import Vue from 'vue'
 let cache_ = {}; //global cache
 
 export default {
-    data: function() {
-        return {
-        }
-    },
-
     methods: {
-        get_cache: function(id) {
-            if(cache_[id]) {
-                let now = (new Date()).getTime();
-                if(cache_[id].exp < now) return null;
-                return cache_[id].it; //good!
+        _cache(id, promise_maker, cb) {
+            //let now = (new Date()).getTime();
+            let cache = cache_[id];
+            
+            //check cache exists
+            if(!cache) {
+                //start caching
+                //let exp = now + ttl;
+                cache = {promise: promise_maker()};
+                cache_[id] = cache;
+                cache.promise.then(it=>{
+                    cache_[id].it = it;
+                    cb(null, it);
+                }).catch(cb);
+                return;
             }
-            return null;
-        },  
 
-        set_cache(id, it, ttl) {
-            if(!ttl) ttl = 600; //10 minute default
-            let now = (new Date()).getTime();
-            let exp = now + ttl*1000;
-            cache_[id] = {it, exp};
-        },
+            //item already loaded?
+            if(!cache.it) {
+                //wait for existing promise
+                cache.promise.then(it=>{
+                    cb(null, it);
+                }).catch(cb);
+                return;
+            }
+
+            //all good!
+            cb(null, cache.it);
+        },  
     }
 }
 

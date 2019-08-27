@@ -224,6 +224,9 @@ export default {
 
                 release.sets = release.sets.concat(sets); //TODO - dedupe this
                 this.$forceUpdate(); //to show new sets..
+
+                //console.log("got new datatypes");
+                //console.dir(sets);
             });
         },
 
