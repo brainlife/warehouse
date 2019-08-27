@@ -23,18 +23,17 @@
         <task :task="task" class="task" v-if="task.show">
             <!--header-->
             <div slot="header" style="background-color: white;">
-
                 <!--task-id and toggler-->
                 <div :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
                     <icon name="caret-down" v-if="task.show"/>
                     t.{{task.config._tid}}
                 </div>
 
-                <div v-if="task.app && task.show" style="margin-right: 30px;">
+                <div v-if="task.app && task.show">
                     <app :app="task.app" :branch="task.service_branch||'master'" :compact="true"/>
                 </div>
                 <div v-else>
-                    <h4 style="padding: 7px;" class="text-muted">
+                    <h4 style="padding: 7px; margin-bottom: 0px;" class="text-muted">
                         <icon name="paper-plane"/>&nbsp;&nbsp;{{task.name}}
                     </h4>
                 </div>
@@ -714,7 +713,7 @@ font-size: 125%;
 color: #999;
 }
 .task-area {
-padding: 5px 2px 0 0;
+padding: 5px 0 0 1px;
 }
 .instance-action {
 float: right;
