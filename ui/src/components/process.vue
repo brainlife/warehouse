@@ -1,31 +1,8 @@
 <template>
 <div v-if="projects && instance" ref="process">
-
-    <!--task list to show on the right hand side-->
-    <!--
-    <div class="task-tabs">
-        <div v-if="tasks" v-for="task in tasks" :key="task._id" :class="get_tasktab_class(task)" @click="scrollto(task._id)">
-            <div class="task-tab-title">
-                <b style="float: right;">t.{{task.config._tid}}</b> 
-                <span v-if="task.service!='soichih/sca-product-raw' && task.service!='brainlife/app-stage'">{{task.service}}</span>
-            </div>
-            <div v-for="(output, idx) in task.config._outputs" :key="idx">
-                <b>{{output.meta.subject}}</b>
-                <small v-if="output.meta.session" style="opacity: 0.8">/ {{output.meta.session}}</small>
-                <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" :clickable="false"/>
-            </div>
-        </div>
-    </div>
-    -->
     <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-
     <div v-if="!loading" style="padding: 10px;">
         <div class="instance-action">
-            <!--
-            <div @click.stop="editdesc()" class="button">
-                <icon name="edit"/>
-            </div>
-            -->
             <div @click.stop="remove()" class="button">
                 <icon name="trash"/>
             </div>
@@ -37,21 +14,27 @@
 
     <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking "Stage New dataset" button below.</b-alert>
     <div class="task-area" v-if="!loading && tasks" v-for="task in tasks" :key="task._id">
-        <!--task-id and toggler-->
-        <div style="float: right;" :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
-            <icon name="caret-down" v-if="task.show"/><icon name="caret-right" v-else/> 
+
+        <div v-if="!task.show" class="task-id" @click="toggle_task(task)">
+            <icon name="caret-right"/>
             t.{{task.config._tid}}
         </div>
-
         <!--full detail-->
         <task :task="task" class="task" v-if="task.show">
             <!--header-->
-            <div slot="header" class="task-header">
+            <div slot="header" style="background-color: white;">
+
+                <!--task-id and toggler-->
+                <div :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
+                    <icon name="caret-down" v-if="task.show"/>
+                    t.{{task.config._tid}}
+                </div>
+
                 <div v-if="task.app && task.show" style="margin-right: 30px;">
                     <app :app="task.app" :branch="task.service_branch||'master'" :compact="true"/>
                 </div>
                 <div v-else>
-                    <h4 style="margin: 0px;" class="text-muted">
+                    <h4 style="padding: 7px;" class="text-muted">
                         <icon name="paper-plane"/>&nbsp;&nbsp;{{task.name}}
                     </h4>
                 </div>
@@ -149,14 +132,16 @@
         </task>
 
         <!--task summary (hidden detail)-->
-        <div v-else class="task-summary" style="color: #666;">
+        <div v-else class="task-summary">
             <div style="display: inline-block; float: left; width: 25px;">
                 <statusicon :status="task.status"/>
             </div>
-            <b>
+            <span>
                 <appname v-if="task.app" :app="task.app"/>
-                <span v-else class="text-muted">{{task.name}}</span>
-            </b>
+                <b v-else style="padding: 7px;" class="text-muted">
+                    {{task.name}}
+                </b>
+            </span>
         </div>
     </div>
     <!--make sure the bottom end of task-area won't be overwrapped-->
@@ -621,11 +606,6 @@ color: #999;
 padding: 10px;
 margin: 0px;
 }
-.task-header {
-margin: 0px;
-padding: 10px;
-background-color: #fff;
-}
 .task {
 box-shadow: 1px 1px 5px #ccc;
 }
@@ -683,12 +663,13 @@ cursor: pointer;
 color: gray;
 margin: 5px 10px;
 font-weight: bold;
+float: right;
 }
 .task-id:hover {
 color: black;
 }
 .task-summary {
-padding: 10px;
+padding: 5px 10px;
 background-color: white;
 box-shadow: 0px 2px 4px #ccc;
 margin-bottom: 1px;
@@ -732,8 +713,7 @@ font-size: 125%;
 color: #999;
 }
 .task-area {
-padding: 10px;
-padding-left: 1px;
+padding: 5px 2px 0 0;
 }
 .instance-action {
 float: right;

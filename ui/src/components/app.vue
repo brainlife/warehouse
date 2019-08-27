@@ -177,7 +177,7 @@ h5 {
 font-size: 12px;
 }
 .compact .name {
-padding: 0px;
+padding-top: 5px;
 margin-bottom: 4px;
 font-size: 14px;
 }

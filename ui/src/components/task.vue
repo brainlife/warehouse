@@ -1,85 +1,90 @@
 <template>
 <div v-if="task">
-    <slot name="header">
-        <h3><icon name="paper-plane"></icon> {{task.name||task.service}}</h3>
-    </slot>
+    <div class="task-header">
+        <slot name="header">
+            <h3><icon name="paper-plane"></icon> {{task.name||task.service}}</h3>
+        </slot>
 
-    <!--status indicator-->
-    <div class="status-card" :class="task.status" style="position: relative;">
-        <div v-if="estimated_remain(task)" class="remain" :style="{width: (estimated_remain(task)*100)+'%'}"/>
-        <div style="float: left; padding: 6px 8px" @click="poke">
-            <statusicon :status="task.status" scale="1.5"/>
-        </div>
-        <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px; position: relative;">
-            <div style="float: right;">
-                <div class="button" style="opacity: 0.7" v-if="!editing_desc" @click="editing_desc = true" title="Edit Notes"><icon name="edit"/></div>
-                <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid" @click="openinfo"><icon name="info"/></div>
-                <b-popover :target="'popover'+task.config._tid" triggers="hover">
-                    <template slot="title"><span class="text-muted"><small>ID</small> {{task._id}}</span></template>
-                    <p>
-                        <contact :id="task.user_id" size="small"/>
-                    </p>
-                    <table class="table table-sm">
-                    <tr>
-                        <th>Created</th>
-                        <td>{{new Date(this.task.create_date).toLocaleString()}}</td>
-                    </tr>
-                    <tr v-if="task.start_date">
-                        <th>Started</th>
-                        <td>{{new Date(this.task.start_date).toLocaleString()}}</td>
-                    </tr>
-                    <tr v-if="task.finish_date">
-                        <th>Finished</th>
-                        <td>{{new Date(this.task.finish_date).toLocaleString()}}</td>
-                    </tr>
-                    <tr v-if="task.fail_date">
-                        <th>Failed</th>
-                        <td>{{new Date(this.task.fail_date).toLocaleString()}}</td>
-                    </tr>
-                    <tr v-if="task.nice">
-                        <th>Nice</th>
-                        <td>{{task.nice}} <small style="opacity: 0.5">yeilds to less nice tasks</small></td>
-                    </tr>
-                    <tr v-if="task.config._rule">
-                        <th>Rule</th>
-                        <td>
-                            <small>This task was submitted by {{task.config._rule.id}}
-                            For subject:<b>{{task.config._rule.subject}}</b></small>
-                        </td>
-                    </tr>
-                    <tr v-if="resource">
-                        <th>Resource</th>
-                        <td>{{this.resource.name}}</td>
-                    </tr>
-                    <tr v-if="task.next_date" style="opacity: 0.6;">
-                        <th>Next&nbsp;Chk</th>
-                        <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
-                    </tr>
-                    </table>
-                    <p v-if="task.status == 'finished'" style="opacity: 0.5;">
-                        <icon name="exclamation-circle" scale="0.8"/> will be removed on {{remove_date.toLocaleDateString()}}
-                    </p>
-                </b-popover>
-                <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
-                    <icon name="redo"/>
-                </div>
-                <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop" title="Stop Task"><icon name="stop"/></div>
-                <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove" title="Remove Task"><icon name="trash"/></div>
-            </div><!--float right-->
-            <h4>
-                <strong style="text-transform: uppercase;">{{task.status}}</strong>
-                <small>
-                    <time v-if="task.status == 'requested'"><timeago :since="task.request_date" :auto-update="60"/></time>
-                    <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date" :auto-update="60"/></time>
-                    <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :auto-update="30"/></time>
-                    <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :auto-update="60"/></time>
-                    <time v-if="task.status == 'failed'"><timeago :since="task.fail_date" :auto-update="60"/></time>
-                    <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :auto-update="60"/></time>
-                </small>
-            </h4>
-            <i style="font-size: 95%;">{{task.status_msg.trim()||'empty status message'}}</i>
-        </div>
+        <!--status indicator-->
+        <div class="status-card status-color" :class="task.status" style="position: relative;">
+            <div v-if="estimated_remain(task)" class="remain" :style="{width: (estimated_remain(task)*100)+'%'}"/>
+            <div style="float: left; padding: 6px 8px" @click="poke">
+                <statusicon :status="task.status" scale="1.5"/>
+            </div>
+            <div style="margin-left: 45px; margin-right: 5px; padding-bottom: 4px; position: relative;">
+                <div style="float: right;">
+                    <div class="button" style="opacity: 0.7" v-if="!editing_desc" @click="editing_desc = true" title="Edit Notes"><icon name="edit"/></div>
+                    <div class="button" style="opacity: 0.7" :id="'popover'+task.config._tid" @click="openinfo"><icon name="info"/></div>
+                    <b-popover :target="'popover'+task.config._tid" triggers="hover">
+                        <template slot="title"><span class="text-muted"><small>ID</small> {{task._id}}</span></template>
+                        <p>
+                            <contact :id="task.user_id" size="small"/>
+                        </p>
+                        <table class="table table-sm">
+                        <tr>
+                            <th>Created</th>
+                            <td>{{new Date(this.task.create_date).toLocaleString()}}</td>
+                        </tr>
+                        <tr v-if="task.start_date">
+                            <th>Started</th>
+                            <td>{{new Date(this.task.start_date).toLocaleString()}}</td>
+                        </tr>
+                        <tr v-if="task.finish_date">
+                            <th>Finished</th>
+                            <td>{{new Date(this.task.finish_date).toLocaleString()}}</td>
+                        </tr>
+                        <tr v-if="task.fail_date">
+                            <th>Failed</th>
+                            <td>{{new Date(this.task.fail_date).toLocaleString()}}</td>
+                        </tr>
+                        <tr v-if="task.nice">
+                            <th>Nice</th>
+                            <td>{{task.nice}} <small style="opacity: 0.5">yeilds to less nice tasks</small></td>
+                        </tr>
+                        <tr v-if="task.config._rule">
+                            <th>Rule</th>
+                            <td>
+                                <small>This task was submitted by {{task.config._rule.id}}
+                                For subject:<b>{{task.config._rule.subject}}</b></small>
+                            </td>
+                        </tr>
+                        <tr v-if="resource">
+                            <th>Resource</th>
+                            <td>{{this.resource.name}}</td>
+                        </tr>
+                        <tr v-if="task.next_date" style="opacity: 0.6;">
+                            <th>Next&nbsp;Chk</th>
+                            <td>{{new Date(this.task.next_date).toLocaleString()}}</td>
+                        </tr>
+                        </table>
+                        <p v-if="task.status == 'finished'" style="opacity: 0.5;">
+                            <icon name="exclamation-circle" scale="0.8"/> will be removed on {{remove_date.toLocaleDateString()}}
+                        </p>
+                    </b-popover>
+                    <div class="button" v-if="task.status == 'failed' || task.status == 'finished' || task.status == 'removed' || task.status == 'stopped'" title="Rerun Task" @click="rerun">
+                        <icon name="redo"/>
+                    </div>
+                    <div class="button" v-if="task.status == 'requested' || task.status == 'running'" @click="stop" title="Stop Task"><icon name="stop"/></div>
+                    <div class="button" v-if="task.status != 'removed' && task.status != 'remove_requested'" @click="remove" title="Remove Task"><icon name="trash"/></div>
+                </div><!--float right-->
+                <h4>
+                    <strong style="text-transform: uppercase;">{{task.status}}</strong>
+                    <small>
+                        <time v-if="task.status == 'requested'"><timeago :since="task.request_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'waiting'">since <timeago :since="task.create_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'running'">since <timeago :since="task.start_date" :auto-update="30"/></time>
+                        <time v-if="task.status == 'finished'"><timeago :since="task.finish_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'failed'"><timeago :since="task.fail_date" :auto-update="60"/></time>
+                        <time v-if="task.status == 'removed'"><timeago :since="task.remove_date" :auto-update="60"/></time>
+                    </small>
+                </h4>
+                <i style="font-size: 95%;">{{task.status_msg.trim()||'empty status message'}}</i>
+            </div>
+        </div><!--status-card-->
+    </div><!--sticky top-->
 
+    <!--task details-->
+    <div class="status-color" :class="task.status" style="padding-left: 3px;">
         <div style="background-color: #fafafa; color: #555; position: relative;">
             <div class="note" v-if="task.desc || editing_desc">
                 <div v-if="task.desc && !editing_desc" @click="editing_desc = true" class="note-text">
@@ -328,41 +333,47 @@ export default {
 .task {
 background-color: #fafafa;
 }
+.task-header {
+position: sticky; 
+top: 0; 
+z-index: 7;  /*needs to be higher than z-index: 6 of ace scrollbar*/
+box-shadow: 0 3px 3px #0002;
+}
 .status-card {
 padding: 5px 0 0 4px;
 border: none;
 }
-.status-card.finished {
+.status-color.finished {
 color: white;
 background-color: #28a745;
 }
-.status-card.failed {
+.status-color.failed {
 color: white;
 background-color: #c00;
 }
-.status-card.running_sync,
-.status-card.running {
+.status-color.running_sync,
+.status-color.running {
 color: white;
-/* background-color: #2693ff; */
 background-color: #007bff;
 }
-.status-card.waiting {
+.status-color.waiting {
 color: white;
 background-color: #50bfff;
 }
-.status-card.requested {
+.status-color.requested {
 color: white;
 background-color: #50bfff;
 }
-.status-card.removed,
-.status-card.stop_requested,
-.status-card.stopped {
+.status-color.removed,
+.status-color.stop_requested,
+.status-color.stopped {
 color: white;
 background-color: gray;
 }
-.status-card .button {
+.status-color .button {
 color: white;
 }
+
 time {
 color: white;
 opacity: 0.8;
