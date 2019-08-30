@@ -664,6 +664,8 @@ color: gray;
 margin: 5px 10px;
 font-weight: bold;
 float: right;
+position: relative;
+z-index: 1;
 }
 .task-id:hover {
 color: black;
