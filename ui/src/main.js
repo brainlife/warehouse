@@ -36,7 +36,7 @@ import VueAxios from 'vue-axios'
 Vue.component('v-select', vSelect)
 Vue.component('icon', Icon)
 
-import VueDisqus from 'vue-disqus'
+import VueDisqus from 'vue-disqus';
 
 Vue.use(VueDisqus)
 Vue.use(VueHighlightJS)

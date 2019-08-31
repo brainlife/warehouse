@@ -13,8 +13,7 @@
     </div>
 
     <b-alert variant="secondary" :show="!loading && tasks && tasks.length == 0">Please stage datasets by clicking "Stage New dataset" button below.</b-alert>
-    <div class="task-area" v-if="!loading && tasks" v-for="task in tasks" :key="task._id">
-
+    <div class="task-area" v-if="!loading && tasks" v-for="task in tasks" :key="task._id" :id="task._id">
         <div v-if="!task.show" class="task-id" @click="toggle_task(task)">
             <icon name="caret-right"/>
             t.{{task.config._tid}}
@@ -24,7 +23,7 @@
             <!--header-->
             <div slot="header" style="background-color: white;">
                 <!--task-id and toggler-->
-                <div :id="task._id" :title="task._id" class="task-id" @click="toggle_task(task)">
+                <div :title="task._id" class="task-id" @click="toggle_task(task)">
                     <icon name="caret-down" v-if="task.show"/>
                     t.{{task.config._tid}}
                 </div>
@@ -331,10 +330,9 @@ export default {
         },
 
         scrollto(id) {
-            var header = document.getElementsByClassName("instance-active")[0];
             var elem = document.getElementById(id);
-            if(!elem || !header) return; //maybe not loaded yet?
-            var top = elem.offsetTop-header.clientHeight;
+            if(!elem) return; //maybe not loaded yet?
+            var top = elem.offsetTop;//-header.clientHeight;
             this.$refs.process.scrollTop = top;
         },
         open_dataset(id) {
