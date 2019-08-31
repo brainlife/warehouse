@@ -145,10 +145,6 @@ var projectSchema = mongoose.Schema({
             others: Number,  //probably empty, or null
         },
 
-        /*
-        datasets: Number, //total number of datasets
-        subjects: Number, //total number of subjects
-        */
         datasets: {
             //subjects: [String],
             subject_count: Number,

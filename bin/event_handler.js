@@ -206,9 +206,11 @@ function handle_task(task, cb) {
                         "prov.output_id": output.id,
                         //ignore failed and removed ones
                         $or: [
-                            { removed: false }, 
+                            { removed: false }, //already archived!
                             //or.. if archived but removed and not failed, user must have a good reason to remove it.. (don't rearchive)
                             { removed: true, status: {$ne: "failed"} }, 
+                            //or.. removed while being stored (maybe got stuck storing?)
+                            { removed: true, status: {$ne: "storing"} }, 
                         ]
                     }).exec((err,_dataset)=>{
                         if(!_dataset) outputs.push(output);
@@ -344,18 +346,18 @@ function handle_event(msg, head, dinfo, cb) {
         let sub = keys[2];
         let email = msg.email;
         let fullname = msg.fullname;
-        invite_slack_user(email, fullname);
+        if(config.slack) invite_slack_user(email, fullname);
 
         //set public profile
-        logger.debug("--------------------------------------------------------");
-        logger.debug(JSON.stringify(msg._profile, null, 4));
+        logger.debug("publishing profile");
         request.put({
             url: config.profile.api+"/public/"+sub, 
             body: msg._profile,
             headers: { Authorization: 'Bearer '+config.warehouse.jwt, },
             json: true,
         }, (err, res, body)=>{
-            console.log("published profile");
+            if(err) console.error(err);
+            else logger.debug("successfully published profile");
         });
     }
     cb();

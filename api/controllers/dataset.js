@@ -962,7 +962,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 url: config.amaretti.api+"/task",
                 json: true,
                 body: {
-                    name : "Staging Out Of Archive",
+                    name : "Staging",
                     //desc : "archiving",
                     service : "brainlife/app-stage",
                     instance_id : req.body.instance_id,

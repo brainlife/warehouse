@@ -192,11 +192,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         //update info from github
         cb=>{
             logger.debug("loading github info");
-            common.pull_appinfo(app.github, (err, info)=>{
-                if(err) return cb(err);
-                Object.assign(app, info);
-                cb();
-            });
+            common.update_appinfo(app, cb);
         },
 
         //mint doi
@@ -274,15 +270,6 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             if(!canedit(req.user, app)) {
                 return res.status(401).end("you are not administartor of this app");
             } else {
-                
-                //apply user update 
-                /*
-                delete req.body.user_id;
-                delete req.body.create_date;
-                delete req.body.doi;
-                logger.debug(req.body);
-                for(var k in req.body) app[k] = req.body[k];    
-                */
                 for(var k in req.body) {
                     //white list fields that user can update
                     switch(k) {
@@ -308,31 +295,14 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 }
 
                 async.series([
-                    /* we don't need to do this anymore
-                    //issue doi if doi isn't issued 
-                    next=>{
-                        if(app.doi) return next();
-                        mint_doi((err, doi)=>{
-                            if(err) return next(err);
-                            //logger.debug("minting doi", doi);
-                            app.doi = doi;
-                        });
-                    },
-                    */
-
                     //update info from github
                     cb=>{
-                        common.pull_appinfo(app.github, (err, info)=>{
-                            if(err) return cb(err);
-                            Object.assign(app, info);
-                            cb();
-                        });
+                        common.update_appinfo(app, cb);
                     },
 
                     //update datacite info
                     cb=>{
                         if(!app.doi) return cb(); //doi not set...skip
-
                         let metadata = common.compose_app_datacite_metadata(app);
                         common.doi_post_metadata(metadata, err=>{
                             if(err) {
@@ -340,11 +310,6 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                                 logger.error(err);
                                 return cb(); //sometime datacite is broken.. let's skip if this happens
                             }
-                            /*
-                            //shouldn't need to be updated but just in case..
-                            let url = config.warehouse.url+"/app/"+app._id; 
-                            common.doi_put_url(app.doi, url, cb);
-                            */
                             cb();
                         });
                     },

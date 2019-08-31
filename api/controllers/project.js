@@ -110,12 +110,13 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 			admins: req.body.admins,
 			members: req.body.members,
 		}
-	}, (err, _res, group)=>{
+	}, (err, _res, body)=>{
 		if(err) return next(err);
+        console.dir(body);
 
         //now update the warehouse project
 		var project = new db.Projects(req.body);
-		project.group_id = group.group.id;
+		project.group_id = body.group.id;
 		project.save(err=>{
 			if (err) return next(err); 
 			project = JSON.parse(JSON.stringify(project));
@@ -159,6 +160,8 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         for(var k in req.body) project[k] = req.body[k];
 
         logger.debug("update existing group on auth service");
+        logger.debug(req.body.admins);
+        logger.debug(req.body.members);
         request.put({ url: config.auth.api+"/group/"+project.group_id, headers: { authorization: req.headers.authorization }, json: true,
             body: {
                 name: req.body.name,

@@ -68,25 +68,8 @@ function handle_app(app, cb) {
                 if(err) return next(err);
                 if(res.statusCode != 200) return next("couldn't obtain service stats "+res.statusCode);
                 app.stats.serviceinfo = info;
-
-                common.pull_appinfo(app.github, (err, gitinfo)=>{
-                    if(err) return next(err);
-                    //Object.assign(app, gitinfo); //TODO which fields is this setting?
-                    app.stats.gitinfo = gitinfo; //stars
-                    
-                    /*
-                    if(info) {
-                        //deprecated..
-                        app.stats.requested = info.counts.requested;
-                        app.stats.users = info.users;
-                        app.stats.success_rate = info.success_rate;
-
-                        app.markModified('stats');
-                    }
-                    */
-                    app.markModified('stats');
-                    next();
-                });
+                app.markModified('stats');
+                common.update_appinfo(app, next);
             });
         },
 

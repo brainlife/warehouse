@@ -31,9 +31,11 @@ exports.github = {
 //once you create oauth app, you will need to re-authorize it with admin+client (it gave with just admin scope)
 //https://slack.com/oauth/authorize?&client_id=(your client id)&team=(teamId)&install_redirect=install-on-team&scope=admin+client
 //more information can be found here https://github.com/outsideris/slack-invite-automation
+/*
 exports.slack = {
     token: fs.readFileSync(__dirname+"/slack.token", "ascii").trim(),
 }
+*/
 
 exports.amaretti = {
     api: "https://dev1.soichi.us/api/amaretti",

@@ -31,7 +31,7 @@ router.get('/health', (req, res, next)=>{
                 messages.push(service+" is stale max:"+(report.maxage||(1000*120)));
             }
         }
-        if(status != "ok") logger.error(JSON.stringify({messages, reports}, null, 4));
+        //if(status != "ok") logger.error(JSON.stringify({messages, reports}, null, 4));
         res.json({status, messages, reports});
     });
 });

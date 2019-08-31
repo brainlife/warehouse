@@ -283,22 +283,26 @@ exports.archive_task_outputs = async function(task, outputs, cb) {
     });
 }
 
-exports.pull_appinfo = function(service_name, cb) {
-    let app = {};
+//get new information from github and apply it to app document
+exports.update_appinfo = function(app, cb) {
+    let service_name = app.github;
     exports.load_github_detail(service_name, (err, repo, con_details)=>{
         if(err) return cb(err);
         app.desc = repo.description;
         app.tags = repo.topics;
         if(!app.stats) app.stats = {};
+        console.log("before....");
+        console.dir(app.toString());
         app.stats.stars = repo.stargazers_count;
+        app.markModified('stats');
         app.contributors = con_details.map(con=>{
             //see https://api.github.com/users/francopestilli for other fields
             return {name: con.name, email: con.email};
         });
-        //console.dir(app.contributors.toObject());
-        cb(null, app);
+        console.log("after....");
+        console.dir(app.toString());
+        cb();
     });
-
 }
 
 exports.load_github_detail = function(service_name, cb) {
@@ -544,7 +548,7 @@ exports.cache_contact = function(cb) {
         if(res.statusCode != 200) logger.error("couldn't cache auth profiles. code:"+res.statusCode);
         else {
             body.profiles.forEach(profile=>{
-                cached_contacts[profile.id.toString()] = profile;
+                cached_contacts[profile.sub] = profile;
             });
             if(cb) cb();
         }

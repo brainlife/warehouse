@@ -25,11 +25,22 @@ function count_apps(d) {
 
 function count_dataset(d) {
     return new Promise((resolve, reject)=>{
-        db.Datasets.countDocuments({create_date: {$lt: d}, removed: false}, (err, count)=>{
+
+        //ignore removed projects
+        db.Projects.find({removed: true}, {_id: 1}, (err, removed_projects)=>{
             if(err) return reject(err);
-            const time = Math.round(d.getTime()/1000);
-            console.log(graphite_prefix+".dataset.count "+count+" "+time);
-            resolve();
+
+            //TODO - I should include published datasets that are in removed project?
+            db.Datasets.countDocuments({
+                create_date: {$lt: d}, 
+                project: {$nin: removed_projects},
+                removed: false,
+            }, (err, count)=>{
+                if(err) return reject(err);
+                const time = Math.round(d.getTime()/1000);
+                console.log(graphite_prefix+".dataset.count "+count+" "+time);
+                resolve();
+            });
         });
     });
 }
