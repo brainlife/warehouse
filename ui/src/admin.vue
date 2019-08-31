@@ -64,8 +64,8 @@ export default {
                 where: JSON.stringify({
                     $or: [
                         //need to use iLike with postgres..
-                        {fullname: {$like: "%"+search+"%"}}, 
-                        {email: {$like: "%"+search+"%"}},
+                        {fullname: {$regex: search}}, 
+                        {email: {$regex: search}},
                     ],
                 }),
             }}).then(res=>{
@@ -76,7 +76,7 @@ export default {
 
         su(person) {
             if(!person) return;
-            this.$http.get(Vue.config.auth_api+'/jwt/'+person.id).then(res=>{
+            this.$http.get(Vue.config.auth_api+'/jwt/'+person.sub).then(res=>{
                 localStorage.setItem("jwt", res.data.jwt);
                 document.location = "/project/";
             });
