@@ -32,7 +32,7 @@
                     <app :app="task.app" :branch="task.service_branch||'master'" :compact="true"/>
                 </div>
                 <div v-else>
-                    <h4 style="padding: 7px; margin-bottom: 0px;" class="text-muted">
+                    <h4 style="padding: 7px; margin-bottom: 0px; opacity: 0.8;">
                         <icon name="paper-plane"/>&nbsp;&nbsp;{{task.name}}
                     </h4>
                 </div>

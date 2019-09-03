@@ -2,7 +2,8 @@
 <div v-if="task">
     <div class="task-header">
         <slot name="header">
-            <h3><icon name="paper-plane"></icon> {{task.name||task.service}}</h3>
+            <!--default content.. normally client should override this slot-->
+            <h4 style="background-color: white; padding: 7px; margin-bottom: 0px;"><icon name="paper-plane"></icon> {{task.name||task.service}}</h4>
         </slot>
 
         <!--status indicator-->

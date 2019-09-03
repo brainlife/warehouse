@@ -113,7 +113,6 @@
                         <b-row v-if="dataset.product">
                             <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
                             <b-col cols="9">
-                                <!--<product :product="dataset.prov.task.product"/>-->
                                 <product :product="dataset.product"/>
                                 <br>
                             </b-col>
@@ -130,7 +129,6 @@
                                         <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                     </span> 
                                     <span v-if="(dataset.status == 'failed' || dataset.status == 'storing')">
-                                        <!--<icon name="exclamation-triangle"/> Failed to store on warehouse-->
                                         <task :task="dataset.archive_task" v-if="dataset.archive_task"/>
                                     </span> 
                                     <span v-if="!dataset.status">
@@ -795,19 +793,6 @@ overflow: auto;
 overflow: auto;
 padding: 20px;
 }
-/*
-.reef {
-position: absolute;
-top: -21px;
-left: -21px;
-z-index: 100;
-width: 80px;
-transition: opacity 1s;
-}
-.brainlife-modal-header:hover .reef {
-opacity: 0;
-}
-*/
 pre.code {
 background-color: white;
 padding: 10px;
