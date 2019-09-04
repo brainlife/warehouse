@@ -496,7 +496,6 @@ Normally, the App description is automatically pulled from github repo descripti
 import Vue from 'vue'
 
 import sidemenu from '@/components/sidemenu'
-import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
 import multiprojectselecter from '@/components/multiprojectselecter'
 import datatypeselecter from '@/components/datatypeselecter'
@@ -512,8 +511,7 @@ let debounce;
 export default {
     mixins: [ search_app_mixin ],
     components: { 
-        sidemenu, contactlist, 
-        pageheader, multiprojectselecter,
+        sidemenu, contactlist, multiprojectselecter,
         datatypeselecter, trueorfalse, tageditor, datatype, app,
 
         editor: require('vue2-ace-editor'),

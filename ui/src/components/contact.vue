@@ -1,15 +1,20 @@
 <template>
-<div v-if="profile" class="contact" :class="{'text-muted': !profile.active}" :id="uuid" @click-dis.stop="click">
-    <img :src="gurl(20)">
-    <div v-if="size != 'tiny'" style="display: inline-block;">
-        <div class="name" v-if="profile.fullname">
-            {{profile.fullname||'No Name'}}
-        </div><div class="name" v-else>
-            <span class="text-muted">No Name</span>
-        </div><div class="email" v-if="profile.email && size == 'full'">&lt;{{profile.email}}&gt;</div>
+<div v-if="profile">
+
+    <!--contact tag-->
+    <div class="contact" :id="uuid" :class="{'text-muted': !profile.active}">
+        <img :src="avatar_url(profile, 20)">
+        <div v-if="size != 'tiny'" style="display: inline-block;">
+            <div class="name" v-if="profile.fullname">
+                {{profile.fullname||'No Name'}}
+            </div><div class="name" v-else>
+                <span class="text-muted">No Name</span>
+            </div><div class="email" v-if="profile.email && size == 'full'">&lt;{{profile.email}}&gt;</div>
+        </div>
     </div>
-    <b-popover :target="uuid" :title="null" delay="500" triggers="hover click" @show="show">
-        <img :src="gurl(60)" style="float: left">
+
+    <b-popover :target="uuid" :title="null" triggers="click">
+        <img :src="avatar_url(profile, 60)" style="float: left">
         <div style="margin-left: 70px; min-height: 60px;">
             <b>{{profile.fullname}}</b> <small style="opacity: 0.5">{{profile.username}}</small>
             <div v-if="public && public.bio">
@@ -31,11 +36,15 @@
 import Vue from 'vue'
 import md5 from 'md5'
 
-var profiles = null;
+import authprofilecache from '@/mixins/authprofilecache'
+import profilecache from '@/mixins/profilecache'
+
+const lib = require('@/lib'); //for avatar_url
 
 export default {
+    mixins: [authprofilecache, profilecache],
     props: {
-        //set id or (fullname, email)
+        //set id(sub) or (fullname, email)
         id: {
             type: String,
         },
@@ -67,9 +76,6 @@ export default {
         }
     },
 
-    computed: {
-    },
-
     watch: {
         id: function() {
             this.loadprofile();
@@ -77,12 +83,16 @@ export default {
     },
 
     created: function() {
+        //TODO - what is the point of this?
         this.profile.fullname = this.fullname;
         this.profile.email = this.email;
+
         if(this.id) this.loadprofile();
     },
 
     methods: {
+        avatar_url: lib.avatar_url,
+        /*
         gurl(size) {
             var email = this.profile.email;
             if(this.profile.email) {
@@ -96,20 +106,14 @@ export default {
                 return "https://api.adorable.io/avatars/"+size+"/"+key+".png";
             }
         },
+        */
         loadprofile() {
-            if(!Vue.config.user) return;
-
-            if(profiles === null) {
-                //TODO -- this is utterly bad.. only load the contact we need
-                profiles = this.$http.get(Vue.config.auth_api+'/profile?limit=3000');
-            }
-            profiles.then(res=>{
-                res.data.profiles.forEach((profile)=>{
-                    if(profile.sub == this.id) this.profile = profile;
+            if(!Vue.config.user) return; //TODO what is this?
+            this.authprofilecache(this.id, (err, profile)=>{
+                this.profile = profile;
+                this.profilecache(this.id, (err, public_profile)=>{
+                    this.public = public_profile;
                 });
-            
-            }).catch(err=>{
-                console.error(err);
             });
         },
 
@@ -126,6 +130,7 @@ export default {
         },
         */
 
+        /*
         show() {
             if(!this.public) {
                 this.$http.get(Vue.config.profile_api+'/public/'+this.profile.sub).then(res=>{
@@ -135,6 +140,7 @@ export default {
                 });
             }
         },
+        */
     },
 }
 </script>
@@ -167,6 +173,5 @@ background-color: #fff;
 .email {
 background-color: #ddd;
 color: #888;
-/*font-family: monospace;*/
 }
 </style>

@@ -129,7 +129,6 @@
 <script>
 import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
-import pageheader from '@/components/pageheader'
 import app from '@/components/app'
 
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
@@ -139,7 +138,7 @@ let query_debounce;
 var ps;
 
 export default {
-    components: { sidemenu, pageheader, app },
+    components: { sidemenu, app },
     data () {
         return {
             active: null,

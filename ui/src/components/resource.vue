@@ -12,7 +12,6 @@ import resource_cache from '@/mixins/resource_cache'
 
 export default {
     mixins: [ resource_cache ],
-    //components: { appavatar },
     props: {
         id: String, //resource id
         resource: Object,
@@ -25,7 +24,6 @@ export default {
     created: function() {
         if(this.resource) this.resource_obj = this.resource;
         if(this.id) {
-            console.log("resolving id", this.id);
             this.resource_cache(this.id, (err, resource)=>{
                 this.resource_obj = resource;
             });

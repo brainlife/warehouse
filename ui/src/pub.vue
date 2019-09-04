@@ -300,7 +300,6 @@
 
 <script>
 import Vue from 'vue'
-import pageheader from '@/components/pageheader'
 import sidemenu from '@/components/sidemenu'
 import projectavatar from '@/components/projectavatar'
 import contact from '@/components/contact'
@@ -318,7 +317,7 @@ export default {
     mixins: [agreementMixin],
 
     components: { 
-        pageheader, sidemenu, projectavatar, 
+        sidemenu, projectavatar, 
         contact, VueMarkdown, license, 
         datatypetag, tags, 
         app, citation,

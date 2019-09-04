@@ -2,7 +2,7 @@
 
 import Vue from 'vue'
 
-let cache_ = {}; //global cache
+let cache_ = {}; //global cache for all caches (singleton!)
 
 export default {
     methods: {
