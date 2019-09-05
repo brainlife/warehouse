@@ -3,24 +3,24 @@
     <sidemenu active="/dashboard"></sidemenu>
     <div class="page-content">
         <h5>New Members</h5>
-        <small>Please say hi to these members!</small>
-        <div v-for="user in recent_users" :key="user.sub" style="border-top: 1px solid #eee; margin: 5px; margin-bottom: 10px">
-            <b-row>
-                <b-col cols="2">
-                    <img :src="avatar_url(user, 64)">
-                </b-col>
-                <b-col cols="3">
-                    <b>{{user.fullname}}</b>
-                    <div class="email" v-if="user.email">&lt;{{user.email}}&gt;</div>
-                </b-col>
-                <b-col>
-                    <div v-if="user._profile">
-                        <b>{{user._profile.institution}}</b>
-                        <small>{{user._profile.bio||'no bio'}}</small>
-                    </div>
-                </b-col>
-            </b-row>
-        </div>
+        <small>The following members joined brainlife recently (in the last 60 days). Please say hi!</small>
+        <br>
+        <b-card-group columns>
+            <b-card v-for="user in recent_users" :key="user.sub">
+                <img :src="avatar_url(user, 50)" style="float: left; margin-right: 10px;">
+                <p>
+                    <b>{{user.fullname}}</b><br>
+                    <span>{{user._profile.institution}}</span>
+                    <small v-if="user.email" >{{user.email}}</small>
+                </p>
+                <div slot="footer" v-if="user._profile && user._profile.bio">
+                    <small class="text-muted">{{user._profile.bio}}</small>
+                </div>
+            </b-card>
+        </b-card-group>
+        <br clear="both">
+        <small style="float: right; margin-top: 10px;">{{recent_users.length}} users</small>
+        <hr>
 
         <h5>Resources</h5>
         <small>This graph shows number of jobs executed on resources that you have access to</small>
@@ -87,10 +87,10 @@ export default {
         }).catch(console.error);
 
         //load recent users
-        let last_3month = new Date();
-        last_3month.setMonth(last_3month.getMonth()-3); 
+        let recent = new Date();
+        recent.setMonth(recent.getMonth()-2); 
         let where = {
-            "times.register": {$gt: last_3month},
+            "times.register": {$gt: recent},
             email_confirmed: true,
         };
 
@@ -166,5 +166,17 @@ top: 0px;
 }
 .email {
 opacity: 0.8;
+}
+.recent_user {
+border-top: 1px solid #eee; 
+margin: 3px; 
+padding: 3px;
+margin-bottom: 10px;
+/*
+display: inline-block;
+width: 40%;
+float: left;
+position: relative;
+*/
 }
 </style>

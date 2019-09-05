@@ -110,13 +110,12 @@ filter: saturate(100%);
 */
 }
 .datatypes {
-height: 25px;
 padding: 0px 5px;
 margin-bottom: 0px;
 overflow: hidden; 
-white-space: nowrap; 
 text-overflow: ellipsis;
 font-size: 85%;
+height: 20px;
 }
 /*
 .projectcard img {

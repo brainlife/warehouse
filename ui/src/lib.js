@@ -74,7 +74,6 @@ export function avatar_url(user, size) {
     if(user.email) {
         return "//www.gravatar.com/avatar/"+md5(user.email)+"?s="+size;  
     } else {
-        console.dir(user);
         //generate avatar for user who doesn't have email set..
         //return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=20";
         //return "//www.gravatar.com/avatar/"+md5(this.fullname)+"?d=robohash&s=20";

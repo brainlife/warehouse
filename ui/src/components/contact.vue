@@ -1,8 +1,8 @@
 <template>
-<div v-if="profile">
+<div v-if="profile" style="display: inline-block">
 
     <!--contact tag-->
-    <div class="contact" :id="uuid" :class="{'text-muted': !profile.active}">
+    <div class="contact" :id="uuid" :class="{'text-muted': !profile.active, 'contact-tiny': size == 'tiny'}">
         <img :src="avatar_url(profile, 20)">
         <div v-if="size != 'tiny'" style="display: inline-block;">
             <div class="name" v-if="profile.fullname">
@@ -162,6 +162,9 @@ cursor: pointer;
 .contact img {
 float: left;
 height: 20px;
+}
+.contact-tiny {
+margin-right: 8px;
 }
 .name, .email {
 display: inline-block;
