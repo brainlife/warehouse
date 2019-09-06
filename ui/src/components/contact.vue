@@ -3,7 +3,7 @@
 
     <!--contact tag-->
     <div class="contact" :id="uuid" :class="{'text-muted': !profile.active, 'contact-tiny': size == 'tiny'}">
-        <img :src="avatar_url(profile, 20)">
+        <img v-lazy="avatar_url(profile, 20)">
         <div v-if="size != 'tiny'" style="display: inline-block;">
             <div class="name" v-if="profile.fullname">
                 {{profile.fullname||'No Name'}}
@@ -14,7 +14,7 @@
     </div>
 
     <b-popover :target="uuid" :title="null" triggers="click">
-        <img :src="avatar_url(profile, 60)" style="float: left">
+        <img v-lazy="avatar_url(profile, 60)" style="float: left">
         <div style="margin-left: 70px; min-height: 60px;">
             <b>{{profile.fullname}}</b> <small style="opacity: 0.5">{{profile.username}}</small>
             <div v-if="public && public.bio">

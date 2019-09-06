@@ -6,8 +6,8 @@
         <small>The following members joined brainlife recently (in the last 60 days). Please say hi!</small>
         <br>
         <b-card-group columns>
-            <b-card v-for="user in recent_users" :key="user.sub">
-                <img :src="avatar_url(user, 50)" style="float: left; margin-right: 10px;">
+            <b-card v-for="user in recent_users" :key="user.sub" no-body style="padding: 5px;">
+                <img :src="avatar_url(user, 50)" style="float: left; padding-right: 15px;">
                 <p>
                     <b>{{user.fullname}}</b><br>
                     <span>{{user._profile.institution}}</span>
