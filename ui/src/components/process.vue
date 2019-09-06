@@ -1,7 +1,7 @@
 <template>
 <div v-if="projects && instance" ref="process">
     <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-    <div v-if="!loading" style="padding: 10px;">
+    <div v-if="!loading" style="padding: 10px; position: sticky; top: 0px; z-index: 7; background-color: #eee;">
         <div class="instance-action">
             <div @click.stop="remove()" class="button">
                 <icon name="trash"/>
@@ -142,7 +142,10 @@
             </span>
         </div>
     </div>
-    <!--make sure the bottom end of task-area won't be overwrapped-->
+    <!--give it a bit of space after the last task-->
+    <br>
+    <br>
+    <br>
 
     <div class="new-action">
         <b-row no-gutters>
@@ -679,7 +682,7 @@ margin-bottom: 1px;
 background-color: white;
 position: sticky;
 bottom: 0px;
-z-index: 6;
+z-index: 7;
 }
 
 .new-action-button {

@@ -335,7 +335,7 @@ export default {
 background-color: #fafafa;
 }
 .task-header {
-position: sticky; 
+/*position: sticky; */
 top: 0; 
 z-index: 7;  /*needs to be higher than z-index: 6 of ace scrollbar*/
 box-shadow: 0 3px 3px #0002;
