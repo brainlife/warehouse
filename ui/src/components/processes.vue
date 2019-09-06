@@ -5,18 +5,6 @@
     <div class="instances" v-if="instances">
         <!--instances list-->
         <div class="instances-header" :style="{width: splitter_pos-200+'px'}">
-            <!--
-            <b-button-group style="background-color: white">
-                <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">
-                    <span style="font-size: 80%;">All&nbsp;<b>{{instances.length}}</b></span>
-                </b-button>
-                <b-button size="sm" v-for="state in ['requested', 'running', 'finished', 'failed']"  :key="state"
-                    :pressed="show == state" :variant="state2variant(state)" @click="show = state">
-                    <span style="font-size: 75%;">{{state.toUpperCase()}}&nbsp;<b>{{instance_counts[state]||0}}</b></span>
-                </b-button>
-            </b-button-group>
-            -->
-
             <div style="padding-top: 10px;">
                 <div style="float: right;">
                     <!--<small><icon name="sort"/></small>-->
@@ -791,14 +779,10 @@ display: inline-block;
     background-color: #2693ff40;
 }
 .status-picker {
-    margin: 0px -8px;
-    padding: 0px 8px;
-    padding-top: 9px;
     white-space: nowrap;
     overflow: hidden;
-    position: absolute;
-    z-index: 1;
-    width: 100%;
+    text-overflow: ellipsis;
+    padding-top: 9px;
 }
 .status-picker .status {
     font-size: 9pt;
