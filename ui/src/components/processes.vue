@@ -30,7 +30,7 @@
                 </div>
             </div>
 
-            <div style="float: right; padding-top: 15px; padding-right: 5px;">
+            <div style="position: absolute; right: 8px; bottom: 4px;">
                 <div class="date">
                     <small>Update Date</small>
                 </div>
@@ -39,7 +39,7 @@
                 </div>
             </div>
 
-            <div class="status-picker">
+            <div class="status-picker" v-if="instance_counts[null] > 0">
                 <div v-for="state in [null, 'requested', 'running', 'finished', 'failed']" :key="state"
                      :class="status_picker_class(state)" @click="show = state">
                     {{state||'All'}} <span class="count">{{instance_counts[state]||0}}</span>
@@ -600,6 +600,7 @@ top: 85px;
 left: 200px;
 background-color: #f6f6f6;
 z-index: 1; /*for dropdown menu to go on top*/
+border-bottom: 1px solid #ddd;
 }
 
 .instances-header .btn {
@@ -781,11 +782,14 @@ display: inline-block;
 .status-picker {
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
-    padding-top: 9px;
+    /* text-overflow: ellipsis; */
+    box-sizing: border-box;
+    width: 100%;
+    padding-top: 10px;
+    position: relative;
 }
 .status-picker .status {
-    font-size: 9pt;
+    font-size: 8pt;
     text-transform: uppercase;
     display: inline-block;
     padding: 5px;
@@ -802,11 +806,13 @@ display: inline-block;
     opacity: 0.7;
     background-color: #f6f6f6;
 }
+.status-picker .status:hover {
+    background-color: white;
+    opacity: 1;
+}
 .status-picker .status-pressed {
     background-color: white;
     color: white;
-    box-shadow: 0px 0px 2px #0003;
-    z-index: 1;
     opacity: 1;
 }
 .status-picker .count {
