@@ -180,7 +180,8 @@ export default {
             document.location = "/auth/#!/signup";
         },
         slack() {
-            document.location = "https://brainlife-inviter.herokuapp.com/";
+            //document.location = "https://brainlife-inviter.herokuapp.com/";
+            document.location = "https://brainlife.slack.com";
         },
         md5, 
         open_usersettings() {
