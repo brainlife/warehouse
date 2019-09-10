@@ -99,9 +99,18 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         }
     }
 
+    console.time("api");
+    console.log("querying project");
+    mongoose.set('debug', true)
+
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         let query = construct_dataset_query(req.query, canread_project_ids);
+
+        console.timeLog("api");
+        console.log("querying datasets");
+        console.dir(query);
+
         db.Datasets.find(query)
         .populate(populate)
         .select(req.query.select)
@@ -117,6 +126,9 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 rec._canedit = canedit(req.user, rec, canwrite_project_ids);
             });
 
+            console.timeLog("api");
+            console.log("aggregating count/size");
+
             //count and get total size
             cast_mongoid(query);
             db.Datasets.aggregate()
@@ -130,7 +142,11 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                     count = stats[0].count;
                     size = stats[0].size;
                 }
+
+                console.timeEnd("api");
+                console.log("responding");
                 res.json({ datasets, count, size, });
+                mongoose.set('debug', config.debug)
             });
         });
     });
@@ -881,9 +897,6 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     let next_tid;
     let stage_task; 
 
-    //logger.debug("staging request");
-    //console.dir(req.body.dataset_ids);
-
     let unique_dataset_ids = [...new Set(req.body.dataset_ids)];
 
     async.series([
@@ -894,33 +907,45 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 db.Datasets.find({_id: {$in: unique_dataset_ids}}).exec((err, _datasets)=>{
                     if(err) return cb(err);
                     //find dataset ids that user have access to
-                    datasets = [];
-                    _datasets.forEach(dataset=>{
-                        if(!dataset) return;
-                        if(!dataset.storage) return;
+                    datasets = _datasets.filter(dataset=>{
+                        if(!dataset) return false;
+                        if(!dataset.storage) return false; //not stored yet
 
-                        canread_project_ids = canread_project_ids.map(id=>id.toString());
-                        if(!~canread_project_ids.indexOf(dataset.project.toString())) {
-                            //user doesn't have read access to this project
-                            return;
-                        } 
-
-                        inc_download_count(dataset);
-                        dataset.save();
-
-                        datasets.push(dataset);
+                        if(dataset.publications && dataset.publications.length > 0) {
+                            //published dataset can be staged by anyone
+                        } else {
+                            canread_project_ids = canread_project_ids.map(id=>id.toString());
+                            if(!~canread_project_ids.indexOf(dataset.project.toString())) {
+                                //user doesn't have read access to this project
+                                return false;
+                            } 
+                        }
+                        return true;
                     });
+                    //console.log("accepted datasets");
+                    //console.dir(datasets);
 
                     if(unique_dataset_ids.length != datasets.length) {
-                        return cb("you don't have access to all requested datasets");
+                        return cb("you don't have access to all requested datasets or not stored yet");
                     }
+
                     cb();
                 });
             });
         },
 
-        //find next tid
         cb=>{
+            //console.log("incrementing download counter");
+            async.forEach(datasets, async dataset=>{
+                inc_download_count(dataset);
+                await dataset.save();
+            }, cb);
+        },
+
+        //TODO - shouldn't we check for user agreement?
+
+        cb=>{
+            //console.log("querying for the next tid");
             request.get({
                 url: config.amaretti.api+'/task', 
                 json: true,
@@ -947,6 +972,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
 
         //submit!
         async cb=>{
+            console.log("issuing archiver jwt - that can run task on archiving resource");
             let jwt = await common.issue_archiver_jwt(req.user.sub);
 
             /*
@@ -958,6 +984,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             remove_date.setDate(remove_date.getDate()+7); 
             */
 
+            console.log("submitting stage task");
             stage_task = await rp.post({
                 url: config.amaretti.api+"/task",
                 json: true,
@@ -970,18 +997,20 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                     config: {
                         datasets: datasets.map(d=>{
                             if(d.storage == "copy") {
-                                //this dataset is a copy of an original dataset.
-                                //we need to state the original, but output to this dataset id (outdir)
                                 return {
+                                    //this dataset is a copy of an original dataset.
+                                    //we need to stage the original, but output to this dataset id (outdir)
                                     id: d.storage_config.dataset_id,
-                                    project: d.storage_config.project,
                                     outdir: d._id,
+
+                                    project: d.storage_config.project,
                                     storage: d.storage_config.storage,
                                     storage_config: d.storage_config.storage_config,
                                 }
                             } else {
                                 return {
                                     id: d.id,
+
                                     project: d.project,
                                     storage: d.storage,
                                     storage_config: d.storage_config,
@@ -1013,11 +1042,14 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 }
             });
 
+            console.log("reached the end");
             //don't need to call cb() as this is an async function
         },
 
     ], err=>{
         if(err) return next(err);
+        console.log("all done");
+        console.dir(stage_task);
         res.json(stage_task);
     });
 });
@@ -1240,7 +1272,6 @@ router.get('/download/:id', jwt({
             //check project access
             cb=>{
                 //we don't need to check project access if it's a published dataset
-                //TODO - maybe I should still limit download without correct publication id? (what's the point?)
                 if(dataset.publications && dataset.publications.length > 0) return cb();
 
                 common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{

@@ -81,7 +81,7 @@ function handle_app(app, cb) {
                 if(err) return next(err);
                 app.doi = doi;
                 let metadata = common.compose_app_datacite_metadata(app);
-                console.log(JSON.stringify(metadata, null, 4));
+                //console.log(JSON.stringify(metadata, null, 4));
                 common.doi_post_metadata(metadata, err=>{
                     if(err) return next(err);
                     let url = config.warehouse.url+"/app/"+app._id;  
