@@ -72,12 +72,14 @@
                     <b-col cols="8">
 
                         <b-card v-if="app.deprecated_by" no-body
-                            header="This App has been deprecated by the following App" border-variant="danger" header-bg-variant="danger" header-text-variant="white">
+                            header="This App has been deprecated" style="margin-bottom: 10px"
+                            border-variant="danger" header-bg-variant="danger" header-text-variant="white">
+                            <p style="padding: 10px;">Please consider using the following App instead.</p>
                             <app :appid="app.deprecated_by"/>
                         </b-card>
 
                         <!--input/output-->
-                        <p><small class="text-muted">This app uses the following input/output datatypes</small></p>
+                        <p><small class="text-muted">This App uses the following input/output datatypes</small></p>
                         <div style="position: relative;">
                             <b-row>
                                 <!--input-->

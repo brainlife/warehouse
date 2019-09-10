@@ -8,7 +8,7 @@ export default {
     methods: {
         profilecache(id, cb) {
             this._cache("profilecache."+id, ()=>{
-                console.log("loading public profile for "+id);
+                //console.log("loading public profile for "+id);
                 return this.$http.get(Vue.config.profile_api+'/public/'+id);
             }, (err, res)=>{
                 if(!res.data) return cb("couldn't find such profile");
