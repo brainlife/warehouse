@@ -1,5 +1,5 @@
 <template>
-<b-modal title="Select Datatypes" id="uploader" ref="modal" size="lg" @ok="submit" ok-only>
+<b-modal title="Select Datatypes" ref="modal" size="lg" @ok="submit" ok-only>
     <!--<h4>Select Datasets</h4>-->
     <b-alert v-if="Object.keys(datatype_groups).length == 0" show variant="danger">There are no datasets to publish</b-alert>
     <p v-else class="text-muted">Please select datasets you'd like to publish (and make them publically downloadable)</p>
