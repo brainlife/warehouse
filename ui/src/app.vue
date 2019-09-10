@@ -72,12 +72,14 @@
                     <b-col cols="8">
 
                         <b-card v-if="app.deprecated_by" no-body
-                            header="This App has been deprecated by the following App" border-variant="danger" header-bg-variant="danger" header-text-variant="white">
+                            header="This App has been deprecated" style="margin-bottom: 10px"
+                            border-variant="danger" header-bg-variant="danger" header-text-variant="white">
+                            <p style="padding: 10px;">Please consider using the following App instead.</p>
                             <app :appid="app.deprecated_by"/>
                         </b-card>
 
                         <!--input/output-->
-                        <p><small class="text-muted">This app uses the following input/output datatypes</small></p>
+                        <p><small class="text-muted">This App uses the following input/output datatypes</small></p>
                         <div style="position: relative;">
                             <b-row>
                                 <!--input-->
@@ -169,7 +171,7 @@
 
                             <b-row>
                                 <b-col cols="6" v-for="resource in resources" :key="resource._id">
-                                    <div class="resource" v-b-popover.hover.d500="resource.info.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
+                                    <div class="resource" v-b-popover.hover.d1000="resource.info.desc+'\n\n'+resource.detail.msg+'\nstatus:'+resource.status" :title="null">
                                         <p style="padding: 10px; margin-bottom: 0px;">
                                             <icon v-if="resource.gids.length > 0" name="users" style="opacity: 0.4; float: right"/>
                                             <icon v-else name="lock" class="text-danger" style="float: right" title="Private resource"/>
@@ -281,7 +283,6 @@ import Vue from 'vue'
 
 import app from '@/components/app'
 import sidemenu from '@/components/sidemenu'
-import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import tags from '@/components/tags'
 import datatype from '@/components/datatype'
@@ -296,7 +297,7 @@ import VuePlotly from '@statnett/vue-plotly'
 
 export default {
     components: { 
-        sidemenu, pageheader, contact, 
+        sidemenu, contact, 
         tags, datatype, appavatar,
         VueMarkdown, statustag, 
         datatypetag, datatypefile,

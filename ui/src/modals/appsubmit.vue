@@ -14,7 +14,7 @@
     <b-form v-if="app" @submit="submit">
     <div class="submit-form">
         <app :app="app" :clickable="false" style="margin: -20px; position: sticky; top: -20px; margin-bottom: 20px; z-index: 1"/>
-        <b-alert :show="this.no_resource || true" variant="secondary" style="margin: -20px; margin-bottom: 10px">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
+        <b-alert :show="this.no_resource" variant="secondary" style="margin: -20px; margin-bottom: 10px">There are currently no resource available to run this App. If you submit this App, it will be executed after a resource becomes available.</b-alert>
         <b-row v-for="input in app.inputs" :key="input.id" style="margin-bottom: 10px;">
             <b-col cols="3">
                 <small style="float: right;" class="text-muted">{{input.id}}</small>

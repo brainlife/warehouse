@@ -152,7 +152,7 @@
                                 </div>
                             </b-col>
 
-                            <b-col v-if="config.user && selected.access == 'private' && selected.guests.length > 0">
+                            <b-col v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
                                     <span class="form-header">Guests</span>
                                     <p style="height: 50px;">
                                         <small class="text-muted">Read access to dataset.</small>
@@ -160,7 +160,9 @@
                                     <p v-for="c in selected.guests" :key="c._id">
                                         <contact :id="c"/>
                                     </p>
+                                    <!--
                                     <p class="text-muted" v-if="!selected.guests || selected.guests.length == 0"><small>No Guests</small></p>
+                                    -->
                                     <br>
                             </b-col>
                         </b-row>

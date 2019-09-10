@@ -129,7 +129,6 @@
 <script>
 import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
-import pageheader from '@/components/pageheader'
 import app from '@/components/app'
 
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
@@ -139,7 +138,7 @@ let query_debounce;
 var ps;
 
 export default {
-    components: { sidemenu, pageheader, app },
+    components: { sidemenu, app },
     data () {
         return {
             active: null,
@@ -229,16 +228,14 @@ export default {
             }
 
             console.log("getting apps");
-            //console.timeLog("loading");
             this.$http.get('app', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500, //TODO - this is not sustailable
-                populate: 'inputs.datatype outputs.datatype contributors',
+                populate: 'contributors', //'inputs.datatype outputs.datatype contributors',
             }})
             .then(res=>{
                 this.apps = res.data.apps;
                 console.log("organizing apps");
-                //console.timeLog("loading");
 
                 //organize apps into various tags
                 res.data.apps.forEach(app=>{
@@ -260,7 +257,6 @@ export default {
                         return false;
                     });
                     apps.sort((a,b)=>new Date(b.create_date) - new Date(a.create_date));
-                    //this.sorted_tags.unshift('_new');
                     this.app_groups._new = apps.slice(0, 6);
                 }
 
@@ -271,13 +267,11 @@ export default {
                         this.jump(document.location.hash.substring(1));
                     }
                     console.log("updating active");
-                    //console.timeLog("loading");
                     this.update_active();
 
                     let grouplist = this.$refs["group-list"];
 
                     console.log("setting scrollbar");
-                    //console.timeLog("loading");
                     ps = new PerfectScrollbar(grouplist);
                     grouplist.scrollTop = 0;
                 });

@@ -75,7 +75,7 @@
     <ul class="items items-bottom">
         <li v-if="config.user" @click="open_usersettings" id="user" style="white-space: nowrap">
             <icon name="caret-right" style="float: right; margin-right: 10px; margin-top: 2px;" scale="1.25"/>
-            <img :src="gurl" width="18px" class="avatar"/>
+            <img :src="avatar_url(config.user.profile, 22)" width="18px" class="avatar"/>
             <h4>{{config.user.profile.fullname||config.user.profile.username}}</h4>
         </li>
         <b-popover ref="usersettings" target="user">
@@ -114,6 +114,8 @@ import Vue from 'vue'
 import projectmenu from '@/components/projectmenu'
 import md5 from 'md5'
 
+const lib = require('@/lib'); //for avatar_url
+
 export default {
     components: { projectmenu },
     data () {
@@ -125,10 +127,12 @@ export default {
 	mounted: function() {
 	},
     computed: {
+        /*
         gurl: function() {
             if(!this.config.user.profile.email) return null;
             return "//www.gravatar.com/avatar/"+md5(this.config.user.profile.email)+"?s=22";
         },
+        */
         styles: function() {
             switch(window.location.hostname) {
             case "localhost-dis":
@@ -147,6 +151,8 @@ export default {
         }
     },
     methods: {
+        avatar_url: lib.avatar_url,
+
         setting_old() {
             window.open("/auth/#!/settings/account", "_blank");
         },
@@ -174,7 +180,8 @@ export default {
             document.location = "/auth/#!/signup";
         },
         slack() {
-            document.location = "https://brainlife-inviter.herokuapp.com/";
+            //document.location = "https://brainlife-inviter.herokuapp.com/";
+            document.location = "https://brainlife.slack.com";
         },
         md5, 
         open_usersettings() {

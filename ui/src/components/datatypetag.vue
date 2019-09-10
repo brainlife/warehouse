@@ -24,6 +24,7 @@
 
 import Vue from 'vue'
 
+//TODO - update to use mixin/cache
 let cache_datatypes_loading = null;
 let cache_datatypes = null;
 
@@ -62,7 +63,7 @@ export default {
                 this.init();
             });
         } else {
-            //loading cache for the first time
+            //loading cache for the first time (TODO use mixin cache!)
             cache_datatypes_loading = this.$http.get("datatype", {params: {
                 find: JSON.stringify(),
                 limit: 500,

@@ -1,6 +1,9 @@
+import md5 from 'md5'
+
+console.log("loaded lib");
 
 //pick apps that dataset can be used as input - based on its datatype_id and _tags
-function filter_apps(dataset, apps) {
+export function filter_apps(dataset, apps) {
     //TODO - maybe I should move this filtering logic to server
     return apps.filter((app)=> {
         var has_matching_input = false;
@@ -34,7 +37,7 @@ function filter_apps(dataset, apps) {
 }
 
 //opposite of filter_apps. select datasets that can be used as input for app
-function filter_datasets(datasets, input) {
+export function filter_datasets(datasets, input) {
     return datasets.filter(dataset=>{
         var input_datatype_id = input.datatype._id || input.datatype;
         var dataset_datatype_id = dataset.datatype._id || dataset.datatype;
@@ -60,11 +63,22 @@ function filter_datasets(datasets, input) {
 
 //dedupe an array
 //https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
-function uniq(a) {
+export function uniq(a) {
     var seen = {};
     return a.filter(function(item) {
         return seen.hasOwnProperty(item) ? false : (seen[item] = true);
     });
 }
 
-export { filter_apps, filter_datasets, uniq };
+export function avatar_url(user, size) {
+    if(user.email) {
+        return "//www.gravatar.com/avatar/"+md5(user.email)+"?s="+size;  
+    } else {
+        //generate avatar for user who doesn't have email set..
+        //return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=20";
+        //return "//www.gravatar.com/avatar/"+md5(this.fullname)+"?d=robohash&s=20";
+        //return "https://api.adorable.io/avatars/20/"+this.fullname.replace(" ", "")+".png";
+        var key = (user.fullname||user.email||user.id);
+        return "https://api.adorable.io/avatars/"+size+"/"+key+".png";
+    }
+}

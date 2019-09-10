@@ -143,7 +143,7 @@ color: #007bff;
 }
 .appcard.compact {
 box-shadow: none;
-background-color: inherit;
+/*background-color: inherit;*/
 }
 .header {
 margin-right: 7px;
@@ -225,6 +225,7 @@ background-color: #f7f7f7;
 line-height: 100%;
 }
 .deprecated {
-opacity: 0.5;
+opacity: 0.7;
+background-color: #f9f9f9;
 }
 </style>

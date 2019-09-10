@@ -113,7 +113,6 @@
                         <b-row v-if="dataset.product">
                             <b-col cols="3"><span class="form-header">Task Result <small>(product.json)</small></span></b-col>
                             <b-col cols="9">
-                                <!--<product :product="dataset.prov.task.product"/>-->
                                 <product :product="dataset.product"/>
                                 <br>
                             </b-col>
@@ -130,7 +129,6 @@
                                         <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                     </span> 
                                     <span v-if="(dataset.status == 'failed' || dataset.status == 'storing')">
-                                        <!--<icon name="exclamation-triangle"/> Failed to store on warehouse-->
                                         <task :task="dataset.archive_task" v-if="dataset.archive_task"/>
                                     </span> 
                                     <span v-if="!dataset.status">
@@ -681,22 +679,26 @@ export default {
 
         find_staged_task(cb) {
             //first, query for the staging task to see if it already staged
+            /*
+            let dataset_id = this.dataset._id;
+            if(this.dataset.storage == "copy") {
+                dataset_id = this.dataset.storage_config.dataset_id; //real dataset id
+            }
+            */
             this.$http.get(Vue.config.amaretti_api+'/task', {params: {
                 find: JSON.stringify({ 
                     status: { $ne: "removed" },
                     service: "brainlife/app-stage", 
-                    "config.datasets.id": this.dataset._id,
+                    "config._outputs.id": this.dataset._id,
                 }),
                 sort: '-create_date', //pick the latest one
                 limit: 1,
             }}).then(res=>{
                 let task = res.data.tasks[0];
                 if(task) {
-                    console.log("found previously staged task!");
-                    //but.. copied dataset can't be accessed through the dataset id itself.. I need to use outdir
-                    let dataset_config = task.config.datasets.find(dataset=>dataset.id == this.dataset._id);
-                    let subdir = dataset_config.outdir || dataset_config.id;
-                    return cb(task, subdir);
+                    console.log("found previously staged task !"+this.dataset._id);
+                    let output = task.config._outputs.find(output=>output.dataset_id == this.dataset._id);
+                    return cb(task, output.subdir);
                 }
 
                 //ok.. let's see if a task that produced the dataset still exists
@@ -795,19 +797,6 @@ overflow: auto;
 overflow: auto;
 padding: 20px;
 }
-/*
-.reef {
-position: absolute;
-top: -21px;
-left: -21px;
-z-index: 100;
-width: 80px;
-transition: opacity 1s;
-}
-.brainlife-modal-header:hover .reef {
-opacity: 0;
-}
-*/
 pre.code {
 background-color: white;
 padding: 10px;

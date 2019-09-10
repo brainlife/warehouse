@@ -1,24 +1,6 @@
 <template>
 <!--deprecated-->
 <div class="pageheader" :style="styles" v-if="false">
-    <!--
-    <b-nav class="nav">
-        <b-nav-item @click="slack"><icon name="brands/slack" scale="1.25"/>&nbsp;&nbsp;Contact Us</b-nav-item>
-        <b-nav-item-dropdown v-if="config.user">
-            <span slot="button-content">
-                <img :src="gurl">
-                &nbsp;{{config.user.profile.fullname||config.user.profile.username}}
-            </span>
-            <b-dropdown-item @click="goaccount">Settings</b-dropdown-item>
-            <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item @click="signout">Signout</b-dropdown-item>
-        </b-nav-item-dropdown>
-        <b-nav-item v-if="!config.user" @click="login">Login</b-nav-item>
-        <b-nav-item v-if="!config.user" @click="signup">Sign Up</b-nav-item>
-    </b-nav>
-    <span class="title" @click="gohome">brainlife</span>
-    <div class="slot"><slot/></div>
-    -->
 </div>
 </template>
 
@@ -34,12 +16,7 @@ export default {
             config: Vue.config,
         }
     },
-	//props: ['user'],
     computed: {
-        gurl: function() {
-            if(!this.config.user.profile.email) return null;
-            return "//www.gravatar.com/avatar/"+md5(this.config.user.profile.email)+"?s=22";
-        },
         styles: function() {
             switch(window.location.hostname) {
             case "localhost":

@@ -5,16 +5,6 @@
     <div class="instances" v-if="instances">
         <!--instances list-->
         <div class="instances-header" :style="{width: splitter_pos-200+'px'}">
-            <b-button-group style="background-color: white">
-                <b-button size="sm" variant="outline-secondary" :pressed="show == null" @click="show = null">
-                    <span style="font-size: 80%;">All&nbsp;<b>{{instances.length}}</b></span>
-                </b-button>
-                <b-button size="sm" v-for="state in ['requested', 'running', 'finished', 'failed']"  :key="state"
-                        :pressed="show == state" :variant="state2variant(state)" @click="show = state">
-                        <span style="font-size: 75%;">{{state.toUpperCase()}}&nbsp;<b>{{instance_counts[state]||0}}</b></span>
-                </b-button>
-            </b-button-group>
-
             <div style="padding-top: 10px;">
                 <div style="float: right;">
                     <!--<small><icon name="sort"/></small>-->
@@ -39,7 +29,8 @@
                     </b-form-input>
                 </div>
             </div>
-            <div style="padding-top: 5px; padding-right: 5px;">
+
+            <div style="position: absolute; right: 8px; bottom: 4px;">
                 <div class="date">
                     <small>Update Date</small>
                 </div>
@@ -47,6 +38,14 @@
                     <small>Create Date</small>
                 </div>
             </div>
+
+            <div class="status-picker" v-if="instance_counts[null] > 0">
+                <div v-for="state in [null, 'requested', 'running', 'finished', 'failed']" :key="state"
+                     :class="status_picker_class(state)" @click="show = state">
+                    {{state||'All'}} <span class="count">{{instance_counts[state]||0}}</span>
+                </div>
+            </div>
+
         </div>
 
         <div class="instances-list" ref="instances-list" :style="{width: splitter_pos-200+'px'}">
@@ -217,7 +216,7 @@ export default {
         },
 
         instance_counts() {
-            let counts = {};
+            let counts = {null: this.instances.length};
 
             this.instances.forEach(i=>{
                 let summary = this.get_nonstaging_summary(i);
@@ -234,7 +233,7 @@ export default {
             return this.capitalize(this.show)+" ("+(this.instance_counts[this.show]||0)+")";
         },
 
-    },
+    },//computed
 
     mounted: function() {
         /*
@@ -393,6 +392,7 @@ export default {
             return string.charAt(0).toUpperCase() + string.slice(1);
         },
 
+        /*
         state2variant(state) {
             switch(state) {
             case "requested": return "outline-info";
@@ -403,6 +403,7 @@ export default {
             default: return "outline-warning";
             }
         },
+        */
 
         notify_error(err) {
             console.error(err);
@@ -563,8 +564,15 @@ export default {
                 if(summary.service!='soichih/sca-product-raw' && summary.service!='brainlife/app-stage' && summary.name) return true;
                 return false;
             });
-        }
-    },
+        },
+
+        status_picker_class(state) {
+            let cs = ["status", "status-"+state];
+            if(state == this.show) cs.push("status-pressed");
+            return cs;
+        },
+
+    }, //methods
 }
 
 </script>
@@ -587,11 +595,12 @@ background-color: #bbb;
 .instances-header {
 padding: 10px;
 position: fixed;
-height: 110px;
-top: 95px;
+height: 90px;
+top: 85px;
 left: 200px;
 background-color: #f6f6f6;
 z-index: 1; /*for dropdown menu to go on top*/
+border-bottom: 1px solid #ddd;
 }
 
 .instances-header .btn {
@@ -601,7 +610,7 @@ padding: .15rem .3rem;
 .instances-list {
 position: fixed;
 bottom: 0px;
-top: 205px;
+top: 175px;
 left: 200px;
 width: 400px;
 background-color: white;
@@ -633,7 +642,6 @@ background-color: #ddd;
 border-bottom: 1px solid rgba(0,0,0,0.1);
 padding: 4px 8px;
 color: #333;
-/*transition: background-color 0.2s, color 0.2s;*/
 }
 
 .instance-info {
@@ -769,17 +777,83 @@ display: inline-block;
     }
 }
 .filter.filter-active {
-background-color: #2693ff40;
+    background-color: #2693ff40;
 }
-/*
-.nosel-note {
-position: fixed;
-top: 95px;
-bottom: 0px;
-right: 0px;
-overflow: auto;
-padding: 30px;
-font-size: 125%;
+.status-picker {
+    white-space: nowrap;
+    overflow: hidden;
+    /* text-overflow: ellipsis; */
+    box-sizing: border-box;
+    width: 100%;
+    padding-top: 10px;
+    position: relative;
 }
-*/
+.status-picker .status {
+    font-size: 8pt;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, border-bottom 0.3s, opacity 0.3s;
+    border-top: 2px solid #0000;
+    position: relative;
+    padding-top: 5px;
+    /*
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    */
+    font-weight: bold;
+    opacity: 0.7;
+    background-color: #f6f6f6;
+}
+.status-picker .status:hover {
+    background-color: white;
+    opacity: 1;
+}
+.status-picker .status-pressed {
+    background-color: white;
+    color: white;
+    opacity: 1;
+}
+.status-picker .count {
+    font-size: 90%;
+    opacity: 0.9;
+    font-weight: normal;
+}
+
+.status-picker .status-null {
+    color: #666;
+}
+.status-picker .status-pressed.status-null {
+    border-top: 2px solid #666;
+}
+
+.status-picker .status-requested {
+    color: #50bfff;
+}
+.status-picker .status-pressed.status-requested {
+    border-top: 2px solid #50bfff;
+}
+
+.status-picker .status-running {
+    color: #007bff;
+}
+.status-picker .status-pressed.status-running {
+    border-top: 2px solid #007bff;
+}
+
+.status-picker .status-finished {
+    color: #28a745;
+}
+.status-picker .status-pressed.status-finished {
+    border-top: 2px solid #28a745;
+}
+
+.status-picker .status-failed {
+    color: #dc3545;
+}
+.status-picker .status-pressed.status-failed {
+    border-top: 2px solid #dc3545;
+}
+
 </style>
