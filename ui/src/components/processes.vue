@@ -654,7 +654,8 @@ background-color: #eee;
 }
 .instance-header.instance-active {
 color: white;
-background-color: #007bff;
+/*background-color: #007bff;*/
+background-color: #2693ff;
 /*box-shadow: 0 0 5px #aaa;*/
 }
 .instance-desc {
@@ -758,7 +759,7 @@ background-color: #28a745;
 float: right;
 width: 80px;
 text-align: right;
-font-size: 80%;
+font-size: 75%;
 margin-top: 1px;
 margin-right: 7px;
 opacity: 0.7;

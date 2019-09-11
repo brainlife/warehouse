@@ -7,7 +7,7 @@
                 <b-container>
                     <h2>Datatypes</h2>
                     <p style="opacity: 0.7;">
-                        Datatypes allow Apps to exchange data. Please contact the Brainlife administrator to register new datatypes.
+                        Datatypes allow Apps to exchange data. Please visit <a href="https://app.slack.com/client/T3X5ND3U1/C946FA6PK">#datatype slack channel</a> to register new datatypes.
                     </p>
                 </b-container>
             </div>
@@ -41,12 +41,21 @@
                     <div style="float: right;">
                         <span class="button" @click="edit" v-if="canedit && !editing" title="Edit"><icon name="edit" scale="1.25"/></span>
                     </div>
-                    <h2>
-                        <b-form-input v-if="editing" type="text" v-model="selected.name" placeholder="neuro/somename"></b-form-input>
-                        <datatypetag v-else :datatype="selected" :trimname="!!(~selected.name.indexOf('neuro/'))"/>
-                    </h2>
-                    <b-form-textarea v-if="editing" v-model="selected.desc" :rows="2"></b-form-textarea>
-                    <p v-else style="opacity: 0.6">{{selected.desc}}</p>
+                    <b-row>
+                        <b-col cols="2">
+                            <div @click="back()" class="button">
+                                <icon name="angle-left" scale="2"/>
+                            </div>
+                        </b-col>
+                        <b-col>
+                            <h2>
+                                <b-form-input v-if="editing" type="text" v-model="selected.name" placeholder="neuro/somename"></b-form-input>
+                                <datatypetag v-else :datatype="selected" :trimname="!!(~selected.name.indexOf('neuro/'))"/>
+                            </h2>
+                            <b-form-textarea v-if="editing" v-model="selected.desc" :rows="2"></b-form-textarea>
+                            <p v-else style="opacity: 0.6">{{selected.desc}}</p>
+                        </b-col>
+                    </b-row>
                 </b-container>
             </div>
             <br>
@@ -285,7 +294,11 @@ export default {
     },
 
     methods: {
-        
+        back() {
+            //this.$router.push('/apps');
+            this.$router.go(-1);
+        },
+    
         select(datatype) {
             this.selected = datatype;
             this.$nextTick(()=>{
@@ -423,7 +436,6 @@ top: 0px;
 background-color: #eee;
 }
 .page-content h2 {
-color: #999;
 margin-bottom: 0px;
 padding: 10px 0px;
 font-size: 20pt;

@@ -68,7 +68,6 @@ top: 0px;
 background-color: #eee;
 }
 .page-content h3 {
-color: #999;
 margin-bottom: 0px;
 padding: 10px 0px;
 }
