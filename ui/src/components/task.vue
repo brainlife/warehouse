@@ -145,8 +145,8 @@ import Vue from 'vue'
 
 import filebrowser from '@/components/filebrowser'
 import statusicon from '@/components/statusicon'
-import mute from '@/components/mute'
-import tags from '@/components/tags'
+//import mute from '@/components/mute'
+//import tags from '@/components/tags'
 import taskconfig from '@/components/taskconfig'
 import contact from '@/components/contact'
 import VueMarkdown from 'vue-markdown'
@@ -157,7 +157,7 @@ let desc_debounce = null;
 export default {
     props: ['task'],
     components: { 
-        filebrowser, statusicon, mute, tags, taskconfig, contact, VueMarkdown,
+        filebrowser, statusicon, taskconfig, contact, VueMarkdown,
     },
     data () {
         return {

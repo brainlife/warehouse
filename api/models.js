@@ -97,7 +97,7 @@ exports.rule_event = function(rule) {
 
 exports.disconnect = function(cb) {
     mongoose.disconnect(cb);
-    common.disconnect_amqp();
+    common.disconnect_amqp(); //I don't think this works..
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -443,8 +443,7 @@ var datatypeSchema = mongoose.Schema({
     //registered UIs for this datatype
     uis: [{type: mongoose.Schema.Types.ObjectId, ref: 'UIs'}], 
 
-    //published datasets that can be used as sample datasets
-    //in the future, all sample datasets will be permanently staged and allows quick access
+    //published dataset that can be used as a sample dataset
     samples: [{type: mongoose.Schema.Types.ObjectId, ref: 'Datasets'}],
 
     create_date: { type: Date, default: Date.now },

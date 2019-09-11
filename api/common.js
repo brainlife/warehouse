@@ -167,6 +167,10 @@ exports.wait_task = function(req, task_id, cb) {
 }
 
 exports.issue_archiver_jwt = async function(user_id, cb) {
+
+    /* why do I need to *add* to the existing gids? I can just issue a new token with just the archive.gid
+
+    console.log("querying gids for user "+user_id);
     //load user's gids so that we can add warehouse group id (authorized to access archive)
     let gids = await rp.get({
         url: config.auth.api+"/user/groups/"+user_id,
@@ -175,10 +179,16 @@ exports.issue_archiver_jwt = async function(user_id, cb) {
             authorization: "Bearer "+config.warehouse.jwt,
         }
     });
+    */
     
     ///add warehouse group that allows user to submit
-    gids = gids.concat(config.archive.gid);  
+    //gids = gids.concat(config.archive.gid);  
 
+    let gids = [config.archive.gid];
+
+    //console.log("using gids");
+    //console.dir(gids);
+    
     //issue user token with added gids priviledge
     let {jwt: user_jwt} = await rp.get({
         url: config.auth.api+"/jwt/"+user_id,
@@ -249,6 +259,8 @@ exports.archive_task_outputs = async function(task, outputs, cb) {
             if(err) return cb(err);
             if(datasets.length == 0) return cb();
             try {
+                //TODO - I forgot why I can't just use admin jwt to stage this for the user? 
+                //maybe so that the task will belong to the regular user - not admin and only admin can access?
                 let user_jwt = await exports.issue_archiver_jwt(task.user_id);
 
                 //submit app-archive!
@@ -324,7 +336,7 @@ exports.load_github_detail = function(service_name, cb) {
             logger.error(_res.body);
             return cb("failed to query requested repo. code:"+_res.statusCode);
         }
-        logger.debug(_res.headers);
+        //logger.debug(_res.headers);
 
         logger.debug("loading contributors");
         request("https://api.github.com/repos/"+service_name+"/contributors"+auth, { json: true, headers: {
@@ -345,7 +357,7 @@ exports.load_github_detail = function(service_name, cb) {
                         logger.error(_res.body);
                         return next_con("failed to load user detail:"+_res.statusCode);
                     }
-                    logger.debug(_res.headers);
+                    //logger.debug(_res.headers);
                     con_details.push(detail);
                     next_con();
                 });
@@ -737,7 +749,7 @@ exports.update_project_stats = async function(group_id, cb) {
         });
         let stats = counts[0]; //there should be only 1
         logger.debug("update-project-stats-----------------------------------------------")
-        logger.debug(JSON.stringify(stats, null, 4));
+        //logger.debug(JSON.stringify(stats, null, 4));
         let project = await db.Projects.findOneAndUpdate({group_id}, {$set: {"stats.instances": stats}}, {new: true});
 
         logger.debug("updating rule stats for project_id:%s", project._id.toString());
@@ -781,8 +793,8 @@ exports.update_project_stats = async function(group_id, cb) {
 }
 
 exports.update_rule_stats = function(rule_id, cb) {
-    logger.debug("update_rule_stats:%s", rule_id);
-    logger.debug(JSON.stringify({'config._rule.id': rule_id}, null, 4));
+    //logger.debug("update_rule_stats:%s", rule_id);
+    //logger.debug(JSON.stringify({'config._rule.id': rule_id}, null, 4));
     request.get({
         url: config.amaretti.api+"/task", json: true,
         qs: {

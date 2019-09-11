@@ -7,7 +7,7 @@
                 <b-container>
                     <h2>Datatypes</h2>
                     <p style="opacity: 0.7;">
-                        Datatypes allow Apps to exchange data. Please contact the Brainlife administrator to register new datatypes.
+                        Datatypes allow Apps to exchange data. Please visit <a href="https://app.slack.com/client/T3X5ND3U1/C946FA6PK">#datatype slack channel</a> to register new datatypes.
                     </p>
                 </b-container>
             </div>
@@ -41,26 +41,37 @@
                     <div style="float: right;">
                         <span class="button" @click="edit" v-if="canedit && !editing" title="Edit"><icon name="edit" scale="1.25"/></span>
                     </div>
-                    <h2>
-                        <b-form-input v-if="editing" type="text" v-model="selected.name" placeholder="neuro/somename"></b-form-input>
-                        <datatypetag v-else :datatype="selected" :trimname="!!(~selected.name.indexOf('neuro/'))"/>
-                    </h2>
-                    <b-form-textarea v-if="editing" v-model="selected.desc" :rows="2"></b-form-textarea>
-                    <p v-else style="opacity: 0.6">{{selected.desc}}</p>
+                    <b-row>
+                        <b-col cols="2">
+                            <div @click="back()" class="button">
+                                <icon name="angle-left" scale="2"/>
+                            </div>
+                        </b-col>
+                        <b-col>
+                            <h2>
+                                <b-form-input v-if="editing" type="text" v-model="selected.name" placeholder="neuro/somename"></b-form-input>
+                                <datatypetag v-else :datatype="selected" :trimname="!!(~selected.name.indexOf('neuro/'))"/>
+                            </h2>
+                            <b-form-textarea v-if="editing" v-model="selected.desc" :rows="2"></b-form-textarea>
+                            <p v-else style="opacity: 0.6">{{selected.desc}}</p>
+                        </b-col>
+                    </b-row>
                 </b-container>
             </div>
             <br>
             <b-container>
-                <b-row>
+                <b-row v-if="selected.readme">
                     <b-col cols="2">
                         <span class="form-header">README</span>
                     </b-col>
                     <b-col>
                         <b-form-textarea v-if="editing" v-model="selected.readme" :rows="2"></b-form-textarea>
+                        <!--
                         <div v-else>
                             <p v-if="!selected.readme" style="opacity: 0.7">No README</p>
                             <vue-markdown v-else :source="selected.readme" class="readme"/>
                         </div>
+                        -->
                         <br>
                     </b-col>
                 </b-row>
@@ -123,11 +134,28 @@
                     </b-col>
                 </b-row>
 
-                <b-row>
+                <b-row v-if="sample_datasets.length > 0">
                     <b-col cols="2">
-                        <span class="form-header">Visualizer</span>
+                        <span class="form-header">Sample Datasets</span>
                     </b-col>
                     <b-col>
+                        <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset._id)">
+                            <b-row>
+                                <b-col cols="3">
+                                    <icon name="cubes"/>&nbsp;
+                                    <datatypetag :datatype="selected" :tags="dataset.datatype_tags"/>
+                                </b-col>
+                                <b-col>
+                                    {{dataset.meta.subject}} <small>{{dataset.desc}}</small>
+                                    <!-- <span style="float: right"><b>From</b> {{dataset.project.name}}</span> -->
+                                </b-col>
+                                <b-col cols="3">
+                                    <tags :tags="dataset.tags"/>
+                                </b-col>
+                            </b-row>
+                        </div>
+                        <!--
+                        <filebrowser v-if="sample_task" :path="selected.sample" :task="sample_task" style="background-color: white; margin: 5px; margin-bottom: 5px"/>
                         <p v-if="selected.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
                         <p v-else><small style="opacity: 0.7">The following visualizers can be used to visualize this datatype on Brainlife.</small></p>
                         <b-row>
@@ -137,12 +165,14 @@
                                     header-text-variant="white" 
                                     :header="ui.name" 
                                     class="card" 
+                                    @click="openvis(ui)"
                                     style="max-width: 25rem; margin-bottom: 20px;"
                                     :img-src="ui.avatar"> 
                                     <p class="card-text">{{ui.desc}}</p>
                                 </b-card>
                             </b-col>
                         </b-row>
+                        -->
                         <br>
                     </b-col>
                 </b-row>
@@ -164,18 +194,18 @@
                         <span class="form-header">Apps</span>
                     </b-col>
                     <b-col>
-                        <p v-if="input_apps.length == 0" style="opacity: 0.8">No App uses this datatype as input.</p>
+                        <p v-if="input_apps.length == 0"><small>No App uses this datatype as input.</small></p>
                         <p v-else>
-                            <small style="opacity: 0.7">The following Apps uses this datatype for input.</small>
+                            <small>The following Apps uses this datatype for input.</small>
                         </p>
                         <div class="apps-container" style="border-left: 4px solid rgb(0, 123, 255); padding-left: 15px;">
                             <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
                         </div>
                         <br>
 
-                        <p v-if="output_apps.length == 0" style="opacity: 0.8">No App uses this datatype as output.</p>
+                        <p v-if="output_apps.length == 0"><small>No App uses this datatype as output.</small></p>
                         <p v-else>
-                            <small style="opacity: 0.7">The following Apps outputs this datatype.</small>
+                            <small>The following Apps outputs this datatype.</small>
                         </p>
                         <div class="apps-container" style="border-left: 4px solid rgb(40, 167, 69); padding-left: 15px;">
                             <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
@@ -226,13 +256,19 @@ import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import app from '@/components/app'
 import contactlist from '@/components/contactlist'
+import tags from '@/components/tags'
+//import filebrowser from '@/components/filebrowser'
 
 export default {
-    components: { sidemenu, pageheader, datatype, datatypetag, app, VueMarkdown, contact, contactlist } ,
+    components: { 
+        sidemenu, pageheader, datatype, 
+        datatypetag, app, VueMarkdown, 
+        contact, contactlist, tags,
+        //filebrowser 
+    },
 
     data () {
         return {
-            //ps: null,
             datatypes: null,
             selected: null, //selected datatype
 
@@ -240,7 +276,8 @@ export default {
             apps: [], //apps that uses selected datatype
             adhoc_datatype_tags: [], //datatype tags associated with selected datatype
 
-            //uis: [],  //ui catalog
+            //sample_task: null,
+            sample_datasets: [],
             
             editing: false, 
             config: Vue.config,
@@ -267,32 +304,46 @@ export default {
     },
 
     mounted: function() {
-        /*
-        //this.ps = new PerfectScrollbar(this.$refs.scrollable);
-        this.$http.get('datatype/ui', {params: {}})
-        .then(res=>{
-            this.uis = res.data.uis;    
-        });
-        */
-
+        console.log("datatype loaded");
         this.$http.get('datatype', {params: {
             sort: 'name',
         }})
         .then(res=>{
             this.datatypes = res.data.datatypes;
             this.selected = this.datatypes.find(d=>d._id == this.$route.params.id);
+            console.log("datatype loaded");
         }).catch(console.error);
     },
 
     methods: {
-        
+        back() {
+            //this.$router.push('/apps');
+            this.$router.go(-1);
+        },
+        open_sample_dataset(dataset_id) {
+            //this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
+            this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
+        },
+        /*
+        openvis(ui) {
+            if(!this.selected.sample) {
+                alert("No sample dataset is registered for this datatype. Please contact the datatype administrator.");
+                return;
+            }
+            console.dir(this.selected.sample); 
+            console.dir(ui);
+            //look for prestaged task for this dataset
+        },
+        */
+
         select(datatype) {
             this.selected = datatype;
             this.$nextTick(()=>{
                 this.$refs.scrolled.scrollTo(0, 0);
             });
             this.$router.push(`/datatypes/${datatype._id}`);
-        },
+
+       },
 
         get_datatypes(prefix) {
             if(!this.datatypes) return false;
@@ -378,6 +429,7 @@ export default {
         '$route': function() {
             this.selected = this.datatypes.find(d=>d._id == this.$route.params.id);
         },
+
         selected() {
             if(!this.selected) return; 
             if(!this.selected._id) return; //editing new
@@ -412,6 +464,37 @@ export default {
                 this.adhoc_datatype_tags = res.data;
             });
 
+            /*
+            //load prestaged task for sample
+            if(this.selected.sample) {
+                this.$http.get(Vue.config.amaretti_api+'/task', {params: {
+                    find: JSON.stringify({
+                        "service": "brainlife/app-stage",
+                        $or: [
+                            //{"config.datasets.id": this.selected.sample},
+                            {"config._outputs.id": this.selected.sample}, //works for both original and copy
+                        ]
+                    }),
+                    limit: 1, 
+                }}).then(res=>{
+                    console.log("loaded sample");
+                    if(res.data.tasks.length == 1) this.sample_task = res.data.tasks[0];
+                });
+            }
+            */
+
+            //load sample datasets
+            if(this.selected.samples) {
+                this.$http.get('/dataset', {params: {
+                    find: JSON.stringify({
+                        _id: {$in: this.selected.samples},
+                    }),
+                    //populate: 'project',
+                }}).then(res=>{
+                    console.dir(res);
+                    this.sample_datasets = res.data.datasets;
+                });
+            }
         },
     }
 }
@@ -423,7 +506,6 @@ top: 0px;
 background-color: #eee;
 }
 .page-content h2 {
-color: #999;
 margin-bottom: 0px;
 padding: 10px 0px;
 font-size: 20pt;
@@ -486,4 +568,23 @@ transition: box-shadow 0.5s;
 .datatype-card:hover {
 box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 }
+/*
+.card-img {
+heightkj
+}
+
+.card-text {
+height: 70px
+}
+*/
+.sample-dataset {
+background-color: white;
+border-bottom: 1px solid #ddd;
+padding: 5px 10px;
+cursor: pointer;
+} 
+.sample-dataset:hover {
+background-color: #ddd;
+}
 </style>
+

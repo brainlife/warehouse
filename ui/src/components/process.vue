@@ -1,7 +1,7 @@
 <template>
 <div v-if="projects && instance" ref="process">
     <p class="loading" v-if="loading"><icon name="cog" scale="1.25" spin/> Loading...</p>
-    <div v-if="!loading" style="padding: 10px; position: sticky; top: 0px; z-index: 7; background-color: #eee;">
+    <div v-if="!loading" ref="process-header" class="process-header">
         <div class="instance-action">
             <div @click.stop="remove()" class="button">
                 <icon name="trash"/>
@@ -333,9 +333,10 @@ export default {
         },
 
         scrollto(id) {
-            var elem = document.getElementById(id);
+            let elem = document.getElementById(id);
             if(!elem) return; //maybe not loaded yet?
-            var top = elem.offsetTop;//-header.clientHeight;
+            let header = this.$refs["process-header"];
+            var top = elem.offsetTop-header.clientHeight;
             this.$refs.process.scrollTop = top;
         },
         open_dataset(id) {
@@ -717,7 +718,7 @@ font-size: 125%;
 color: #999;
 }
 .task-area {
-padding: 5px 0 0 1px;
+padding: 0 0 5px 1px;
 }
 .instance-action {
 float: right;
@@ -738,5 +739,12 @@ top: -3px;
 span.ioid {
 opacity: 0.6;
 margin-right: 5px;
+}
+.process-header {
+padding: 10px; 
+position: sticky; 
+top: 0px; 
+z-index: 7; 
+background-color: #eee;
 }
 </style>
