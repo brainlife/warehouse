@@ -78,58 +78,11 @@
 
                 <b-row>
                     <b-col cols="2">
-                        <span class="form-header">Admins</span>
-                    </b-col>
-                    <b-col>
-                        <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
-                        <contactlist v-if="editing" v-model="selected.admins"></contactlist>
-                        <div v-else>
-                            <p v-if="!selected.admins || selected.admins.length == 0" style="opacity: 0.8">No admins</p>
-                            <p v-for="admin in selected.admins" :key="admin._id">
-                                <contact :id="admin"/>
-                            </p>
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row>
-                    <b-col cols="2">
                         <span class="form-header">Files/Dirs</span>
                     </b-col>
                     <b-col>
                         <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
                         <pre v-highlightjs="JSON.stringify(selected.files, null, 4)"><code class="json hljs"></code></pre>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Datatype Tags</span>
-                    </b-col>
-                    <b-col>
-                        <p v-if="selected.datatype_tags.length > 0"><small style="opacity: 0.7">The following datatype tags are used for this datatype.</small></p>
-                        <p v-else><small style="opacity: 0.7">No officially registered datatype tags</small></p>
-                        <b-row v-for="(entry, idx) in selected.datatype_tags" :key="idx" style="margin-bottom: 5px;">
-                            <b-col cols="3">
-                                <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
-                            </b-col>
-                            <b-col cols="9">
-                                {{entry.desc}}
-                            </b-col>
-                        </b-row>
-
-                        <p v-if="adhoc_datatype_tags.length > 0"><small style="opacity: 0.7">The following adhoc datatype tags are used for some datasets.</small></p>
-                        <b-row v-for="tag in adhoc_datatype_tags" :key="tag" style="margin-bottom: 5px;">
-                            <b-col cols="3">
-                                <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{tag}}</span>
-                            </b-col>
-                            <b-col cols="9">
-                                <span style="opacity: 0.7">Ad-hoc</span>
-                            </b-col>
-                        </b-row>
-
                         <br>
                     </b-col>
                 </b-row>
@@ -141,7 +94,7 @@
                     <b-col>
                         <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset._id)">
                             <b-row>
-                                <b-col cols="3">
+                                <b-col cols="4">
                                     <icon name="cubes"/>&nbsp;
                                     <datatypetag :datatype="selected" :tags="dataset.datatype_tags"/>
                                 </b-col>
@@ -176,6 +129,55 @@
                         <br>
                     </b-col>
                 </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Datatype Tags</span>
+                    </b-col>
+                    <b-col>
+                        <p v-if="selected.datatype_tags.length > 0"><small style="opacity: 0.7">The following datatype tags are used for this datatype.</small></p>
+                        <p v-else><small style="opacity: 0.7">No officially registered datatype tags</small></p>
+                        <b-row v-for="(entry, idx) in selected.datatype_tags" :key="idx" style="margin-bottom: 5px;">
+                            <b-col cols="3">
+                                <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
+                            </b-col>
+                            <b-col cols="9">
+                                {{entry.desc}}
+                            </b-col>
+                        </b-row>
+
+                        <p v-if="adhoc_datatype_tags.length > 0"><small style="opacity: 0.7">The following adhoc datatype tags are used for some datasets.</small></p>
+                        <b-row v-for="tag in adhoc_datatype_tags" :key="tag" style="margin-bottom: 5px;">
+                            <b-col cols="3">
+                                <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{tag}}</span>
+                            </b-col>
+                            <b-col cols="9">
+                                <span style="opacity: 0.7">Ad-hoc</span>
+                            </b-col>
+                        </b-row>
+
+                        <br>
+                    </b-col>
+                </b-row>
+
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Admins</span>
+                    </b-col>
+                    <b-col>
+                        <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
+                        <contactlist v-if="editing" v-model="selected.admins"></contactlist>
+                        <div v-else>
+                            <p v-if="!selected.admins || selected.admins.length == 0" style="opacity: 0.8">No admins</p>
+                            <p v-for="admin in selected.admins" :key="admin._id">
+                                <contact :id="admin"/>
+                            </p>
+                        </div>
+                        <br>
+                    </b-col>
+                </b-row>
+
 
                 <b-row v-if="selected.bids.maps.length > 0">
                     <b-col cols="2">
