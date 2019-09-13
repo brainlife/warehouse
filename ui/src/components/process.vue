@@ -394,6 +394,7 @@ export default {
                             if(task.config._app) this.appcache(task.config._app, (err, app)=>{
                                 if(err) return console.error(err);
                                 task.app = app;
+                                this.$forceUpdate();
                             });
                             this.tasks.push(task); 
                             Vue.nextTick(()=>{

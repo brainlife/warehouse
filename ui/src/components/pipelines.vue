@@ -28,15 +28,18 @@
         </div>
         <div class="rules" v-else>
             <b-row :no-gutters="true" style="padding-right: 20px; padding-bottom: 10px">
-                <b-col :cols="6"><!--placeholder--></b-col>
+                <b-col :cols="5"><!--placeholder--></b-col>
+                <b-col :cols="1">
+                    <small>Submitter</small>
+                </b-col>
                 <b-col :cols="2">
-                    <span style="width: 95px; float: right; opacity: 0.5; font-size: 85%;">Jobs</span>
+                    <span style="width: 95px; float: right; opacity: 0.5; font-size: 85%;">Tasks</span>
                 </b-col>
-                <b-col :cols="2" style="text-align: right;">
-                    <div class="date">Create Date</div>
+                <b-col :cols="2">
+                    <small style="float: right;">Create Date</small>
                 </b-col>
-                <b-col :cols="2" style="text-align: right;">
-                    <div class="date">Update Date</div>
+                <b-col :cols="2">
+                    <small style="float: right;">Update Date</small>
                 </b-col>
             </b-row>
 
@@ -46,20 +49,25 @@
                 v-if="rule.removed == false">
                 <div class="rule-header" @click="toggle(rule)">
                     <b-row :no-gutters="true">
-                        <b-col :cols="2" @click.stop="">
-                            <b-form-checkbox switch v-model="rule.active" name="Online" @change="flip_switch(rule)" :disabled="rule.deactivating">
-                                <b style="position: relative; top: 2px; font-weight: bold;">
-                                    <span v-if="rule.active" class="text-primary">Online</span>
-                                    <span v-else class="text-secondary">Offline</span>
-                                </b>
-                            </b-form-checkbox>
+                        <b-col :cols="5">
+                            <div style="display: inline-block; width: 100px; float: left;" @click.stop="">
+                                <b-form-checkbox switch v-model="rule.active" name="Online" @change="flip_switch(rule)" :disabled="rule.deactivating">
+                                    <b style="position: relative; top: 2px; font-weight: bold;">
+                                        <span v-if="rule.active" class="text-primary">Online</span>
+                                        <span v-else class="text-secondary">Offline</span>
+                                    </b>
+                                </b-form-checkbox>
+                            </div>
+                            <div style="margin-left: 100px;">
+                                <span>{{rule.app.name}}</span>
+                                <small>{{rule.name}}</small>
+                                <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
+                                    <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
+                                </span>     
+                            </div>
                         </b-col>
-                        <b-col :cols="4">
-                            <span>{{rule.app.name}}</span>
-                            <small>{{rule.name}}</small>
-                            <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
-                                <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
-                            </span>                      
+                        <b-col :cols="1">
+                            <contact :id="rule.user_id" size="small"/>
                         </b-col>
                         <b-col :cols="2" style="text-align: right;">
                             <stateprogress v-if="rule.stats" :states="rule.stats.tasks" style="float: right; width: 100px"/>
