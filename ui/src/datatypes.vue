@@ -94,15 +94,13 @@
                     <b-col>
                         <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset._id)">
                             <b-row>
-                                <b-col cols="4">
+                                <b-col cols="6">
                                     <icon name="cubes"/>&nbsp;
                                     <datatypetag :datatype="selected" :tags="dataset.datatype_tags"/>
                                 </b-col>
                                 <b-col>
                                     {{dataset.meta.subject}} <small>{{dataset.desc}}</small>
                                     <!-- <span style="float: right"><b>From</b> {{dataset.project.name}}</span> -->
-                                </b-col>
-                                <b-col cols="3">
                                     <tags :tags="dataset.tags"/>
                                 </b-col>
                             </b-row>
