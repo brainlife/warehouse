@@ -33,6 +33,8 @@ import VueAnalytics from 'vue-analytics'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 
+import {parseBibFile} from "bibtex";
+
 Vue.component('v-select', vSelect)
 Vue.component('icon', Icon)
 

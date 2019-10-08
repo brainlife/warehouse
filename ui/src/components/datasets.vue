@@ -47,11 +47,11 @@
                             <b-row>
                                 <b-col cols="3" class="truncate">
                                     <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
-                                    <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
                                     <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
                                     <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                     <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
                                     <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
+                                    <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
                                     <small style="font-size: 80%;" v-if="dataset.prov && dataset.prov.task && dataset.prov.task.name">{{dataset.prov.task.name}} / </small>

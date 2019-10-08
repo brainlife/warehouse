@@ -327,8 +327,21 @@ export default {
                 let match = false;
                 if(app.name && app.name.toLowerCase().includes(l_filter)) match = true;
                 if(app.desc && app.desc.toLowerCase().includes(l_filter)) match = true;
+                if(app.desc_override && app.desc_override.toLowerCase().includes(l_filter)) match = true;
+                if(app.github.toLowerCase().includes(l_filter)) match = true;
 
-                //TODO - allow searching for datatype like apps page?
+                app.inputs.forEach(input=>{
+                    if(input.datatype.name.toLowerCase().includes(l_filter)) match = true;
+                    if(input.datatype_tags) input.datatype_tags.forEach(tag=>{
+                        if(tag.toLowerCase().includes(l_filter)) match = true;
+                    });
+                });
+                app.outputs.forEach(output=>{
+                    if(output.datatype.name.toLowerCase().includes(l_filter)) match = true;
+                    if(output.datatype_tags) output.datatype_tags.forEach(tag=>{
+                        if(tag.toLowerCase().includes(l_filter)) match = true;
+                    });
+                });
                 return match;
             });
 

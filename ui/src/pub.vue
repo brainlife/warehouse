@@ -288,6 +288,13 @@
                     </div>
                     <br>
                 </div>
+
+                <!--resource usage TODO..-->
+                <div v-for="resource in pub.project.stats.resources">
+                    {{resource.name}}
+                    {{resource.desc}}
+                    {{resource.citation}}
+                </div>
             </div>
 
 
