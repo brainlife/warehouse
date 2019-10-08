@@ -89,13 +89,13 @@
 
                 <b-row v-if="sample_datasets.length > 0">
                     <b-col cols="2">
+                        <!--<icon name="cubes"/>&nbsp;-->
                         <span class="form-header">Sample Datasets</span>
                     </b-col>
                     <b-col>
                         <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset._id)">
                             <b-row>
-                                <b-col cols="4">
-                                    <icon name="cubes"/>&nbsp;
+                                <b-col cols="5">
                                     <datatypetag :datatype="selected" :tags="dataset.datatype_tags"/>
                                 </b-col>
                                 <b-col>
