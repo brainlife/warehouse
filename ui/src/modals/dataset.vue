@@ -365,6 +365,11 @@ export default {
                         lines[1] = "📦 "+(lines[1]?lines[1]:'');
                     }
                     edge.label = lines.join("\n");
+                    edge.font = {
+                        size: 10,
+                        color: '#000a',
+                    }
+                
                 })
                 
                 if(this.prov.edges.length) {
