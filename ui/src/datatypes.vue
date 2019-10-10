@@ -95,12 +95,7 @@
                     <b-col>
                         <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset._id)">
                             <b-row>
-<<<<<<< HEAD
                                 <b-col cols="6">
-                                    <icon name="cubes"/>&nbsp;
-=======
-                                <b-col cols="5">
->>>>>>> 51d7b11c5b4eb4ec71a5f1a073115bf577bf5c86
                                     <datatypetag :datatype="selected" :tags="dataset.datatype_tags"/>
                                 </b-col>
                                 <b-col>
