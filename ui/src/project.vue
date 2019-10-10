@@ -131,7 +131,7 @@
                                     <p style="height: 50px;">
                                         <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
                                     </p>
-                                    <p v-for="c in selected.admins" :key="c._id">
+                                    <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
                                         <contact :id="c"/>
                                     </p>
                                     <br>
@@ -157,7 +157,7 @@
                                     <p style="height: 50px;">
                                         <small class="text-muted">Read access to dataset.</small>
                                     </p>
-                                    <p v-for="c in selected.guests" :key="c._id">
+                                    <p v-for="c in selected.guests" :key="c._id" style="margin-bottom: 8px;">
                                         <contact :id="c"/>
                                     </p>
                                     <!--
@@ -523,14 +523,14 @@ export default {
 
             //create resource usage graph
             if(this.selected.stats && this.selected.stats.resources) {
-                let data_obj = {};
+                let resources = {};
                 this.total_walltime = 0;
                 let services = [];
                 this.selected.stats.resources.forEach(stat=>{
                     if(stat.total_walltime == 0) return;
                     this.total_walltime += stat.total_walltime;
-                    if(!data_obj[stat.resource_id]) {
-                        data_obj[stat.resource_id] = {
+                    if(!resources[stat.resource_id]) {
+                        resources[stat.resource_id] = {
                             x: [], //walltime
                             y: [], //list of apps for this resource
                             text: [], //count?
@@ -539,7 +539,7 @@ export default {
                             orientation: 'h'
                         };
                     }
-                    let d = data_obj[stat.resource_id];
+                    let d = resources[stat.resource_id];
                     if(!services.includes(stat.service)) services.push(stat.service);
                     if(!d.x.includes(stat.service)) {
                         d.x.push(stat.total_walltime/(3600*1000));
@@ -549,8 +549,8 @@ export default {
                 });
                 
                 //query resource info
-                //console.dir(Object.keys(data_obj));
-                let resource_ids = Object.keys(data_obj);
+                //console.dir(Object.keys(resources));
+                let resource_ids = Object.keys(resources);
                 this.$http.get(Vue.config.amaretti_api+"/resource", {params: {
                     find: JSON.stringify({
                         _id: {$in: resource_ids},
@@ -561,11 +561,11 @@ export default {
                     //console.dir(res.data.resources);
                     //set resource names
                     res.data.resources.forEach(resource=>{
-                        data_obj[resource._id].name = resource.name;
+                        resources[resource._id].name = resource.name;
                     });
 
                     //create plotly graph
-                    var data = Object.values(data_obj);
+                    var data = Object.values(resources);
                     var layout = {
                         yaxis: {title: 'Apps'},
                         xaxis: {

@@ -18,7 +18,7 @@
         <div class="header">
             <h4 class="name">
                 <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
-                <b-badge v-if="app_.deprecated_by" variant="danger" :id="'dep_'+app_.deprecated_by">Deprecated</b-badge>
+                <b-badge v-if="app_.deprecated_by" variant="danger danger-outline" :id="'dep_'+app_.deprecated_by">Deprecated</b-badge>
                 <b-popover :target="'dep_'+app_.deprecated_by" triggers="click" title="Deprecated By">
                     <!-- TODO I should show the content of the app!-->
                     <a :href="'/app/'+app_.deprecated_by">{{app_.deprecated_by}}</a>
@@ -224,8 +224,7 @@ height: 32px;
 background-color: #f7f7f7;
 line-height: 100%;
 }
-.deprecated {
+.deprecated h4 {
 opacity: 0.7;
-background-color: #f9f9f9;
 }
 </style>

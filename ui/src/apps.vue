@@ -235,7 +235,7 @@ export default {
             }})
             .then(res=>{
                 this.apps = res.data.apps;
-                console.log("organizing apps");
+                console.log("got apps.. organizing");
 
                 //organize apps into various tags
                 res.data.apps.forEach(app=>{
@@ -261,7 +261,6 @@ export default {
                 }
 
                 console.log("waitng for nexttick");
-                //console.timeLog("loading");
                 this.$nextTick(()=>{
                     if(document.location.hash) {
                         this.jump(document.location.hash.substring(1));
