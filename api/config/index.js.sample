@@ -267,8 +267,10 @@ function connect_wrangler(cb) {
     });
 
     conn.connect({
-        username: "hayashis",
-        host: "wrangler.iu.xsede.org",
+        //username: "hayashis",
+        username: "brlife",
+        //host: "wrangler.iu.xsede.org",
+        host: "149.165.156.63",
         privateKey: fs.readFileSync(__dirname+'/brlife.id_rsa'),
         //passphrase: "somepass",  //what's the point?
         keepaliveInterval: 10*1000, //default 0 (disabled)
@@ -277,9 +279,11 @@ function connect_wrangler(cb) {
 }
 
 function get_wrangler_archive_path(dataset) {
-    let _path = "/home/04040/hayashis/data/dev-archive/";
+    //let _path = "/home/04040/hayashis/data/dev-archive/";
+    let _path = "/mnt/wrangler/dev-archive/";
     _path += dataset.project+"/";
     _path += dataset._id+".tar";
+    console.log(_path);
     return _path;
 }
 
@@ -289,7 +293,7 @@ exports.storage_systems.wrangler = {
         connect_wrangler((err, conn, sftp)=>{
             if(err) return cb(err);
             console.log("loading quota.info from wrangler homedir.. should be created by cron..");
-            let stream = sftp.createReadStream("quota.info", {encoding: "ascii"});
+            let stream = sftp.createReadStream("/mnt/wrangler/my-quota", {encoding: "ascii"});
             let content = "";
             stream.on('readable', function() {
                 //could be called multiple times..
@@ -326,41 +330,6 @@ exports.storage_systems.wrangler = {
             });
         });
     },
-
-    /*
-    //TODO - with app-archive in place, we don't use this anymore
-    upload: (dataset, cb)=>{
-        connect_wrangler((err, conn, sftp)=>{
-            console.log("got wrangler streams for uplload");
-            if(err) return cb(err);
-            let _path = get_wrangler_archive_path(dataset);
-            sftp.mkdir(path.dirname(_path), err=>{
-                let success = new Promise((resolve, reject)=>{
-                    conn.exec("cat > "+_path, (err, stream)=>{
-                        if(err) return reject(err);
-                        stream.on('close', (code, signal)=>{
-                            console.log("stream finished");
-                            sftp.stat(_path, (err,stat)=>{
-                                conn.end(); 
-                                if(err) reject(err);
-                                else resolve(stat);
-                            });
-                        });
-                        stream.on('error', reject); //not testetd..
-                        //needed to raise close event.. I think
-                        stream.on('data', data=>{
-                            console.log(data.toString());
-                        });
-                        stream.stderr.on('data', data=>{
-                            console.error(data.toString());
-                        });
-                        cb(null, stream, success);
-                    });
-                });
-            });
-        });
-    },
-    */
 
     download: (dataset, cb)=>{
         connect_wrangler((err, conn, sftp)=>{
@@ -435,61 +404,10 @@ exports.storage_systems.project = {
             headers: {Authorization: "Bearer "+ exports.warehouse.jwt}
         });
         cb(null, stream, dataset._id+".tar");
-        /*
-        connect_wrangler((err, conn, sftp)=>{
-            if (err) {
-                conn.end();
-                return cb(err);
-            }
-            let path = get_wrangler_archive_path(dataset);
-            let filename = path.split("/").pop();
-            console.debug(["loading...", path, filename]);
-            conn.exec("cat "+path, (err, stream)=>{
-                stream.on('error', err=>{
-                    console.error("stream failed but train has already left the station", err);
-                });
-                stream.on('close', code=>{
-                    conn.end();
-                });
-                //I believe listening to stream is required for close event to fire..?
-                stream.stderr.on('data', data=>{
-                    console.error(data.toString());
-                });
-                cb(err, stream, filename);
-            });
-        });
-        */
     },
 
     remove: (dataset, cb)=>{
         console.log("project/remove - todo");
-        /*
-        connect_wrangler((err, conn, sftp)=>{
-            console.log("got wrangler streams for remove");
-            if(err) return cb(err);
-            let _path = get_wrangler_archive_path(dataset);
-            conn.exec("rm -f "+_path, (err, stream)=>{
-                if(err) {
-                    conn.end();
-                    return cb(err);
-                }
-                stream.on('error', err=>{
-                    console.error(err);
-                });
-                stream.on('close', (code, signal)=>{
-                    conn.end(); 
-                    if(code == 0) return cb(null);
-                    else cb("rm failed with code:"+code);
-                });
-                stream.on('data', data=>{
-                    console.log(data.toString());
-                });
-                stream.stderr.on('data', data=>{
-                    console.error(data.toString());
-                });
-            });
-        });
-        */
     }
 } 
 

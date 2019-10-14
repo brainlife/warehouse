@@ -208,9 +208,8 @@ function handle_task(task, cb) {
                         $or: [
                             { removed: false }, //already archived!
                             //or.. if archived but removed and not failed, user must have a good reason to remove it.. (don't rearchive)
-                            { removed: true, status: {$ne: "failed"} }, 
                             //or.. removed while being stored (maybe got stuck storing?)
-                            { removed: true, status: {$ne: "storing"} }, 
+                            { removed: true, status: {$nin: ["storing", "failed"]} }, 
                         ]
                     }).exec((err,_dataset)=>{
                         if(!_dataset) outputs.push(output);

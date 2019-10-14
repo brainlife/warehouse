@@ -103,35 +103,22 @@ router.get('/datasets-inventory/:releaseid', (req, res, next)=>{
  * 
  */
 router.get('/apps/:releaseid', (req, res, next)=>{
-    db.Datasets.aggregate([
-        {$match: {
+    db.Datasets.aggregate()
+    .match({
             publications: mongoose.Types.ObjectId(req.params.releaseid) 
-        }},
-        {$group: {
-            _id: {
-                app: "$prov.task.config._app",
-                service: "$prov.task.service",
-                //service_branch: "$prov.task.service_branch",
-            }
-        }},
-
-        //cleanup result
-        {$project: {
-            _id: 0, 
-            app: "$_id.app", 
-            service: "$_id.service",
-            //service_branch: "$_id.service_branch",
-        }},
-
-        /* doesn't work..
-        {$lookup: {
-            from: "app",
-            localField: "app",
-            foreignField: "_id",
-            as: "appp",
-        }},
-        */
-    ])
+    })
+    .group({
+        _id: { 
+            app: "$prov.task.config._app", 
+            service: "$prov.task.service"
+        }
+    })
+    .project({
+        _id: 0, 
+        app: "$_id.app", 
+        service: "$_id.service",
+        //service_branch: "$_id.service_branch",
+    })
     .exec((err, recs)=>{
         if(err) return next(err);
         

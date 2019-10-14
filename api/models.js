@@ -145,18 +145,24 @@ var projectSchema = mongoose.Schema({
             others: Number,  //probably empty, or null
         },
 
+        //datasets stats updated by projectinfo > common.update_dataset_stats
         datasets: {
             //subjects: [String],
             subject_count: Number,
             datatypes: [{type: mongoose.Schema.Types.ObjectId, ref: "Datatypes"}],
             count: Number,
             size: Number,
-
         },
 
-        //resource usage stats
+        //resource uage stats updated by projectinfo > common.update_project_stats
         resources: [{
-            resource_id: String, //amaretti resource_idy
+            resource_id: String, //amaretti resource_id
+
+            //for quick referncing the resource detail
+            name: String,
+            desc: String,
+            citation: String,
+
             service: String, //amaretti service (github)
             //app_id: {type: mongoose.Schema.Types.ObjectId, ref: "Apps"},
             count: Number, //number of time this app/resource pair appears for stored datasets
@@ -240,10 +246,10 @@ var datasetSchema = mongoose.Schema({
     //copied_from_id: {type: mongoose.Schema.Types.ObjectId, ref: "Datasets"},
     
     //user who submitted this rule. task will run under this user
-    user_id: {type: String, index: true},
+    user_id: String,
     
     //project that this data belongs to
-    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects', index: true},
+    project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},
 
     //type of the data
     datatype : {type: mongoose.Schema.Types.ObjectId, ref: 'Datatypes', index: true},
@@ -343,7 +349,7 @@ var datasetSchema = mongoose.Schema({
     removed: { type: Boolean, default: false},
 
     //list of publications that this datasets is published under (point to releases ID under publications)
-    publications: [{type: mongoose.Schema.Types.ObjectId, ref: 'Releases'}],
+    publications: [{type: mongoose.Schema.Types.ObjectId, ref: 'Releases', index: true}],
 });
 
 datasetSchema.post('validate', function() {
@@ -373,7 +379,7 @@ datasetSchema.index({'prov.task_id': 1, 'prov.output_id': 1, removed: 1}); //for
 datasetSchema.index({datatype: 1, removed: 1}); //for searching projects that provides distinct datatypes
 
 //for some reason..  dataset query can't use the index that has "meta.run".. sort index has to match exactly?
-datasetSchema.index({'meta.subject': 1, 'meta.session': 1, 'meta.run': 1, create_date: -1});
+//datasetSchema.index({'meta.subject': 1, 'meta.session': 1, 'meta.run': 1, create_date: -1});
 datasetSchema.index({'meta.subject': 1, 'meta.session': 1, create_date: -1}); 
 //datasetSchema.index({create_date: -1});  //for rule_handler- finding input
 
@@ -453,7 +459,7 @@ exports.Datatypes = mongoose.model('Datatypes', datatypeSchema);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 var appSchema = mongoose.Schema({
-    user_id: {type: String, index: true}, //registrar of this application
+    user_id: String, //registrar of this application
     projects: [{type: mongoose.Schema.Types.ObjectId, ref: 'Projects'}], //projects that this app is members of
     admins: [ String ], //list of users who can administer this app
     avatar: String, //url for app avatar
@@ -534,7 +540,7 @@ var appSchema = mongoose.Schema({
 
     create_date: { type: Date, default: Date.now },
 }, {minimize: false}); //to keep empty config{} from disappearing
-appSchema.index({'$**': 'text'}) //make all text fields searchable
+//appSchema.index({'$**': 'text'}) //make all text fields searchable (not used according to accesses.ops)
 exports.Apps = mongoose.model('Apps', appSchema);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -543,7 +549,7 @@ exports.Apps = mongoose.model('Apps', appSchema);
 //
 
 var apprateSchema = mongoose.Schema({
-    user_id: {type: String, index: true}, 
+    user_id: String,
     app: {type: mongoose.Schema.Types.ObjectId, ref: 'Apps'},
     rate: Number, //1-5 scale rating
 });
@@ -564,7 +570,7 @@ var ruleSchema = mongoose.Schema({
     desc: String, 
 
     //user submitted this rule (all tasks will be submitted under this user)
-    user_id: {type: String, index: true}, 
+    user_id: String,
     
     //project to look for missing datasets and to archive generated data
     //input_project: {type: mongoose.Schema.Types.ObjectId, ref: 'Projects'},

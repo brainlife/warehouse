@@ -893,6 +893,10 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     if(!req.body.instance_id) return next("instance_id is not set");
     if(!req.body.dataset_ids && !Array.isArray(req.body.dataset_ids)) return next("dataset_ids are not set");
 
+    //logger.debug("dataset/stage requested with instance_id:"+req.body.instance_id);
+    //logger.debug(req.body.dataset_ids);
+    //logger.debug(JSON.stringify(req.user));
+
     let datasets;
     let next_tid;
     let stage_task; 
@@ -984,7 +988,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
             remove_date.setDate(remove_date.getDate()+7); 
             */
 
-            console.log("submitting stage task");
+            //console.log("submitting stage task");
             stage_task = await rp.post({
                 url: config.amaretti.api+"/task",
                 json: true,
@@ -1000,7 +1004,7 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                                 return {
                                     //this dataset is a copy of an original dataset.
                                     //we need to stage the original, but output to this dataset id (outdir)
-                                    id: d.storage_config.dataset_id,
+                                    id: d.storage_config.dataset_id, //(TODO - is this really set?)
                                     outdir: d._id,
 
                                     project: d.storage_config.project,
@@ -1042,14 +1046,14 @@ router.post('/stage', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 }
             });
 
-            console.log("reached the end");
+            //console.log("reached the end");
             //don't need to call cb() as this is an async function
         },
 
     ], err=>{
         if(err) return next(err);
-        console.log("all done");
-        console.dir(stage_task);
+        //console.log("all done");
+        //console.dir(stage_task);
         res.json(stage_task);
     });
 });
@@ -1610,7 +1614,7 @@ router.post('/copy', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 dataset.project = req.body.project;
                 delete dataset._id;
                 dataset.publications = [];
-                dataset.desc = "(copy) "+dataset.desc;
+                dataset.desc = dataset.desc; //could be undefined
             });
 
             db.Datasets.insertMany(datasets,(err, docs)=>{

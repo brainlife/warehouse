@@ -19,16 +19,6 @@ let rule_ex;
 db.init(function(err) {
     if(err) throw err;
 
-    /*
-    acon = amqp.createConnection(config.event.amqp, {reconnectBackoffTime: 1000*10});
-    acon.on('error', logger.error);
-    acon.on('ready', ()=>{
-        logger.info("connected to amqp.. now setting up warehouse.rule exchange");
-        acon.exchange("warehouse.rule", {autoDelete: false, durable: true, type: 'topic', confirm: true}, (ex)=>{
-            rule_ex = ex; 
-        });
-    });
-    */
     common.get_amqp_connection((err, conn)=>{
         acon = conn;
         logger.info("connected to amqp.. now setting up warehouse.rule exchange");
@@ -89,9 +79,9 @@ function run() {
 		if(err) throw err;
         async.eachSeries(rules, handle_rule, err=>{
             if(err) logger.error(err);
-            logger.debug("done handling "+rules.length+" rules - sleeping for a while");
+            logger.debug("done handling "+rules.length+" rules - sleeping for a while (10sec)");
             rule_ex.publish("done", {count: rules.length});    
-            setTimeout(run, 1000*3);
+            setTimeout(run, 1000*10);
         });
 	});
 }
@@ -145,6 +135,8 @@ function handle_rule(rule, cb) {
                     projects.push(rule.input_project_override[input_id]); 
                 }
             }                
+
+            console.log("looking for the last dataset update date for rule:"+rule._id);
             db.Datasets.findOne({
                 project: { $in: projects }, 
                 update_date: { $exists: true } , 

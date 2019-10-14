@@ -168,10 +168,8 @@ exports.wait_task = function(req, task_id, cb) {
 
 exports.issue_archiver_jwt = async function(user_id, cb) {
 
-    /* why do I need to *add* to the existing gids? I can just issue a new token with just the archive.gid
-
-    console.log("querying gids for user "+user_id);
     //load user's gids so that we can add warehouse group id (authorized to access archive)
+    //I need existing user's gids so that user can submit stating task on the instance that user should have access to
     let gids = await rp.get({
         url: config.auth.api+"/user/groups/"+user_id,
         json: true,
@@ -179,15 +177,9 @@ exports.issue_archiver_jwt = async function(user_id, cb) {
             authorization: "Bearer "+config.warehouse.jwt,
         }
     });
-    */
     
     ///add warehouse group that allows user to submit
-    //gids = gids.concat(config.archive.gid);  
-
-    let gids = [config.archive.gid];
-
-    //console.log("using gids");
-    //console.dir(gids);
+    gids = gids.concat(config.archive.gid);  
     
     //issue user token with added gids priviledge
     let {jwt: user_jwt} = await rp.get({
@@ -756,6 +748,7 @@ exports.update_project_stats = async function(group_id, cb) {
         stats = await db.Rules.aggregate()
             .match({removed: false, project: project._id})
             .group({_id: { "active": "$active" }, count: {$sum: 1}});
+        
         let rules = {
             active: 0,
             inactive: 0,
@@ -766,17 +759,40 @@ exports.update_project_stats = async function(group_id, cb) {
         });
 
         //TODO query task/resource_service_count api
-        let resources = await rp.get({
+        let resource_usage = await rp.get({
             url: config.amaretti.api+"/task/resource_usage", json: true,
             qs: {
                 find: JSON.stringify({/*status: {$ne: "finished"},*/ _group_id: group_id}),
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
-        let resource_stats = resources.map(raw=>{
+
+        //TODO resource_usage api returns group with no resource_id attached.. (bug?) let's filter them out for now
+        resource_usage = resource_usage.filter(r=>r._id.resource_id !== undefined);
+
+        //load resource details
+        let resource_ids = resource_usage.map(raw=>raw._id.resource_id);
+        let {resources} = await rp.get({
+            url: config.amaretti.api+"/resource", json: true,
+            qs: {
+                find: JSON.stringify({_id: {$in: resource_ids}, user_id: null}),
+            },
+            headers: { authorization: "Bearer "+config.warehouse.jwt, },
+        });
+        //console.log("asking for "+resource_ids.length);
+        //console.log("got "+resources.length);
+        let resource_stats = resource_usage.map(raw=>{
+            //if(!raw._id.resource_id) return; //some entries doesn't have resource_id .. why?
+            let resource = resources.find(r=>r._id == raw._id.resource_id);
             return {
                 service: raw._id.service,
-                resource_id: raw._id.resource_id,
+                resource_id: raw._id.resource_id, 
+
+                //resource detail for quick reference
+                name: resource.name,
+                desc: resource.config.desc,
+                citation: resource.citation,
+
                 count: raw.count,
                 total_walltime: raw.total_walltime,
             }
@@ -793,8 +809,6 @@ exports.update_project_stats = async function(group_id, cb) {
 }
 
 exports.update_rule_stats = function(rule_id, cb) {
-    //logger.debug("update_rule_stats:%s", rule_id);
-    //logger.debug(JSON.stringify({'config._rule.id': rule_id}, null, 4));
     request.get({
         url: config.amaretti.api+"/task", json: true,
         qs: {
@@ -805,11 +819,6 @@ exports.update_rule_stats = function(rule_id, cb) {
         headers: { authorization: "Bearer "+config.warehouse.jwt, },
     }, (err, _res, body)=>{
         if(err) return cb(err);
-        /*
-8|warehous | { tasks: 
-8|warehous |    [ { _id: '5c899b8c98cf8829f8df1c90', status: 'stop_requested' } ],
-8|warehous |   count: 1 }
-        */
         let stats = {}
         body.tasks.forEach(task=>{
             if(stats[task.status] === undefined) stats[task.status] = 0;
