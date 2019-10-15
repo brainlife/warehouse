@@ -84,7 +84,7 @@ export default {
                         }
 
                         let remove_date = new Date();
-                        remove_date.setDate(remove_date.getHour()+3); 
+                        remove_date.setHours(remove_date.getHours()+3); 
 
                         //submit novnc service for the first time!
                         this.$http.post(Vue.config.wf_api+'/task', {

@@ -181,6 +181,18 @@
                                  ref="resource_usage" :autoResize="true" :watchShallow="true"/>
                         </div>
 
+                        <div v-if="resource_citations.length > 0">
+                            <span class="form-header">Resource Citations</span>
+                            <br>
+                            <!--<small>Please include the following citations</small>-->
+                            <p v-for="resource_citation in resource_citations">
+                                <b>{{resource_citation.resource.name}}</b>
+                                <small>{{resource_citation.resource.config.desc}}</small>
+                                <br>
+                                <i>{{resource_citation.citation}}</i>
+                            </p>
+                        </div>
+
                         <!--
                         <div v-if="selected.datatype_groups">
                             <span class="form-header">Datasets</span>
@@ -311,6 +323,8 @@ export default {
             config: Vue.config,
 
             datatypes: {}, //datatypes loadded (used by datatype_groups)
+
+            resource_citations: [],
         }
     },
 
@@ -547,21 +561,28 @@ export default {
                         d.text.push(stat.count.toString()+" tasks");
                     }
                 });
-                
+
                 //query resource info
-                //console.dir(Object.keys(resources));
                 let resource_ids = Object.keys(resources);
                 this.$http.get(Vue.config.amaretti_api+"/resource", {params: {
                     find: JSON.stringify({
                         _id: {$in: resource_ids},
                     }),
-                    select: 'name',
+                    select: 'name config.desc',
                 }})
                 .then(res=>{
-                    //console.dir(res.data.resources);
                     //set resource names
                     res.data.resources.forEach(resource=>{
                         resources[resource._id].name = resource.name;
+                    });
+
+                    //collect resource citation
+                    this.selected.stats.resources.forEach(stat=>{
+                        if(!stat.citation) return; //don't show resources with no citations
+                        let resource = res.data.resources.find(r=>r._id == stat.resource_id);
+                        if(!resource) return; //no such resource?
+                        let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
+                        if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
                     });
 
                     //create plotly graph
