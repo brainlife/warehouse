@@ -83,12 +83,16 @@ export default {
                             title = output.meta.subject + " "+output.datatype_tags.join(" ");
                         }
 
+                        let remove_date = new Date();
+                        remove_date.setDate(remove_date.getHour()+3); 
+
                         //submit novnc service for the first time!
                         this.$http.post(Vue.config.wf_api+'/task', {
                             instance_id: instance._id,
                             name: novnc_task_name,
-                            service: "soichih/abcd-novnc",
+                            service: "brainlife/abcd-novnc",
                             max_runtime: 3600*1000, //1 hour should be enough?
+                            remove_date, //should remove in a few hours if it gets stuck in requested state..
                             config: {
                                 _tid: -1,
                                 input_instance_id: this.task.instance_id,
