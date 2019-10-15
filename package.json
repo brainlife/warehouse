@@ -4,10 +4,11 @@
   "description": "Service that allows data warehousing and workfow orchestration",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "apidoc": "apidoc -i api/ -o docs/apidoc/",
     "docs": "cd docs && bundle exec jekyll serve",
-    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.js"
+    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.js",
+    "deploy": "ssh -t test.brainlife.io sudo \"sudo /root/docker/warehouse/update.sh\"",
+    "deploy-prod": "ssh -t brainlife.io sudo \"sudo /root/docker/warehouse/update.sh\""
   },
   "repository": {
     "type": "git",
