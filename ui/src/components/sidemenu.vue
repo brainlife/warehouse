@@ -111,13 +111,11 @@
 <script>
 
 import Vue from 'vue'
-import projectmenu from '@/components/projectmenu'
 import md5 from 'md5'
 
 const lib = require('@/lib'); //for avatar_url
 
 export default {
-    components: { projectmenu },
     data () {
         return {
             config: Vue.config,

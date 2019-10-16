@@ -272,7 +272,6 @@ import contact from '@/components/contact'
 import projectaccess from '@/components/projectaccess'
 import projectavatar from '@/components/projectavatar'
 import license from '@/components/license'
-import projectmenu from '@/components/projectmenu'
 import pubcard from '@/components/pubcard'
 import datasets from '@/components/datasets'
 import processes from '@/components/processes'
@@ -293,7 +292,7 @@ export default {
         sidemenu, 
         projectaccess, pageheader, contact, 
         VueMarkdown, projectavatar, license,
-        projectmenu, pubcard, datasets,
+        pubcard, datasets,
         processes, publications, pipelines,
         agreements, datatypetag,
 

@@ -86,9 +86,16 @@ export default {
     },
 
     mounted() {
-        this.$root.$on("datasetselecter.open", ()=>{
+        this.$root.$on("datasetselecter.open", presets=>{
+            console.log("datasetselecter called");
             if(!this.$refs.modal) return console.log("received datasetselecter.open but this.$refs.modal not yet initialized");
+
             this.project = null;
+
+            if(presets.project) this.project = presets.project; //not tested
+            if(presets.subjects) this.selected_subjects = presets.subjects; //not tested
+            if(presets.datatypes) this.selected_datatypes = presets.datatypes; 
+
             this.$refs.modal.show()
             Vue.nextTick(()=>{
                 if(!this.$refs.psel) return console.log("received datasetselecter.open but this.$refs.psel not yet initialized");

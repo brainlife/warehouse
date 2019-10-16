@@ -412,7 +412,7 @@ var datatypeSchema = mongoose.Schema({
     admins: [ String ], //list of users who can administer this datatype
     
     //file inventory for this datatype
-    files: [ new mongoose.Schema({
+    files: [ new mongoose.Schema({ //TODO - do I really need to wrap this with mongoose.Schema?
         id: String,
 
         //either filename or dirname should be set

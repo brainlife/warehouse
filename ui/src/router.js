@@ -9,10 +9,15 @@ import apps from '@/apps'
 import appsgraph from '@/appsgraph'
 import app from '@/app'
 import appedit from '@/appedit'
+
 import projects from '@/projects'
 import project from '@/project'
 import projectedit from '@/projectedit'
+
 import datatypes from '@/datatypes'
+import datatype from '@/datatype'
+import datatypeedit from '@/datatypeedit'
+
 import pubs from '@/pubs'
 import pub from '@/pub'
 import admin from '@/admin'
@@ -57,7 +62,9 @@ export default new Router({
         {path: '/openneuro/:id', component: openneuro, meta: {public: true}},
 
         {path: '/datatypes', component: datatypes, meta: {public: true}},
-        {path: '/datatypes/:id', component: datatypes, meta: {public: true}},
+        {path: '/datatypes/:id', component: datatype, meta: {public: true}}, //depecated by /datatype/:id
+        {path: '/datatype/:id', component: datatype, meta: {public: true}},
+        {path: '/datatype/:id/edit', component: datatypeedit, meta: {public: true}},
 
         {path: '/pubs', component: pubs, meta: {public: true}},
         {path: '/pub/:id', component: pub, meta: {public: true}},

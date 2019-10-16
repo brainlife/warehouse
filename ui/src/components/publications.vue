@@ -37,9 +37,7 @@
             <!--space to make sure add button won't overwrap the pub list-->
             <p style="padding-top: 100px;">&nbsp;</p>
 
-            <b-button v-if="isadmin() || ismember()" @click="newpub" 
-                class="button-fixed" 
-                title="Create new publication">
+            <b-button v-if="isadmin() || ismember()" @click="newpub" class="button-fixed" v-b-tooltip.hover title="Create new publication">
                 <icon name="plus" scale="2"/>
             </b-button>
         </div><!--pubs-->

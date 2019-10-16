@@ -90,7 +90,7 @@
             <br>
         </div>
 
-        <b-button class="button-fixed" @click="newinstance" title="Create New Process" :style="{left: splitter_pos-100+'px'}"><icon name="plus" scale="2"/></b-button>     
+        <b-button class="button-fixed" @click="newinstance" v-b-tooltip.hover title="Create New Process" :style="{left: splitter_pos-100+'px'}"><icon name="plus" scale="2"/></b-button>     
     </div>
     <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"/>
     <!-- oesn't work anymore

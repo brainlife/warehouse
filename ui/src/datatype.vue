@@ -1,48 +1,199 @@
 <template>
 <div>
-    <pageheader/>
-    <sidemenu active="/datatypes"/>
-    <div class="header" v-if="datatype">
-        <div style="float: right;" v-if="datatype._canedit">
-            <span class="button" @click="edit()"><icon name="edit" scale="1.25"></span>
-            <span class="button" @click="remove()"><icon name="trash" scale="1.25"></span>
-        </div>
-        <h1><span class="text-muted"><icon name="shield-alt" scale="1.5"/> Datatype |</span> {{datatype.name}}</h1>
-    </div>
-    <div class="page-content" v-if="datatype" style="margin-top: 80px">
-        <table class="info">
-        <tr>
-            <th width="180px;">Description</th>
-            <td>{{datatype.desc}}</td>
-        </tr>
-        <tr>
-            <th>Access</th>
-            <td>
-                <datatypeaccess :access="datatype.access"/>
-            </td>
-        </tr>
-        <tr>
-            <th>Admins</th>
-            <td>
-                <contact v-for="c in datatype.admins" :key="c._id" :id="c"></contact>
-            </td>
-        </tr>
-        <tr>
-            <th>Datatype Members</th>
-            <td>
-                <contact v-for="c in datatype.members" :key="c._id" :id="c"></contact>
-            </td>
-        </tr>
-        <tr>
-            <th>TODO</th>
-            <td>
-                <p class="text-muted">What else can I show? Maybe timeline of various events that happened to this datatype?</p>
-                <p class="text-muted">Or maybe we can display Facebook style community messaging capability?</p>
-            </td>
-        </tr>
-        </table>
+    <sidemenu active="/datatypes"></sidemenu>
+    <div class="page-content">
+        <div v-if="!datatype" class="loading">Loading ...</div>
+        <div v-else>
+            <div class="header header-sticky">
+                <b-container>
+                    <div style="float: right;">
+                        <span class="button" @click="edit" v-if="canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
+                    </div>
+                    <b-row>
+                        <b-col cols="2">
+                            <div @click="back()" class="button">
+                                <icon name="angle-left" scale="2"/>
+                            </div>
+                        </b-col>
+                        <b-col>
+                            <h2>
+                                <!--<b-form-input v-if="editing" type="text" v-model="datatype.name" placeholder="neuro/somename"></b-form-input>-->
+                                <datatypetag :datatype="datatype" :trimname="!!(~datatype.name.indexOf('neuro/'))"/>
+                            </h2>
+                            <!--<b-form-textarea v-if="editing" v-model="datatype.desc" :rows="2"></b-form-textarea>-->
+                            <p style="opacity: 0.6">{{datatype.desc}}</p>
+                        </b-col>
+                    </b-row>
+                </b-container>
+            </div>
+            <br>
+            <b-container>
+                <b-row v-if="datatype.readme">
+                    <b-col cols="2">
+                        <span class="form-header">README</span>
+                    </b-col>
+                    <b-col>
+                        <!--<b-form-textarea v-if="editing" v-model="datatype.readme" :rows="2"></b-form-textarea>-->
+                        <div>
+                            <p v-if="!datatype.readme" style="opacity: 0.7">No README</p>
+                            <vue-markdown v-else :source="datatype.readme" class="readme"/>
+                        </div>
+                        <br>
+                    </b-col>
+                </b-row>
 
-    </div><!--page-content-->
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Files/Dirs</span>
+                    </b-col>
+                    <b-col>
+                        <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
+                        <pre v-highlightjs="JSON.stringify(datatype.files, null, 4)"><code class="json hljs"></code></pre>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="sample_datasets.length > 0">
+                    <b-col cols="2">
+                        <!--<icon name="cubes"/>&nbsp;-->
+                        <span class="form-header">Sample Datasets</span>
+                    </b-col>
+                    <b-col>
+                        <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset._id)">
+                            <b-row>
+                                <b-col cols="6">
+                                    <datatypetag :datatype="datatype" :tags="dataset.datatype_tags"/>
+                                </b-col>
+                                <b-col>
+                                    {{dataset.meta.subject}} <small>{{dataset.desc}}</small>
+                                    <!-- <span style="float: right"><b>From</b> {{dataset.project.name}}</span> -->
+                                    <tags :tags="dataset.tags"/>
+                                </b-col>
+                            </b-row>
+                        </div>
+                        <!--
+                        <filebrowser v-if="sample_task" :path="datatype.sample" :task="sample_task" style="background-color: white; margin: 5px; margin-bottom: 5px"/>
+                        <p v-if="datatype.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
+                        <p v-else><small style="opacity: 0.7">The following visualizers can be used to visualize this datatype on Brainlife.</small></p>
+                        <b-row>
+                            <b-col :cols="4" class="ui" v-for="ui in datatype.uis" :key="ui._id">
+                                <b-card 
+                                    :header-bg-variant="ui.docker?'success':'dark'" 
+                                    header-text-variant="white" 
+                                    :header="ui.name" 
+                                    class="card" 
+                                    @click="openvis(ui)"
+                                    style="max-width: 25rem; margin-bottom: 20px;"
+                                    :img-src="ui.avatar"> 
+                                    <p class="card-text">{{ui.desc}}</p>
+                                </b-card>
+                            </b-col>
+                        </b-row>
+                        -->
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Datatype Tags</span>
+                    </b-col>
+                    <b-col>
+                        <p v-if="datatype.datatype_tags.length > 0"><small style="opacity: 0.7">The following datatype tags are used for this datatype.</small></p>
+                        <p v-else><small style="opacity: 0.7">No officially registered datatype tags</small></p>
+                        <b-row v-for="(entry, idx) in datatype.datatype_tags" :key="idx" style="margin-bottom: 5px;">
+                            <b-col cols="3">
+                                <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
+                            </b-col>
+                            <b-col cols="9">
+                                {{entry.desc}}
+                            </b-col>
+                        </b-row>
+
+                        <p v-if="adhoc_datatype_tags.length > 0"><small style="opacity: 0.7">The following adhoc datatype tags are used for some datasets.</small></p>
+                        <b-row v-for="tag in adhoc_datatype_tags" :key="tag" style="margin-bottom: 5px;">
+                            <b-col cols="3">
+                                <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{tag}}</span>
+                            </b-col>
+                            <b-col cols="9">
+                                <span style="opacity: 0.7">Ad-hoc</span>
+                            </b-col>
+                        </b-row>
+
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Admins</span>
+                    </b-col>
+                    <b-col>
+                        <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
+                        <!--<contactlist v-if="editing" v-model="datatype.admins"></contactlist>-->
+                        <div>
+                            <p v-if="!datatype.admins || datatype.admins.length == 0" style="opacity: 0.8">No admins</p>
+                            <p v-for="admin in datatype.admins" :key="admin._id">
+                                <contact :id="admin"/>
+                            </p>
+                        </div>
+                        <br>
+                    </b-col>
+                </b-row>
+
+
+                <b-row v-if="datatype.bids.maps.length > 0">
+                    <b-col cols="2">
+                        <span class="form-header">BIDS Export</span>
+                    </b-col>
+                    <b-col>
+                        <p><small style="opacity: 0.7">The following file mapping is used to generate BIDS derivative exports.</small></p>
+                        <b>{{datatype.bids.derivatives}}</b>
+                        <pre v-highlightjs="JSON.stringify(datatype.bids.maps, null, 4)"><code class="json hljs"></code></pre>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Apps</span>
+                    </b-col>
+                    <b-col>
+                        <p v-if="input_apps.length == 0"><small>No App uses this datatype as input.</small></p>
+                        <p v-else>
+                            <small>The following Apps uses this datatype for input.</small>
+                        </p>
+                        <div class="apps-container" style="border-left: 4px solid rgb(0, 123, 255); padding-left: 15px;">
+                            <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
+                        </div>
+                        <br>
+
+                        <p v-if="output_apps.length == 0"><small>No App uses this datatype as output.</small></p>
+                        <p v-else>
+                            <small>The following Apps outputs this datatype.</small>
+                        </p>
+                        <div class="apps-container" style="border-left: 4px solid rgb(40, 167, 69); padding-left: 15px;">
+                            <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
+                        </div>
+                        <br>
+
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="datatype.validator">
+                    <b-col cols="2">
+                        <span class="form-header">Validator</span>
+                    </b-col>
+                    <b-col>
+                        <p><small style="opacity: 0.7">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
+                        <p><a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b></a></p>
+                        <!--<p v-else style="opacity: 0.8">No validator</p>-->
+                        <br>
+                    </b-col>
+                </b-row>
+            </b-container>
+        </div>
+    </div>
 </div>
 </template>
 
@@ -51,70 +202,294 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
+import VueMarkdown from 'vue-markdown'
+
 import sidemenu from '@/components/sidemenu'
-import contactlist from '@/components/contactlist'
 import datatype from '@/components/datatype'
+import datatypetag from '@/components/datatypetag'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
-
-//hello
+import app from '@/components/app'
+import contactlist from '@/components/contactlist'
+import tags from '@/components/tags'
 
 export default {
-    components: { sidemenu, contactlist, datatype, pageheader, contact },
+    components: { 
+        sidemenu, pageheader, datatype, 
+        datatypetag, app, VueMarkdown, 
+        contact, contactlist, tags,
+    },
 
     data () {
         return {
-            datatype: null,
+            datatype: null, //datatype datatype
 
+            //for datatype item
+            apps: [], //apps that uses datatype datatype
+            adhoc_datatype_tags: [], //datatype tags associated with datatype datatype
+
+            //sample_task: null,
+            sample_datasets: [],
+            
+            //editing: false, 
             config: Vue.config,
         }
     },
 
-    mounted: function() {
-        this.$http.get('datatype', {params: {
-            find: JSON.stringify({_id: this.$route.params.id}),
-            //populate: 'inputs.datatype outputs.datatype',
-        }})
-        .then(res=>{
-            this.datatype = res.data.datatypes[0];
-        }).catch(err=>{
-            console.error(err);
-        });
+    computed: {
+        input_apps() {
+            if(!this.apps) return [];
+            return this.apps.filter(a=>{
+                return a.inputs.find(it=>it.datatype._id == this.datatype._id);
+            });
+        },
+        output_apps() {
+            if(!this.apps) return [];
+            return this.apps.filter(a=>{
+                return a.outputs.find(it=>it.datatype._id == this.datatype._id);
+            });
+        },
+        canedit() {
+            if(!Vue.config.user) return false;
+            return ~this.datatype.admins.indexOf(Vue.config.user.sub);
+        }
+    },
+
+    mounted() {
+        this.load();
     },
 
     methods: {
-        edit: function() {
+        load() {
+            console.log("loading datatype:"+this.$route.params.id);
+            this.$http.get('datatype', {params: {
+                find: JSON.stringify({
+                    _id: this.$route.params.id,
+                }),
+                sort: 'name',
+            }})
+            .then(res=>{
+                this.datatype = res.data.datatypes[0];
+                if(!this.datatype) alert("no such datatype");
+
+                //load apps that uses this datatype
+                this.$http.get('app', {params: {
+                    find: JSON.stringify({
+                        removed: false,
+                        $or: [
+                            {'inputs.datatype': this.datatype._id},
+                            {'outputs.datatype': this.datatype._id},
+                        ]
+                    }),
+                    select: 'name desc inputs outputs stats github',
+                    populate: 'inputs.datatype outputs.datatype', //<app> likes datatypes populated
+                    limit: 500, //TODO - this is not sustailable
+                }}).then(res=>{
+                    this.apps = res.data.apps;
+                })
+
+                //load adhoc datatype_tags used for this datatype
+                let registered_datatype_tags = this.datatype.datatype_tags.map(entry=>entry.datatype_tag);
+                this.$http.get('dataset/distinct', {params: {
+                    distinct: 'datatype_tags',
+                    find: JSON.stringify({
+                        removed: false,
+                        datatype: this.datatype._id,
+                        datatype_tags: {$nin: registered_datatype_tags},
+                    }),
+                    
+                }}).then(res=>{
+                    this.adhoc_datatype_tags = res.data;
+                });
+
+                /*
+                //load prestaged task for sample
+                if(this.datatype.sample) {
+                    this.$http.get(Vue.config.amaretti_api+'/task', {params: {
+                        find: JSON.stringify({
+                            "service": "brainlife/app-stage",
+                            $or: [
+                                //{"config.datasets.id": this.datatype.sample},
+                                {"config._outputs.id": this.datatype.sample}, //works for both original and copy
+                            ]
+                        }),
+                        limit: 1, 
+                    }}).then(res=>{
+                        console.log("loaded sample");
+                        if(res.data.tasks.length == 1) this.sample_task = res.data.tasks[0];
+                    });
+                }
+                */
+
+                //load sample datasets
+                if(this.datatype.samples) {
+                    this.$http.get('/dataset', {params: {
+                        find: JSON.stringify({
+                            _id: {$in: this.datatype.samples},
+                        }),
+                        //populate: 'project',
+                    }}).then(res=>{
+                        console.dir(res);
+                        this.sample_datasets = res.data.datasets;
+                    });
+                }
+            }).catch(console.error);
+        },
+
+        back() {
+            //this.$router.push('/apps');
+            this.$router.go(-1);
+        },
+        open_sample_dataset(dataset_id) {
+            //this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
+            this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
+        },
+
+        get_datatypes(prefix) {
+            if(!this.datatypes) return false;
+            return this.datatypes.filter(d=>{
+                if(~d.name.indexOf(prefix)) {
+                    return true;
+                }
+                return false;
+            }); 
+        },
+
+        get_not_datatypes(prefix) {
+            if(!this.datatypes) return false;
+            return this.datatypes.filter(d=>{
+                if(!~d.name.indexOf(prefix)) {
+                    return true;
+                }
+                return false;
+            }); 
+        },
+
+        get_official_desc(tag) {
+            if(!this.datatype.datatype_tags) return;
+            return this.datatype.datatype_tags.find(d=>d.datatype_tag == tag);
+        },
+
+        edit() {
+            //this.editing = true;
             this.$router.push('/datatype/'+this.datatype._id+'/edit');
         },
-        remove: function() {
-            alert('todo');
+
+        /*
+        trim(n) {
+            return n.split("/").splice(1).join("/");
         },
+
+        gethsl(n) {
+            let hash = n.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+            let numhash = Math.abs(hash+120)%360;
+            return "hsl("+(numhash%360)+", 50%, 60%)";
+        },
+        */
     },
+
+    destroyed() {
+        //this.ps.destroy();
+    },
+  
+    watch: {
+        '$route': function() {
+            load();
+        },
+    }
 }
 </script>
 
 <style scoped>
-.header {
-background: #666;
-padding: 20px;
-margin-top: 42px;
-height: 40px;
-position: fixed;
-right: 0px;
-left: 50px;
-color: #666;
-z-index: 1;
-border-bottom: 1px solid #666;
+.page-content {
+top: 0px;
+background-color: #eee;
 }
-.header h1 {
-color: #eee;
+.page-content h2 {
+margin-bottom: 0px;
+padding: 10px 0px;
+font-size: 20pt;
 }
-.header-bottom {
-height: 50px;
+.page-content h3 {
 background-color: white;
+color: gray;
+padding: 20px;
+margin-bottom: 0px;
+}
+.page-content h4 {
+padding: 15px 20px;
+background-color: white;
+opacity: 0.8;
+color: #999;
+font-size: 17pt;
+font-weight: bold;
+}
+.header {
+padding: 10px;
+background-color: white;
+border-bottom: 1px solid #eee;
+}
+.header-sticky {
+position: sticky;
+top: 0px;
+z-index: 1;
+box-shadow: 0 0 1px #ccc;
+}
+
+.apps-container {
+display: flex;
+flex-wrap: wrap;
+}
+.apps-container .app {
+margin-right: 10px;
+margin-bottom: 10px;
+width: 400px;
+box-sizing: border-box;
+}
+code.json {
+background-color: white;
+}
+.form-action {
+text-align: right;
 position: fixed;
-top: 140px;
-right: 0px;
-left: 90px;
+bottom:0;
+right:0;
+left:50px;
+background-color: rgba(100,100,100,0.4);
+padding: 10px;
+}
+.datatype-card {
+cursor: pointer;
+padding: 10px;
+border: none;
+box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+transition: box-shadow 0.5s;
+}
+.datatype-card:hover {
+box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+}
+/*
+.card-img {
+heightkj
+}
+
+.card-text {
+height: 70px
+}
+*/
+.sample-dataset {
+background-color: white;
 border-bottom: 1px solid #ddd;
-}</style>
+padding: 5px 10px;
+cursor: pointer;
+} 
+.sample-dataset:hover {
+background-color: #ddd;
+}
+.loading {
+padding: 50px;
+font-size: 20pt;
+opacity: 0.5;
+}
+</style>
+

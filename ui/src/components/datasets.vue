@@ -74,7 +74,7 @@
 
         <b-btn class="button-fixed" v-b-modal.uploader 
             @click="set_uploader_options" v-if="isadmin() || ismember()"
-            title="Upload Dataset" 
+            v-b-tooltip.hover title="Upload Dataset" 
             :class="{'selected-view-open':selected_count}">
             <icon name="plus" scale="2"/>
         </b-btn>
@@ -138,7 +138,6 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import tags from '@/components/tags'
 import metadata from '@/components/metadata'
-import projectmenu from '@/components/projectmenu'
 import datatypetag from '@/components/datatypetag'
 
 import agreementMixin from '@/mixins/agreement'
@@ -158,9 +157,7 @@ const source = CancelToken.source();
 export default {
     mixins: [agreementMixin],
     components: { 
-        sidemenu, tags, metadata, 
-        pageheader, projectmenu, 
-        datatypetag, 
+        sidemenu, tags, metadata, pageheader, datatypetag, 
     },
     props: ['project', 'projects'],
     data () {
