@@ -184,7 +184,6 @@
                         <div v-if="resource_citations.length > 0">
                             <span class="form-header">Resource Citations</span>
                             <br>
-                            <!--<small>Please include the following citations</small>-->
                             <p v-for="resource_citation in resource_citations">
                                 <b>{{resource_citation.resource.name}}</b>
                                 <small>{{resource_citation.resource.config.desc}}</small>
@@ -325,6 +324,9 @@ export default {
 
             resource_citations: [],
         }
+    },
+
+    computed: {
     },
 
     watch: {

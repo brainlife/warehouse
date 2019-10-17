@@ -138,6 +138,9 @@
                                 <br>
                             </b-col>
                         </b-row>
+                    
+                        {{resource_citations}}
+
                         <!--
                         <b-row>
                             <b-col cols="2">
@@ -413,6 +416,16 @@ export default {
     },
 
     computed: {
+        resource_citations: function() {
+            if(!this.pub) return [];
+            if(!this.pub.project) return [];
+            if(!this.pub.project.stats) return [];
+            let citations = [];
+            this.pub.project.stats.resources.forEach(resource=>{
+                if(resource.citation) citations.push(resource.citation); 
+            });
+        },
+
         social_url: function() {
             if(this.pub.doi) return "http://doi.org/"+this.pub.doi;
             return null;
@@ -438,8 +451,6 @@ export default {
         }})
         .then(res=>{
             this.pub = res.data.pubs[0];
-
-            //if(Vue.config.debug) this.pub.doi = "10.1038/nature.2014.14583";
 
             //sort release by date (new first)
             if(this.pub.releases) {
@@ -468,6 +479,17 @@ export default {
                 //re-initialize altmetric badge - now that we have badge <div> placed
                 _altmetric_embed_init(this.$el);
             });
+
+/*
+            //load all resources referenced for citations
+            return this.$http.get('datatype');
+        })
+        .then(res=>{
+            res.data.datatypes.forEach((d)=>{
+                this.datatypes[d._id] = d;
+            });
+*/
+
 
         }).catch(console.error);
     },
