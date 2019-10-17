@@ -48,7 +48,25 @@
                     </b-col>
                     <b-col>
                         <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
+                        <div v-for="file in datatype.files" :key="file.id" style="background-color: white; padding: 8px; margin-bottom: 1px;">
+                            <b-row>
+                                <b-col>
+                                    <span v-if="file.filename"><icon name="regular/file"/> {{file.filename}}</span>
+                                    <span v-if="file.dirname"><icon name="folder"/> {{file.dirname}}</span>
+                                    <b-badge v-if="file.ext">validator ext: {{file.ext}}</b-badge>
+                                </b-col>
+                                <b-col>
+                                    <small><b style="opacity: 0.7">{{file.id}}</b></small>
+                                </b-col>
+                                <b-col>
+                                    <b-badge v-if="file.required">required</b-badge>
+                                    <small>{{file.desc}}</small>
+                                </b-col>
+                            </b-row>
+                        </div>
+                        <!--
                         <pre v-highlightjs="JSON.stringify(datatype.files, null, 4)"><code class="json hljs"></code></pre>
+                        -->
                         <br>
                     </b-col>
                 </b-row>
@@ -136,7 +154,7 @@
                     </b-col>
                 </b-row>
 
-                <b-row v-if="datatype.bids.maps.length > 0">
+                <b-row v-if="datatype.bids && datatype.bids.maps.length > 0">
                     <b-col cols="2">
                         <span class="form-header">BIDS Export</span>
                     </b-col>

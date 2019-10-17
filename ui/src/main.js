@@ -145,12 +145,23 @@ function jwt_decode_brainlife(jwt) {
 
     axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
-    Vue.config.is_admin = isadmin();
-    if(Vue.config.is_admin) console.log("user is admin!");
+    Vue.config.has_role = function(role) {
+        if( Vue.config.user && 
+            Vue.config.user.scopes.warehouse && 
+            ~Vue.config.user.scopes.warehouse.indexOf(role)) return true;
+//            Vue.config.user.scopes.amaretti && 
+//            ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
+        return false;
+    }
+
+    //deprecated .. use Vue.config.has_role
+    Vue.config.is_admin = Vue.config.has_role("admin"); 
+    if(Vue.config.has_role("admin")) console.log("user is admin!");
 
     console.log(Vue.config.user);
 }
 
+/*
 function isadmin() {
     if( Vue.config.user && 
         Vue.config.user.scopes.warehouse && 
@@ -159,6 +170,7 @@ function isadmin() {
         ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
     return false;
 }
+*/
 
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
 if (Vue.config.jwt) {
