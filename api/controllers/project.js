@@ -9,14 +9,7 @@ const request = require('request');
 const config = require('../config');
 const logger = winston.createLogger(config.logger.winston);
 const db = require('../models');
-
-function isadmin(user, rec) {
-    if(user) {
-        if(user.scopes.warehouse && ~user.scopes.warehouse.indexOf('admin')) return true;
-        if(~rec.admins.indexOf(user.sub.toString())) return true;
-    }
-    return false;
-}
+const common = require('../common');
 
 /**
  * @apiGroup Project
@@ -151,7 +144,7 @@ router.put('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
     db.Projects.findById(id, (err, project)=>{
         if(err) return next(err);
         if(!project) return res.status(404).end();
-        if(!isadmin(req.user, project)) return res.status(401).end("you are not an administartor of this project");
+        if(!common.isadmin(req.user, project)) return res.status(401).end("you are not an administartor of this project");
         
         //user can't update following fields
         delete req.body.user_id;
@@ -196,7 +189,7 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), function(req, res, n
     db.Projects.findById(req.params.id, function(err, project) {
         if(err) return next(err);
         if(!project) return next(new Error("can't find the project with id:"+req.params.id));
-        if(isadmin(req.user, project)) {
+        if(common.isadmin(req.user, project)) {
             project.removed = true;
             project.save(function(err) {
                 if(err) return next(err);
