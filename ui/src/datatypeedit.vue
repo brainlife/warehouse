@@ -66,10 +66,11 @@
                     <span class="form-header">Files/Dirs</span>
                 </b-col> 
                 <b-col cols="9">
-                    <small>Specify list of expected files / directories for this datatype</small>
-                    <br>
+                    <p>
+                        <small>Specify list of expected files / directories for this datatype</small>
+                    </p>
                     <!--I can't use file.id as v-for :key because we let user update it-->
-                    <div v-for="(file, index) in datatype.files" :key="index" style="border-left: 4px solid gray; background-color: #eee; padding: 10px; margin: 10px;">
+                    <div v-for="(file, index) in datatype.files" :key="index" style="background-color: #fff; padding: 10px; margin: 10px;">
                         <b-row>
                             <b-col cols="4">
                                 <b-input-group prepend="ID">
@@ -110,20 +111,22 @@
                     <span class="form-header">Visualizers</span>
                 </b-col> 
                 <b-col cols="9">
-                    <small>Select visualizers that supports this datatype</small>
-                    <br>
-                    <br>
-                    <b-row>
-                        <b-col cols="6" v-for="ui in uis" :key="ui._id">
-                            <b-form-checkbox-group v-model="datatype.uis" style="clear: both;">
-                                <!--<img :src="ui.avatar" height="35" style="float: right"/>-->
-                                <b-form-checkbox :value="ui._id">
-                                    {{ui.name}} <!--<small>{{ui.ui}}</small>-->
-                                    <br><small>{{ui.desc}}</small>
-                                </b-form-checkbox> 
-                            </b-form-checkbox-group>
-                        </b-col>
-                    </b-row>
+                    <p>
+                        <small>Select visualizers that supports this datatype</small>
+                    </p>
+                    <div style="background-color: #fff; padding: 15px;">
+                        <b-row>
+                            <b-col cols="6" v-for="ui in uis" :key="ui._id">
+                                <b-form-checkbox-group v-model="datatype.uis" style="clear: both;">
+                                    <!--<img :src="ui.avatar" height="35" style="float: right"/>-->
+                                    <b-form-checkbox :value="ui._id">
+                                        {{ui.name}} <!--<small>{{ui.ui}}</small>-->
+                                        <br><small>{{ui.desc}}</small>
+                                    </b-form-checkbox> 
+                                </b-form-checkbox-group>
+                            </b-col>
+                        </b-row>
+                    </div>
                     <br>
                 </b-col>
             </b-row>
@@ -136,7 +139,10 @@
                     <small>List of datasets that should be used as sample. Please select public datasets.</small>
                     <br>
                     <div>
-                        <div v-for="sample in datatype.samples">{{sample}} <div class="button" @click="remove_sample(sample)"><icon name="trash"/></div></div>
+                        <div v-for="sample in datatype.samples" style="background-color: white; padding: 5px; margin-bottom: 5px;">
+                            <div class="button" style="float: right;" @click="remove_sample(sample)"><icon name="trash"/></div>
+                            {{sample}} 
+                        </div>
                         <b-btn @click="add_sample" size="sm">Add</b-btn>
                     </div>
                     <br>
@@ -148,9 +154,10 @@
                     <span class="form-header">Datatype Tags</span>
                 </b-col> 
                 <b-col cols="9">
-                    <small>List of official datatypes tags that App developers should use for this datatype</small>
-                    <br>
-                    <div v-for="(tag, index) in datatype.datatype_tags" :key="index" style="border-left: 4px solid gray; background-color: #eee; padding: 10px; margin: 10px;">
+                    <p>
+                        <small>List of official datatypes tags that App developers should use for this datatype</small>
+                    </p>
+                    <div v-for="(tag, index) in datatype.datatype_tags" :key="index" style="background-color: #fff; padding: 10px; margin: 10px;">
                         <b-row>
                             <b-col cols="4">
                                 <b-input-group>
@@ -192,90 +199,6 @@
                 </b-col>
             </b-row>
 
-            <!--
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Access Policy</span>
-                </b-col> 
-                <b-col cols="9">
-                    <b-form-radio-group v-model="project.access">
-                        <p>
-                            <b-form-radio value="public">Public</b-form-radio> <br>
-                            <small class="text-muted">Datasets are accessible to any users but only project member can update them.</small>
-                        </p>
-                        <p>
-                            <b-form-radio value="private">Private</b-form-radio> <br>
-                            <small class="text-muted">Only the members of project can access datasets. Guest users has read access to the datasets.</small>
-                       </p>
-                    </b-form-radio-group>
-                    <p>
-                        <b-form-checkbox v-if="project.access == 'private'" style="margin-left: 40px;" v-model="project.listed">List project summary for all users</b-form-checkbox>
-                    </p>
-                </b-col>
-            </b-row>
-
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Agreements</span>
-                </b-col> 
-                <b-col cols="9">
-                    <p class="text-muted"><small>List of agreements that user must agree before accessing datasets stored on this project</small></p>
-                    <b-row v-for="(agreement, idx) in project.agreements" :key="idx">
-                        <b-col>
-                            <b-form-textarea :rows="4" :max-rows="20" v-model="agreement.agreement" placeholder="Enter agreemenet text(markdown) to be presented to the user"/>
-                            <br>
-                        </b-col>
-                        <b-col cols="1">
-                            <div class="button" @click="remove_agreement(idx)"><icon name="trash"/></div>
-                        </b-col>
-                    </b-row>
-                    <p><b-button @click="project.agreements.push({agreement: ''})" size="sm"><icon name="plus"/> Add Agreement</b-button></p>
-                    <br>
-                </b-col>
-            </b-row>
-
-           
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Members</span>
-                </b-col> 
-                <b-col cols="9">
-                    <contactlist v-model="project.members"></contactlist>
-                    <p class="text-muted"><small>Users who can update datasets in this project. Also for a private project: Users who can run Apps registered on this project.</small></p>     
-                </b-col>
-            </b-row>
-            
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Guests</span>
-                </b-col> 
-                <b-col cols="9">
-                    <contactlist v-model="project.guests"></contactlist>
-                    <p class="text-muted"><small>For Private project, users who has read access to datasets.</small></p>
-                </b-col>
-            </b-row>
-            
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header">Avatar</span>
-                </b-col> 
-                <b-col cols="9">
-                    <b-input type="text" v-model="project.avatar" placeholder="Image URL for the project avatar (if not set, randomly generate)"/>
-                    <br>
-                </b-col>
-            </b-row>
-
-            <b-row>
-                <b-col cols="3">
-                    <span class="form-header"></span>
-                </b-col> 
-                <b-col cols="9">
-                    <b-form-checkbox v-if="project._id" v-model="project.removed">Removed</b-form-checkbox>
-                    <br>
-                </b-col>
-            </b-row>
-            -->
-
             <div class="page-footer">
                 <b-container>
                     <b-button variant="secondary" @click="cancel">Cancel</b-button>
@@ -314,6 +237,8 @@ export default {
                 admins: [Vue.config.user.sub],
 
                 _bids: "",
+                datatype_tags: [],
+                files: [],
                 samples: [],
                 uis: [ "5be75b31e15a02914a4be8f0" ], //(show fileviewer by default)
             },

@@ -29,11 +29,9 @@
             </b-card-group>
         </b-container>
 
-        <!--
-        <b-button v-if="config.is_admin" class="button-fixed" @click="newdatatype" title="New Datatype">
+        <b-button v-if="config.is_admin" class="button-fixed" @click="newdatatype" v-b-tooltip.hover title="New Datatype">
             <icon name="plus" scale="2"/>
         </b-button>
-        -->
     </div><!--page-content-->
 </div>
 </template>
@@ -106,6 +104,11 @@ export default {
         open(datatype) {
             //this.$router.push(`/datatype/${datatype._id}`);
             this.$router.push('/datatype/'+datatype._id);
+        },
+
+        newdatatype() {
+            //this.$router.push(`/datatype/${datatype._id}`);
+            this.$router.push('/datatype/_/edit');
         },
 
         get_datatypes(prefix) {

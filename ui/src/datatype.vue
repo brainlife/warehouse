@@ -101,25 +101,20 @@
                     <b-col>
                         <p v-if="datatype.datatype_tags.length > 0"><small style="opacity: 0.7">The following datatype tags are used for this datatype.</small></p>
                         <p v-else><small style="opacity: 0.7">No officially registered datatype tags</small></p>
-                        <b-row v-for="(entry, idx) in datatype.datatype_tags" :key="idx" style="margin-bottom: 5px;">
+                        <b-row v-for="(entry, idx) in datatype.datatype_tags" :key="idx" style="margin-bottom: 10px;">
                             <b-col cols="3">
                                 <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
                             </b-col>
                             <b-col cols="9">
-                                {{entry.desc}}
+                                <small>{{entry.desc}}</small>
                             </b-col>
                         </b-row>
 
-                        <p v-if="adhoc_datatype_tags.length > 0"><small style="opacity: 0.7">The following adhoc datatype tags are used for some datasets.</small></p>
-                        <b-row v-for="tag in adhoc_datatype_tags" :key="tag" style="margin-bottom: 5px;">
-                            <b-col cols="3">
-                                <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{tag}}</span>
-                            </b-col>
-                            <b-col cols="9">
-                                <span style="opacity: 0.7">Ad-hoc</span>
-                            </b-col>
-                        </b-row>
-
+                        <p v-if="adhoc_datatype_tags.length > 0" style="">
+                            <small style="opacity: 0.7">The following adhoc datatype tags are used for some datasets.</small>
+                        </p>
+                        <span v-for="tag in adhoc_datatype_tags" :key="tag" style="background-color: #ddd; padding: 2px 5px; margin-right: 3px; display: inline-block; opacity: 0.5;">{{tag}}</span>
+                        <br>
                         <br>
                     </b-col>
                 </b-row>
@@ -141,15 +136,26 @@
                     </b-col>
                 </b-row>
 
-
                 <b-row v-if="datatype.bids.maps.length > 0">
                     <b-col cols="2">
                         <span class="form-header">BIDS Export</span>
                     </b-col>
                     <b-col>
                         <p><small style="opacity: 0.7">The following file mapping is used to generate BIDS derivative exports.</small></p>
-                        <b>{{datatype.bids.derivatives}}</b>
+                        <div style="background-color: #f9f9f9; color: #bbb; padding: 5px"><b>{{datatype.bids.derivatives}}</b></div>
                         <pre v-highlightjs="JSON.stringify(datatype.bids.maps, null, 4)"><code class="json hljs"></code></pre>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="datatype.validator">
+                    <b-col cols="2">
+                        <span class="form-header">Validator</span>
+                    </b-col>
+                    <b-col>
+                        <p><small style="opacity: 0.7">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
+                        <p><a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b></a></p>
+                        <!--<p v-else style="opacity: 0.8">No validator</p>-->
                         <br>
                     </b-col>
                 </b-row>
@@ -180,17 +186,6 @@
                     </b-col>
                 </b-row>
 
-                <b-row v-if="datatype.validator">
-                    <b-col cols="2">
-                        <span class="form-header">Validator</span>
-                    </b-col>
-                    <b-col>
-                        <p><small style="opacity: 0.7">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
-                        <p><a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b></a></p>
-                        <!--<p v-else style="opacity: 0.8">No validator</p>-->
-                        <br>
-                    </b-col>
-                </b-row>
             </b-container>
         </div>
     </div>
@@ -337,8 +332,8 @@ export default {
         },
 
         back() {
-            //this.$router.push('/apps');
-            this.$router.go(-1);
+            this.$router.push('/datatypes');
+            //this.$router.go(-1);
         },
         open_sample_dataset(dataset_id) {
             //this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
