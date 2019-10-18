@@ -117,6 +117,14 @@ Vue.config.auth_signout = "/auth#!/signout";
 Vue.config.productionTip = false;
 Vue.config.debug_doi = "10.25663/bl.p.3"; //o3d publication
 
+Vue.config.has_role = function(role, service = "warehouse") {
+    if( Vue.config.user && 
+        Vue.config.user.scopes[service] && ~Vue.config.user.scopes[service].indexOf(role)) return true;
+//            Vue.config.user.scopes.amaretti && 
+//            ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
+    return false;
+}
+
 //Vue.http.options.root = Vue.config.api; //default root for $http
 axios.defaults.baseURL = Vue.config.api; //default root for $http
 
@@ -144,14 +152,6 @@ function jwt_decode_brainlife(jwt) {
     Vue.config.user.sub = Vue.config.user.sub.toString();
 
     axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
-
-    Vue.config.has_role = function(role, service = "warehouse") {
-        if( Vue.config.user && 
-            Vue.config.user.scopes[service] && ~Vue.config.user.scopes[service].indexOf(role)) return true;
-//            Vue.config.user.scopes.amaretti && 
-//            ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
-        return false;
-    }
 
     //deprecated .. use Vue.config.has_role
     Vue.config.is_admin = Vue.config.has_role("admin"); 

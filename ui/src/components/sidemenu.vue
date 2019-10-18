@@ -50,7 +50,7 @@
             <h4>Datatypes</h4>
         </li>
 
-        <li vi-if="config.debug" @click="go('/resources')" :class="{active: active == '/resources'}">
+        <li v-if="config.debug" @click="go('/resources')" :class="{active: active == '/resources'}">
             <icon name="server" scale="1.3"/>
             <h4>Resources</h4>
         </li>
