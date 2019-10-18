@@ -139,7 +139,20 @@
                             </b-col>
                         </b-row>
                     
-                        {{resource_citations}}
+                        <b-row v-if="resource_citations.length > 0">
+                            <b-col cols="2">
+                                <span class="form-header">Resource Citations</span>
+                            </b-col>
+                            <b-col>
+                                <p><small>Datasets published on this dataset are computed on the following resources.</small></p>
+                                <p v-for="resource_citation in resource_citations">
+                                    <b>{{resource_citation.resource.name}}</b>
+                                    <small>{{resource_citation.resource.config.desc}}</small>
+                                    <br>
+                                    <i>{{resource_citation.citation}}</i>
+                                </p>
+                            </b-col>
+                        </b-row>
 
                         <!--
                         <b-row>
@@ -363,6 +376,7 @@ export default {
             apps: null, //list of apps
 
             datatypes: {}, 
+            resource_citations: [],
 
             tab_index: 0,
             query: "",
@@ -416,6 +430,7 @@ export default {
     },
 
     computed: {
+/*
         resource_citations: function() {
             if(!this.pub) return [];
             if(!this.pub.project) return [];
@@ -425,6 +440,7 @@ export default {
                 if(resource.citation) citations.push(resource.citation); 
             });
         },
+*/
 
         social_url: function() {
             if(this.pub.doi) return "http://doi.org/"+this.pub.doi;
@@ -480,16 +496,23 @@ export default {
                 _altmetric_embed_init(this.$el);
             });
 
-/*
             //load all resources referenced for citations
-            return this.$http.get('datatype');
-        })
-        .then(res=>{
-            res.data.datatypes.forEach((d)=>{
-                this.datatypes[d._id] = d;
+            let resource_ids = this.pub.project.stats.resources.map(r=>r.resource_id);
+            return this.$http.get(Vue.config.amaretti_api+"/resource", {params: {
+                find: JSON.stringify({
+                    _id: {$in: resource_ids},
+                }),
+                select: 'name config.desc',
+            }})
+        }).then(res=>{
+            //collect resource citation
+            this.pub.project.stats.resources.forEach(stat=>{
+                if(!stat.citation) return; //don't show resources with no citations
+                let resource = res.data.resources.find(r=>r._id == stat.resource_id);
+                if(!resource) return; //no such resource?
+                let resource_citations = this.resource_citations.find(r=>r.resource._id == stat.resource_id);
+                if(!resource_citations) this.resource_citations.push({resource, citation: stat.citation});    
             });
-*/
-
 
         }).catch(console.error);
     },
