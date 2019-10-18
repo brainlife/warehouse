@@ -47,20 +47,14 @@ import VueMarkdown from 'vue-markdown'
 
 import sidemenu from '@/components/sidemenu'
 import datatype from '@/components/datatype'
-import datatypetag from '@/components/datatypetag'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import app from '@/components/app'
-import contactlist from '@/components/contactlist'
 import tags from '@/components/tags'
-//import filebrowser from '@/components/filebrowser'
 
 export default {
     components: { 
-        sidemenu, pageheader, datatype, 
-        datatypetag, app, VueMarkdown, 
-        contact, contactlist, tags,
-        //filebrowser 
+        sidemenu, pageheader, datatype, app, VueMarkdown, contact, tags,
     },
 
     data () {

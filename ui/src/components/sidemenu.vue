@@ -45,12 +45,16 @@
             <h4>Publications</h4>
         </li>
         
-        <li @click="go('/datatypes')"
-            :class="{active: active == '/datatypes'}">
+        <li @click="go('/datatypes')" :class="{active: active == '/datatypes'}">
             <icon name="cubes" scale="1.3"/>
             <h4>Datatypes</h4>
         </li>
-        
+
+        <li vi-if="config.debug" @click="go('/resources')" :class="{active: active == '/resources'}">
+            <icon name="server" scale="1.3"/>
+            <h4>Resources</h4>
+        </li>
+         
         <li v-if="config.user" @click="setting_old">
             <icon name="cog" scale="1.3"/>
             <h4>Settings</h4>

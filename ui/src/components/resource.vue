@@ -1,7 +1,13 @@
 <template>
 <div v-if="resource_obj">
+    <div style="float: right">
+        <b-badge v-if="!resource.active">Inactive</b-badge>
+        <b-badge v-if="resource.status == 'ok'" variant="success">OK</b-badge>
+        <b-badge v-if="resource.status != 'ok'" variant="danger">{{resource.status}}</b-badge>
+    </div>
     <span>{{resource_obj.name}}</span><br>
-    <span style="font-size: 80%; opacity: 0.7;">{{resource_obj.config.desc}}</span>
+    <span style="font-size: 80%; opacity: 0.7;">{{resource_obj._detail.desc}}</span>
+    <b-alert :show="resource.status != 'ok'" variant="danger">{{resource.status_msg}}</b-alert>
 </div>
 </template>
 
@@ -32,4 +38,8 @@ export default {
 }
 </script>
 
-
+<style scoped>
+.alert {
+padding: 2px 5px;
+}
+</style>

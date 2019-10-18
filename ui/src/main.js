@@ -145,10 +145,9 @@ function jwt_decode_brainlife(jwt) {
 
     axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
-    Vue.config.has_role = function(role) {
+    Vue.config.has_role = function(role, service = "warehouse") {
         if( Vue.config.user && 
-            Vue.config.user.scopes.warehouse && 
-            ~Vue.config.user.scopes.warehouse.indexOf(role)) return true;
+            Vue.config.user.scopes[service] && ~Vue.config.user.scopes[service].indexOf(role)) return true;
 //            Vue.config.user.scopes.amaretti && 
 //            ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
         return false;

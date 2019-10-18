@@ -18,6 +18,10 @@ import datatypes from '@/datatypes'
 import datatype from '@/datatype'
 import datatypeedit from '@/datatypeedit'
 
+import resources from '@/resources'
+import resource from '@/resource'
+import resourceedit from '@/resourceedit'
+
 import pubs from '@/pubs'
 import pub from '@/pub'
 import admin from '@/admin'
@@ -57,14 +61,19 @@ export default new Router({
         {path: '/project', component: projects, meta: {public: true}}, //deprecated by /projects (redirect?)
         {path: '/projects', component: projects, meta: {public: true}}, 
         {path: '/project/:id', component: project, meta: {public: true}},
-        {path: '/project/:id/edit', component: projectedit},
         {path: '/project/:id/:tab?/:subid?', component: project, meta: {public: true}},
+        {path: '/project/:id/edit', component: projectedit},
+
         {path: '/openneuro/:id', component: openneuro, meta: {public: true}},
 
         {path: '/datatypes', component: datatypes, meta: {public: true}},
         {path: '/datatypes/:id', component: datatype, meta: {public: true}}, //depecated by /datatype/:id
         {path: '/datatype/:id', component: datatype, meta: {public: true}},
-        {path: '/datatype/:id/edit', component: datatypeedit, meta: {public: true}},
+        {path: '/datatype/:id/edit', component: datatypeedit},
+
+        {path: '/resources', component: resources, meta: {public: true}},
+        {path: '/resource/:id', component: resource, meta: {public: true}},
+        {path: '/resource/:id/edit', component: resourceedit},
 
         {path: '/pubs', component: pubs, meta: {public: true}},
         {path: '/pub/:id', component: pub, meta: {public: true}},
