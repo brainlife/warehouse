@@ -273,6 +273,8 @@ export default {
                 //if(!this.da.agreements) Vue.set(this.project, "agreements", []); //backward compatibility
                 if(this.datatype.bids) {
                     this.datatype._bids = JSON.stringify(this.datatype.bids, null, 4);
+                } else {
+                    this.datatype._bids = "";
                 }
 
                 //unpopulate uis

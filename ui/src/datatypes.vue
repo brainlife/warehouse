@@ -29,7 +29,7 @@
             </b-card-group>
         </b-container>
 
-        <b-button v-if="config.is_admin" class="button-fixed" @click="newdatatype" v-b-tooltip.hover title="New Datatype">
+        <b-button v-if="config.has_role('datatype.create')" class="button-fixed" @click="newdatatype" v-b-tooltip.hover title="New Datatype">
             <icon name="plus" scale="2"/>
         </b-button>
     </div><!--page-content-->
