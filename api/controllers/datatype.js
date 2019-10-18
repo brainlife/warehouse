@@ -85,7 +85,7 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
     //TODO - should I validate admins/members? how?
 
     //only warehouse admin can register datatype for now..
-    if(!req.user.scopes.warehouse || !~req.user.scopes.warehouse.indexOf('admin')) return res.status(401).end("only admin can register datatype for now");
+    if(!req.user.scopes.warehouse || !~req.user.scopes.warehouse.indexOf('datatype.create')) return res.status(401).end("only user with datatype.create role can register datatype for now");
 
     let datatype = new db.Datatypes(req.body);
     datatype.save(err=>{

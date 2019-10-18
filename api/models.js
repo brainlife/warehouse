@@ -412,7 +412,7 @@ var datatypeSchema = mongoose.Schema({
     admins: [ String ], //list of users who can administer this datatype
     
     //file inventory for this datatype
-    files: [ new mongoose.Schema({ //TODO - do I really need to wrap this with mongoose.Schema?
+    files: [ new mongoose.Schema({ //mongoose.Schema allows for *missing*
         id: String,
 
         //either filename or dirname should be set
@@ -436,7 +436,7 @@ var datatypeSchema = mongoose.Schema({
     validator: String, 
 
     //spec used to export this datatype to bids
-    bids: {
+    bids: new mongoose.Schema({
         //should I move derivatives to maps - so that 1 dataset can output files for more than 1 modality?
         derivatives: String, //dwi/func/anat (meaningless if maps is empty)
         maps: [ {
@@ -444,7 +444,7 @@ var datatypeSchema = mongoose.Schema({
             dest: String, //bids file suffix.ext (dwi.nii.gz)
             json: String, //bids sidecar filename (dwi.json) (optional)
         }],
-    },
+    }),
 
     //registered UIs for this datatype
     uis: [{type: mongoose.Schema.Types.ObjectId, ref: 'UIs'}], 
@@ -651,4 +651,8 @@ ruleSchema.pre('save', function(next) {
 });
 exports.Rules = mongoose.model('Rules', ruleSchema);
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Phenotype 
+//
+//TODO..
