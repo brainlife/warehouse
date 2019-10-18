@@ -136,7 +136,7 @@
                     </b-col>
                 </b-row>
 
-                <b-row v-if="datatype.bids.maps.length > 0">
+                <b-row v-if="datatype.bids && datatype.bids.maps.length > 0">
                     <b-col cols="2">
                         <span class="form-header">BIDS Export</span>
                     </b-col>

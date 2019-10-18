@@ -136,8 +136,9 @@
                     <span class="form-header">Sample Datasets</span>
                 </b-col> 
                 <b-col cols="9">
-                    <small>List of datasets that should be used as sample. Please select public datasets.</small>
-                    <br>
+                    <p>
+                        <small>List of datasets that should be used as sample. Please select public datasets.</small>
+                    </p>
                     <div>
                         <div v-for="sample in datatype.samples" style="background-color: white; padding: 5px; margin-bottom: 5px;">
                             <div class="button" style="float: right;" @click="remove_sample(sample)"><icon name="trash"/></div>
