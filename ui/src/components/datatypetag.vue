@@ -1,14 +1,4 @@
 <template>
-<!--
-<div v-if="ready" class="dt" @click="click"
-    v-b-popover.hover.top.d1000.html="'<small>'+_datatype.desc+'</small>'" :title="'<small><b>'+_datatype.name+'</b></small>'">
-    <div class="dot" :style="{backgroundColor: color}">{{name}}</div
-    ><div class="tags" v-if="tags" v-for="(tag, idx) in tags" :key="idx">
-        <span v-if="tag && tag[0] == '!'" class="text-danger"><b-badge variant="danger">not</b-badge> {{tag.substring(1)}}</span>
-        <span v-else>{{tag}}</span>
-    </div>
-</div>
--->
 <div v-if="ready" class="dt" :class="{'dt-clickable': clickable}" @click="click"
     v-b-popover.hover.top.d1000.html="'<small>'+_datatype.desc+'</small>'" :title="'<small><b>'+_datatype.name+'</b></small>'">
     <span class="dot" :style="{backgroundColor: color}"></span> {{name}}
@@ -23,14 +13,13 @@
 <script>
 
 import Vue from 'vue'
-
-//TODO - update to use mixin/cache
-let cache_datatypes_loading = null;
-let cache_datatypes = null;
+import datatypecache from '@/mixins/datatypecache'
 
 export default {
+    mixins: [ datatypecache ],
     props: {
         datatype: [String, Object],
+
         tags: { type: Array, }, 
         trimname: { type: Boolean, default: true, },
         clickable: { type: Boolean, default: true, },
@@ -46,55 +35,39 @@ export default {
         }
     },
 
+    /*
     watch: {
         datatype: function() {
             this.init();
         }
     },
+    */
     
     computed: {
     },
 
     created() {
-        if(cache_datatypes) return this.init(); //cache already loaded.
-        if(cache_datatypes_loading) {
-            //someone else is loading.. wait for it
-            cache_datatypes_loading.then(()=>{
-                this.init();
+        //console.log(this.datatype);
+        if(!this.datatype) return;
+        if(typeof this.datatype == "string") {
+            this.datatypecache(this.datatype, (err, datatype)=>{
+                if(err) alert(err);
+                this.init(datatype);
             });
         } else {
-            //loading cache for the first time (TODO use mixin cache!)
-            cache_datatypes_loading = this.$http.get("datatype", {params: {
-                find: JSON.stringify(),
-                limit: 500,
-            }}).then(res=>{
-                cache_datatypes = {};
-                res.data.datatypes.forEach(datatype=>{
-                    cache_datatypes[datatype._id] = datatype;
-                });
-                this.init();
-            });
+            //assume the full datatype object is fed..
+            this.init(this.datatype);
         }
     },
 
     methods: {
-        init: function() {
-            this.ready = false;
-
-            if(!this.datatype) return;
-
-            //user could pass datatype as string(id) or an object
-            if(typeof this.datatype != "string") {
-                this.post_init(this.datatype);
-            } else {
-                this.post_init(cache_datatypes[this.datatype]);
-            }
-        },
-
-        post_init: function(datatype) {
+        init(datatype) {
             this._datatype = datatype;
 
             if(!this._datatype) return "unknown";
+            if(!this._datatype.desc) {
+                console.error("desc not set", this._datatype);
+            }
             if(!this._datatype.name) {
                 console.error("name not set", this._datatype);
             }
@@ -115,6 +88,7 @@ export default {
 
             this.ready = true;
         },
+
         click() {
             if(this.clickable) {
                 this.$router.push('/datatypes/'+this._datatype._id);

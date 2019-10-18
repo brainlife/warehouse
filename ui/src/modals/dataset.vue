@@ -39,7 +39,7 @@
             </div>
             <h5 style="margin-top: 8px;">
                 <span v-if="dataset.meta" style="color: #999;">{{dataset.meta.subject}}</span>&nbsp;
-                <datatypetag :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
+                <datatypetag v-if="dataset.datatype" :datatype="dataset.datatype" :tags="dataset.datatype_tags"></datatypetag>
             </h5>
         </div><!--header-->
         <b-tabs class="brainlife-tab" v-model="tab_index">
