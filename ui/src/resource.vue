@@ -1,13 +1,13 @@
 <template>
 <div>
-    <sidemenu active="/datatypes"></sidemenu>
+    <sidemenu active="/resources"></sidemenu>
     <div class="page-content">
-        <div v-if="!datatype" class="loading">Loading ...</div>
+        <div v-if="!resource" class="loading">Loading ...</div>
         <div v-else>
             <div class="header header-sticky">
                 <b-container>
                     <div style="float: right;">
-                        <span class="button" @click="edit" v-if="canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
+                        <span class="button" @click="edit" v-if="resource._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
                     </div>
                     <b-row>
                         <b-col cols="2">
@@ -17,23 +17,141 @@
                         </b-col>
                         <b-col>
                             <h2>
-                                <!--<b-form-input v-if="editing" type="text" v-model="datatype.name" placeholder="neuro/somename"></b-form-input>-->
-                                <datatypetag :datatype="datatype" :trimname="!!(~datatype.name.indexOf('neuro/'))"/>
+                                <b-badge v-if="!resource.active">Inactive</b-badge>
+                                {{resource.name}}
                             </h2>
-                            <!--<b-form-textarea v-if="editing" v-model="datatype.desc" :rows="2"></b-form-textarea>-->
-                            <p style="opacity: 0.6">{{datatype.desc}}</p>
+                            <p style="opacity: 0.6">{{resource._detail.desc}}</p>
                         </b-col>
                     </b-row>
                 </b-container>
             </div>
             <br>
             <b-container>
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Status</span>
+                    </b-col>
+                    <b-col>
+                        <div class="box">
+                            <h5 :class="{'text-danger': resource.status != 'ok', 'text-success': resource.status == 'ok'}">{{resource.status}}</h5>
+                            <small>{{resource.status_msg}}</small>
+                        </div>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="groups && groups.length > 0">
+                    <b-col cols="2">
+                        <span class="form-header">Groups</span>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <small>The member of the following group has access to this resource.</small>
+                        </p>
+                        <div v-for="group in groups" :key="group._id" class="box">
+                            <p>
+                                <icon name="users"/> {{group.name}}
+                                <small>{{group.desc}}</small>
+                            </p>
+                            <contact v-for="c in group.admins" :key="c._id" :fullname="c.fullname" :email="c.email"/>
+                            <contact v-for="c in group.members" :key="c._id" :fullname="c.fullname" :email="c.email"/>
+                        </div>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Login Node <small>/Workdir</small></span>
+                    </b-col>
+                    <b-col>
+                        <p class="box">
+                            <pre>{{resource.config.username}}@{{resource.config.hostname}}:{{resource.config.workdir}}</pre>
+                        </p>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Owner</span>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <contact :id="resource.user_id"/>
+                        </p>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Apps</span>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <small>The following services are enabled by the owner to run on this resource</small>
+                        </p>
+                        <div class="box">
+                            <b-row style="opacity: 0.5; margin-bottom: 5px;">
+                                <b-col>
+                                    <b>org/repo</b>
+                                </b-col>
+                                <b-col>
+                                    <b>score</b>
+                                </b-col>
+                            </b-row>
+                            <b-row v-for="service in resource.config.services" :key="service.name" style="border-top: 1px solid #eee; padding: 2px 0px">
+                                <b-col>
+                                    {{service.name}}
+                                </b-col>
+                                <b-col>
+                                    {{service.score}}
+                                </b-col>
+                            </b-row>
+                        </div>
+                        <br>
+                        <p style="opacity: 0.6;">
+                           Up to <b>{{resource.config.maxtask}}</b> tasks will be submitted on this resource
+                        </p>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">ENVs</span>
+                    </b-col>
+                    <b-col>
+                        {{resource._detail.envs}}
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Dates</span>
+                    </b-col>
+                    <b-col>
+                        <div>
+                            Create Date: <icon name="calendar"/> {{new Date(resource.create_date).toLocaleDateString()}}
+                        </div>
+                        <div>
+                            Update Date: <icon name="calendar"/> {{new Date(resource.update_date).toLocaleDateString()}}
+                        </div>
+                        <div>
+                            Last OK: <icon name="calendar"/> {{new Date(resource.lastok_date).toLocaleDateString()}}
+                        </div>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <hr>
+
+                <!--
                 <b-row v-if="datatype.readme">
                     <b-col cols="2">
                         <span class="form-header">README</span>
                     </b-col>
                     <b-col>
-                        <!--<b-form-textarea v-if="editing" v-model="datatype.readme" :rows="2"></b-form-textarea>-->
                         <div>
                             <p v-if="!datatype.readme" style="opacity: 0.7">No README</p>
                             <vue-markdown v-else :source="datatype.readme" class="readme"/>
@@ -64,16 +182,12 @@
                                 </b-col>
                             </b-row>
                         </div>
-                        <!--
-                        <pre v-highlightjs="JSON.stringify(datatype.files, null, 4)"><code class="json hljs"></code></pre>
-                        -->
                         <br>
                     </b-col>
                 </b-row>
 
                 <b-row v-if="sample_datasets.length > 0">
                     <b-col cols="2">
-                        <!--<icon name="cubes"/>&nbsp;-->
                         <span class="form-header">Sample Datasets</span>
                     </b-col>
                     <b-col>
@@ -84,30 +198,10 @@
                                 </b-col>
                                 <b-col>
                                     {{dataset.meta.subject}} <small>{{dataset.desc}}</small>
-                                    <!-- <span style="float: right"><b>From</b> {{dataset.project.name}}</span> -->
                                     <tags :tags="dataset.tags"/>
                                 </b-col>
                             </b-row>
                         </div>
-                        <!--
-                        <filebrowser v-if="sample_task" :path="datatype.sample" :task="sample_task" style="background-color: white; margin: 5px; margin-bottom: 5px"/>
-                        <p v-if="datatype.uis.length == 0" style="opacity: 0.8;">No visualizer</p>
-                        <p v-else><small style="opacity: 0.7">The following visualizers can be used to visualize this datatype on Brainlife.</small></p>
-                        <b-row>
-                            <b-col :cols="4" class="ui" v-for="ui in datatype.uis" :key="ui._id">
-                                <b-card 
-                                    :header-bg-variant="ui.docker?'success':'dark'" 
-                                    header-text-variant="white" 
-                                    :header="ui.name" 
-                                    class="card" 
-                                    @click="openvis(ui)"
-                                    style="max-width: 25rem; margin-bottom: 20px;"
-                                    :img-src="ui.avatar"> 
-                                    <p class="card-text">{{ui.desc}}</p>
-                                </b-card>
-                            </b-col>
-                        </b-row>
-                        -->
                         <br>
                     </b-col>
                 </b-row>
@@ -143,7 +237,6 @@
                     </b-col>
                     <b-col>
                         <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
-                        <!--<contactlist v-if="editing" v-model="datatype.admins"></contactlist>-->
                         <div>
                             <p v-if="!datatype.admins || datatype.admins.length == 0" style="opacity: 0.8">No admins</p>
                             <p v-for="admin in datatype.admins" :key="admin._id">
@@ -173,7 +266,6 @@
                     <b-col>
                         <p><small style="opacity: 0.7">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
                         <p><a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b></a></p>
-                        <!--<p v-else style="opacity: 0.8">No validator</p>-->
                         <br>
                     </b-col>
                 </b-row>
@@ -203,7 +295,7 @@
 
                     </b-col>
                 </b-row>
-
+                -->
             </b-container>
         </div>
     </div>
@@ -215,41 +307,28 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import VueMarkdown from 'vue-markdown'
-
 import sidemenu from '@/components/sidemenu'
-import datatype from '@/components/datatype'
-import datatypetag from '@/components/datatypetag'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import app from '@/components/app'
-import contactlist from '@/components/contactlist'
 import tags from '@/components/tags'
 
 export default {
     components: { 
-        sidemenu, pageheader, datatype, 
-        datatypetag, app, VueMarkdown, 
-        contact, contactlist, tags,
+        sidemenu, pageheader, app, contact, tags,
     },
 
     data () {
         return {
-            datatype: null, //datatype datatype
+            resource: null, 
+            groups: null,
 
-            //for datatype item
-            apps: [], //apps that uses datatype datatype
-            adhoc_datatype_tags: [], //datatype tags associated with datatype datatype
-
-            //sample_task: null,
-            sample_datasets: [],
-            
-            //editing: false, 
             config: Vue.config,
         }
     },
 
     computed: {
+        /*
         input_apps() {
             if(!this.apps) return [];
             return this.apps.filter(a=>{
@@ -262,10 +341,7 @@ export default {
                 return a.outputs.find(it=>it.datatype._id == this.datatype._id);
             });
         },
-        canedit() {
-            if(!Vue.config.user) return false;
-            return ~this.datatype.admins.indexOf(Vue.config.user.sub);
-        }
+        */
     },
 
     mounted() {
@@ -274,137 +350,37 @@ export default {
 
     methods: {
         load() {
-            console.log("loading datatype:"+this.$route.params.id);
-            this.$http.get('datatype', {params: {
+            console.log("loading resource:"+this.$route.params.id);
+            this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
                 find: JSON.stringify({
                     _id: this.$route.params.id,
                 }),
-                sort: 'name',
-            }})
-            .then(res=>{
-                this.datatype = res.data.datatypes[0];
-                if(!this.datatype) alert("no such datatype");
+            }}).then(res=>{
+                this.resource = res.data.resources[0];
+                if(!this.resource) alert("no such resource");
 
-                //load apps that uses this datatype
-                this.$http.get('app', {params: {
-                    find: JSON.stringify({
-                        removed: false,
-                        $or: [
-                            {'inputs.datatype': this.datatype._id},
-                            {'outputs.datatype': this.datatype._id},
-                        ]
-                    }),
-                    select: 'name desc inputs outputs stats github',
-                    populate: 'inputs.datatype outputs.datatype', //<app> likes datatypes populated
-                    limit: 500, //TODO - this is not sustailable
-                }}).then(res=>{
-                    this.apps = res.data.apps;
-                })
-
-                //load adhoc datatype_tags used for this datatype
-                let registered_datatype_tags = this.datatype.datatype_tags.map(entry=>entry.datatype_tag);
-                this.$http.get('dataset/distinct', {params: {
-                    distinct: 'datatype_tags',
-                    find: JSON.stringify({
-                        removed: false,
-                        datatype: this.datatype._id,
-                        datatype_tags: {$nin: registered_datatype_tags},
-                    }),
-                    
-                }}).then(res=>{
-                    this.adhoc_datatype_tags = res.data;
-                });
-
-                /*
-                //load prestaged task for sample
-                if(this.datatype.sample) {
-                    this.$http.get(Vue.config.amaretti_api+'/task', {params: {
+                if(this.resource.gids) {
+                    this.$http.get(Vue.config.auth_api+'/groups', {params: {
                         find: JSON.stringify({
-                            "service": "brainlife/app-stage",
-                            $or: [
-                                //{"config.datasets.id": this.datatype.sample},
-                                {"config._outputs.id": this.datatype.sample}, //works for both original and copy
-                            ]
+                            id: {$in: this.resource.gids},
                         }),
-                        limit: 1, 
                     }}).then(res=>{
-                        console.log("loaded sample");
-                        if(res.data.tasks.length == 1) this.sample_task = res.data.tasks[0];
-                    });
-                }
-                */
-
-                //load sample datasets
-                if(this.datatype.samples) {
-                    this.$http.get('/dataset', {params: {
-                        find: JSON.stringify({
-                            _id: {$in: this.datatype.samples},
-                        }),
-                        //populate: 'project',
-                    }}).then(res=>{
-                        console.dir(res);
-                        this.sample_datasets = res.data.datasets;
+                        this.groups = res.data;
                     });
                 }
             }).catch(console.error);
         },
 
         back() {
-            this.$router.push('/datatypes');
-            //this.$router.go(-1);
-        },
-        open_sample_dataset(dataset_id) {
-            //this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
-            this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
-        },
-
-        get_datatypes(prefix) {
-            if(!this.datatypes) return false;
-            return this.datatypes.filter(d=>{
-                if(~d.name.indexOf(prefix)) {
-                    return true;
-                }
-                return false;
-            }); 
-        },
-
-        get_not_datatypes(prefix) {
-            if(!this.datatypes) return false;
-            return this.datatypes.filter(d=>{
-                if(!~d.name.indexOf(prefix)) {
-                    return true;
-                }
-                return false;
-            }); 
-        },
-
-        get_official_desc(tag) {
-            if(!this.datatype.datatype_tags) return;
-            return this.datatype.datatype_tags.find(d=>d.datatype_tag == tag);
+            this.$router.push('/resources');
         },
 
         edit() {
             //this.editing = true;
-            this.$router.push('/datatype/'+this.datatype._id+'/edit');
+            this.$router.push('/resource/'+this.resource._id+'/edit');
         },
-
-        /*
-        trim(n) {
-            return n.split("/").splice(1).join("/");
-        },
-
-        gethsl(n) {
-            let hash = n.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
-            let numhash = Math.abs(hash+120)%360;
-            return "hsl("+(numhash%360)+", 50%, 60%)";
-        },
-        */
     },
 
-    destroyed() {
-        //this.ps.destroy();
-    },
-  
     watch: {
         '$route': function() {
             load();
@@ -448,17 +424,6 @@ top: 0px;
 z-index: 1;
 box-shadow: 0 0 1px #ccc;
 }
-
-.apps-container {
-display: flex;
-flex-wrap: wrap;
-}
-.apps-container .app {
-margin-right: 10px;
-margin-bottom: 10px;
-width: 400px;
-box-sizing: border-box;
-}
 code.json {
 background-color: white;
 }
@@ -471,38 +436,14 @@ left:50px;
 background-color: rgba(100,100,100,0.4);
 padding: 10px;
 }
-.datatype-card {
-cursor: pointer;
-padding: 10px;
-border: none;
-box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-transition: box-shadow 0.5s;
-}
-.datatype-card:hover {
-box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-}
-/*
-.card-img {
-heightkj
-}
-
-.card-text {
-height: 70px
-}
-*/
-.sample-dataset {
-background-color: white;
-border-bottom: 1px solid #ddd;
-padding: 5px 10px;
-cursor: pointer;
-} 
-.sample-dataset:hover {
-background-color: #ddd;
-}
 .loading {
 padding: 50px;
 font-size: 20pt;
 opacity: 0.5;
+}
+.box {
+background-color: white;
+padding: 10px;
 }
 </style>
 

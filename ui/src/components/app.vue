@@ -17,12 +17,17 @@
         <appavatar :app="app_" style="float: right; margin-left: 10px;" :width="80" :height="80"/>
         <div class="header">
             <h4 class="name">
-                <icon v-if="app_.projects && app_.projects.length > 0" name="lock" title="not working.." class="text-danger"/>
-                <b-badge v-if="app_.deprecated_by" variant="danger danger-outline" :id="'dep_'+app_.deprecated_by">Deprecated</b-badge>
-                <b-popover :target="'dep_'+app_.deprecated_by" triggers="click" title="Deprecated By">
-                    <!-- TODO I should show the content of the app!-->
-                    <a :href="'/app/'+app_.deprecated_by">{{app_.deprecated_by}}</a>
-                </b-popover>
+                <span v-if="app_.projects && app_.projects.length > 0" title="Private App" class="text-danger">
+                    <icon name="lock"/>
+                </span>
+                <span v-if="app_.deprecated_by" :id="'dep_'+app_.deprecated_by" title="Deprecated">
+                    <icon name="regular/calendar-times"/>
+                    <!--
+                    <b-popover :target="'dep_'+app_.deprecated_by" triggers="hover" title="Deprecated By">
+                        <a :href="'/app/'+app_.deprecated_by">{{app_.deprecated_by}}</a>
+                    </b-popover>
+                    -->
+                </span>
                 {{app_.name}}
             </h4>
             <h5 class="github">{{app_.github}} <b-badge>{{branch||app_.github_branch}}</b-badge></h5>

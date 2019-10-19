@@ -71,10 +71,11 @@
                     </b-col>
                     <b-col cols="8">
 
-                        <b-card v-if="app.deprecated_by" no-body
-                            header="This App has been deprecated" style="margin-bottom: 10px"
-                            border-variant="danger" header-bg-variant="danger" header-text-variant="white">
-                            <p style="padding: 10px;">Please consider using the following App instead.</p>
+                        <!--border-variant="danger" header-bg-variant="danger" header-text-variant="white">-->
+                        <b-card v-if="app.deprecated_by" no-body style="margin-bottom: 10px">
+                            <span slot="header">
+                                <icon name="regular/calendar-times"/> This App has been deprecated by the following App
+                            </span>
                             <app :appid="app.deprecated_by"/>
                         </b-card>
 

@@ -149,7 +149,7 @@
 
     <div class="new-action">
         <b-row no-gutters>
-            <b-col>
+            <b-col v-if="_datasets.length > 0">
                 <div class="new-action-button new-action-button-newtask" @click="newtask"><icon name="play"/>&nbsp;&nbsp;Submit App</div>
             </b-col>
             <b-col>

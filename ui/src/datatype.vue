@@ -143,7 +143,6 @@
                     </b-col>
                     <b-col>
                         <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
-                        <!--<contactlist v-if="editing" v-model="datatype.admins"></contactlist>-->
                         <div>
                             <p v-if="!datatype.admins || datatype.admins.length == 0" style="opacity: 0.8">No admins</p>
                             <p v-for="admin in datatype.admins" :key="admin._id">
@@ -223,14 +222,11 @@ import datatypetag from '@/components/datatypetag'
 import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import app from '@/components/app'
-import contactlist from '@/components/contactlist'
 import tags from '@/components/tags'
 
 export default {
     components: { 
-        sidemenu, pageheader, datatype, 
-        datatypetag, app, VueMarkdown, 
-        contact, contactlist, tags,
+        sidemenu, pageheader, datatype, datatypetag, app, VueMarkdown, contact, tags,
     },
 
     data () {
@@ -279,7 +275,7 @@ export default {
                 find: JSON.stringify({
                     _id: this.$route.params.id,
                 }),
-                sort: 'name',
+                //sort: 'name',
             }})
             .then(res=>{
                 this.datatype = res.data.datatypes[0];
