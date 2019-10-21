@@ -26,8 +26,8 @@
         <h5>BIDS Download</h5>
         <p class="text-muted">
             Copy and paste the following command to your terminal on a computer where you want to download selected datasets.
-            This command will also create <a href="http://bids.neuroimaging.io" target="_bids">BIDS</a> a directory (/bids) 
-            containing symbolic links to organize downloaded files into a BIDS derivative format (for BIDS compatible datatypes).
+            This command will also create a directory (/bids) containing symbolic links to organize downloaded files into 
+            a <a href="http://bids.neuroimaging.io" target="_bids">BIDS</a> derivative format (for BIDS compatible datatypes).
         </p>
         <div class="downscript-area">
             <textarea class="downscript" ref="downscript" readonly>{{downscript}}</textarea>
