@@ -48,7 +48,7 @@
                         <div class="button" @click="download_file(file)" title="Download"><icon name="download" scale="0.8"/></div>
                         <div class="button" @click="refresh_file(file)" title="Refresh"><icon name="sync-alt" scale="0.8"/></div>
                     </div>
-                    <editor :ref="'file.'+idx" v-model="file.content" @init="editorInit" :lang="file.lang"></editor>
+                    <editor :ref="'file.'+idx" v-model="file.content" @init="editorInit" :lang="file.lang" theme="chrome"></editor>
                 </div>
                 <div v-if="file.image_src" style="margin-bottom: 20px;">
                     <a :href="file.image_src"><img style="max-width: 100%;" :src="file.image_src"/></a>
@@ -99,6 +99,10 @@ export default {
     
     methods: {
         editorInit(editor) {
+            console.log("initializing editor");
+
+            require('brace/ext/language_tools')
+
             require('brace/mode/sh')
             require('brace/mode/json')
             require('brace/mode/matlab')
@@ -109,8 +113,11 @@ export default {
             require('brace/mode/html')
             require('brace/mode/dockerfile')
 
-            require('brace/theme/dawn')
-            //editor.setTheme("ace/theme/dawn");
+            require('brace/theme/chrome')
+
+            require('brace/snippets/javascript')
+
+            //require('brace/theme/dawn')
 
             editor.container.style.lineHeight = 1.25;
             editor.renderer.updateFontSize();

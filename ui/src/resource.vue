@@ -35,18 +35,20 @@
                     </b-col>
                     <b-col>
                         <div class="box">
-                            <b-btn style="float: right; top: -5px; position: relative;" size="sm" @click="test" v-if="resource._canedit" title="Test">Test</b-btn>
+                            <b-btn style="float: right; top: -5px; position: relative;" size="sm" @click="test" variant="success" v-if="resource._canedit && !testing" title="Test">Test</b-btn>
+                            <b-btn style="float: right; top: -5px; position: relative;" size="sm" v-if="testing" title="Test" disabled>Testing ... </b-btn>
                             <statustag :status="resource.status"/>
+                            <span style="padding-left: 15px; opacity: 0.8;">
+                                Tested <timeago :since="resource.status_update" :auto-update="1"/>
+                            </span>
                             <!--
                             <b :class="{'text-danger': resource.status != 'ok', 'text-success': resource.status == 'ok'}">{{resource.status.toUpperCase()}}</b>
                             -->
-                            <small>{{resource.status_msg}}</small>
+                            <pre v-if="resource.status != 'ok'" style="max-height: 300px; margin-top: 15px; overflow: auto; color: #dc3545">{{resource.status_msg}}</pre>
                         </div>
                         <br>
                     </b-col>
                 </b-row>
-
-
 
                 <!--
                 <b-row v-if="groups && groups.length > 0">
@@ -132,7 +134,7 @@
                     </b-col>
                     <b-col>
                         <p class="box">
-                            <pre>{{resource._detail.envs}}</pre>
+                            <pre>{{resource.envs}}</pre>
                         </p>
                     </b-col>
                 </b-row>
@@ -154,6 +156,7 @@
                     </b-col>
                 </b-row>
 
+                <div v-if="config.debug"><pre>{{resource}}</pre></div>
             </b-container>
         </div>
     </div>
@@ -182,6 +185,7 @@ export default {
             resource: null, 
             //groups: null,
 
+            testing: false,
             config: Vue.config,
         }
     },
@@ -237,8 +241,21 @@ export default {
         },
 
         test() {
-            alert('TODO');
-        },
+            if(this.testing) return; //already testing
+            this.testing = true;
+            this.$http.put(Vue.config.amaretti_api+'/resource/test/'+this.$route.params.id).then(res=>{
+                this.resource.status = res.data.status;
+                this.resource.status_msg = res.data.message.trim(); 
+                if(res.data.status == "ok") this.$notify({type: "success", text: "Successfully tested!"});
+                else this.$notify({type: "error", text: "Resource test failed"});
+                this.resource.status_update = new Date();
+                this.testing = false;
+            }).catch(err=>{
+                this.testing = false;
+                this.resource.status_update = new Date();
+                this.$notify({type: "error", text: err});
+            });
+         },
 
         edit() {
             //this.editing = true;

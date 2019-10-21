@@ -15,7 +15,7 @@
             <h4 class="header-sticky"><b-container>My Resources</b-container></h4> 
             <b-container>
                 <b-card-group columns style="margin: 10px;">
-                    <b-card no-body v-for="resource in my_resources" :key="resource._id" @click="open(resource)" class="resource-card" :class="{'resource-inactive': !resource.active}">
+                    <b-card no-body v-for="resource in my_resources" :key="resource._id" class="resource-card" :class="{'resource-inactive': !resource.active}">
                         <resource :resource="resource"/>
                     </b-card>
                 </b-card-group>
@@ -25,7 +25,7 @@
         <h4 class="header-sticky"><b-container>Shared Resources</b-container></h4> 
         <b-container>
             <b-card-group columns style="margin: 10px;">
-                <b-card no-body v-for="resource in shared_resources" :key="resource._id" @click="open(resource)" class="resource-card" :class="{'resource-inactive': !resource.active}">
+                <b-card no-body v-for="resource in shared_resources" :key="resource._id" class="resource-card" :class="{'resource-inactive': !resource.active}">
                     <resource :resource="resource"/>
                 </b-card>
             </b-card-group>
@@ -90,7 +90,7 @@ export default {
             status: {$ne: "removed"},
             //active: true,
         });
-        this.$http.get(Vue.config.amaretti_api+'/resource', {params: {find, select: 'resource_id name citation status status_msg lastok_date active gids'}}).then(res=>{
+        this.$http.get(Vue.config.amaretti_api+'/resource', {params: {find, select: 'resource_id config.desc name citation status status_msg lastok_date active gids'}}).then(res=>{
             this.resources = res.data.resources;
         }).catch(console.error);
     },
@@ -107,9 +107,11 @@ export default {
         },
         */
 
+        /*
         open(resource) {
             this.$router.push('/resource/'+resource._id);
         },
+        */
 
         newresource() {
             this.$router.push('/resource/_/edit');

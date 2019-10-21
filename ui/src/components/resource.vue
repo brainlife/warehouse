@@ -1,13 +1,15 @@
 <template>
-<div v-if="resource_obj">
+<div v-if="resource_obj" @click="open">
     <div style="float: right">
         <b-badge v-if="!resource_obj.active">Inactive</b-badge>
         <b-badge v-if="resource_obj.status == 'ok'" variant="success">OK</b-badge>
         <b-badge v-if="resource_obj.status != 'ok'" variant="danger">{{resource_obj.status}}</b-badge>
     </div>
     <span>{{resource_obj.name}}</span><br>
-    <span style="font-size: 80%; opacity: 0.7;">{{resource_obj._detail.desc}}</span>
-    <b-alert :show="resource_obj.status != 'ok'" variant="danger">{{resource_obj.status_msg}}</b-alert>
+    <span style="font-size: 80%; opacity: 0.7;">{{resource_obj.config.desc}}</span>
+    <!--
+    <pre v-if="resource_obj.status != 'ok'" style="font-size: 85%; color: red;">{{resource_obj.status_msg}}</pre>
+    -->
 </div>
 </template>
 
@@ -34,6 +36,11 @@ export default {
                 this.resource_obj = resource;
             });
         }
+    },
+    methods: {
+        open() {
+            this.$router.push('/resource/'+this.resource._id);
+        },
     },
 }
 </script>

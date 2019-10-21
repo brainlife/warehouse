@@ -59,7 +59,7 @@ export default {
             this.preferrable_resources = res.data.considered.map(resource => {
                 return {
                     value: resource.id,
-                    text: resource.name + " - " + resource.info.name
+                    text: resource.name,
                 };
             });
             this.preferrable_resources.unshift({ value: null, text: "(None)" });
