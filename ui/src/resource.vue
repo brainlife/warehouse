@@ -16,11 +16,13 @@
                             </div>
                         </b-col>
                         <b-col>
+                            <!--<p style="opacity: 0.6">{{resource._detail.desc}}</p>-->
                             <h2>
                                 <b-badge v-if="!resource.active">Inactive</b-badge>
+                                <b-badge v-if="resource.gids.includes(1)" variant="success">Shared</b-badge>
                                 {{resource.name}}
                             </h2>
-                            <p style="opacity: 0.6">{{resource._detail.desc}}</p>
+                            <p style="opacity: 0.6">{{resource.config.desc}}</p>
                         </b-col>
                     </b-row>
                 </b-container>
@@ -33,13 +35,20 @@
                     </b-col>
                     <b-col>
                         <div class="box">
-                            <h5 :class="{'text-danger': resource.status != 'ok', 'text-success': resource.status == 'ok'}">{{resource.status}}</h5>
+                            <b-btn style="float: right; top: -5px; position: relative;" size="sm" @click="test" v-if="resource._canedit" title="Test">Test</b-btn>
+                            <statustag :status="resource.status"/>
+                            <!--
+                            <b :class="{'text-danger': resource.status != 'ok', 'text-success': resource.status == 'ok'}">{{resource.status.toUpperCase()}}</b>
+                            -->
                             <small>{{resource.status_msg}}</small>
                         </div>
                         <br>
                     </b-col>
                 </b-row>
 
+
+
+                <!--
                 <b-row v-if="groups && groups.length > 0">
                     <b-col cols="2">
                         <span class="form-header">Groups</span>
@@ -59,6 +68,7 @@
                         <br>
                     </b-col>
                 </b-row>
+                -->
 
                 <b-row>
                     <b-col cols="2">
@@ -121,181 +131,29 @@
                         <span class="form-header">ENVs</span>
                     </b-col>
                     <b-col>
-                        {{resource._detail.envs}}
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Dates</span>
-                    </b-col>
-                    <b-col>
-                        <div>
-                            Create Date: <icon name="calendar"/> {{new Date(resource.create_date).toLocaleDateString()}}
-                        </div>
-                        <div>
-                            Update Date: <icon name="calendar"/> {{new Date(resource.update_date).toLocaleDateString()}}
-                        </div>
-                        <div>
-                            Last OK: <icon name="calendar"/> {{new Date(resource.lastok_date).toLocaleDateString()}}
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <hr>
-
-                <!--
-                <b-row v-if="datatype.readme">
-                    <b-col cols="2">
-                        <span class="form-header">README</span>
-                    </b-col>
-                    <b-col>
-                        <div>
-                            <p v-if="!datatype.readme" style="opacity: 0.7">No README</p>
-                            <vue-markdown v-else :source="datatype.readme" class="readme"/>
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Files/Dirs</span>
-                    </b-col>
-                    <b-col>
-                        <p><small style="opacity: 0.7">The following files/dirs are expected to be part of this datatype</small></p>
-                        <div v-for="file in datatype.files" :key="file.id" style="background-color: white; padding: 8px; margin-bottom: 1px;">
-                            <b-row>
-                                <b-col>
-                                    <span v-if="file.filename"><icon name="regular/file"/> {{file.filename}}</span>
-                                    <span v-if="file.dirname"><icon name="folder"/> {{file.dirname}}</span>
-                                    <b-badge v-if="file.ext">validator ext: {{file.ext}}</b-badge>
-                                </b-col>
-                                <b-col>
-                                    <small><b style="opacity: 0.7">{{file.id}}</b></small>
-                                </b-col>
-                                <b-col>
-                                    <b-badge v-if="file.required">required</b-badge>
-                                    <small>{{file.desc}}</small>
-                                </b-col>
-                            </b-row>
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row v-if="sample_datasets.length > 0">
-                    <b-col cols="2">
-                        <span class="form-header">Sample Datasets</span>
-                    </b-col>
-                    <b-col>
-                        <div v-for="dataset in sample_datasets" :key="dataset._id" class="sample-dataset" @click="open_sample_dataset(dataset._id)">
-                            <b-row>
-                                <b-col cols="6">
-                                    <datatypetag :datatype="datatype" :tags="dataset.datatype_tags"/>
-                                </b-col>
-                                <b-col>
-                                    {{dataset.meta.subject}} <small>{{dataset.desc}}</small>
-                                    <tags :tags="dataset.tags"/>
-                                </b-col>
-                            </b-row>
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Datatype Tags</span>
-                    </b-col>
-                    <b-col>
-                        <p v-if="datatype.datatype_tags.length > 0"><small style="opacity: 0.7">The following datatype tags are used for this datatype.</small></p>
-                        <p v-else><small style="opacity: 0.7">No officially registered datatype tags</small></p>
-                        <b-row v-for="(entry, idx) in datatype.datatype_tags" :key="idx" style="margin-bottom: 10px;">
-                            <b-col cols="3">
-                                <span style="background-color: #ddd; padding: 2px 5px; display: inline-block;">{{entry.datatype_tag}}</span>
-                            </b-col>
-                            <b-col cols="9">
-                                <small>{{entry.desc}}</small>
-                            </b-col>
-                        </b-row>
-
-                        <p v-if="adhoc_datatype_tags.length > 0" style="">
-                            <small style="opacity: 0.7">The following adhoc datatype tags are used for some datasets.</small>
+                        <p class="box">
+                            <pre>{{resource._detail.envs}}</pre>
                         </p>
-                        <span v-for="tag in adhoc_datatype_tags" :key="tag" style="background-color: #ddd; padding: 2px 5px; margin-right: 3px; display: inline-block; opacity: 0.5;">{{tag}}</span>
-                        <br>
-                        <br>
                     </b-col>
                 </b-row>
 
                 <b-row>
                     <b-col cols="2">
-                        <span class="form-header">Admins</span>
                     </b-col>
                     <b-col>
-                        <p><small style="opacity: 0.7">Users who are responsible for this datatype.</small></p>
-                        <div>
-                            <p v-if="!datatype.admins || datatype.admins.length == 0" style="opacity: 0.8">No admins</p>
-                            <p v-for="admin in datatype.admins" :key="admin._id">
-                                <contact :id="admin"/>
-                            </p>
-                        </div>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row v-if="datatype.bids && datatype.bids.maps.length > 0">
-                    <b-col cols="2">
-                        <span class="form-header">BIDS Export</span>
-                    </b-col>
-                    <b-col>
-                        <p><small style="opacity: 0.7">The following file mapping is used to generate BIDS derivative exports.</small></p>
-                        <div style="background-color: #f9f9f9; color: #bbb; padding: 5px"><b>{{datatype.bids.derivatives}}</b></div>
-                        <pre v-highlightjs="JSON.stringify(datatype.bids.maps, null, 4)"><code class="json hljs"></code></pre>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row v-if="datatype.validator">
-                    <b-col cols="2">
-                        <span class="form-header">Validator</span>
-                    </b-col>
-                    <b-col>
-                        <p><small style="opacity: 0.7">The following validator service is used to validate/normalize when a dataset of this datatype is imported by Brainlife UI.</small></p>
-                        <p><a :href="'https://github.com/'+datatype.validator"><b>{{datatype.validator}}</b></a></p>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Apps</span>
-                    </b-col>
-                    <b-col>
-                        <p v-if="input_apps.length == 0"><small>No App uses this datatype as input.</small></p>
-                        <p v-else>
-                            <small>The following Apps uses this datatype for input.</small>
+                        <p>
+                            <icon name="calendar"/> Created on {{new Date(resource.create_date).toLocaleDateString()}}
                         </p>
-                        <div class="apps-container" style="border-left: 4px solid rgb(0, 123, 255); padding-left: 15px;">
-                            <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
-                        </div>
-                        <br>
-
-                        <p v-if="output_apps.length == 0"><small>No App uses this datatype as output.</small></p>
-                        <p v-else>
-                            <small>The following Apps outputs this datatype.</small>
+                        <p>
+                            <icon name="calendar"/> Updated on {{new Date(resource.update_date).toLocaleDateString()}}
                         </p>
-                        <div class="apps-container" style="border-left: 4px solid rgb(40, 167, 69); padding-left: 15px;">
-                            <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
-                        </div>
+                        <p>
+                            <icon name="calendar"/> Last OK date {{new Date(resource.lastok_date).toLocaleDateString()}}
+                        </p>
                         <br>
-
                     </b-col>
                 </b-row>
-                -->
+
             </b-container>
         </div>
     </div>
@@ -312,16 +170,17 @@ import pageheader from '@/components/pageheader'
 import contact from '@/components/contact'
 import app from '@/components/app'
 import tags from '@/components/tags'
+import statustag from '@/components/statustag'
 
 export default {
     components: { 
-        sidemenu, pageheader, app, contact, tags,
+        sidemenu, pageheader, app, contact, tags, statustag,
     },
 
     data () {
         return {
             resource: null, 
-            groups: null,
+            //groups: null,
 
             config: Vue.config,
         }
@@ -359,6 +218,7 @@ export default {
                 this.resource = res.data.resources[0];
                 if(!this.resource) alert("no such resource");
 
+                /*
                 if(this.resource.gids) {
                     this.$http.get(Vue.config.auth_api+'/groups', {params: {
                         find: JSON.stringify({
@@ -368,11 +228,16 @@ export default {
                         this.groups = res.data;
                     });
                 }
+                */
             }).catch(console.error);
         },
 
         back() {
             this.$router.push('/resources');
+        },
+
+        test() {
+            alert('TODO');
         },
 
         edit() {
