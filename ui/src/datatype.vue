@@ -53,13 +53,13 @@
                                 <b-col>
                                     <span v-if="file.filename"><icon name="regular/file"/> {{file.filename}}</span>
                                     <span v-if="file.dirname"><icon name="folder"/> {{file.dirname}}</span>
-                                    <b-badge v-if="file.ext">validator ext: {{file.ext}}</b-badge>
+                                    <b-badge v-if="file.ext" variant="light" title="Validator extension check">{{file.ext}}</b-badge>
                                 </b-col>
-                                <b-col>
+                                <b-col cols="3">
                                     <small><b style="opacity: 0.7">{{file.id}}</b></small>
+                                    <b-badge v-if="!file.required" style="float: right;">optional</b-badge>
                                 </b-col>
                                 <b-col>
-                                    <b-badge v-if="file.required">required</b-badge>
                                     <small>{{file.desc}}</small>
                                 </b-col>
                             </b-row>

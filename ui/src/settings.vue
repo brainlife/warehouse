@@ -6,6 +6,7 @@
             <b-container>
                 <h1>Settings</h1>
                 <b-tabs class="brainlife-tab" v-model="tab">
+                    <b-tab title="Profile"/>
                     <b-tab title="Account"/>
                     <b-tab title="Notifications"/>
                 </b-tabs>

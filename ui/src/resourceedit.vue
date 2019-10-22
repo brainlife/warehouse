@@ -77,13 +77,18 @@
 
             <b-row v-if="config.has_role('admin')">
                 <b-col cols="3">
-                    <span class="form-header">Sharing (admin only)</span>
+                    <span class="form-header">Group Sharing</span>
                 </b-col> 
                 <b-col cols="9">
                     <p>
+                        <!--
                         <b-form-checkbox v-model="global">Allow all users to access this resource</b-form-checkbox>
                         <b-form-checkbox v-model="archive_access">Archive access</b-form-checkbox>
+                        -->
+                        <tageditor v-model="resource.gids"/> 
+                        <small>Only the brainlife administrator can edit this</small>
                     </p>
+                    
                 </b-col>
             </b-row>
 
@@ -134,8 +139,8 @@
                     <p>
                         <b>Private Key</b>
                         <small>Brainlife will use the following private key to access this resource.</small>
-                        <b-form-checkbox v-if="resource.config.enc_ssh_private" v-model="resource.config.enc_ssh_private">Use the current private key</b-form-checkbox>
-                        <b-form-textarea v-if="!resource.config.enc_ssh_private" :rows="3" v-model="resource.config.ssh_private"/>
+                        <b-form-checkbox v-if="resource.config.enc_ssh_private === true" v-model="resource.config.enc_ssh_private">Use the current private key</b-form-checkbox>
+                        <b-form-textarea v-if="resource.config.enc_ssh_private !== true" :rows="3" v-model="resource.config.enc_ssh_private"/>
                     </p>
                     <p>
                         <b-btn @click="reset_sshkey" size="sm">Generate Keypair</b-btn>
@@ -150,7 +155,7 @@
                 </b-col> 
                 <b-col cols="9">
                     <p>
-                        <b-form-textarea :rows="2" v-model="resource.citation"/>
+                        <b-form-textarea :rows="3" v-model="resource.citation"/>
                         <small>Enter citation that should be used to acknowledge the use of this resource (in bibtex format)</small>
                     </p>
                 </b-col>
@@ -182,11 +187,17 @@ import Vue from 'vue'
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import contactlist from '@/components/contactlist'
+import tageditor from '@/components/tageditor'
 
 const forge = require('node-forge');
 
 export default {
-    components: { sidemenu, contactlist, pageheader },
+    components: { 
+        sidemenu, 
+        contactlist, 
+        pageheader,
+        tageditor,
+    },
     data () {
         return {
             resource: {
@@ -201,8 +212,8 @@ export default {
             },
 
             envs_: "",
-            global: false, 
-            archive_access: false, 
+            //global: false, 
+            //archive_access: false, 
 
             service_names: [], //all services that user can choose from
 
@@ -219,8 +230,8 @@ export default {
             }}).then(res=>{
                 this.resource = res.data.resources[0];
                 this.envs_ = JSON.stringify(this.resource.envs, null, 4);
-                if(this.resource.gids.includes(1)) this.global = true;
-                if(this.resource.gids.includes(137)) this.archive_access = true;
+                //if(this.resource.gids.includes(1)) this.global = true;
+                //if(this.resource.gids.includes(137)) this.archive_access = true;
             });
         } else {
             this.reset_sshkey();
@@ -232,7 +243,8 @@ export default {
             this.service_names = res.data.apps.map(app=>app.github);
             this.service_names = [...new Set(this.service_names)]; //debupe
             this.service_names = this.service_names.filter(name=>name && name.includes("/")); //remove odd looking service names
-            console.dir(this.service_names);
+            this.service_names.sort();
+            //console.dir(this.service_names);
         });
     },
 
@@ -243,12 +255,14 @@ export default {
         },
 
         remove() {
-            this.$http.delete(Vue.config.amaretti_api+'/resource/'+this.resource._id).then(res=>{
-                this.$router.push('/resources/');
-                this.$notify({type: 'success', text: "resource removed successfully"});
-            }).catch(err=>{
-                this.$notify({type: 'error', text: err});
-            });
+            if(confirm("Do you really want to remove this resource?")) {
+                this.$http.delete(Vue.config.amaretti_api+'/resource/'+this.resource._id).then(res=>{
+                    this.$router.push('/resources/');
+                    this.$notify({type: 'success', text: "resource removed successfully"});
+                }).catch(err=>{
+                    this.$notify({type: 'error', text: err});
+                });
+            }
         },
 
         reset_sshkey() {
@@ -259,7 +273,7 @@ export default {
                     return;
                 }
                 Vue.set(this.resource.config, 'ssh_public', forge.ssh.publicKeyToOpenSSH(keypair.publicKey));//, "pubkey comment");
-                Vue.set(this.resource.config, 'ssh_private', forge.ssh.privateKeyToOpenSSH(keypair.privateKey));
+                Vue.set(this.resource.config, 'enc_ssh_private', forge.ssh.privateKeyToOpenSSH(keypair.privateKey));
             });
         },
 
@@ -269,22 +283,30 @@ export default {
             if(this.submitting) return; //prevent double submission..
             this.submitting = true;
 
-            this.resource.gids = [];
-            if(this.global) this.resource.gids.push(1);
-            if(this.archive_access) this.resource.gids.push(137); //TODO make it confiruable
+            //this.resource.gids = [];
+            //if(this.global) this.resource.gids.push(1);
+            //if(this.archive_access) this.resource.gids.push(137); //TODO make it confiruable
+            if(this.envs_ && this.envs_.trim()) {
+                try {
+                    this.resource.envs = JSON.parse(this.envs_);
 
-            /* old key=value format
-            inst.envs = {};
-            if(inst._envs) {
-                inst._envs.split("\n").forEach(function(env) {
-                    var pos = env.indexOf("=");
-                    var key = env.substr(0, pos);
-                    if(!key) return;//skip empty keys
-                    var value = env.substr(pos+1);
-                    inst.envs[key] = value;
-                });
+                    /* old key=value format
+                        inst.envs = {};
+                        inst._envs.split("\n").forEach(function(env) {
+                            var pos = env.indexOf("=");
+                            var key = env.substr(0, pos);
+                            if(!key) return;//skip empty keys
+                            var value = env.substr(pos+1);
+                            inst.envs[key] = value;
+                        });
+                    */
+
+                } catch(err) {
+                    this.$notify({type: 'error', text: err});
+                    this.submitting = false;
+                    return;
+                }
             }
-            */
 
             if(this.resource._id) {
                 //update
@@ -297,6 +319,7 @@ export default {
                 });
             } else {
                 //create
+                delete this.resource._id;
                 this.$http.post(Vue.config.amaretti_api+'/resource', this.resource).then(res=>{
                     this.$router.push('/resource/'+res.data._id);
                 }).catch(err=>{
@@ -321,7 +344,7 @@ export default {
 
         add_service() {
             this.resource.config.services.push({
-                name: "repo/name",
+                name: "",
                 score: 10,
             });
         },

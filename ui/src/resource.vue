@@ -19,7 +19,7 @@
                             <!--<p style="opacity: 0.6">{{resource._detail.desc}}</p>-->
                             <h2>
                                 <b-badge v-if="!resource.active">Inactive</b-badge>
-                                <b-badge v-if="resource.gids.includes(1)" variant="success">Shared</b-badge>
+                                <b-badge v-if="resource.gids.length > 0" variant="success">Shared</b-badge>
                                 {{resource.name}}
                             </h2>
                             <p style="opacity: 0.6">{{resource.config.desc}}</p>
@@ -36,7 +36,7 @@
                     <b-col>
                         <div class="box">
                             <b-btn style="float: right; top: -5px; position: relative;" size="sm" @click="test" variant="success" v-if="resource._canedit && !testing" title="Test">Test</b-btn>
-                            <b-btn style="float: right; top: -5px; position: relative;" size="sm" v-if="testing" title="Test" disabled>Testing ... </b-btn>
+                            <b-btn style="float: right; top: -5px; position: relative;" size="sm" v-if="testing" title="Test" disabled><icon name="cog" :spin="true"/> Testing ... </b-btn>
                             <statustag :status="resource.status"/>
                             <span style="padding-left: 15px; opacity: 0.8;">
                                 Tested <timeago :since="resource.status_update" :auto-update="1"/>
@@ -74,14 +74,38 @@
 
                 <b-row>
                     <b-col cols="2">
-                        <span class="form-header">Login Node <small>/Workdir</small></span>
+                        <span class="form-header">Login Node (user:host)</span>
                     </b-col>
                     <b-col>
                         <p class="box">
-                            <pre>{{resource.config.username}}@{{resource.config.hostname}}:{{resource.config.workdir}}</pre>
+                            <pre>{{resource.config.username}}@{{resource.config.hostname}}</pre>
                         </p>
                     </b-col>
                 </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Workdir</span>
+                    </b-col>
+                    <b-col>
+                        <p class="box">
+                            <pre>{{resource.config.workdir}}</pre>
+                        </p>
+                    </b-col>
+                </b-row>
+
+                <b-row v-if="resource.config.io_hostname">
+                    <b-col cols="2">
+                        <span class="form-header">IO Hostname</span>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <pre class="box">{{resource.config.io_hostname}}</pre> 
+                            <small>Optional hostname used to transfer data in and out of this resource</small>
+                        </p>
+                    </b-col>
+                </b-row>
+
 
                 <b-row>
                     <b-col cols="2">
@@ -93,6 +117,19 @@
                         </p>
                     </b-col>
                 </b-row>
+
+                <b-row v-if="resource.gids.length > 0">
+                    <b-col cols="2">
+                        <span class="form-header">Groups</span>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <tags :tags="resource.gids"/><br>
+                            <small>Group ID that this resource is shared with</small>
+                        </p>
+                    </b-col>
+                </b-row>
+
 
                 <b-row>
                     <b-col cols="2">
@@ -138,6 +175,18 @@
                         </p>
                     </b-col>
                 </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Citation</span>
+                    </b-col>
+                    <b-col>
+                        <p class="box">
+                            <pre>{{resource.citation}}</pre>
+                        </p>
+                    </b-col>
+                </b-row>
+
 
                 <b-row>
                     <b-col cols="2">
