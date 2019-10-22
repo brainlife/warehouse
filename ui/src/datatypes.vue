@@ -13,7 +13,7 @@
 
         <h4 class="header-sticky"><b-container>neuro/</b-container></h4> 
         <b-container>
-            <b-card-group columns style="margin: 10px;">
+            <b-card-group columns style="margin: 15px 0px;">
                 <b-card no-body v-for="datatype in get_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
                     <datatype :datatype="datatype"/>
                 </b-card>
@@ -22,7 +22,7 @@
 
         <h4 class="header-sticky"><b-container>other</b-container></h4> 
         <b-container>
-            <b-card-group columns style="margin: 10px;">
+            <b-card-group columns style="margin: 15px 0px;">
                 <b-card no-body v-for="datatype in get_not_datatypes('neuro/')" :key="datatype._id" @click="open(datatype)" class="datatype-card">
                     <datatype :datatype="datatype"/>
                 </b-card>

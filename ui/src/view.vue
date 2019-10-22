@@ -1,15 +1,16 @@
 <template>
 <div style="height: 100%; margin: 0px; padding: 0px;">
     <div v-if="task && task.status == 'finished'" style="height: 100%;">
-        <dtiinit v-if="type == 't1pdd'" :task="task" :subdir="subdir" :datatype="datatype"></dtiinit>
-        <tractview v-else-if="type == 'tractview'" :task="task" :subdir="subdir" :datatype="datatype"></tractview>
-        <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir" :datatype="datatype"></surfaces>
-        <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir" :datatype="datatype"></lifeview>
-        <lifestats v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"></lifestats>
-        <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"></evaluator>
-        <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"></images>
-        <volumeviewer v-else-if="type == 'volumeviewer'" :uiconfig="uiconfig"></volumeviewer>
-        <nnview v-else-if="type == 'nnview'" :task="task" :subdir="subdir" :datatype="datatype"></nnview>
+        <dtiinit v-if="type == 't1pdd'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        <tractview v-else-if="type == 'tractview'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        <surfaces v-else-if="type == 'surfaces'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        <lifeview v-else-if="type == 'lifeview'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        <lifestats v-else-if="type == 'lifestats'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        <evaluator v-else-if="type == 'conneval'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        <images v-else-if="type == 'images'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        <volumeviewer v-else-if="type == 'volumeviewer'" :uiconfig="uiconfig"/>
+        <nnview v-else-if="type == 'nnview'" :task="task" :subdir="subdir" :datatype="datatype"/>
+        <prfview v-else-if="type == 'prf'" :task="task" :subdir="subdir" :datatype="datatype"/>
         
         <div v-else-if="type == 'raw'" style="padding: 10px 0px; background-color: white; height: 100%; overflow: auto;">
             <filebrowser :task="task" :path="(subdir||'')" style="margin-right: 50px;"></filebrowser>
@@ -36,6 +37,7 @@ import evaluator from '@/datauis/evaluator'
 import images from '@/datauis/images'
 import volumeviewer from '@/datauis/volumeviewer'
 import nnview from '@/datauis/nnview'
+import prfview from '@/datauis/prfview'
 
 import filebrowser from '@/components/filebrowser'
 import task from '@/components/task'
@@ -47,10 +49,7 @@ export default {
     mixins: [ wait ],
     props: [ 'taskid', 'type', 'datatype64', 'subdir' ], //deprecated - use uiconfig
     components: { 
-        dtiinit, freesurfer, tractview, 
-        lifestats, lifeview, evaluator, images, 
-        volumeviewer, filebrowser, task,
-        surfaces, nnview,
+        dtiinit, freesurfer, tractview, lifestats, lifeview, evaluator, images, volumeviewer, filebrowser, task, surfaces, nnview, prfview
     },
 
     data() {

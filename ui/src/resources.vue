@@ -14,7 +14,7 @@
         <div v-if="my_resources.length > 0">
             <h4 class="header-sticky"><b-container>My Resources</b-container></h4> 
             <b-container>
-                <b-card-group columns style="margin: 10px;">
+                <b-card-group columns style="margin: 15px 0px">
                     <b-card no-body v-for="resource in my_resources" :key="resource._id" class="resource-card" :class="{'resource-inactive': !resource.active}">
                         <resource :resource="resource"/>
                     </b-card>
@@ -24,7 +24,10 @@
 
         <h4 class="header-sticky"><b-container>Shared Resources</b-container></h4> 
         <b-container>
-            <b-card-group columns style="margin: 10px;">
+            <p>
+                <small>The following resources are shared among all Brainlife users.</small>
+            </p>
+            <b-card-group columns style="margin: 15px 0px;">
                 <b-card no-body v-for="resource in shared_resources" :key="resource._id" class="resource-card" :class="{'resource-inactive': !resource.active}">
                     <resource :resource="resource"/>
                 </b-card>

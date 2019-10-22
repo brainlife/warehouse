@@ -182,7 +182,7 @@
                     </b-col>
                     <b-col>
                         <p class="box">
-                            <pre>{{resource.citation}}</pre>
+                            {{resource.citation}}
                         </p>
                     </b-col>
                 </b-row>
