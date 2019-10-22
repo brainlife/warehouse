@@ -247,7 +247,7 @@ function handle_task(task, cb) {
                         break;
                     case "failed":
                         _set.status = "failed";
-                        _set.desc = task.status_msg;
+                        //_set.desc = task.status_msg; //user can look at archive job status instead
                         break;
                     }
                     //console.log(JSON.stringify(dataset_config, null, 4));
