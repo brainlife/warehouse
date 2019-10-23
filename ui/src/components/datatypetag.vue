@@ -35,13 +35,11 @@ export default {
         }
     },
 
-    /*
     watch: {
         datatype: function() {
-            this.init();
+            this.init(this.datatype);
         }
     },
-    */
     
     computed: {
     },

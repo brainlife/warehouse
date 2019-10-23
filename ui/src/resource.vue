@@ -19,7 +19,7 @@
                             <!--<p style="opacity: 0.6">{{resource._detail.desc}}</p>-->
                             <h2>
                                 <b-badge v-if="!resource.active">Inactive</b-badge>
-                                <b-badge v-if="resource.gids.length > 0" variant="success">Shared</b-badge>
+                                <b-badge v-if="resource.gids && resource.gids.length > 0" variant="success">Shared</b-badge>
                                 {{resource.name}}
                             </h2>
                             <p style="opacity: 0.6">{{resource.config.desc}}</p>
@@ -118,7 +118,7 @@
                     </b-col>
                 </b-row>
 
-                <b-row v-if="resource.gids.length > 0">
+                <b-row v-if="resource.gids && resource.gids.length > 0">
                     <b-col cols="2">
                         <span class="form-header">Groups</span>
                     </b-col>
@@ -269,18 +269,6 @@ export default {
             }}).then(res=>{
                 this.resource = res.data.resources[0];
                 if(!this.resource) alert("no such resource");
-
-                /*
-                if(this.resource.gids) {
-                    this.$http.get(Vue.config.auth_api+'/groups', {params: {
-                        find: JSON.stringify({
-                            id: {$in: this.resource.gids},
-                        }),
-                    }}).then(res=>{
-                        this.groups = res.data;
-                    });
-                }
-                */
             }).catch(console.error);
         },
 
