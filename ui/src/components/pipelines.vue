@@ -145,7 +145,7 @@
                             If the following output datasets are missing (and archive when finish)
                         </div>
                         <div style="margin-left: 30px;">
-                            <p v-for="output in rule.app.outputs" :key="output.id" v-if="rule.archive == undefined || rule.archive[output.id].do">
+                            <p v-for="output in rule.app.outputs" :key="output.id" v-if="rule.archive == undefined || rule.archive[output.id] == undefined || rule.archive[output.id].do">
                                 <small style="float: right; margin-right: 10px">{{output.id}}</small>
                                 <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" v-if="datatypes"/>
                                 <span class="opacity: 0.7" v-if="rule.output_tags && rule.output_tags[output.id] && rule.output_tags[output.id].length > 0">

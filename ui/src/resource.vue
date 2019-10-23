@@ -123,7 +123,7 @@
                         <span class="form-header">Groups</span>
                     </b-col>
                     <b-col>
-                        <p>
+                        <p class="box">
                             <tags :tags="resource.gids"/><br>
                             <small>Group ID that this resource is shared with</small>
                         </p>
@@ -165,7 +165,7 @@
                     </b-col>
                 </b-row>
 
-                <b-row>
+                <b-row v-if="Object.keys(resource.envs).length > 0">
                     <b-col cols="2">
                         <span class="form-header">ENVs</span>
                     </b-col>
@@ -176,7 +176,7 @@
                     </b-col>
                 </b-row>
 
-                <b-row>
+                <b-row v-if="resource.citation">
                     <b-col cols="2">
                         <span class="form-header">Citation</span>
                     </b-col>
@@ -186,7 +186,6 @@
                         </p>
                     </b-col>
                 </b-row>
-
 
                 <b-row>
                     <b-col cols="2">
