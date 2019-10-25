@@ -1,10 +1,11 @@
 <template>
-<div v-if="resource_obj" @click="open">
+<div class="resource" v-if="resource_obj" @click="open">
     <div style="float: right">
-        <b-badge v-if="!resource_obj.active">Inactive</b-badge>
         <b-badge v-if="resource_obj.status == 'ok'" variant="success">OK</b-badge>
         <b-badge v-if="resource_obj.status != 'ok'" variant="danger">{{resource_obj.status}}</b-badge>
     </div>
+    <b-badge v-if="!resource_obj.active">Inactive</b-badge>
+    <b-badge v-if="resource.gids && resource.gids.length > 0" variant="success">Shared</b-badge>
     <span>{{resource_obj.name}}</span><br>
     <span style="font-size: 80%; opacity: 0.7;">{{resource_obj.config.desc}}</span>
     <!--
@@ -48,5 +49,9 @@ export default {
 <style scoped>
 .alert {
 padding: 2px 5px;
+}
+.resource {
+height: 80px;
+overflow: hidden;
 }
 </style>

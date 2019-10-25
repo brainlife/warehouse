@@ -14,11 +14,13 @@
         <div v-if="my_resources.length > 0">
             <h4 class="header-sticky"><b-container>My Resources</b-container></h4> 
             <b-container>
-                <b-card-group columns style="margin: 15px 0px">
-                    <b-card no-body v-for="resource in my_resources" :key="resource._id" class="resource-card" :class="{'resource-inactive': !resource.active}">
+                <b-row no-gutters>
+                <b-col cols="4" v-for="resource in my_resources" :key="resource._id">
+                    <b-card no-body class="resource-card" :class="{'resource-inactive': !resource.active}">
                         <resource :resource="resource"/>
                     </b-card>
-                </b-card-group>
+                </b-col>
+                </b-row>
             </b-container>
         </div>
 
@@ -161,7 +163,9 @@ box-shadow: 0 0 1px #ccc;
 
 .resource-card {
 cursor: pointer;
-padding: 10px;
+padding: 5px;
+margin-bottom: 5px;
+margin-right: 5px;
 border: none;
 box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 transition: box-shadow 0.5s;

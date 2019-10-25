@@ -309,6 +309,26 @@ export default {
                 }
             } catch(err) {
                 alert(err);
+                this.submitting = false;
+                return;
+            }
+
+            //validate
+            let error = null;
+            this.datatype.files.forEach(file=>{
+                if(file.id.includes(".")) {
+                    error = "datatype file ID("+file.id+") must not contains .";
+                }
+                if(!file.filename && !file.dirname) {
+                    error = "please specify either filename or dirname for each files";
+                }
+                if(file.filename && file.dirname) {
+                    error = "please specify either filename or dirname for each files (not both)";
+                }
+            });
+            if(error) {
+                this.$notify({type: "error", text: error});
+                this.submitting = false;
                 return;
             }
 

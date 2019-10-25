@@ -72,7 +72,6 @@ font-size: inherit;
 .input-group-text {
 font-size: 14px;
 }
-
 legend {
 font-size: 1.1rem;
 }

@@ -732,7 +732,7 @@ font-size: 65%;
 top: -2px;
 display: inline-block;
 transition: background-color 0.3s;
-border-radius: 10%;
+/*border-radius: 10%;*/
 }
 .summary:hover {
 background-color: white;

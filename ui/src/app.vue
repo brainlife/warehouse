@@ -588,8 +588,7 @@ background-color: #ddd;
 }
 .resource {
 background-color: white;
-box-shadow: 2px 2px 3px #eee;
-margin-bottom: 10px;
+box-shadow: 2px 2px 2px #0001;
 position: relative;
 }
 .resource-status {
@@ -600,6 +599,7 @@ background-color: #ddd;
 height: 30px;
 padding: 5px 10px;
 width: 100%;
+margin-bottom: 10px;
 }
 .resource-status .score {
 float: right;

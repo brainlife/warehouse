@@ -353,13 +353,29 @@ Normally, the App description is automatically pulled from github repo descripti
                                     </b-col>
                                     <b-col v-if="input.datatype" cols="5">
                                         <b-input-group prepend="file/dir">
-                                            <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')', value: f.id }))" v-model="file.file_id" required/>
+                                            <b-form-select :options="datatypes[input.datatype].files.map(f => ({ text: f.id+' ('+(f.filename||f.dirname)+')'+(f.required?'':' - optional'), value: f.id }))" v-model="file.file_id" required/>
                                         </b-input-group>
                                     </b-col>
                                 </b-row>
                             </div>
+                            <!--
+                            <div class="file-map">
+                                <b-row v-if="input.files.length > 0">
+                                    <b-col cols="5">
+                                        <small>key used in config.json</small>
+                                    </b-col>
+                                    <b-col cols="2">
+                                    </b-col>
+                                    <b-col v-if="input.datatype" cols="5">
+                                        <small>* shows files that are always present in this datatype.</small>
+                                    </b-col>
+                                </b-row>
+                            </div>
+                            -->
+                            <div class="file-map">
+                                <b-button v-if="input.datatype" @click="add_file(idx)" size="sm">Add Optional File Mapping</b-button>
+                            </div>
                             <br>
-                            <b-button v-if="input.datatype" @click="add_file(idx)" size="sm">Add File Mapping</b-button>
                         </div>
                     </b-card>
                 </div>
@@ -756,6 +772,9 @@ export default {
                     if (!file.id) {
                         return cb("Not all file ids for input '" + input.id + "' are non-null");
                     }
+                    if(file.id.includes(".")) {
+                        return cb("config.json (for input file) must not contains .(dot)");
+                    }
                     if (config[file.id]) {
                         return cb("Duplicate config.json key '" + input.id + "' found when checking file mapping");
                     }
@@ -802,6 +821,9 @@ export default {
             for (let param of this.config_params) {
                 if (!param.id) {
                     return cb("Not all configuration parameter ids are non-null");
+                }
+                if(param.id.includes(".")) {
+                    return cb("config.json key (for configuration parameter) must not contains .(dot)");
                 }
                 if (config[param.id]) {
                     return cb("Duplicate ID '" + param.id + "' used for config.json key or input file mapping ID");
