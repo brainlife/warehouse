@@ -246,8 +246,13 @@ export default {
                         this.tasks.validation = task;
                         if(task.status == "finished") {
                             console.log("validation finished!", task)
-                            if(task.product.tags) this.tags = task.product.tags;
-                            if(task.product.datatype_tags) this.datatype_tags = task.product.datatype_tags; 
+                            if(task.product.tags) {
+                                this.tags = [... new Set(this.product.tags.concat(task.tags))];
+                            }
+
+                            if(task.product.datatype_tags) {
+                                this.datatype_tags = [... new Set(task.product.datatype_tags.concat(this.datatype_tags))];
+                            }
                         }
                     }
                 }
