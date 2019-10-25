@@ -429,8 +429,8 @@ export default {
         },
 
         back() {
-            this.$router.push('/projects');
-            //this.$router.go(-1);
+            //this.$router.push('/projects');
+            this.$router.go(-1);
         },
 
         openneuro() {

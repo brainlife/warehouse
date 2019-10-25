@@ -1,16 +1,13 @@
 <template>
 <div class="resource" v-if="resource_obj" @click="open">
-    <div style="float: right">
+    <div style="float: right; font-size: 125%; text-transform: uppercase;">
         <b-badge v-if="resource_obj.status == 'ok'" variant="success">OK</b-badge>
         <b-badge v-if="resource_obj.status != 'ok'" variant="danger">{{resource_obj.status}}</b-badge>
     </div>
-    <b-badge v-if="!resource_obj.active">Inactive</b-badge>
-    <b-badge v-if="resource.gids && resource.gids.length > 0" variant="success">Shared</b-badge>
+    <b-badge v-if="!resource_obj.active" title="This resource is manually disabled by the resource owner, or status has been non-OK for long time.">Inactive</b-badge>
+    <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="danger" title="Private resource that's not shared with anyone."><icon name="lock" scale="0.8"/></b-badge>
     <span>{{resource_obj.name}}</span><br>
     <span style="font-size: 80%; opacity: 0.7;">{{resource_obj.config.desc}}</span>
-    <!--
-    <pre v-if="resource_obj.status != 'ok'" style="font-size: 85%; color: red;">{{resource_obj.status_msg}}</pre>
-    -->
 </div>
 </template>
 

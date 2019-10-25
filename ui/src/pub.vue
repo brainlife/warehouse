@@ -4,6 +4,9 @@
     <div class="page-content">
         <div class="header">
             <b-container>
+                <div @click="back()" class="button" style="position: absolute; left: 20px; top: 8px; opacity: 0.7; z-index: 1">
+                    <icon name="angle-left" scale="2"/>
+                </div>
                 <!--
                         inspiration
                         https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/24301
@@ -305,12 +308,13 @@
                     <br>
                 </div>
 
-                <!--resource usage TODO..-->
+                <!--resource usage TODO.. let's show all resources used by the project on the detail page for now
                 <div v-for="resource in pub.project.stats.resources">
                     {{resource.name}}
                     {{resource.desc}}
                     {{resource.citation}}
                 </div>
+                -->
             </div>
 
 
@@ -518,6 +522,11 @@ export default {
     },
     
     methods: {
+        back() {
+            //this.$router.push('/apps');
+            this.$router.go(-1);
+        },
+
         view(id) {
             document.location.hash = id;
             this.$root.$emit('dataset.view', {id});
@@ -680,6 +689,12 @@ box-shadow: 2px 2px 3px #eee;
 .citation-box {
 border: none;
 box-shadow: 2px 2px 3px #eee;
+}
+.button-page {
+float: left;
+position: relative;
+left: -10px;
+z-index: 1;
 }
 </style>
 

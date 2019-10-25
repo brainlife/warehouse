@@ -19,7 +19,7 @@
                             <!--<p style="opacity: 0.6">{{resource._detail.desc}}</p>-->
                             <h2>
                                 <b-badge v-if="!resource.active">Inactive</b-badge>
-                                <b-badge v-if="resource.gids && resource.gids.length > 0" variant="success">Shared</b-badge>
+                                <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="danger" title="Private resource"><icon name="lock"/></b-badge>
                                 {{resource.name}}
                             </h2>
                             <p style="opacity: 0.6">{{resource.config.desc}}</p>
@@ -165,7 +165,7 @@
                     </b-col>
                 </b-row>
 
-                <b-row v-if="Object.keys(resource.envs).length > 0">
+                <b-row v-if="resource.envs && Object.keys(resource.envs).length > 0">
                     <b-col cols="2">
                         <span class="form-header">ENVs</span>
                     </b-col>
@@ -273,7 +273,8 @@ export default {
         },
 
         back() {
-            this.$router.push('/resources');
+            this.$router.go(-1);
+            //this.$router.push('/resources');
         },
 
         test() {
