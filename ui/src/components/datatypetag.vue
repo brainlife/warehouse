@@ -6,7 +6,6 @@
         <span v-if="tag && tag[0] == '!'" class="text-danger"><b-badge variant="danger">not</b-badge> {{tag.substring(1)}}</span>
         <span v-else>{{tag}}</span>
     </div>
-
 </div>
 </template>
 
@@ -89,6 +88,7 @@ export default {
 
         click() {
             if(this.clickable) {
+                //console.log(this.$router.history.current.path);
                 this.$router.push('/datatypes/'+this._datatype._id);
             } 
         },

@@ -422,11 +422,11 @@ export default {
         toggle_instance(instance) {
             if(this.selected != instance) {
                 //if jumping to instance below currently selected, I should adjust current scroll position
-                this.$router.push("/project/"+this.project._id+"/process/"+instance._id);
+                this.$router.replace("/project/"+this.project._id+"/process/"+instance._id);
                 this.selected = instance;
             } else {
                 //close!
-                this.$router.push("/project/"+this.project._id+"/process");
+                this.$router.replace("/project/"+this.project._id+"/process");
                 this.selected = null;
             }
 

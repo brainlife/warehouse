@@ -290,8 +290,9 @@ export default {
     methods: {
 
         cancel() {
-            if(this.datatype._id) this.$router.push('/datatypes/'+this.datatype._id);
-            else this.$router.push('/datatypes');
+            //if(this.datatype._id) this.$router.push('/datatypes/'+this.datatype._id);
+            //else this.$router.push('/datatypes');
+            this.$router.go(-1);
         },
 
         submit(evt) {
@@ -335,8 +336,8 @@ export default {
             if(this.datatype._id) {
                 //update
                 this.$http.put('datatype/'+this.datatype._id, this.datatype).then(res=>{
-                    //this.$root.$emit("refresh_jwt"); //why?
-                    this.$router.push('/datatype/'+this.datatype._id);
+                    //this.$router.replace('/datatype/'+this.datatype._id);
+                    this.$router.go(-1);
                     this.submitting = false;
                 }).catch(err=>{
                     console.error(err);
@@ -345,9 +346,10 @@ export default {
             } else {
                 //create
                 this.$http.post('datatype', this.datatype).then(res=>{
-                    //this.$root.$emit("refresh_jwt"); //why?
-                    this.$router.push('/datatype/'+res.data._id);
+                    this.$router.replace('/datatype/'+res.data._id);
+                    this.submitting = false;
                 }).catch(err=>{
+                    this.$notify({text: err.toString(), type: 'error' });
                     console.error(err);
                     this.submitting = false;
                 });

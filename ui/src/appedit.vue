@@ -917,7 +917,7 @@ export default {
         },
 
         submit(evt) {
-            console.log("submitting");
+            //console.log("submitting");
             if(this.submitting) return;
             this.submitting = true;
             this.validate(err => {
@@ -934,10 +934,11 @@ export default {
                         //update
                         this.$http.put('app/' + this.app._id, app_submitting)
                         .then(res=>{
-                            this.$router.push("/app/" + this.app._id);
+                            //this.$router.push("/app/" + this.app._id);
+                            this.$router.go(-1);
                             this.submitting = false;
                         }).catch(err=>{
-                            this.$notify({text: err.body.message, type: 'error' });
+                            this.$notify({text: err.toString(), type: 'error' });
                             console.error(err);
                             this.submitting = false;
                         });
@@ -945,10 +946,10 @@ export default {
                         //new
                         this.$http.post('app', app_submitting)
                         .then(res => {
-                            this.$router.push("/app/" + res.data._id);
+                            this.$router.replace("/app/" + res.data._id);
                             this.submitting = false;
                         }).catch(err=>{
-                            this.$notify({text: err.body.message, type: 'error' });
+                            this.$notify({text: err.toString(), type: 'error' });
                             console.error(err);
                             this.submitting = false;
                         });

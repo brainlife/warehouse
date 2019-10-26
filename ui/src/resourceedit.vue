@@ -250,14 +250,16 @@ export default {
 
     methods: {
         cancel() {
-            if(this.resource._id) this.$router.push('/resource/'+this.resource._id);
-            else this.$router.push('/resources');
+            //if(this.resource._id) this.$router.push('/resource/'+this.resource._id);
+            //else this.$router.push('/resources');
+            this.$router.go(-1);
         },
 
         remove() {
             if(confirm("Do you really want to remove this resource?")) {
                 this.$http.delete(Vue.config.amaretti_api+'/resource/'+this.resource._id).then(res=>{
-                    this.$router.push('/resources/');
+                    //this.$router.push('/resources/');
+                    this.$router.go(-2); //go all the way back to resources page
                     this.$notify({type: 'success', text: "resource removed successfully"});
                 }).catch(err=>{
                     this.$notify({type: 'error', text: err});
@@ -278,7 +280,7 @@ export default {
         },
 
         submit(evt) {
-            evt.preventDefault();
+            evt.preventDefault(); //TODO do I need this?
 
             if(this.submitting) return; //prevent double submission..
             this.submitting = true;
@@ -311,9 +313,11 @@ export default {
             if(this.resource._id) {
                 //update
                 this.$http.put(Vue.config.amaretti_api+'/resource/'+this.resource._id, this.resource).then(res=>{
-                    this.$router.push('/resource/'+this.resource._id);
+                    //this.$router.push('/resource/'+this.resource._id);
+                    this.$router.go(-1);
                     this.submitting = false;
                 }).catch(err=>{
+                    this.$notify({text: err.toString(), type: 'error' });
                     console.error(err);
                     this.submitting = false;
                 });
@@ -321,26 +325,15 @@ export default {
                 //create
                 delete this.resource._id;
                 this.$http.post(Vue.config.amaretti_api+'/resource', this.resource).then(res=>{
-                    this.$router.push('/resource/'+res.data._id);
+                    this.$router.replace('/resource/'+res.data._id);
+                    this.submitting = false;
                 }).catch(err=>{
+                    this.$notify({text: err.toString(), type: 'error' });
                     console.error(err);
                     this.submitting = false;
                 });
             }
         },
-
-        /*
-        add_tag() {
-            this.datatype.datatype_tags.push({
-                datatype_tag: "",
-                desc: "",
-            });
-        },
-        remove_tag(tag) {
-            let pos = this.datatype.datatype_tags.indexOf(tag);
-            this.datatype.datatype_tags.splice(pos, 1);
-        },
-        */
 
         add_service() {
             this.resource.config.services.push({

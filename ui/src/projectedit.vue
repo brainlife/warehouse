@@ -202,8 +202,9 @@ export default {
     methods: {
 
         cancel() {
-            if(this.project._id) this.$router.push('/project/'+this.project._id);
-            else this.$router.push('/project');
+            //if(this.project._id) this.$router.push('/project/'+this.project._id);
+            //else this.$router.push('/project');
+            this.$router.go(-1);
         },
 
         remove_agreement(idx) {
@@ -219,9 +220,11 @@ export default {
                 //update
                 this.$http.put('project/'+this.project._id, this.project).then(res=>{
                     this.$root.$emit("refresh_jwt");
-                    this.$router.push('/project/'+this.project._id);
+                    //this.$router.push('/project/'+this.project._id);
+                    this.$router.go(-1);
                     this.submitting = false;
                 }).catch(err=>{
+                    this.$notify({text: err.toString(), type: 'error' });
                     console.error(err);
                     this.submitting = false;
                 });
@@ -229,8 +232,10 @@ export default {
                 //create
                 this.$http.post('project', this.project).then(res=>{
                     this.$root.$emit("refresh_jwt");
-                    this.$router.push('/project/'+res.data._id);
+                    this.$router.replace("/project/" + res.data._id);
+                    this.submitting = false;
                 }).catch(err=>{
+                    this.$notify({text: err.toString(), type: 'error' });
                     console.error(err);
                     this.submitting = false;
                 });

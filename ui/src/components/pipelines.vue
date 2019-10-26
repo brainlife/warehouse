@@ -429,7 +429,7 @@ export default {
 
         edit(rule) {
             if(rule.active) return alert("Please stop the rule before editing it");
-            this.$router.push("/project/"+this.project._id+"/pipeline/"+rule._id);
+            this.$router.replace("/project/"+this.project._id+"/pipeline/"+rule._id);
             this.$refs.scrolled.scrollTop = 0;
             this.editing = rule;
             this.selected = rule; //I think it makes sense to select rule that user is editing?
@@ -454,7 +454,8 @@ export default {
 
         cancel_edit() {
             this.editing = null;
-            this.$router.push("/project/"+this.project._id+"/pipeline");
+            this.$router.replace("/project/"+this.project._id+"/pipeline");
+            //this.$router.go(-1);
             Vue.nextTick(()=>{
                 //scroll to the selected rule (TODO - I think I should delay until animation is over?)
                 if(this.selected) {

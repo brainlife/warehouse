@@ -159,7 +159,7 @@ export default {
                     for(var k in pub) {
                         this.editing[k] = res.data[k]; //will load release._id
                     }
-                    this.$router.push('/project/'+this.project._id+'/pub/');
+                    this.$router.replace('/project/'+this.project._id+'/pub/');
                     this.editing = null;
                     this.$notify("Successfully updated!");
                 }).catch(res=>{
@@ -183,14 +183,14 @@ export default {
 
         edit(pub) {
             //if(this.ismember() || this.isadmin()) {
-            this.$router.push("/project/"+this.project._id+"/pub/"+pub._id);
+            this.$router.replace("/project/"+this.project._id+"/pub/"+pub._id);
             this.editing = pub;
             //} 
         },
 
         cancel() {
             //console.log("cancel");
-            this.$router.push("/project/"+this.project._id+"/pub/");
+            this.$router.replace("/project/"+this.project._id+"/pub/");
             this.editing = false;
         },
     },
