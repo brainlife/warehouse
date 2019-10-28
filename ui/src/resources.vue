@@ -95,7 +95,10 @@ export default {
             status: {$ne: "removed"},
             //active: true,
         });
-        this.$http.get(Vue.config.amaretti_api+'/resource', {params: {find, select: 'resource_id config.desc name citation status status_msg lastok_date active gids'}}).then(res=>{
+        this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
+            find, 
+            select: 'resource_id config.desc config.maxtask name citation status status_msg lastok_date active gids stats'
+        }}).then(res=>{
             this.resources = res.data.resources;
         }).catch(console.error);
     },
