@@ -21,7 +21,7 @@
         </b-tab>
         <b-tab v-for="(p, $idx) in images" :title="p.name||$idx" :key="$idx">
             <p v-if="p.desc"><small>{{p.desc}}</small></p>
-            <img v-if="p.type == 'image/png'" :src="'data:'+p.type+';base64, '+p.base64" width="50%"/>
+            <img v-if="p.type.includes('image/')" :src="'data:'+p.type+';base64, '+p.base64" width="50%"/>
         </b-tab>
     </b-tabs>
 </div>
