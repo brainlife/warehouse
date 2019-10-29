@@ -509,7 +509,7 @@ export default {
 
         open(dataset_id) {
             this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);
-            this.$root.$emit('dataset.view', {id: dataset_id,  back: './'});
+            this.$root.$emit('dataset.view', {id: dataset_id});
         },
 
         check(dataset, event) {
@@ -693,7 +693,7 @@ export default {
                 dataset_ids,
             }).then(res=>{
                 this.clear_selected();
-                this.$router.push("/project/"+project_id+"/process/"+instance._id);
+                this.$router.replace("/project/"+project_id+"/process/"+instance._id);
             });
          }
     },

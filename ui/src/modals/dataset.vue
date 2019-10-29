@@ -271,7 +271,7 @@ export default {
 
             selfurl: document.location.href,
 
-            back: null, //route to push to when user close it
+            //back: null, //route to push to when user close it
             
             alltags: null,
             config: Vue.config,
@@ -281,7 +281,7 @@ export default {
     created() {
         console.log("modal/dataset listening to dataset.view event");
         this.$root.$on("dataset.view", opt=>{
-            this.back = opt.back;
+            //this.back = opt.back;
             this.load(opt.id);
         });
 
@@ -402,18 +402,18 @@ export default {
                             e.nodes.forEach(node=>{
                                 if(node.startsWith("dataset.")) {
                                     let dataset_id = node.substring(8);
-                                    this.$router.push(this.$route.path.replace(this.dataset._id, dataset_id));
+                                    this.$router.replace(this.$route.path.replace(this.dataset._id, dataset_id));
                                 }
                                 if(node.startsWith("task.")) {
                                     let fullnode = this.prov.nodes.find(n=>n.id == node);
                                     console.dir(fullnode);
-                                    if(fullnode._app) this.$router.push("/app/"+fullnode._app);
+                                    if(fullnode._app) this.$router.replace("/app/"+fullnode._app);
                                 }
                             });
                             e.edges.forEach(edge_id=>{
                                 let edge = this.prov.edges.find(e=>e.id == edge_id);
                                 if(edge._archived_dataset_id) {
-                                    this.$router.push(this.$route.path.replace(this.dataset._id, edge._archived_dataset_id)); 
+                                    this.$router.replace(this.$route.path.replace(this.dataset._id, edge._archived_dataset_id)); 
                                 }
                             });
                         });
@@ -440,18 +440,18 @@ export default {
 
         close() {
             if(!this.dataset) return;
-            this.$router.push(this.$route.path.replace(this.dataset._id, ""));
+            this.$router.replace(this.$route.path.replace(this.dataset._id, ""));
             this.dataset = null;
         },
 
         openpub(pub) {
-            this.$router.push('/pub/'+pub._id);
+            this.$router.replace('/pub/'+pub._id);
             this.dataset = null;
         },
 
         openapp(app_id) {
             if(!this.dataset) return;
-            this.$router.push('/app/'+app_id);
+            this.$router.replace('/app/'+app_id);
             this.dataset = null;
         },
 
@@ -526,7 +526,7 @@ export default {
                     instance_id: instance._id,
                     dataset_ids: [ this.dataset._id ],
                 }).then(res=>{
-                    this.$router.push("/project/"+project_id+"/process/"+instance._id);
+                    this.$router.replace("/project/"+project_id+"/process/"+instance._id);
                     this.dataset = null;
                 });
             });
