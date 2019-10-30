@@ -9,7 +9,7 @@
     <span>{{resource_obj.name}}</span><br>
     <span style="font-size: 80%; opacity: 0.7;">{{resource_obj.config.desc}}</span>
     <svg viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg" class="svg">
-        <path :d="update_path" fill="none" stroke="grey" />
+        <path :d="usage_path" fill="none" stroke="grey" />
     </svg>
 </div>
 </template>

@@ -130,7 +130,6 @@
                     </b-col>
                 </b-row>
 
-
                 <b-row>
                     <b-col cols="2">
                         <span class="form-header">Apps</span>
@@ -189,6 +188,18 @@
 
                 <b-row>
                     <b-col cols="2">
+                        <span class="form-header">Running Task</span>
+                    </b-col>
+                    <b-col>
+                        <p class="box">
+                            {{tasks}}
+                        </p>
+                    </b-col>
+                </b-row>
+
+
+                <b-row>
+                    <b-col cols="2">
                     </b-col>
                     <b-col>
                         <p>
@@ -232,6 +243,7 @@ export default {
         return {
             resource: null, 
             //groups: null,
+            tasks: [], //currently running tasks
 
             testing: false,
             config: Vue.config,
@@ -269,6 +281,10 @@ export default {
             }}).then(res=>{
                 this.resource = res.data.resources[0];
                 if(!this.resource) alert("no such resource");
+            }).catch(console.error);
+
+            this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
+                this.tasks = res.data;
             }).catch(console.error);
         },
 
