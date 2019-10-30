@@ -50,6 +50,77 @@
                     </b-col>
                 </b-row>
 
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Running Tasks</span>
+                    </b-col>
+                    <b-col>
+                        <div v-for="task in tasks" :key="task._id" class="box" style="margin-bottom: 1px">
+                        <b-row>
+                            <b-col cols="3">
+                                <small>{{task.service}}</small> <b-badge>{{task.service_branch}}</b-badge>
+                            </b-col>
+                            <b-col>
+                                <statusicon :status="task.status"/> <span style="text-transform: uppercase;">{{task.status}}</span><br>
+                                <small>{{task.status_msg}}</small>
+                            </b-col>
+                            <b-col>
+                                <contact :id="task.user_id"/>
+                                project:{{task._group_id}}
+                            </b-col>
+                        </b-row>
+                        </div>
+                        <p v-if="tasks.length ==0">No tasks running on this resource.</p>
+                        <br>
+                    </b-col>
+                </b-row>
+
+                <b-row>
+                    <b-col cols="2">
+                        <span class="form-header">Apps</span>
+                    </b-col>
+                    <b-col>
+                        <p>
+                            <small>The following services are enabled to run on this resource</small>
+                        </p>
+                        <div class="box">
+                            <b-row style="opacity: 0.5; margin-bottom: 5px;">
+                                <b-col>
+                                    <b>org/repo</b>
+                                </b-col>
+                                <b-col>
+                                    <b>score</b>
+                                </b-col>
+                                <b-col>
+                                    <b># of request</b>
+                                </b-col>
+                                <b-col>
+                                    <b>Success Rate</b>
+                                </b-col>
+                            </b-row>
+                            <b-row v-for="service in resource.config.services" :key="service.name" style="border-top: 1px solid #eee; padding: 2px 0px">
+                                <b-col>
+                                    {{service.name}}
+                                </b-col>
+                                <b-col>
+                                    {{service.score}}
+                                </b-col>
+                                <b-col>
+                                    <div v-if="resource.stats.services && resource.stats.services[service.name]">
+                                        {{resource.stats.services[service.name].requested}}
+                                    </div>
+                                </b-col>
+                                <b-col>
+                                    <div v-if="resource.stats.services && resource.stats.services[service.name]">
+                                        <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}"/>
+                                    </div>
+                                </b-col>
+                            </b-row>
+                        </div>
+                        <br>
+                    </b-col>
+                </b-row>
+
                 <!--
                 <b-row v-if="groups && groups.length > 0">
                     <b-col cols="2">
@@ -123,8 +194,10 @@
                         <span class="form-header">Groups</span>
                     </b-col>
                     <b-col>
-                        <p class="box">
+                        <div class="box">
                             <tags :tags="resource.gids"/><br>
+                        </div>
+                        <p>
                             <small>Group ID that this resource is shared with</small>
                         </p>
                     </b-col>
@@ -132,38 +205,14 @@
 
                 <b-row>
                     <b-col cols="2">
-                        <span class="form-header">Apps</span>
+                        <span class="form-header">Max Task</span>
                     </b-col>
                     <b-col>
-                        <p>
-                            <small>The following services are enabled by the owner to run on this resource</small>
-                        </p>
                         <p style="opacity: 0.6;">
-                           Up to <b>{{resource.config.maxtask}}</b> tasks will be submitted on this resource
+                           Up to <b>{{resource.config.maxtask}}</b> concurrent tasks will be submitted on this resource
                         </p>
-                        <br>
-                        <div class="box">
-                            <b-row style="opacity: 0.5; margin-bottom: 5px;">
-                                <b-col>
-                                    <b>org/repo</b>
-                                </b-col>
-                                <b-col>
-                                    <b>score</b>
-                                </b-col>
-                            </b-row>
-                            <b-row v-for="service in resource.config.services" :key="service.name" style="border-top: 1px solid #eee; padding: 2px 0px">
-                                <b-col>
-                                    {{service.name}}
-                                </b-col>
-                                <b-col>
-                                    {{service.score}}
-                                </b-col>
-                            </b-row>
-                        </div>
-                        <br>
                     </b-col>
                 </b-row>
-
                 <b-row v-if="resource.envs && Object.keys(resource.envs).length > 0">
                     <b-col cols="2">
                         <span class="form-header">ENVs</span>
@@ -180,28 +229,16 @@
                         <span class="form-header">Citation</span>
                     </b-col>
                     <b-col>
-                        <p class="box">
-                            {{resource.citation}}
+                        <p class="box" style="opacity: 0.8;">
+                            <i>{{resource.citation}}</i>
                         </p>
                     </b-col>
                 </b-row>
-
-                <b-row>
-                    <b-col cols="2">
-                        <span class="form-header">Running Task</span>
-                    </b-col>
-                    <b-col>
-                        <p class="box">
-                            {{tasks}}
-                        </p>
-                    </b-col>
-                </b-row>
-
-
                 <b-row>
                     <b-col cols="2">
                     </b-col>
                     <b-col>
+                        <hr>
                         <p>
                             <icon name="calendar"/> Created on {{new Date(resource.create_date).toLocaleDateString()}}
                         </p>
@@ -233,10 +270,12 @@ import contact from '@/components/contact'
 import app from '@/components/app'
 import tags from '@/components/tags'
 import statustag from '@/components/statustag'
+import statusicon from '@/components/statusicon'
+import stateprogress from '@/components/stateprogress'
 
 export default {
     components: { 
-        sidemenu, pageheader, app, contact, tags, statustag,
+        sidemenu, pageheader, app, contact, tags, statustag, statusicon, stateprogress,
     },
 
     data () {

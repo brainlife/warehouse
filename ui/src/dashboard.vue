@@ -13,11 +13,11 @@
                 <img :src="avatar_url(user, 50)" style="float: left; padding-right: 15px;">
                 <p>
                     <b>{{user.fullname}}</b><br>
-                    <span>{{user._profile.institution}}</span>
+                    <span v-if="user._profile">{{user._profile.institution}}</span>
                     <small v-if="user.email" >{{user.email}}</small>
                 </p>
                 <div slot="footer" v-if="user._profile && user._profile.bio">
-                    <small class="text-muted">{{user._profile.bio}}</small>
+                    <small v-if="" class="text-muted">{{user._profile.bio}}</small>
                 </div>
             </b-card>
         </b-card-group>

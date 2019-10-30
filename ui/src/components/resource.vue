@@ -90,7 +90,7 @@ export default {
             console.dir(raw_points);
             console.dir(points);
 
-            const smoothing = 0; //smoothing causes graph to dip below 0 when 0 goes to 1
+            const smoothing = 0.1; //smoothing causes graph to dip below 0 when 0 goes to 1
 
             // Properties of a line 
             // I:  - pointA (array) [x,y]: coordinates
@@ -151,7 +151,7 @@ export default {
                     return acc+' '+ bezierCommand(point, i, a);
                 }
             }, '')
-            console.log(d);
+            //console.log(d);
             return d;
         },
     },
