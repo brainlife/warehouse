@@ -1,5 +1,8 @@
 <template>
 <div>
+    <!--inspiration
+        https://dribbble.com/shots/1262299-Spear/attachments/172826
+    -->
     <sidemenu active="/dashboard"></sidemenu>
     <div class="page-content">
         <h5>New Members</h5>

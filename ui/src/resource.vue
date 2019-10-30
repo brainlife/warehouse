@@ -138,6 +138,10 @@
                         <p>
                             <small>The following services are enabled by the owner to run on this resource</small>
                         </p>
+                        <p style="opacity: 0.6;">
+                           Up to <b>{{resource.config.maxtask}}</b> tasks will be submitted on this resource
+                        </p>
+                        <br>
                         <div class="box">
                             <b-row style="opacity: 0.5; margin-bottom: 5px;">
                                 <b-col>
@@ -156,10 +160,6 @@
                                 </b-col>
                             </b-row>
                         </div>
-                        <br>
-                        <p style="opacity: 0.6;">
-                           Up to <b>{{resource.config.maxtask}}</b> tasks will be submitted on this resource
-                        </p>
                         <br>
                     </b-col>
                 </b-row>

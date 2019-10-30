@@ -159,7 +159,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                     </b-form-checkbox>
                                 </b-form-group>
 
-                                <b-form-group v-if="param.optional || param.default">
+                                <b-form-group v-if="param.optional || param.default !== ''">
                                     <b-form-checkbox v-model="param.advanced">Advanced Option<br>
                                         <small class="text-muted">Show this option under <b>advanced</b> configuration section.</small>
                                     </b-form-checkbox>
@@ -201,10 +201,15 @@ Normally, the App description is automatically pulled from github repo descripti
                                     <b-form-checkbox v-model="param.readonly">Read Only 
                                     <br><small class="text-muted">Value will be fixed to the default value and user can not change it</small></b-form-checkbox>
                                 </b-form-group>
+                                <b-form-group>
+                                    <b-form-checkbox v-model="param.advanced">Advanced Option<br>
+                                        <small class="text-muted">Show this option under <b>advanced</b> configuration section.</small>
+                                    </b-form-checkbox>
+                                </b-form-group>
                             </b-col>
                             <b-col sm="7">
                                 <div class="text-muted">Description</div>
-                                <b-form-input type="text" v-model="param.desc"></b-form-input>
+                                <b-form-textarea v-model="param.desc" :rows="4"/>
                             </b-col>
                         </b-row>
                         <div v-else-if="param.type == 'enum'">
@@ -228,7 +233,7 @@ Normally, the App description is automatically pulled from github repo descripti
                                         <b-form-checkbox v-model="param.optional">Optional Configuration<br>
                                         <small class="text-muted">Check this if user should be able to submit your app without this parameter set</small></b-form-checkbox>
                                     </b-form-group>
-                                    <b-form-group v-if="param.optional || param.default">
+                                    <b-form-group v-if="param.optional || param.default !== ''">
                                         <b-form-checkbox v-model="param.advanced">Advanced Option<br>
                                             <small class="text-muted">Show this option under <b>advanced</b> configuration section.</small>
                                         </b-form-checkbox>
