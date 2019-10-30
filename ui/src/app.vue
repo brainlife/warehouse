@@ -182,7 +182,7 @@
                                             <small>{{resource.config.desc}}</small>
                                         </p>
                                         -->
-                                        <resource :resource="resource" style="padding: 10px;"/>
+                                        <resource :resource="resource" style="0px 0px 3px #0002;"/>
 
                                         <div v-if="resource.status != 'ok'" class="resource-status bg-danger">
                                             <icon name="exclamation" style="position: relative; top: -3px;"/>

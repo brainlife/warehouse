@@ -166,7 +166,6 @@ box-shadow: 0 0 1px #ccc;
 
 .resource-card {
 cursor: pointer;
-padding: 5px;
 margin-bottom: 5px;
 margin-right: 5px;
 border: none;
