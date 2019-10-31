@@ -140,7 +140,7 @@
                                 </p>
                             </b-col>
                         </b-row>
-                        <b-row v-if="config.user">
+                        <b-row>
                             <b-col cols="3"><span class="form-header">Archived by</span></b-col>
                             <b-col>
                                 <p>

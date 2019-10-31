@@ -58,6 +58,7 @@
                     src="https://www.youtube.com/embed/u9Qlh0-iaAk" frameborder="0" 
                     allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
+
             <!--show list-->
             <div v-if="instances.length > 0">
                 <div v-for="instance in sorted_and_filtered_instances" :key="instance._id" :id="instance._id" v-if="instance.config && !instance.config.removing">
@@ -114,13 +115,10 @@ import Vue from 'vue'
 
 import 'perfect-scrollbar/css/perfect-scrollbar.css'
 import PerfectScrollbar from 'perfect-scrollbar'
-
 import statusicon from '@/components/statusicon'
 import contact from '@/components/contact'
 import process from '@/components/process'
-
 import agreementMixin from '@/mixins/agreement'
-
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 
 var debounce;
@@ -254,9 +252,11 @@ export default {
     },
 
     watch: {
-        project: function() {
-            this.load();
+        /* I don't think we need this anymore?
+        project: function(nv, ov) {
+            if(nv && nv._id != ov._id) this.load();
         },
+        */
 
         order: function() {
             let group_id = this.project.group_id;
@@ -306,10 +306,11 @@ export default {
                 this.$http.put(Vue.config.wf_api+'/instance/'+this.selected._id, this.selected).then(res=>{
                     this.$notify({ text: 'Updated description', type: 'success' });
                 });
-            }, 500);
+            }, 1000);
         },
 
         load() {
+            console.log("load................................................................");
             this.check_agreements(this.project, ()=>{
                 let group_id = this.project.group_id;
                 this.order = window.localStorage.getItem("processes.order."+group_id)||"create_date";
@@ -477,6 +478,7 @@ export default {
                 this.instances = [];
                 return; //can't load for non-group project..
             }
+
             //console.log("loading instances for group", this.project.group_id);
             this.$http.get(Vue.config.wf_api+'/instance', {params: {
                 find: JSON.stringify({
@@ -487,12 +489,9 @@ export default {
                 }),
                 limit: 3000,
             }}).then(res=>{
-                //debug.. 
                 this.instances = res.data.instances;
                 this.$nextTick(()=>{
                     ps = new PerfectScrollbar(this.$refs["instances-list"]);
-                    //console.log("init_splitter...........");
-                    //console.dir(this);
                     this.init_splitter();
                 });
 

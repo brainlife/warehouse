@@ -43,7 +43,7 @@
                 <div v-for="(input, idx) in task.config._inputs" :key="idx" class="input">
                     <b v-if="input.meta && input.meta.subject">{{input.meta.subject}}</b>
                     <div style="display: inline-block;" v-if="find_task(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
-                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
+                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
                         <span style="opacity: 0.5;">
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                             <statusicon v-if="find_task(input.task_id).status != 'finished'" :status="find_task(input.task_id).status"/>
@@ -54,7 +54,7 @@
                     </div>
                     <div v-else style="display: inline-block;">
                         <small v-if="input.meta && input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
-                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags"/>
+                        <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
                         <span style="opacity: 0.5;">
                             <small v-for="(tag,idx) in input.tags" :key="idx"> | {{tag}} </small>
                         </span>
@@ -83,7 +83,7 @@
 
                     <b v-if="output.meta && output.meta.subject">{{output.meta.subject}}</b>
                     <small v-if="output.meta && output.meta.session" style="opacity: 0.8"> / {{output.meta.session}}</small>
-                    <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags"/>
+                    <datatypetag :datatype="datatypes[output.datatype]" :tags="output.datatype_tags" :clickable="false"/>
                     <mute>
                         <small v-for="(tag,idx) in output.tags" :key="idx"> | {{tag}}</small>
                     </mute>

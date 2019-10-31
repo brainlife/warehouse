@@ -57,16 +57,16 @@
                     <b-col>
                         <div v-for="task in tasks" :key="task._id" class="box" style="margin-bottom: 1px">
                         <b-row>
-                            <b-col cols="3">
-                                <small>{{task.service}}</small> <b-badge>{{task.service_branch}}</b-badge>
+                            <b-col cols="4">
+                                <contact :id="task.user_id" size="small"/>
+                                <small><icon name="shield-alt"/> {{task._group_id}}</small><br>
                             </b-col>
                             <b-col>
-                                <statusicon :status="task.status"/> <span style="text-transform: uppercase;">{{task.status}}</span><br>
+                                <small style="float: right;"><time>Started <timeago :since="task.start_date" :auto-update="1"/></time></small>
+                                <statusicon :status="task.status"/> <span style="text-transform: uppercase;">{{task.status}}</span>
+                                {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
                                 <small>{{task.status_msg}}</small>
-                            </b-col>
-                            <b-col>
-                                <contact :id="task.user_id"/>
-                                project:{{task._group_id}}
+                                <small style="font-size: 70%">{{task._id}}</small>
                             </b-col>
                         </b-row>
                         </div>
@@ -84,35 +84,25 @@
                             <small>The following services are enabled to run on this resource</small>
                         </p>
                         <div class="box">
-                            <b-row style="opacity: 0.5; margin-bottom: 5px;">
+                            <b-row style="opacity: 0.5; margin-bottom: 5px; text-transform: uppercase;">
                                 <b-col>
                                     <b>org/repo</b>
-                                </b-col>
-                                <b-col>
-                                    <b>score</b>
-                                </b-col>
-                                <b-col>
-                                    <b># of request</b>
+                                    <b style="float: right;">Score</b>
                                 </b-col>
                                 <b-col>
                                     <b>Success Rate</b>
+                                    <b style="float: right;">Requests</b>
                                 </b-col>
                             </b-row>
                             <b-row v-for="service in resource.config.services" :key="service.name" style="border-top: 1px solid #eee; padding: 2px 0px">
                                 <b-col>
                                     {{service.name}}
+                                    <span style="float: right">{{service.score}}</span>
                                 </b-col>
                                 <b-col>
-                                    {{service.score}}
-                                </b-col>
-                                <b-col>
-                                    <div v-if="resource.stats.services && resource.stats.services[service.name]">
-                                        {{resource.stats.services[service.name].requested}}
-                                    </div>
-                                </b-col>
-                                <b-col>
-                                    <div v-if="resource.stats.services && resource.stats.services[service.name]">
-                                        <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}"/>
+                                    <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
+                                        <span style="float: right">{{resource.stats.services[service.name].running}}</span>
+                                        <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
                                     </div>
                                 </b-col>
                             </b-row>
@@ -290,20 +280,6 @@ export default {
     },
 
     computed: {
-        /*
-        input_apps() {
-            if(!this.apps) return [];
-            return this.apps.filter(a=>{
-                return a.inputs.find(it=>it.datatype._id == this.datatype._id);
-            });
-        },
-        output_apps() {
-            if(!this.apps) return [];
-            return this.apps.filter(a=>{
-                return a.outputs.find(it=>it.datatype._id == this.datatype._id);
-            });
-        },
-        */
     },
 
     mounted() {
@@ -320,6 +296,11 @@ export default {
             }}).then(res=>{
                 this.resource = res.data.resources[0];
                 if(!this.resource) alert("no such resource");
+                this.resource.config.services.sort((a,b)=>{
+                    if(a.name < b.name) return -1;
+                    if(a.name > b.name) return 1;
+                    return 0;
+                });
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{

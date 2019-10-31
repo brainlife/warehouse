@@ -92,23 +92,8 @@ export default {
 
     methods: {
         avatar_url: lib.avatar_url,
-        /*
-        gurl(size) {
-            var email = this.profile.email;
-            if(this.profile.email) {
-                return "//www.gravatar.com/avatar/"+md5(this.profile.email)+"?s="+size;  
-            } else {
-                //generate avatar for user who doesn't have email set..
-                //return "//eightbitavatar.herokuapp.com/?id="+this.id+"&s=male&size=20";
-                //return "//www.gravatar.com/avatar/"+md5(this.fullname)+"?d=robohash&s=20";
-                //return "https://api.adorable.io/avatars/20/"+this.fullname.replace(" ", "")+".png";
-                var key = (this.fullname||this.email||this.id);
-                return "https://api.adorable.io/avatars/"+size+"/"+key+".png";
-            }
-        },
-        */
         loadprofile() {
-            if(!Vue.config.user) return; //TODO what is this?
+            //if(!Vue.config.user) return; //TODO what is this?
             this.authprofilecache(this.id, (err, profile)=>{
                 this.profile = profile;
                 this.profilecache(this.id, (err, public_profile)=>{

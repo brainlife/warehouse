@@ -1,6 +1,6 @@
 <template>
 <div class="resource" v-if="resource_obj" @click="open">
-    <div style="height: 150px; position: absolute">
+    <div style="height: 150px; position: absolute; width: 100%; z-index: 1;">
         <div class="resource-tags">
             <b-badge v-if="resource_obj.status == 'ok'" variant="success">OK</b-badge>
             <b-badge v-if="resource_obj.status != 'ok'" variant="danger">{{resource_obj.status}}</b-badge>
@@ -9,7 +9,7 @@
             <b-badge v-if="!resource_obj.active" title="This resource is manually disabled by the resource owner, or status has been non-OK for long time.">Inactive</b-badge>
             <b-badge v-if="!resource.gids || resource.gids.length == 0" variant="danger" title="Private resource that's not shared with anyone."><icon name="lock" scale="0.8"/></b-badge>
             <span>{{resource_obj.name}}</span><br>
-            <span style="font-size: 80%; opacity: 0.7;">{{resource_obj.config.desc}}</span>
+            <span style="font-size: 80%; opacity: 0.8;">{{resource_obj.config.desc}}</span>
         </div>
     </div>
     <div style="bottom: 10px; position: absolute; left: 10px;">
@@ -20,12 +20,12 @@
         <b style="margin-bottom: 0px;">{{running}}</b><br>
         <small style="opacity: 0.5; text-transform: uppercase;">running</small>
     </div>
-    <svg viewBox="0 0 200 100" style="position: absolute; bottom: 0px;">
+    <svg viewBox="0 0 200 100" style="position: absolute; bottom: 0px; height: 150px; width: 100%;">
         <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#2693ff;stop-opacity:0.6" />
-          <stop offset="100%" style="stop-color:#2693ff;stop-opacity:0" />
+          <stop offset="0%" style="stop-color:#555;stop-opacity:0.8" />
+          <stop offset="80%" style="stop-color:#ddd;stop-opacity:0.2" />
         </linearGradient>
-        <path :d="usage_path" fill="url(#grad1)" stroke="#2693ff" stroke-width="0.5"/>
+        <path :d="usage_path" fill="url(#grad1)" stroke="#ccc" stroke-width="0.5"/>
     </svg>
 </div>
 </template>
@@ -83,7 +83,8 @@ export default {
             raw_points.forEach(point=>{
                 let t = point[0] - min_time;
                 t = t / range_time * 200; 
-                let v = point[1];// + Math.random();
+                let v = point[1];
+                if(Vue.config.debug) v += Math.random()*4;
                 v = 99 - v / max_value * 100; //don't let graph touch top and bottom..
                 points.push([t,v]);
             });

@@ -291,17 +291,7 @@ export default {
             });
         },
 
-        /*
-        edit_desc() {
-            this.editing_desc = this.task.desc||"";
-            this.$nextTick(()=>{
-                this.$refs.desc_editor.focus();
-            });
-        },
-        */
-
         update_desc() {
-            console.log(this.task.desc);
             this.$http.put(Vue.config.wf_api+'/task/'+this.task._id, {desc: this.task.desc})
             .then(res=>{
                 this.$notify({text: "Note successfully updated", type: 'success'});

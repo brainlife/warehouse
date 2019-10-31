@@ -12,6 +12,7 @@ export default {
                 let where = JSON.stringify({sub: id});
                 return this.$http.get(Vue.config.auth_api+'/profile?where='+where);
             }, (err, res)=>{
+                if(err) return cb(err);
                 cb(null, res.data.profiles[0]);
             });
         },  

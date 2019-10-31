@@ -210,14 +210,12 @@
 
                         <b-row>
                             <b-col>
-                                <div v-if="config.user">
-                                    <span class="form-header">Maintaners</span>
-                                    <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
-                                    <p v-for="c in app.admins" :key="c._id">
-                                        <contact :id="c"/>
-                                    </p>
-                                    <br>
-                                </div>
+                                <span class="form-header">Maintaners</span>
+                                <p style="height: 30px;"><small class="text-muted">List of users who currently maintains this App.</small></p>
+                                <p v-for="c in app.admins" :key="c._id">
+                                    <contact :id="c"/>
+                                </p>
+                                <br>
                             </b-col>
                             <b-col>
                                 <div v-if="app.contributors.length > 0">

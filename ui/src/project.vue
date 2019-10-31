@@ -126,30 +126,26 @@
 
                         <b-row>
                             <b-col>
-                                <div v-if="config.user">
-                                    <span class="form-header">Admins</span>
-                                    <p style="height: 50px;">
-                                        <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
-                                    </p>
-                                    <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
-                                        <contact :id="c"/>
-                                    </p>
-                                    <br>
-                                </div>
+                                <span class="form-header">Admins</span>
+                                <p style="height: 50px;">
+                                    <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
+                                </p>
+                                <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
+                                    <contact :id="c"/>
+                                </p>
+                                <br>
                             </b-col>
 
                             <b-col>
-                                <div v-if="config.user">
-                                    <span class="form-header">Members</span>
-                                    <p style="height: 50px;">
-                                        <small class="text-muted">Read/Write access to datasets, share processes, and create rules / publications.</small>
-                                    </p>
-                                    <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
-                                        <contact :id="c"/>
-                                    </p>
-                                    <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
-                                    <br>
-                                </div>
+                                <span class="form-header">Members</span>
+                                <p style="height: 50px;">
+                                    <small class="text-muted">Read/Write access to datasets, share processes, and create rules / publications.</small>
+                                </p>
+                                <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
+                                    <contact :id="c"/>
+                                </p>
+                                <p class="text-muted" v-if="selected.members.length == 0"><small>No Members</small></p>
+                                <br>
                             </b-col>
 
                             <b-col v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
