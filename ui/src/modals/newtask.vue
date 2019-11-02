@@ -127,7 +127,7 @@
                 <b-row>
                     <b-col cols="3">Notes</b-col>
                     <b-col>
-                        <b-form-textarea placeholder="Optional" v-model="desc" :rows="2"/>
+                        <b-form-textarea placeholder="Optional task description (markdown OK)" v-model="desc" :rows="2"/>
                         <br>
                     </b-col>
                 </b-row>

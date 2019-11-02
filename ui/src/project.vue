@@ -359,6 +359,7 @@ export default {
     },
 
     mounted() {
+
         this.tabs.push({id: "detail", label: "Detail"});
         this.tabs.push({id: "dataset", label: "Archive"});
         this.tabs.push({id: "process", label: "Processes"});

@@ -94,7 +94,7 @@
                                                 <datatype :datatype="input.datatype" :datatype_tags="input.datatype_tags">
                                                     <template slot="tag_extra">
                                                         <span v-if="input.multi" style="opacity: 0.8">(multi)</span>
-                                                        <span v-if="input.optional" style="opacity: 0.8">(optional)</span>
+                                                        <b-badge v-if="input.optional" style="opacity: 0.8">optional</b-badge>
                                                         <p v-if="input.desc" style="margin-bottom: 0px; font-size: 80%;">{{input.desc}}</p>
                                                     </template>
                                                 </datatype>

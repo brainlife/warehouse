@@ -73,7 +73,7 @@ function handle_app(app, cb) {
             });
         },
 
-        //make sure doi is issued (shouldn't be needed anymore..)
+        //make sure doi is issued (shouldn't be needed anymore.. but in case it failes to issue doi when the app is registered?)
         next=>{
             if(app.doi) return next();
             logger.debug("minting doi");

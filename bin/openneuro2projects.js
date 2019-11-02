@@ -465,7 +465,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         if(rootmeta["magnitude2.json"]) Object.assign(dataset.meta, {magnitude2: rootmeta["magnitude2.json"].body});
                         break;
                     case "epi.nii.gz":
-                        dataset.datatype_tags = ["epi"];
+                        dataset.datatype_tags = ["pepolar"];
                         //TODO -- any root items?
                         break;
                     case "fieldmap.nii.gz":
@@ -512,7 +512,11 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         Object.assign(dataset.meta, {[item.dir]: body});
                         //fall through to store the json .. will be redundant with meta.. but just in case
                     case "epi.nii.gz":
-                        dataset.storage_config.files.push({ local: item.dir+"."+item.filename, url: item.file.urls[0], });
+                        //dataset.storage_config.files.push({ local: item.dir+"."+item.filename, url: item.file.urls[0], });
+                        //add numeric ID to the file
+                        let tokens = item.filename.split(".");
+                        tokens[0] += dataset.storage_config.files.length+1;
+                        dataset.storage_config.files.push({ local: tokens.join("."), url: item.file.urls[0], });
                         break;
                             
                     //real things
