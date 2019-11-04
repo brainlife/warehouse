@@ -20,12 +20,12 @@
         <b style="margin-bottom: 0px;">{{running}}</b><br>
         <small style="opacity: 0.5; text-transform: uppercase;">running</small>
     </div>
-    <svg viewBox="0 0 200 100" style="position: absolute; bottom: 0px; height: 150px; width: 100%;">
+    <svg viewBox="0 0 200 100" style="position: absolute; bottom: 0px; height: 150px; width: 100%;" preserveAspectRatio="none">
         <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#555;stop-opacity:0.8" />
+          <stop offset="0%" style="stop-color:#2693ff;stop-opacity:0.8" />
           <stop offset="80%" style="stop-color:#ddd;stop-opacity:0.2" />
         </linearGradient>
-        <path :d="usage_path" fill="url(#grad1)" stroke="#ccc" stroke-width="0.5"/>
+        <path :d="usage_path" fill="url(#grad1)" stroke="#2693ff" stroke-width="0.5"/>
     </svg>
 </div>
 </template>
@@ -91,7 +91,7 @@ export default {
             console.dir(raw_points);
             console.dir(points);
 
-            const smoothing = 0.1; //smoothing causes graph to dip below 0 when 0 goes to 1
+            const smoothing = 0.2; //smoothing causes graph to dip below 0 when 0 goes to 1
 
             // Properties of a line 
             // I:  - pointA (array) [x,y]: coordinates
@@ -147,6 +147,7 @@ export default {
             // build the d attributes by looping over the points
             const d = points.reduce((acc, point, i, a) => {
                 if(i === 0) {
+                    //make sure graph doesn't end too close to the left/right end
                     return "M250,0L250,150L-50,150L-50,0L"+point[0]+","+point[1];
                 } else {
                     return acc+' '+ bezierCommand(point, i, a);

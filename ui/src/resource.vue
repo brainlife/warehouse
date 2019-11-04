@@ -85,24 +85,30 @@
                         </p>
                         <div class="box">
                             <b-row style="opacity: 0.5; margin-bottom: 5px; text-transform: uppercase;">
-                                <b-col>
-                                    <b>org/repo</b>
-                                    <b style="float: right;">Score</b>
+                                <b-col cols="1">
+                                    Score
                                 </b-col>
                                 <b-col>
-                                    <b>Success Rate</b>
-                                    <b style="float: right;">Requests</b>
+                                    <b>org/repo</b>
+                                </b-col>
+                                <b-col>
+                                    <b>Total Requests <small style="float: right">(success rate)</small></b>
                                 </b-col>
                             </b-row>
                             <b-row v-for="service in resource.config.services" :key="service.name" style="border-top: 1px solid #eee; padding: 2px 0px">
+                                <b-col cols="1">
+                                    {{service.score}}
+                                </b-col>
                                 <b-col>
                                     {{service.name}}
-                                    <span style="float: right">{{service.score}}</span>
                                 </b-col>
                                 <b-col>
                                     <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
-                                        <span style="float: right">{{resource.stats.services[service.name].running}}</span>
+                                        <span>{{resource.stats.services[service.name].running}}</span>
+                                        <!--
                                         <stateprogress :states="{'finished': resource.stats.services[service.name].finished, 'failed': resource.stats.services[service.name].failed}" style="margin-right: 125px;"/>
+                                        -->
+                                        <small style="float: right;">{{success_rate(service.name)}}</small>
                                     </div>
                                 </b-col>
                             </b-row>
@@ -111,6 +117,41 @@
                     </b-col>
                 </b-row>
 
+                <b-row v-if="projects">
+                    <b-col cols="2">
+                        <span class="form-header">Projects</span>
+                    </b-col>
+                    <b-col>
+                        
+                        <p>
+                            <small>This resource has been used to analyze datasets on the following projects</small>
+                        </p>
+                        <div class="box">
+                            <b-row style="opacity: 0.5; margin-bottom: 5px; text-transform: uppercase;">
+                                <b-col> Project </b-col>
+                                <b-col> Admins </b-col>
+                                <b-col> Total Walltime </b-col>
+                            </b-row>
+
+                            <div v-for="project in resource.stats.projects" :key="project._id">
+                                <b-row v-if="projects[project._id]" style="border-top: 1px solid #eee; padding: 2px 0px">
+                                    <b-col>
+                                        {{projects[project._id].name}}
+                                        <small>{{projects[project._id].name}}</small>
+                                    </b-col>
+                                    <b-col>
+                                        <contact v-for="id in projects[project._id].admins" :key="id" :id="id"/>
+                                    </b-col>
+                                    <b-col>
+                                        {{(project.total_walltime/(1000*60)).toFixed(1)}} mins 
+                                        <span style="float: right"><b>{{project.count}}</b> jobs</span>
+                                    </b-col>
+                                </b-row>
+                            </div>
+                        </div>
+                    </b-col>
+                </b-row>
+ 
                 <!--
                 <b-row v-if="groups && groups.length > 0">
                     <b-col cols="2">
@@ -224,18 +265,19 @@
                         </p>
                     </b-col>
                 </b-row>
+
                 <b-row>
                     <b-col cols="2">
                     </b-col>
                     <b-col>
                         <hr>
-                        <p>
+                        <p style="opacity: 0.7;">
                             <icon name="calendar"/> Created on {{new Date(resource.create_date).toLocaleDateString()}}
                         </p>
-                        <p>
+                        <p style="opacity: 0.7;">
                             <icon name="calendar"/> Updated on {{new Date(resource.update_date).toLocaleDateString()}}
                         </p>
-                        <p>
+                        <p style="opacity: 0.7;">
                             <icon name="calendar"/> Last OK date {{new Date(resource.lastok_date).toLocaleDateString()}}
                         </p>
                         <br>
@@ -274,6 +316,9 @@ export default {
             //groups: null,
             tasks: [], //currently running tasks
 
+            //report: null,
+            projects: null, //list of all projects and some basic info (only admin can load this)
+
             testing: false,
             config: Vue.config,
         }
@@ -287,6 +332,13 @@ export default {
     },
 
     methods: {
+        success_rate(service) {
+            if(!service) return null;
+            let stat = this.resource.stats.services[service];
+            if(!stat || !stat.finished || !stat.failed) return null;
+            let p = stat.finished / (stat.finished + stat.failed);
+            return (p*100).toFixed(1)+ "%";
+        },
         load() {
             console.log("loading resource:"+this.$route.params.id);
             this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
@@ -301,6 +353,30 @@ export default {
                     if(a.name > b.name) return 1;
                     return 0;
                 });
+
+                if(Vue.config.has_role("admin")) {
+                    let group_ids = this.resource.stats.projects.map(p=>p._id);
+                    this.$http.get('/project/', {params: {
+                        find: JSON.stringify({
+                            _group_id: {$in: group_ids},
+                        }),
+                        select: 'name desc group_id admins',
+                        admin: true, //return all that matches (requires admin token)
+                    }}).then(res=>{
+                        this.projects = {};
+                        res.data.projects.forEach(project=>{
+                            this.projects[project.group_id] = project;
+                        });
+                        console.dir(res.data);
+                    }).catch(console.error);
+                    
+                    /*
+                    console.log("loading resource report");
+                    this.$http.get(Vue.config.amaretti_api+'/resource/report/'+this.$route.params.id).then(res=>{
+                        this.report = res.data;
+                    }).catch(console.error);
+                    */
+                }
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
@@ -397,6 +473,10 @@ font-size: 20pt;
 opacity: 0.5;
 }
 .box {
+background-color: white;
+padding: 10px;
+}
+.resource {
 background-color: white;
 padding: 10px;
 }

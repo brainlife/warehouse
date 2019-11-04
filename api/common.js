@@ -770,7 +770,7 @@ exports.update_project_stats = async function(group_id, cb) {
         //TODO resource_usage api returns group with no resource_id attached.. (bug?) let's filter them out for now
         resource_usage = resource_usage.filter(r=>r._id.resource_id !== undefined);
 
-        //load resource details
+        //load resource details to be merged into the resource_usage info
         let resource_ids = resource_usage.map(raw=>raw._id.resource_id);
         let {resources} = await rp.get({
             url: config.amaretti.api+"/resource", json: true,
@@ -779,8 +779,6 @@ exports.update_project_stats = async function(group_id, cb) {
             },
             headers: { authorization: "Bearer "+config.warehouse.jwt, },
         });
-        //console.log("asking for "+resource_ids.length);
-        //console.log("got "+resources.length);
         let resource_stats = resource_usage.map(raw=>{
             //if(!raw._id.resource_id) return; //some entries doesn't have resource_id .. why?
             let resource = resources.find(r=>r._id == raw._id.resource_id);

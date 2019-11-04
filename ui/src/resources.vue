@@ -160,7 +160,7 @@ border-bottom: 1px solid #eee;
 .header-sticky {
 position: sticky;
 top: 0px;
-z-index: 1;
+z-index: 2;
 box-shadow: 0 0 1px #ccc;
 }
 

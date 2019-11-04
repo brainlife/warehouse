@@ -564,6 +564,10 @@ function run() {
         let datasets = [await get_dataset("ds001454")];
 
         async.eachSeries(datasets, (dataset, next_dataset)=>{
+            if(!dataset) {
+                console.error("null dataset? maybe something is wrong with this project on openneuro");
+                return next_dataset();
+            }
             console.log("%s %s", dataset.id, dataset.name);
             //find the latest snapshot
             dataset.snapshots.sort((a,b)=>{

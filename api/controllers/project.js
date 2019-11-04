@@ -38,8 +38,10 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         select = req.query.select;
     }
 
-    //only allow querying for public, or private project that user owns
-    if(req.user) {
+    if(req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('admin') && req.query.admin) {
+        //admin requested admin priviledge return all
+    } else if(req.user) {
+        //only allow querying for public, or private project that user owns
         //user can see all public, private-listed or any project that they are member of
         let access_control = {$or: [
             { guests: req.user.sub },
@@ -48,7 +50,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
             { access: "public" },
             { listed: true }, //private project can be viewed if it's listed
         ]}
-        find = {$and: [ find, access_control]};
+        find = {$and: [ find, access_control ]};
     } else {
         find.access = "public"; //guest can only see public projects
     }
@@ -67,6 +69,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         });
     });
 });
+
 
 /**
  * @apiGroup Project
@@ -116,7 +119,6 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 			res.json(project);
 		});
 	});
-
 });
 
 /**
