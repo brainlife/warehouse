@@ -132,7 +132,7 @@
                                 <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000" style="border-top: 1px solid #eee; padding: 2px 0px">
                                     <b-col cols="6">
                                         <b>{{projects[project._id].name}}</b><br>
-                                        <small>{{projects[project._id].name}}</small>
+                                        <small>{{projects[project._id].desc}}</small>
                                     </b-col>
                                     <b-col>
                                         <small><contact v-for="id in projects[project._id].admins" size="small" :key="id" :id="id"/></small>

@@ -38,7 +38,7 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         select = req.query.select;
     }
 
-    if(req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('admin') && req.query.admin) {
+    if(req.user && req.user.scopes.warehouse && ~req.user.scopes.warehouse.indexOf('admin') && req.query.admin) {
         //admin requested admin priviledge return all
     } else if(req.user) {
         //only allow querying for public, or private project that user owns
