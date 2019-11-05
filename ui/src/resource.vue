@@ -85,22 +85,17 @@
                         </p>
                         <div class="box">
                             <b-row style="opacity: 0.5; margin-bottom: 5px; text-transform: uppercase;">
-                                <b-col cols="1">
-                                    Score
+                                <b-col>
+                                    org/repo <small>(score)</small>
                                 </b-col>
                                 <b-col>
-                                    <b>org/repo</b>
-                                </b-col>
-                                <b-col>
-                                    <b>Total Requests <small style="float: right">(success rate)</small></b>
+                                    Total Requests <small style="float: right">success rate</small>
                                 </b-col>
                             </b-row>
                             <b-row v-for="service in resource.config.services" :key="service.name" style="border-top: 1px solid #eee; padding: 2px 0px">
-                                <b-col cols="1">
-                                    {{service.score}}
-                                </b-col>
                                 <b-col>
                                     {{service.name}}
+                                    <small>({{service.score}})</small>
                                 </b-col>
                                 <b-col>
                                     <div v-if="resource.stats && resource.stats.services && resource.stats.services[service.name]">
@@ -128,27 +123,27 @@
                         </p>
                         <div class="box">
                             <b-row style="opacity: 0.5; margin-bottom: 5px; text-transform: uppercase;">
-                                <b-col> Project </b-col>
-                                <b-col> Admins </b-col>
-                                <b-col> Total Walltime </b-col>
+                                <b-col cols="6">Project</b-col>
+                                <b-col>Admin </b-col>
+                                <b-col>Total Walltime</b-col>
                             </b-row>
 
                             <div v-for="project in resource.stats.projects" :key="project._id">
-                                <b-row v-if="projects[project._id]" style="border-top: 1px solid #eee; padding: 2px 0px">
-                                    <b-col>
-                                        {{projects[project._id].name}}
+                                <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000" style="border-top: 1px solid #eee; padding: 2px 0px">
+                                    <b-col cols="6">
+                                        <b>{{projects[project._id].name}}</b><br>
                                         <small>{{projects[project._id].name}}</small>
                                     </b-col>
                                     <b-col>
-                                        <contact v-for="id in projects[project._id].admins" :key="id" :id="id"/>
+                                        <small><contact v-for="id in projects[project._id].admins" size="small" :key="id" :id="id"/></small>
                                     </b-col>
                                     <b-col>
-                                        {{(project.total_walltime/(1000*60)).toFixed(1)}} mins 
-                                        <span style="float: right"><b>{{project.count}}</b> jobs</span>
+                                        {{(project.total_walltime/(1000*60*60)).toFixed(1)}} hours <small>({{project.count}} jobs)</small>
                                     </b-col>
                                 </b-row>
                             </div>
                         </div>
+                        <br>
                     </b-col>
                 </b-row>
  
@@ -358,10 +353,11 @@ export default {
                     let group_ids = this.resource.stats.projects.map(p=>p._id);
                     this.$http.get('/project/', {params: {
                         find: JSON.stringify({
-                            _group_id: {$in: group_ids},
+                            group_id: {$in: group_ids},
                         }),
                         select: 'name desc group_id admins',
                         admin: true, //return all that matches (requires admin token)
+                        limit: 0,
                     }}).then(res=>{
                         this.projects = {};
                         res.data.projects.forEach(project=>{
