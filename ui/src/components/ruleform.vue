@@ -13,7 +13,7 @@
         -->
 
         <b-form-group label="App *" horizontal>
-            <p class="text-muted">Submit the following App on all matching subjects.</p>
+            <p class="text-muted">Select App to run</p>
             <v-select required v-model="rule.app" label="name" :filterable="false" :options="search_apps" @search="search_app" placeholder="Please enter App name to search">
                 <template slot="no-options">please enter App name / desc to search</template>
                 <template slot="option" slot-scope="app">
@@ -40,18 +40,23 @@
                     <configform :spec="rule.app.config" v-model="rule.config"/>
                 </b-card>
             </b-form-group>
-            <b-form-group label="Inputs" horizontal>
-                <p class="text-muted">For each subject, look for input datasets with the following criteria.</p>
-                <div style="border-left: 4px solid rgb(0, 123, 355); padding-left: 10px;">
-                    <p>
-                        <b-input-group prepend="Subject Filter" title="Only process subjects that matches this regex">
-                            <b-form-input v-model="rule.subject_match" type="text" placeholder="(Process all subjects)"></b-form-input>
-                            <b-input-group-prepend is-text>Session Filter</b-input-group-prepend>
-                            <b-form-input v-model="rule.session_match" type="text" placeholder="(Process all sessions)"></b-form-input>
-                        </b-input-group>
-                        <small class="text-muted">Enter regex to filter subjects/session to process. For example, <b>^100</b> will make this rule to only process subjects that starts with 100.</small>
-                    </p>
 
+            <b-form-group label="Subject / Session Filtering" horizontal>
+                <p class="text-muted">Enter subject/session names to submit the above App. Leave them black if you want to process all.</p>
+                <p>
+                    <b-input-group prepend="Subject Filter" title="Only process subjects that matches this regex">
+                        <b-form-input v-model="rule.subject_match" type="text" placeholder="(All subjects)"></b-form-input>
+                        <b-input-group-prepend is-text>Session Filter</b-input-group-prepend>
+                        <b-form-input v-model="rule.session_match" type="text" placeholder="(All sessions)"></b-form-input>
+                    </b-input-group>
+                    <small class="text-muted">For example, <b>^100</b> will make this rule to only submit Apps on subjects that starts with 100 (it could 1001, 1002, 1003, etc..).</small>
+                </p>
+            </b-form-group>
+
+            <b-form-group label="Inputs" horizontal>
+                <p class="text-muted">Rule handler will look for subjects that <b>contain</b> the following inputs.</p>
+
+                <div style="border-left: 4px solid rgb(0, 123, 355); padding-left: 10px;">
                     <b-card v-for="input in rule.app.inputs" :key="input._id" class="card">
                         <div slot="header">
                             <small class="text-muted" style="float: right">{{input.id}}</small>
@@ -63,7 +68,7 @@
                         </div>
                         <p v-if="input.optional">
                             <b-form-checkbox v-model="rule.input_selection[input.id]" value="ignore">Do not use this input</b-form-checkbox>
-                            <small class="text-muted">This is an optional field. You can submit without this input</small>
+                            <small class="text-muted">This is an optional field. Apps will be submitted without this input</small>
                         </p>
                         <div v-if="rule.input_selection[input.id] != 'ignore'">
                             <b-row>
@@ -101,7 +106,7 @@
             </b-form-group>
 
             <b-form-group label="Outputs" horizontal>
-                <!--<p class="text-muted">Submit the App if the following dataset <b>does not</b> exist in the archive.</p>-->
+                <p class="text-muted">Rule handler will submit Apps if the following datasets are <b>missing</b> in the archive.</p>
                 <div style="border-left: 4px solid rgb(40, 167, 69); padding-left: 10px;">
                     <b-card v-for="output in rule.app.outputs" :key="output._id" class="card">
                         <div slot="header">

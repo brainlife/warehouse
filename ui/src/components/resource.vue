@@ -84,7 +84,7 @@ export default {
                 let t = point[0] - min_time;
                 t = t / range_time * 200; 
                 let v = point[1];
-                if(Vue.config.debug) v += Math.random()*4;
+                //if(Vue.config.debug) v += Math.random()*4;
                 v = 99 - v / max_value * 100; //don't let graph touch top and bottom..
                 points.push([t,v]);
             });

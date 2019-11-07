@@ -709,6 +709,11 @@ function handle_rule(rule, cb) {
 						if(!meta[k]) meta[k] = input.meta[k]; //use first encounter
 					}
 				}
+
+                //we need to use the subject/session for the current group as input might have come from other subject/session
+                meta.subject = group.subject;
+                meta.session = group.session;
+
                 next();
             },
 
@@ -740,7 +745,7 @@ function handle_rule(rule, cb) {
                         id: output.id,
                         datatype: output.datatype,
                         desc: output.desc,
-                        meta: meta,
+                        meta,
                         tags: rule.output_tags[output.id], 
                     }
 

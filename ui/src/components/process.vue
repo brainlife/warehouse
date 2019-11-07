@@ -42,6 +42,7 @@
             <div slot="input" v-if="task.config._inputs">
                 <div v-for="(input, idx) in task.config._inputs" :key="idx" class="input">
                     <b v-if="input.meta && input.meta.subject">{{input.meta.subject}}</b>
+                    <small v-if="input.meta && input.meta.session" style="opacity: 0.8"> / {{input.meta.session}}</small>
                     <div style="display: inline-block;" v-if="find_task(input.task_id)" class="clickable" @click="scrollto(input.task_id)">
                         <datatypetag :datatype="datatypes[input.datatype]" :tags="input.datatype_tags" :clickable="false"/>
                         <span style="opacity: 0.5;">
