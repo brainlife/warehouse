@@ -61,9 +61,14 @@
                             <div style="margin-left: 100px;">
                                 <span>{{rule.app.name}}</span>
                                 <small>{{rule.name}}</small>
-                                <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
-                                    <icon name="filter" scale="0.8"/> <b>{{rule.subject_match}}</b>
-                                </span>     
+                                <div style="float: right; margin-right: 5px">
+                                    <span v-if="rule.subject_match" title="Only handle subjects that matches this regex">
+                                        <b-badge variant="light">SUBJECT: {{rule.subject_match}}</b-badge>&nbsp;
+                                    </span>     
+                                    <span v-if="rule.session_match" title="Only handle session that matches this regex">
+                                        <b-badge variant="light">SESSION: {{rule.session_match}}</b-badge>&nbsp;
+                                    </span>     
+                                </div>
                             </div>
                         </b-col>
                         <b-col :cols="1">
@@ -112,18 +117,21 @@
                         </b-row>
 
                         <div class="section-header">
-                            On
-                            <div style="display: inline-block; width: 300px;">
+                            For
+                            <div style="display: inline-block; width: 400px;">
                                 <b-input-group prepend="Subject" size="sm" title="Only process subjects that matches this regex">
-                                    <b-form-input v-model="rule.subject_match_edit" type="text" placeholder="(All)"></b-form-input>
-                                    <b-input-group-append v-if="rule.subject_match != rule.subject_match_edit">
-                                        <b-btn variant="primary" @click="update_subject_match(rule)"><icon name="check"/></b-btn>
-                                        <!-- <b-btn variant="secondary" @click="rule.subject_match_edit = rule.subject_match;">Cancel</b-btn> -->
+                                    <b-form-input v-model="rule.subject_match_edit" type="text" placeholder="(All Subjects)"></b-form-input>
+
+                                    <b-input-group-prepend is-text>Session</b-input-group-prepend>
+                                    <b-form-input v-model="rule.session_match_edit" type="text" placeholder="(All Session)"></b-form-input>
+                                    <b-input-group-append v-if="rule.session_match != rule.session_match_edit || rule.subject_match != rule.subject_match_edit">
+                                        <b-btn variant="primary" @click="update_match(rule)"><icon name="check"/></b-btn>
                                     </b-input-group-append>
+
                                 </b-input-group>
                             </div>
-                            <small style="opacity: 0.5">(regex)</small>
-                            subject with the following set of archived datasets available
+                            <!--<small style="opacity: 0.5">(regex)</small>-->
+                            with the following set of archived datasets available
                         </div>
                         <div style="margin-left: 30px;">
                             <p v-for="input in rule.app.inputs" :key="input.id">
@@ -136,6 +144,12 @@
                                 </span>
                                 <span v-if="rule.input_project_override && rule.input_project_override[input.id] && projects[rule.input_project_override[input.id]]" class="text-muted">
                                     <icon style="opacity: 0.5; margin: 0 5px" name="arrow-left" scale="0.8"/><small>from</small> <icon name="shield-alt"/> {{projects[rule.input_project_override[input.id]].name}}
+                                </span>
+                                <span v-if="rule.input_subject && rule.input_subject[input.id]">
+                                    <small>use subject:</small> {{rule.input_subject[input.id]}}
+                                </span>
+                                <span v-if="rule.input_session && rule.input_session[input.id]">
+                                    <small>use session:</small> {{rule.input_session[input.id]}}
                                 </span>
                                 <b v-if="rule.input_selection && rule.input_selection[input.id]">{{rule.input_selection[input.id]}}</b>
                             </p>
@@ -265,6 +279,7 @@ export default {
         selected: function() {
             if(!this.selected) return;
             Vue.set(this.selected, 'subject_match_edit', this.selected.subject_match);
+            Vue.set(this.selected, 'session_match_edit', this.selected.session_match);
         },
     },
 
@@ -410,9 +425,7 @@ export default {
         },
 
         notify_error(err) {
-            console.error(err);
-            console.error(err.status);
-            this.$notify({type: 'error', text: err.body.message||err.status});
+            this.$notify({type: 'error', text: err});
         },
 
         newrule() {
@@ -445,8 +458,9 @@ export default {
             delete this.editing.stats;
         },
 
-        update_subject_match(rule) {
+        update_match(rule) {
             Vue.set(rule, 'subject_match', rule.subject_match_edit);
+            Vue.set(rule, 'session_match', rule.session_match_edit);
             this.$http.put('rule/'+rule._id, rule).then(res=>{
                 this.$notify({type: "success", text: "Updated filter"});
             }).catch(this.notify_error);

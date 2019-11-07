@@ -22,10 +22,10 @@
     </div>
     <svg viewBox="0 0 200 100" style="position: absolute; bottom: 0px; height: 150px; width: 100%;" preserveAspectRatio="none">
         <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#2693ff;stop-opacity:0.8" />
-          <stop offset="80%" style="stop-color:#ddd;stop-opacity:0.2" />
+          <stop offset="0%" style="stop-color:#2693ff;stop-opacity:0.5" />
+          <stop offset="80%" style="stop-color:#2693ff;stop-opacity:0.01" />
         </linearGradient>
-        <path :d="usage_path" fill="url(#grad1)" stroke="#2693ff" stroke-width="0.5"/>
+        <path :d="usage_path" fill="url(#grad1)" stroke="#2693ff60" stroke-width="0.5"/>
     </svg>
 </div>
 </template>

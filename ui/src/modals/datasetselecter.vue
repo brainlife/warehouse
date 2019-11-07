@@ -229,8 +229,10 @@ export default {
                     this.alldatasets[dataset._id] = dataset;
                     
                     let text = "(non-existing)";
-                    if (dataset.meta.subject) text = dataset.meta.subject;
-                    if (dataset.meta.session) text += " / "+dataset.meta.session;
+                    if(dataset.meta) {
+                        if (dataset.meta.subject) text = dataset.meta.subject;
+                        if (dataset.meta.session) text += " / "+dataset.meta.session;
+                    }
                     
                     // dropdown menu item to add
                     let item = {
@@ -278,6 +280,7 @@ export default {
 
     watch: {
         project: function(project) {
+            console.log("project switched.... loading subjects: "+this.project);
             this.$http.get('dataset/distinct', { params: {
                 find: JSON.stringify({
                     project: this.project,
@@ -285,6 +288,7 @@ export default {
                 distinct: 'meta.subject',
             }}).then(res=>{
                 this.subjects = res.data;
+                console.dir(res.data);
             });
         },
     },

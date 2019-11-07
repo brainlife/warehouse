@@ -58,6 +58,7 @@ height: 100%;
 background-color: #f9f9f9;
 color: #555;
 font-size: 14px;
+font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
 }
 .select2-container, 
 .form-control,
@@ -129,7 +130,7 @@ right: 0px;
 bottom: 0px; 
 padding: 10px 30px;
 background-color: rgba(100,100,100,0.4);
-z-index: 2;
+z-index: 3;
 pointer-events: none;
 }
 .page-footer .btn {

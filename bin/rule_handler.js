@@ -7,6 +7,7 @@ const request = require('request');
 const fs = require('fs');
 const redis = require('redis');
 const amqp = require('amqp');
+const mongoose = require("mongoose");
 
 const config = require('../api/config');
 const logger = createLogger(config.logger.winston);
@@ -101,7 +102,7 @@ function handle_rule(rule, cb) {
     _counts.rules++;
 
     let jwt = null;
-    let subjects = null;
+    let groups = null; //[{subject: .. session: }]
     let running = null; //number of currently running tasks for this rule
     let rule_tasks = null; //tasks submitted for this rule (grouped by subject name)
     let rlogger = logger;
@@ -215,7 +216,7 @@ function handle_rule(rule, cb) {
                         "config._app": {$exists: true}, //don't want staging task
                         status: {$ne: "removed"},
                     }),
-                    select: 'status config._rule.subject',
+                    select: 'status config._rule.subject config._rule.session',
                     limit,
                 },
             }, (err, res, body)=>{
@@ -225,7 +226,7 @@ function handle_rule(rule, cb) {
                 running = 0;
                 body.tasks.forEach(task=>{
                     if(task.status == "running" || task.status == "requested") running++;
-                    rule_tasks[task.config._rule.subject] = task;
+                    rule_tasks[get_group_id(task.config._rule)] = task;
                 });
 
                 rlogger.debug(body.tasks.length+" tasks submitted for this rule");
@@ -238,22 +239,37 @@ function handle_rule(rule, cb) {
             });
         },
 
-        //enumerate all subjects under rule's project (and all input_project_overrides)
+        //enumerate all subjects/session under rule's project (and all input_project_overrides)
         next=>{
             let projects = [ rule.project._id ];
             if(rule.input_project_override) {
                 for(var input_id in rule.input_project_override) {
-                    projects.push(rule.input_project_override[input_id]); 
+                    projects.push(mongoose.Types.ObjectId(rule.input_project_override[input_id])); 
                 }
             }                
 
-            db.Datasets.find({
+            let find = {
                 project: { $in: projects }, 
                 removed: false,
-            })
-            .distinct("meta.subject", (err, _subjects)=>{
+            };
+
+            if(rule.subject_match) find["meta.subject"] = {$regex: rule.subject_match};
+            if(rule.session_match) find["meta.session"] = {$regex: rule.session_match};
+
+            db.Datasets.aggregate().match(find).group({_id: {
+                subject: "$meta.subject", 
+                session: "$meta.session"
+            }}).exec((err, _groups)=>{
                 if(err) return next(err);
-                subjects = _subjects;        
+                groups = _groups.map(group=>{
+                    return group._id;
+                }).sort((a,b)=>{
+                    if(a.subject > b.subject) return 1;
+                    if(a.subject < b.subject) return -1;
+                    if(a.session > b.session) return 1;
+                    if(a.session < b.session) return -1;
+                    return 0;
+                });
                 next();
             });
         },
@@ -284,7 +300,7 @@ function handle_rule(rule, cb) {
                 .lean()
                 .exec((err, datasets)=>{
                     if(err) return next_output(err);
-                    output._subjects = datasets.map(dataset=>dataset.meta.subject);
+                    output._groups = datasets.map(dataset=>get_group_id(dataset.meta));
                     next_output();
                 });
             }, next);
@@ -322,8 +338,11 @@ function handle_rule(rule, cb) {
                     if(neg_tags.length > 0) tag_query.push({tags: {$nin: neg_tags}});
                 }
 
-                if(rule.input_subject[input.id]) {
+                if(rule.input_subject && rule.input_subject[input.id]) {
                     query["meta.subject"] = rule.input_subject[input.id];
+                } 
+                if(rule.input_session && rule.input_session[input.id]) {
+                    query["meta.session"] = rule.input_session[input.id];
                 } 
 
                 //handle datatype_tags
@@ -339,8 +358,7 @@ function handle_rule(rule, cb) {
                 if(neg_tags.length > 0) tag_query.push({datatype_tags: {$nin: neg_tags}});
                 if(tag_query.length > 0) query.$and = tag_query;
 
-                //console.log("finding input-------------------");
-                //console.log(JSON.stringify(query, null, 4));
+                //now ready to find inputs!
                 db.Datasets.find(query)
                 .populate('datatype')
                 //.sort("-create_date") //this add whopping 4 seconds to the query sometimes
@@ -350,15 +368,17 @@ function handle_rule(rule, cb) {
                     if(err) return next_input(err);
 
                     //sorting myself is *much* faster than letting mongo do it.. I am not sure why.. maybe -create_date index was broken?
-                    //make new dataset first
                     datasets.sort((a,b)=>{
                         if(a.create_date > b.create_date) return -1;
                         if(a.create_date < b.create_date) return 1;
                         return 0;
                     })
+                    
+                    //group by group_id
                     datasets.forEach(dataset=>{
-                        if(!input._datasets[dataset.meta.subject]) input._datasets[dataset.meta.subject] = [];
-                        input._datasets[dataset.meta.subject].push(dataset);
+                        let group_id = get_group_id(dataset.meta);
+                        if(!input._datasets[group_id]) input._datasets[group_id] = [];
+                        input._datasets[group_id].push(dataset);
                     });
 
                     next_input(); 
@@ -368,8 +388,7 @@ function handle_rule(rule, cb) {
 
         //now handle all subjects
         next=>{
-            subjects.sort();
-            async.eachSeries(subjects, handle_subject, next);
+            async.eachSeries(groups, handle_group, next);
         },
 
     ], err=>{
@@ -379,25 +398,34 @@ function handle_rule(rule, cb) {
         cb();
     });
 
-    function handle_subject(subject, next_subject) {
+    function get_group_id(obj) {
+        let id = obj.subject;
+        if(obj.session) id += "/"+obj.session;
+        return id;
+    }
+
+    function handle_group(group, next_group) {
+        let group_id = get_group_id(group);
         rlogger.debug("");//empty
-        rlogger.debug(subject+" --------------------------------");
+        rlogger.debug(group_id+" --------------------------------");
 
         /* disabling this now because we are only running rule when datasets or rule is updated
         if(running >= config.rule.max_task_per_rule) {
             rlogger.info("reached max running task.. skipping the rest of subjects", subject, running);
-            return next_subject();
+            return next_group();
         }
         */
 
+        /* I should apply this filter upstream..
         if(rule.subject_match && !subject.match(rule.subject_match)) {
             rlogger.debug("doesn't match subject filter:"+rule.subject_match);
-            return next_subject();
+            return next_group();
         }
+        */
 
-        if(rule_tasks[subject]) {
-            rlogger.debug("task already submitted for subject:"+subject+" "+rule_tasks[subject]._id+" "+rule_tasks[subject].status);
-            return next_subject();
+        if(rule_tasks[group_id]) {
+            rlogger.debug("task already submitted for group:"+group_id+" "+rule_tasks[group_id]._id+" "+rule_tasks[group_id].status);
+            return next_group();
         }
         
         //find all outputs from the app with tags specified in rule.output_tags[output_id]
@@ -409,14 +437,14 @@ function handle_rule(rule, cb) {
                 return;
             }
 
-            if(!~output._subjects.indexOf(subject)) {
+            if(!~output._groups.indexOf(group_id)) {
                 rlogger.debug("output dataset not yet created for id:"+output.id);
                 output_missing = true;
             }
         });
         if(!output_missing) {
-            rlogger.info("all datasets accounted for.. skipping to next subject");
-            return next_subject();
+            rlogger.info("all datasets accounted for.. skipping to next group");
+            return next_group();
         }
 
         //make sure we have all input datasets we need
@@ -428,28 +456,33 @@ function handle_rule(rule, cb) {
                 if(selection_method == "ignore") return; //we don't need this input
             }
 
-            let _subject = subject;
-            if(rule.input_subject[input.id]) {
-                _subject = rule.input_subject[input.id]; //override to look for different subject
+            let input_group = Object.assign({}, group);
+            if(rule.input_subject && rule.input_subject[input.id]) {
+                input_group.subject = rule.input_subject[input.id]; //override to look for different subject
             }
-            if(!input._datasets[_subject]) {
+            if(rule.input_session && rule.input_session[input.id]) {
+                input_group.session = rule.input_session[input.id]; //override to look for different session
+            }
+            let input_group_id = get_group_id(input_group);
+            if(!input._datasets[input_group_id]) {
                 missing = true;
                 rlogger.info("missing input for "+input.id);
             } else {
-                inputs[input.id] = input._datasets[_subject][0]; //use the first one for now.. (TODO for multiinput, we could grab all?)
+                inputs[input.id] = input._datasets[input_group_id][0]; //(TODO for multiinput, we could grab all?)
             }
         });
+
         if(missing) {
             rlogger.info("Found the output datasets that need to be generated, but input are missing");
-            return next_subject();
+            return next_group();
         }
 
         //all good! 
         rlogger.info("Found the output datasets that need to be generated, and we have all the inputs also! submitting tasks");
-        submit_tasks(subject, inputs, next_subject);
+        submit_tasks(group, inputs, next_group);
     }
 
-    function submit_tasks(subject, inputs, cb) {
+    function submit_tasks(group, inputs, cb) {
         var instance = null;
         var task_stage = null;
         var task_app = null;
@@ -462,7 +495,6 @@ function handle_rule(rule, cb) {
         var deps = [];
         var tasks = {};
 
-        //var instance_name = "brainlife.rule subject:"+subject;
         running++;
 
         //prepare for stage / app / archive
@@ -474,8 +506,9 @@ function handle_rule(rule, cb) {
                     headers: { authorization: "Bearer "+jwt },
                     qs: {
                         find: JSON.stringify({
-                            "config.rule_subject": subject,
-                            group_id: rule.project.group_id, 
+                            "config.rule_subject": group.subject,
+                            "config.rule_session": group.session,
+                            group_id: rule.project.group_id,  //aka. project id
                             "config.removing": {$exists: false},
                             "config.status": {$ne: "removed"},
                         }),
@@ -499,11 +532,12 @@ function handle_rule(rule, cb) {
                     headers: { authorization: "Bearer "+jwt },
                     body: {
                         //name: instance_name, //is this necessary?
-                        desc: subject,
+                        desc: get_group_id(group),
                         group_id: rule.project.group_id, 
                         config: {
                             brainlife: true, //TODO is this still used?
-                            rule_subject: subject,
+                            rule_subject: group.subject,
+                            rule_session: group.session,
                         }
                     },
                 }, (err, res, body)=>{
@@ -692,7 +726,8 @@ function handle_rule(rule, cb) {
                         _app: rule.app._id,
                         _rule: {
                             id: rule._id,
-                            subject,
+                            subject: group.subject,
+                            session: group.session,
                         },
                         _inputs: _app_inputs,
                         _outputs: [],

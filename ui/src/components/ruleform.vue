@@ -45,9 +45,11 @@
                 <div style="border-left: 4px solid rgb(0, 123, 355); padding-left: 10px;">
                     <p>
                         <b-input-group prepend="Subject Filter" title="Only process subjects that matches this regex">
-                            <b-form-input v-model="rule.subject_match" type="text" placeholder="regex to match subject name"></b-form-input>
+                            <b-form-input v-model="rule.subject_match" type="text" placeholder="(Process all subjects)"></b-form-input>
+                            <b-input-group-prepend is-text>Session Filter</b-input-group-prepend>
+                            <b-form-input v-model="rule.session_match" type="text" placeholder="(Process all sessions)"></b-form-input>
                         </b-input-group>
-                        <small class="text-muted">For example, <b>^100</b> will make this rule to only process subjects that starts with 100.</small>
+                        <small class="text-muted">Enter regex to filter subjects/session to process. For example, <b>^100</b> will make this rule to only process subjects that starts with 100.</small>
                     </p>
 
                     <b-card v-for="input in rule.app.inputs" :key="input._id" class="card">
@@ -65,23 +67,19 @@
                         </p>
                         <div v-if="rule.input_selection[input.id] != 'ignore'">
                             <b-row>
-                                <b-col>Project</b-col>
+                                <b-col>Selection Override</b-col>
                                 <b-col :cols="9">
                                     <p>
                                         <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(From this project)"/>
-                                        <small class="text-muted">Look for datasets in this project</small>
                                     </p>
-                                </b-col>
-                            </b-row> 
-                            <b-row>
-                                <b-col>Subject</b-col>
-                                <b-col :cols="9">
-                                    <p>
-                                        <!--
-                                        <projectselecter v-model="rule.input_project_override[input.id]" placeholder="(From this project)"/>
-                                        <small class="text-muted">Look for datasets in this project</small>
-                                        -->
+                                    <b-input-group prepend="Subject">
                                         <b-form-input v-model="rule.input_subject[input.id]" placeholder="(Use the matching subject)"/>
+                                        <b-input-group-prepend is-text>Session</b-input-group-prepend>
+                                        <b-form-input v-model="rule.input_session[input.id]" placeholder="(Use the matching session)"/>
+                                    </b-input-group>
+
+                                    <p>
+                                        <small class="text-muted">Instead of using datasets from the same subject/session, you can look for datasets from different project, or different subject/session.</small>
                                     </p>
                                 </b-col>
                             </b-row> 
@@ -100,9 +98,6 @@
                         </div>
                     </b-card>
                 </div><!--border-->
-                <!--
-                <p v-if="rule.subject_match_count"><small>{{rule.subject_match_count}} subjects matches this filter</small></p>
-                -->
             </b-form-group>
 
             <b-form-group label="Outputs" horizontal>
@@ -167,6 +162,13 @@ import search_app_mixin from '@/mixins/searchapp'
 
 let debounce = null;
 
+function remove_null(obj) {
+    for(let key in obj) {
+        if(!obj[key]) delete obj[key];
+    }
+    return obj;
+}
+
 export default {
     mixins: [ search_app_mixin ],
     props: {
@@ -181,12 +183,6 @@ export default {
     data() {
         return {
             rule: {
-                /*
-                app: {
-                    inputs: [],
-                    outputs: [],
-                },
-                */
                 app: null, 
                 input_tags: {},
                 output_tags: {},
@@ -195,8 +191,12 @@ export default {
                 input_tags_count: {}, //number of matching input datasets for each input
 
                 subject_match: "", 
+                session_match: "", 
+
                 input_project_override: {},
                 input_subject: {},
+                input_session: {},
+
                 input_selection: {},
                 extra_datatype_tags: {},
                 config: {},
@@ -250,6 +250,14 @@ export default {
                 }, 300)
             }, deep: true,
         },
+        "rule.input_session": {
+            handler: function() {
+                clearTimeout(debounce);
+                debounce = setTimeout(()=>{
+                    this.query_matching_datasets();
+                }, 300)
+            }, deep: true,
+        },
         "rule.extra_datatype_tags": {
             handler: function(v) {
                 this.query_matching_datasets();
@@ -263,6 +271,13 @@ export default {
             }, deep: true,
         },
         "rule.subject_match": function() {
+            clearTimeout(debounce);
+            debounce = setTimeout(()=>{
+                this.query_matching_datasets();
+                this.load_dataset_tags();
+            }, 300)
+        },
+        "rule.session_match": function() {
             clearTimeout(debounce);
             debounce = setTimeout(()=>{
                 this.query_matching_datasets();
@@ -296,8 +311,11 @@ export default {
                     removed: false,
                 }
                 if(this.rule.subject_match != "") find["meta.subject"] = {$regex: this.rule.subject_match};
+                if(this.rule.session_match != "") find["meta.session"] = {$regex: this.rule.session_match};
+
                 //override if subject name is specified
                 if(this.rule.input_subject[id]) find["meta.subject"] = this.rule.input_subject[id];
+                if(this.rule.input_session[id]) find["meta.session"] = this.rule.input_session[id];
 
                 //handle dataset (negative)tags
                 //TODO - I think I can simplify this by combining $in and $nin like.. "{tags: {$all: ["test", "dev"], $nin: ["xyz123"]}}"
@@ -350,9 +368,13 @@ export default {
                 input_tags_count: {}, //number of matching input datasets for each input
 
                 subject_match: "", 
+                session_match: "", 
                 output_tags: {}, 
+
                 input_project_override: {},
                 input_subject: {},
+                input_session: {},
+
                 input_selection: {},
                 extra_datatype_tags: {},
                 config: {},
@@ -370,6 +392,7 @@ export default {
                 if(!this.rule.input_tags[input.id]) Vue.set(this.rule.input_tags, input.id, []);
                 if(!this.rule.input_project_override[input.id]) Vue.set(this.rule.input_project_override, input.id, null);
                 if(!this.rule.input_subject[input.id]) Vue.set(this.rule.input_subject, input.id, null);
+                if(!this.rule.input_session[input.id]) Vue.set(this.rule.input_session, input.id, null);
                 if(!this.rule.extra_datatype_tags[input.id]) Vue.set(this.rule.extra_datatype_tags, input.id, []);
 
                 if(!this.rule.input_tags_count[input.id]) Vue.set(this.rule.input_tags_count, input.id, null);
@@ -414,20 +437,18 @@ export default {
             var input_tags = {};
             var output_tags = {};
             var input_subject = {};
+            var input_session = {};
             var input_project_override = {};
             input_ids.forEach(id=>{
                 if(this.rule.input_tags[id].length > 0) input_tags[id] = this.rule.input_tags[id];
                 input_subject[id] = this.rule.input_subject[id];
+                input_session[id] = this.rule.input_session[id];
                 input_project_override[id] = this.rule.input_project_override[id];
             });
 
-            //remove null values for subject/project override
-            for(var id in input_project_override) {
-                if(!input_project_override[id]) delete input_project_override[id];
-            }
-            for(var id in input_subject) {
-                if(!input_subject[id]) delete input_subject[id];
-            }
+            remove_null(input_project_override);
+            remove_null(input_subject);
+            remove_null(input_session);
 
             output_ids.forEach(id=>{
                 if(this.rule.output_tags[id].length > 0) output_tags[id] = this.rule.output_tags[id];
@@ -445,10 +466,11 @@ export default {
                 output_tags,
                 input_project_override,
                 input_subject,
+                input_session,
             });
+            console.dir(rule);
             this.$emit("submit", rule);
         },
-
 
         load_dataset_tags() {
             if(!this.rule.app) return null;

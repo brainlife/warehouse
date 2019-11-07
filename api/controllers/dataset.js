@@ -99,17 +99,13 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         }
     }
 
-    console.time("api");
-    console.log("querying project");
-    mongoose.set('debug', true)
-
     common.getprojects(req.user, (err, canread_project_ids, canwrite_project_ids)=>{
         if(err) return next(err);
         let query = construct_dataset_query(req.query, canread_project_ids);
 
-        console.timeLog("api");
-        console.log("querying datasets");
-        console.dir(query);
+        //console.timeLog("api");
+        //console.log("querying datasets");
+        //console.dir(query);
 
         db.Datasets.find(query)
         .populate(populate)
@@ -126,8 +122,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                 rec._canedit = canedit(req.user, rec, canwrite_project_ids);
             });
 
-            console.timeLog("api");
-            console.log("aggregating count/size");
+            //console.timeLog("api");
+            //console.log("aggregating count/size");
 
             //count and get total size
             cast_mongoid(query);
@@ -143,10 +139,9 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                     size = stats[0].size;
                 }
 
-                console.timeEnd("api");
-                console.log("responding");
+                //console.timeEnd("api");
+                //console.log("responding");
                 res.json({ datasets, count, size, });
-                mongoose.set('debug', config.debug)
             });
         });
     });

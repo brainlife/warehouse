@@ -45,8 +45,11 @@
                         <tr v-if="task.config._rule">
                             <th>Rule</th>
                             <td>
-                                <small>This task was submitted by {{task.config._rule.id}}
-                                For subject:<b>{{task.config._rule.subject}}</b></small>
+                                <small>
+                                    This task was submitted by {{task.config._rule.id}}
+                                    For subject:<b>{{task.config._rule.subject}}</b>
+                                    <span v-if="task.config._rule.session">session:<b>{{task.config._rule.session}}</b></span>
+                                </small>
                             </td>
                         </tr>
                         <tr v-if="resource">

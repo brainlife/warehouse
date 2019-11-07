@@ -582,6 +582,7 @@ var ruleSchema = mongoose.Schema({
 
     //subject to look for each input id (if not set, it should match the same subject group)
     input_subject: mongoose.Schema.Types.Mixed,
+    input_session: mongoose.Schema.Types.Mixed,
     //any tags to look for each input id (object with key(output id)=>array(tags))
     input_tags: mongoose.Schema.Types.Mixed,
     
@@ -610,8 +611,9 @@ var ruleSchema = mongoose.Schema({
     //archive info (keyed by output id, then {do: Boolean, desc: ""}.
     archive: mongoose.Schema.Types.Mixed,
 
-    //only process subjects that ends with this if set
+    //only process subjects/session that ends with this if set
     subject_match: String,
+    session_match: String,
 
     stats: {
         tasks: {

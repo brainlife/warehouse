@@ -25,22 +25,11 @@
         <small style="float: right; margin-top: 10px;">{{recent_users.length}} users</small>
         <hr>
 
+        <!--
         <h5>Resources</h5>
         <small>This graph shows number of jobs executed on resources that you have access to</small>
-        <!--
-        <b-row v-for="resource in resources" :key="resource._id">
-            <b-col cols="6">
-                <statusicon :status="resource.status"/>
-                {{resource.name}}<br>
-                <small>{{resource.status_msg}}</small>
-                <small>{{resource.config.desc}}</small>
-            </b-col>
-            <b-col cols="6">
-                <resourcegraph :id="resource._id"/>
-            </b-col>
-        </b-row>
-        -->
         <div ref="resource_vis"/>
+        -->
     </div><!--page-content-->
 </div>
 </template>
@@ -72,13 +61,14 @@ export default {
     data () {
         return {
             recent_users: [],
-            resources: null,
+            //resources: null,
             config: Vue.config,
 
         }
     },
 
     mounted() {
+        /*
         console.log("loading resources");
         let find = JSON.stringify({
             status: {$ne: "removed"},
@@ -88,6 +78,7 @@ export default {
             this.resources = res.data.resources;
             this.update_resource_vis();
         }).catch(console.error);
+        */
 
         //load recent users
         let recent = new Date();

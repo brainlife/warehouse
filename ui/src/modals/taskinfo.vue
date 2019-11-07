@@ -59,6 +59,7 @@
                                 <td>
                                     <small>This task was submitted by {{task.config._rule.id}}
                                     For subject:<b>{{task.config._rule.subject}}</b></small>
+                                    <span v-if="task.config._rule.session">session:<b>{{task.config._rule.session}}</b></small></span>
                                 </td>
                             </tr>
                             <!-- this confuses people with job walltime

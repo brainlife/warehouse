@@ -1,6 +1,6 @@
 <template>
 <div style="min-height: 35px;">
-    <div style="opacity: 0.5; margin: 10px;">
+    <div style="opacity: 0.5; margin: 10px; position: relative; top: -45px;">
         <div style="float: right;">
             <div class="button" @click="load"><icon name="sync-alt"/></div>
             <span v-if="err">No log</span>
@@ -8,7 +8,7 @@
         </div>
         <!--<b>{{taskcount}} Active Tasks</b>-->
     </div>
-    <pre v-if="logs" v-highlightjs>{{logs}}</pre>
+    <pre v-if="logs" v-highlightjs="logs"><code class="plaintext hljs"></code></pre>
 </div>
 </template>
 

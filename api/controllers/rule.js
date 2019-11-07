@@ -91,6 +91,7 @@ router.get('/log/:ruleid', jwt({secret: config.express.pubkey}), (req, res, next
 
 function check_access(req, rule, cb) {
     //TODO - make sure user has access to req.body.app?
+    console.log(JSON.stringify(rule, null, 4));
     
     //check user has access to the project
     common.getprojects(req.user, function(err, canread_project_ids, canwrite_project_ids) {
@@ -101,9 +102,11 @@ function check_access(req, rule, cb) {
 
         //check to see if user has read accesses to all input_project_override 
         if(rule.input_project_override) for(let id in rule.input_project_override) {
-            let o_project_id = mongoose.Types.ObjectId(rule.input_project_override[id]);
+            let project_id = rule.input_project_override[id];
+            if(!project_id) continue; //ignore null..
+            let o_project_id = mongoose.Types.ObjectId(project_id); //null gets converted to a valid mongoose id.. new id?)
             let found = canread_project_ids.find(id=>id.equals(o_project_id));
-            if(!found) return cb("can't use project selected in override:"+o_project_id);
+            if(!found) return cb("can't use project selected in override:"+o_project_id+" for id:"+id);
         }
 
         cb(); //a-ok
@@ -126,7 +129,8 @@ function check_access(req, rule, cb) {
  * @apiParam {String} app           Application ID
  * @apiParam {String} branch        Application branch to use
  * @apiParam {Boolean} active       Active flag
- * @apiParam {String} subject_match Subject Match
+ * @apiParam {String} subject_match Subject match
+ * @apiParam {String} session_match Session match
  * @apiParam {Object} config        Application configuration
  *
  * @apiHeader {String} authorization 
@@ -167,7 +171,8 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, next)=>{
  * @apiParam {String} branch        Application branch to use
  * @apiParam {Object} extra_datatype_tags 
  *                                  Datatype tags to add to each inputs
- * @apiParam {String} subject_match Subject Match
+ * @apiParam {String} subject_match Subject match
+ * @apiParam {String} session_match Session match
  * @apiParam {Object} config        Application configuration
  *
  * @apiParam {Boolean} removed      If this is a removed publication

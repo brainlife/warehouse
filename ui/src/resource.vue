@@ -62,7 +62,7 @@
                                 <small><icon name="shield-alt"/> {{task._group_id}}</small><br>
                             </b-col>
                             <b-col>
-                                <small style="float: right;"><time>Started <timeago :since="task.start_date" :auto-update="1"/></time></small>
+                                <small style="float: right;" v-if="task.start_date"><time>Started <timeago :since="task.start_date" :auto-update="1"/></time></small>
                                 <statusicon :status="task.status"/> <span style="text-transform: uppercase;">{{task.status}}</span>
                                 {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
                                 <small>{{task.status_msg}}</small>

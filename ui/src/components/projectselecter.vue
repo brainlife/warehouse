@@ -6,11 +6,14 @@ PR > https://github.com/sagalbot/vue-select/pull/373
 -->
 <div v-if="options">
     <b-alert show variant="danger" v-if="options.length == 0 && required">You don't have any project that you can select.</b-alert>
-    <v-select v-if="options.length > 0" v-model="selected" 
-        max-height="250px"
-        :options="options" 
-        :placeholder="placeholder" 
-        :required="required"/>
+    <b-input-group prepend="Project">
+        <b-form-select v-if="options.length > 0" v-model="selected"
+            max-height="250px"
+            :options="options" 
+            :placeholder="placeholder" 
+            :required="required">
+        </b-form-select>
+    </b-input-group>
 </div>
 </template>
 
@@ -41,17 +44,19 @@ export default {
     watch: {
         selected: function() {
             if(this.selected) {
-                console.log("new select", this.selected);
-                localStorage.setItem('last_projectid_used', this.selected.value);
-                this.$emit('input', this.selected.value);
+                localStorage.setItem('last_projectid_used', this.selected);
+                this.$emit('input', this.selected);
             } else {
                 this.$emit('input', null);
             }
         },
         value: function() {
-            if(this.selected && this.selected.value != this.value) {
+            /*
+            if(this.selected != this.value) {
                 this.selected = this.options.find(it=>it.value == this.value);
             }
+            */
+            this.selected = this.value;
         }
     },
 
@@ -120,26 +125,24 @@ export default {
                 sort: 'name',
             }}).then(res=>{
                 this.options = [];
-                if(!this.required) this.options.push({value: null, label: this.placeholder||''});
+                if(!this.required) this.options.push({value: null, text: this.placeholder||''});
                 res.data.projects.forEach(project=>{
-                    let label = project.name;
-                    //if(project.openneuro) label = "OpenNeuro / "+label;
-                    this.options.push({value: project._id, label});
+                    this.options.push({value: project._id, text: project.name, desc: project.desc});
                 });
 
                 //first, select project that client has requested
                 let found = this.options.find(it=>it.value == this.value);
                 if(found) {
-                    this.selected = found;
+                    this.selected = found.value;
                 } else {
                     //if not, then try selecting the last project used
                     var last = localStorage.getItem('last_projectid_used');
                     found = this.options.find(it=>it.value == last);
                     if(found) {
-                        this.selected = found;
+                        this.selected = found.value;
                     } else if(this.required && this.options.length > 0) {
                         //if we can't find it, and required field.. then select first one from the list
-                        this.selected = this.options[0];
+                        this.selected = this.options[0].value;
                     }
                 }
             });
