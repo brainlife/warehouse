@@ -65,6 +65,7 @@ export default {
 
         usage_path() {
             if(!this.resource_obj.stats || !this.resource_obj.stats.recent_job_counts) return "";
+            if(this.resource_obj.config.maxtask == 0) return "";
             let raw_points = this.resource_obj.stats.recent_job_counts; 
             if(raw_points.length == 0) return "";
 
@@ -73,23 +74,20 @@ export default {
             let min_time = raw_points[0][0];
             let max_time = raw_points[raw_points.length-1][0];
             let range_time = max_time - min_time;
-            let max_value = this.resource_obj.config.maxtask||1; //don't use 0
+
             /*
             raw_points.forEach(point=>{
                 if(max_value < point[1]) max_value = point[1];
             });
             */
-            console.log(max_value);
             raw_points.forEach(point=>{
                 let t = point[0] - min_time;
                 t = t / range_time * 200; 
                 let v = point[1];
                 //if(Vue.config.debug) v += Math.random()*4;
-                v = 99 - v / max_value * 100; //don't let graph touch top and bottom..
+                v = 99 - v / this.resource_obj.config.maxtask * 100; //don't let graph touch top and bottom..
                 points.push([t,v]);
             });
-            console.dir(raw_points);
-            console.dir(points);
 
             const smoothing = 0.2; //smoothing causes graph to dip below 0 when 0 goes to 1
 
