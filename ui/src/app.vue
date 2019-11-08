@@ -259,9 +259,10 @@
                                 </svg>
                                 <b>{{app.stats.serviceinfo.success_rate.toFixed(1)}}%</b>
                             </p>
-                            <p v-if="app.stats.serviceinfo.runtime_mean">
-                                <span class="form-header">Typical Runtime</span>
-                                {{avg_runtime(app.stats.serviceinfo.runtime_mean, app.stats.serviceinfo.runtime_std)}}
+                            <p>
+                                <b-badge pill variant="light" v-if="app.stats.serviceinfo.runtime_mean" style="background-color: white; text-transform: uppercase; border: 1px solid #ddd; padding: 8px 15px; opacity: 0.7;">
+                                    <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;{{avg_runtime(app.stats.serviceinfo.runtime_mean, app.stats.serviceinfo.runtime_std)}}
+                                </b-badge>
                             </p>
                         </div>
                         <div class='altmetric-embed' data-badge-type='donut' :data-doi="app.doi" data-hide-no-mentions="true"/>
@@ -431,11 +432,11 @@ export default {
             if(min < 0) min = 0;
             let max = Math.round((mean+std/3)/(1000*60));
             if(max<90) {
-                return min+" to "+max+" mins";
+                return min+"-"+max+" min";
             }
             let min_hours = Math.round(min/60*10)/10;
             let max_hours = Math.round(max/60*10)/10;
-            return min_hours+" to "+max_hours+" hours";
+            return min_hours+"-"+max_hours+" hour";
         },
 
         open_app() {
@@ -481,8 +482,8 @@ export default {
         },
 
         back() {
-            //this.$router.push('/apps');
-            this.$router.go(-1);
+            if(window.history.length > 1) this.$router.go(-1);
+            else this.$router.push('/apps');
         },
 
         download_app() {

@@ -10,6 +10,7 @@ const path = require('path');
 const archiver = require('archiver');
 const ssh2 = require('ssh2');
 const request = require('request');
+const zlib = require('zlib');
 
 exports.mongodb = "mongodb://localhost/warehouse";
 exports.mongoose_debug = true;
@@ -585,6 +586,7 @@ exports.storage_systems["nki"] = {
     },
 }
 
+/*
 //TODO - deprecate this in favor of url
 const openneuro_config = require(__dirname+'/openneuro');
 const openneuro_storage = pkgcloud.storage.createClient(openneuro_config);
@@ -606,18 +608,21 @@ exports.storage_systems["openneuro"] = {
     },
     download: (dataset, cb)=>{
         var archive = archiver('tar');
+        let gzip = zlib.createGzip();
         dataset.storage_config.files.forEach(file=>{
             console.log("downloading", file.s3, "from", openneuro_config.bucket, file.local);
             //downloading from s3 takes 30 seconds before the first byte arrives.
             //it's not archiver's fault or anything else.
             //https://github.com/pkgcloud/pkgcloud/issues/596
             var stream = openneuro_storage.download({container: openneuro_config.bucket, remote: file.s3});
+
             archive.append(stream, {name: file.local});
         });
         archive.finalize();
         cb(null, archive, dataset._id+".tar");
     },
 }
+*/
 
 exports.storage_systems["url"] = {
     need_backup: false,
@@ -637,8 +642,15 @@ exports.storage_systems["url"] = {
 
     download: (dataset, cb)=>{
         let archive = archiver('tar');
+        let gzip = zlib.createGzip();
         dataset.storage_config.files.forEach(file=>{
             let stream = request(file.url);
+            if(file.url.endsWith(".nii")) {
+                //compress .nii with .nii.gz as *all* brainlife datatype uses .nii.gz for nifti
+                console.log("passing", file.url, "through gzip stream");
+                //archive.append(stream.pipe(gzip), {name: file.local});
+                stream = stream.pipe(gzip);
+            }
             archive.append(stream, {name: file.local});
         });
         archive.finalize();

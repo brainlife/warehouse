@@ -523,8 +523,8 @@ export default {
     
     methods: {
         back() {
-            //this.$router.push('/apps');
-            this.$router.go(-1);
+            if(window.history.length > 1) this.$router.go(-1);
+            else this.$router.push('/pubs');
         },
 
         view(id) {

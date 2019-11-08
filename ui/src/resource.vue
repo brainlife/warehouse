@@ -381,8 +381,8 @@ export default {
         },
 
         back() {
-            this.$router.go(-1);
-            //this.$router.push('/resources');
+            if(window.history.length > 1) this.$router.go(-1);
+            else this.$router.push('/resources');
         },
 
         test() {

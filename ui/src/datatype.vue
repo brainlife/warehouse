@@ -346,8 +346,8 @@ export default {
         },
 
         back() {
-            //this.$router.push('/datatypes');
-            this.$router.go(-1);
+            if(window.history.length > 1) this.$router.go(-1);
+            else this.$router.push('/datatypes');
         },
         open_sample_dataset(dataset_id) {
             //this.$router.replace('/project/'+this.project._id+'/dataset/'+dataset_id);

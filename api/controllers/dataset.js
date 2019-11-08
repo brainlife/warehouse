@@ -1101,7 +1101,7 @@ function stream_dataset(dataset, res, next) {
     system.stat(dataset, (err, stats)=>{
         clearTimeout(stat_timer);
         if(err) return next(err);
-        logger.debug("obtaining download stream %s", dataset.storage);
+        logger.debug("obtaining download stream "+dataset.storage);
         system.download(dataset, (err, readstream, filename)=>{
             if(err) return next(err);
             //without attachment, the file will replace the current page (why?)
@@ -1243,11 +1243,13 @@ router.get('/download/:id', jwt({
     var id = req.params.id;
 
     logger.debug("download requested for %s", id);
+    /*
     if(config.debug) {
         logger.debug("Authoriziation token given");
         console.dir(req.headers);
         console.dir(req.user);
     }
+    */
     if(!req.user) logger.warn("no auth request");
     db.Datasets.findById(id).populate('datatype').exec(function(err, dataset) {
         if(err) return next(err);
@@ -1318,9 +1320,9 @@ router.get('/download/:id', jwt({
             },
 
         ], err=>{
-            logger.debug(err);
+            //logger.debug(err);
             if(err) return res.status(403).json({err});
-            logger.debug("streaming..");
+            //logger.debug("streaming..");
             stream_dataset(dataset, res, next);
         });
     });

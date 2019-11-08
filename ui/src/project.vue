@@ -58,12 +58,6 @@
             <div style="margin: 20px;">
                 <b-row>
                     <b-col cols="3" class="sideinfo">
-                        <!-- seems redundant with datasets section
-                        <div class="datatypes">
-                            <div class="datatypes-header">Datatypes</div>
-                            <datatypetag v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" style="margin-right: 3px; margin-bottom: 3px;"/>
-                        </div>
-                        -->
                         <p class="info" title="Project creation date">
                             <icon name="calendar"/>
                             {{new Date(selected.create_date).toLocaleDateString()}}
@@ -187,34 +181,6 @@
                                 <i>{{resource_citation.citation}}</i>
                             </p>
                         </div>
-
-                        <!--
-                        <div v-if="selected.datatype_groups">
-                            <span class="form-header">Datasets</span>
-                            <p class="text-muted">This project currently contains the following datasets</p>
-                            <b-card-group deck v-for="(group, datatype_id) in selected.datatype_groups" :key="datatype_id" style="margin-bottom: 10px;">
-                                <b-card header-tag="header">
-                                    <div slot="header">
-                                        <datatypetag :datatype="datatypes[datatype_id]"/>
-                                        <b>{{group.count}}</b> datasets <small style="opacity: 0.8">({{group.size|filesize}})</small>
-                                        on <b>{{group.subjects.size}}</b> subjects
-                                    </div>
-
-                                    <b-list-group>
-                                        <b-list-group-item v-for="(stats, tags_s) in group.datatype_tags" :key="tags_s" >
-                                            <datatypetag :datatype="datatypes[datatype_id]" :tags="JSON.parse(tags_s)"/>
-                                            <b>{{stats.count}}</b> datasets                             
-                                        </b-list-group-item>
-                                    </b-list-group>
-
-                                    <p style="opacity: 0.3">
-                                        TODO.. show product.json info
-                                    </p>
-                    
-                                </b-card>
-                            </b-card-group>
-                        </div>
-                        -->
                     </b-col>
                 </b-row>
                 <hr>
@@ -273,7 +239,6 @@ import processes from '@/components/processes'
 import publications from '@/components/publications'
 import pipelines from '@/components/pipelines'
 import agreements from '@/components/agreements'
-import datatypetag from '@/components/datatypetag'
 import stateprogress from '@/components/stateprogress'
 import noprocess from '@/assets/noprocess'
 import resource from '@/components/resource'
@@ -289,7 +254,7 @@ export default {
         VueMarkdown, projectavatar, license,
         pubcard, datasets,
         processes, publications, pipelines,
-        agreements, datatypetag,
+        agreements, 
 
         noprocess, resource, VuePlotly,
 
@@ -426,8 +391,8 @@ export default {
         },
 
         back() {
-            //this.$router.push('/projects');
-            this.$router.go(-1);
+            if(window.history.length > 1) this.$router.go(-1);
+            else this.$router.push('/projects');
         },
 
         openneuro() {

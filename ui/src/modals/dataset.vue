@@ -124,9 +124,16 @@
                                 <p>
                                     <span v-if="dataset.status == 'stored'">
                                         <b>
-                                            {{dataset.storage}} <span v-if="dataset.storage == 'copy'">- {{dataset.storage_config.storage}}</span>
+                                            {{dataset.storage}} 
+                                            <span v-if="dataset.storage == 'copy'">- {{dataset.storage_config.storage}}</span>
                                         </b>
                                         <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
+                                        <div v-if="dataset.storage == 'url'">
+                                            <b-row v-for="file in dataset.storage_config.files">
+                                                <b-col cols="2">{{file.local}}</b-col>
+                                                <b-col><a :href="file.url">{{file.url}}</a></b-col>
+                                            </b-row>
+                                        </div>
                                     </span> 
                                     <span v-if="(dataset.status == 'failed' || dataset.status == 'storing')">
                                         <task :task="dataset.archive_task" v-if="dataset.archive_task"/>
@@ -497,7 +504,7 @@ export default {
                             this.submit_process(opt.project_id, res.data);
                         }).catch(err=>{
                             console.error(err);
-                            this.$notify({type: 'error', text: err.body.message});
+                            this.$notify({type: 'error', text: err});
                         })
                     }
                 });
@@ -526,6 +533,7 @@ export default {
                     instance_id: instance._id,
                     dataset_ids: [ this.dataset._id ],
                 }).then(res=>{
+                    console.log(res);
                     this.$router.replace("/project/"+project_id+"/process/"+instance._id);
                     this.dataset = null;
                 });
@@ -650,6 +658,7 @@ export default {
                 this.$set(this.dataset, '_pubs', res.data.pubs);
              }).catch(err=>{
                 console.error(err);
+                this.$notify({type: 'error', text: err});
             });
         },
 
@@ -663,6 +672,7 @@ export default {
                 this.resource = res.data.resources[0];
             }).catch(err=>{
                 console.error(err);
+                this.$notify({type: 'error', text: err});
             });;
         },
 
@@ -694,7 +704,9 @@ export default {
                 find: JSON.stringify({ 
                     status: { $ne: "removed" },
                     service: "brainlife/app-stage", 
-                    "config._outputs.id": this.dataset._id,
+                    
+                    //why not look for config.datasets.id? because for copied dataset, config.dataset.id != config._outputs.id
+                    "config._outputs.id": this.dataset._id, 
                 }),
                 sort: '-create_date', //pick the latest one
                 limit: 1,

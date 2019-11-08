@@ -84,7 +84,7 @@ export default {
         let recent = new Date();
         recent.setMonth(recent.getMonth()-2); 
         let where = {
-            "times.register": {$gt: recent},
+            "times.register": {$gt: {$date: recent}},
             email_confirmed: true,
         };
 

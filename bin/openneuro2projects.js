@@ -181,9 +181,11 @@ function split_groups(in_groups) {
         let t2 = false;
         group.forEach(item=>{
             switch(item.filename) {
+            case "T1w.nii":
             case "T1w.nii.gz":
                 t1 = true;
                 break;
+            case "T2w.nii":
             case "T2w.nii.gz":
                 t2 = true;
                 break;
@@ -231,6 +233,8 @@ function upsert_project(rootmeta, dataset, snapshot, cb) {
                 },
             });
         }
+        
+        project.stats = undefined; //fix for some corrupted project on dev1
 
         //fields that we should be able to update
         //project.name = dataset.name;
@@ -241,6 +245,7 @@ function upsert_project(rootmeta, dataset, snapshot, cb) {
         //project.readme += "\n\nhttps://openneuro.org/datasets/"+dataset.id+"/versions/"+snapshot.tag;
 
         logger.info("upsert project %s %s", project.name, project._id.toString());
+        console.log(JSON.stringify(project, null, 4));
         project.save(err=>{
             cb(err, project);
         });
@@ -283,8 +288,6 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
             dataset = {
                 user_id: admin_uid, 
                 project,
-                //datatype_tags: [], 
-                //desc: group[0].filename, //just use the first one..
                 tags: ["snapshot-"+snapshot.tag], 
                 storage: "url",
                 storage_config: {
@@ -312,9 +315,11 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                 let t2 = false;
                 group.forEach(item=>{
                     switch(item.filename) {
+                    case "T1w.nii":
                     case "T1w.nii.gz":
                         t1 = true;
                         break;
+                    case "T2w.nii":
                     case "T2w.nii.gz":
                         t2 = true;
                         break;
@@ -346,6 +351,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, body);
                         break;
+                    case "T1w.nii":
                     case "T1w.nii.gz":
                         dataset.storage_config.files.push({ local: "t1.nii.gz", url: item.file.urls[0], });
                         break;
@@ -354,16 +360,22 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, body);
                         break;
+                    case "T2w.nii":
                     case "T2w.nii.gz":
                         dataset.storage_config.files.push({ local: "t2.nii.gz", url: item.file.urls[0], });
                         break;
                     case "FLAIR.json":
+                    case "FLAIR.nii":
                     case "FLAIR.nii.gz":
                     case "GRE.json":
+                    case "GRE.nii":
                     case "GRE.nii.gz":
+                    case "defacemask.nii":
                     case "defacemask.nii.gz":
+                    case "T1map.nii":
                     case "T1map.nii.gz":
                     case "mp2rage.json":
+                    case "mp2rage.nii":
                     case "mp2rage.nii.gz":
                     case "inplaneT2.nii.gz":
                     case "inplaneT2.json":
@@ -388,9 +400,11 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         Object.assign(dataset.meta, body);
                         break;
 
+                    case "bold.nii":
                     case "bold.nii.gz":
                     case "events.tsv":
                     case "events.json":
+                    case "sbref.nii":
                     case "sbref.nii.gz":
                     case "sbref.json":
                     case "physio.tsv.gz":
@@ -398,6 +412,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         dataset.storage_config.files.push({ local: item.filename, url: item.file.urls[0], });
                         break;
 
+                    case "defacemask.nii":
                     case "defacemask.nii.gz":
                         logger.warn("don't know how to handle defacemask.nii.gz for func.. skipping");
                         break;
@@ -419,6 +434,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, body);
                         break;
+                    case "dwi.nii":
                     case "dwi.nii.gz":
                         dataset.storage_config.files.push({ local: "dwi.nii.gz", url: item.file.urls[0], });
                         break;
@@ -451,6 +467,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                 //figure out datatype_tag (phasediff, epi, real, or 2phasemag)
                 group.forEach(item=>{
                     switch(item.filename) {
+                    case "phase1.nii": 
                     case "phase1.nii.gz": 
                         dataset.datatype_tags = ["2phasemag"];
                         if(rootmeta["phase1.json"]) Object.assign(dataset.meta, {phase1: rootmeta["phase1.json"].body});
@@ -458,16 +475,19 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         if(rootmeta["magnitude1.json"]) Object.assign(dataset.meta, {magnitude1: rootmeta["magnitude1.json"].body});
                         if(rootmeta["magnitude2.json"]) Object.assign(dataset.meta, {magnitude2: rootmeta["magnitude2.json"].body});
                         break;
+                    case "phasediff.nii":
                     case "phasediff.nii.gz":
                         dataset.datatype_tags = ["phasediff"];
                         if(rootmeta["phasediff.json"]) Object.assign(dataset.meta, rootmeta["phasediff.json"].body);
                         if(rootmeta["magnitude1.json"]) Object.assign(dataset.meta, {magnitude1: rootmeta["magnitude1.json"].body});
                         if(rootmeta["magnitude2.json"]) Object.assign(dataset.meta, {magnitude2: rootmeta["magnitude2.json"].body});
                         break;
+                    case "epi.nii":
                     case "epi.nii.gz":
                         dataset.datatype_tags = ["pepolar"];
                         //TODO -- any root items?
                         break;
+                    case "fieldmap.nii":
                     case "fieldmap.nii.gz":
                         dataset.datatype_tags = ["real"];
                         if(rootmeta["fieldmap.json"]) Object.assign(dataset.meta, rootmeta["fieldmap.json"].body);
@@ -486,9 +506,12 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, body);
                         //fall through to store the json .. will be redundant with meta.. but just in case
+                    case "phasediff.nii":
                     case "phasediff.nii.gz":
+                    case "magnitude1.nii":
                     case "magnitude1.nii.gz":
                     case "magnitude2.nii.gz":
+                    case "magnitude2.nii":
                         dataset.storage_config.files.push({ local: item.filename, url: item.file.urls[0], });
                         break;
 
@@ -501,7 +524,9 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         name = item.filename.split(".")[0]; //phase1/phase2/magnitude1/magnitude2
                         Object.assign(dataset.meta, {[name]: body});
                         //fall through to store the json .. will be redundant with meta.. but just in case
+                    case "phase1.nii":
                     case "phase1.nii.gz":
+                    case "phase2.nii":
                     case "phase2.nii.gz":
                         dataset.storage_config.files.push({ local: item.filename, url: item.file.urls[0], });
                         break;
@@ -511,6 +536,7 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, {[item.dir]: body});
                         //fall through to store the json .. will be redundant with meta.. but just in case
+                    case "epi.nii":
                     case "epi.nii.gz":
                         //dataset.storage_config.files.push({ local: item.dir+"."+item.filename, url: item.file.urls[0], });
                         //add numeric ID to the file
@@ -524,7 +550,9 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
                         body = await rp({ json: true, uri: item.file.urls[0] });
                         Object.assign(dataset.meta, body);
                         //fall through to store the json .. will be redundant with meta.. but just in case
+                    case "magnitude.nii":
                     case "magnitude.nii.gz":
+                    case "fieldmap.nii":
                     case "fieldmap.nii.gz":
                         dataset.storage_config.files.push({ local: item.filename, url: item.file.urls[0], });
                         break;
@@ -549,6 +577,30 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
 
             //console.log(JSON.stringify(dataset, null, 4));
             logger.info("saving dataset----------------");
+
+            console.dir(dataset.storage_config.files);
+
+            //clean up meta
+            function clean_keys(obj) {
+                let clean_v = {};
+                for(let key in obj) {
+                    let v = obj[key];
+                    if(!Array.isArray(v) && typeof v == 'object') {
+                        v = clean_keys(v);
+                    }
+
+                    if(key.includes('.')) {
+                        let clean_key = key.replace(/\./g, "-");
+                        console.log("replacing key:", key, "with", clean_key);
+                        clean_v[clean_key] = v;
+                    } else {
+                        clean_v[key] = v;
+                    }
+                }
+                return clean_v;
+            }
+            dataset.meta = clean_keys(dataset.meta);
+            //console.dir(dataset.meta);
             new db.Datasets(dataset).save(next_group);
         });
     }, cb);
@@ -557,11 +609,14 @@ function upsert_datasets(project, rootmeta, snapshot, groups, cb) {
 function run() {
     db.init(async err=>{
         if(err) throw err;
+        
         //load all datasets
         //let datasets = await list_datasets();
 
         //specific dataset
-        let datasets = [await get_dataset("ds001454")];
+        console.log("loading only specific projects");
+        //let datasets = [await get_dataset("ds001454")];
+        let datasets = [await get_dataset("ds002171")]; //.nii dataset
 
         async.eachSeries(datasets, (dataset, next_dataset)=>{
             if(!dataset) {
@@ -583,7 +638,7 @@ function run() {
             }
 
             //TODO - can I pass this to the graphql query?
-            if(dataset.analytics.downloads < 30) {
+            if(datasets.length > 10 && dataset.analytics.downloads < 30) {
                 logger.info("low download count.. skipping");
                 return next_dataset();
             }
@@ -595,7 +650,10 @@ function run() {
                 load_root_meta(snapshot.files, (err, rootmeta)=>{
                     if(err) return next_dataset(err);
                     upsert_project(rootmeta, dataset, snapshot, (err, project)=>{
+                        logger.debug("post upsert_project");
+                        console.dir(err);
                         if(err) return next_dataset(err);
+                        logger.debug("done upsert project");
                         let groups = group_files(snapshot.files);
                         groups = split_groups(groups);
                         upsert_datasets(project, rootmeta, snapshot, groups, next_dataset);
@@ -603,11 +661,10 @@ function run() {
                 });
             });
         }, err=>{
-            logger.debug("checking point -end");
-            if(err) logger.error(err);
             db.disconnect(()=>{
-                logger.info("all done");
-                process.exit(0);
+                if(err) logger.error(err);
+                else logger.info("all done!");
+                process.exit(0); //something gets stuck and won't terminate..
             });
         });
     });
