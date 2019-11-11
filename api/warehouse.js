@@ -1,5 +1,4 @@
 #!/usr/bin/node
-'use strict';
 
 const server = require('./server');
 server.start(function(err) {

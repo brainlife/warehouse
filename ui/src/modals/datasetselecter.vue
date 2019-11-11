@@ -1,7 +1,7 @@
 <template>
 <b-modal title="Select Datasets" ref="modal" id="datasetSelecter" size="lg" @ok="submit" ok-only>
     <b-row>
-        <b-col><span class="form-header">From Project</span></b-col>
+        <b-col><span class="form-header">From</span></b-col>
         <b-col cols="9">
             <projectselecter ref="psel" v-model="project" :required="true"></projectselecter>
         </b-col>

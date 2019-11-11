@@ -7,8 +7,10 @@
 		<div class="margin20">
             <b-alert show>todo</b-alert>
 
+            <!--
             <h3>Services Running</h3>
             <pre>{{service_running}}</pre>
+            -->
 
             <p>
                 <h3>su</h3>
@@ -37,17 +39,19 @@ export default {
     components: { sidemenu, pageheader },
     data () {
         return {
-            service_running: [],
+            //service_running: [],
             su_options: [],
             config: Vue.config,
         }
     },
     mounted() {
         //load counts of apps currently running
+        /*
         this.$http.get(Vue.config.wf_api+'/admin/services/running')
         .then(res=>{
             this.service_running = res.data;
         });
+        */
 
         /*
         //load counts of resource currently running
@@ -68,6 +72,7 @@ export default {
                         {email: {$regex: search}},
                     ],
                 }),
+                limit: 0,
             }}).then(res=>{
                 this.su_options = res.data;
                 loading(false);

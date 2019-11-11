@@ -835,7 +835,10 @@ function process_input_config(app, input_info, _app_inputs) {
 
             var info = input_info[node.input_id];
             var file = info.datatype.files.find(file=>file.id == node.file_id);
-                
+            if(!file) {
+                console.error("referencing to missing file "+node.file_id);
+                continue;
+            }
             var path = base+"/"+(file.filename||file.dirname);
             if(dataset.files && dataset.files[node.file_id]) {
                 path = base+"/"+dataset.files[node.file_id];

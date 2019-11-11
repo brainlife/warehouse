@@ -1550,7 +1550,7 @@ ${p.desc}`;
                                 bidspath_exit += "../";
                             }
                             //then resolve the src(could be glob pattern) and link it to bidspath
-                            script += "ln -sf "+bidspath_exit+"$(ls -d \""+path+"/"+map.src+"\") \""+bidspath+"/"+dest+"\"\n";
+                            script += "[ -f "+path+"/"+map.src+" ] && ln -sf "+bidspath_exit+"$(ls -d \""+path+"/"+map.src+"\") \""+bidspath+"/"+dest+"\"\n";
                         }
                     });
                 } else script+="#no bids mapping\n";
