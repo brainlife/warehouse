@@ -22,11 +22,6 @@
                 </span>
                 <span v-if="app_.deprecated_by" :id="'dep_'+app_.deprecated_by" title="Deprecated">
                     <icon name="regular/calendar-times"/>
-                    <!--
-                    <b-popover :target="'dep_'+app_.deprecated_by" triggers="hover" title="Deprecated By">
-                        <a :href="'/app/'+app_.deprecated_by">{{app_.deprecated_by}}</a>
-                    </b-popover>
-                    -->
                 </span>
                 {{app_.name}}
             </h4>
@@ -47,23 +42,22 @@
         <div class="desc">{{app_.desc_override||app_.desc||'no description..'}}</div>
         <slot/>
         <div class="stats" v-if="app_.stats && app_.stats.serviceinfo">
-            <span class="stat" v-b-tooltip.hover.d500 title="Number of time this App was requested">
+            <span class="stat" title="Number of time this App was requested">
                 <icon name="play" scale="0.8"/> {{app_.stats.serviceinfo.counts.requested}}
                 &nbsp;
                 &nbsp;
             </span>
-            <span class="stat" v-b-tooltip.hover.d500 title="Number of unique users who requested this App">
+            <span class="stat" title="Number of unique users who requested this App">
                 <icon name="user" scale="0.8"/> {{app_.stats.serviceinfo.users}}
                 &nbsp;
                 &nbsp;
             </span>
-            <span class="stat" v-b-tooltip.hover.d500 title="github stars" v-if="app_.stats.gitinfo">
+            <span class="stat" title="github stars" v-if="app_.stats.gitinfo">
                 <icon name="star" scale="0.8"/> {{app_.stats.gitinfo.stats.stars}}
                 &nbsp;
                 &nbsp;
             </span>
-            <span class="stat" style="float: right;" v-b-tooltip.hover.d500 
-                title="success rate = finished/(failed+finished)" v-if="app_.stats.serviceinfo.success_rate">
+            <span class="stat" style="float: right;" title="success rate = finished/(failed+finished)" v-if="app_.stats.serviceinfo.success_rate">
                 <icon name="check-circle" scale="0.8"/> {{app_.stats.serviceinfo.success_rate.toFixed(1)}}%
             </span>
         </div>
@@ -93,6 +87,7 @@ export default {
         clickable: {type: Boolean, default: true},
         height: String, //"200px"
     },
+
     watch: {
         appid() {
             if(this.appid) this.load_app();
@@ -101,11 +96,13 @@ export default {
             if(this.app) this.app_ = this.app;
         }
     },
+
     data() {
         return {
             app_: null
         }
     },
+
     created: function() {
         if(this.appid) this.load_app();
         if(this.app) this.app_ = this.app;
@@ -125,6 +122,7 @@ export default {
                 this.$emit("open", this.app_._id);
             }
         },
+
     },
 }
 </script>

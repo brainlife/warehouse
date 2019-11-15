@@ -1,6 +1,8 @@
 <template>
-<div v-if="ready" class="dt" :class="{'dt-clickable': clickable}" @click="click"
+<div v-if="ready" class="dt" :class="{'dt-clickable': clickable}" @click="click">
+    <!--
     v-b-popover.hover.top.d1000.html="'<small>'+_datatype.desc+'</small>'" :title="'<small><b>'+_datatype.name+'</b></small>'">
+    -->
     <span class="dot" :style="{backgroundColor: color}"></span> {{name}}
     <div class="tags" v-if="tags" v-for="(tag, idx) in tags" :key="idx">
         <span v-if="tag && tag[0] == '!'" class="text-danger"><b-badge variant="danger">not</b-badge> {{tag.substring(1)}}</span>
@@ -40,10 +42,7 @@ export default {
         }
     },
     
-    computed: {
-    },
-
-    created() {
+    mounted() {
         //console.log(this.datatype);
         if(!this.datatype) return;
         if(typeof this.datatype == "string") {

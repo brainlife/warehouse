@@ -712,7 +712,7 @@ function handle_rule(rule, cb) {
 
                 //we need to use the subject/session for the current group as input might have come from other subject/session
                 meta.subject = group.subject;
-                meta.session = group.session;
+                if(group.session) meta.session = group.session; //don't set if it's empty
 
                 next();
             },

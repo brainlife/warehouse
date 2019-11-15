@@ -129,7 +129,7 @@
                                         </b>
                                         <span class="text-muted" v-if="dataset.size">({{dataset.size | filesize}})</span>
                                         <div v-if="dataset.storage == 'url'">
-                                            <b-row v-for="file in dataset.storage_config.files">
+                                            <b-row v-for="file in dataset.storage_config.files" :key="file.id">
                                                 <b-col cols="2">{{file.local}}</b-col>
                                                 <b-col><a :href="file.url">{{file.url}}</a></b-col>
                                             </b-row>

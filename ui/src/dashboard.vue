@@ -80,11 +80,25 @@ export default {
         }).catch(console.error);
         */
 
+        function formatDateForMongo(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+
         //load recent users
         let recent = new Date();
         recent.setMonth(recent.getMonth()-2); 
         let where = {
-            "times.register": {$gt: {$date: recent}},
+            "times.register": {$gt: formatDateForMongo(recent)},
             email_confirmed: true,
         };
 
