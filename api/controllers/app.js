@@ -6,6 +6,7 @@ const jwt = require('express-jwt');
 const winston = require('winston');
 const async = require('async');
 const request = require('request');
+const rp = require('request-promise-native');
 
 const config = require('../config');
 const logger = winston.createLogger(config.logger.winston);
@@ -359,6 +360,42 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
                 res.json({status: "ok"});
             }); 
         } else return res.status(401).end();
+    });
+});
+
+/**
+ * @apiGroup App
+ * @api {delete} /app/github/:org/:name
+ *                              Query github information (tab, branches)
+ * @apiDescription              Mark the application as removed (redundant with put?)
+ *
+ * @apiHeader {String} authorization 
+ *                              A valid JWT token "Bearer: xxxxx"
+ */
+router.get('/info/:org/:name', jwt({secret: config.express.pubkey}), (req, res, next)=>{
+
+    //TODO - this allow for querying private repo that only brainlifeio has
+    //access, but I think it's better to get this working rather than forcing
+    //users to use public repo at all cases.
+    //also user has to know the existance of the repo..(and this only lists tags/branches)
+
+    let service = req.params.org+"/"+req.params.name; //TODO validate?
+    let promise_branches = rp('https://api.github.com/repos/'+service+'/branches',
+        { json: true, 
+            headers: {
+            Authorization: 'token '+config.github.access_token,
+            'User-Agent': 'brainlife/warehouse',
+    }});
+    let promise_tags = rp('https://api.github.com/repos/'+service+'/tags',
+        { json: true, 
+            headers: {
+            Authorization: 'token '+config.github.access_token,
+            'User-Agent': 'brainlife/warehouse',
+    }});
+    Promise.all([promise_branches, promise_tags]).then(results=>{
+        res.json({branches: results[0], tags: results[1]});
+    }).catch(err=>{
+        next("No such repo?");
     });
 });
 

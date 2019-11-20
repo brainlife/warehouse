@@ -6,10 +6,10 @@ import cache from '@/mixins/cache'
 export default {
     mixins: [ cache ], 
     methods: {
-        authprofilecache(id, cb) {
-            this._cache("auth.profile."+id, ()=>{
+        authprofilecache(sub, cb) {
+            this._cache("auth.profile."+sub, ()=>{
                 //console.log("loading auth profile for "+id);
-                let where = JSON.stringify({sub: id});
+                let where = JSON.stringify({sub});
                 return this.$http.get(Vue.config.auth_api+'/profile?where='+where);
             }, (err, res)=>{
                 if(err) return cb(err);

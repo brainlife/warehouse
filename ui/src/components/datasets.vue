@@ -63,7 +63,7 @@
                                     <time>{{new Date(dataset.create_date).toLocaleString()}}</time>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
-                                    <tags :tags="dataset.tags"></tags> &nbsp;
+                                    <tags :tags="dataset.tags"></tags>
                                 </b-col>
                             </b-row>
                         </div>
@@ -809,7 +809,7 @@ right: 250px;
 .list  .truncate {
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: fade clip; 
+    text-overflow: ellipsis;
 }
 .loading {
     position: fixed;

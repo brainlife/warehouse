@@ -2,6 +2,7 @@
 <div>
     <sidemenu active="/apps"></sidemenu>
     <div class="page-header">
+        <b-form-checkbox style="float: right; padding: 11px; z-index: 1" v-model="show_dep">Show Deprecated Apps</b-form-checkbox>
         <div class="search-box">
             <b-form-input v-model="query" type="text" placeholder="Search Apps" @focus.native="focus_search()" @input="change_query_debounce" class="input"/>
             <icon name="search" class="search-icon" scale="1.5"/>
@@ -19,7 +20,7 @@
 
         <p v-for="tag in sorted_tags" class="item" :class="{'active': active == tag}" @click="jump(tag)" :key="tag">
             <span>{{tag}}</span> 
-            <b-badge variant="dark" v-if="app_groups[tag]">{{app_groups[tag].length}}</b-badge>
+            <small v-if="app_groups[tag]">{{app_groups[tag].length}}</small>
         </p>
 
         <div v-if="my_apps && my_apps.length > 0">
@@ -149,6 +150,7 @@ export default {
             apps: null,  //number of total apps loaded
             query: "",
             config: Vue.config,
+            show_dep: false,
 
             datatypes: null, //only loaded if search box is focused
         };
@@ -156,7 +158,17 @@ export default {
 
     created() {
         this.query = sessionStorage.getItem("apps.query");
+        this.show_dep = !!localStorage.getItem("apps.show_dep");
         this.load();
+    },
+
+    watch: {
+        show_dep(nv, ov) {
+            if(nv == ov) return;
+            console.log(this.show_dep);
+            localStorage.setItem("apps.show_dep", this.show_dep);
+            this.load();
+        },
     },
 
     computed: {
@@ -191,7 +203,6 @@ export default {
         },
 
         load() {    
-            console.time("loading");
             this.app_groups = {};
             this.sorted_tags = [];
             this.apps = null;
@@ -202,6 +213,9 @@ export default {
                     { removed: {$exists: false }},
                 ]}
             ];
+            if(!this.show_dep) {
+                ands.push({deprecated_by: {$exists: false}});
+            }
             if(this.query) {
                 //split query into each token and allow for regex search on each token
                 //so that we can query against multiple fields simultanously
@@ -229,7 +243,7 @@ export default {
                 });
             }
 
-            console.log("getting apps");
+            console.log("loading apps", ands);
             this.$http.get('app', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500, //TODO - this is not sustailable
@@ -250,6 +264,20 @@ export default {
                     });
                 });
                 this.sorted_tags.sort();
+
+                if(Vue.config.debug) {
+                    console.log("adding dummy apps to test performance");
+                    let template = Object.assign({}, res.data.apps[0]);
+                    let apps = [];
+                    for(let i = 0;i < 200; i++) {
+                        apps.push(Object.assign({}, template, {
+                            _id: Math.random().toString()+Math.random().toString(),
+                            desc: "This app will quickly check the dwi image to see if any bvecs directions needs to be flipped. The algorithm finds bvecs that are pointing toward certain direction and find the volume slice within 4D DWI data and see how many image slices indeed seems to contain features that are orthogonal to the bvecs directions. Inconclusive output from this App usually means you have some data quality issue with your dwi.",
+                        }));
+                    }
+                    this.app_groups['dummy'] = apps;
+                    this.sorted_tags.push('dummy');
+                }
 
                 if(!this.query) {
                     //find most recently created apps as *new apps*

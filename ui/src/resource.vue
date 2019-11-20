@@ -112,12 +112,21 @@
                     </b-col>
                 </b-row>
 
+                <b-row v-if="usage_data">
+                    <b-col cols="2">
+                        <span class="form-header">Resource Usage</span>
+                    </b-col>
+                    <b-col>
+                        <vue-plotly :data="usage_data" :layout="usage_layout" :autoResize="true"/>
+                        <br>
+                    </b-col>
+                </b-row>
+
                 <b-row v-if="projects">
                     <b-col cols="2">
                         <span class="form-header">Projects</span>
                     </b-col>
                     <b-col>
-                        
                         <p>
                             <small>This resource has been used to analyze datasets on the following projects</small>
                         </p>
@@ -279,7 +288,10 @@
                     </b-col>
                 </b-row>
 
-                <div v-if="config.debug"><pre>{{resource}}</pre></div>
+                <div v-if="config.debug">
+                    <pre>{{resource}}</pre>
+                    <pre>{{usage_data}}</pre>
+                </div>
             </b-container>
         </div>
     </div>
@@ -290,6 +302,7 @@
 
 import Vue from 'vue'
 import Router from 'vue-router'
+import VuePlotly from '@statnett/vue-plotly'
 
 import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
@@ -302,7 +315,7 @@ import stateprogress from '@/components/stateprogress'
 
 export default {
     components: { 
-        sidemenu, pageheader, app, contact, tags, statustag, statusicon, stateprogress,
+        sidemenu, pageheader, app, contact, tags, statustag, statusicon, stateprogress, VuePlotly,
     },
 
     data () {
@@ -313,6 +326,8 @@ export default {
 
             //report: null,
             projects: null, //list of all projects and some basic info (only admin can load this)
+            usage_data: null, 
+            usage_layout: null, 
 
             testing: false,
             config: Vue.config,
@@ -377,6 +392,39 @@ export default {
 
             this.$http.get(Vue.config.amaretti_api+'/resource/tasks/'+this.$route.params.id).then(res=>{
                 this.tasks = res.data;
+            }).catch(console.error);
+
+            this.$http.get(Vue.config.amaretti_api+'/resource/usage/'+this.$route.params.id).then(res=>{
+                console.dir(res.data);
+                let x = [];
+                let y = [];
+                res.data.forEach(rec=>{
+                    x.push(new Date(rec[0]*1000)); //time
+                    y.push(rec[1]); //value
+                });
+                this.usage_data = [{x, y, mode: 'line'}];
+                this.usage_layout = {
+                    //title: "Resource Usage",
+                    //height: 370,
+                    margin: {
+                        t: 10, //top
+                        b: 35, //bottom
+                        r: 10, //right
+                    },
+                    /*
+                    showlegend: true,
+                    legend: {
+                        //orientation: "h",
+                        font: {
+                            family: 'sans-serif',
+                            size: 10,
+                        }
+                    },
+                    */
+                    yaxis: {
+                        title: 'Running Jobs',
+                    },
+                };
             }).catch(console.error);
         },
 

@@ -15,7 +15,7 @@
     </div>
     <div class="page-content">
         <br>
-        <b-form>
+        <b-form @submit="submit">
         <b-container>
             <b-row>
                 <b-col cols="3">
@@ -33,7 +33,7 @@
                 </b-col> 
                 <b-col cols="9">
                     <p>
-                        <b-form-textarea :rows="2" v-model="datatype.desc" placeholder="Enter description for this datatype."/>
+                        <b-form-textarea :rows="2" v-model="datatype.desc" placeholder="Enter description for this datatype." required/>
                     </p>
                 </b-col>
             </b-row>
@@ -203,7 +203,7 @@
             <div class="page-footer">
                 <b-container>
                     <b-button variant="secondary" @click="cancel">Cancel</b-button>
-                    <b-button variant="primary" @click="submit" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
+                    <b-button variant="primary" type="submit" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
                 </b-container>
             </div>
                 

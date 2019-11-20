@@ -74,12 +74,6 @@ export default {
             let min_time = raw_points[0][0];
             let max_time = raw_points[raw_points.length-1][0];
             let range_time = max_time - min_time;
-
-            /*
-            raw_points.forEach(point=>{
-                if(max_value < point[1]) max_value = point[1];
-            });
-            */
             raw_points.forEach(point=>{
                 let t = point[0] - min_time;
                 t = t / range_time * 200; 

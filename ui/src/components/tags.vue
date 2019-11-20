@@ -1,10 +1,10 @@
 <template>
-<div style="display: inline-block;">
+<span>
     <b-badge v-for="(tag, i) in deco_tags" :key="i" :variant="tag.neg?'danger':'default'">
         <icon name="ban" v-if="tag.neg" scale="0.5"></icon>
         {{tag.name}}
     </b-badge>
-</div>
+</span>
 </template>
 
 <script>

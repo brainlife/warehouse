@@ -24,10 +24,21 @@
                         v-model='preferred_resource' class="mb-3" />
             </b-col>
         </b-row>
-        <b-row v-if="github_branches">
+        <b-row>
             <b-col cols="3" class="text-muted">Github Branch</b-col>
             <b-col>
-                <b-form-select style="width:100%;" :options="github_branches" v-model='github_branch'></b-form-select>
+                <!--
+                <b-form-select v-model='github_branch'>
+                    <optgroup label="Branches" v-if="github_branches">
+                        <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
+                    </optgroup>
+                    <optgroup label="Tags" v-if="github_tags">
+                        <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
+                    </optgroup>
+                </b-form-select>
+                -->
+                <branchselecter v-model="github_branch" :service="app.github"/>
+
             </b-col>
         </b-row>
         <br>
@@ -36,10 +47,16 @@
 </template>
 
 <script>
+
 import Vue from 'vue'
+import branchselecter from '@/components/branchselecter'
 
 export default {
     props: [ 'app', 'value' ],
+
+    components: { 
+        branchselecter,
+    },
     
     data () {
         return {
@@ -48,7 +65,9 @@ export default {
             preferrable_resources: [],
             preferred_resource: null,
             
-            github_branches: [],
+            //github_branches: [],
+            //github_tags: [],
+
             github_branch: null,
             
         };
@@ -68,16 +87,20 @@ export default {
             this.preferrable_resources.unshift({ value: null, text: "(None)" });
             this.preferrable_resources.sort((a, b) => a.score > b.score);
 
-            return this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', { headers: { Authorization: null } });
+            //return this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', { headers: { Authorization: null } });
+            /*
+            return this.$http.get('app/info/'+this.app.github);
         })
         .then(res => {
-            this.github_branches = res.data.map(b => {
-                return {
-                    value: b.name,
-                    text: b.name
-                };
+            console.dir(res.data);
+            this.github_tags = res.data.tags.map(b => {
+                return b.name;
             });
-            
+            this.github_branches = res.data.branches.map(b => {
+                return b.name;
+            });
+            */
+
             this.github_branch = this.value.github_branch || this.app.github_branch || 'master';
         })
         .catch(console.error);

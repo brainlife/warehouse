@@ -20,9 +20,10 @@
                 </div>
             </div>
         </div>
-        <div v-if="!compact" style="clear: both; background-color: #f0f0f0; opacity: 0.8;">
+        <div v-if="!compact" style="clear: both;">
             <div style="margin-left: 100px; padding-bottom: 15px; margin-top: 10px; padding-top: 10px;">
-                <b style="opacity: 0.6; margin-right: 20px;">Authors</b> <contact v-for="contact in pub.authors" :key="contact.id" :fullname="contact.fullname" :email="contact.email"></contact>
+                <!--<b style="opacity: 0.6; margin-right: 20px;">Authors</b>-->
+                <contact v-for="contact in pub.authors" :key="contact.id" :fullname="contact.fullname" :email="contact.email"></contact>
                 <!--
                 <p>
                     <b class="text-muted">Published On </b> {{new Date(pub.create_date).toLocaleDateString()}}

@@ -84,9 +84,10 @@ Normally, the App description is automatically pulled from github repo descripti
                             <b-input-group prepend="https://github.com/">
                                 <b-form-input type="text" v-model="app.github" placeholder="github-org/app-name" required/>
                             </b-input-group>
-                            <small v-if="app.github && github_branches && github_branches.length == 0" class="text-danger">No such repository found.</small>
+                            <!--<small v-if="app.github" class="text-danger">No such repository found.</small>-->
                         </b-col>
                         <b-col>
+                            <!--
                             <b-input-group prepend="Branch/Tag">
                                 <b-form-select v-model="app.github_branch">
                                     <optgroup label="Branches" v-if="github_branches">
@@ -98,10 +99,14 @@ Normally, the App description is automatically pulled from github repo descripti
                                 </b-form-select>
                                 
                             </b-input-group>
-                                <small v-if="app.github_branch == 'master'" class="text-danger"><icon name="exclamation" scale="0.8"/> Please avoid master branch</small>
+                            -->
+                            <branchselecter v-model="app.github_branch" :service="app.github"/>
                         </b-col>
                     </b-row>
                     <br>
+                    <p v-if="app.github_branch == 'master'">
+                        <b-alert show variant="secondary"><icon name="exclamation" scale="0.8"/> You should avoid releasing an App with master branch. Please read <a href="https://brainlife.io/docs/apps/versioning/" target="doc">Versioning Tips</a></b-alert>
+                    </p>
                 </b-col>
             </b-row>
 
@@ -520,6 +525,7 @@ import trueorfalse from '@/components/trueorfalse'
 import tageditor from '@/components/tageditor'
 import datatype from '@/components/datatype'
 import app from '@/components/app'
+import branchselecter from '@/components/branchselecter'
 
 import search_app_mixin from '@/mixins/searchapp'
 
@@ -529,7 +535,7 @@ export default {
     mixins: [ search_app_mixin ],
     components: { 
         sidemenu, contactlist, multiprojectselecter,
-        datatypeselecter, trueorfalse, tageditor, datatype, app,
+        datatypeselecter, trueorfalse, tageditor, datatype, app, branchselecter,
 
         editor: require('vue2-ace-editor'),
     },
@@ -539,13 +545,13 @@ export default {
                 config: {},
                 inputs: [],
                 outputs: [],
-                github_branch: "master",
+                github_branch: null,
                 github: "",
             },
 
             invalid_repo: false,
-            github_branches: null,
-            github_tags: null,
+            //github_branches: null,
+            //github_tags: null,
             
             input_datasets: [],
             output_datasets: [],
@@ -646,6 +652,8 @@ export default {
         load_branches() {
             if(!this.app.github) return;
             console.log("loading branches", this.app.github);
+
+            /*
             this.github_branches = null;
             this.$http.get('https://api.github.com/repos/' + this.app.github + '/branches', 
                 { headers: { Authorization: null } })
@@ -669,6 +677,23 @@ export default {
                 this.github_tags = [];
                 console.error(err);
             });
+            */
+
+            /*
+            this.github_branches = [];
+            this.github_tags = [];
+            this.$http.get("/app/info/"+this.app.github).then(res=>{
+                console.dir(res.data);
+                this.github_tags = res.data.tags.map(b => {
+                    return b.name;
+                });
+                this.github_branches = res.data.branches.map(b => {
+                    return b.name;
+                });
+            }).catch(err=>{
+                console.error(err);
+            });
+            */
         },
         swap_inputs(first_idx, snd_idx) {
             let tmp = this.input_datasets[first_idx];

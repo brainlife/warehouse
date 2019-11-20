@@ -312,15 +312,16 @@ exports.update_appinfo = function(app, cb) {
 exports.load_github_detail = function(service_name, cb) {
     if(!config.github) return cb("no github config");
 
-    let auth = "?client_id="+config.github.client_id + "&client_secret="+config.github.client_secret;
+//    let auth = "?client_id="+config.github.client_id + "&client_secret="+config.github.client_secret;
 
     //first load main repo info
-    logger.debug("loading repo detail");
-    logger.debug("https://api.github.com/repos/"+service_name+auth);
-    request("https://api.github.com/repos/"+service_name+auth, { json: true, headers: {
-        'User-Agent': 'brain-life/warehouse',
+    //logger.debug("loading repo detail");
+    //logger.debug("https://api.github.com/repos/"+service_name+auth);
+    request("https://api.github.com/repos/"+service_name, { json: true, headers: {
         //needed to get topic (which is currently in preview mode..)
         //https://developer.github.com/v3/repos/#list-all-topics-for-a-repository
+        'Authorization': 'token '+config.github.access_token,
+        'User-Agent': 'brain-life/warehouse',
         'Accept': "application/vnd.github.mercy-preview+json", 
     }}, function(err, _res, git) {
         if(err) return cb(err);
@@ -331,7 +332,8 @@ exports.load_github_detail = function(service_name, cb) {
         //logger.debug(_res.headers);
 
         logger.debug("loading contributors");
-        request("https://api.github.com/repos/"+service_name+"/contributors"+auth, { json: true, headers: {
+        request("https://api.github.com/repos/"+service_name+"/contributors", { json: true, headers: {
+            'Authorization': 'token '+config.github.access_token,
             'User-Agent': 'brain-life/warehouse',
         }}, function(err, _res, cons) {
             if(err) return cb(err);
@@ -343,7 +345,10 @@ exports.load_github_detail = function(service_name, cb) {
             logger.debug("loading contributor details")
             let con_details = [];
             async.eachSeries(cons, (con, next_con)=>{
-                request(con.url+auth, { json: true, headers: {'User-Agent': 'brain-life/warehouse'} }, function(err, _res, detail) {
+                request(con.url, { json: true, headers: {
+                    'Authorization': 'token '+config.github.access_token,
+                    'User-Agent': 'brain-life/warehouse',
+                } }, function(err, _res, detail) {
                     if(err) return next_con(err);
                     if(_res.statusCode != 200) {
                         logger.error(_res.body);
@@ -565,24 +570,6 @@ setInterval(exports.cache_contact, 1000*60*30); //cache every 30 minutes
 exports.deref_contact = function(id) {
     return cached_contacts[id];
 }
-
-/* bad pattern..
-exports.populate_github_fields = function(repo, app, cb) {
-    exports.load_github_detail(repo, (err, repo, con_details)=>{
-        if(err) return cb(err);
-        app.desc = repo.description;
-        app.tags = repo.topics;
-        if(!app.stats) app.stats = {};
-        app.stats.stars = repo.stargazers_count;
-        app.contributors = con_details.map(con=>{
-            //see https://api.github.com/users/francopestilli for other fields
-            return {name: con.name, email: con.email};
-        });
-        console.dir(app.contributors.toObject());
-        cb();
-    });
-}
-*/
 
 //for split_product
 Array.prototype.unique = function() {

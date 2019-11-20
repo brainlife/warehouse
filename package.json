@@ -41,7 +41,7 @@
     "redis": "^2.8.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
-    "request-promise-native": "^1.0.7",
+    "request-promise-native": "^1.0.8",
     "ssh2": "^0.6.2",
     "stream-meter": "^1.0.4",
     "tar": "^4.4.8",

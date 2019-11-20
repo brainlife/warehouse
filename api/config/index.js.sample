@@ -24,8 +24,9 @@ exports.redis = {
 }
 
 exports.github = {
-    client_id: "6a581b698021c7f38c52",
-    client_secret: fs.readFileSync(__dirname+"/github.client.secret", "ascii").trim(),
+    //client_id: "6a581b698021c7f38c52",
+    //client_secret: fs.readFileSync(__dirname+"/github.client.secret", "ascii").trim(),
+    access_token: fs.readFileSync(__dirname+"/github.access_token", "ascii").trim(),
 }
 
 //admin+client scope oauth2 token used to invite users

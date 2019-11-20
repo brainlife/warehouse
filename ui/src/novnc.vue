@@ -66,7 +66,6 @@ export default {
                     find: JSON.stringify({
                         instance_id: instance._id,
                         name: novnc_task_name,
-                        //"config.input_instance_id": this.instanceid,
                         "config.input_instance_id": this.task.instance_id,
                         "config.input_task_id": this.taskid,
                         "config.type": this.type,

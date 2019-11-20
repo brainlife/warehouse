@@ -80,20 +80,7 @@ export default {
         }).catch(console.error);
         */
 
-        function formatDateForMongo(date) {
-            var d = new Date(date),
-                month = '' + (d.getMonth() + 1),
-                day = '' + d.getDate(),
-                year = d.getFullYear();
-
-            if (month.length < 2)
-                month = '0' + month;
-            if (day.length < 2)
-                day = '0' + day;
-
-            return [year, month, day].join('-');
-        }
-
+        /*
         //load recent users
         let recent = new Date();
         recent.setMonth(recent.getMonth()-2); 
@@ -101,16 +88,10 @@ export default {
             "times.register": {$gt: formatDateForMongo(recent)},
             email_confirmed: true,
         };
+        */
 
-        if(Vue.config.debug) {
-            where = {$or: [
-                where, 
-                {sub: 1} //pull soichi into the list to debug
-            ]};
-        }
-
-        this.$http.get(Vue.config.auth_api+"/profile", {params: {where: JSON.stringify(where)}}).then(res=>{
-            this.recent_users = res.data.profiles;
+        this.$http.get(Vue.config.auth_api+"/profile/recreg/60").then(res=>{
+            this.recent_users = res.data.users;
         
             //load public profiles for each users
             this.recent_users.forEach(u=>{

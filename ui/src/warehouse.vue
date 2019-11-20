@@ -424,7 +424,6 @@ width: 11px;
 .search-box {
 position: fixed;
 top: 6px;
-/*width: 550px;*/
 padding-left: 10px;
 width: 100%;
 max-width: 1320px;

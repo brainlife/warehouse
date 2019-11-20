@@ -33,8 +33,20 @@
 
         <div v-if="rule.app">
             <b-form-group label="Branch" horizontal>
-                <b-form-select :options="github_branches" v-model='rule.branch'></b-form-select>
+                <!--<b-form-select :options="github_branches" v-model='rule.branch'></b-form-select>-->
+                <!--
+                <b-form-select v-model="rule.branch">
+                    <optgroup label="Branches" v-if="github_branches">
+                        <option v-for="branch in github_branches" :key="branch" :value="branch">{{branch}}</option>
+                    </optgroup>
+                    <optgroup label="Tags" v-if="github_tags">
+                        <option v-for="tag in github_tags" :key="tag" :value="tag">{{tag}}</option>
+                    </optgroup>
+                </b-form-select>
+                -->
+                <branchselecter v-model="rule.branch" :service="this.rule.app.github"/>
             </b-form-group>
+
             <b-form-group label="Configuration" horizontal>
                 <b-card>
                     <configform :spec="rule.app.config" v-model="rule.config"/>
@@ -161,6 +173,7 @@ import datatypetag from '@/components/datatypetag'
 import app from '@/components/app'
 import tageditor from '@/components/tageditor'
 import projectselecter from '@/components/projectselecter'
+import branchselecter from '@/components/branchselecter'
 import configform from '@/components/configform'
 
 import search_app_mixin from '@/mixins/searchapp'
@@ -182,7 +195,7 @@ export default {
     },
 
     components: { 
-        projectselecter, datatypetag, app, tageditor, configform,
+        projectselecter, branchselecter, datatypetag, app, tageditor, configform,
     },
 
     data() {
@@ -211,7 +224,9 @@ export default {
             ready: false,
             input_dataset_tags: {},
             output_dataset_tags: {},
-            github_branches: [],
+
+            //github_branches: [],
+            //github_tags: [],
 
             config: Vue.config,
         }
@@ -230,7 +245,11 @@ export default {
             this.ensure_ids_exists();
             this.ensure_config_exists();
             this.load_dataset_tags();
-            this.load_branches();
+
+            //this.load_branches();
+            console.log("reset app");
+            console.log(this.rule.app.github_branch);
+            this.rule.branch = this.rule.app.github_branch || 'master';
         },
 
         //can't just watch rule with deep:true because there are so many fields that
@@ -300,7 +319,6 @@ export default {
 
         query_matching_datasets() {
             if(!this.rule.app) return;
-            //console.dir(this.rule.input_tags);
             for(let id in this.rule.input_tags) {
                 let input = this.rule.app.inputs.find(i=>i.id == id);
                 if(!input) {
@@ -347,12 +365,12 @@ export default {
                
                 if(tag_query.length > 0) find.$and = tag_query;
 
-                console.log("querying datasets", find);
+                //console.log("querying datasets", find);
                 this.$http.get('dataset', {params: {
                     find: JSON.stringify(find),
                     limit: 1, //I just need count (0 means all!)
                 }}).then(res=>{
-                    console.log(res.data.count);
+                    //console.log(res.data.count);
                     this.rule.input_tags_count[id] = res.data.count;
                 }); 
             }
@@ -385,7 +403,6 @@ export default {
                 config: {},
                 archive: {},
 
-                branch: null,
             });
         },
 
@@ -473,7 +490,6 @@ export default {
                 input_subject,
                 input_session,
             });
-            console.dir(rule);
             this.$emit("submit", rule);
         },
 
@@ -512,7 +528,8 @@ export default {
         },
 
         load_branches() {
-            console.log("loading branches", this.rule.branch);
+            /*
+            console.log("loading tags/branches", this.rule.branch);
             this.$http.get('https://api.github.com/repos/' + this.rule.app.github + '/branches', 
                 { headers: { Authorization: null } })
             .then(res=>{
@@ -527,6 +544,17 @@ export default {
                 if(!this.rule.branch) this.rule.branch = this.rule.app.github_branch || 'master';
                 
             }).catch(console.error);
+            this.$http.get("/app/info/"+this.rule.app.github).then(res=>{
+                this.github_tags = res.data.tags.map(b => {
+                    return b.name;
+                });
+                this.github_branches = res.data.branches.map(b => {
+                    return b.name;
+                });
+            }).catch(err=>{
+                console.error(err);
+            });
+            */
         },
         
         edit_etag(input) {

@@ -157,8 +157,8 @@
 
                         <div v-if="resources">
                             <span class="form-header">Computing Resources</span>
-                            <b-alert show variant="danger" v-if="resources.length == 0" style="margin-bottom: 10px;">
-                                This App is not enabled to run on any resource that you have access to. 
+                            <b-alert show variant="secondary" v-if="resources.length == 0" style="margin-bottom: 10px;">
+                                This App is not registered to run on any resource that you have access to. 
                             </b-alert>
                             <b-alert show variant="secondary" v-else-if="!preferred_resource" style="margin-bottom: 10px;">
                                 This App can not run on any resources that you have access to at the moment.
