@@ -2,7 +2,7 @@
 <b-modal :no-close-on-backdrop='true' title="Upload Dataset" ref="modal" id="uploader" size="lg">
     <div v-if="mode == 'upload'">
         <b-form-group horizontal label="Data Type" v-if="datatypes">
-            <v-select v-model="datatype" placeholder="Please select" :options="datatypes_with_validator"/>
+            <v-select v-model="datatype" placeholder="Please select" label="desc" :options="Object.values(datatypes)"/>
         </b-form-group>
 
         <div v-if="datatype">
@@ -36,8 +36,17 @@
                 </b-form-group>
             </div>
 
+            <!--
             <b-form-group horizontal :label="m.id.toUpperCase()+(m.required?' *':'')" v-for="m in datatype.meta" :key="m.id">
                 <b-input type="text" v-model="meta[m.id]" :required="m.required" :placeholder="m.required?'':'(optional)'"/>
+            </b-form-group>
+            -->
+            <b-form-group horizontal label="Subject *">
+                <b-input type="text" v-model="meta['subject']" required/>
+            </b-form-group>
+
+            <b-form-group horizontal label="Session">
+                <b-input type="text" v-model="meta['session']"/>
             </b-form-group>
 
             <b-form-group horizontal label="Description">
@@ -128,7 +137,10 @@ export default {
             datatype: null,
             tags: [],
             datatype_tags: [],
-            meta: {},
+            meta: {
+                subject: "",
+                session: "",
+            },
 
             tasks: {
                 upload: null, //task where I can upload to
@@ -151,12 +163,15 @@ export default {
         //load all datatypes
         this.$http.get('datatype', {params: {
             sort: 'name', 
+            find: JSON.stringify({validator: {$exists: true}}),
         }}).then(res=>{
+            console.dir(res);
             this.datatypes = {};
             res.data.datatypes.forEach((type)=>{
                 this.datatypes[type._id] = type;
             });
             
+            /*
             //override meta 
             for(let id in this.datatypes) {
                 this.datatypes[id].meta = [
@@ -164,6 +179,7 @@ export default {
                     {id: "session", type: "string", required: false},
                 ];
             }
+            */
         });
 
         this.$root.$on("uploader.option", (opt)=>{
@@ -185,6 +201,7 @@ export default {
             if(!this.datatype) return null;
             return this.datatype.files;
         },
+        /*
         datatypes_with_validator: function() {
             let types = [];
             for(let id in this.datatypes) { 
@@ -194,6 +211,7 @@ export default {
             }
             return types;
         },
+        */
     },
 
     methods: {
@@ -380,8 +398,9 @@ export default {
             this.$refs.modal.hide();
 
             //remove null meta
+            let clean_meta = {};
             for(let id in this.meta) {
-                if(this.meta[id] === "") delete this.meta[id];
+                if(this.meta[id] !== "") clean_meta[id] = this.meta[id];
             }
 
             this.$http.post('dataset', {
@@ -389,7 +408,7 @@ export default {
                 task_id: this.tasks.validation._id, 
                 output_id: "output", //validation service isn't realy BL app, so I just have to come up with something
 
-                meta: this.meta,
+                meta: clean_meta,
                 tags: this.tags,
                 desc: this.desc,
 
@@ -424,11 +443,14 @@ export default {
         change_datatype() {
             if(!this.datatype) return;
 
-            //need to reset all meta properties to be reactive
+            /*
             this.meta = {};
+            //need to reset all meta properties to be reactive
             this.datatype.meta.forEach(meta=>{
                 Vue.set(this.meta, meta.id, "");
             });
+            */
+
             this.prep_upload();
 
             //load available dataset tags

@@ -266,6 +266,7 @@ var datasetSchema = mongoose.Schema({
 
     //physical location of this crate (URI?)
     storage: String, //azure, dc2, sda?, jetstream-swift, etc.. (as configured in /config)
+    
     //any extra storage config (maybe like subdir needed to access the dataset)
     storage_config: mongoose.Schema.Types.Mixed, 
     //size of datasets (when downloaded). at the momenet, size is only set when it's copied to SDA
@@ -653,8 +654,28 @@ ruleSchema.pre('save', function(next) {
 });
 exports.Rules = mongoose.model('Rules', ruleSchema);
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Phenotype 
-//
-//TODO..
+//////////////////////////////////////////////////////////////
+
+var dataladDatasetsSchema = mongoose.Schema({
+    path: String, //"/home/hayashis/datalad/workshops/mind-2017/MotivationalT",
+
+    author: [String], //["van der Meer"],
+    conformsto: String, //"http://specs.frictionlessdata.io/data-packages",
+    description: String, //"For a description of the experimental procedures, including the behavioral task, see van der Meer, Carey, Tanaka (2017) Optimizing for generalization in the decoding of internally generated activity in the hippocampus. Hippocampus 27(5), pp. 580--595",
+    license: [String], //["http://opendatacommons.org/licenses/pddl/"],
+    name: String, //"MotivationalT",
+    shortdescription: String, //"Extracellular tetrode recordings from the dorsal CA1 area of the hippocampus in behaving rats"
+    
+    /*
+    dsid: String, 
+    metadata: {
+        datalad_core: mongoose.Schema.Types.Mixed,
+        frictionless_datapackage: mongoose.Schema.Types.Mixed,
+    },
+    path: String,
+    status: String,
+    */
+});
+exports.DataladDatasets = mongoose.model('DataladDatasets', dataladDatasetsSchema);
+
+

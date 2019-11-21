@@ -69,6 +69,10 @@ font-size: 14px;
 font-size: inherit;
 }
 
+.progress {
+border-radius: inherit;
+}
+
 /*adjust bootstrap font sizes*/
 .input-group-text {
 font-size: 14px;

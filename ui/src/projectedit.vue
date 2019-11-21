@@ -13,14 +13,14 @@
     </div>
     <div class="page-content">
         <br>
-        <b-form>
+        <b-form @submit="submit">
         <b-container>
             <b-row>
                 <b-col cols="3">
                     <span class="form-header">Name</span>
                 </b-col> 
                 <b-col cols="9">
-                    <b-input type="text" v-model="project.name" placeholder="Project Name"/>
+                    <b-input type="text" v-model="project.name" placeholder="Project Name" required/>
                     <br>
                 </b-col>
             </b-row>
@@ -31,7 +31,7 @@
                 </b-col> 
                 <b-col cols="9">
                     <p>
-                        <b-form-textarea :rows="2" v-model="project.desc" placeholder="Enter description for this project."/>
+                        <b-form-textarea :rows="2" v-model="project.desc" placeholder="Enter description for this project." required/>
                     </p>
                 </b-col>
             </b-row>
@@ -139,10 +139,8 @@
             </b-row>
 
             <div class="page-footer">
-                <b-container>
-                    <b-button variant="secondary" @click="cancel">Cancel</b-button>
-                    <b-button variant="primary" @click="submit" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
-                </b-container>
+                <b-button variant="secondary" @click="cancel">Cancel</b-button>
+                <b-button type="submit" variant="primary" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
             </div>
                 
             <br>

@@ -837,7 +837,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             });
         },
 
-        //request archvie
+        //request archive
         next=>{
             if(!task.config) task.config = {};
             
@@ -868,7 +868,6 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
         },
     ], cb);
 });
-
 
 /**
  * @apiGroup Dataset

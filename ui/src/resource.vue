@@ -36,7 +36,7 @@
                         <span class="form-header">Status</span>
                     </b-col>
                     <b-col>
-                        <div class="box">
+                        <div class="">
                             <statustag :status="resource.status"/>
                             <span style="padding-left: 15px; opacity: 0.8;">
                                 Tested <timeago :since="resource.status_update" :auto-update="1"/>
@@ -83,16 +83,16 @@
                         <p>
                             <small>The following services are enabled to run on this resource</small>
                         </p>
-                        <div class="box">
-                            <b-row style="opacity: 0.5; margin-bottom: 5px; text-transform: uppercase;">
+                        <div class="">
+                            <b-row style="margin-bottom: 8px; opacity: 0.7;">
                                 <b-col>
-                                    org/repo <small>(score)</small>
+                                    Service <small>(score)</small>
                                 </b-col>
                                 <b-col>
                                     Total Requests <small style="float: right">success rate</small>
                                 </b-col>
                             </b-row>
-                            <b-row v-for="service in resource.config.services" :key="service.name" style="border-top: 1px solid #eee; padding: 2px 0px">
+                            <b-row v-for="service in resource.config.services" :key="service.name" style="border-top: 1px solid #ddd; padding: 2px 0px">
                                 <b-col>
                                     {{service.name}}
                                     <small>({{service.score}})</small>
@@ -130,7 +130,7 @@
                         <p>
                             <small>This resource has been used to analyze datasets on the following projects</small>
                         </p>
-                        <div class="box">
+                        <div class="">
                             <b-row style="opacity: 0.5; margin-bottom: 5px; text-transform: uppercase;">
                                 <b-col cols="6">Project</b-col>
                                 <b-col>Admin </b-col>
@@ -165,7 +165,7 @@
                         <p>
                             <small>The member of the following group has access to this resource.</small>
                         </p>
-                        <div v-for="group in groups" :key="group._id" class="box">
+                        <div v-for="group in groups" :key="group._id" class="">
                             <p>
                                 <icon name="users"/> {{group.name}}
                                 <small>{{group.desc}}</small>
@@ -183,7 +183,7 @@
                         <span class="form-header">Login Node (user:host)</span>
                     </b-col>
                     <b-col>
-                        <p class="box">
+                        <p class="">
                             <pre>{{resource.config.username}}@{{resource.config.hostname}}</pre>
                         </p>
                     </b-col>
@@ -194,7 +194,7 @@
                         <span class="form-header">Workdir</span>
                     </b-col>
                     <b-col>
-                        <p class="box">
+                        <p class="">
                             <pre>{{resource.config.workdir}}</pre>
                         </p>
                     </b-col>
@@ -206,7 +206,7 @@
                     </b-col>
                     <b-col>
                         <p>
-                            <pre class="box">{{resource.config.io_hostname}}</pre> 
+                            <pre class="">{{resource.config.io_hostname}}</pre> 
                             <small>Optional hostname used to transfer data in and out of this resource</small>
                         </p>
                     </b-col>
@@ -229,7 +229,7 @@
                         <span class="form-header">Groups</span>
                     </b-col>
                     <b-col>
-                        <div class="box">
+                        <div class="">
                             <tags :tags="resource.gids"/><br>
                         </div>
                         <p>
@@ -253,7 +253,7 @@
                         <span class="form-header">ENVs</span>
                     </b-col>
                     <b-col>
-                        <p class="box">
+                        <p class="">
                             <pre>{{resource.envs}}</pre>
                         </p>
                     </b-col>
@@ -264,7 +264,7 @@
                         <span class="form-header">Citation</span>
                     </b-col>
                     <b-col>
-                        <p class="box" style="opacity: 0.8;">
+                        <p class="" style="opacity: 0.8;">
                             <i>{{resource.citation}}</i>
                         </p>
                     </b-col>
