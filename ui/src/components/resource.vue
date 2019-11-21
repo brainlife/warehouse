@@ -79,7 +79,7 @@ export default {
                 t = t / range_time * 200; 
                 let v = point[1];
                 //if(Vue.config.debug) v += Math.random()*4;
-                v = 99 - v / this.resource_obj.config.maxtask * 100; //don't let graph touch top and bottom..
+                v = 100 - v / this.resource_obj.config.maxtask * 100; 
                 points.push([t,v]);
             });
 

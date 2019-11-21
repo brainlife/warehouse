@@ -14,11 +14,6 @@
     <!--app selection page--> 
     <div v-if="!app" class="app-selecter">
         <div v-if="apps.all">
-            <!--
-            <div v-if="loading" style="margin: 30px; opacity: 0.5; font-size: 200%; padding-top: 30px;">
-                <icon name="cog" scale="2" spin/> Loading ...
-            </div>
-            -->
             <b-alert v-if="!loading && apps.all.length == 0" show variant="secondary">No App can be submitted with currently staged datasets.</b-alert>
             <div v-else>
                 <icon name="search" class="search-icon" scale="1.3"/>
@@ -90,6 +85,7 @@
                                             <span v-if="option.dataset.task.status != 'finished'">({{option.dataset.task.status}})</span>
                                             {{option.dataset.task.name}} (t.{{option.dataset.task.config._tid}}) <icon name="arrow-right" scale="0.8"></icon>
                                             <b>{{option.dataset.meta.subject}}</b> 
+                                            <small v-if="option.dataset.meta.session"> / {{option.dataset.meta.session}}</small>
                                             <small v-if="option.dataset.datatype_tags">{{option.dataset.datatype_tags.toString()}}</small>
                                             <span v-if="option.dataset.tags.length > 0">
                                                 |
@@ -563,6 +559,7 @@ export default {
             var label = "";
             if(dataset.task.status != 'finished') label += "("+dataset.task.status+") ";
             label += dataset.task.name+' (t.'+dataset.task.config._tid+') '+' > '+dataset.meta.subject;
+            if(dataset.meta.session) label += " / "+dataset.meta.session;
             if(dataset.datatype_tags && dataset.datatype_tags.length > 0) label += ' '+dataset.datatype_tags;
             if(dataset.tags.length > 0) label +=' | '+dataset.tags; 
             return label;

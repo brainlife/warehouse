@@ -664,6 +664,7 @@ export default {
 
 
         load_resource() {
+            if(!Vue.config.user) return;
             if(!this.dataset.prov || !this.dataset.prov.task) return;
             this.$http.get(Vue.config.amaretti_api+'/resource', {params: {
                 find: JSON.stringify({_id: this.dataset.prov.task.resource_id}),

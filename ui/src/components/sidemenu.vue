@@ -18,10 +18,11 @@
         </defs>
     </svg>
     <ul class="items" style="margin-top: -30px;">
-        <li v-if="config.debug" 
+        <li v-if="config.user && config.debug" 
             @click="go('/dashboard')"
             :class="{active: active == '/dashboard'}">
-            <icon name="home" scale="1.3"/> <h4>Dashboard</h4>
+            <icon name="home" scale="1.3"/> 
+            <h4>Dashboard</h4>
         </li>
         <!--<li v-if="config.debug" class="divider"></li>-->
 
@@ -48,6 +49,11 @@
         <li @click="go('/datatypes')" :class="{active: active == '/datatypes'}">
             <icon name="cubes" scale="1.3"/>
             <h4>Datatypes</h4>
+        </li>
+
+        <li v-if="config.debug" @click="go('/datasources')" :class="{active: active == '/datasources'}">
+            <icon name="database" scale="1.3"/>
+            <h4>Data Sources</h4>
         </li>
 
         <li v-if="config.user" @click="go('/resources')" :class="{active: active == '/resources'}">
@@ -269,6 +275,10 @@ export default {
     padding-top: 5px;
     margin-bottom: 5px;
 }
+.items svg {
+    width: 22px;
+}
+
 .items-bottom {
     position: absolute;
     bottom: 0px;

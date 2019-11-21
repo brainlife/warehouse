@@ -26,25 +26,24 @@
             </b-row>
         </div>
 
-        <div class="list" id="scrolled-area">
+        <div class="list" ref="scrolled-area" @scroll="page_scrolled">
             <div v-if="!loading && total_datasets == 0" style="margin: 20px; opacity: 0.8;">
                 Please upload datasets by clicking the button on the right bottom corner of the page. You can also copy datasets from another project.
             </div>
             
             <!--start of dataset list-->
             <div v-for="(page, page_idx) in pages" v-if="datatypes" :key="page_idx" style="font-size: 12px;">
-                <div v-if="page_info[page_idx] && page_info[page_idx].visible === false" 
-                    :style="{height: page_info[page_idx].height}">
+                <div v-if="page_info[page_idx] && !page_info[page_idx].visible" :style="{'height': page_info[page_idx].height+'px'}">
                     <!--show empty div to speed up rendering if it's outside the view-->
-                    <pre>{{page_info[page_idx].height}}</pre>
+                    <!--{{page_idx}} {{page_info[page_idx]}}-->
                 </div>
-                <b-row class="subjects" v-for="(datasets, subject) in page" :key="subject" v-else>
+                <b-row class="subjects" v-for="(datasets, subject) in page" :key="subject" :ref="'sub-'+subject" v-else>
                     <b-col cols="2">
                         <strong>{{subject}}</strong>
                     </b-col>
                     <b-col cols="10">
                         <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked, removed: dataset.removed}">
-                            <b-row>
+                            <b-row v-if="visible_subjects.includes(subject)">
                                 <b-col cols="3" class="truncate">
                                     <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
                                     <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
@@ -169,6 +168,8 @@ export default {
             total_size: null,
 
             page_info: [], //{top/bottom/visible/}
+            visible_subjects: [],
+
             loading: false,
 
             last_groups: {},
@@ -188,6 +189,8 @@ export default {
     },
 
     computed: {
+
+        //used to do range select
         all_datasets() {
             let result = {};
             this.pages.forEach(page => {
@@ -258,9 +261,6 @@ export default {
             console.error(err);
         });
 
-        var area = document.getElementById("scrolled-area");
-        area.addEventListener("scroll", this.page_scrolled);
-
         let subid = this.$route.params.subid;
         if(subid) this.$root.$emit('dataset.view', {id: subid, back: './'});
 
@@ -297,6 +297,7 @@ export default {
     },
 
 	methods: {
+        
         isadmin() {
             if(!this.project) return false;
             if(!Vue.config.user) return false;
@@ -334,6 +335,7 @@ export default {
             if(this.ws) this.ws.close();
             this.ws = new ReconnectingWebSocket(url, null, {/*debug: Vue.config.debug,*/ reconnectInterval: 3000});
             this.ws.onopen = (e)=>{
+                console.log("connected.. sending bind request");
                 this.ws.send(JSON.stringify({
                     bind: {
                         ex: "warehouse.dataset",
@@ -372,13 +374,49 @@ export default {
         },
         
 		page_scrolled() {
-            var e = document.getElementById("scrolled-area");
+            let e = this.$refs["scrolled-area"];
             var scroll_top = e.scrollTop;
             var client_height = e.clientHeight;
             var page_margin_bottom = e.scrollHeight - scroll_top - client_height;
-            if (page_margin_bottom < 300) {
+            if (page_margin_bottom < 2000) {
                 this.load();
             }
+
+            //let datasets = document.getElementsByClassName("dataset");
+            //console.dir(datasets);
+            //console.log(scroll_top, client_height);
+
+            //hide page that's not in the view
+            //TODO - now that we do subject level visibility check, we might not need to check for page visibility..
+            //console.log("............");
+            this.page_info.forEach(page=>{
+                if(page.bottom+1000 < scroll_top || page.top-1000 > scroll_top+client_height) page.visible = false;
+                else page.visible = true;
+                //console.log(page.visible);
+            });
+
+            this.update_subject_visibility();
+        },
+
+        update_subject_visibility() {
+            //show record that are in view
+            this.visible_subjects = [];
+
+            let page = this.$refs["scrolled-area"];
+            var scroll_top = page.scrollTop;
+            var client_height = page.clientHeight;
+
+            for(let i = 0;i < this.pages.length;++i) {
+                let page = this.pages[i];
+                if(!this.page_info[i].visible) continue;
+                for(var subject in page) {
+                    let subject_e = this.$refs['sub-'+subject][0];
+                    if(!subject_e) continue; //odd?
+                    if((subject_e.offsetTop+subject_e.clientHeight+1000) < scroll_top || 
+                        subject_e.offsetTop-1000 > scroll_top+client_height) continue; //out of view
+                    this.visible_subjects.push(subject);
+                }
+            }  
         },
 
         change_query_debounce() {
@@ -486,15 +524,21 @@ export default {
                     delete groups[last_subject];
                 }
 
-                //this.pages.push(groups);
                 Vue.set(this.pages, this.pages.length, groups);
 
-                //remember the page height
                 this.$nextTick(()=>{
-                    var h = document.getElementById("scrolled-area").scrollHeight;
+                    //remember the page height
+                    var h = this.$refs["scrolled-area"].scrollHeight;
                     var prev = 0;
                     if(this.pages.length > 1) prev = this.page_info[this.pages.length-2].bottom;
-                    this.page_info.push({top: prev, bottom: h, height: h-prev, visible: true});
+                    let info = {
+                        top: prev, 
+                        bottom: h, 
+                        height: h-prev, 
+                        visible: true
+                    };
+                    this.page_info.push(info);
+                    this.update_subject_visibility();
                 });
                 
             }, err=>{
@@ -791,6 +835,7 @@ right: 250px;
     transition: background-color 0.3s;
     padding: 1px;
     margin-bottom: 1px;
+    height: 20px;
 }
 .list .dataset.clickable:hover {
     background-color: #ccc;

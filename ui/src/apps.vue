@@ -38,7 +38,7 @@
         </div>
 
     </div>
-    <div class="page-content" v-on:scroll="update_active" ref="scrolled">
+    <div class="page-content" @scroll="handle_scroll" ref="scrolled">
         <div v-if="apps === null" style="margin: 40px; opacity: 0.5"><h3><icon name="cog" spin scale="2"/> Loading ..</h3></div>
         <div v-else>
             <h3 v-if="apps.length == 0" style="opacity: 0.8; margin: 40px;" variant="secondary">No matching Apps</h3>
@@ -59,10 +59,10 @@
                 <br clear="both">
             </div>
 
-            <div v-for="tag in sorted_tags" :id="tag" style="position: relative;" :key="tag">
+            <div v-for="tag in sorted_tags" :id="tag" style="position: relative;" :key="tag" :ref="'category-'+tag">
                 <h4 class="group-title">{{tag}} <!--<small style="float: right;">{{app_groups[tag].length}} Apps</small>--> </h4> 
                 <div v-for="app in app_groups[tag]" :key="app._id" class="app">
-                    <app :app="app" height="220px" class="app-card"/>
+                    <app :app="app" height="220px" class="app-card" v-if="visible_category.includes(tag)"/>
                 </div>
                 <br clear="both">
             </div>
@@ -84,10 +84,10 @@
             <br>
 
             <!-- mine -->
-            <div style="position: relative;" id="_mine" class="bg-success" v-if="my_apps && my_apps.length > 0">
+            <div style="position: relative;" id="_mine" class="bg-success" v-if="my_apps && my_apps.length > 0" ref="category-_mine">
                 <h4 class="group-title colored">My Apps <!--<small style="float: right">{{my_apps.length}} Apps</small>--> </h4> 
                 <div v-for="app in my_apps" :key="app._id" class="app">
-                    <app :app="app" height="220px" class="app-card"/>
+                    <app :app="app" height="220px" class="app-card" v-if="visible_category.includes('_mine')"/>
                 </div>
                 <br clear="both">
                 <!--
@@ -151,6 +151,8 @@ export default {
             query: "",
             config: Vue.config,
             show_dep: false,
+
+            visible_category: [],
 
             datatypes: null, //only loaded if search box is focused
         };
@@ -296,7 +298,7 @@ export default {
                         this.jump(document.location.hash.substring(1));
                     }
                     console.log("updating active");
-                    this.update_active();
+                    this.handle_scroll();
 
                     let grouplist = this.$refs["group-list"];
 
@@ -317,7 +319,7 @@ export default {
             document.location="#"+tag;
         },
 
-        update_active() {
+        handle_scroll() {
             if(!this.$refs.scrolled) return;
             var scrolltop = this.$refs.scrolled.scrollTop;
             var height = this.$refs.scrolled.clientHeight;
@@ -338,6 +340,20 @@ export default {
             //check for other things
             e = document.getElementById("_mine");
             if(e && e.offsetTop-height/4 <= scrolltop) this.active = "_mine";
+
+            //show/hide app category
+            this.visible_category = [];
+            [...this.sorted_tags, '_mine'].forEach(tag=>{
+                let category = this.$refs['category-'+tag];
+                if(!category) return; //guest doesn't have _mine
+                if(Array.isArray(category)) category = category[0]; //v-for makes is an array
+
+                if((category.offsetTop+category.clientHeight+300) < scrolltop || 
+                    category.offsetTop-300 > scrolltop+height) return; //out of view
+                this.visible_category.push(tag);
+            });
+
+            //console.dir(this.visible_category);
         },
 
         change_query_debounce() {
@@ -415,6 +431,7 @@ color: white;
 margin-left: 10px;
 margin-bottom: 10px;
 width: 325px;
+height: 220px;
 float: left;
 position: relative;
 top: 0;

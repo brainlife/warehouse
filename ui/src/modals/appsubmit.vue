@@ -31,8 +31,7 @@
             <b-col>
                 <b-form-textarea v-model="form.desc"
                      placeholder="Optional description for this processing"
-                     :rows="3"
-                     :max-rows="6"/>
+                     :rows="3" :max-rows="6"/>
             </b-col>
         </b-row>
         <hr>
@@ -63,7 +62,7 @@
                             @input="add_new_input(input)"
                             :options="datasets[input.id]" placeholder="Select/Search Input Dataset">
                             <template slot="option" slot-scope="option">
-                                <b>{{option.subject}}</b>
+                                <b>{{option.subject}}</b> <small v-if="option.session">/ {{option.session}}</small>
                                 <small v-if="option.datatype_tags"><b>{{option.datatype_tags.toString()}}</b></small>
                                 <span v-if="option.tags.length > 0">
                                     |
@@ -88,7 +87,6 @@
         <configform :spec="app.config" v-model="form.config"/>
         <hr>
 
-       
         <advanced :app='app' v-model='form.advanced'>
             <configform :spec="app.config" v-model="form.config" :advanced="true"/>
         </advanced>
@@ -231,7 +229,7 @@ export default {
             
             this.$http.get('dataset', { params: {
                 find: JSON.stringify(find_raw),
-                sort: "project meta.subject -create_date",
+                sort: "project meta.subject meta.session -create_date",
                 populate: "datatype",
                 datatype_tags: input.datatype_tags,
                 limit: 300, //100 too small for bold500
@@ -239,9 +237,14 @@ export default {
             .then(res => {
                 res.data.datasets.forEach(dataset => {
                     var subject = "N/A";
-                    if (dataset.meta && dataset.meta.subject) subject = dataset.meta.subject;
+                    var session = "";
+                    if (dataset.meta) {
+                        if(dataset.meta.subject) subject = dataset.meta.subject;
+                        if(dataset.meta.session) session = dataset.meta.session;
+                    }
 
                     let label = subject;
+                    if(session) label += " / "+session;
                     if(dataset.datatype_tags && dataset.datatype_tags.length > 0) label += ' '+dataset.datatype_tags;
                     if(dataset.tags.length > 0) label +=' | '+dataset.tags; 
 
@@ -250,7 +253,8 @@ export default {
                         id: dataset._id,
                         label,
 
-                        subject: subject,
+                        subject,
+                        session,
                         date: dataset.create_date,
                         datatype: dataset.datatype,
                         datatype_tags: dataset.datatype_tags,

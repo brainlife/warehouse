@@ -18,6 +18,8 @@ import datatypes from '@/datatypes'
 import datatype from '@/datatype'
 import datatypeedit from '@/datatypeedit'
 
+import datasources from '@/datasources'
+
 import resources from '@/resources'
 import resource from '@/resource'
 import resourceedit from '@/resourceedit'
@@ -70,6 +72,8 @@ export default new Router({
         {path: '/datatypes/:id', component: datatype, meta: {public: true}}, //depecated by /datatype/:id
         {path: '/datatype/:id', component: datatype, meta: {public: true}},
         {path: '/datatype/:id/edit', component: datatypeedit},
+
+        {path: '/datasources', component: datasources, meta: {public: true}},
 
         {path: '/resources', component: resources, meta: {public: true}},
         {path: '/resource/:id', component: resource, meta: {public: true}},

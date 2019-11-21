@@ -165,6 +165,7 @@
 
                         <div v-if="resource_usage && total_walltime > 3600*1000">      
                             <span class="form-header">Resource Usage</span>     
+                            <p><small>Datasets on this project has been computed using the following apps/resources.</small></p>
                             <br>
                             <small>Total Walltime: <b>{{(total_walltime/(3600*1000)).toFixed(2)}} hours</b></small>               
                             <vue-plotly :data="resource_usage.data" :layout="resource_usage.layout" :options="resource_usage.options"
@@ -173,9 +174,9 @@
 
                         <div v-if="resource_citations.length > 0">
                             <span class="form-header">Resource Citations</span>
-                            <br>
+                            <p><small>Please use the following citations to cite the resources used by this project.</small></p>
                             <p v-for="resource_citation in resource_citations">
-                                <b>{{resource_citation.resource.name}}</b>
+                                <icon name="caret-right"/> <b>{{resource_citation.resource.name}}</b><br>
                                 <small>{{resource_citation.resource.config.desc}}</small>
                                 <br>
                                 <i>{{resource_citation.citation}}</i>

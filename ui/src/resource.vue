@@ -7,7 +7,9 @@
             <div class="header header-sticky">
                 <b-container>
                     <div style="float: right;">
-                        <span class="button" @click="edit" v-if="resource._canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
+                        <b-btn size="sm" @click="test" variant="success" v-if="resource._canedit && !testing" title="Test">Test</b-btn>
+                        <b-btn size="sm" v-if="testing" title="Test" disabled><icon name="cog" :spin="true"/> Testing ... </b-btn>
+                        <b-btn @click="edit" v-if="resource._canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
                     <b-row>
                         <b-col cols="2">
@@ -35,8 +37,6 @@
                     </b-col>
                     <b-col>
                         <div class="box">
-                            <b-btn style="float: right; top: -5px; position: relative;" size="sm" @click="test" variant="success" v-if="resource._canedit && !testing" title="Test">Test</b-btn>
-                            <b-btn style="float: right; top: -5px; position: relative;" size="sm" v-if="testing" title="Test" disabled><icon name="cog" :spin="true"/> Testing ... </b-btn>
                             <statustag :status="resource.status"/>
                             <span style="padding-left: 15px; opacity: 0.8;">
                                 Tested <timeago :since="resource.status_update" :auto-update="1"/>
@@ -380,13 +380,6 @@ export default {
                         });
                         console.dir(res.data);
                     }).catch(console.error);
-                    
-                    /*
-                    console.log("loading resource report");
-                    this.$http.get(Vue.config.amaretti_api+'/resource/report/'+this.$route.params.id).then(res=>{
-                        this.report = res.data;
-                    }).catch(console.error);
-                    */
                 }
             }).catch(console.error);
 
@@ -395,7 +388,6 @@ export default {
             }).catch(console.error);
 
             this.$http.get(Vue.config.amaretti_api+'/resource/usage/'+this.$route.params.id).then(res=>{
-                console.dir(res.data);
                 let x = [];
                 let y = [];
                 res.data.forEach(rec=>{
@@ -404,23 +396,12 @@ export default {
                 });
                 this.usage_data = [{x, y, mode: 'line'}];
                 this.usage_layout = {
-                    //title: "Resource Usage",
-                    //height: 370,
+                    height: 200,
                     margin: {
                         t: 10, //top
                         b: 35, //bottom
                         r: 10, //right
                     },
-                    /*
-                    showlegend: true,
-                    legend: {
-                        //orientation: "h",
-                        font: {
-                            family: 'sans-serif',
-                            size: 10,
-                        }
-                    },
-                    */
                     yaxis: {
                         title: 'Running Jobs',
                     },

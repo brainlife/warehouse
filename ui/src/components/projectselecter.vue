@@ -5,8 +5,8 @@ https://github.com/sagalbot/vue-select/issues/474
 PR > https://github.com/sagalbot/vue-select/pull/373
 -->
 <div v-if="options">
-    <b-alert show variant="danger" v-if="options.length == 0 && required">You don't have any project that you can select.</b-alert>
-    <b-input-group prepend="Project">
+    <b-alert show variant="secondary" v-if="options.length == 0 && required">You don't have access to any project that contains this datatype.</b-alert>
+    <b-input-group prepend="Project" v-else>
         <b-form-select v-if="options.length > 0" v-model="selected"
             max-height="250px"
             :options="options" 

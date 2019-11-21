@@ -7,7 +7,7 @@
             <div class="header header-sticky">
                 <b-container>
                     <div style="float: right;">
-                        <span class="button" @click="edit" v-if="canedit" title="Edit"><icon name="edit" scale="1.25"/></span>
+                        <b-btn @click="edit" v-if="canedit" variant="secondary" size="sm"><icon name="edit"/> Edit</b-btn>
                     </div>
                     <b-row>
                         <b-col cols="2">
@@ -182,23 +182,24 @@
                         <span class="form-header">Apps</span>
                     </b-col>
                     <b-col>
+                        <p v-if="output_apps.length == 0"><small>No App uses this datatype as output.</small></p>
+                        <p v-else>
+                            <small>The following Apps outputs datasets in this datatype.</small>
+                        </p>
+                        <div class="apps-container" style="border-left: 4px solid rgb(40, 167, 69); padding-left: 15px;">
+                            <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
+                        </div>
+                        <br>
+
                         <p v-if="input_apps.length == 0"><small>No App uses this datatype as input.</small></p>
                         <p v-else>
-                            <small>The following Apps uses this datatype for input.</small>
+                            <small>The following Apps uses datasets in this datatype for input.</small>
                         </p>
                         <div class="apps-container" style="border-left: 4px solid rgb(0, 123, 255); padding-left: 15px;">
                             <app v-for="app in input_apps" :key="app._id" :app="app" class="app" height="270px"/>
                         </div>
                         <br>
 
-                        <p v-if="output_apps.length == 0"><small>No App uses this datatype as output.</small></p>
-                        <p v-else>
-                            <small>The following Apps outputs this datatype.</small>
-                        </p>
-                        <div class="apps-container" style="border-left: 4px solid rgb(40, 167, 69); padding-left: 15px;">
-                            <app v-for="app in output_apps" :key="app._id" :app="app" class="app" height="270px"/>
-                        </div>
-                        <br>
 
                     </b-col>
                 </b-row>
