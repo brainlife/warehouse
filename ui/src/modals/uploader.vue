@@ -411,10 +411,7 @@ export default {
                 meta: clean_meta,
                 tags: this.tags,
                 desc: this.desc,
-
-                await: false,
             }).then(res=>{
-                console.log("submitted dataset request");
                 var dataset = res.data;
                 this.$notify({ type: 'success', text: 'Successfully uploaded a new dataset. Please give a few minutes for your data to become available.', });
                 this.$router.push("/project/"+this.project._id+"/dataset/"+dataset._id);

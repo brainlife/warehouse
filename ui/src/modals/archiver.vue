@@ -98,6 +98,11 @@ export default {
                 return;
             }
 
+            this.$notify({text: "Archive requested.."});
+            this.$nextTick(()=>{
+                this.$refs.archiver.hide();
+            });
+
             //try parsing _meta
             var meta = null;
             try {   
@@ -118,11 +123,9 @@ export default {
                 desc: this.output.desc,
                 tags: this.tags, 
 
-                await: false, //request to not wait for dataset to be archived before returning
+                //await: false, //request to not wait for dataset to be archived before returning
             }).then(res=>{
-                //this.$root.$emit('archiver.submit', res.data); //dataset event should be delivered via event bus
-                this.$notify({text: "Archiving requested.."});
-                this.$refs.archiver.hide();
+                this.$notify({text: "Dataset registered", type: "success"});
             }).catch(err=>{
                 console.error(err);
                 this.$notify({text: err, type: "error"});
