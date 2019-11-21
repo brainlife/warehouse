@@ -127,8 +127,7 @@ export default {
             }).then(res=>{
                 this.$notify({text: "Dataset registered", type: "success"});
             }).catch(err=>{
-                console.error(err);
-                this.$notify({text: err, type: "error"});
+                this.$notify({text: err.response.data.message, type: "error"});
             });
         },
 

@@ -220,7 +220,7 @@ function handle_task(task, cb) {
                     if(err) return next(err);
 
                     //archive outputs not yet archived
-                    common.archive_task_outputs(task, outputs, next);
+                    common.archive_task_outputs(task.user_id, task, outputs, next);
                 });
             } else next();
         },

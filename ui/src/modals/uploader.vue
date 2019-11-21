@@ -395,6 +395,7 @@ export default {
         },
 
         finalize() {
+            this.$notify({ text: 'Archive request submitted..'});
             this.$refs.modal.hide();
 
             //remove null meta

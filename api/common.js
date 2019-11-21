@@ -197,7 +197,7 @@ exports.issue_archiver_jwt = async function(user_id, cb) {
 }
 
 //register new dataset and submits brainlife/app-archive to archive data for it
-exports.archive_task_outputs = async function(task, outputs, cb) {
+exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
     if(!Array.isArray(outputs)) {
         return cb("archive_task_outputs/outputs is not array "+JSON.stringify(outputs, null, 4));
     }
@@ -209,7 +209,7 @@ exports.archive_task_outputs = async function(task, outputs, cb) {
         if(output.archive && !~project_ids.indexOf(output.archive.project)) project_ids.push(output.archive.project);
     });
     
-    //archive_task_outputs handles multiple output datasets, but they should all belong to the same project.
+    //handles multiple output datasets, but they should all belong to the same project.
     //if not, app-archive will fail..
     if(project_ids.length == 0) return cb(); //nothing to archive?
     if(project_ids.length > 1) return cb("archive_task_outputs can't handle request with mixed projects");
@@ -218,7 +218,7 @@ exports.archive_task_outputs = async function(task, outputs, cb) {
     let storage_config = project.storage_config||config.archive.storage_config;
 
     //check project access
-    exports.validate_projects(task.user_id, project_ids, err=>{
+    exports.validate_projects(user_id, project_ids, err=>{
         if(err) return cb(err);
         let datasets = []; 
         async.eachSeries(outputs, (output, next_output)=>{
@@ -253,7 +253,7 @@ exports.archive_task_outputs = async function(task, outputs, cb) {
             try {
                 //TODO - I forgot why I can't just use admin jwt to stage this for the user? 
                 //maybe so that the task will belong to the regular user - not admin and only admin can access?
-                let user_jwt = await exports.issue_archiver_jwt(task.user_id);
+                let user_jwt = await exports.issue_archiver_jwt(user_id);
 
                 //submit app-archive!
                 let remove_date = new Date();

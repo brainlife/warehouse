@@ -861,7 +861,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             if(req.body.tags) output.tags = output.tags.concat(req.body.tags).unique();
 
             logger.debug("submitting archive task");
-            common.archive_task_outputs(task, [output], (err, datasets, archive_task)=>{
+            common.archive_task_outputs(req.user.sub.toString(), task, [output], (err, datasets, archive_task)=>{
                 if(err) return next(err);
                 res.json(datasets[0].dataset); //there should be only 1 dataset being archived via this API, so return [0]
             });
