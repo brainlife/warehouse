@@ -639,8 +639,7 @@ function generate_prov(origin_dataset_id, cb) {
                     if(defer.edge.to != defer.edge.from) edges.push(defer.edge);
                     to = defer.node.id;
                 }
-                if(dataset.prov.subdir) load_stage(to, dataset.prov.subdir, cb);
-                else load_stage(to, dataset._id, cb);
+                load_stage(to, null, (dataset.prov.subdir||dataset._id), cb);
             } else {
                 //should be a normal task..
                 add_node(Object.assign({
@@ -654,6 +653,7 @@ function generate_prov(origin_dataset_id, cb) {
                     let label_parts = defer.node.label.split("\n");
                     if(label_parts[2]) edge_label += "\n"+label_parts[2];//tags
                     archived_dataset_id = defer.node.id.split(".")[1];
+                    if(defer.input_name) edge_label += " ("+defer.input_name+")";
                 }
                 edges.push({
                     to,
@@ -667,14 +667,14 @@ function generate_prov(origin_dataset_id, cb) {
         });
     }
 
-    function load_stage(to, dataset_id, cb) {
+    function load_stage(to, input_name, dataset_id, cb) {
         //staging task should be shown as dataset input.. 
         if(~datasets_analyzed.indexOf(dataset_id.toString())) {
             //dataset already analyzed.. just add edge
             var found = false;
             var from = "dataset."+dataset_id;
             var found = edges.find(e=>(e.from == from && e.to == to));
-            if(to != from && !found) edges.push({ from, to, arrows: "to", });
+            if(to != from && !found) edges.push({ from, to, arrows: "to", label: input_name});
             return cb();
         }
 
@@ -693,8 +693,12 @@ function generate_prov(origin_dataset_id, cb) {
             //then load_dataset_prov will display
             
             //dataset to dataset links are formed when user *copy* dataset to another project
-            let label = null;
-            if(to.indexOf("dataset.") === 0) label = "copy";
+            let label = "";
+            //if(to.indexOf("dataset.") === 0) label += "copy"; //I don't think we need to show "copy".. it's obvsious?
+            if(input_name) label += " ("+input_name+")";
+            //console.log(".............to..................");
+            //console.dir(to);
+
             let defer = {
                 node: {
                     id: "dataset."+dataset_id, 
@@ -708,6 +712,7 @@ function generate_prov(origin_dataset_id, cb) {
                     label,
                 },
                 to,
+                input_name,
             };
             load_dataset_prov(dataset, defer, cb);
         });
@@ -729,7 +734,9 @@ function generate_prov(origin_dataset_id, cb) {
                 //instead of showing that, let's *skip* this node back to datasets that it loaded
                 //and load their tasks
                 if(dep_task.service == "soichih/sca-product-raw" || dep_task.service == "brainlife/app-stage") { 
-                    load_stage("task."+task._id, input.dataset_id||input._id||input.subdir, next_dep);
+                    let input_name = null;
+                    if(task.config._inputs.length > 1) input_name = input.id;
+                    load_stage("task."+task._id, input_name, input.dataset_id||input._id||input.subdir, next_dep);
                 } else {
                     //task2task
                     let datatype = datatypes[input.datatype];
@@ -742,7 +749,7 @@ function generate_prov(origin_dataset_id, cb) {
                         from: "task."+input.task_id,
                         to: "task."+task._id,
                         arrows: "to",
-                        label: datatype.name+" "+input.datatype_tags.join(","),
+                        label: input.id+": "+datatype.name+" "+input.datatype_tags.join(","),
                     });
                     load_task_prov(dep_task, next_dep); //recurse to its deps
                 }
@@ -863,6 +870,7 @@ router.post('/', jwt({secret: config.express.pubkey}), (req, res, cb)=>{
             logger.debug("submitting archive task");
             common.archive_task_outputs(req.user.sub.toString(), task, [output], (err, datasets, archive_task)=>{
                 if(err) return next(err);
+                //console.log(JSON.stringify(task, null, 4));
                 res.json(datasets[0].dataset); //there should be only 1 dataset being archived via this API, so return [0]
             });
         },
