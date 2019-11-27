@@ -224,7 +224,8 @@ exports.archive_task_outputs = async function(user_id, task, outputs, cb) {
         async.eachSeries(outputs, (output, next_output)=>{
             if(!output.archive) return next_output();
             register_dataset(task, output, products[output.id], async (err, dataset)=>{
-                if(err || !dataset) return next_output(); //couldn't register, or already registered
+                if(err) return next_output(err);
+                if(!dataset) return next_output(); //couldn't register, or already registered
                 let dir =  "../"+task._id;
                 let dataset_config = {
                     project: output.archive.project,

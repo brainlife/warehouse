@@ -329,7 +329,7 @@ export default {
             file.type = f.type;
             file.progress = {};
 
-            //var path = this.instance._id+'/'+this.tasks.upload._id+'/'+file.filename;
+            //axios has onUploadProgress cb.. I think I can switch to $http (see easybids)
             var xhr = new XMLHttpRequest();
             file.xhr = xhr; //so that I can abort it if user wants to
             xhr.open("POST", Vue.config.wf_api+"/task/upload/"+this.tasks.upload._id+"?p="+encodeURIComponent(file.filename));

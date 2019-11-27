@@ -43,6 +43,7 @@ router.use('/pub', require('./pub'));
 router.use('/datatype', require('./datatype'));
 router.use('/event', require('./event'));
 router.use('/rule', require('./rule'));
+router.use('/datalad', require('./datalad'));
 
 module.exports = router;
 

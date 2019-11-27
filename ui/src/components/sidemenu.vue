@@ -51,9 +51,9 @@
             <h4>Datatypes</h4>
         </li>
 
-        <li v-if="config.debug" @click="go('/datasources')" :class="{active: active == '/datasources'}">
+        <li v-if="config.debug" @click="go('/datalad')" :class="{active: active == '/datalad'}">
             <icon name="database" scale="1.3"/>
-            <h4>Data Sources</h4>
+            <h4>Datalad</h4>
         </li>
 
         <li v-if="config.user" @click="go('/resources')" :class="{active: active == '/resources'}">

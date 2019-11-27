@@ -655,27 +655,78 @@ ruleSchema.pre('save', function(next) {
 exports.Rules = mongoose.model('Rules', ruleSchema);
 
 //////////////////////////////////////////////////////////////
+//
+// DL collections
+// 
 
-var dataladDatasetsSchema = mongoose.Schema({
-    path: String, //"/home/hayashis/datalad/workshops/mind-2017/MotivationalT",
+//similar to brainlife "project"
+var dlDatasetSchema = mongoose.Schema({
 
+    //path and name should be unique
+    path: String, //datasets.dl.org/openneuro (can be used as dataset "group")
+    //name: String,  //ds000102 (path/name should point to bids "dataset")
+
+    README: String, 
+    CHANGES: String, 
+
+    //https://bids.neuroimaging.io/bids_spec.pdf section 8.1.1
+    dataset_description: {
+        Name: String,
+        BIDSVersion: String,
+        License: String, 
+        Authors: [String],
+        Acknowledgements: [String],
+        HowToAcknowledge: String,
+        Funding: [String],
+        ReferencesAndLinks: [String],
+        DatasetDOI: String,
+    },
+    participants: [
+        mongoose.Schema.Types.Mixed, //{subject: "sub-001", sex: 'F', age: '26' }
+    ],
+    participants_info: mongoose.Schema.Types.Mixed, //metadata for participants info
+    stats: {
+        subjects: Number,
+        sessions: Number,
+        datatypes: mongoose.Schema.Types.Mixed,
+    },
+});
+dlDatasetSchema.index({path: 1, name: 1}, {unique: true}); 
+exports.DLDatasets = mongoose.model('DLDatasets', dlDatasetSchema);
+
+//similar to brainlife "dataset"
+var dlItemSchema = mongoose.Schema({
+
+    //dataset that this item is member of
+    dldataset: {type: mongoose.Schema.Types.ObjectId, ref: 'DLDatasets'},
+
+    //path: String, //"/home/hayashis/dl/workshops/mind-2017/MotivationalT",
+
+    /*
     author: [String], //["van der Meer"],
     conformsto: String, //"http://specs.frictionlessdata.io/data-packages",
     description: String, //"For a description of the experimental procedures, including the behavioral task, see van der Meer, Carey, Tanaka (2017) Optimizing for generalization in the decoding of internally generated activity in the hippocampus. Hippocampus 27(5), pp. 580--595",
     license: [String], //["http://opendatacommons.org/licenses/pddl/"],
     name: String, //"MotivationalT",
     shortdescription: String, //"Extracellular tetrode recordings from the dorsal CA1 area of the hippocampus in behaving rats"
+    */
+
+    //metadata from dl
+    //meta: {},
+
+
+    dataset: datasetSchema, //brainlife dataset record (as parsed by bids_walker)
     
     /*
     dsid: String, 
     metadata: {
-        datalad_core: mongoose.Schema.Types.Mixed,
+        dl_core: mongoose.Schema.Types.Mixed,
         frictionless_datapackage: mongoose.Schema.Types.Mixed,
     },
     path: String,
     status: String,
     */
 });
-exports.DataladDatasets = mongoose.model('DataladDatasets', dataladDatasetsSchema);
+exports.DLItems = mongoose.model('DLItems', dlItemSchema);
 
 

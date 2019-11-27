@@ -61,7 +61,7 @@
                                 <contact :id="task.user_id" size="small"/>
                                 <small><icon name="shield-alt"/> {{task._group_id}}</small><br>
                             </b-col>
-                            <b-col>
+                            <b-col style="word-break: break-all;">
                                 <small style="float: right;" v-if="task.start_date"><time>Started <timeago :since="task.start_date" :auto-update="1"/></time></small>
                                 <statusicon :status="task.status"/> <span style="text-transform: uppercase;">{{task.status}}</span>
                                 {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
@@ -128,17 +128,17 @@
                     </b-col>
                     <b-col>
                         <p>
-                            <small>This resource has been used to analyze datasets on the following projects</small>
+                            <small>This resource has been used to analyze datasets on the following projects (only showing >10 hours of usage)</small>
                         </p>
                         <div class="">
-                            <b-row style="opacity: 0.5; margin-bottom: 5px; text-transform: uppercase;">
-                                <b-col cols="6">Project</b-col>
+                            <b-row style="margin-bottom: 8px; opacity: 0.7;">
+                                <b-col cols="6">Project Name</b-col>
                                 <b-col>Admin </b-col>
                                 <b-col>Total Walltime</b-col>
                             </b-row>
 
                             <div v-for="project in resource.stats.projects" :key="project._id">
-                                <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000" style="border-top: 1px solid #eee; padding: 2px 0px">
+                                <b-row v-if="projects[project._id] && project.total_walltime > 3600*1000*10" style="border-top: 1px solid #eee; padding: 2px 0px">
                                     <b-col cols="6">
                                         <b>{{projects[project._id].name}}</b><br>
                                         <small>{{projects[project._id].desc}}</small>
@@ -180,7 +180,7 @@
 
                 <b-row>
                     <b-col cols="2">
-                        <span class="form-header">Login Node (user:host)</span>
+                        <span class="form-header">Login Host</span>
                     </b-col>
                     <b-col>
                         <p class="">
@@ -394,7 +394,11 @@ export default {
                     x.push(new Date(rec[0]*1000)); //time
                     y.push(rec[1]); //value
                 });
-                this.usage_data = [{x, y, mode: 'line'}];
+                let line = {
+                    width: 1,
+                    shape: 'spline',
+                };
+                this.usage_data = [{x, y, type: 'scatter', mode: 'lines', line, fill: 'tozeroy'}];
                 this.usage_layout = {
                     height: 200,
                     margin: {

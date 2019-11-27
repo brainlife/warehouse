@@ -68,8 +68,8 @@ export default {
                 where: JSON.stringify({
                     $or: [
                         //need to use iLike with postgres..
-                        {fullname: {$regex: search}}, 
-                        {email: {$regex: search}},
+                        {fullname: {$regex: search, $options : 'i'}}, 
+                        {email: {$regex: search, $options : 'i'}},
                     ],
                 }),
                 limit: 0,
