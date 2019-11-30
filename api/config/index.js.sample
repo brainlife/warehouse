@@ -13,6 +13,7 @@ const archiver = require('archiver');
 const ssh2 = require('ssh2');
 const request = require('request');
 const zlib = require('zlib');
+const async = require('async');
 
 exports.mongodb = "mongodb://localhost/warehouse";
 exports.mongoose_debug = true;
@@ -630,12 +631,12 @@ exports.storage_systems["openneuro"] = {
 exports.storage_systems["url"] = {
     need_backup: false,
     test: cb=>{
-        //TODO??
+        //TODO - maybe check to see if we have outbound connection?
         cb();
     }, 
 
     stat: (dataset, cb)=>{
-        //can't obtain stats for .tar.gz because we are creating it on the fly
+        //no stats as .tar will be generated on the fly
         cb(null);
     },
 
@@ -660,6 +661,53 @@ exports.storage_systems["url"] = {
         cb(null, archive, dataset._id+".tar");
     },
 }
+
+const datalad_root = "/mnt/datalad";
+exports.storage_systems["datalad"] = {
+    need_backup: false,
+    test: cb=>{
+        //TODO??
+        cb();
+    }, 
+
+    stat: (dataset, cb)=>{
+        //no stats as .tar will be generated on the fly
+        cb(null);
+    },
+
+    upload: (dataset, cb)=>{
+        cb("read only");
+    },
+
+    download: (dataset, cb)=>{
+        //console.log("datalad getting");
+        //run datalad get on each files
+        async.each(dataset.storage_config.files, (file, next_file)=>{
+            child_process.exec("datalad get "+file.src, {cwd: datalad_root}, (err, stdout, stderr)=>{
+                if(err) return next_file(err);
+                console.debug(stdout);
+                console.error(stderr);
+                next_file();
+            });
+        }, err=>{
+            //create tar ball
+            let archive = archiver('tar');
+            let gzip = zlib.createGzip();
+            dataset.storage_config.files.forEach(file=>{
+                let stream = fs.createReadStream(datalad_root+"/"+file.src);
+                if(file.src.endsWith(".nii")) {
+                    //compress .nii with .nii.gz as *all* brainlife datatype uses .nii.gz for nifti
+                    console.log("passing", file.src, "through gzip stream");
+                    stream = stream.pipe(gzip);
+                }
+                archive.append(stream, {name: file.dest});
+            });
+            archive.finalize();
+            cb(null, archive, dataset._id+".tar");
+        });
+    },
+}
+
 
 //config used to backup data from warehouse 
 exports.sda = {

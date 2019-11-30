@@ -32,14 +32,14 @@
         <div v-if="tabs[tab].id == 'detail'">
             <div class="project-header">
                 <b-row>
-                    <b-col cols="3">
+                    <b-col cols="2">
                         <projectavatar :project="selected" :height="120" :width="120"/>
                     </b-col>
-                    <b-col cols="9"><!--hide avatar when screen is narrow-->
+                    <b-col>
                         <p style="opacity: 0.8;">{{selected.desc||'no description.'}}</p>
                     </b-col>
                 </b-row>
-            </div>
+            </div><!--project header-->
 
             <b-alert :show="selected.removed" style="border-radius: 0px" variant="secondary">This project has been removed.</b-alert>
             <b-alert :show="selected.access == 'private' && selected.listed" style="border-radius: 0px; color: #888;" variant="secondary">
@@ -55,51 +55,9 @@
             </b-alert>
             -->
 
-            <div style="margin: 20px;">
-                <b-row>
-                    <b-col cols="3" class="sideinfo">
-                        <p class="info" title="Project creation date">
-                            <icon name="calendar"/>
-                            {{new Date(selected.create_date).toLocaleDateString()}}
-                        </p>
-                        <div v-if="selected.stats" title="Number of subjects stored in archvie">
-                            <p class="info" v-if="selected.stats.datasets && selected.stats.datasets.subject_count">
-                                <icon name="users"/>
-                                {{selected.stats.datasets.subject_count}} <span style="opacity: 0.6">Subjects</span>
-                            </p>                           
-                            <p class="info" v-if="selected.stats.datasets && selected.stats.datasets.count" title="Number of datasets stored in archive">
-                                <icon name="cubes"/>     
-                                {{selected.stats.datasets.count}} <span style="opacity: 0.6">Datasets</span>
-                            </p>
-                            <div class="info" v-if="selected.stats.datasets && selected.stats.datasets.size" title="Total size of data stored in archive">                           
-                                <p style="margin-left: 25px;">
-                                    <span>{{selected.stats.datasets.size|filesize}}</span> <span style="opacity: 0.6">Total</span> <br>
-                                    <span>{{selected.quota|filesize}}</span> <span style="opacity: 0.6">Quota</span> <br>
-                                </p>
-                            </div>
-
-                            <div class="info" v-if="selected.storage == 'project'" title="Storage resource used to archive data for this project">
-                                <icon name="cube" style="float: left; margin-top: 3px;"/>     
-                                <p style="margin-left: 25px;">
-                                    <resource :id="selected.storage_config.resource_id"/>
-                                </p>
-                            </div>
-                            
-                            <p class="info" v-if="!selected.openneuro && get_total(selected.stats.instances) > 0" title="Tasks currently running">
-                                <icon name="paper-plane"/>
-                                <stateprogress :states="selected.stats.instances" style="width: 60%"/>
-                            </p>
-
-                            <p class="info" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
-                                <icon name="robot"/>
-                                {{selected.stats.rules.active}} 
-                                <span style="opacity: 0.6">Pipeline Rules</span>
-                            </p>
-
-                        </div>
-                    </b-col>
-
-                    <b-col cols="9">
+            <b-row>
+                <b-col cols="9">
+                    <div style="margin: 20px">
                         <!--
                         <div v-if="!selected.openneuro && selected.stats.instances && Object.keys(selected.stats.instances).length > 0">
                             <span class="form-header">Processes</span>
@@ -121,7 +79,7 @@
                         <b-row>
                             <b-col>
                                 <span class="form-header">Admins</span>
-                                <p style="height: 50px;">
+                                <p style="height: 50px; margin-bottom: 3px;">
                                     <small class="text-muted">Update project details, share processes, and create rules / publications.</small>
                                 </p>
                                 <p v-for="c in selected.admins" :key="c._id" style="margin-bottom: 8px;">
@@ -132,7 +90,7 @@
 
                             <b-col>
                                 <span class="form-header">Members</span>
-                                <p style="height: 50px;">
+                                <p style="height: 50px; margin-bottom: 3px;">
                                     <small class="text-muted">Read/Write access to datasets, share processes, and create rules / publications.</small>
                                 </p>
                                 <p v-for="c in selected.members" :key="c._id" style="margin-bottom: 8px;">
@@ -144,7 +102,7 @@
 
                             <b-col v-if="config.user && selected.access == 'private' && selected.guests && selected.guests.length > 0">
                                     <span class="form-header">Guests</span>
-                                    <p style="height: 50px;">
+                                    <p style="height: 50px; margin-bottom: 3px;">
                                         <small class="text-muted">Read access to dataset.</small>
                                     </p>
                                     <p v-for="c in selected.guests" :key="c._id" style="margin-bottom: 8px;">
@@ -158,8 +116,8 @@
                         </b-row>
 
                         <div v-if="selected.readme">
-                            <!--<span class="form-header">Readme</span>-->
-                            <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme box"></vue-markdown>
+                            <span class="form-header">Readme</span>
+                            <vue-markdown v-if="selected.readme" :source="selected.readme" class="readme"></vue-markdown>
                             <br>
                         </div>
 
@@ -182,17 +140,72 @@
                                 <i>{{resource_citation.citation}}</i>
                             </p>
                         </div>
-                    </b-col>
-                </b-row>
-                <hr>
-                <b-row>
-                    <b-col cols="3">
-                    </b-col>
-                    <b-col cols="9">
+                        <hr>
                         <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
-                    </b-col>
-                </b-row>
-            </div>
+
+                        <div v-if="config.debug">
+                            <pre>{{selected}}</pre>
+                        </div>
+                    </div><!-- margin20-->
+                </b-col>
+                <b-col cols="3" style="background-color: #eee; box-shadow: inset 3px 0px 3px #ddd9;">
+                    <div style="margin: 20px 10px" v-if="selected.stats">
+                        <p>
+                            <b-badge pill class="bigpill" title="Project creation date">
+                                <icon name="calendar"/>&nbsp;&nbsp;
+                                {{new Date(selected.create_date).toLocaleDateString()}}
+                            </b-badge>
+                        </p>
+
+                        <p>
+                            <b-badge pill class="bigpill" title="Number of subjects stored in archvie"
+                                v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
+                                <icon name="users"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
+                                <span style="opacity: 0.6">Subjects</span>
+                            </b-badge>                           
+                        </p>
+
+                        <p>
+                            <b-badge pill class="bigpill" title="Number of datasets stored in archive"
+                                v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
+                                <icon name="cubes"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
+                                <span style="opacity: 0.6">Data-objects</span>
+                            </b-badge>
+                        </p>
+
+                        <p>
+                            <b-badge pill class="bigpill" title="Total size of data stored in archive"
+                                v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size">
+                                <icon name="folder"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
+                                <span style="opacity: 0.6">Total</span> <br>
+                            </b-badge>
+                        </p>
+
+                        <p>
+                            <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
+                                <icon name="robot"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
+                                <span style="opacity: 0.6">Active Pipeline Rules</span>
+                            </b-badge>
+                        </p>
+
+                        <p>
+                            <span class="form-header">Datatypes</span>
+                            <span v-for="datatype_id in selected.stats.datasets.datatypes" :key="datatype_id">
+                                <b-badge variant="light">
+                                    <datatypetag :datatype="datatype_id"/> 
+                                </b-badge>
+                                &nbsp;
+                            </span>
+                        </p>
+
+                        <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
+                            <span class="form-header">Processes</span>
+                            <stateprogress :states="selected.stats.instances" title="Tasks currently running"/>
+                        </p>
+
+                    </div>
+                </b-col>
+            </b-row>
         </div>
 
         <div v-if="tabs[tab].id == 'dataset'">
@@ -243,6 +256,7 @@ import agreements from '@/components/agreements'
 import stateprogress from '@/components/stateprogress'
 import noprocess from '@/assets/noprocess'
 import resource from '@/components/resource'
+import datatypetag from '@/components/datatypetag'
 
 //modals
 import newtaskModal from '@/modals/newtask'
@@ -255,7 +269,7 @@ export default {
         VueMarkdown, projectavatar, license,
         pubcard, datasets,
         processes, publications, pipelines,
-        agreements, 
+        agreements, datatypetag,
 
         noprocess, resource, VuePlotly,
 
@@ -370,10 +384,9 @@ export default {
                 console.log("resetting url due to missing tab");
                 this.$router.replace("/project/"+project_id+"/"+this.tabs[this.tab].id);
             }
-        })
-        .catch(res=>{
-            console.error(res);
-            this.$notify({type: 'error', text: res.data.message});
+        }).catch(err=>{
+            console.error(err);
+            this.$notify({type: 'error', text: err.response.data.message});
         });
     },
 
@@ -457,6 +470,7 @@ export default {
                 }
             });
 
+            /*
             //load list of datatypes stored in this project
             let groups = {};
             this.$http.get('dataset/inventory', {params: {
@@ -498,6 +512,7 @@ export default {
                 Vue.set(this.selected, "datatype_groups", groups);
                 this.$forceUpdate();
             }).catch(console.error);
+            */
 
             //create resource usage graph
             if(this.selected.stats && this.selected.stats.resources) {
@@ -633,12 +648,13 @@ z-index: 1;
 }
 .page-content {
 top: 95px;
+overflow-x: hidden;
 }
 
 .project-header {
 padding: 20px; 
 box-shadow: 0 0 2px #ccc;
-background-color: #f6f6f6;
+background-color: white;
 position: sticky;
 top: 0;
 z-index: 2;
@@ -695,5 +711,8 @@ font-weight: bold;
 font-size: 85%;
 margin-bottom: 5px; 
 text-transform: uppercase;    
+}
+.bigpill {
+padding: 5px 10px;
 }
 </style>

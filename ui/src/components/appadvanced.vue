@@ -1,21 +1,19 @@
 <template>
 <div>
     <b-row>
-        <b-col class="text-muted" style="text-align:right; margin-bottom: 5px;">
+        <b-col style="margin-bottom: 5px;">
             <div class="advanced-options-toggle" style="display:inline-block;" @click="show = !show">
-                <icon v-if="show" name="caret-down" />
-                <icon name="caret-right" v-else />
+                <icon v-if="show" name="caret-down" style="width: 20px"/>
+                <icon name="caret-right" v-else style="width: 20px"/>
                 <span>Advanced</span>
             </div>
         </b-col>
     </b-row>
     
     <div v-if="show">
-
         <!--this is where all the advanced options will go -->
         <slot/>
-        <hr>
-
+        <br>
         <b-row>
             <b-col cols="3" class="text-muted">Preferred Resource</b-col>
             <b-col>

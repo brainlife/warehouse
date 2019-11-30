@@ -35,6 +35,10 @@ import VueAxios from 'vue-axios'
 
 import {parseBibFile} from "bibtex";
 
+//import 'vue-multiselect/dist/vue-multiselect.min.css'
+//import multiselect from 'vue-multiselect'
+//Vue.component('multiselect', multiselect)
+
 Vue.component('v-select', vSelect)
 Vue.component('icon', Icon)
 
@@ -151,6 +155,8 @@ function jwt_decode_brainlife(jwt) {
     //let's just covert it to string 
     Vue.config.user.sub = Vue.config.user.sub.toString();
 
+    console.log("setting axios");
+    console.log(Vue.config.jwt);
     axios.defaults.headers.common['Authorization'] = 'Bearer '+Vue.config.jwt;
 
     //deprecated .. use Vue.config.has_role
@@ -222,8 +228,8 @@ new Vue({
 
         //allow child component to refresh jwt
         //project/submit (adding project requires jwt scope change for ac)
-        this.$on("refresh_jwt", ()=>{
-            this.refresh_jwt();
+        this.$on("refresh_jwt", cb=>{
+            this.refresh_jwt(cb);
         });
 
         if(!Vue.config.jwt) {
@@ -235,6 +241,7 @@ new Vue({
         //refresh jwt on page refresh (and to get new jwt after creating new project)
         //this.$root.$emit("refresh_jwt");
         this.refresh_jwt(err=>{
+            this.$root.$emit("jwt_refreshed");
             this.load_profile(err=>{
                 this.ready = true;
             });

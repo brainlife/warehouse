@@ -222,8 +222,8 @@ export default {
                     this.$router.go(-1);
                     this.submitting = false;
                 }).catch(err=>{
-                    this.$notify({text: err.toString(), type: 'error' });
                     console.error(err);
+                    this.$notify({text: err.response.data.message, type: 'error' });
                     this.submitting = false;
                 });
             } else {
@@ -233,8 +233,8 @@ export default {
                     this.$router.replace("/project/" + res.data._id);
                     this.submitting = false;
                 }).catch(err=>{
-                    this.$notify({text: err.toString(), type: 'error' });
                     console.error(err);
+                    this.$notify({text: err.response.data.message, type: 'error' });
                     this.submitting = false;
                 });
             }

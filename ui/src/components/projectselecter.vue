@@ -1,11 +1,7 @@
 <template> 
-<!-- this is no longer an issue?
-v-select has some issue with clicking scrollbar closing the select dropdown..
-https://github.com/sagalbot/vue-select/issues/474
-PR > https://github.com/sagalbot/vue-select/pull/373
--->
 <div v-if="options">
     <b-alert show variant="secondary" v-if="options.length == 0 && required">You don't have access to any project that contains this datatype.</b-alert>
+    <!--
     <b-input-group prepend="Project" v-else>
         <b-form-select v-if="options.length > 0" v-model="selected"
             max-height="250px"
@@ -14,6 +10,9 @@ PR > https://github.com/sagalbot/vue-select/pull/373
             :required="required">
         </b-form-select>
     </b-input-group>
+    -->
+    <!--- i don't think required works with v-select-->
+    <v-select :options="options" :placeholder="placeholder"  v-model="selected" label="text" :required="required" reduce="opt=>opt.value" @change="change"></v-select>
 </div>
 </template>
 
@@ -41,30 +40,21 @@ export default {
         };
     },
 
-    watch: {
-        selected: function() {
-            if(this.selected) {
-                localStorage.setItem('last_projectid_used', this.selected);
-                this.$emit('input', this.selected);
-            } else {
-                this.$emit('input', null);
-            }
-        },
-        value: function() {
-            /*
-            if(this.selected != this.value) {
-                this.selected = this.options.find(it=>it.value == this.value);
-            }
-            */
-            this.selected = this.value;
-        }
-    },
-
     mounted: function() {
         this.load_projects();
     },
 
     methods: {
+
+        change() {
+            if(this.selected) {
+                localStorage.setItem('last_projectid_used', this.selected.value);
+                this.$emit('input', this.selected.value);
+                //console.log(this.selected);
+            } else {
+                this.$emit('input', null);
+            } 
+        },
 
         load_projects() {         
             var find = null;
@@ -133,16 +123,16 @@ export default {
                 //first, select project that client has requested
                 let found = this.options.find(it=>it.value == this.value);
                 if(found) {
-                    this.selected = found.value;
+                    this.selected = found;//.value;
                 } else {
                     //if not, then try selecting the last project used
-                    var last = localStorage.getItem('last_projectid_used');
-                    found = this.options.find(it=>it.value == last);
+                    var last_value = localStorage.getItem('last_projectid_used');
+                    found = this.options.find(it=>it.value == last_value);
                     if(found) {
-                        this.selected = found.value;
+                        this.selected = found;//.value;
                     } else if(this.required && this.options.length > 0) {
                         //if we can't find it, and required field.. then select first one from the list
-                        this.selected = this.options[0].value;
+                        this.selected = this.options[0];//.value;
                     }
                 }
             });

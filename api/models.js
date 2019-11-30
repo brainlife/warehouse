@@ -692,6 +692,7 @@ var dlDatasetSchema = mongoose.Schema({
     },
 });
 dlDatasetSchema.index({path: 1, name: 1}, {unique: true}); 
+dlDatasetSchema.index({'$**': 'text'}) //make all text fields searchable
 exports.DLDatasets = mongoose.model('DLDatasets', dlDatasetSchema);
 
 //similar to brainlife "dataset"

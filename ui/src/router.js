@@ -48,7 +48,6 @@ export default new Router({
     routes: [
         {path: '/', redirect: '/project'},
         {path: '/dashboard', component: dashboard},
-        //{path: '/download/:id', component: download},
         
         {path: '/apps', component: apps, meta: {public: true}},
         {path: '/appsgraph', component: appsgraph, meta: {public: true}},
@@ -74,6 +73,7 @@ export default new Router({
         {path: '/datatype/:id/edit', component: datatypeedit},
 
         {path: '/datalad', component: datalad, meta: {public: true}},
+        {path: '/datalad/:dataset_id', component: datalad, meta: {public: true}},
 
         {path: '/resources', component: resources, meta: {public: true}},
         {path: '/resource/:id', component: resource, meta: {public: true}},

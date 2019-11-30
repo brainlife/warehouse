@@ -113,7 +113,6 @@ import sidemenu from '@/components/sidemenu'
 import pageheader from '@/components/pageheader'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
 import projectaccess from '@/components/projectaccess'
-import projectselecter from '@/components/projectselecter'
 import task from '@/components/task'
 import tageditor from '@/components/tageditor'
 import product from '@/components/product'
@@ -122,7 +121,7 @@ import product from '@/components/product'
 //singleton instance to handle upload request
 export default {
     components: { 
-        sidemenu, pageheader, projectselecter, 
+        sidemenu, pageheader, 
         task, tageditor, product,
         //datatypetag,
     },

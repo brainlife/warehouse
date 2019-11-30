@@ -371,8 +371,11 @@ color: black;
 opacity: 0.35;
 }
 
+.readme {
+font-size: 95%;
+}
 div.readme p, p.text {
-line-height: 175%;
+line-height: 150%;
 }
 .readme img {
 max-width: 100%;
@@ -383,18 +386,16 @@ padding: 10px;
 margin-bottom: 15px;
 }
 .readme h1 {
-font-size: 1.5rem;
-}
-.readme h2 {
 font-size: 1.3rem;
 }
-.readme h3 {
-font-size: 1.1rem;
+.readme h2 {
+font-size: 1.2rem;
 }
+.readme h3,
 .readme h4,
 .readme h5,
 .readme h6 {
-font-size: 1rem;
+font-size: 1.1rem;
 }
 
 pre {
@@ -429,9 +430,8 @@ width: 11px;
 position: fixed;
 top: 6px;
 padding-left: 10px;
-width: 100%;
-max-width: 1320px;
-padding-right: 300px;
+right: 0px;
+left: 200px;
 }
 .search-box .input {
 font-size: 120%;
@@ -443,7 +443,7 @@ padding-left: 45px;
 
 .search-box .input:focus,
 .search-box .input:not([value=""]) {
-background-color: white;
+/*background-color: white;*/
 color: gray;
 box-shadow: none;
 }
@@ -480,5 +480,49 @@ background-color: #50bfff !important;
 }
 .btn-outline-info {
 color: #50bfff;
+}
+
+/*
+.multiselect__tags {
+font-size: 12px;
+margin-bottom: 0px;
+padding: 4px 20px 0 4px;
+min-height: inherit;
+}
+.multiselect__tag {
+margin-right: 5px;
+}
+.multiselect__tag-icon {
+line-height: 18px;
+}
+.multiselect__select {
+padding: 0px;
+height: 27px;
+}
+*/
+
+.splitter {
+position: fixed;
+top: 0px;
+bottom: 0px;
+width: 10px;
+cursor: ew-resize;
+background-color: #eee;
+transition: background-color 0.3s;
+}
+.splitter:hover {
+background-color: #ddd;
+}
+
+.bigpill {
+background-color: white; 
+text-transform: uppercase; 
+border: 1px solid #ddd; 
+padding: 4px 15px; 
+opacity: 0.7;
+color: black;
+}
+.bigpill svg {
+    min-height: 16px;
 }
 </style>

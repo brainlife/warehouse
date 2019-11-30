@@ -8,13 +8,12 @@ export default {
     methods: {
         datatypecache(id, cb) {
             this._cache("datatype."+id, ()=>{
-                console.log("loading datatype cache for "+id);
                 return this.$http.get('datatype', {params: {
-                    find: JSON.stringify({_id: id}),
-                    //populate: 'inputs.datatype outputs.datatype',
+                    find: JSON.stringify({_id: id}), //TODO - maybe seach by name also?
                 }});
             }, (err, res)=>{
-                cb(null, res.data.datatypes[0]);
+                if(err) return cb(err);
+                cb(err, res.data.datatypes[0]);
             });
         },  
     }

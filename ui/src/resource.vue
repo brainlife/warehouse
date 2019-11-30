@@ -431,7 +431,7 @@ export default {
             }).catch(err=>{
                 this.testing = false;
                 this.resource.status_update = new Date();
-                this.$notify({type: "error", text: err});
+                this.$notify({type: "error", text: err.response.data.message});
             });
          },
 

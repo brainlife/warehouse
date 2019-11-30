@@ -7,10 +7,11 @@ import Vue from 'vue'
 
 export default {
     components: { },
-    props: ['doi'],
+    props: ['doi', 'jump'],
     methods: {
         show: function() {
-            prompt("DOI URL", "https://doi.org/"+this.doi);
+            if(this.jump) document.location = "https://doi.org/"+this.doi;
+            else prompt("DOI URL", "https://doi.org/"+this.doi);
         },
     },
 }

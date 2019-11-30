@@ -16,7 +16,8 @@
         <archiver/>
         <taskinfo/>
         <appsubmit/>
-        <dsimport/>
+        <!--<dsimport/>-->
+        <importer/>
     </div>
 </div>
 </template>
@@ -36,14 +37,16 @@ import agreements from '@/modals/agreements'
 import downscript from '@/modals/downscript'
 import taskinfo from '@/modals/taskinfo'
 import appsubmit from '@/modals/appsubmit'
-import dsimport from '@/modals/dsimport'
+//import dsimport from '@/modals/dsimport'
 import copytarget from '@/modals/copytarget'
+import importer from '@/modals/importer'
 
 export default {
     components: {
         viewselecter, dataset, datatype, 
         uploader, datasetselecter, instanceselecter, 
-        archiver, agreements, downscript, taskinfo, appsubmit, dsimport, copytarget,
+        archiver, agreements, downscript, taskinfo, appsubmit, copytarget, importer,
+        //dsimport
     },
     data() {
         return {

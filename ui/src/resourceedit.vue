@@ -59,7 +59,7 @@
                         <b-button @click="remove_service(service)" size="sm" text="Button" variant="danger" style="float: right;"><icon name="trash"/></b-button>
                         <div style="padding-right: 50px;">
                             <b-input-group prepend="Name">
-                                <b-form-input v-model="service.name" list="service_names"></b-form-input>
+                                <b-form-input v-model="service.name" list="service_names" trim></b-form-input>
                                 <datalist id="service_names">
                                     <option v-for="service in service_names">{{service}}</option>
                                 </datalist>
@@ -262,7 +262,7 @@ export default {
                     this.$router.go(-2); //go all the way back to resources page
                     this.$notify({type: 'success', text: "resource removed successfully"});
                 }).catch(err=>{
-                    this.$notify({type: 'error', text: err});
+                    this.$notify({type: 'error', text: err.response.data.message});
                 });
             }
         },
@@ -317,7 +317,7 @@ export default {
                     this.$router.go(-1);
                     this.submitting = false;
                 }).catch(err=>{
-                    this.$notify({text: err.toString(), type: 'error' });
+                    this.$notify({text: err.response.data.message, type: 'error' });
                     console.error(err);
                     this.submitting = false;
                 });
@@ -328,7 +328,7 @@ export default {
                     this.$router.replace('/resource/'+res.data._id);
                     this.submitting = false;
                 }).catch(err=>{
-                    this.$notify({text: err.toString(), type: 'error' });
+                    this.$notify({text: err.response.data.message, type: 'error' });
                     console.error(err);
                     this.submitting = false;
                 });

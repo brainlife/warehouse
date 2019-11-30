@@ -95,8 +95,11 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
     delete req.body._id; //shouldn't be set
     req.body.user_id = req.user.sub; //override (TODO - toString()?)
 
-    //TODO - I should make sure req.user.sub is listed in admin?
     //TODO - should I validate admins/members? how?
+
+    //make sure submitter is listed as admin
+    if(!req.body.admins) req.body.admins = [];
+    if(!req.body.admins.includes(req.user.sub)) req.body.admins.push(req.user.sub);
 
 	//create a new group
 	request.post({ url: config.auth.api+"/group", headers: { authorization: req.headers.authorization }, json: true,
@@ -108,7 +111,6 @@ router.post('/', jwt({secret: config.express.pubkey}), function(req, res, next) 
 		}
 	}, (err, _res, body)=>{
 		if(err) return next(err);
-        console.dir(body);
 
         //now update the warehouse project
 		var project = new db.Projects(req.body);

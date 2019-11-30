@@ -52,8 +52,8 @@
         </li>
 
         <li v-if="config.debug" @click="go('/datalad')" :class="{active: active == '/datalad'}">
-            <icon name="database" scale="1.3"/>
-            <h4>Datalad</h4>
+            <icon name="cloud-download-alt" scale="1.3"/>
+            <h4>Import</h4>
         </li>
 
         <li v-if="config.user" @click="go('/resources')" :class="{active: active == '/resources'}">

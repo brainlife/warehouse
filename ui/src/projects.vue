@@ -145,10 +145,9 @@ export default {
                         this.other_projects.push(p);
                     }
                 });
-            })
-            .catch(res=>{
-                console.error(res);
-                this.$notify({type: 'error', text: res.toString()});
+            }).catch(err=>{
+                console.error(err);
+                this.$notify({type: 'error', text: err.response.data.message()});
             });
 
             //load openneuro project separately..
@@ -161,9 +160,9 @@ export default {
                 sort: 'name',
             }}).then(res=>{
                 this.openneuro_projects = res.data.projects;
-            }).catch(res=>{
-                console.error(res);
-                this.$notify({type: 'error', text: res.data.message});               
+            }).catch(err=>{
+                console.error(err);
+                this.$notify({type: 'error', text: err.response.data.message});               
             })
         },
 

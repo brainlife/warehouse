@@ -48,7 +48,7 @@
                     </b-col>
                     <b-col cols="2">
                         <div style="position: relative; top: -2px;">
-                            <b-btn @click="execute" variant="primary" size="sm"><icon name="play"/>&nbsp;&nbsp;&nbsp;<b>Execute</b></b-btn>
+                            <b-btn @click="execute" variant="primary" size="sm"><icon name="play"/>&nbsp;&nbsp;&nbsp;Execute</b-btn>
                         </div>
                     </b-col>
                 </b-row>
@@ -260,7 +260,7 @@
                                 <b>{{app.stats.serviceinfo.success_rate.toFixed(1)}}%</b>
                             </p>
                             <p>
-                                <b-badge pill variant="light" v-if="app.stats.serviceinfo.runtime_mean" style="background-color: white; text-transform: uppercase; border: 1px solid #ddd; padding: 8px 15px; opacity: 0.7;">
+                                <b-badge pill v-if="app.stats.serviceinfo.runtime_mean" class="bigpill">
                                     <icon name="clock" style="opacity: 0.4;"/>&nbsp;&nbsp;{{avg_runtime(app.stats.serviceinfo.runtime_mean, app.stats.serviceinfo.runtime_std)}}
                                 </b-badge>
                             </p>

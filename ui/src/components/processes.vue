@@ -94,9 +94,6 @@
         <b-button class="button-fixed" @click="newinstance" v-b-tooltip.hover title="Create New Process" :style="{left: splitter_pos-100+'px'}"><icon name="plus" scale="2"/></b-button>     
     </div>
     <div class="splitter" ref="splitter" :style="{left: splitter_pos+'px'}"/>
-    <!-- oesn't work anymore
-    <p v-if="instances && !selected" class="nosel-note" :style="{left: splitter_pos+10+'px'}"/>{{splitter_pos}} Please create / select process to open.</p>  
-    -->
     <transition name="fade">
         <process transition="slide" 
                 :project="project" 
@@ -118,14 +115,16 @@ import PerfectScrollbar from 'perfect-scrollbar'
 import statusicon from '@/components/statusicon'
 import contact from '@/components/contact'
 import process from '@/components/process'
-import agreementMixin from '@/mixins/agreement'
 import ReconnectingWebSocket from 'reconnectingwebsocket'
+
+import agreementMixin from '@/mixins/agreement'
+import pagesplitter from '@/mixins/pagesplitter'
 
 var debounce;
 var ps;
 
 export default {
-    mixins: [agreementMixin],
+    mixins: [agreementMixin, pagesplitter],
     props: [ 'project' ], 
     components: { 
         statusicon, contact, process,
@@ -137,7 +136,6 @@ export default {
             show: null, //null == all
             
             selected: null,
-            splitter_pos: parseInt(window.localStorage.getItem("splitter_pos"))||600,
 
             query: "",
             apps: null, //keyed by _id
@@ -234,13 +232,6 @@ export default {
     },//computed
 
     mounted: function() {
-        /*
-        let pos = window.localStorage.getItem("splitter_pos");
-        if(pos) {
-            console.log("updating splitter_pos", pos);
-            this.splitter_pos = pos;
-        }
-        */
         this.load();
     },
 
@@ -331,58 +322,6 @@ export default {
                     });
                 });
             });
-        },
-
-        init_splitter() {
-            let splitter = this.$refs.splitter;
-
-            if(!splitter) {
-                console.error("refs.splitter not initialized");
-                return;
-            }
-
-            let start_x;
-            let new_x;
-            let offset_x;
-
-            /* this doesn't seem to help all that much..
-            let x_update_timer;
-            splitter.onpointerdown = e=>{
-                splitter.onpointermove = e=>{
-                    new_x = e.clientX + start_x;
-                    if(new_x < 400) new_x = 400;
-                    if(x_update_timer) {
-                        console.log("skipping update");
-                        return; //timer already called..
-                    }
-                    x_update_timer = setTimeout(()=>{
-                        console.log("updating");
-                        this.splitter_pos = new_x;  
-                        x_update_timer = null;
-                    }, 100); //don't update more frequently than every 100msec (still too long?)
-                };
-                splitter.setPointerCapture(e.pointerId);    
-                start_x = e.clientX - this.splitter_pos;
-            };
-            */
-
-            splitter.onpointerdown = e=>{
-                splitter.onpointermove = e=>{
-                    //console.log(offset_x);
-                    new_x = e.clientX + start_x - offset_x*2;
-                    if(new_x < 400) new_x = 400;
-                    this.splitter_pos = new_x;  
-                };
-                splitter.setPointerCapture(e.pointerId);    
-                offset_x = e.offsetX;
-                start_x = e.clientX - this.splitter_pos;
-            };
-
-            splitter.onpointerup = e=>{
-                window.localStorage.setItem("splitter_pos", this.splitter_pos);
-                splitter.onpointermove = null;
-                splitter.setPointerCapture(e.pointerId);    
-            };
         },
 
         change_query() {
@@ -650,18 +589,6 @@ overflow-y: auto;
 overflow-x: hidden;
 }
 
-.splitter {
-position: fixed;
-top: 95px;
-bottom: 0px;
-width: 10px;
-cursor: ew-resize;
-background-color: #eee;
-transition: background-color 0.3s;
-}
-.splitter:hover {
-background-color: #ddd;
-}
 .instance-header {
 border-bottom: 1px solid rgba(0,0,0,0.1);
 padding: 4px 8px;
@@ -880,5 +807,7 @@ display: inline-block;
 .status-picker .status-pressed.status-failed {
     border-top: 2px solid #dc3545;
 }
-
+.splitter {
+top: 95px;
+}
 </style>
