@@ -14,7 +14,7 @@ common.redis.on('ready', ()=>{
         common.redis.del(keys, (err, reps)=>{
             if(err) throw err;
             logger.debug(reps);
-            process.exit(1);
+            process.exit(0);
         });
     });
 });
