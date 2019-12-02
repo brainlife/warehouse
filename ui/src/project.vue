@@ -140,6 +140,20 @@
                                 <i>{{resource_citation.citation}}</i>
                             </p>
                         </div>
+
+                        <div v-if="selected.meta">
+                            <span class="form-header">Meta (todo)</span>
+                            <pre style="font-size: 80%;">{{selected.meta}}</pre>
+                            <br>
+                        </div>
+
+                        <div v-if="selected.meta_info">
+                            <span class="form-header">Meta Info (todo)</span>
+                            <pre style="font-size: 80%;">{{selected.meta_info}}</pre>
+                            <br>
+                        </div>
+
+
                         <hr>
                         <vue-disqus ref="disqus" shortname="brain-life" :identifier="selected._id"/>
 
@@ -148,11 +162,17 @@
                         </div>
                     </div><!-- margin20-->
                 </b-col>
-                <b-col cols="3" style="background-color: #eee; box-shadow: inset 3px 0px 3px #ddd9;">
+                <b-col cols="3" style="background-color: #eee; box-shadow: inset 3px 0px 3px #ddd6;">
                     <div style="margin: 20px 10px" v-if="selected.stats">
+
+                        <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
+                            <span class="form-header">Processes</span>
+                            <stateprogress :states="selected.stats.instances" title="Tasks currently running"/>
+                        </p>
+                        
                         <p>
                             <b-badge pill class="bigpill" title="Project creation date">
-                                <icon name="calendar"/>&nbsp;&nbsp;
+                                <icon name="calendar" style="opacity: 0.4;"/>&nbsp;&nbsp;
                                 {{new Date(selected.create_date).toLocaleDateString()}}
                             </b-badge>
                         </p>
@@ -160,31 +180,31 @@
                         <p>
                             <b-badge pill class="bigpill" title="Number of subjects stored in archvie"
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.subject_count">
-                                <icon name="users"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
-                                <span style="opacity: 0.6">Subjects</span>
+                                <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.subject_count}} 
+                                <small>Subjects</small>
                             </b-badge>                           
                         </p>
 
                         <p>
                             <b-badge pill class="bigpill" title="Number of datasets stored in archive"
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.count">
-                                <icon name="cubes"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
-                                <span style="opacity: 0.6">Data-objects</span>
+                                <icon name="cubes" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.count}}
+                                <small>Data-objects</small>
                             </b-badge>
                         </p>
 
                         <p>
                             <b-badge pill class="bigpill" title="Total size of data stored in archive"
                                 v-if="selected.stats && selected.stats.datasets && selected.stats.datasets.size">
-                                <icon name="folder"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
-                                <span style="opacity: 0.6">Total</span> <br>
+                                <icon name="folder" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.datasets.size|filesize}}
+                                <small>Total</small> <br>
                             </b-badge>
                         </p>
 
                         <p>
                             <b-badge pill class="bigpill" v-if="selected.stats.rules && selected.stats.rules.active > 0" title="Number of pipeline rules configured for this project">
-                                <icon name="robot"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
-                                <span style="opacity: 0.6">Active Pipeline Rules</span>
+                                <icon name="robot" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.rules.active}}
+                                <small>Active Pipeline Rules</small>
                             </b-badge>
                         </p>
 
@@ -196,11 +216,6 @@
                                 </b-badge>
                                 &nbsp;
                             </span>
-                        </p>
-
-                        <p v-if="selected.stats && get_total(selected.stats.instances) > 0">
-                            <span class="form-header">Processes</span>
-                            <stateprogress :states="selected.stats.instances" title="Tasks currently running"/>
                         </p>
 
                     </div>
@@ -567,7 +582,9 @@ export default {
                     //create plotly graph
                     var data = Object.values(resources);
                     var layout = {
-                        yaxis: {title: 'Apps'},
+                        yaxis: {
+                            //title: 'Apps'
+                        },
                         xaxis: {
                             title: 'Total Walltime (hour)',  
                             type: 'log',
@@ -575,15 +592,13 @@ export default {
                             showgrid: true,
                         },
                         barmode: 'relative',
-                        //title: 'Relative Barmode'
                         margin: {
                             t: 30,
                             l: 240,
                             pad: 10
                         },
                         height: 17*services.length+120,
-                        //paper_bgcolor: 'rgba(0,0,0,0)',
-                        //plot_bgcolor: 'rgba(0,0,0,0)',
+                        font: Vue.config.plotly.font,
                     };
 
                     let options = {

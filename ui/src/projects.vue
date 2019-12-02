@@ -129,7 +129,7 @@ export default {
             this.$http.get('project', {params: {
                 find: JSON.stringify({$and: ands}),
                 limit: 500, //TODO implement paging eventually
-                select: '-readme',
+                select: '-readme -meta',
                 sort: 'name',
             }}).then(res=>{
                 this.my_projects = [];

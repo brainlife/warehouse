@@ -9,7 +9,6 @@
 <script>
 
 import Vue from 'vue'
-
 import modals from '@/components/modals'
 
 export default {
@@ -481,25 +480,6 @@ background-color: #50bfff !important;
 .btn-outline-info {
 color: #50bfff;
 }
-
-/*
-.multiselect__tags {
-font-size: 12px;
-margin-bottom: 0px;
-padding: 4px 20px 0 4px;
-min-height: inherit;
-}
-.multiselect__tag {
-margin-right: 5px;
-}
-.multiselect__tag-icon {
-line-height: 18px;
-}
-.multiselect__select {
-padding: 0px;
-height: 27px;
-}
-*/
 
 .splitter {
 position: fixed;

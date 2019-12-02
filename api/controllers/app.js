@@ -349,11 +349,6 @@ router.delete('/:id', jwt({secret: config.express.pubkey}), (req, res, next)=>{
         if(err) return next(err);
         if(!app) return next(new Error("can't find the app with id:"+req.params.id));
         if(canedit(req.user, app)) {
-            /*physically remove
-            app.remove().then(function() {
-                res.json({status: "ok"});
-            }); 
-            */
             app.removed = true;
             app.save(err=>{
                 if(err) return next(err);

@@ -128,6 +128,7 @@
                 </b-col>
             </b-row>
 
+            <!--
             <b-row>
                 <b-col cols="3">
                     <span class="form-header"></span>
@@ -137,8 +138,10 @@
                     <br>
                 </b-col>
             </b-row>
+            -->
 
             <div class="page-footer">
+                <b-button variant="danger" @click="remove" style="float: left">Remove</b-button>
                 <b-button variant="secondary" @click="cancel">Cancel</b-button>
                 <b-button type="submit" variant="primary" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Submit</b-button>
             </div>
@@ -203,6 +206,16 @@ export default {
             //if(this.project._id) this.$router.push('/project/'+this.project._id);
             //else this.$router.push('/project');
             this.$router.go(-1);
+        },
+
+        remove() {
+            if(confirm("Do you really want to remove this project?")) {
+                this.$http.delete('project/'+this.project._id)
+                .then(res=>{
+                    this.$notify({text: 'successfully removed the project' });
+                    this.$router.push('/projects');        
+                });
+            }
         },
 
         remove_agreement(idx) {

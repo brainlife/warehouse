@@ -27,7 +27,7 @@
             </b-col>
             -->
             <b-col md="3" title="unique subjects" v-if="project.stats.datasets">
-                <icon name="users" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
+                <icon name="user-friends" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
             </b-col>
             <b-col md="6" title="number of datasets" v-if="project.stats.datasets">
                 <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
@@ -96,17 +96,12 @@ export default {
 .projectcard {
 border: none;
 cursor: pointer;
-box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+box-shadow: 2px 2px 3px rgba(0,0,0,0.05);
 background-color: white;
 position: relative;
 /*
 transition: filter 0.5s;
 filter: saturate(20%);
-*/
-}
-.projectcard:hover {
-/*
-filter: saturate(100%);
 */
 }
 .datatypes {
@@ -117,15 +112,6 @@ text-overflow: ellipsis;
 font-size: 85%;
 height: 20px;
 }
-/*
-.projectcard img {
-filter: grayscale(100%);
-transition: filter 1s;
-}
-.projectcard:hover img {
-filter: none;
-}
-*/
 .avatar {
 float: right;
 position: relative;
@@ -138,7 +124,7 @@ width: 40px;
 height: 40px;
 right: 0px;
 clip-path: polygon(0 0, 100% 0, 100% 100%);
-background:#e0e0e0;
+background:#3333;
 position: absolute;
 padding-left: 23px;
 }

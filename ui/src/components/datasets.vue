@@ -37,23 +37,35 @@
                     <!--show empty div to speed up rendering if it's outside the view-->
                     <!--{{page_idx}} {{page_info[page_idx]}}-->
                 </div>
-                <b-row class="subjects" v-for="(datasets, subject) in page" :key="subject" :ref="'sub-'+subject" v-else>
+                <b-row class="subjects" v-for="(datasets, group) in page" :key="group" :ref="'sub-'+group" v-else>
                     <b-col cols="2">
-                        <strong>{{subject}}</strong>
+                        <strong>{{group}}</strong>
+                        <!-- need to show this else where..
+                        <div v-if="project.meta">
+                            <span class="keyvalue" v-for="(v, k) in project.meta[datasets._subject]" :key="k">
+                                <small>{{k}}</small> {{v}}
+                            </span>
+                        </div>
+                        -->
                     </b-col>
                     <b-col cols="10">
-                        <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" :class="{selected: dataset.checked, removed: dataset.removed}">
-                            <b-row v-if="visible_subjects.includes(subject)">
+                        <div v-for="dataset in datasets" :key="dataset._id" @click="open(dataset._id)" class="dataset clickable" 
+                            :class="{selected: dataset.checked, removed: dataset.removed}">
+                            <b-row v-if="visible_subjects.includes(group)">
                                 <b-col cols="3" class="truncate">
-                                    <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" @click.stop="check(dataset, $event)" class="dataset-checker">
-                                    <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" style="margin-top: 1px;"/>
+                                    <input :disabled="dataset.removed" type="checkbox" v-model="dataset.checked" 
+                                        @click.stop="check(dataset, $event)" class="dataset-checker">
+                                    <datatypetag :datatype="datatypes[dataset.datatype]" :clickable="false" :tags="dataset.datatype_tags" 
+                                        style="margin-top: 1px;"/>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
                                     <icon v-if="dataset.status == 'storing'" name="cog" :spin="true" style="color: #2693ff;" scale="0.8"/>
                                     <icon v-if="dataset.status == 'failed'" name="exclamation-triangle" style="color: red;" scale="0.8"/>
                                     <icon v-if="dataset.status == 'archived'" name="archive" scale="0.8"/>
                                     <icon v-if="!dataset.status" name="question-circle" style="color: gray;" scale="0.8"/>
-                                    <small style="font-size: 80%;" v-if="dataset.prov && dataset.prov.task && dataset.prov.task.name">{{dataset.prov.task.name}} / </small>
+                                    <small style="font-size: 80%;" v-if="dataset.prov && dataset.prov.task && dataset.prov.task.name">
+                                        {{dataset.prov.task.name}} / 
+                                    </small>
                                     <span style="">{{dataset.desc||'&nbsp;'}}</span>
                                 </b-col>
                                 <b-col cols="3" class="truncate">
@@ -508,12 +520,13 @@ export default {
                 var last_subject = null;
                 res.data.datasets.forEach((dataset, idx)=>{
                     dataset.checked = this.selected[dataset._id];
-                    var subject = "nosub"; //not all datasets has subject tag
-                    if(dataset.meta && dataset.meta.subject) subject = dataset.meta.subject; 
-                    if(dataset.meta && dataset.meta.session) subject += " / " + dataset.meta.session;
-                    last_subject = subject;
-                    if(!groups[subject]) Vue.set(groups, subject, []);
-                    groups[subject].push(dataset);
+                    var group = "nosub"; //not all datasets has subject tag
+                    if(dataset.meta && dataset.meta.subject) group = dataset.meta.subject; 
+                    if(dataset.meta && dataset.meta.session) group += " / " + dataset.meta.session;
+                    last_subject = group;
+                    if(!groups[group]) Vue.set(groups, group, []);
+                    groups[group]._subject = dataset.meta.subject; //to help with displaying meta data for this subject
+                    groups[group].push(dataset);
                 });
 
                 this.last_groups = {};

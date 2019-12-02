@@ -6,8 +6,8 @@
             <div class="header-row">
                 <projectaccess :access="project.access"/>
                 <div style="float: right; font-size: 90%; opacity: 0.9;" v-if="project.stats.datasets">
-                    <icon name="users" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
-                    <icon name="cubes" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
+                    <icon name="user-friends" style="opacity: 0.7" scale="0.8"/>&nbsp;{{project.stats.datasets.subject_count}}
+                    <icon name="cubes" style="opacity: 0.7" scale="0.8"/>&nbsp;{{project.stats.datasets.count}}
                     <span v-if="project.stats.datasets.size" style="opacity: 0.8; font-size: 85%;"> ({{project.stats.datasets.size | filesize}})</span>
                 </div>
                 <span class="title">
@@ -26,8 +26,9 @@
         </b-col>
         <b-col md="3">
             <div class="datatypes" v-if="project.stats && project.stats.datasets">
-                <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" :key="datatype_id" :datatype="datatype_id" 
-                    style="font-size: 85%; margin-right: 2px"/>
+                <datatypetag v-for="datatype_id in project.stats.datasets.datatypes" 
+                :key="datatype_id"
+                :datatype="datatype_id" style="font-size: 85%; margin-right: 2px"/>
             </div>
         </b-col>
         <b-col md="1" v-if="config.user">
@@ -104,7 +105,6 @@ export default {
 background-color: white;
 padding: 3px 6px;
 margin-bottom: 1px;
-box-shadow: 1px 1px 3px #ddd;
 }
 .project:hover {
 background-color: #f9f9f9;

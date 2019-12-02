@@ -69,12 +69,21 @@ router.post('/import/:dataset_id', jwt({secret: config.express.pubkey}), (req, r
             if(err) return next(err); 
             if(!project) return next("no such project");
 
-            //console.dir(project.toString());
-
             let canedit = false;
             if(project.admins.includes(req.user.sub)) canedit = true;
             if(project.members.includes(req.user.sub)) canedit = true;
             if(!canedit) return next("you can't import to this project"); 
+
+            //update participants info
+            if(req.body.meta) {
+                if(!project.meta) project.meta = {};
+                Object.assign(project.meta, req.body.meta);
+            }
+            if(req.body.meta_info) {
+                if(!project.meta_info) project.meta_info = {};
+                Object.assign(project.meta_info, req.body.meta_info);
+            }
+            project.save();
 
             //query datasets requested for import
             db.DLItems.find({

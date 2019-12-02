@@ -10,19 +10,6 @@ const child_process = require('child_process');
 
 const bids_walker = require('/home/hayashis/git/cli/bids-walker');
 
-/*
-let roots = ['/mnt/datalad/datasets.datalad.org/openneuro'];
-
-async.forEach(roots, (root, next_root)=>{
-    console.log(root);
-
-}, err=>{
-    if(err) throw err;
-    console.log("all done");
-    process.exit(0); //db keeps it going.. so I have to kill it
-});
-*/
-
 process.chdir('/mnt/datalad');
 
 console.log("connecting");
@@ -33,19 +20,24 @@ db.init(async err=>{
     //find dataset_description.json
     console.log("looking for dataset_description.json");
 
-    let bids_dirs = child_process.execSync("find datasets.datalad.org  -name dataset_description.json", {encoding: "utf8"}).split("\n");
+    //let bids_dirs = child_process.execSync("find datasets.datalad.org -name dataset_description.json", {encoding: "utf8"}).split("\n");
+    let bids_dirs = child_process.execSync("cat bids.list", {encoding: "utf8"}).split("\n");
 
     //debug..
     //let bids_dirs = ["datasets.datalad.org/openneuro/ds002040/dataset_description.json"];
 
+    let skipped = [];
+
     async.eachSeries(bids_dirs, (bids_dir, next_dir)=>{
         let dataset_path = path.dirname(bids_dir);
+
         console.log(dataset_path+".......................");
         if(dataset_path[0] == '.') return next_dir();
         if(dataset_path.includes("/derivatives")) return next_dir(); //openneuro/ds001734/derivatives contains dataset_description.json
         if(dataset_path.includes("/.bidsignore")) return next_dir(); //openneuro/ds001583
 
-        let skipped = [];
+        //debug
+        //if(dataset_path != "datasets.datalad.org/openneuro/ds000237") return next_dir();
 
         bids_walker.walk(dataset_path, (err, bids)=>{
             if(err) return next_dir(err);
@@ -64,7 +56,7 @@ db.init(async err=>{
         console.log("all done");
         if(skipped.length > 0) {
             console.log("\nskipped dataset");
-            skipped.forEach(console.log);
+            console.dir(skipped);
         }
     });
 });
@@ -89,7 +81,7 @@ function handle_bids(key, bids, cb) {
         if(bids.participants) dldataset.participants = bids.participants;
         if(bids.participants_json) dldataset.participants_info = bids.participants_json;
 
-        if(!bids.dataset_description.Name) bids.dataset_description.Name = "untitled";
+        //if(!bids.dataset_description.Name) bids.dataset_description.Name = "untitled";
        
         //count
         let unique_subjects = [];

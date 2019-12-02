@@ -228,19 +228,10 @@
                                 </div>
                             </b-col>
                         </b-row>
- 
-                        <!-- I am going to replace this with graphite data
-                        <div v-if="info">
-                            <span class="form-header">App execution history.</span>
-                            <p><small class="text-muted">Activity over the last 180 days.</small></p>
-                            <vue-plotly :data="hist_data" :layout="hist_layout" :options="{displayModeBar: false}" :autoResize="true" :watchShallow="true"/>
-                            <br>
-                        </div>
-                        -->
 
                         <div v-if="readme">
+                            <p style="float: right;"><small class="text-muted">From github repo / README.md</small></p>
                             <span class="form-header">README</span>
-                            <p><small class="text-muted">From github repo / README.md</small></p>
                             <vue-markdown :source="readme" class="readme box"></vue-markdown>
                         </div>
 
@@ -297,7 +288,6 @@ import statustag from '@/components/statustag'
 import projectavatar from '@/components/projectavatar'
 import doibadge from '@/components/doibadge'
 import resource from '@/components/resource'
-import VuePlotly from '@statnett/vue-plotly'
 
 export default {
     components: { 
@@ -306,7 +296,7 @@ export default {
         VueMarkdown, statustag, 
         datatypetag, datatypefile,
         projectavatar,
-        doibadge, VuePlotly, app,
+        doibadge, app,
         resource,
     },
 

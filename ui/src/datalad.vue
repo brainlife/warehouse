@@ -20,7 +20,8 @@
         </b-form-group>
     </div>
     <div class="page-left" ref="dataset-list" :style="{width: splitter_pos-200+'px'}">
-        <p v-if="datasets.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
+        <p v-if="loading_datasets" style="padding: 20px; opacity: 0.8;">Loading...</p>
+        <p v-else-if="datasets.length == 0" style="padding: 20px; opacity: 0.8;">No matching dataset</p>
         <div v-for="dataset in datasets" :key="dataset._id" class="dataset" :title="dataset.path" :ref="dataset._id" @click="open_dataset(dataset._id)" 
             :class="{dataset_selected: (selected && dataset._id == selected._id)}"> 
             <p style="margin-bottom:7px;">
@@ -31,14 +32,16 @@
                 </span>
             </p>
             <p style="margin-bottom:0px;">
-                <b-badge variant="light" v-for="(count, datatype_id) in dataset.stats.datatypes" :key="datatype_id" style="margin-right: 10px;">
-                    <datatypetag :datatype="datatype_id" :clickable="false"/> <small>{{count}}</small>
-                </b-badge>
                 <small>
-                    <span>{{license_label(dataset)}}</span>
-                    {{dataset.stats.subjects}} Subjects 
-                    <span v-if="dataset.stats.sessions > 1"> <b>&bull;</b> {{dataset.stats.sessions}} Sessions</span>
+                    {{dataset.stats.subjects}} <span style="opacity: 0.5;">sub</span>
+                    <span v-if="dataset.stats.sessions"> 
+                        <span style="opacity: 0.3;">|</span> {{dataset.stats.sessions}} <span style="opacity: 0.5;">ses</span>
+                    </span>
                 </small>
+                <small v-for="(count, datatype_id) in dataset.stats.datatypes" :key="datatype_id" style="margin-right: 10px;">
+                    <datatypetag :datatype="datatype_id" :clickable="false"/> <small>{{count}}</small>
+                </small>
+                <!--<span>{{license_label(dataset)}}</span>-->
             </p>
         
         </div>
@@ -65,8 +68,8 @@
             
             <p>
                 <b-badge pill class="bigpill" style="margin-right: 5px;">
-                    <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.subjects}} subjects 
-                    <span v-if="selected.stats.sessions"><span style="opacity: 0.4"> | </span>{{selected.stats.sessions}} sessions</span>
+                    <icon name="user-friends" style="opacity: 0.4;"/>&nbsp;&nbsp;{{selected.stats.subjects}} <small>subjects</small> 
+                    <span v-if="selected.stats.sessions"><span style="opacity: 0.4"> | </span>{{selected.stats.sessions}} <small>sessions</small></span>
                 </b-badge>
                 <span v-for="(count, datatype_id) in selected.stats.datatypes" :key="datatype_id" style="margin-right: 10px;">
                     <datatypetag :datatype="datatype_id" :clickable="false"/> <small>{{count}}</small>
@@ -144,12 +147,15 @@
                         </span>
                     </b-col>
                     <b-col>
-                        <b-row v-for="dataset in group.datasets" :key="dataset._id" class="dataobject">
-                            <b-col>
-                                <datatypetag :datatype="dataset.datatype" :clickable="false" :tags="dataset.datatype_tags" />
-                            </b-col>
-                            <b-col><tags :tags="dataset.tags"/></b-col>
-                        </b-row>
+                        <div v-for="dataset in group.datasets" :key="dataset._id" class="dataobject" @click="click_dataset(dataset)">
+                            <b-row>
+                                <b-col>
+                                    <datatypetag :datatype="dataset.datatype" :clickable="false" :tags="dataset.datatype_tags" />
+                                </b-col>
+                                <b-col><tags :tags="dataset.tags"/></b-col>
+                            </b-row>
+                            <pre style="font-size: 85%">{{dataset._meta}}</pre>
+                        </div>
                     </b-col>
                 </b-row>
             </div>
@@ -226,11 +232,12 @@ export default {
             datatype_options: [ 
                 "58c33bcee13a50849b25879a", //t1
                 "594c0325fa1d2e5a1f0beda5", //t2
-                "5d9cf81c0eed545f51bf75df", //flair
+                //"5d9cf81c0eed545f51bf75df", //flair
                 "58c33c5fe13a50849b25879b", //dwi
                 "59b685a08e5d38b0b331ddc5", //func
                 "5c390505f9109beac42b00df", //fmap
                 "5ddf1381936ca39318c5f045", //eeg
+                "5dcecaffc4ae284155298383", //meg
             ],
             //min_age: 0,
             //max_age: 100,
@@ -241,6 +248,7 @@ export default {
             query: "",
             dataset_ps: null, 
 
+            loading_datasets: false,
             loading_dataset: false,
             selected: null, 
             subjects: null, //dataobjects that belongs to selected dataset
@@ -299,7 +307,9 @@ export default {
     
     methods: {
         load_datasets() {
+            this.loading_datasets = true;
             this.datasets = [];
+
             let find = {};
             if(this.query) {
                 find["$text"] = {$search: this.query};
@@ -316,14 +326,26 @@ export default {
                 this.datasets = res.data;
                 this.$refs["dataset-list"].scrollTop = 0;
 
+                //make sure certain key information is set
+                this.datasets.forEach(dataset=>{
+                    if(!dataset.dataset_description) dataset.dataset_description = {};
+                    if(!dataset.dataset_description.Name) dataset.dataset_description.Name = "untitled";
+                });
+
                 //scroll list to the selected element
                 this.$nextTick(()=>{
                     if(this.$route.params.dataset_id) {
                         let item = this.$refs[this.$route.params.dataset_id][0];
-                        item.scrollIntoView();
+                        if(item) item.scrollIntoView();
                     }
                 });
-            }).catch(console.error);
+
+                this.loading_datasets = false;
+
+            }).catch(err=>{
+                this.loading_datasets = false;
+                console.dir(err);
+            });
         },
 
         open_dataset(dataset_id) {
@@ -350,8 +372,8 @@ export default {
             case "ccby.40":
                 return license;
             }
-            console.log("unknown license");
-            console.log(license);
+            //console.log("unknown license");
+            //console.log(license);
             return null;
         },
 
@@ -383,6 +405,7 @@ export default {
                 for(let item of items) {
                     let subject = item.dataset.meta.subject;
                     let session = item.dataset.meta.session;
+                    item.dataset._id = item._id;
                     let group = subject;
                     if(session) group += " / "+session;
                     if(!this.subjects[group]) this.subjects[group] = {subject, session, datasets: []};
@@ -414,9 +437,23 @@ export default {
             //console.dir(this.selected);
             if(Vue.config.user) {
                 //this.$bvModal.show('importer'); 
-                this.$root.$emit("importer.open", {dataset: this.selected, subjects: this.subjects});
+                this.$root.$emit("importer.open", {
+                    dataset: this.selected, 
+                    subjects: this.subjects,
+                });
             } else alert('Please signup/login before importing datasets.');
-        }
+        },
+
+        click_dataset(item) {
+            console.log(item);
+            this.$http('datalad/items', {params: {
+                find: JSON.stringify({_id: item._id}), 
+                select: 'dataset.meta',
+            }}).then(res=>{
+                item._meta = res.data[0].dataset.meta;     
+                this.$forceUpdate();
+            });     
+        },
     }, //methods
 }
 </script>
@@ -561,6 +598,7 @@ font-size: 90%;
 }
 .subject-group .dataobject:hover {
 background-color: #eee;
+cursor: pointer;
 }
 .import-button {
 float: right; 

@@ -662,6 +662,17 @@ exports.storage_systems["url"] = {
     },
 }
 
+async function walk(dir) {
+    let files = await fs.promises.readdir(dir);
+    files = await Promise.all(files.map(async file => {
+        const filePath = path.join(dir, file);
+        const stats = await fs.promises.stat(filePath);
+        if (stats.isDirectory()) return walk(filePath);
+        else if(stats.isFile()) return filePath;
+    }));
+    return files.reduce((all, folderContents) => all.concat(folderContents), []);
+}
+
 const datalad_root = "/mnt/datalad";
 exports.storage_systems["datalad"] = {
     need_backup: false,
@@ -693,17 +704,32 @@ exports.storage_systems["datalad"] = {
             //create tar ball
             let archive = archiver('tar');
             let gzip = zlib.createGzip();
-            dataset.storage_config.files.forEach(file=>{
-                let stream = fs.createReadStream(datalad_root+"/"+file.src);
-                if(file.src.endsWith(".nii")) {
-                    //compress .nii with .nii.gz as *all* brainlife datatype uses .nii.gz for nifti
-                    console.log("passing", file.src, "through gzip stream");
-                    stream = stream.pipe(gzip);
+            async.forEach(dataset.storage_config.files, async file=>{
+                let source_path = datalad_root+"/"+file.src;
+                let stat = fs.statSync(source_path);
+                if(stat.isDirectory()) {
+                    //I need to deference symbolic link as archiver won't deference symlinks
+                    let entries = await walk(source_path);
+                    console.dir(entries);
+                    entries.forEach(entry=>{
+                        let subpath = entry.substring(source_path.length);
+                        console.log(entry, file.dest+subpath);
+                        archive.append(fs.createReadStream(entry), {name: file.dest+subpath});
+                    });
+                    //archive.directory(source_path, file.dest);
+                } else {
+                    let stream = fs.createReadStream(source_path);
+                    if(file.src.endsWith(".nii")) {
+                        //compress .nii with .nii.gz as *all* brainlife datatype uses .nii.gz for nifti
+                        console.log("passing", file.src, "through gzip stream");
+                        stream = stream.pipe(gzip);
+                    }
+                    archive.append(stream, {name: file.dest});
                 }
-                archive.append(stream, {name: file.dest});
+            }, err=>{
+                archive.finalize();
+                cb(err, archive, dataset._id+".tar");
             });
-            archive.finalize();
-            cb(null, archive, dataset._id+".tar");
         });
     },
 }

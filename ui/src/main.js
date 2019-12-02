@@ -120,12 +120,17 @@ Vue.config.auth_signin = "/auth#!/signin";
 Vue.config.auth_signout = "/auth#!/signout";
 Vue.config.productionTip = false;
 Vue.config.debug_doi = "10.25663/bl.p.3"; //o3d publication
+Vue.config.plotly = {
+    font: {
+        font: '-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji',
+        size: 10,
+    },
+};
 
 Vue.config.has_role = function(role, service = "warehouse") {
     if( Vue.config.user && 
-        Vue.config.user.scopes[service] && ~Vue.config.user.scopes[service].indexOf(role)) return true;
-//            Vue.config.user.scopes.amaretti && 
-//            ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
+        Vue.config.user.scopes[service] &&
+        ~Vue.config.user.scopes[service].indexOf(role)) return true;
     return false;
 }
 
@@ -166,17 +171,6 @@ function jwt_decode_brainlife(jwt) {
     console.log(Vue.config.user);
 }
 
-/*
-function isadmin() {
-    if( Vue.config.user && 
-        Vue.config.user.scopes.warehouse && 
-        ~Vue.config.user.scopes.warehouse.indexOf('admin') &&
-        Vue.config.user.scopes.amaretti && 
-        ~Vue.config.user.scopes.amaretti.indexOf('admin')) return true;
-    return false;
-}
-*/
-
 Vue.config.jwt = localStorage.getItem("jwt");//jwt token for user
 if (Vue.config.jwt) {
     jwt_decode_brainlife(Vue.config.jwt);
@@ -186,7 +180,6 @@ if (Vue.config.jwt) {
 
 router.beforeEach(function (to, from, next) {
     if (to.matched.length == 0) {
-        //console.log("no matching reouter for", JSON.stringify(to, null, 4), "redirecting to /404");
         document.location = "/404";
         return;
     }
@@ -239,7 +232,6 @@ new Vue({
         this.ensure_myproject();
 
         //refresh jwt on page refresh (and to get new jwt after creating new project)
-        //this.$root.$emit("refresh_jwt");
         this.refresh_jwt(err=>{
             this.$root.$emit("jwt_refreshed");
             this.load_profile(err=>{

@@ -179,10 +179,14 @@ var projectSchema = mongoose.Schema({
 
     quota: {type: Number, default: 1000000000000}, //maximum archive size (1TB by default)
 
+    //TODO - will be deprecated when datalad goes online
     //for openneuro proxy project (not set if it's not openneuro)
     openneuro: {
         dataset_id: String,
     },
+
+    meta: mongoose.Schema.Types.Mixed, //metadata for each subject (keyed by subject id and child object)
+    meta_info: mongoose.Schema.Types.Mixed, //from participants info
 
     //project can store datasets on project specific storage. {resource_id}
     storage: String,  //default to warehouse config.archive.storage_default
@@ -681,10 +685,13 @@ var dlDatasetSchema = mongoose.Schema({
         ReferencesAndLinks: [String],
         DatasetDOI: String,
     },
+
     participants: [
-        mongoose.Schema.Types.Mixed, //{subject: "sub-001", sex: 'F', age: '26' }
+        mongoose.Schema.Types.Mixed, //{subject: "01", sex: 'F', age: '26', etc.. }
     ],
     participants_info: mongoose.Schema.Types.Mixed, //metadata for participants info
+
+
     stats: {
         subjects: Number,
         sessions: Number,

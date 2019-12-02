@@ -708,7 +708,7 @@ exports.update_dataset_stats = async function(project_id, cb) {
             stats.size += item.size;
         });
         stats.subject_count = subjects.size;
-        stats.datatypes = [...datatypes];
+        stats.datatypes = [...datatypes].sort();
         let doc = await db.Projects.findByIdAndUpdate(project_id, {$set: {"stats.datasets": stats}}, {new: true});
         if(cb) cb(null, doc);
     } catch(err) {

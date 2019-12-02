@@ -50,25 +50,29 @@
                     </b-col>
                 </b-row>
 
-                <b-row>
+                <b-row v-if="usage_data">
                     <b-col cols="2">
-                        <span class="form-header">Running Tasks</span>
+                        <span class="form-header">Resource Usage</span>
                     </b-col>
                     <b-col>
-                        <div v-for="task in tasks" :key="task._id" class="box" style="margin-bottom: 1px">
-                        <b-row>
-                            <b-col cols="4">
-                                <contact :id="task.user_id" size="small"/>
-                                <small><icon name="shield-alt"/> {{task._group_id}}</small><br>
-                            </b-col>
-                            <b-col style="word-break: break-all;">
-                                <small style="float: right;" v-if="task.start_date"><time>Started <timeago :since="task.start_date" :auto-update="1"/></time></small>
-                                <statusicon :status="task.status"/> <span style="text-transform: uppercase;">{{task.status}}</span>
-                                {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
-                                <small>{{task.status_msg}}</small>
-                                <small style="font-size: 70%">{{task._id}}</small>
-                            </b-col>
-                        </b-row>
+                        <vue-plotly :data="usage_data" :layout="usage_layout" :autoResize="true"/>
+                        <br>
+
+                        <span class="form-header">Currently Running Tasks</span>
+                        <div v-for="task in tasks" :key="task._id" style="margin-bottom: 1px">
+                            <b-row>
+                                <b-col cols="4">
+                                    <contact :id="task.user_id" size="small"/>
+                                    <small><icon name="shield-alt"/> {{task._group_id}}</small><br>
+                                </b-col>
+                                <b-col style="word-break: break-all;">
+                                    <small style="float: right;" v-if="task.start_date"><time>Started <timeago :since="task.start_date" :auto-update="1"/></time></small>
+                                    <statusicon :status="task.status"/> <span style="text-transform: uppercase;">{{task.status}}</span>
+                                    {{task.service}} <b-badge>{{task.service_branch}}</b-badge><br>
+                                    <small>{{task.status_msg}}</small>
+                                    <small style="font-size: 70%">{{task._id}}</small>
+                                </b-col>
+                            </b-row>
                         </div>
                         <p v-if="tasks.length ==0">No tasks running on this resource.</p>
                         <br>
@@ -108,16 +112,6 @@
                                 </b-col>
                             </b-row>
                         </div>
-                        <br>
-                    </b-col>
-                </b-row>
-
-                <b-row v-if="usage_data">
-                    <b-col cols="2">
-                        <span class="form-header">Resource Usage</span>
-                    </b-col>
-                    <b-col>
-                        <vue-plotly :data="usage_data" :layout="usage_layout" :autoResize="true"/>
                         <br>
                     </b-col>
                 </b-row>
@@ -409,6 +403,7 @@ export default {
                     yaxis: {
                         title: 'Running Jobs',
                     },
+                    font: Vue.config.plotly.font,
                 };
             }).catch(console.error);
         },

@@ -72,9 +72,9 @@ export default {
             this.dataset = opt.dataset;
             this.subjects = opt.subjects;
 
-            this.title = "Import "+this.dataset.dataset_description.Name;
-            this.project_name = "";
-            this.project_desc = "Imported from "+this.dataset.dataset_description.Name;
+            this.title = "Import";
+            this.project_name = this.dataset.dataset_description.Name;
+            this.project_desc = "Imported from "+this.dataset.path;
             this.$refs.modal.show(); 
         });
     },
@@ -85,8 +85,24 @@ export default {
     },
 
     methods: {
+        get_meta() {
+            if(!this.dataset.participants) return null;
+            let meta = {};
+            this.dataset.participants.forEach(rec=>{
+                if(!rec.subject) return; //just in case.
+                meta[rec.subject] = rec;
+            });
+            
+            for(let sub in meta) {
+                delete meta[sub].subject;
+            }
+            
+            return meta;
+        },
+
         submit() {
             if(!this.createnew) return this.submit_import();
+
             this.$notify({text: "Creating project"});
             this.$http.post('project', {
                 name: this.project_name, 
@@ -96,12 +112,6 @@ export default {
 
                 console.log("refreshing jwt.. so I can write to the project");
                 this.$root.$emit("refresh_jwt", this.submit_import);
-                /*
-                this.$root.$on("jwt_refreshed", ()=>{
-                    this.$root.$off("jwt_refreshed");
-                    this.submit_import();
-                })
-                */
             }).catch(err=>{
                 console.error(err);
                 this.$notify({type: "error", text: err.response.data.message});
@@ -113,7 +123,9 @@ export default {
             this.$notify({text: "Importing datasets.."});
             this.$http.post('datalad/import/'+this.dataset._id, {
                 project: this.project, 
-                datatypes: this.datatypes
+                datatypes: this.datatypes,
+                meta: this.get_meta(),
+                meta_info: this.dataset.participants_info,
             }).then(res=>{
                 this.$router.push("/project/"+this.project+"/dataset");
             }).catch(err=>{
