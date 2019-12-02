@@ -77,6 +77,7 @@ function construct_dataset_query(query, canread_project_ids) {
  *                              as this is not too difficult to construct
  * @apiParam {Number} [limit]   Maximum number of records to return - defaults to 100
  * @apiParam {Number} [skip]    Record offset for pagination (default to 0)
+ * @apiParam {Boolean} [single] Return a single dataset content without wrapping in datasets:[] with counts, etc..
  * @apiParam {String} [populate] Fields to populate
  * 
  * @apiHeader {String} authorization A valid JWT token "Bearer: xxxxx"
@@ -104,8 +105,8 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
         let query = construct_dataset_query(req.query, canread_project_ids);
 
         //console.timeLog("api");
-        //console.log("querying datasets");
-        //console.dir(query);
+        console.log("querying datasets");
+        console.dir(query);
 
         db.Datasets.find(query)
         .populate(populate)
@@ -139,9 +140,12 @@ router.get('/', jwt({secret: config.express.pubkey, credentialsRequired: false})
                     size = stats[0].size;
                 }
 
-                //console.timeEnd("api");
-                //console.log("responding");
-                res.json({ datasets, count, size, });
+                if(req.query.single) {
+                    return res.json(datasets[0]);
+                } else {
+                    console.log("not single query");
+                    res.json({ datasets, count, size, });
+                }
             });
         });
     });
@@ -1453,7 +1457,7 @@ set +e #stop the script if anything fails
                 let p = projects[project_id];
                 let authors = [...p.admins, ...p.members];
                 authors = authors.filter((v,idx,self)=>self.indexOf(v) === idx); //uniq
-                authors = authors.map(id=>common.deref_contact(id)).map(a=>a.fullname||a.email);
+                authors = authors.map(id=>common.deref_contact(id)).filter(a=>!!a).map(a=>a.fullname||a.email);
 
                 //write README and bids/dataset_description.json
                 let root = "./proj-"+project_id;
@@ -1498,6 +1502,11 @@ ${p.desc}`;
                 script += "curl ";
                 if(req.headers.authorization) script += "-H \"$auth\" ";
                 script += config.warehouse.api+"/dataset/download/"+dataset._id+" | tar -C \""+path+"\" -x\n";
+
+                //download info.json
+                script += "curl ";
+                if(req.headers.authorization) script += "-H \"$auth\" ";
+                script += config.warehouse.api+"/dataset?single=true\\&find='\\{\"_id\":\""+dataset._id+"\"\\}' > "+path+"/info.json\n";
 
                 if(dataset.datatype.bids) {
                     //Create BIDS symlinks

@@ -19,37 +19,41 @@
             <!--profile-->
             <div v-if="tab == 0">
                 <b-form @submit="submit_profile">
-                    <b-alert show variant="secondary">
-                        Brainlife.io is NSF funded project and supported by Indiana University. We are obliged to collect basic user profile information for annual reporting and to implement features that are useful for our users.
-                    </b-alert>
-                    <br>
-
+                    <p>
+                        <span class="form-header">Full Name</span>
+                        <b-form-input v-model="fullname" placeholder="Which campus / research center are you member of?" required/>
+                    </p>
                     <p>
                         <span class="form-header">Institution</span>
-                        <b-form-input v-model="profile.institution" placeholder="Which campus / research center are you member of?" required/>
+                        <b-form-input v-model="profile.public.institution" placeholder="Which campus / research center are you member of?" required/>
                     </p>
 
                     <p>
                         <span class="form-header">Position</span>
-                        <b-form-input v-model="profile.position" placeholder="What is your role at your institution?" required/>
+                        <b-form-input v-model="profile.public.position" placeholder="What is your role at your institution?" required/>
                     </p>
 
                     <p>
                         <span class="form-header">Biography</span>
-                        <b-form-textarea v-model="profile.bio" rows="3" placeholder="Please enter a brief introduction about yourself and your research that you'd like to share with other members of brainlife." required/>
+                        <b-form-textarea v-model="profile.public.bio" rows="3" placeholder="Please enter a brief introduction about yourself and your research that you'd like to share with other members of brainlife." required/>
                     </p>
 
                     <p>
-                        <b-form-checkbox v-model="profile.aup">
+                        <b-form-checkbox v-model="profile.private.aup">
                             Agree to Brainlife <a href="/docs/aup" target="_blank">Acceptable Use Policy</a><br>
+                            <br>
+                            Brainlife.io is a NSF funded project and supported by Indiana University. 
+                            We are obliged to collect basic user profile information for annual reporting and to implement features that are useful for our users.
+                            Please see our <a href="/docs/privacy" target="_blank">Privacy Policy</a> to understand what other information are collected and how it is used.
+                            <br>
                          </b-form-checkbox>
                     </p>
 
                     <div class="page-footer">
-                        <b-button type="submit" variant="primary" :disabled="submitting"><icon v-if="submitting" name="cog" spin/> Update</b-button>
+                        <b-button type="submit" variant="primary">Update</b-button>
                     </div>
                 </b-form>
-                <b-card v-if="config.debug"><pre>{{profile}}</pre></b-card>
+                <b-card v-if="config.debug"><pre>{{fullname}} {{profile}}</pre></b-card>
             </div>
 
             <!--avatar-->
@@ -105,30 +109,45 @@ export default {
         return {
             tab: 0,
 
+            fullname: "",
             profile: {
-                institution: "",
-                position: "",
-                bio: "",
-                aup: false,
+                public: {
+                    institution: "",
+                    position: "",
+                    bio: "",
+                },
+                private: {
+                    aup: false,
+                }
             },
 
-            submitting: false,
+            //submitting: false,
 
             config: Vue.config,
         }
     },
 
     mounted() {
-        console.log("mounting settings"); 
+        this.$http.get(Vue.config.auth_api+"/profile").then(res=>{
+            console.log("downloading user profile");
+            console.dir(res.data);
+            this.fullname = res.data.fullname;
+            if(res.data.profile) Object.assign(this.profile, res.data.profile);
+        })
     },
     
     methods: {
         avatar_url: lib.avatar_url,
         submit_profile(e) {
             e.preventDefault()
-            console.dir(this.profile);
-
-            this.submitting = true;
+            //this.submitting = true;
+            this.$http.patch(Vue.config.auth_api+"/profile", {
+                fullname: this.fullname,
+                profile: this.profile, 
+            }).then(res=>{
+                console.dir(res.data);
+                this.$notify("Updated profile");
+            });            
         },
     },
 }
